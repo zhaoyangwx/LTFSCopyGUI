@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2047
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "LTFSCopyGUI", "LTFSCopyGUI\LTFSCopyGUI.vbproj", "{7C0D817C-BD76-4D16-8D8A-2D38B101BAFC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C0D817C-BD76-4D16-8D8A-2D38B101BAFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C0D817C-BD76-4D16-8D8A-2D38B101BAFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C0D817C-BD76-4D16-8D8A-2D38B101BAFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C0D817C-BD76-4D16-8D8A-2D38B101BAFC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {536310DD-7EE4-4856-BAB6-B9EED63BD7F5}
+	EndGlobalSection
+EndGlobal
