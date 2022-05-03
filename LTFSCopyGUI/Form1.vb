@@ -5,22 +5,22 @@
         Public Property Path As String
         Public Property Partition As ltfsindex.Partition.PartitionLabel
         Public Property BlockNumber As Long
+        Public Property FileLength As Long
     End Class
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        LoadSchemaFile()
+    End Sub
+    Public Sub LoadSchemaFile(Optional ByVal ReloadFile As Boolean = True)
         Dim th As New Threading.Thread(
             Sub()
                 Try
                     Invoke(Sub() Label4.Text = "1/7 正在加载...")
-                    Dim s As String = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
+                    Dim s As String
+                    If ReloadFile Or schema Is Nothing Then s = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
                     Invoke(Sub() Label4.Text = "2/7 预处理...")
-                    s = s.Replace("<directory>", "<_directory><directory>")
-                    s = s.Replace("</directory>", "</directory></_directory>")
-                    s = s.Replace("<file>", "<_file><file>")
-                    s = s.Replace("</file>", "</file></_file>")
                     Invoke(Sub() Label4.Text = "3/7 解析文件...")
-                    schema = ltfsindex.FromXML(s)
-                    contents = New ltfsindex.contentsDef With {._directory = schema._directory, ._file = schema._file}
-                    contents._directory(0).name = ""
+                    If ReloadFile Or schema Is Nothing Then schema = ltfsindex.FromSchemaText(s)
+                    contents = New ltfsindex.contentsDef With {._directory = schema._directory(0).contents._directory, ._file = schema._directory(0).contents._file}
                     Dim flist As New List(Of TapeFileInfo)
                     ScanFile(contents, flist, "")
                     Dim alist As New List(Of TapeFileInfo)
@@ -59,8 +59,9 @@
 
                     Dim p As New System.Text.StringBuilder()
                     If Not CheckBox1.Checked Then
+                        p.Append("Partition" & vbTab & "Startblock" & vbTab & "Length" & vbTab & "Path" & vbCrLf)
                         For Each f As TapeFileInfo In alist
-                            p.Append(f.BlockNumber & vbTab & f.Path & vbCrLf)
+                            p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -69,7 +70,7 @@
 
                         Next
                         For Each f As TapeFileInfo In blist
-                            p.Append(f.BlockNumber & vbTab & f.Path & vbCrLf)
+                            p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -80,8 +81,10 @@
                         p.Append("chcp 65001" & vbCrLf)
                         Dim fdir As String = TextBox3.Text
                         If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\")
+                        fdir &= "\"
                         Dim tdir As String = TextBox4.Text
-                        If tdir.EndsWith("\") Then tdir = fdir.TrimEnd("\")
+                        If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\")
+                        tdir &= "\"
                         For Each f As TapeFileInfo In alist
                             p.Append("echo f|xcopy /D /Y """ & fdir & f.Path & """ """ & tdir & f.Path & """" & vbCrLf)
                             Threading.Interlocked.Increment(counter)
@@ -126,9 +129,7 @@
         TextBox4.Enabled = False
         Label4.Visible = True
         th.Start()
-
     End Sub
-
     Public Function LookforXMLEndPosition(ByRef s As String, ByVal Target As String, ByVal StartPos As String) As Long
         Dim i As Integer = StartPos
         Dim TargetBra As String = "<" & Target & ">"
@@ -169,19 +170,26 @@
             If contents._file.Count > 0 Then
                 Parallel.ForEach(contents._file,
                     Sub(f As ltfsindex.file)
+                        If f IsNot Nothing Then
+                            If Not f.Selected Then Exit Sub
+                        End If
                         If f.extentinfo IsNot Nothing Then
                             If f.extentinfo.Count > 0 Then
                                 SyncLock flist
                                     flist.Add(New TapeFileInfo With {.BlockNumber = f.extentinfo(0).startblock,
                                               .Partition = f.extentinfo(0).partition,
-                                              .Path = ParentPath & f.name})
+                                              .Path = ParentPath & f.name,
+                                              .FileLength = f.length})
                                 End SyncLock
                                 Exit Sub
                             End If
                         End If
-                        flist.Add(New TapeFileInfo With {.BlockNumber = 0,
+                        SyncLock flist
+                            flist.Add(New TapeFileInfo With {.BlockNumber = 0,
                                   .Partition = ltfsindex.Partition.PartitionLabel.a,
-                                  .Path = ParentPath & f.name})
+                                  .Path = ParentPath & f.name,
+                                  .FileLength = f.length})
+                        End SyncLock
                     End Sub)
             End If
         End If
@@ -191,5 +199,22 @@
         If SaveFileDialog1.ShowDialog = DialogResult.OK Then
             My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, TextBox2.Text, False, New Text.UTF8Encoding(False))
         End If
+    End Sub
+    Public LoadComplete As Boolean = False
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        LoadComplete = True
+    End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        Dim schfile As ltfsindex = schema.Clone()
+        If FileBrowser.ShowDialog(schfile) = DialogResult.OK Then
+            schema = schfile
+        End If
+        LoadSchemaFile(False)
+    End Sub
+
+    Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
+        If Not LoadComplete Then Exit Sub
+        LoadSchemaFile(False)
     End Sub
 End Class

@@ -43,6 +43,9 @@ Public Class ltfsindex
         Public Property accesstime As String
         Public Property backuptime As String
         Public Property fileuid As Long
+
+        <NonSerialized> Public Selected As Boolean = True
+
         <Serializable>
         Public Class extent
             Public Property fileoffset As Long
@@ -64,6 +67,8 @@ Public Class ltfsindex
         Public Property backuptime As String
         Public Property fileuid As Long
         Public Property contents As New contentsDef
+
+        <NonSerialized> Public Selected As Boolean = True
     End Class
     <Serializable>
     Public Class contentsDef
@@ -84,5 +89,17 @@ Public Class ltfsindex
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim t As IO.TextReader = New IO.StringReader(s)
         Return CType(reader.Deserialize(t), ltfsindex)
+    End Function
+    Public Shared Function FromSchemaText(s As String) As ltfsindex
+        s = s.Replace("<directory>", "<_directory><directory>")
+        s = s.Replace("</directory>", "</directory></_directory>")
+        s = s.Replace("<file>", "<_file><file>")
+        s = s.Replace("</file>", "</file></_file>")
+        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+        Dim t As IO.TextReader = New IO.StringReader(s)
+        Return CType(reader.Deserialize(t), ltfsindex)
+    End Function
+    Public Function Clone() As ltfsindex
+        Return (FromXML(GetSerializedText))
     End Function
 End Class
