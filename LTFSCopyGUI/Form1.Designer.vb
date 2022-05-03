@@ -36,6 +36,7 @@ Partial Class Form1
         Me.Button3 = New System.Windows.Forms.Button()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.Label4 = New System.Windows.Forms.Label()
+        Me.Button4 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -112,7 +113,7 @@ Partial Class Form1
         Me.TextBox3.Name = "TextBox3"
         Me.TextBox3.Size = New System.Drawing.Size(401, 21)
         Me.TextBox3.TabIndex = 6
-        Me.TextBox3.Text = "L:"
+        Me.TextBox3.Text = "L:\"
         '
         'Label3
         '
@@ -131,7 +132,7 @@ Partial Class Form1
         Me.TextBox4.Name = "TextBox4"
         Me.TextBox4.Size = New System.Drawing.Size(401, 21)
         Me.TextBox4.TabIndex = 8
-        Me.TextBox4.Text = "U:"
+        Me.TextBox4.Text = "U:\"
         '
         'CheckBox1
         '
@@ -149,7 +150,7 @@ Partial Class Form1
         'Button3
         '
         Me.Button3.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button3.Location = New System.Drawing.Point(275, 417)
+        Me.Button3.Location = New System.Drawing.Point(314, 417)
         Me.Button3.Name = "Button3"
         Me.Button3.Size = New System.Drawing.Size(73, 23)
         Me.Button3.TabIndex = 10
@@ -171,11 +172,22 @@ Partial Class Form1
         Me.Label4.Text = "处理中"
         Me.Label4.Visible = False
         '
+        'Button4
+        '
+        Me.Button4.Anchor = System.Windows.Forms.AnchorStyles.Bottom
+        Me.Button4.Location = New System.Drawing.Point(235, 417)
+        Me.Button4.Name = "Button4"
+        Me.Button4.Size = New System.Drawing.Size(73, 23)
+        Me.Button4.TabIndex = 12
+        Me.Button4.Text = "选择文件"
+        Me.Button4.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(621, 452)
+        Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.Button3)
         Me.Controls.Add(Me.CheckBox1)
@@ -209,4 +221,5 @@ Partial Class Form1
     Friend WithEvents Button3 As Button
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
     Friend WithEvents Label4 As Label
+    Friend WithEvents Button4 As Button
 End Class
