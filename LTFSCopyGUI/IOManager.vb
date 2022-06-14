@@ -49,6 +49,7 @@
                             fsin.Position = 0
                             Dim hashValue() As Byte
                             hashValue = algo.ComputeHash(fsin)
+                            fsin.Position = 0
                             fsin.Close()
                             Dim result As New Text.StringBuilder()
                             For i As Integer = 0 To hashValue.Length - 1
@@ -175,7 +176,6 @@
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
                             f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
-                            RaiseEvent ProgressReport("#ssum" & hashedSize)
                             If f.sha1 = "" Or Not IgnoreExisting Then
                                 RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                 Try
@@ -192,6 +192,7 @@
                             RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
                             RaiseEvent ProgressReport("#tval" & progval)
                             RaiseEvent ProgressReport("  " & f.sha1 & vbCrLf)
+                            RaiseEvent ProgressReport("#ssum" & hashedSize)
 
                             Threading.Thread.Sleep(0)
                         Next
