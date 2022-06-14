@@ -43,6 +43,9 @@ Public Class ltfsindex
         Public Property accesstime As String
         Public Property backuptime As String
         Public Property fileuid As Long
+        Public Property sha1 As String
+        Public Property tag As String
+        <NonSerialized> Public fullpath As String
 
         <NonSerialized> Public Selected As Boolean = True
 
@@ -67,7 +70,9 @@ Public Class ltfsindex
         Public Property backuptime As String
         Public Property fileuid As Long
         Public Property contents As New contentsDef
+        Public Property tag As String
 
+        <NonSerialized> Public fullpath As String
         <NonSerialized> Public Selected As Boolean = True
     End Class
     <Serializable>

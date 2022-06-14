@@ -1,0 +1,13 @@
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\LTFSCopyGUI.exe.config
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\LTFSCopyGUI.exe
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\LTFSCopyGUI.pdb
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\LTFSCopyGUI.xml
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.Form1.resources
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.Resources.resources
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.vbproj.GenerateResource.cache
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.vbproj.CoreCompileInputs.cache
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.exe
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.xml
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.pdb
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.FileBrowser.resources
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.HashTaskWindow.resources
