@@ -1,4 +1,6 @@
-﻿Public Class Form1
+﻿Imports System.ComponentModel
+
+Public Class Form1
     Public schema As ltfsindex
     Public contents As ltfsindex.contentsDef
     Public filelist As New List(Of String)
@@ -167,6 +169,7 @@
         End If
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
             TextBox1.Text = OpenFileDialog1.FileName
+            Button2_Click(sender, e)
         End If
     End Sub
 
@@ -215,6 +218,10 @@
     End Sub
     Public LoadComplete As Boolean = False
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        TextBox1.Text = My.Settings.LastFile
+        TextBox3.Text = My.Settings.Src
+        TextBox4.Text = My.Settings.Dest
+        CheckBox1.Checked = My.Settings.GenCMD
         LoadComplete = True
     End Sub
 
@@ -261,5 +268,13 @@
             End Sub)
         thprog.Start()
         f.Show()
+    End Sub
+
+    Private Sub Form1_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        My.Settings.LastFile = TextBox1.Text
+        My.Settings.Src = TextBox3.Text
+        My.Settings.Dest = TextBox4.Text
+        My.Settings.GenCMD = CheckBox1.Checked
+        My.Settings.Save()
     End Sub
 End Class

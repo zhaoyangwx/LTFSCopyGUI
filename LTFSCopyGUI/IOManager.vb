@@ -9,6 +9,17 @@
         End Sub
     End Class
     Public Event ErrorOccured(s As String)
+    Public Shared Function FormatSize(l As Long) As String
+        If l < 1024 Then
+            Return l & " Bytes"
+        ElseIf l < 1024 ^ 2 Then
+            Return (l / 1024).ToString("F2") & " KiB"
+        ElseIf l < 1024 ^ 3 Then
+            Return (l / 1024 ^ 2).ToString("F2") & " MiB"
+        Else
+            Return (l / 1024 ^ 3).ToString("F2") & " GiB"
+        End If
+    End Function
     Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing) As String
         If OnFinished Is Nothing Then
             Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
@@ -62,6 +73,7 @@
         Public schema As ltfsindex
         Public IgnoreExisting As Boolean = True
         Private _BaseDirectory As String
+        Private fs As fsReport
         Public Property BaseDirectory As String
             Set(value As String)
                 _BaseDirectory = value.TrimEnd("\")
@@ -81,7 +93,7 @@
                 If Status <> TaskStatus.Idle Then
                     Exit Sub
                 End If
-                Dim fs As New fsReport()
+                fs = New fsReport()
                 Dim thProg As New Threading.Thread(
                     Sub()
                         While Status <> TaskStatus.Idle
@@ -89,10 +101,12 @@
                                 If fs.fs IsNot Nothing Then
                                     If Not fs.fs.CanSeek Then Exit Try
                                     If fs.fs.Length = 0 Then Exit Try
+                                    Dim p As Long = fs.fs.Position
+                                    Dim l As Long = fs.fs.Length
                                     RaiseEvent ProgressReport("#fmax" & 10000)
-                                    RaiseEvent ProgressReport("#fval" & fs.fs.Position / fs.fs.Length * 10000)
-                                    RaiseEvent ProgressReport("#dmax" & fs.fs.Length)
-                                    RaiseEvent ProgressReport("#dval" & fs.fs.Position)
+                                    RaiseEvent ProgressReport("#fval" & p / l * 10000)
+                                    RaiseEvent ProgressReport("#dmax" & l)
+                                    RaiseEvent ProgressReport("#dval" & p)
                                 End If
                             Catch ex As Exception
                                 'RaiseEvent ErrorOccured(ex.ToString)
@@ -140,6 +154,13 @@
                             Next
                             q = qtmp
                         End While
+                        Dim totalSize As Long = 0
+                        Dim hashedSize As Long = 0
+                        For Each f As ltfsindex.file In flist
+                            Threading.Interlocked.Add(totalSize, f.length)
+                        Next
+                        If totalSize = 0 Then totalSize = 1
+                        RaiseEvent ProgressReport("#smax" & totalSize)
                         RaiseEvent ProgressReport("Sorting")
                         flist.Sort(New Comparison(Of ltfsindex.file)(Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
                                                                          If a.extentinfo.Count = 0 Then Return a.extentinfo.Count.CompareTo(b.extentinfo.Count)
@@ -149,24 +170,32 @@
                                                                          End If
                                                                          Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
                                                                      End Function))
-                        RaiseEvent ProgressReport("#max" & flist.Count)
+                        RaiseEvent ProgressReport("#max" & 10000)
                         RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
                             f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
+                            RaiseEvent ProgressReport("#ssum" & hashedSize)
                             If f.sha1 = "" Or Not IgnoreExisting Then
+                                RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                 Try
                                     f.sha1 = SHA1(f.fullpath, Nothing, fs)
                                 Catch ex As Exception
                                     RaiseEvent ErrorOccured(ex.ToString)
                                 End Try
+                            Else
+                                RaiseEvent ProgressReport("[skip] " & f.fullpath)
                             End If
+
                             Threading.Interlocked.Add(progval, 1)
-                            RaiseEvent ProgressReport("#val" & progval)
+                            Threading.Interlocked.Add(hashedSize, f.length)
+                            RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
                             RaiseEvent ProgressReport("#tval" & progval)
-                            RaiseEvent ProgressReport(f.sha1 & " - " & f.fullpath)
+                            RaiseEvent ProgressReport("  " & f.sha1 & vbCrLf)
+
                             Threading.Thread.Sleep(0)
                         Next
+                        RaiseEvent ProgressReport("#ssum" & hashedSize)
                         'RaiseEvent ProgressReport(Now.ToString)
                         SyncLock OperationLock
                             _Status = TaskStatus.Idle
@@ -184,6 +213,11 @@
                         thHash.Resume()
                         RaiseEvent TaskResumed("Resumed")
                     End If
+                    Try
+                        fs.fs.Close()
+                    Catch ex As Exception
+                        RaiseEvent ErrorOccured(ex.ToString)
+                    End Try
                     thHash.Abort()
                     _Status = TaskStatus.Idle
                     RaiseEvent TaskCancelled("Cancelled")

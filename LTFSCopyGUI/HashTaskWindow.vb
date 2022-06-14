@@ -1,7 +1,9 @@
-﻿Public Class HashTaskWindow
+﻿Imports System.ComponentModel
+
+Public Class HashTaskWindow
     Public schema As ltfsindex
     Public HashTask As IOManager.HashTask
-    Private tval, tmax, dval, dmax As Long
+    Private tval, tmax, dval, dmax, ssum, smax As Long
     Private ddelta As Long
     Private _BaseDirectory As String
     Public Property BaseDirectory As String
@@ -15,7 +17,7 @@
     End Property
     Public Sub PrintMsg(Message As String)
         Me.Invoke(Sub()
-                      If TextBox1.Text.Length > 100000 Then TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.IndexOf(vbCrLf) + 3)
+                      If TextBox1.Text.Length > 10000 Then TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.IndexOf(vbCrLf) + 3)
                       TextBox1.Text &= vbCrLf & Message
                       TextBox1.Select(TextBox1.Text.Length, 0)
                       TextBox1.ScrollToCaret()
@@ -23,6 +25,7 @@
     End Sub
 
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        CheckBox1.Checked = My.Settings.ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory}
         AddHandler HashTask.TaskStarted, Sub(s As String)
                                              PrintMsg(s)
@@ -68,8 +71,15 @@
                                                                       dval = s.Substring(5)
                                                                   ElseIf s.StartsWith("#dmax") Then
                                                                       dmax = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#ssum") Then
+                                                                      ssum = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#smax") Then
+                                                                      smax = s.Substring(5)
                                                                   End If
-                                                                  Text = "[" & tval & "/" & tmax & "] " & dval & "/" & dmax & " (" & Math.Round(ddelta / 1048576, 2) & "MiB/s)"
+                                                                  Text = "[" & tval & "/" & tmax & "] " & IOManager.FormatSize(dval) &
+                                                                         "/" & IOManager.FormatSize(dmax) & " (" &
+                                                                         IOManager.FormatSize(ddelta) & "/s) Total:" &
+                                                                         IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
                                                               Else
                                                                   PrintMsg(s)
                                                               End If
@@ -95,8 +105,9 @@
 
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Static d_last As Long = 0
-        If dval > d_last Then ddelta = dval - d_last
-        d_last = dval
+        Dim pnow As Long = ssum + dval
+        If pnow > d_last Then ddelta = pnow - d_last
+        d_last = pnow
     End Sub
 
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
@@ -114,5 +125,10 @@
 
     Private Sub HashTaskWindow_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
         Button2_Click(sender, e)
+    End Sub
+
+    Private Sub HashTaskWindow_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        My.Settings.ReHash = CheckBox1.Checked
+        My.Settings.Save()
     End Sub
 End Class
