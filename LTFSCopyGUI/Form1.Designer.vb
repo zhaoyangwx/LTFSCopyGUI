@@ -37,6 +37,7 @@ Partial Class Form1
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.Button4 = New System.Windows.Forms.Button()
+        Me.Button5 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -150,7 +151,7 @@ Partial Class Form1
         'Button3
         '
         Me.Button3.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button3.Location = New System.Drawing.Point(314, 417)
+        Me.Button3.Location = New System.Drawing.Point(274, 417)
         Me.Button3.Name = "Button3"
         Me.Button3.Size = New System.Drawing.Size(73, 23)
         Me.Button3.TabIndex = 10
@@ -175,18 +176,30 @@ Partial Class Form1
         'Button4
         '
         Me.Button4.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button4.Location = New System.Drawing.Point(235, 417)
+        Me.Button4.Location = New System.Drawing.Point(195, 417)
         Me.Button4.Name = "Button4"
         Me.Button4.Size = New System.Drawing.Size(73, 23)
         Me.Button4.TabIndex = 12
         Me.Button4.Text = "选择文件"
         Me.Button4.UseVisualStyleBackColor = True
         '
+        'Button5
+        '
+        Me.Button5.Anchor = System.Windows.Forms.AnchorStyles.Bottom
+        Me.Button5.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom
+        Me.Button5.Location = New System.Drawing.Point(353, 417)
+        Me.Button5.Name = "Button5"
+        Me.Button5.Size = New System.Drawing.Size(73, 23)
+        Me.Button5.TabIndex = 13
+        Me.Button5.Text = "校验"
+        Me.Button5.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(621, 452)
+        Me.Controls.Add(Me.Button5)
         Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.Label4)
         Me.Controls.Add(Me.Button3)
@@ -222,4 +235,5 @@ Partial Class Form1
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
     Friend WithEvents Label4 As Label
     Friend WithEvents Button4 As Button
+    Friend WithEvents Button5 As Button
 End Class

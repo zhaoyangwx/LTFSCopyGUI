@@ -1,6 +1,7 @@
 ﻿Public Class Form1
     Public schema As ltfsindex
     Public contents As ltfsindex.contentsDef
+    Public filelist As New List(Of String)
     Public Class TapeFileInfo
         Public Property Path As String
         Public Property Partition As ltfsindex.Partition.PartitionLabel
@@ -19,7 +20,14 @@
                     If ReloadFile Or schema Is Nothing Then s = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
                     Invoke(Sub() Label4.Text = "2/7 预处理...")
                     Invoke(Sub() Label4.Text = "3/7 解析文件...")
-                    If ReloadFile Or schema Is Nothing Then schema = ltfsindex.FromSchemaText(s)
+
+                    If ReloadFile Or schema Is Nothing Then
+                        If s.Contains("XMLSchema") Then
+                            schema = ltfsindex.FromXML(s)
+                        Else
+                            schema = ltfsindex.FromSchemaText(s)
+                        End If
+                    End If
                     contents = New ltfsindex.contentsDef With {._directory = schema._directory(0).contents._directory, ._file = schema._directory(0).contents._file}
                     Dim flist As New List(Of TapeFileInfo)
                     ScanFile(contents, flist, "")
@@ -51,6 +59,7 @@
                                                                            End Function))
                             End If
                         End Sub)
+                    filelist = New List(Of String)
                     Invoke(Sub() Label4.Text = "6/7 生成输出内容...")
                     Dim counter As Integer = 0
                     Dim total As Integer = alist.Count + blist.Count
@@ -58,10 +67,17 @@
                     Dim stepval As Integer = ran.Next(100, 1000)
 
                     Dim p As New System.Text.StringBuilder()
+                    Dim fdir As String = TextBox3.Text
+                    If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\")
+                    fdir &= "\"
+                    Dim tdir As String = TextBox4.Text
+                    If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\")
+                    tdir &= "\"
                     If Not CheckBox1.Checked Then
                         p.Append("Partition" & vbTab & "Startblock" & vbTab & "Length" & vbTab & "Path" & vbCrLf)
                         For Each f As TapeFileInfo In alist
                             p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
+                            filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -71,6 +87,7 @@
                         Next
                         For Each f As TapeFileInfo In blist
                             p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
+                            filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -79,14 +96,9 @@
                         Next
                     Else
                         p.Append("chcp 65001" & vbCrLf)
-                        Dim fdir As String = TextBox3.Text
-                        If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\")
-                        fdir &= "\"
-                        Dim tdir As String = TextBox4.Text
-                        If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\")
-                        tdir &= "\"
                         For Each f As TapeFileInfo In alist
                             p.Append("echo f|xcopy /D /Y """ & fdir & f.Path & """ """ & tdir & f.Path & """" & vbCrLf)
+                            filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -95,6 +107,7 @@
                         Next
                         For Each f As TapeFileInfo In blist
                             p.Append("echo f|xcopy /D /Y """ & fdir & f.Path & """ """ & tdir & f.Path & """" & vbCrLf)
+                            filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
                                 Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
@@ -206,6 +219,7 @@
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        If schema Is Nothing Then Exit Sub
         Dim schfile As ltfsindex = schema.Clone()
         If FileBrowser.ShowDialog(schfile) = DialogResult.OK Then
             schema = schfile
@@ -216,5 +230,36 @@
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
         If Not LoadComplete Then Exit Sub
         LoadSchemaFile(False)
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        If schema Is Nothing Then Exit Sub
+        Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = TextBox3.Text}
+        hw.Show()
+        Exit Sub
+        Dim f As New Form With {.Height = 300, .Width = 800, .Text = "群主福利", .FormBorderStyle = FormBorderStyle.None, .StartPosition = FormStartPosition.CenterScreen}
+        Dim p As New ProgressBar With {.Parent = f, .Maximum = 10000, .Value = 1, .Top = f.Height / 2, .Left = 80, .Width = f.Width - 160, .Height = 20}
+        Dim l0 As New Label With {.Parent = f, .Top = 0, .Left = 0, .Text = f.Text}
+        Dim l As New Label With {.Parent = f, .Top = f.Height / 4, .Text = "挂机100小时送5元优惠券", .AutoSize = True}
+        l.Left = f.Width / 2 - l.Width
+        l.Font = New Font(l.Font.FontFamily, l.Font.Size * 2)
+        Dim l2 As New Label With {.Parent = f, .Top = p.Top, .Left = 10, .Text = "当前进度：0.01%"}
+        l2.Top -= (p.Height - l2.Height)
+        p.Left = l2.Left + l2.Width + 20
+        Dim thprog As New Threading.Thread(
+            Sub()
+                Dim starttime As Date = Now
+                While True
+                    Threading.Thread.Sleep(100)
+                    Dim prog As Decimal = (Now - starttime).TotalSeconds / (New TimeSpan(100, 0, 0)).TotalSeconds
+                    f.Invoke(
+                        Sub()
+                            p.Value = Math.Min(p.Maximum, prog * p.Maximum)
+                            l2.Text = "当前进度：" & Math.Round(prog * 100, 2) & "%"
+                        End Sub)
+                End While
+            End Sub)
+        thprog.Start()
+        f.Show()
     End Sub
 End Class
