@@ -102,12 +102,14 @@
                                 If fs.fs IsNot Nothing Then
                                     If Not fs.fs.CanSeek Then Exit Try
                                     If fs.fs.Length = 0 Then Exit Try
-                                    Dim p As Long = fs.fs.Position
-                                    Dim l As Long = fs.fs.Length
-                                    RaiseEvent ProgressReport("#fmax" & 10000)
-                                    RaiseEvent ProgressReport("#fval" & p / l * 10000)
-                                    RaiseEvent ProgressReport("#dmax" & l)
-                                    RaiseEvent ProgressReport("#dval" & p)
+                                    SyncLock OperationLock
+                                        Dim p As Long = fs.fs.Position
+                                        Dim l As Long = fs.fs.Length
+                                        RaiseEvent ProgressReport("#fmax" & 10000)
+                                        RaiseEvent ProgressReport("#fval" & p / l * 10000)
+                                        RaiseEvent ProgressReport("#dmax" & l)
+                                        RaiseEvent ProgressReport("#dval" & p)
+                                    End SyncLock
                                 End If
                             Catch ex As Exception
                                 'RaiseEvent ErrorOccured(ex.ToString)
@@ -185,6 +187,7 @@
                                 RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                 Try
                                     f.sha1 = SHA1(f.fullpath, Nothing, fs)
+                                    fs.fs.Dispose()
                                 Catch ex As Exception
                                     RaiseEvent ErrorOccured(ex.ToString)
                                 End Try
@@ -193,11 +196,14 @@
                             End If
 
                             Threading.Interlocked.Add(progval, 1)
-                            Threading.Interlocked.Add(hashedSize, f.length)
-                            RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
-                            RaiseEvent ProgressReport("#tval" & progval)
-                            RaiseEvent ProgressReport("  " & f.sha1 & vbCrLf)
-                            RaiseEvent ProgressReport("#ssum" & hashedSize)
+                            SyncLock OperationLock
+                                RaiseEvent ProgressReport("#dval" & 0)
+                                Threading.Interlocked.Add(hashedSize, f.length)
+                                RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
+                                RaiseEvent ProgressReport("#tval" & progval)
+                                RaiseEvent ProgressReport("  " & f.sha1 & vbCrLf)
+                                RaiseEvent ProgressReport("#ssum" & hashedSize)
+                            End SyncLock
 
                             Threading.Thread.Sleep(0)
                         Next

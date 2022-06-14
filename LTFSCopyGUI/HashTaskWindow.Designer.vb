@@ -42,8 +42,13 @@ Partial Class HashTaskWindow
         Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AxTChart1 = New AxTeeChart.AxTChart()
+        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.SplitContainer1.Panel1.SuspendLayout()
+        Me.SplitContainer1.Panel2.SuspendLayout()
+        Me.SplitContainer1.SuspendLayout()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -51,12 +56,12 @@ Partial Class HashTaskWindow
         Me.TextBox1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TextBox1.Location = New System.Drawing.Point(12, 167)
+        Me.TextBox1.Location = New System.Drawing.Point(3, 3)
         Me.TextBox1.MaxLength = 2147483647
         Me.TextBox1.Multiline = True
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
-        Me.TextBox1.Size = New System.Drawing.Size(621, 281)
+        Me.TextBox1.Size = New System.Drawing.Size(615, 238)
         Me.TextBox1.TabIndex = 0
         Me.TextBox1.WordWrap = False
         '
@@ -178,14 +183,35 @@ Partial Class HashTaskWindow
         '
         'AxTChart1
         '
-        Me.AxTChart1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+        Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.AxTChart1.Enabled = True
-        Me.AxTChart1.Location = New System.Drawing.Point(10, 70)
+        Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
         Me.AxTChart1.Name = "AxTChart1"
         Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
-        Me.AxTChart1.Size = New System.Drawing.Size(623, 91)
+        Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
         Me.AxTChart1.TabIndex = 7
+        '
+        'SplitContainer1
+        '
+        Me.SplitContainer1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.SplitContainer1.Location = New System.Drawing.Point(12, 70)
+        Me.SplitContainer1.Name = "SplitContainer1"
+        Me.SplitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal
+        '
+        'SplitContainer1.Panel1
+        '
+        Me.SplitContainer1.Panel1.Controls.Add(Me.AxTChart1)
+        '
+        'SplitContainer1.Panel2
+        '
+        Me.SplitContainer1.Panel2.Controls.Add(Me.TextBox1)
+        Me.SplitContainer1.Size = New System.Drawing.Size(621, 375)
+        Me.SplitContainer1.SplitterDistance = 127
+        Me.SplitContainer1.TabIndex = 10
         '
         'HashTaskWindow
         '
@@ -193,18 +219,22 @@ Partial Class HashTaskWindow
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(645, 489)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.ProgressBar2)
         Me.Controls.Add(Me.Button3)
         Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.ProgressBar1)
-        Me.Controls.Add(Me.TextBox1)
-        Me.Controls.Add(Me.AxTChart1)
         Me.Name = "HashTaskWindow"
         Me.Text = "HashTaskWindow"
         Me.ContextMenuStrip1.ResumeLayout(False)
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.SplitContainer1.Panel1.ResumeLayout(False)
+        Me.SplitContainer1.Panel2.ResumeLayout(False)
+        Me.SplitContainer1.Panel2.PerformLayout()
+        CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.SplitContainer1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -228,4 +258,5 @@ Partial Class HashTaskWindow
     Friend WithEvents HToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents LinearToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents LogrithmToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents SplitContainer1 As SplitContainer
 End Class
