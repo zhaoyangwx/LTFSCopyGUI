@@ -131,8 +131,10 @@
                             f.fullpath = f.name
                             flist.Add(f)
                         Next
+                        Dim dnlist As New List(Of String)
                         For Each d As ltfsindex.directory In schema._directory
                             If Not d.Selected Then Continue For
+                            dnlist.Add(d.name.Clone())
                             d.fullpath = ""
                             d.name = ""
                             q.Add(d)
@@ -155,6 +157,9 @@
                             Next
                             q = qtmp
                         End While
+                        For i As Integer = 0 To schema._directory.Count - 1
+                            schema._directory(i).name = dnlist(i)
+                        Next
                         Dim totalSize As Long = 0
                         Dim hashedSize As Long = 0
                         For Each f As ltfsindex.file In flist
@@ -196,6 +201,7 @@
 
                             Threading.Thread.Sleep(0)
                         Next
+
                         RaiseEvent ProgressReport("#ssum" & hashedSize)
                         'RaiseEvent ProgressReport(Now.ToString)
                         SyncLock OperationLock

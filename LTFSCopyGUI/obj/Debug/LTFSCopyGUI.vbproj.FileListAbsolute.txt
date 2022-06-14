@@ -11,3 +11,8 @@ C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGU
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.pdb
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.FileBrowser.resources
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.HashTaskWindow.resources
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\LTFSCopyGUI.vbproj.ResolveComReference.cache
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\AxInterop.TeeChart.dll
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\bin\Debug\Interop.TeeChart.dll
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\Interop.TeeChart.dll
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\Debug\AxInterop.TeeChart.dll
