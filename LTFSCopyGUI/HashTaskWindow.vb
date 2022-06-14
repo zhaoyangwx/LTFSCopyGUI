@@ -107,6 +107,7 @@
         If schema IsNot Nothing Then
             If SaveFileDialog1.ShowDialog = DialogResult.OK Then
                 My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False)
+                PrintMsg("Saved to " & SaveFileDialog1.FileName)
             End If
         End If
     End Sub
