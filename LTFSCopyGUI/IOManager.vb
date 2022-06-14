@@ -12,7 +12,7 @@
     Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing) As String
         If OnFinished Is Nothing Then
             Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
-            Dim fsin As New IO.BufferedStream(fsin0, 1 * 1024 * 1024)
+            Dim fsin As New IO.BufferedStream(fsin0, 512 * 1024)
             If fs IsNot Nothing Then fs.fs = fsin
             Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                 fsin.Position = 0
