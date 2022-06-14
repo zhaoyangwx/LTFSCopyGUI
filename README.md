@@ -8,3 +8,5 @@ LTFS文件排序工具
 读取schema文件，对文件存放的block进行排序，并产生命令行用来复制文件。
 
 若Partition A有文件，先复制Partition A的文件
+
+新增校验功能，可覆盖保存原schema文件
