@@ -1,12 +1,26 @@
 ﻿Public Class IOManager
+    Public Class fsReport
+        Public fs As IO.BufferedStream
+        Public Sub New()
+
+        End Sub
+        Public Sub New(fst As IO.BufferedStream)
+            fs = fst
+        End Sub
+    End Class
     Public Event ErrorOccured(s As String)
-    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing) As String
+    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing) As String
         If OnFinished Is Nothing Then
-            Dim fsin As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+            Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+            Dim fsin As New IO.BufferedStream(fsin0, 1 * 1024 * 1024)
+            If fs IsNot Nothing Then fs.fs = fsin
             Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                 fsin.Position = 0
                 Dim hashValue() As Byte
                 hashValue = algo.ComputeHash(fsin)
+                'While fsin.Read(block, 0, block.Length) > 0
+                '
+                'End While
                 fsin.Close()
                 Dim result As New Text.StringBuilder()
                 For i As Integer = 0 To hashValue.Length - 1
@@ -17,7 +31,9 @@
         Else
             Dim thHash As New Threading.Thread(
                     Sub()
-                        Dim fsin As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+                        Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+                        Dim fsin As New IO.BufferedStream(fsin0, 4 * 1024 * 1024)
+                        If fs IsNot Nothing Then fs.fs = fsin
                         Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                             fsin.Position = 0
                             Dim hashValue() As Byte
@@ -65,10 +81,31 @@
                 If Status <> TaskStatus.Idle Then
                     Exit Sub
                 End If
+                Dim fs As New fsReport()
+                Dim thProg As New Threading.Thread(
+                    Sub()
+                        While Status <> TaskStatus.Idle
+                            Try
+                                If fs.fs IsNot Nothing Then
+                                    If Not fs.fs.CanSeek Then Exit Try
+                                    If fs.fs.Length = 0 Then Exit Try
+                                    RaiseEvent ProgressReport("#fmax" & 10000)
+                                    RaiseEvent ProgressReport("#fval" & fs.fs.Position / fs.fs.Length * 10000)
+                                    RaiseEvent ProgressReport("#dmax" & fs.fs.Length)
+                                    RaiseEvent ProgressReport("#dval" & fs.fs.Position)
+                                End If
+                            Catch ex As Exception
+                                'RaiseEvent ErrorOccured(ex.ToString)
+                            End Try
+
+                            Threading.Thread.Sleep(100)
+                        End While
+                    End Sub)
                 thHash = New Threading.Thread(
                     Sub()
                         SyncLock OperationLock
                             _Status = TaskStatus.Running
+                            thProg.Start()
                         End SyncLock
                         RaiseEvent ProgressReport("#max10000")
                         RaiseEvent ProgressReport("#val0")
@@ -113,23 +150,24 @@
                                                                          Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
                                                                      End Function))
                         RaiseEvent ProgressReport("#max" & flist.Count)
+                        RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
+                            f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
                             If f.sha1 = "" Or Not IgnoreExisting Then
                                 Try
-                                    f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
-                                    f.sha1 = SHA1(f.fullpath)
+                                    f.sha1 = SHA1(f.fullpath, Nothing, fs)
                                 Catch ex As Exception
                                     RaiseEvent ErrorOccured(ex.ToString)
                                 End Try
                             End If
                             Threading.Interlocked.Add(progval, 1)
                             RaiseEvent ProgressReport("#val" & progval)
-                            RaiseEvent ProgressReport("#text" & progval & "/" & flist.Count)
+                            RaiseEvent ProgressReport("#tval" & progval)
                             RaiseEvent ProgressReport(f.sha1 & " - " & f.fullpath)
                             Threading.Thread.Sleep(0)
                         Next
-                        RaiseEvent ProgressReport(Now.ToString)
+                        'RaiseEvent ProgressReport(Now.ToString)
                         SyncLock OperationLock
                             _Status = TaskStatus.Idle
                         End SyncLock

@@ -1,6 +1,8 @@
 ﻿Public Class HashTaskWindow
     Public schema As ltfsindex
     Public HashTask As IOManager.HashTask
+    Private tval, tmax, dval, dmax As Long
+    Private ddelta As Long
     Private _BaseDirectory As String
     Public Property BaseDirectory As String
         Set(value As String)
@@ -54,7 +56,20 @@
                                                                       ProgressBar1.Maximum = Val(s.Substring(4))
                                                                   ElseIf s.StartsWith("#text") Then
                                                                       Text = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#fval") Then
+                                                                      ProgressBar2.Value = Math.Min(ProgressBar2.Maximum, Val(s.Substring(5)))
+                                                                  ElseIf s.StartsWith("#fmax") Then
+                                                                      ProgressBar2.Maximum = Val(s.Substring(5))
+                                                                  ElseIf s.StartsWith("#tval") Then
+                                                                      tval = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#tmax") Then
+                                                                      tmax = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#dval") Then
+                                                                      dval = s.Substring(5)
+                                                                  ElseIf s.StartsWith("#dmax") Then
+                                                                      dmax = s.Substring(5)
                                                                   End If
+                                                                  Text = "[" & tval & "/" & tmax & "] " & dval & "/" & dmax & " (" & Math.Round(ddelta / 1048576, 2) & "MiB/s)"
                                                               Else
                                                                   PrintMsg(s)
                                                               End If
@@ -78,6 +93,12 @@
         HashTask.Stop()
     End Sub
 
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+        Static d_last As Long = 0
+        If dval > d_last Then ddelta = dval - d_last
+        d_last = dval
+    End Sub
+
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
         If HashTask IsNot Nothing Then HashTask.IgnoreExisting = Not CheckBox1.Checked
     End Sub
@@ -88,5 +109,9 @@
                 My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False)
             End If
         End If
+    End Sub
+
+    Private Sub HashTaskWindow_FormClosing(sender As Object, e As FormClosingEventArgs) Handles Me.FormClosing
+        Button2_Click(sender, e)
     End Sub
 End Class

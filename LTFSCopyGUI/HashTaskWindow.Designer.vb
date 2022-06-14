@@ -22,6 +22,7 @@ Partial Class HashTaskWindow
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.Button1 = New System.Windows.Forms.Button()
@@ -29,6 +30,8 @@ Partial Class HashTaskWindow
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Button3 = New System.Windows.Forms.Button()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
+        Me.ProgressBar2 = New System.Windows.Forms.ProgressBar()
+        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.SuspendLayout()
         '
         'TextBox1
@@ -36,11 +39,11 @@ Partial Class HashTaskWindow
         Me.TextBox1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TextBox1.Location = New System.Drawing.Point(12, 41)
+        Me.TextBox1.Location = New System.Drawing.Point(12, 70)
         Me.TextBox1.Multiline = True
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.TextBox1.Size = New System.Drawing.Size(605, 346)
+        Me.TextBox1.Size = New System.Drawing.Size(605, 317)
         Me.TextBox1.TabIndex = 0
         '
         'ProgressBar1
@@ -97,11 +100,26 @@ Partial Class HashTaskWindow
         '
         Me.SaveFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
         '
+        'ProgressBar2
+        '
+        Me.ProgressBar2.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ProgressBar2.Location = New System.Drawing.Point(12, 41)
+        Me.ProgressBar2.Name = "ProgressBar2"
+        Me.ProgressBar2.Size = New System.Drawing.Size(605, 23)
+        Me.ProgressBar2.TabIndex = 6
+        '
+        'Timer1
+        '
+        Me.Timer1.Enabled = True
+        Me.Timer1.Interval = 1000
+        '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(629, 428)
+        Me.Controls.Add(Me.ProgressBar2)
         Me.Controls.Add(Me.Button3)
         Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.Button2)
@@ -122,4 +140,6 @@ Partial Class HashTaskWindow
     Friend WithEvents CheckBox1 As CheckBox
     Friend WithEvents Button3 As Button
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
+    Friend WithEvents ProgressBar2 As ProgressBar
+    Friend WithEvents Timer1 As Timer
 End Class
