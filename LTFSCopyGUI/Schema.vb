@@ -100,6 +100,7 @@ Public Class ltfsindex
         s = s.Replace("</directory>", "</directory></_directory>")
         s = s.Replace("<file>", "<_file><file>")
         s = s.Replace("</file>", "</file></_file>")
+        s = s.Replace("%25", "%")
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim t As IO.TextReader = New IO.StringReader(s)
         Return CType(reader.Deserialize(t), ltfsindex)
