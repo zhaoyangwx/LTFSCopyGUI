@@ -4,7 +4,7 @@ Public Class HashTaskWindow
     Public schema As ltfsindex
     Public HashTask As IOManager.HashTask
     Private tval, tmax, dval, dmax, ssum, smax As Long
-    Private ddelta As Long
+    Private ddelta, fdelta As Long
     Private _BaseDirectory As String
     Public Property BaseDirectory As String
         Set(value As String)
@@ -18,10 +18,12 @@ Public Class HashTaskWindow
     Public Sub PrintMsg(Message As String)
         Try
             Me.Invoke(Sub()
-                          If TextBox1.Text.Length > 3000 Then TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.IndexOf(vbCrLf) + 3)
-                          TextBox1.Text &= vbCrLf & Message
-                          TextBox1.Select(TextBox1.Text.Length, 0)
-                          TextBox1.ScrollToCaret()
+                          'If TextBox1.Text.Length > 20000 Then TextBox1.Text = Mid(TextBox1.Text, 18000)
+
+                          TextBox1.AppendText(vbCrLf & Message)
+                          'TextBox1.Select(TextBox1.Text.Length, 0)
+                          'TextBox1.ScrollToCaret()
+
                       End Sub)
         Catch ex As Exception
 
@@ -134,8 +136,6 @@ Public Class HashTaskWindow
 
     End Sub
 
-    Public SpeedHistory As List(Of Long) = New Long(3600) {}.ToList()
-    Public SMaxNum As Integer = 60
 
     Private Sub SToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SToolStripMenuItem.Click
         SMaxNum = 60
@@ -164,33 +164,61 @@ Public Class HashTaskWindow
 
     Private Sub LinearToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LinearToolStripMenuItem.Click
         AxTChart1.Axis.Left.Logarithmic = False
+        LinearToolStripMenuItem.Checked = True
+        LogrithmToolStripMenuItem.Checked = False
     End Sub
 
     Private Sub LogrithmToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LogrithmToolStripMenuItem.Click
         AxTChart1.Axis.Left.Logarithmic = True
+        LinearToolStripMenuItem.Checked = False
+        LogrithmToolStripMenuItem.Checked = True
     End Sub
 
+    Private Sub WordwrapToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WordwrapToolStripMenuItem.Click
+        TextBox1.WordWrap = WordwrapToolStripMenuItem.Checked
+    End Sub
+
+    Public SpeedHistory As List(Of Long) = New Long(3600) {}.ToList()
+    Public FileRateHistory As List(Of Long) = New Long(3600) {}.ToList()
+    Public SMaxNum As Integer = 60
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Static d_last As Long = 0
+        Static t_last As Long = 0
         Try
             Dim pnow As Long = ssum + dval
             If pnow >= d_last Then
                 ddelta = pnow - d_last
                 d_last = pnow
             End If
+            If tval >= t_last Then
+                fdelta = tval - t_last
+                t_last = tval
+            End If
             SpeedHistory.Add(ddelta / 1048576)
+            FileRateHistory.Add(fdelta)
             While SpeedHistory.Count > 3600
                 SpeedHistory.RemoveAt(0)
+            End While
+            While FileRateHistory.Count > 3600
+                FileRateHistory.RemoveAt(0)
             End While
 
             AxTChart1.Series(0).Clear()
             AxTChart1.Series(0).AddArray(SMaxNum, SpeedHistory.GetRange(SpeedHistory.Count - SMaxNum, SMaxNum).ToArray())
+            AxTChart1.Series(1).Clear()
+            AxTChart1.Series(1).AddArray(SMaxNum, FileRateHistory.GetRange(FileRateHistory.Count - SMaxNum, SMaxNum).ToArray())
+
             Text = "[" & tval & "/" & tmax & "] " & IOManager.FormatSize(dval) &
                "/" & IOManager.FormatSize(dmax) & " (" &
                IOManager.FormatSize(ddelta) & "/s) Total: " &
                IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
             If smax <> 0 Then
                 ProgressBar1.Value = Math.Min((ssum + dval) / smax * ProgressBar1.Maximum, ProgressBar1.Maximum)
+            End If
+            If TextBox1.Text.Length > TextBox1.MaxLength Then
+                TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.Length - TextBox1.MaxLength / 3 * 2)
+                TextBox1.Select(TextBox1.Text.Length, 0)
+                TextBox1.ScrollToCaret()
             End If
         Catch ex As Exception
             PrintMsg(ex.ToString)
@@ -216,6 +244,11 @@ Public Class HashTaskWindow
     End Sub
 
     Private Sub HashTaskWindow_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        If HashTask.Status <> IOManager.HashTask.TaskStatus.Idle Then
+            MessageBox.Show("Task is still running.")
+            e.Cancel = True
+            Exit Sub
+        End If
         My.Settings.ReHash = CheckBox1.Checked
         My.Settings.Save()
         Try
@@ -224,4 +257,5 @@ Public Class HashTaskWindow
 
         End Try
     End Sub
+
 End Class
