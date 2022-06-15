@@ -41,14 +41,17 @@ Partial Class HashTaskWindow
         Me.HToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+        Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.ContextMenuStrip1.SuspendLayout()
-        CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
+        CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -57,13 +60,12 @@ Partial Class HashTaskWindow
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.TextBox1.Location = New System.Drawing.Point(3, 3)
-        Me.TextBox1.MaxLength = 2147483647
+        Me.TextBox1.MaxLength = 30000
         Me.TextBox1.Multiline = True
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
         Me.TextBox1.Size = New System.Drawing.Size(615, 238)
         Me.TextBox1.TabIndex = 0
-        Me.TextBox1.WordWrap = False
         '
         'ProgressBar1
         '
@@ -135,9 +137,9 @@ Partial Class HashTaskWindow
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 158)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 192)
         '
         'SToolStripMenuItem
         '
@@ -171,27 +173,17 @@ Partial Class HashTaskWindow
         '
         'LinearToolStripMenuItem
         '
+        Me.LinearToolStripMenuItem.CheckOnClick = True
         Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
         Me.LinearToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.LinearToolStripMenuItem.Text = "Linear"
         '
         'LogrithmToolStripMenuItem
         '
+        Me.LogrithmToolStripMenuItem.CheckOnClick = True
         Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
         Me.LogrithmToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.LogrithmToolStripMenuItem.Text = "Logarithmic"
-        '
-        'AxTChart1
-        '
-        Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.AxTChart1.Enabled = True
-        Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
-        Me.AxTChart1.Name = "AxTChart1"
-        Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
-        Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
-        Me.AxTChart1.TabIndex = 7
         '
         'SplitContainer1
         '
@@ -213,6 +205,37 @@ Partial Class HashTaskWindow
         Me.SplitContainer1.SplitterDistance = 127
         Me.SplitContainer1.TabIndex = 10
         '
+        'WordwrapToolStripMenuItem
+        '
+        Me.WordwrapToolStripMenuItem.Checked = True
+        Me.WordwrapToolStripMenuItem.CheckOnClick = True
+        Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
+        Me.WordwrapToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
+        Me.WordwrapToolStripMenuItem.Text = "Wordwrap"
+        '
+        'ToolStripSeparator1
+        '
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(141, 6)
+        '
+        'ToolStripSeparator2
+        '
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        Me.ToolStripSeparator2.Size = New System.Drawing.Size(141, 6)
+        '
+        'AxTChart1
+        '
+        Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.AxTChart1.Enabled = True
+        Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
+        Me.AxTChart1.Name = "AxTChart1"
+        Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
+        Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
+        Me.AxTChart1.TabIndex = 7
+        '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -229,12 +252,12 @@ Partial Class HashTaskWindow
         Me.Name = "HashTaskWindow"
         Me.Text = "HashTaskWindow"
         Me.ContextMenuStrip1.ResumeLayout(False)
-        CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         Me.SplitContainer1.Panel2.PerformLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
+        CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -259,4 +282,7 @@ Partial Class HashTaskWindow
     Friend WithEvents LinearToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents LogrithmToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents SplitContainer1 As SplitContainer
+    Friend WithEvents WordwrapToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
+    Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
 End Class
