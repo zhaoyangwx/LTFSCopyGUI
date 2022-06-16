@@ -178,9 +178,16 @@ Public Class HashTaskWindow
         TextBox1.WordWrap = WordwrapToolStripMenuItem.Checked
     End Sub
 
-    Public SpeedHistory As List(Of Long) = New Long(3600) {}.ToList()
-    Public FileRateHistory As List(Of Long) = New Long(3600) {}.ToList()
+    Public SpeedHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
+    Public FileRateHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
     Public SMaxNum As Integer = 60
+
+    Private Sub AllToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AllToolStripMenuItem.Click
+        SMaxNum = 3600 * 24
+        AxTChart1.Axis.Bottom.Title.Caption = "1d"
+    End Sub
+
+    Public PMaxNum As Integer = 3600 * 24
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Static d_last As Long = 0
         Static t_last As Long = 0
@@ -196,10 +203,10 @@ Public Class HashTaskWindow
             End If
             SpeedHistory.Add(ddelta / 1048576)
             FileRateHistory.Add(fdelta)
-            While SpeedHistory.Count > 3600
+            While SpeedHistory.Count > PMaxNum
                 SpeedHistory.RemoveAt(0)
             End While
-            While FileRateHistory.Count > 3600
+            While FileRateHistory.Count > PMaxNum
                 FileRateHistory.RemoveAt(0)
             End While
 
