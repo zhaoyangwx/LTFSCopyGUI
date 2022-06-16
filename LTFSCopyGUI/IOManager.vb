@@ -35,7 +35,7 @@
                 fsin.Close()
                 Dim result As New Text.StringBuilder()
                 For i As Integer = 0 To hashValue.Length - 1
-                    result.Append(String.Format("{0:X}", hashValue(i)))
+                    result.Append(String.Format("{0:X2}", hashValue(i)))
                 Next
                 Return result.ToString()
             End Using
@@ -182,18 +182,24 @@
                         RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
-                            f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
-                            If f.sha1 = "" Or Not IgnoreExisting Then
-                                RaiseEvent ProgressReport("[hash] " & f.fullpath)
-                                Try
-                                    f.sha1 = SHA1(f.fullpath, Nothing, fs)
-                                    fs.fs.Dispose()
-                                Catch ex As Exception
-                                    RaiseEvent ErrorOccured(ex.ToString)
-                                End Try
-                            Else
-                                RaiseEvent ProgressReport("[skip] " & f.fullpath)
-                            End If
+                            Try
+                                f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
+                                If f.sha1 Is Nothing Then f.sha1 = ""
+                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Then
+                                    RaiseEvent ProgressReport("[hash] " & f.fullpath)
+                                    Try
+                                        f.sha1 = SHA1(f.fullpath, Nothing, fs)
+                                        fs.fs.Dispose()
+                                    Catch ex As Exception
+                                        RaiseEvent ErrorOccured(ex.ToString)
+                                    End Try
+                                Else
+                                    RaiseEvent ProgressReport("[skip] " & f.fullpath)
+                                End If
+                            Catch ex As Exception
+                                RaiseEvent ErrorOccured(ex.ToString)
+                            End Try
+
 
                             Threading.Interlocked.Add(progval, 1)
                             SyncLock OperationLock
