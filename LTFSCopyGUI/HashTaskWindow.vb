@@ -56,6 +56,7 @@ Public Class HashTaskWindow
                                                             Button1.Text = "Start"
                                                             ProgressBar1.Value = ProgressBar1.Maximum
                                                             ProgressBar2.Value = ProgressBar2.Maximum
+                                                            Button3_Click(Nothing, Nothing)
                                                         End Sub)
                                           End Sub
         AddHandler HashTask.ErrorOccured, Sub(s As String)
@@ -114,26 +115,37 @@ Public Class HashTaskWindow
     End Sub
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
         Dim th As New Threading.Thread(Sub()
-                                           SyncLock Button1.Text
-                                               Select Case Button1.Text
-                                                   Case "Start"
-                                                       HashTask.Start()
-                                                   Case "Pause"
-                                                       HashTask.Pause()
-                                                   Case "Resume"
-                                                       HashTask.Resume()
-                                               End Select
-                                           End SyncLock
+                                           Try
+                                               SyncLock Button1.Text
+                                                   Select Case Button1.Text
+                                                       Case "Start"
+                                                           HashTask.Start()
+                                                       Case "Pause"
+                                                           HashTask.Pause()
+                                                       Case "Resume"
+                                                           HashTask.Resume()
+                                                   End Select
+                                               End SyncLock
+                                           Catch ex As Exception
+                                               PrintMsg(ex.ToString)
+                                           End Try
+                                           Invoke(Sub() Button1.Enabled = True)
                                        End Sub)
+        Button1.Enabled = False
         th.Start()
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Dim th As New Threading.Thread(Sub()
-                                           HashTask.Stop()
+                                           Try
+                                               HashTask.Stop()
+                                           Catch ex As Exception
+                                               PrintMsg(ex.ToString)
+                                           End Try
+                                           Invoke(Sub() Button2.Enabled = True)
                                        End Sub)
         th.Start()
-
+        Button2.Enabled = False
     End Sub
 
 
@@ -185,6 +197,21 @@ Public Class HashTaskWindow
     Private Sub AllToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AllToolStripMenuItem.Click
         SMaxNum = 3600 * 24
         AxTChart1.Axis.Bottom.Title.Caption = "1d"
+    End Sub
+
+    Private Sub HToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem1.Click
+        SMaxNum = 3600 * 3
+        AxTChart1.Axis.Bottom.Title.Caption = "3h"
+    End Sub
+
+    Private Sub HToolStripMenuItem2_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem2.Click
+        SMaxNum = 3600 * 6
+        AxTChart1.Axis.Bottom.Title.Caption = "6h"
+    End Sub
+
+    Private Sub HToolStripMenuItem3_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem3.Click
+        SMaxNum = 3600 * 12
+        AxTChart1.Axis.Bottom.Title.Caption = "12h"
     End Sub
 
     Public PMaxNum As Integer = 3600 * 24
@@ -239,6 +266,7 @@ Public Class HashTaskWindow
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         If schema IsNot Nothing Then
+            SaveFileDialog1.FileName = Form1.TextBox1.Text
             If SaveFileDialog1.ShowDialog = DialogResult.OK Then
                 My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False)
                 PrintMsg("Saved to " & SaveFileDialog1.FileName)
@@ -252,17 +280,18 @@ Public Class HashTaskWindow
 
     Private Sub HashTaskWindow_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         If HashTask.Status <> IOManager.HashTask.TaskStatus.Idle Then
-            MessageBox.Show("Task is still running.")
             e.Cancel = True
+            MessageBox.Show("Task is still running.")
             Exit Sub
-        End If
-        My.Settings.ReHash = CheckBox1.Checked
-        My.Settings.Save()
-        Try
-            HashTask.Stop()
-        Catch ex As Exception
+        Else
+            My.Settings.ReHash = CheckBox1.Checked
+            My.Settings.Save()
+            Try
+                HashTask.Stop()
+            Catch ex As Exception
 
-        End Try
+            End Try
+        End If
     End Sub
 
 End Class

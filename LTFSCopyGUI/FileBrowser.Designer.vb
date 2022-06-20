@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class FileBrowser
     Inherits System.Windows.Forms.Form
 
     'Form 重写 Dispose，以清理组件列表。
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,13 +20,18 @@ Partial Class FileBrowser
     '注意: 以下过程是 Windows 窗体设计器所必需的
     '可以使用 Windows 窗体设计器修改它。  
     '不要使用代码编辑器修改它。
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.TreeView1 = New LTFSCopyGUI.TreeViewEx()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.Button2 = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.全选ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.按大小ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.匹配文件名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'ImageList1
@@ -40,6 +45,7 @@ Partial Class FileBrowser
         Me.TreeView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.TreeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.TreeView1.CheckBoxes = True
         Me.TreeView1.Location = New System.Drawing.Point(12, 12)
         Me.TreeView1.Name = "TreeView1"
@@ -66,16 +72,42 @@ Partial Class FileBrowser
         Me.Button2.Text = "Cancel"
         Me.Button2.UseVisualStyleBackColor = True
         '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.全选ToolStripMenuItem, Me.按大小ToolStripMenuItem, Me.匹配文件名ToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(137, 70)
+        '
+        '全选ToolStripMenuItem
+        '
+        Me.全选ToolStripMenuItem.Name = "全选ToolStripMenuItem"
+        Me.全选ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
+        Me.全选ToolStripMenuItem.Text = "全选"
+        '
+        '按大小ToolStripMenuItem
+        '
+        Me.按大小ToolStripMenuItem.Name = "按大小ToolStripMenuItem"
+        Me.按大小ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
+        Me.按大小ToolStripMenuItem.Text = "按大小"
+        '
+        '匹配文件名ToolStripMenuItem
+        '
+        Me.匹配文件名ToolStripMenuItem.Name = "匹配文件名ToolStripMenuItem"
+        Me.匹配文件名ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
+        Me.匹配文件名ToolStripMenuItem.Text = "匹配文件名"
+        '
         'FileBrowser
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
+        Me.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.TreeView1)
         Me.Name = "FileBrowser"
         Me.Text = "FileBrowser"
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -83,4 +115,8 @@ Partial Class FileBrowser
     Friend WithEvents TreeView1 As TreeViewEx
     Friend WithEvents Button1 As Button
     Friend WithEvents Button2 As Button
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents 全选ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 按大小ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 匹配文件名ToolStripMenuItem As ToolStripMenuItem
 End Class

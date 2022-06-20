@@ -207,7 +207,7 @@
                                 Threading.Interlocked.Add(hashedSize, f.length)
                                 RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
                                 RaiseEvent ProgressReport("#tval" & progval)
-                                RaiseEvent ProgressReport("  " & f.sha1 & vbCrLf)
+                                RaiseEvent ProgressReport("  " & f.sha1 & "  " & f.length & vbCrLf)
                                 RaiseEvent ProgressReport("#ssum" & hashedSize)
                             End SyncLock
 

@@ -45,8 +45,11 @@ Partial Class HashTaskWindow
         Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.AllToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
+        Me.HToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.HToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.HToolStripMenuItem3 = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -138,9 +141,9 @@ Partial Class HashTaskWindow
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.AllToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.HToolStripMenuItem3, Me.AllToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 236)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 302)
         '
         'SToolStripMenuItem
         '
@@ -225,6 +228,12 @@ Partial Class HashTaskWindow
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
         Me.ToolStripSeparator2.Size = New System.Drawing.Size(177, 6)
         '
+        'AllToolStripMenuItem
+        '
+        Me.AllToolStripMenuItem.Name = "AllToolStripMenuItem"
+        Me.AllToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.AllToolStripMenuItem.Text = "1d"
+        '
         'AxTChart1
         '
         Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
@@ -237,11 +246,23 @@ Partial Class HashTaskWindow
         Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
         Me.AxTChart1.TabIndex = 7
         '
-        'AllToolStripMenuItem
+        'HToolStripMenuItem1
         '
-        Me.AllToolStripMenuItem.Name = "AllToolStripMenuItem"
-        Me.AllToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.AllToolStripMenuItem.Text = "1d"
+        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
+        Me.HToolStripMenuItem1.Size = New System.Drawing.Size(180, 22)
+        Me.HToolStripMenuItem1.Text = "3h"
+        '
+        'HToolStripMenuItem2
+        '
+        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
+        Me.HToolStripMenuItem2.Size = New System.Drawing.Size(180, 22)
+        Me.HToolStripMenuItem2.Text = "6h"
+        '
+        'HToolStripMenuItem3
+        '
+        Me.HToolStripMenuItem3.Name = "HToolStripMenuItem3"
+        Me.HToolStripMenuItem3.Size = New System.Drawing.Size(180, 22)
+        Me.HToolStripMenuItem3.Text = "12h"
         '
         'HashTaskWindow
         '
@@ -293,4 +314,7 @@ Partial Class HashTaskWindow
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
     Friend WithEvents AllToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents HToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents HToolStripMenuItem2 As ToolStripMenuItem
+    Friend WithEvents HToolStripMenuItem3 As ToolStripMenuItem
 End Class

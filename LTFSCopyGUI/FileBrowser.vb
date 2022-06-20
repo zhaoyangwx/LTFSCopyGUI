@@ -17,6 +17,7 @@ Public Class FileBrowser
         End With
     End Function
     Private Sub FileBrowser_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        SuspendLayout()
         SyncLock EventLock
             If EventLock Then Exit Sub
             EventLock = True
@@ -31,7 +32,7 @@ Public Class FileBrowser
         SyncLock EventLock
             EventLock = False
         End SyncLock
-
+        ResumeLayout()
     End Sub
     Private Sub AddItem(Root As TreeNodeCollection, FList As ltfsindex.contentsDef)
         If FList Is Nothing Then Exit Sub
@@ -156,5 +157,93 @@ Public Class FileBrowser
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         DialogResult = DialogResult.Cancel
         Close()
+    End Sub
+
+    Private Sub 全选ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 全选ToolStripMenuItem.Click
+        For Each n As TreeNode In TreeView1.Nodes
+            n.Checked = True
+        Next
+    End Sub
+
+    Private Sub 按大小ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 按大小ToolStripMenuItem.Click
+        SuspendLayout()
+        For Each n As TreeNode In TreeView1.Nodes
+            n.Checked = False
+        Next
+        Dim sMin As Long = InputBox("Minimum Bytes", "By Size", 0)
+        Dim sMax As Long = InputBox("Maximum Bytes", "By Size", Long.MaxValue)
+        If sMax < sMin Then Exit Sub
+        Dim NList As New List(Of TreeNode)
+        Dim DirQ As New List(Of TreeNode)
+        For Each n As TreeNode In TreeView1.Nodes
+            If n.Nodes.Count = 0 Then
+                NList.Add(n)
+            Else
+                DirQ.Add(n)
+            End If
+        Next
+        While DirQ.Count > 0
+            Dim DirT As New List(Of TreeNode)
+            For Each n As TreeNode In DirQ
+                If n.Nodes.Count = 0 Then
+                    NList.Add(n)
+                Else
+                    For Each n2 As TreeNode In n.Nodes
+                        DirT.Add(n2)
+                    Next
+                End If
+            Next
+            DirQ = DirT
+            DirT = New List(Of TreeNode)
+        End While
+        For Each n As TreeNode In NList
+            If TypeOf n.Tag Is ltfsindex.file Then
+                Dim nlen As Long = CType(n.Tag, ltfsindex.file).length
+                If sMin <= nlen And sMax >= nlen Then
+                    n.Checked = True
+                End If
+            End If
+        Next
+        ResumeLayout()
+    End Sub
+
+    Private Sub 匹配文件名ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 匹配文件名ToolStripMenuItem.Click
+        SuspendLayout()
+        Dim pattern As String = InputBox("Regex", "By regex", "*")
+        For Each n As TreeNode In TreeView1.Nodes
+            n.Checked = False
+        Next
+        Dim NList As New List(Of TreeNode)
+        Dim DirQ As New List(Of TreeNode)
+        For Each n As TreeNode In TreeView1.Nodes
+            If n.Nodes.Count = 0 Then
+                NList.Add(n)
+            Else
+                DirQ.Add(n)
+            End If
+        Next
+        While DirQ.Count > 0
+            Dim DirT As New List(Of TreeNode)
+            For Each n As TreeNode In DirQ
+                If n.Nodes.Count = 0 Then
+                    NList.Add(n)
+                Else
+                    For Each n2 As TreeNode In n.Nodes
+                        DirT.Add(n2)
+                    Next
+                End If
+            Next
+            DirQ = DirT
+            DirT = New List(Of TreeNode)
+        End While
+        For Each n As TreeNode In NList
+            If TypeOf n.Tag Is ltfsindex.file Then
+                Dim nName As String = CType(n.Tag, ltfsindex.file).name
+                If System.Text.RegularExpressions.Regex.IsMatch(nName, pattern, System.Text.RegularExpressions.RegexOptions.Compiled) Then
+                    n.Checked = True
+                End If
+            End If
+        Next
+        ResumeLayout()
     End Sub
 End Class
