@@ -15,6 +15,15 @@ Public Class HashTaskWindow
             Return _BaseDirectory
         End Get
     End Property
+    Private _TargetDirectory As String
+    Public Property TargetDirectory As String
+        Set(value As String)
+            _TargetDirectory = value.TrimEnd("\")
+        End Set
+        Get
+            Return _TargetDirectory
+        End Get
+    End Property
     Public Sub PrintMsg(Message As String)
         Try
             Me.Invoke(Sub()
@@ -114,11 +123,17 @@ Public Class HashTaskWindow
         End Try
     End Sub
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        If HashTask IsNot Nothing Then HashTask.IgnoreExisting = Not CheckBox1.Checked
         Dim th As New Threading.Thread(Sub()
                                            Try
                                                SyncLock Button1.Text
                                                    Select Case Button1.Text
                                                        Case "Start"
+                                                           If CheckBox2.Checked Then
+                                                               HashTask.TargetDirectory = TargetDirectory
+                                                           Else
+                                                               HashTask.TargetDirectory = ""
+                                                           End If
                                                            HashTask.Start()
                                                        Case "Pause"
                                                            HashTask.Pause()
@@ -142,7 +157,12 @@ Public Class HashTaskWindow
                                            Catch ex As Exception
                                                PrintMsg(ex.ToString)
                                            End Try
-                                           Invoke(Sub() Button2.Enabled = True)
+                                           Try
+                                               Invoke(Sub() Button2.Enabled = True)
+
+                                           Catch ex As Exception
+
+                                           End Try
                                        End Sub)
         th.Start()
         Button2.Enabled = False
@@ -249,6 +269,7 @@ Public Class HashTaskWindow
             If smax <> 0 Then
                 ProgressBar1.Value = Math.Min((ssum + dval) / smax * ProgressBar1.Maximum, ProgressBar1.Maximum)
             End If
+            d_last = pnow
             If TextBox1.Text.Length > TextBox1.MaxLength Then
                 TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.Length - TextBox1.MaxLength / 3 * 2)
                 TextBox1.Select(TextBox1.Text.Length, 0)

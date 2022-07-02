@@ -1,4 +1,6 @@
-﻿Public Class IOManager
+﻿Imports System.IO
+
+Public Class IOManager
     Public Class fsReport
         Public fs As IO.BufferedStream
         Public Sub New()
@@ -20,30 +22,40 @@
             Return (l / 1024 ^ 3).ToString("F2") & " GiB"
         End If
     End Function
-    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing) As String
+    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs) = Nothing) As String
         If OnFinished Is Nothing Then
-            Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
-            Dim fsin As New IO.BufferedStream(fsin0, 512 * 1024)
-            If fs IsNot Nothing Then fs.fs = fsin
-            Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
-                fsin.Position = 0
-                Dim hashValue() As Byte
-                hashValue = algo.ComputeHash(fsin)
-                'While fsin.Read(block, 0, block.Length) > 0
-                '
-                'End While
-                fsin.Close()
-                Dim result As New Text.StringBuilder()
-                For i As Integer = 0 To hashValue.Length - 1
-                    result.Append(String.Format("{0:X2}", hashValue(i)))
-                Next
-                Return result.ToString()
+            Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+
+                Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
+                Dim fsine As New EventedStream With {.baseStream = fsinb}
+                AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args)
+                Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+
+                If fs IsNot Nothing Then fs.fs = fsin
+                Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
+                    fsin.Position = 0
+                    Dim hashValue() As Byte
+
+                    hashValue = algo.ComputeHash(fsin)
+                    'While fsin.Read(block, 0, block.Length) > 0
+                    '
+                    'End While
+                    fsin.Close()
+                    Dim result As New Text.StringBuilder()
+                    For i As Integer = 0 To hashValue.Length - 1
+                        result.Append(String.Format("{0:X2}", hashValue(i)))
+                    Next
+                    Return result.ToString()
+                End Using
             End Using
         Else
             Dim thHash As New Threading.Thread(
                     Sub()
                         Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
-                        Dim fsin As New IO.BufferedStream(fsin0, 4 * 1024 * 1024)
+
+                        Dim fsinb As New IO.BufferedStream(fsin0, 4 * 1024 * 1024)
+                        Dim fsine As New EventedStream With {.baseStream = fsinb}
+                        Dim fsin As New IO.BufferedStream(fsine, 4 * 1024 * 1024)
                         If fs IsNot Nothing Then fs.fs = fsin
                         Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                             fsin.Position = 0
@@ -53,7 +65,7 @@
                             fsin.Close()
                             Dim result As New Text.StringBuilder()
                             For i As Integer = 0 To hashValue.Length - 1
-                                result.Append(String.Format("{0:X}", hashValue(i)))
+                                result.Append(String.Format("{0:X2}", hashValue(i)))
                             Next
                             OnFinished(result.ToString)
                         End Using
@@ -73,6 +85,15 @@
         Public Event ProgressReport(Message As String)
         Public schema As ltfsindex
         Public IgnoreExisting As Boolean = True
+        Private _TargetDirectory As String
+        Public Property TargetDirectory As String
+            Set(value As String)
+                _TargetDirectory = value.TrimEnd("\")
+            End Set
+            Get
+                Return _TargetDirectory
+            End Get
+        End Property
         Private _BaseDirectory As String
         Private fs As fsReport
         Public Property BaseDirectory As String
@@ -85,6 +106,8 @@
         End Property
         Public OperationLock As New Object
         Private thHash As Threading.Thread
+        Private fout As IO.FileStream = Nothing
+        Dim f_outpath As String
         Public Sub Start()
             SyncLock OperationLock
                 If schema Is Nothing Then
@@ -183,20 +206,78 @@
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
                             Try
+                                If TargetDirectory <> "" Then f_outpath = My.Computer.FileSystem.CombinePath(TargetDirectory, f.fullpath)
                                 f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
                                 If f.sha1 Is Nothing Then f.sha1 = ""
-                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Then
+                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not My.Computer.FileSystem.FileExists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
-                                        f.sha1 = SHA1(f.fullpath, Nothing, fs)
+                                        Dim action_writefile As Action(Of EventedStream.ReadStreamEventArgs) = Sub(args As EventedStream.ReadStreamEventArgs)
+                                                                                                               End Sub
+
+                                        If TargetDirectory <> "" Then
+                                            If Not My.Computer.FileSystem.DirectoryExists(TargetDirectory) Then
+                                                Try
+                                                    My.Computer.FileSystem.CreateDirectory(TargetDirectory)
+                                                Catch ex As Exception
+                                                    RaiseEvent ErrorOccured(ex.ToString)
+                                                End Try
+                                            End If
+                                            Try
+                                                Dim outdir As String = My.Computer.FileSystem.GetFileInfo(f_outpath).DirectoryName
+                                                If Not My.Computer.FileSystem.DirectoryExists(outdir) Then
+                                                    My.Computer.FileSystem.CreateDirectory(outdir)
+                                                End If
+                                                fout = IO.File.OpenWrite(f_outpath)
+                                                action_writefile =
+                                                    Sub(args As EventedStream.ReadStreamEventArgs)
+                                                        fout.Write(args.Buffer, args.Offset, args.Count)
+                                                    End Sub
+                                            Catch ex As Exception
+                                                RaiseEvent ErrorOccured(ex.ToString)
+                                            End Try
+                                        End If
+                                        f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
+                                        If fout IsNot Nothing Then
+                                            Try
+                                                fout.Close()
+                                                My.Computer.FileSystem.GetFileInfo(f_outpath).CreationTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).CreationTimeUtc
+                                                My.Computer.FileSystem.GetFileInfo(f_outpath).Attributes = My.Computer.FileSystem.GetFileInfo(f.fullpath).Attributes
+                                                My.Computer.FileSystem.GetFileInfo(f_outpath).LastWriteTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).LastWriteTimeUtc
+                                                fout.Dispose()
+                                                fout = Nothing
+                                            Catch ex As Exception
+                                                RaiseEvent ErrorOccured(ex.ToString)
+                                            End Try
+                                        End If
                                         fs.fs.Dispose()
                                     Catch ex As Exception
+                                        If fout IsNot Nothing Then
+                                            Try
+                                                fout.Close()
+                                                fout.Dispose()
+                                                fout = Nothing
+                                            Catch ex2 As Exception
+                                                RaiseEvent ErrorOccured(ex2.ToString)
+                                            End Try
+                                        End If
+                                        If ex.Message = "正在中止线程。" Then Exit Try
                                         RaiseEvent ErrorOccured(ex.ToString)
                                     End Try
                                 Else
                                     RaiseEvent ProgressReport("[skip] " & f.fullpath)
                                 End If
                             Catch ex As Exception
+                                If fout IsNot Nothing Then
+                                    Try
+                                        fout.Close()
+                                        fout.Dispose()
+                                        fout = Nothing
+                                    Catch ex2 As Exception
+                                        RaiseEvent ErrorOccured(ex2.ToString)
+                                    End Try
+                                End If
+                                If ex.Message = "正在中止线程。" Then Exit Try
                                 RaiseEvent ErrorOccured(ex.ToString)
                             End Try
 
@@ -238,6 +319,20 @@
                         RaiseEvent ErrorOccured(ex.ToString)
                     End Try
                     thHash.Abort()
+                Catch ex As Exception
+                    RaiseEvent ErrorOccured(ex.ToString)
+                End Try
+                Try
+                    If fout IsNot Nothing Then
+                        fout.Close()
+                        If My.Computer.FileSystem.FileExists(f_outpath) Then
+                            My.Computer.FileSystem.DeleteFile(f_outpath)
+                        End If
+                    End If
+                Catch ex As Exception
+                    RaiseEvent ErrorOccured(ex.ToString)
+                End Try
+                Try
                     _Status = TaskStatus.Idle
                     RaiseEvent TaskCancelled("Cancelled")
                 Catch ex As Exception
@@ -278,5 +373,144 @@
                 Return _Status
             End Get
         End Property
+    End Class
+    Public Class EventedStream
+        Inherits Stream
+        Implements IDisposable
+        Class ReadStreamEventArgs
+            Inherits EventArgs
+
+            Public Buffer() As Byte
+
+            Public Offset As Integer
+
+            Public Count As Integer
+
+            Public Denied As Boolean = False
+        End Class
+        Class WriteStreamEventArgs
+            Inherits EventArgs
+
+            Public Buffer() As Byte
+
+            Public Offset As Integer
+
+            Public Count As Integer
+
+            Public Denied As Boolean = False
+        End Class
+        Public Class FlushStreamEventArgs
+            Inherits EventArgs
+
+            Public Denied As Boolean = False
+        End Class
+
+        Public Class SetStreamLengthEventArgs
+            Inherits EventArgs
+
+            Public Value As Long
+
+            Public Denied As Boolean = False
+        End Class
+
+        Public Class SeekStreamEventArgs
+            Inherits EventArgs
+
+            Public Offset As Long
+
+            Public SeekOrigin As SeekOrigin
+
+            Public Denied As Boolean = False
+        End Class
+
+        Public baseStream As BufferedStream
+
+        Public Overrides ReadOnly Property CanRead As Boolean
+            Get
+                Return baseStream.CanRead
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property CanSeek As Boolean
+            Get
+                Return baseStream.CanSeek
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property CanWrite As Boolean
+            Get
+                Return baseStream.CanWrite
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Length As Long
+            Get
+                Return baseStream.Length
+            End Get
+        End Property
+
+        Public Overrides Property Position As Long
+            Get
+                Return baseStream.Position
+            End Get
+            Set(value As Long)
+                baseStream.Position = value
+            End Set
+        End Property
+
+        Public Overrides Sub Flush()
+            Dim args As New FlushStreamEventArgs()
+            RaiseEvent PreviewFlush(args)
+            If args.Denied Then
+                Return
+            End If
+            baseStream.Flush()
+        End Sub
+
+        Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
+            Dim args As New SeekStreamEventArgs() With {.Offset = offset, .SeekOrigin = origin}
+            RaiseEvent PreviewSeek(args)
+            If args.Denied Then
+                Return 0
+            End If
+            Return baseStream.Seek(offset, origin)
+        End Function
+
+
+        Public Overrides Sub SetLength(value As Long)
+            Dim args As New SetStreamLengthEventArgs With {.Value = value}
+            RaiseEvent PreviewSetLength(args)
+            If args.Denied Then
+                Return
+            End If
+            baseStream.SetLength(value)
+        End Sub
+
+
+        Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
+            Dim args As New ReadStreamEventArgs() With {.Buffer = buffer, .Offset = offset, .Count = count}
+            RaiseEvent PreviewRead(args)
+            If args.Denied Then
+                Return 0
+            End If
+            Dim result As Integer = baseStream.Read(buffer, offset, count)
+            RaiseEvent Readed(args)
+            Return result
+        End Function
+
+        Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
+            Dim args As New WriteStreamEventArgs With {.Buffer = buffer, .Offset = offset, .Count = count}
+            RaiseEvent PreviewWrite(args)
+            If args.Denied Then
+                Return
+            End If
+            baseStream.Write(buffer, offset, count)
+        End Sub
+        Public Event PreviewFlush(args As FlushStreamEventArgs)
+        Public Event PreviewSetLength(args As SetStreamLengthEventArgs)
+        Public Event PreviewSeek(args As SeekStreamEventArgs)
+        Public Event PreviewWrite(args As WriteStreamEventArgs)
+        Public Event PreviewRead(args As ReadStreamEventArgs)
+        Public Event Readed(args As ReadStreamEventArgs)
     End Class
 End Class
