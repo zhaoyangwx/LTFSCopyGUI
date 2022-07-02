@@ -39,17 +39,18 @@ Partial Class HashTaskWindow
         Me.MinToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.MinToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
         Me.HToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-        Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
-        Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
-        Me.AllToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.HToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.HToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
         Me.HToolStripMenuItem3 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.AllToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
+        Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+        Me.CheckBox2 = New System.Windows.Forms.CheckBox()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -143,51 +144,94 @@ Partial Class HashTaskWindow
         '
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.HToolStripMenuItem3, Me.AllToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 302)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 280)
         '
         'SToolStripMenuItem
         '
         Me.SToolStripMenuItem.Name = "SToolStripMenuItem"
-        Me.SToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.SToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.SToolStripMenuItem.Text = "60s"
         '
         'MinToolStripMenuItem
         '
         Me.MinToolStripMenuItem.Name = "MinToolStripMenuItem"
-        Me.MinToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.MinToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.MinToolStripMenuItem.Text = "5min"
         '
         'MinToolStripMenuItem1
         '
         Me.MinToolStripMenuItem1.Name = "MinToolStripMenuItem1"
-        Me.MinToolStripMenuItem1.Size = New System.Drawing.Size(180, 22)
+        Me.MinToolStripMenuItem1.Size = New System.Drawing.Size(144, 22)
         Me.MinToolStripMenuItem1.Text = "10min"
         '
         'MinToolStripMenuItem2
         '
         Me.MinToolStripMenuItem2.Name = "MinToolStripMenuItem2"
-        Me.MinToolStripMenuItem2.Size = New System.Drawing.Size(180, 22)
+        Me.MinToolStripMenuItem2.Size = New System.Drawing.Size(144, 22)
         Me.MinToolStripMenuItem2.Text = "30min"
         '
         'HToolStripMenuItem
         '
         Me.HToolStripMenuItem.Name = "HToolStripMenuItem"
-        Me.HToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.HToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.HToolStripMenuItem.Text = "1h"
+        '
+        'HToolStripMenuItem1
+        '
+        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
+        Me.HToolStripMenuItem1.Size = New System.Drawing.Size(144, 22)
+        Me.HToolStripMenuItem1.Text = "3h"
+        '
+        'HToolStripMenuItem2
+        '
+        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
+        Me.HToolStripMenuItem2.Size = New System.Drawing.Size(144, 22)
+        Me.HToolStripMenuItem2.Text = "6h"
+        '
+        'HToolStripMenuItem3
+        '
+        Me.HToolStripMenuItem3.Name = "HToolStripMenuItem3"
+        Me.HToolStripMenuItem3.Size = New System.Drawing.Size(144, 22)
+        Me.HToolStripMenuItem3.Text = "12h"
+        '
+        'AllToolStripMenuItem
+        '
+        Me.AllToolStripMenuItem.Name = "AllToolStripMenuItem"
+        Me.AllToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
+        Me.AllToolStripMenuItem.Text = "1d"
+        '
+        'ToolStripSeparator1
+        '
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        Me.ToolStripSeparator1.Size = New System.Drawing.Size(141, 6)
         '
         'LinearToolStripMenuItem
         '
         Me.LinearToolStripMenuItem.CheckOnClick = True
         Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
-        Me.LinearToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.LinearToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.LinearToolStripMenuItem.Text = "Linear"
         '
         'LogrithmToolStripMenuItem
         '
         Me.LogrithmToolStripMenuItem.CheckOnClick = True
         Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
-        Me.LogrithmToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.LogrithmToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
         Me.LogrithmToolStripMenuItem.Text = "Logarithmic"
+        '
+        'ToolStripSeparator2
+        '
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        Me.ToolStripSeparator2.Size = New System.Drawing.Size(141, 6)
+        '
+        'WordwrapToolStripMenuItem
+        '
+        Me.WordwrapToolStripMenuItem.Checked = True
+        Me.WordwrapToolStripMenuItem.CheckOnClick = True
+        Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
+        Me.WordwrapToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
+        Me.WordwrapToolStripMenuItem.Text = "Wordwrap"
         '
         'SplitContainer1
         '
@@ -209,30 +253,18 @@ Partial Class HashTaskWindow
         Me.SplitContainer1.SplitterDistance = 127
         Me.SplitContainer1.TabIndex = 10
         '
-        'WordwrapToolStripMenuItem
+        'CheckBox2
         '
-        Me.WordwrapToolStripMenuItem.Checked = True
-        Me.WordwrapToolStripMenuItem.CheckOnClick = True
-        Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
-        Me.WordwrapToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.WordwrapToolStripMenuItem.Text = "Wordwrap"
-        '
-        'ToolStripSeparator1
-        '
-        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(177, 6)
-        '
-        'ToolStripSeparator2
-        '
-        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(177, 6)
-        '
-        'AllToolStripMenuItem
-        '
-        Me.AllToolStripMenuItem.Name = "AllToolStripMenuItem"
-        Me.AllToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.AllToolStripMenuItem.Text = "1d"
+        Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CheckBox2.AutoSize = True
+        Me.CheckBox2.Checked = True
+        Me.CheckBox2.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox2.Location = New System.Drawing.Point(78, 458)
+        Me.CheckBox2.Name = "CheckBox2"
+        Me.CheckBox2.Size = New System.Drawing.Size(48, 16)
+        Me.CheckBox2.TabIndex = 11
+        Me.CheckBox2.Text = "Copy"
+        Me.CheckBox2.UseVisualStyleBackColor = True
         '
         'AxTChart1
         '
@@ -246,30 +278,13 @@ Partial Class HashTaskWindow
         Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
         Me.AxTChart1.TabIndex = 7
         '
-        'HToolStripMenuItem1
-        '
-        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
-        Me.HToolStripMenuItem1.Size = New System.Drawing.Size(180, 22)
-        Me.HToolStripMenuItem1.Text = "3h"
-        '
-        'HToolStripMenuItem2
-        '
-        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
-        Me.HToolStripMenuItem2.Size = New System.Drawing.Size(180, 22)
-        Me.HToolStripMenuItem2.Text = "6h"
-        '
-        'HToolStripMenuItem3
-        '
-        Me.HToolStripMenuItem3.Name = "HToolStripMenuItem3"
-        Me.HToolStripMenuItem3.Size = New System.Drawing.Size(180, 22)
-        Me.HToolStripMenuItem3.Text = "12h"
-        '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(645, 489)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.ProgressBar2)
         Me.Controls.Add(Me.Button3)
@@ -317,4 +332,5 @@ Partial Class HashTaskWindow
     Friend WithEvents HToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents HToolStripMenuItem2 As ToolStripMenuItem
     Friend WithEvents HToolStripMenuItem3 As ToolStripMenuItem
+    Friend WithEvents CheckBox2 As CheckBox
 End Class

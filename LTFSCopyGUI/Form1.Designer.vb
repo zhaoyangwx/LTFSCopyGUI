@@ -191,7 +191,7 @@ Partial Class Form1
         Me.Button5.Name = "Button5"
         Me.Button5.Size = New System.Drawing.Size(73, 23)
         Me.Button5.TabIndex = 13
-        Me.Button5.Text = "校验"
+        Me.Button5.Text = "运行"
         Me.Button5.UseVisualStyleBackColor = True
         '
         'Form1

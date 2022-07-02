@@ -241,7 +241,7 @@ Public Class Form1
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         If schema Is Nothing Then Exit Sub
-        Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = TextBox3.Text}
+        Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = TextBox3.Text, .TargetDirectory = TextBox4.Text}
         hw.Show()
         Exit Sub
         Dim f As New Form With {.Height = 300, .Width = 800, .Text = "群主福利", .FormBorderStyle = FormBorderStyle.None, .StartPosition = FormStartPosition.CenterScreen}
