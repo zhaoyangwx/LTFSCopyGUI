@@ -1,5 +1,5 @@
 # LTFSCopyGUI
-LTFS文件排序工具
+LTFS文件排序复制工具
 
 适用HP LTFS
 
@@ -10,3 +10,5 @@ LTFS文件排序工具
 若Partition A有文件，先复制Partition A的文件
 
 新增校验功能，可覆盖保存原schema文件
+
+新增复制功能，边校验边复制文件
