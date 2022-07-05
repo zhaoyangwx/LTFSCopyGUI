@@ -292,6 +292,7 @@ Partial Class HashTaskWindow
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.ProgressBar1)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "HashTaskWindow"
         Me.Text = "HashTaskWindow"
         Me.ContextMenuStrip1.ResumeLayout(False)
