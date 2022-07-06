@@ -51,6 +51,7 @@ Partial Class HashTaskWindow
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.AxTChart1 = New AxTeeChart.AxTChart()
+        Me.Button4 = New System.Windows.Forms.Button()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -115,11 +116,11 @@ Partial Class HashTaskWindow
         'Button3
         '
         Me.Button3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button3.Location = New System.Drawing.Point(558, 451)
+        Me.Button3.Location = New System.Drawing.Point(558, 454)
         Me.Button3.Name = "Button3"
         Me.Button3.Size = New System.Drawing.Size(75, 23)
         Me.Button3.TabIndex = 5
-        Me.Button3.Text = "Save"
+        Me.Button3.Text = "SaveIndex"
         Me.Button3.UseVisualStyleBackColor = True
         '
         'SaveFileDialog1
@@ -278,12 +279,23 @@ Partial Class HashTaskWindow
         Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
         Me.AxTChart1.TabIndex = 7
         '
+        'Button4
+        '
+        Me.Button4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button4.Location = New System.Drawing.Point(477, 454)
+        Me.Button4.Name = "Button4"
+        Me.Button4.Size = New System.Drawing.Size(75, 23)
+        Me.Button4.TabIndex = 12
+        Me.Button4.Text = "SaveHash"
+        Me.Button4.UseVisualStyleBackColor = True
+        '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(645, 489)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.ProgressBar2)
@@ -334,4 +346,5 @@ Partial Class HashTaskWindow
     Friend WithEvents HToolStripMenuItem2 As ToolStripMenuItem
     Friend WithEvents HToolStripMenuItem3 As ToolStripMenuItem
     Friend WithEvents CheckBox2 As CheckBox
+    Friend WithEvents Button4 As Button
 End Class

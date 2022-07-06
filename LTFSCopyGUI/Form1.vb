@@ -277,4 +277,89 @@ Public Class Form1
         My.Settings.GenCMD = CheckBox1.Checked
         My.Settings.Save()
     End Sub
+    Public Class IndexedDirectory
+        Public LTFSIndexDir As ltfsindex.directory
+        Public IO_Dir As IO.DirectoryInfo
+        Public Sub New(index As ltfsindex.directory, dir As IO.DirectoryInfo)
+            LTFSIndexDir = index
+            IO_Dir = dir
+        End Sub
+    End Class
+    Public Class ldirStack
+        Private ldir As New List(Of ltfsindex.directory)
+        Public ReadOnly Property IsEmpty
+            Get
+                Return ldir.Count = 0
+            End Get
+        End Property
+        Public Sub Push(v As ltfsindex.directory)
+            ldir.Add(v)
+        End Sub
+        Public Function Pop() As ltfsindex.directory
+            Try
+                Dim r As ltfsindex.directory = ldir.Last
+                ldir.RemoveAt(ldir.Count - 1)
+                Return r
+            Catch ex As Exception
+                Return Nothing
+            End Try
+        End Function
+    End Class
+    Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Try
+            schema = New ltfsindex
+            Dim fid As Integer = 0
+            Dim RootDir As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(TextBox3.Text)
+            Dim BasePath As String = RootDir.Parent.FullName
+            Dim q As New List(Of IndexedDirectory)
+            q.Add(New IndexedDirectory(New ltfsindex.directory With {.name = RootDir.Name}, RootDir))
+            schema._directory.Add(q(0).LTFSIndexDir)
+            While q.Count > 0
+                Dim qtmp As New List(Of IndexedDirectory)
+                For Each d As IndexedDirectory In q
+                    d.LTFSIndexDir.contents._file = New List(Of ltfsindex.file)
+                    For Each f As IO.FileInfo In d.IO_Dir.GetFiles
+                        Threading.Interlocked.Add(fid, 1)
+                        d.LTFSIndexDir.contents._file.Add(New ltfsindex.file With {.name = f.Name, .length = f.Length, .extentinfo = New List(Of ltfsindex.file.extent)({New ltfsindex.file.extent With {.startblock = fid}})})
+                    Next
+                    For Each sd As IO.DirectoryInfo In d.IO_Dir.GetDirectories
+                        Dim ld As New ltfsindex.directory With {.name = sd.Name}
+                        d.LTFSIndexDir.contents._directory.Add(ld)
+                        qtmp.Add(New IndexedDirectory(ld, sd))
+                    Next
+                Next
+                q = qtmp
+            End While
+            Dim ds As New ldirStack
+            fid = 0
+            ds.Push(schema._directory(0))
+            While Not ds.IsEmpty
+                Dim currentdir As ltfsindex.directory = ds.Pop()
+                For i As Integer = 0 To currentdir.contents._file.Count - 1
+                    Threading.Interlocked.Add(fid, 1)
+                    currentdir.contents._file(i).extentinfo(0).startblock = fid
+                Next
+                For i As Integer = currentdir.contents._directory.Count - 1 To 0 Step -1
+                    ds.Push(currentdir.contents._directory(i))
+                Next
+            End While
+            LoadSchemaFile(False)
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString)
+        End Try
+    End Sub
+
+    Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
+        If My.Computer.FileSystem.DirectoryExists(TextBox3.Text) Then FolderBrowserDialog1.SelectedPath = TextBox3.Text
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            TextBox3.Text = FolderBrowserDialog1.SelectedPath
+        End If
+    End Sub
+
+    Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
+        If My.Computer.FileSystem.DirectoryExists(TextBox4.Text) Then FolderBrowserDialog1.SelectedPath = TextBox4.Text
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            TextBox4.Text = FolderBrowserDialog1.SelectedPath
+        End If
+    End Sub
 End Class
