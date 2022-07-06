@@ -107,6 +107,7 @@ Public Class IOManager
         Public OperationLock As New Object
         Private thHash As Threading.Thread
         Private fout As IO.FileStream = Nothing
+        Private fob As IO.BufferedStream = Nothing
         Dim f_outpath As String
         Public Sub Start()
             SyncLock OperationLock
@@ -228,7 +229,14 @@ Public Class IOManager
                                                 If Not My.Computer.FileSystem.DirectoryExists(outdir) Then
                                                     My.Computer.FileSystem.CreateDirectory(outdir)
                                                 End If
-                                                fout = IO.File.OpenWrite(f_outpath)
+                                                If My.Computer.FileSystem.FileExists(f_outpath) Then
+                                                    fout = Nothing
+                                                    Exit Try
+                                                End If
+                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, 4 * 1024 * 1024, FileOptions.WriteThrough)
+                                                'fout = IO.File.OpenWrite(f_outpath)
+
+                                                'fob = New IO.BufferedStream(fout, 1024 * 1024)
                                                 action_writefile =
                                                     Sub(args As EventedStream.ReadStreamEventArgs)
                                                         fout.Write(args.Buffer, args.Offset, args.Count)
@@ -240,6 +248,8 @@ Public Class IOManager
                                         f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
                                         If fout IsNot Nothing Then
                                             Try
+                                                'fob.Flush()
+                                                'fob.Close()
                                                 fout.Close()
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).CreationTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).CreationTimeUtc
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).Attributes = My.Computer.FileSystem.GetFileInfo(f.fullpath).Attributes
@@ -254,6 +264,8 @@ Public Class IOManager
                                     Catch ex As Exception
                                         If fout IsNot Nothing Then
                                             Try
+                                                'fob.Flush()
+                                                'fob.Close()
                                                 fout.Close()
                                                 fout.Dispose()
                                                 fout = Nothing
@@ -270,6 +282,8 @@ Public Class IOManager
                             Catch ex As Exception
                                 If fout IsNot Nothing Then
                                     Try
+                                        'fob.Flush()
+                                        'fob.Close()
                                         fout.Close()
                                         fout.Dispose()
                                         fout = Nothing
