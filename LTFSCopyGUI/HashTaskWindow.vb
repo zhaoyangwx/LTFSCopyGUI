@@ -233,6 +233,81 @@ Public Class HashTaskWindow
         SMaxNum = 3600 * 12
         AxTChart1.Axis.Bottom.Title.Caption = "12h"
     End Sub
+    Public Class IndexedLHashDirectory
+        Public LTFSIndexDir As ltfsindex.directory
+        Public LHash_Dir As ltfsindex.directory
+        Public Sub New(index As ltfsindex.directory, lhash As ltfsindex.directory)
+            LTFSIndexDir = index
+            LHash_Dir = lhash
+        End Sub
+    End Class
+    Public Class ldirStack
+        Private ldir As New List(Of ltfsindex.directory)
+        Public ReadOnly Property IsEmpty
+            Get
+                Return ldir.Count = 0
+            End Get
+        End Property
+        Public Sub Push(v As ltfsindex.directory)
+            ldir.Add(v)
+        End Sub
+        Public Function Pop() As ltfsindex.directory
+            Try
+                Dim r As ltfsindex.directory = ldir.Last
+                ldir.RemoveAt(ldir.Count - 1)
+                Return r
+            Catch ex As Exception
+                Return Nothing
+            End Try
+        End Function
+    End Class
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            Try
+                Dim schhash As ltfsindex
+                Dim s As String = My.Computer.FileSystem.ReadAllText(OpenFileDialog1.FileName)
+                If s.Contains("XMLSchema") Then
+                    schhash = ltfsindex.FromXML(s)
+                Else
+                    schhash = ltfsindex.FromSchemaText(s)
+                End If
+                Dim q As New List(Of IndexedLHashDirectory)
+                q.Add(New IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
+                While q.Count > 0
+                    Dim qtmp As New List(Of IndexedLHashDirectory)
+                    For Each d As IndexedLHashDirectory In q
+                        For Each f As ltfsindex.file In d.LTFSIndexDir.contents._file
+                            For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
+                                If flookup.name = f.name And flookup.length = f.length Then
+                                    If flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
+                                        PrintMsg("")
+                                        PrintMsg(f.fullpath)
+                                        PrintMsg("    " & f.sha1 & " -> " & flookup.sha1)
+                                        f.sha1 = flookup.sha1
+                                    End If
+                                    Exit For
+                                End If
+                            Next
+                        Next
+                        For Each sd As ltfsindex.directory In d.LTFSIndexDir.contents._directory
+                            For Each dlookup As ltfsindex.directory In d.LHash_Dir.contents._directory
+                                If dlookup.name = sd.name Then
+                                    qtmp.Add(New IndexedLHashDirectory(sd, dlookup))
+                                    Exit For
+                                End If
+                            Next
+                        Next
+                    Next
+                    q = qtmp
+                End While
+
+            Catch ex As Exception
+                MessageBox.Show(ex.ToString)
+            End Try
+            PrintMsg("Finished")
+        End If
+
+    End Sub
 
     Public PMaxNum As Integer = 3600 * 24
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick

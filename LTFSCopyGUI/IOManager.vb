@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports LTFSCopyGUI
 
 Public Class IOManager
     Public Class fsReport
@@ -22,21 +23,21 @@ Public Class IOManager
             Return (l / 1024 ^ 3).ToString("F2") & " GiB"
         End If
     End Function
-    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs) = Nothing) As String
+    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
         If OnFinished Is Nothing Then
             Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
 
-                Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
-                Dim fsine As New EventedStream With {.baseStream = fsinb}
-                AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args)
-                Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
-
-                If fs IsNot Nothing Then fs.fs = fsin
+                Dim fsine As New EventedStream With {.baseStream = fsin0}
+                Dim fsinb As New IO.BufferedStream(fsine, 512 * 1024)
+                AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
+                'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                Dim fsin As EventedStream = fsine
+                If fs IsNot Nothing Then fs.fs = fsinb
                 Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                     fsin.Position = 0
                     Dim hashValue() As Byte
 
-                    hashValue = algo.ComputeHash(fsin)
+                    hashValue = algo.ComputeHash(fsine)
                     'While fsin.Read(block, 0, block.Length) > 0
                     '
                     'End While
@@ -213,8 +214,8 @@ Public Class IOManager
                                 If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not My.Computer.FileSystem.FileExists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
-                                        Dim action_writefile As Action(Of EventedStream.ReadStreamEventArgs) = Sub(args As EventedStream.ReadStreamEventArgs)
-                                                                                                               End Sub
+                                        Dim action_writefile As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
+                                                                                                                              End Sub
 
                                         If TargetDirectory <> "" Then
                                             If Not My.Computer.FileSystem.DirectoryExists(TargetDirectory) Then
@@ -233,13 +234,13 @@ Public Class IOManager
                                                     fout = Nothing
                                                     Exit Try
                                                 End If
-                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, 4 * 1024 * 1024, FileOptions.WriteThrough)
+                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, 1 * 1024 * 1024, FileOptions.WriteThrough)
                                                 'fout = IO.File.OpenWrite(f_outpath)
 
                                                 'fob = New IO.BufferedStream(fout, 1024 * 1024)
                                                 action_writefile =
-                                                    Sub(args As EventedStream.ReadStreamEventArgs)
-                                                        fout.Write(args.Buffer, args.Offset, args.Count)
+                                                    Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
+                                                        fout.Write(args.Buffer, args.Offset, Math.Min(args.Count, st.Length - fout.Position))
                                                     End Sub
                                             Catch ex As Exception
                                                 RaiseEvent ErrorOccured(ex.ToString)
@@ -250,6 +251,7 @@ Public Class IOManager
                                             Try
                                                 'fob.Flush()
                                                 'fob.Close()
+
                                                 fout.Close()
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).CreationTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).CreationTimeUtc
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).Attributes = My.Computer.FileSystem.GetFileInfo(f.fullpath).Attributes
@@ -437,7 +439,7 @@ Public Class IOManager
             Public Denied As Boolean = False
         End Class
 
-        Public baseStream As BufferedStream
+        Public baseStream As Stream
 
         Public Overrides ReadOnly Property CanRead As Boolean
             Get
@@ -526,5 +528,7 @@ Public Class IOManager
         Public Event PreviewWrite(args As WriteStreamEventArgs)
         Public Event PreviewRead(args As ReadStreamEventArgs)
         Public Event Readed(args As ReadStreamEventArgs)
+
+
     End Class
 End Class
