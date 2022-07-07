@@ -16,3 +16,4 @@ C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x86\Debug\LTFSCo
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x86\Debug\LTFSCopyGUI.exe
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x86\Debug\LTFSCopyGUI.xml
 C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x86\Debug\LTFSCopyGUI.pdb
+C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x86\Debug\LTFSCopyGUI.vbprojAssemblyReference.cache

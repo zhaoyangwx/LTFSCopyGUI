@@ -27,12 +27,12 @@ Public Class IOManager
         If OnFinished Is Nothing Then
             Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
 
-                Dim fsine As New EventedStream With {.baseStream = fsin0}
-                Dim fsinb As New IO.BufferedStream(fsine, 512 * 1024)
+                Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
+                Dim fsine As New EventedStream With {.baseStream = fsinb}
                 AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
                 'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
-                Dim fsin As EventedStream = fsine
-                If fs IsNot Nothing Then fs.fs = fsinb
+                Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                If fs IsNot Nothing Then fs.fs = fsin
                 Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                     fsin.Position = 0
                     Dim hashValue() As Byte
