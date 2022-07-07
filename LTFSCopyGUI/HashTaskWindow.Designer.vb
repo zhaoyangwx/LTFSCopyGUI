@@ -50,8 +50,9 @@ Partial Class HashTaskWindow
         Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.Button4 = New System.Windows.Forms.Button()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
+        Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -70,7 +71,7 @@ Partial Class HashTaskWindow
         Me.TextBox1.Multiline = True
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
-        Me.TextBox1.Size = New System.Drawing.Size(615, 238)
+        Me.TextBox1.Size = New System.Drawing.Size(701, 244)
         Me.TextBox1.TabIndex = 0
         '
         'ProgressBar1
@@ -79,13 +80,13 @@ Partial Class HashTaskWindow
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ProgressBar1.Location = New System.Drawing.Point(12, 12)
         Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(621, 23)
+        Me.ProgressBar1.Size = New System.Drawing.Size(707, 23)
         Me.ProgressBar1.TabIndex = 1
         '
         'Button1
         '
         Me.Button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button1.Location = New System.Drawing.Point(244, 454)
+        Me.Button1.Location = New System.Drawing.Point(287, 462)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(75, 23)
         Me.Button1.TabIndex = 2
@@ -95,7 +96,7 @@ Partial Class HashTaskWindow
         'Button2
         '
         Me.Button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button2.Location = New System.Drawing.Point(325, 454)
+        Me.Button2.Location = New System.Drawing.Point(368, 462)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(75, 23)
         Me.Button2.TabIndex = 3
@@ -106,7 +107,7 @@ Partial Class HashTaskWindow
         '
         Me.CheckBox1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.CheckBox1.AutoSize = True
-        Me.CheckBox1.Location = New System.Drawing.Point(12, 458)
+        Me.CheckBox1.Location = New System.Drawing.Point(12, 466)
         Me.CheckBox1.Name = "CheckBox1"
         Me.CheckBox1.Size = New System.Drawing.Size(60, 16)
         Me.CheckBox1.TabIndex = 4
@@ -116,7 +117,7 @@ Partial Class HashTaskWindow
         'Button3
         '
         Me.Button3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button3.Location = New System.Drawing.Point(558, 454)
+        Me.Button3.Location = New System.Drawing.Point(644, 462)
         Me.Button3.Name = "Button3"
         Me.Button3.Size = New System.Drawing.Size(75, 23)
         Me.Button3.TabIndex = 5
@@ -133,7 +134,7 @@ Partial Class HashTaskWindow
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ProgressBar2.Location = New System.Drawing.Point(12, 41)
         Me.ProgressBar2.Name = "ProgressBar2"
-        Me.ProgressBar2.Size = New System.Drawing.Size(621, 23)
+        Me.ProgressBar2.Size = New System.Drawing.Size(707, 23)
         Me.ProgressBar2.TabIndex = 6
         '
         'Timer1
@@ -250,8 +251,8 @@ Partial Class HashTaskWindow
         'SplitContainer1.Panel2
         '
         Me.SplitContainer1.Panel2.Controls.Add(Me.TextBox1)
-        Me.SplitContainer1.Size = New System.Drawing.Size(621, 375)
-        Me.SplitContainer1.SplitterDistance = 127
+        Me.SplitContainer1.Size = New System.Drawing.Size(707, 383)
+        Me.SplitContainer1.SplitterDistance = 129
         Me.SplitContainer1.TabIndex = 10
         '
         'CheckBox2
@@ -260,12 +261,22 @@ Partial Class HashTaskWindow
         Me.CheckBox2.AutoSize = True
         Me.CheckBox2.Checked = True
         Me.CheckBox2.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBox2.Location = New System.Drawing.Point(78, 458)
+        Me.CheckBox2.Location = New System.Drawing.Point(78, 466)
         Me.CheckBox2.Name = "CheckBox2"
         Me.CheckBox2.Size = New System.Drawing.Size(48, 16)
         Me.CheckBox2.TabIndex = 11
         Me.CheckBox2.Text = "Copy"
         Me.CheckBox2.UseVisualStyleBackColor = True
+        '
+        'Button4
+        '
+        Me.Button4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button4.Location = New System.Drawing.Point(563, 462)
+        Me.Button4.Name = "Button4"
+        Me.Button4.Size = New System.Drawing.Size(75, 23)
+        Me.Button4.TabIndex = 12
+        Me.Button4.Text = "LoadHash"
+        Me.Button4.UseVisualStyleBackColor = True
         '
         'AxTChart1
         '
@@ -276,24 +287,19 @@ Partial Class HashTaskWindow
         Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
         Me.AxTChart1.Name = "AxTChart1"
         Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
-        Me.AxTChart1.Size = New System.Drawing.Size(615, 121)
+        Me.AxTChart1.Size = New System.Drawing.Size(701, 123)
         Me.AxTChart1.TabIndex = 7
         '
-        'Button4
+        'OpenFileDialog1
         '
-        Me.Button4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button4.Location = New System.Drawing.Point(477, 454)
-        Me.Button4.Name = "Button4"
-        Me.Button4.Size = New System.Drawing.Size(75, 23)
-        Me.Button4.TabIndex = 12
-        Me.Button4.Text = "SaveHash"
-        Me.Button4.UseVisualStyleBackColor = True
+        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
+        Me.OpenFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
         '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(645, 489)
+        Me.ClientSize = New System.Drawing.Size(731, 497)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.CheckBox2)
@@ -347,4 +353,5 @@ Partial Class HashTaskWindow
     Friend WithEvents HToolStripMenuItem3 As ToolStripMenuItem
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents Button4 As Button
+    Friend WithEvents OpenFileDialog1 As OpenFileDialog
 End Class
