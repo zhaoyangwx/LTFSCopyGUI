@@ -51,13 +51,15 @@ Partial Class HashTaskWindow
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button4 = New System.Windows.Forms.Button()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -259,8 +261,6 @@ Partial Class HashTaskWindow
         '
         Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.CheckBox2.AutoSize = True
-        Me.CheckBox2.Checked = True
-        Me.CheckBox2.CheckState = System.Windows.Forms.CheckState.Checked
         Me.CheckBox2.Location = New System.Drawing.Point(78, 466)
         Me.CheckBox2.Name = "CheckBox2"
         Me.CheckBox2.Size = New System.Drawing.Size(48, 16)
@@ -278,6 +278,23 @@ Partial Class HashTaskWindow
         Me.Button4.Text = "LoadHash"
         Me.Button4.UseVisualStyleBackColor = True
         '
+        'OpenFileDialog1
+        '
+        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
+        Me.OpenFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
+        '
+        'NumericUpDown1
+        '
+        Me.NumericUpDown1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.NumericUpDown1.Location = New System.Drawing.Point(132, 464)
+        Me.NumericUpDown1.Maximum = New Decimal(New Integer() {-133, 4, 0, 0})
+        Me.NumericUpDown1.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NumericUpDown1.Name = "NumericUpDown1"
+        Me.NumericUpDown1.Size = New System.Drawing.Size(72, 21)
+        Me.NumericUpDown1.TabIndex = 13
+        Me.NumericUpDown1.Value = New Decimal(New Integer() {4194304, 0, 0, 0})
+        Me.NumericUpDown1.Visible = False
+        '
         'AxTChart1
         '
         Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
@@ -290,17 +307,13 @@ Partial Class HashTaskWindow
         Me.AxTChart1.Size = New System.Drawing.Size(701, 123)
         Me.AxTChart1.TabIndex = 7
         '
-        'OpenFileDialog1
-        '
-        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        Me.OpenFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
-        '
         'HashTaskWindow
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(731, 497)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.NumericUpDown1)
         Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.SplitContainer1)
@@ -319,6 +332,7 @@ Partial Class HashTaskWindow
         Me.SplitContainer1.Panel2.PerformLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
@@ -354,4 +368,5 @@ Partial Class HashTaskWindow
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents Button4 As Button
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
+    Friend WithEvents NumericUpDown1 As NumericUpDown
 End Class
