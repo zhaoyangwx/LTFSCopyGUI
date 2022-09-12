@@ -26,7 +26,6 @@ Public Class IOManager
     Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
         If OnFinished Is Nothing Then
             Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
-
                 Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
                 Dim fsine As New EventedStream With {.baseStream = fsinb}
                 AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
@@ -52,23 +51,28 @@ Public Class IOManager
         Else
             Dim thHash As New Threading.Thread(
                     Sub()
-                        Dim fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+                        Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+                            Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
+                            Dim fsine As New EventedStream With {.baseStream = fsinb}
+                            AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
+                            'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                            Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                            If fs IsNot Nothing Then fs.fs = fsin
+                            Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
+                                fsin.Position = 0
+                                Dim hashValue() As Byte
 
-                        Dim fsinb As New IO.BufferedStream(fsin0, 4 * 1024 * 1024)
-                        Dim fsine As New EventedStream With {.baseStream = fsinb}
-                        Dim fsin As New IO.BufferedStream(fsine, 4 * 1024 * 1024)
-                        If fs IsNot Nothing Then fs.fs = fsin
-                        Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
-                            fsin.Position = 0
-                            Dim hashValue() As Byte
-                            hashValue = algo.ComputeHash(fsin)
-                            fsin.Position = 0
-                            fsin.Close()
-                            Dim result As New Text.StringBuilder()
-                            For i As Integer = 0 To hashValue.Length - 1
-                                result.Append(String.Format("{0:X2}", hashValue(i)))
-                            Next
-                            OnFinished(result.ToString)
+                                hashValue = algo.ComputeHash(fsine)
+                                'While fsin.Read(block, 0, block.Length) > 0
+                                '
+                                'End While
+                                fsin.Close()
+                                Dim result As New Text.StringBuilder()
+                                For i As Integer = 0 To hashValue.Length - 1
+                                    result.Append(String.Format("{0:X2}", hashValue(i)))
+                                Next
+                                OnFinished(result.ToString)
+                            End Using
                         End Using
                     End Sub)
             thHash.Start()
@@ -84,6 +88,7 @@ Public Class IOManager
         Public Event TaskFinished(Message As String)
         Public Event ErrorOccured(Message As String)
         Public Event ProgressReport(Message As String)
+        Public Property BufferWrite As Integer = 4 * 1024 * 1024
         Public schema As ltfsindex
         Public IgnoreExisting As Boolean = True
         Private _TargetDirectory As String
@@ -208,8 +213,8 @@ Public Class IOManager
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
                             Try
-                                If TargetDirectory <> "" Then f_outpath = My.Computer.FileSystem.CombinePath(TargetDirectory, f.fullpath)
-                                f.fullpath = My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
+                                If TargetDirectory <> "" Then f_outpath = "\\?\" & My.Computer.FileSystem.CombinePath(TargetDirectory, f.fullpath)
+                                f.fullpath = "\\?\" & My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
                                 If f.sha1 Is Nothing Then f.sha1 = ""
                                 If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not My.Computer.FileSystem.FileExists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
@@ -234,7 +239,7 @@ Public Class IOManager
                                                     fout = Nothing
                                                     Exit Try
                                                 End If
-                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, 1 * 1024 * 1024, FileOptions.WriteThrough)
+                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, BufferWrite, FileOptions.WriteThrough)
                                                 'fout = IO.File.OpenWrite(f_outpath)
 
                                                 'fob = New IO.BufferedStream(fout, 1024 * 1024)
@@ -251,7 +256,7 @@ Public Class IOManager
                                             Try
                                                 'fob.Flush()
                                                 'fob.Close()
-
+                                                fout.Flush()
                                                 fout.Close()
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).CreationTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).CreationTimeUtc
                                                 My.Computer.FileSystem.GetFileInfo(f_outpath).Attributes = My.Computer.FileSystem.GetFileInfo(f.fullpath).Attributes
@@ -268,6 +273,7 @@ Public Class IOManager
                                             Try
                                                 'fob.Flush()
                                                 'fob.Close()
+                                                fout.Flush()
                                                 fout.Close()
                                                 fout.Dispose()
                                                 fout = Nothing
@@ -286,6 +292,7 @@ Public Class IOManager
                                     Try
                                         'fob.Flush()
                                         'fob.Close()
+                                        fout.Flush()
                                         fout.Close()
                                         fout.Dispose()
                                         fout = Nothing

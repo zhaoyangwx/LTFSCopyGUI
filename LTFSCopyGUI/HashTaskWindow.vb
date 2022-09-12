@@ -212,7 +212,7 @@ Public Class HashTaskWindow
 
     Public SpeedHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
     Public FileRateHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
-    Public SMaxNum As Integer = 60
+    Public SMaxNum As Integer = 600
 
     Private Sub AllToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AllToolStripMenuItem.Click
         SMaxNum = 3600 * 24
@@ -277,17 +277,23 @@ Public Class HashTaskWindow
                     Dim qtmp As New List(Of IndexedLHashDirectory)
                     For Each d As IndexedLHashDirectory In q
                         For Each f As ltfsindex.file In d.LTFSIndexDir.contents._file
-                            For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
-                                If flookup.name = f.name And flookup.length = f.length Then
-                                    If flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
-                                        PrintMsg("")
-                                        PrintMsg(f.fullpath)
-                                        PrintMsg("    " & f.sha1 & " -> " & flookup.sha1)
-                                        f.sha1 = flookup.sha1
+                            Try
+                                For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
+                                    If flookup.name = f.name And flookup.length = f.length Then
+                                        If flookup.sha1 IsNot Nothing Then
+                                            If flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
+                                                PrintMsg("")
+                                                PrintMsg(f.name)
+                                                PrintMsg("    " & f.sha1 & " -> " & flookup.sha1)
+                                                f.sha1 = flookup.sha1
+                                            End If
+                                        End If
+                                        Exit For
                                     End If
-                                    Exit For
-                                End If
-                            Next
+                                Next
+                            Catch ex As Exception
+                                PrintMsg(ex.ToString)
+                            End Try
                         Next
                         For Each sd As ltfsindex.directory In d.LTFSIndexDir.contents._directory
                             For Each dlookup As ltfsindex.directory In d.LHash_Dir.contents._directory
@@ -302,11 +308,16 @@ Public Class HashTaskWindow
                 End While
 
             Catch ex As Exception
-                MessageBox.Show(ex.ToString)
+                PrintMsg(ex.ToString)
             End Try
             PrintMsg("Finished")
         End If
 
+    End Sub
+
+    Private Sub NumericUpDown1_ValueChanged(sender As Object, e As EventArgs) Handles NumericUpDown1.ValueChanged
+        If HashTask Is Nothing Then Exit Sub
+        If NumericUpDown1.Value >= 1 Then HashTask.BufferWrite = NumericUpDown1.Value
     End Sub
 
     Public PMaxNum As Integer = 3600 * 24
