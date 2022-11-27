@@ -45,9 +45,9 @@ Public Class ltfsindex
         Public Property fileuid As Long
         Public Property sha1 As String
         Public Property tag As String
-        <NonSerialized> Public fullpath As String
+        <Xml.Serialization.XmlIgnore> Public fullpath As String
 
-        <NonSerialized> Public Selected As Boolean = True
+        <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
 
         <Serializable>
         Public Class extent
@@ -72,8 +72,8 @@ Public Class ltfsindex
         Public Property contents As New contentsDef
         Public Property tag As String
 
-        <NonSerialized> Public fullpath As String
-        <NonSerialized> Public Selected As Boolean = True
+        <Xml.Serialization.XmlIgnore> Public fullpath As String
+        <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
     End Class
     <Serializable>
     Public Class contentsDef
