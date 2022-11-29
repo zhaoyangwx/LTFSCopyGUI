@@ -362,4 +362,32 @@ Public Class Form1
             TextBox4.Text = FolderBrowserDialog1.SelectedPath
         End If
     End Sub
+
+    Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click
+        Try
+            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(TextBox1.Text).GetFiles("*.schema")
+            For Each fl As IO.FileInfo In f
+                Dim s As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                If s.Contains("XMLSchema") Then
+                    schema = ltfsindex.FromXML(s)
+                Else
+                    schema = ltfsindex.FromSchemaText(s)
+                End If
+                Dim tnew As String = schema.GetSerializedText
+                My.Computer.FileSystem.WriteAllText(fl.FullName, tnew, False, New System.Text.UTF8Encoding(False))
+                TextBox2.AppendText(fl.FullName & vbCrLf)
+            Next
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString)
+        End Try
+
+    End Sub
+
+    Private Sub Form1_Click(sender As Object, e As EventArgs) Handles Me.Click
+        Static q As Integer
+        q += 1
+        If q >= 10 Then
+            Button9.Visible = True
+        End If
+    End Sub
 End Class
