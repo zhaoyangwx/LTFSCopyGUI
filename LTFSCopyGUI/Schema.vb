@@ -84,11 +84,30 @@ Public Class ltfsindex
     Public Property _directory As New List(Of directory)
     Public Function GetSerializedText() As String
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim sb As New System.Text.StringBuilder()
-        Dim t As IO.TextWriter = New IO.StringWriter(sb)
-        writer.Serialize(t, Me)
-        t.Close()
-        Return sb.ToString
+        Dim tmpf As String = My.Computer.FileSystem.GetTempFileName()
+        Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
+        Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
+        Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "LTFSCopyGUI 1.0")})
+        writer.Serialize(t, Me, ns)
+        ms.Close()
+        Dim soutp As New IO.StreamReader(tmpf)
+
+        Dim sout As New System.Text.StringBuilder
+        While Not soutp.EndOfStream
+            Dim sline As String = soutp.ReadLine
+            sline = sline.Replace("xmlns:v", "version")
+            sline = sline.Replace("<_file />", "")
+            sline = sline.Replace("<_directory />", "")
+            sline = sline.Replace("<_file>", "")
+            sline = sline.Replace("</_file>", "")
+            sline = sline.Replace("<_directory>", "")
+            sline = sline.Replace("</_directory>", "")
+            sline = sline.TrimEnd(" ").TrimStart(" ")
+            If sline.Length > 0 Then sout.AppendLine(sline)
+        End While
+        soutp.Close()
+        My.Computer.FileSystem.DeleteFile(tmpf)
+        Return sout.ToString()
     End Function
     Public Shared Function FromXML(s As String) As ltfsindex
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
