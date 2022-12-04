@@ -1,0 +1,15 @@
+LIBRARY LtfsCommand
+
+EXPORTS
+_GetTapeDriveList
+_GetDriveMappings
+_StartLtfsService
+_StopLtfsService
+_RemapTapeDrives
+_MapTapeDrive
+_UnmapTapeDrive
+_LoadTapeDrive
+_EjectTapeDrive
+_MountTapeDrive
+_CheckTapeMedia
+_Test
