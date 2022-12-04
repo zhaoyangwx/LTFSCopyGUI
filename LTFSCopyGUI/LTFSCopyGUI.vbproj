@@ -146,6 +146,12 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="IOManager.vb" />
+    <Compile Include="LTFSConfigurator.Designer.vb">
+      <DependentUpon>LTFSConfigurator.vb</DependentUpon>
+    </Compile>
+    <Compile Include="LTFSConfigurator.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -162,6 +168,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Schema.vb" />
+    <Compile Include="TapeUtils.vb" />
     <Compile Include="TreeViewEx.vb">
       <SubType>Component</SubType>
     </Compile>
@@ -175,6 +182,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="HashTaskWindow.resx">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LTFSConfigurator.resx">
+      <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>

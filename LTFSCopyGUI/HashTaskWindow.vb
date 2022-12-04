@@ -65,6 +65,18 @@ Public Class HashTaskWindow
                                                             Button1.Text = "Start"
                                                             ProgressBar1.Value = ProgressBar1.Maximum
                                                             ProgressBar2.Value = ProgressBar2.Maximum
+                                                            Dim thEject As New Threading.Thread(
+                                                                Sub()
+                                                                    Dim result As String
+                                                                    Try
+                                                                        result = TapeUtils.EjectTapeDrive(BaseDirectory(0))
+                                                                    Catch ex As Exception
+                                                                        result = ex.ToString
+                                                                    End Try
+                                                                    If result = "" Then result = "Tape Ejected."
+                                                                    Me.Invoke(Sub() PrintMsg(result))
+                                                                End Sub)
+                                                            If CheckBox3.Checked Then thEject.Start()
                                                             Button3_Click(Nothing, Nothing)
                                                         End Sub)
                                           End Sub

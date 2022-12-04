@@ -49,18 +49,19 @@ Partial Class HashTaskWindow
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+        Me.AxTChart1 = New AxTeeChart.AxTChart()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button4 = New System.Windows.Forms.Button()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
-        Me.AxTChart1 = New AxTeeChart.AxTChart()
+        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
-        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -257,6 +258,18 @@ Partial Class HashTaskWindow
         Me.SplitContainer1.SplitterDistance = 129
         Me.SplitContainer1.TabIndex = 10
         '
+        'AxTChart1
+        '
+        Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.AxTChart1.Enabled = True
+        Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
+        Me.AxTChart1.Name = "AxTChart1"
+        Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
+        Me.AxTChart1.Size = New System.Drawing.Size(701, 123)
+        Me.AxTChart1.TabIndex = 7
+        '
         'CheckBox2
         '
         Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
@@ -286,7 +299,7 @@ Partial Class HashTaskWindow
         'NumericUpDown1
         '
         Me.NumericUpDown1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown1.Location = New System.Drawing.Point(132, 464)
+        Me.NumericUpDown1.Location = New System.Drawing.Point(209, 462)
         Me.NumericUpDown1.Maximum = New Decimal(New Integer() {-133, 4, 0, 0})
         Me.NumericUpDown1.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.NumericUpDown1.Name = "NumericUpDown1"
@@ -295,17 +308,16 @@ Partial Class HashTaskWindow
         Me.NumericUpDown1.Value = New Decimal(New Integer() {4194304, 0, 0, 0})
         Me.NumericUpDown1.Visible = False
         '
-        'AxTChart1
+        'CheckBox3
         '
-        Me.AxTChart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.AxTChart1.Enabled = True
-        Me.AxTChart1.Location = New System.Drawing.Point(3, 3)
-        Me.AxTChart1.Name = "AxTChart1"
-        Me.AxTChart1.OcxState = CType(resources.GetObject("AxTChart1.OcxState"), System.Windows.Forms.AxHost.State)
-        Me.AxTChart1.Size = New System.Drawing.Size(701, 123)
-        Me.AxTChart1.TabIndex = 7
+        Me.CheckBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CheckBox3.AutoSize = True
+        Me.CheckBox3.Location = New System.Drawing.Point(132, 466)
+        Me.CheckBox3.Name = "CheckBox3"
+        Me.CheckBox3.Size = New System.Drawing.Size(78, 16)
+        Me.CheckBox3.TabIndex = 14
+        Me.CheckBox3.Text = "AutoEject"
+        Me.CheckBox3.UseVisualStyleBackColor = True
         '
         'HashTaskWindow
         '
@@ -313,6 +325,7 @@ Partial Class HashTaskWindow
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(731, 497)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.CheckBox3)
         Me.Controls.Add(Me.NumericUpDown1)
         Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.CheckBox2)
@@ -332,8 +345,8 @@ Partial Class HashTaskWindow
         Me.SplitContainer1.Panel2.PerformLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
-        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.AxTChart1, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -369,4 +382,5 @@ Partial Class HashTaskWindow
     Friend WithEvents Button4 As Button
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents NumericUpDown1 As NumericUpDown
+    Friend WithEvents CheckBox3 As CheckBox
 End Class

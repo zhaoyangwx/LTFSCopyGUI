@@ -390,4 +390,8 @@ Public Class Form1
             Button9.Visible = True
         End If
     End Sub
+
+    Private Sub Button10_Click(sender As Object, e As EventArgs) Handles Button10.Click
+        LTFSConfigurator.Show()
+    End Sub
 End Class

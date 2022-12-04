@@ -82,9 +82,9 @@ Public Class ltfsindex
     End Class
     Public Property _file As New List(Of file)
     Public Property _directory As New List(Of directory)
-    Public Function GetSerializedText() As String
+    Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = My.Computer.FileSystem.GetTempFileName()
+        Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("LCG_yyyyMMdd_hhmmss.tmp")
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "LTFSCopyGUI 1.0")})
@@ -95,14 +95,16 @@ Public Class ltfsindex
         Dim sout As New System.Text.StringBuilder
         While Not soutp.EndOfStream
             Dim sline As String = soutp.ReadLine
-            sline = sline.Replace("xmlns:v", "version")
-            sline = sline.Replace("<_file />", "")
-            sline = sline.Replace("<_directory />", "")
-            sline = sline.Replace("<_file>", "")
-            sline = sline.Replace("</_file>", "")
-            sline = sline.Replace("<_directory>", "")
-            sline = sline.Replace("</_directory>", "")
-            sline = sline.TrimEnd(" ").TrimStart(" ")
+            If ReduceSize Then
+                sline = sline.Replace("xmlns:v", "version")
+                sline = sline.Replace("<_file />", "")
+                sline = sline.Replace("<_directory />", "")
+                sline = sline.Replace("<_file>", "")
+                sline = sline.Replace("</_file>", "")
+                sline = sline.Replace("<_directory>", "")
+                sline = sline.Replace("</_directory>", "")
+                sline = sline.TrimEnd(" ").TrimStart(" ")
+            End If
             If sline.Length > 0 Then sout.AppendLine(sline)
         End While
         soutp.Close()
@@ -125,6 +127,6 @@ Public Class ltfsindex
         Return CType(reader.Deserialize(t), ltfsindex)
     End Function
     Public Function Clone() As ltfsindex
-        Return (FromXML(GetSerializedText))
+        Return (FromXML(GetSerializedText(False)))
     End Function
 End Class

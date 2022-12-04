@@ -1,4 +1,5 @@
-﻿Imports LTFSCopyGUI
+﻿Imports System.ComponentModel
+Imports LTFSCopyGUI
 
 Public Class FileBrowser
     Public Property schema As ltfsindex
@@ -22,6 +23,7 @@ Public Class FileBrowser
             If EventLock Then Exit Sub
             EventLock = True
         End SyncLock
+        CheckBox1.Checked = My.Settings.CopyInfo
         TreeView1.Nodes.Clear()
         If schema IsNot Nothing Then
             AddItem(TreeView1.Nodes, New ltfsindex.contentsDef With {._directory = schema._directory, ._file = schema._file})
@@ -55,7 +57,36 @@ Public Class FileBrowser
     End Sub
 
     Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles TreeView1.AfterSelect
+        SyncLock EventLock
+            If EventLock Then Exit Sub
+            EventLock = True
+        End SyncLock
+        If e.Node.Nodes IsNot Nothing Then
+            Dim n As Object = e.Node.Tag
+            If TypeOf (n) Is ltfsindex.file Then
+                Text = "File: " & CType(n, ltfsindex.file).name
+                If CheckBox1.Checked Then
+                    Clipboard.SetText("File" & vbTab & CType(n, ltfsindex.file).name & vbCrLf)
+                End If
+            End If
+            If TypeOf (n) Is ltfsindex.directory Then
+                Text = "Directory: " & CType(n, ltfsindex.directory).name & " (DirCount=" & CType(n, ltfsindex.directory).contents._directory.Count & " FileCount=" & CType(n, ltfsindex.directory).contents._file.Count & ")"
 
+                If CheckBox1.Checked Then
+                    Dim o As String = ""
+                    For Each d As ltfsindex.directory In CType(n, ltfsindex.directory).contents._directory
+                        o &= "Directory" & vbTab & d.name & vbCrLf
+                    Next
+                    For Each d As ltfsindex.file In CType(n, ltfsindex.directory).contents._file
+                        o &= "File" & vbTab & d.name & vbCrLf
+                    Next
+                    Clipboard.SetText(o)
+                End If
+            End If
+        End If
+        SyncLock EventLock
+            EventLock = False
+        End SyncLock
     End Sub
     Public Sub RecursivelySetNodeCheckStatus(n As TreeNode, Checked As Boolean)
         n.Checked = Checked
@@ -245,5 +276,10 @@ Public Class FileBrowser
             End If
         Next
         ResumeLayout()
+    End Sub
+
+    Private Sub FileBrowser_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        My.Settings.CopyInfo = CheckBox1.Checked
+        My.Settings.Save()
     End Sub
 End Class
