@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.779
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LtfsCommand", "LtfsCommand\LtfsCommand.vcxproj", "{496F0A0B-7429-474A-B7F0-2CE51299B22E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		EXE Debug|x64 = EXE Debug|x64
+		EXE Debug|x86 = EXE Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Debug|x64.ActiveCfg = Debug|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Debug|x64.Build.0 = Debug|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Debug|x86.ActiveCfg = Debug|Win32
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Debug|x86.Build.0 = Debug|Win32
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.EXE Debug|x64.ActiveCfg = EXE Debug|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.EXE Debug|x64.Build.0 = EXE Debug|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.EXE Debug|x86.ActiveCfg = EXE Debug|Win32
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.EXE Debug|x86.Build.0 = EXE Debug|Win32
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Release|x64.ActiveCfg = Release|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Release|x64.Build.0 = Release|x64
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Release|x86.ActiveCfg = Release|Win32
+		{496F0A0B-7429-474A-B7F0-2CE51299B22E}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6CB61D94-5E4B-4DAA-A537-9EF40212E6D0}
+	EndGlobalSection
+EndGlobal
