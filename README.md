@@ -15,3 +15,5 @@ LTFS文件排序复制工具
 新增校验功能，可覆盖保存原schema文件(建议另存到别处，防止被覆盖)
 
 新增复制功能，边校验边复制文件
+
+LtfsCommand from inaxeon/ltfscmd
