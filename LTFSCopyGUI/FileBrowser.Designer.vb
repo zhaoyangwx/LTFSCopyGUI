@@ -24,13 +24,14 @@ Partial Class FileBrowser
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
-        Me.TreeView1 = New LTFSCopyGUI.TreeViewEx()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.Button2 = New System.Windows.Forms.Button()
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.全选ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.按大小ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.匹配文件名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.TreeView1 = New LTFSCopyGUI.TreeViewEx()
+        Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -39,18 +40,6 @@ Partial Class FileBrowser
         Me.ImageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit
         Me.ImageList1.ImageSize = New System.Drawing.Size(16, 16)
         Me.ImageList1.TransparentColor = System.Drawing.Color.Transparent
-        '
-        'TreeView1
-        '
-        Me.TreeView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TreeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.TreeView1.CheckBoxes = True
-        Me.TreeView1.Location = New System.Drawing.Point(12, 12)
-        Me.TreeView1.Name = "TreeView1"
-        Me.TreeView1.Size = New System.Drawing.Size(776, 401)
-        Me.TreeView1.TabIndex = 0
         '
         'Button1
         '
@@ -96,12 +85,38 @@ Partial Class FileBrowser
         Me.匹配文件名ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
         Me.匹配文件名ToolStripMenuItem.Text = "匹配文件名"
         '
+        'TreeView1
+        '
+        Me.TreeView1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
+            Or System.Windows.Forms.AnchorStyles.Left) _
+            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.TreeView1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.TreeView1.CheckBoxes = True
+        Me.TreeView1.Location = New System.Drawing.Point(12, 12)
+        Me.TreeView1.Name = "TreeView1"
+        Me.TreeView1.Size = New System.Drawing.Size(776, 401)
+        Me.TreeView1.TabIndex = 0
+        '
+        'CheckBox1
+        '
+        Me.CheckBox1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CheckBox1.AutoSize = True
+        Me.CheckBox1.Checked = True
+        Me.CheckBox1.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox1.Location = New System.Drawing.Point(12, 426)
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.Size = New System.Drawing.Size(72, 16)
+        Me.CheckBox1.TabIndex = 3
+        Me.CheckBox1.Text = "CopyInfo"
+        Me.CheckBox1.UseVisualStyleBackColor = True
+        '
         'FileBrowser
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(800, 450)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.TreeView1)
@@ -109,6 +124,7 @@ Partial Class FileBrowser
         Me.Text = "FileBrowser"
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
+        Me.PerformLayout()
 
     End Sub
     Friend WithEvents ImageList1 As ImageList
@@ -119,4 +135,5 @@ Partial Class FileBrowser
     Friend WithEvents 全选ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 按大小ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 匹配文件名ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents CheckBox1 As CheckBox
 End Class
