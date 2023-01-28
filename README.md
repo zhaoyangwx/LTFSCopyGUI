@@ -17,3 +17,5 @@ LTFS文件排序复制工具
 新增复制功能，边校验边复制文件
 
 LtfsCommand from inaxeon/ltfscmd
+
+更多驱动器控制功能、SCSI命令直接发送、磁带标签修改
