@@ -309,6 +309,91 @@ BOOL TapeCheckMedia(LPCSTR tapeDrive, LPSTR mediaDesc, size_t len)
     return result;
 }
 
+BOOL _TapeSCSIIOCtl(LPCSTR tapeDrive, BYTE SCSIOPCode)
+{
+	CHAR drivePath[64];
+	HANDLE handle;
+	BOOL result = FALSE;
+	BYTE cdb[6];
+	
+	_snprintf_s(drivePath, _countof(drivePath), _TRUNCATE, "\\\\.\\%s", tapeDrive);
+	
+	handle = CreateFile(drivePath, GENERIC_READ | GENERIC_WRITE, 0 & (FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE), NULL, OPEN_EXISTING, 0, NULL);
+	
+	if (handle == INVALID_HANDLE_VALUE)
+	return FALSE;
+	
+	memset(cdb, 0, sizeof(cdb));
+	
+	((PCDB)(cdb))->START_STOP.OperationCode = SCSIOPCode;
+	((PCDB)(cdb))->START_STOP.Start = 1;
+	
+	result = ScsiIoControl(handle, 0, cdb, sizeof(cdb), NULL, 0, SCSI_IOCTL_DATA_UNSPECIFIED, 300, NULL);
+	
+	CloseHandle(handle);
+	
+	return result;
+}
+
+BOOL _TapeSCSIIOCtlFull(LPCSTR tapeDrive, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+{
+	CHAR drivePath[64];
+	HANDLE hFile;
+	BOOL result = FALSE;
+
+	_snprintf_s(drivePath, _countof(drivePath), _TRUNCATE, "\\\\.\\%s", tapeDrive);
+
+	hFile = CreateFile(drivePath, GENERIC_READ | GENERIC_WRITE, 0 & (FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE), NULL, OPEN_EXISTING, 0, NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	DWORD bytesReturned;
+	BYTE scsiBuffer[sizeof(SCSI_PASS_THROUGH_DIRECT) + SENSE_INFO_LEN];
+
+	PSCSI_PASS_THROUGH_DIRECT scsiDirect = (PSCSI_PASS_THROUGH_DIRECT)scsiBuffer;
+	memset(scsiDirect, 0, sizeof(scsiBuffer));
+
+	scsiDirect->Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
+	scsiDirect->CdbLength = cdbLength;
+	scsiDirect->DataBuffer = dataBuffer;
+	scsiDirect->SenseInfoLength = SENSE_INFO_LEN;
+	scsiDirect->SenseInfoOffset = sizeof(SCSI_PASS_THROUGH_DIRECT);
+	scsiDirect->DataTransferLength = bufferLength;
+	scsiDirect->TimeOutValue = timeoutValue;
+	scsiDirect->DataIn = dataIn;
+
+	memcpy(scsiDirect->Cdb, cdb, cdbLength);
+
+	result = DeviceIoControl(hFile, IOCTL_SCSI_PASS_THROUGH_DIRECT, scsiDirect, sizeof(scsiBuffer), scsiDirect, sizeof(scsiBuffer), &bytesReturned, NULL);
+
+	CloseHandle(hFile);
+	if (senseBuffer)
+		memcpy(senseBuffer, scsiBuffer + sizeof(SCSI_PASS_THROUGH_DIRECT), SENSE_INFO_LEN);
+
+	return result;
+}
+
+
+BOOL _TapeDeviceIOCtl(LPCSTR tapeDrive, DWORD DWIOCode) {
+	DWORD bytesReturned;
+	CHAR drivePath[64];
+	HANDLE handle;
+	BOOL result = FALSE;
+
+	_snprintf_s(drivePath, _countof(drivePath), _TRUNCATE, "\\\\.\\%s", tapeDrive);
+
+	handle = CreateFile(drivePath, GENERIC_READ | GENERIC_WRITE, 0 & (FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE), NULL, OPEN_EXISTING, 0, NULL);
+
+	if (handle == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	result = DeviceIoControl(handle, DWIOCode, NULL, 0, NULL, 0, &bytesReturned, NULL);
+
+	CloseHandle(handle);
+
+	return result;
+}
+
 BOOL TapeLoad(LPCSTR tapeDrive)
 {
     CHAR drivePath[64];
@@ -334,6 +419,7 @@ BOOL TapeLoad(LPCSTR tapeDrive)
 
     return result;
 }
+
 
 BOOL TapeEject(LPCSTR tapeDrive)
 {
@@ -366,6 +452,10 @@ BOOL TapeEject(LPCSTR tapeDrive)
     return result;
 }
 
+BOOL _ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+{
+	return ScsiIoControl(hFile, deviceNumber, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer);
+}
 
 static BOOL ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
 {
