@@ -53,11 +53,19 @@ Public Class Form1
                         Sub(nlist As List(Of TapeFileInfo))
                             If nlist Is alist Then
                                 alist.Sort(New Comparison(Of TapeFileInfo)(Function(a As TapeFileInfo, b As TapeFileInfo) As Integer
-                                                                               Return a.BlockNumber.CompareTo(b.BlockNumber)
+                                                                               If a.BlockNumber <> b.BlockNumber Then
+                                                                                   Return a.BlockNumber.CompareTo(b.BlockNumber)
+                                                                               Else
+                                                                                   Return a.Path.CompareTo(b.Path)
+                                                                               End If
                                                                            End Function))
                             ElseIf nlist Is blist Then
                                 blist.Sort(New Comparison(Of TapeFileInfo)(Function(a As TapeFileInfo, b As TapeFileInfo) As Integer
-                                                                               Return a.BlockNumber.CompareTo(b.BlockNumber)
+                                                                               If a.BlockNumber <> b.BlockNumber Then
+                                                                                   Return a.BlockNumber.CompareTo(b.BlockNumber)
+                                                                               Else
+                                                                                   Return a.Path.CompareTo(b.Path)
+                                                                               End If
                                                                            End Function))
                             End If
                         End Sub)

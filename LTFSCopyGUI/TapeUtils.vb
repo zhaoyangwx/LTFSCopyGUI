@@ -32,11 +32,95 @@ Public Class TapeUtils
     Private Shared Function _CheckTapeMedia(driveLetter As Char) As IntPtr
 
     End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Private Shared Function _ScsiIoControl(hFile As IntPtr,
+                                           deviceNumber As UInt32,
+                                           cdb As UIntPtr,
+                                           cdbLength As Byte,
+                                           dataBuffer As UIntPtr,
+                                           bufferLength As UInt16,
+                                           dataIn As Byte,
+                                           timeoutValue As UInt32,
+                                           senseBuffer As UIntPtr) As Boolean
 
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeSCSIIOCtlFull(tapeDrive As String,
+                                           cdb As IntPtr,
+                                           cdbLength As Byte,
+                                           dataBuffer As IntPtr,
+                                           bufferLength As UInt16,
+                                           dataIn As Byte,
+                                           timeoutValue As UInt32,
+                                           senseBuffer As IntPtr) As Boolean
+
+    End Function
+    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing) As Boolean
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+
+        Dim dataBufferPtr As IntPtr
+        Dim dataLen As Integer = 0
+        If Data IsNot Nothing Then
+            dataLen = Data.Length
+            dataBufferPtr = Marshal.AllocHGlobal(Data.Length)
+            Marshal.Copy(Data, 0, dataBufferPtr, Data.Length)
+        Else
+            dataBufferPtr = Marshal.AllocHGlobal(127)
+        End If
+
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(127)
+
+        Dim senseBuffer(127) As Byte
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, 2, 300, senseBufferPtr)
+        'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(dataBufferPtr)
+        Marshal.FreeHGlobal(senseBufferPtr)
+        Return succ
+    End Function
+    Structure LPSECURITY_ATTRIBUTES
+        Dim nLength As UInt32
+        Dim lpSecurityDescriptor As UIntPtr
+        Dim bInheritHandle As Boolean
+    End Structure
+
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Private Shared Function _CreateFile(lpFileName As String,
+                                        dwDesiredAccess As UInt32,
+                                        dwShareMode As UInt32,
+                                        lpSecurityAttributes As IntPtr,
+                                        dwCreationDisposition As UInt32,
+                                        dwFlagsAndAttributes As UInt32,
+                                        hTemplateFile As IntPtr
+    ) As IntPtr
+
+    End Function
+    Public Shared Function CreateFile(lpFileName As String,
+                                        dwDesiredAccess As UInt32,
+                                        dwShareMode As UInt32,
+                                        lpSecurityAttributes As LPSECURITY_ATTRIBUTES,
+                                        dwCreationDisposition As UInt32,
+                                        dwFlagsAndAttributes As UInt32,
+                                        hTemplateFile As IntPtr)
+        Dim lpSecurityAttributesPtr As IntPtr
+        Marshal.StructureToPtr(lpSecurityAttributes, lpSecurityAttributesPtr, True)
+        Return _CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributesPtr, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeSCSIIOCtl(tapeDrive As String, SCSIOPCode As Byte) As IntPtr
+
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeDeviceIOCtl(tapeDrive As String, DWIOCode As UInt32) As IntPtr
+
+    End Function
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
     Private Shared Function _Test(ByVal a As Char) As IntPtr
 
     End Function
+
+
     Public Const DEFAULT_LOG_DIR As String = "C:\ProgramData\HPE\LTFS"
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
     Public Shared Function GetTapeDriveList() As List(Of TapeDrive)
