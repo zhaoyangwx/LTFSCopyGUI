@@ -206,7 +206,11 @@ Public Class IOManager
                                                                          If a.extentinfo(0).partition <> b.extentinfo(0).partition Then
                                                                              Return a.extentinfo(0).partition.CompareTo(b.extentinfo(0).partition)
                                                                          End If
-                                                                         Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
+                                                                         If a.extentinfo(0).startblock <> b.extentinfo(0).startblock Then
+                                                                             Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
+                                                                         Else
+                                                                             Return a.name.CompareTo(b.name)
+                                                                         End If
                                                                      End Function))
                         RaiseEvent ProgressReport("#max" & 10000)
                         RaiseEvent ProgressReport("#tmax" & flist.Count)

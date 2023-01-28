@@ -6,6 +6,8 @@ Public Class HashTaskWindow
     Private tval, tmax, dval, dmax, ssum, smax As Long
     Private ddelta, fdelta As Long
     Private _BaseDirectory As String
+    Public LogEnabled As Boolean = True
+    Public StartTime As String = Now.ToString("yyyyMMdd_hhmmss")
     Public Property BaseDirectory As String
         Set(value As String)
             _BaseDirectory = value
@@ -29,10 +31,12 @@ Public Class HashTaskWindow
             Me.Invoke(Sub()
                           'If TextBox1.Text.Length > 20000 Then TextBox1.Text = Mid(TextBox1.Text, 18000)
 
-                          TextBox1.AppendText(vbCrLf & Message)
+                          TextBox1.AppendText(Message & vbCrLf)
                           'TextBox1.Select(TextBox1.Text.Length, 0)
                           'TextBox1.ScrollToCaret()
-
+                          If LogEnabled Then
+                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log_" & StartTime & ".txt"), Message & vbCrLf, True)
+                          End If
                       End Sub)
         Catch ex As Exception
 
