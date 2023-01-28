@@ -13,3 +13,8 @@ _EjectTapeDrive
 _MountTapeDrive
 _CheckTapeMedia
 _Test
+_ScsiIoControl
+_CreateFile
+_TapeSCSIIOCtl
+_TapeDeviceIOCtl
+_TapeSCSIIOCtlFull
