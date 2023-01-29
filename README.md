@@ -19,3 +19,7 @@ LTFS文件排序复制工具
 LtfsCommand from inaxeon/ltfscmd
 
 更多驱动器控制功能、SCSI命令直接发送、磁带标签修改
+
+
+
+欢迎加入LTO磁带技术交流QQ群 433387693
