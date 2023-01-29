@@ -2,7 +2,7 @@
 
 ![LTFSCopyGUIIcon](https://user-images.githubusercontent.com/32697586/177280874-14110415-bd43-4e54-94fa-e8a16673d755.png)
 
-LTFS文件排序复制工具
+## LTFS文件排序复制工具
 
 适用HP LTFS
 
@@ -21,7 +21,7 @@ LtfsCommand from inaxeon/ltfscmd
 更多驱动器控制功能、SCSI命令直接发送、磁带标签修改
 
 
+---
 
 
-
-欢迎加入LTO磁带技术交流QQ群 433387693
+**欢迎加入LTO磁带技术交流QQ群 433387693**
