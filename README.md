@@ -18,7 +18,7 @@
 
 LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
-更多驱动器控制功能、SCSI命令直接发送、磁带标签修改
+更多驱动器控制功能、SCSI命令直接发送、磁带标签修改、磁带信息读取
 
 
 ---
