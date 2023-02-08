@@ -1,2 +1,0 @@
-C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x64\Debug\LTFSCopyGUI.vbprojAssemblyReference.cache
-C:\Users\Administrator\Source\Repos\LTFSCopyGUI\LTFSCopyGUI\obj\x64\Debug\Interop.TeeChart.dll
