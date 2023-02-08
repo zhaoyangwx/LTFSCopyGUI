@@ -335,7 +335,7 @@ BOOL _TapeSCSIIOCtl(LPCSTR tapeDrive, BYTE SCSIOPCode)
 	return result;
 }
 
-BOOL _TapeSCSIIOCtlFull(LPCSTR tapeDrive, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+BOOL _TapeSCSIIOCtlFull(LPCSTR tapeDrive, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, ULONG bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
 {
 	CHAR drivePath[64];
 	HANDLE hFile;
@@ -452,12 +452,12 @@ BOOL TapeEject(LPCSTR tapeDrive)
     return result;
 }
 
-BOOL _ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+BOOL _ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, ULONG bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
 {
 	return ScsiIoControl(hFile, deviceNumber, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer);
 }
 
-static BOOL ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, USHORT bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+static BOOL ScsiIoControl(HANDLE hFile, DWORD deviceNumber, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, ULONG bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
 {
     DWORD bytesReturned;
     BOOL result = FALSE;
