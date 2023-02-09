@@ -394,27 +394,98 @@ Public Class LTFSConfigurator
             Dim dL As Char = ComboBox1.Text
             Dim th As New Threading.Thread(
                 Sub()
-                    Dim result As String = ""
+                    Invoke(Sub() TextBox8.Text = "Start erase ..." & vbCrLf)
                     Try
                         'result = TapeUtils.LoadTapeDrive(dL, True)
+
+                        'Load and Thread
+                        Invoke(Sub() TextBox8.AppendText("Loading.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 1, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
+
+                        'Mode Select:1st Partition to Minimum 
+                        Invoke(Sub() TextBox8.AppendText("MODE SELECT.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H15, 0, 0, 0, 0, &HC, 0}, {&H11, &HC, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
+
+                        'Format
+                        Invoke(Sub() TextBox8.AppendText("Partitioning.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {4, 0, 1, 0, 0, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
                         For i As Integer = 1 To NumericUpDown6.Value
-                            result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, &HA, 0}) 'Unthread
-                            result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 1, 0}) 'Thread
-                            result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H19, 1, 0, 0, 0, 0}) 'Erase
+                            'Unthread
+                            Invoke(Sub() TextBox8.AppendText("Unthreading.."))
+                            If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, &HA, 0}) Then
+                                Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                            Else
+                                Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                                Exit Try
+                            End If
+                            'Thread
+                            Invoke(Sub() TextBox8.AppendText("Threading.."))
+                            If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 1, 0}) Then
+                                Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                            Else
+                                Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                                Exit Try
+                            End If
+                            'Erase
+                            Invoke(Sub() TextBox8.AppendText("Erasing " & i & "/" & NumericUpDown6.Value & ".."))
+                            If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H19, 1, 0, 0, 0, 0}) Then
+                                Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                            Else
+                                Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                                Exit Try
+                            End If
                         Next
-                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, &HA, 0}) 'Unthread
-                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 1, 0}) 'Thread
-                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {4, 0, 0, 0, 0, 0}) 'Remove Partition
-                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 0, 0}) 'Unload
-                        result = result.Replace("True", "").Replace("False", "Failed")
+                        'Unthread
+                        Invoke(Sub() TextBox8.AppendText("Unthreading.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, &HA, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
+                        'Thread
+                        Invoke(Sub() TextBox8.AppendText("Threading.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 1, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
+                        'Remove Partition
+                        Invoke(Sub() TextBox8.AppendText("Reinitializing.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {4, 0, 0, 0, 0, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
+                        'Unload
+                        Invoke(Sub() TextBox8.AppendText("Unloading.."))
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H1B, 0, 0, 0, 0, 0}) Then
+                            Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
+                        Else
+                            Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
+                            Exit Try
+                        End If
                     Catch ex As Exception
-                        result = ex.ToString()
+                        Invoke(Sub() TextBox8.AppendText(ex.ToString()))
                     End Try
-                    Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已进仓"
-                               result &= vbCrLf
-                               TextBox2.AppendText(result)
-                           End Sub)
+                    Invoke(Sub() TextBox8.AppendText("Erase finished."))
                     Invoke(Sub()
                                Panel1.Enabled = True
                                RefreshUI()
@@ -442,7 +513,7 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String = ""
                     Try
-                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, cdb, data)
+                        result &= TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, cdb, data, 0)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
