@@ -297,7 +297,7 @@ Public Class TapeUtils
             Return sb.ToString
         End Function
     End Class
-    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing) As Boolean
+    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2) As Boolean
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
 
@@ -311,10 +311,10 @@ Public Class TapeUtils
             dataBufferPtr = Marshal.AllocHGlobal(128)
         End If
 
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(128)
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
-        Dim senseBuffer(127) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, 2, 60000, senseBufferPtr)
+        Dim senseBuffer(64) As Byte
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, 60000, senseBufferPtr)
         'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBufferPtr)
