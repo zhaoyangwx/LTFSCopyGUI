@@ -303,7 +303,8 @@ Public Class LTFSConfigurator
                                   TextBox8.Text = "DataBuffer" & vbCrLf
                                   TextBox8.Text &= Byte2Hex(dataData)
                                   TextBox8.Text &= vbCrLf & vbCrLf & "SenseBuffer" & vbCrLf
-                                  TextBox8.Text &= Byte2Hex(senseBuffer)
+                                  TextBox8.Text &= Byte2Hex(senseBuffer) & vbCrLf
+                                  TextBox8.Text &= TapeUtils.ParseSenseData(senseBuffer) & vbCrLf
                               End Sub)
                     'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
                     Marshal.FreeHGlobal(cdb)
@@ -409,7 +410,7 @@ Public Class LTFSConfigurator
 
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT.."))
-                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H15, 0, 0, 0, 0, &HC, 0}, {&H11, &HC, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}) Then
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -418,7 +419,7 @@ Public Class LTFSConfigurator
 
                         'Format
                         Invoke(Sub() TextBox8.AppendText("Partitioning.."))
-                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {4, 0, 1, 0, 0, 0}) Then
+                        If TapeUtils.SendSCSICommand("\\.\TAPE" & CurDrive.DevIndex, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
