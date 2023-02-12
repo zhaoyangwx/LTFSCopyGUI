@@ -68,7 +68,19 @@ Public Class TapeUtils
         Return ReadMAMAttributeString(tapeDrive, 8, 6)
     End Function
 
-    Public Shared Function RawDump(TapeDrive As String, BufferID As Byte) As Byte()
+    Public Class BlockLimits
+        Public MaximumBlockLength As UInt64
+        Public MinimumBlockLength As UInt16
+        Public Shared Widening Operator CType(data As BlockLimits) As UInt64
+            Return data.MaximumBlockLength
+        End Operator
+    End Class
+    Public Shared Function ReadBlockLimits(tapeDrive As String) As BlockLimits
+        Dim data As Byte() = SCSIReadParam(tapeDrive, {5, 0, 0, 0, 0, 0}, 6)
+        Return New BlockLimits With {.MaximumBlockLength = CULng(data(1)) << 16 Or CULng(data(2)) << 8 Or data(3),
+            .MinimumBlockLength = CUShort(data(4)) << 8 Or data(5)}
+    End Function
+    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte) As Byte()
         'Get EEPROM buffer Length
         Dim cdbD0 As Byte() = {&H3C, 3, BufferID, 0, 0, 0, 0, 0, 4, 0}
         Dim lenData As Byte() = {0, 0, 0, 0}
@@ -101,7 +113,354 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(sense)
         Return dumpData
     End Function
+    Public Shared Function ReadBlock(TapeDrive As String, ByRef sense As Byte(), Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
+        Dim senseRaw(63) As Byte
+        Dim RawData As Byte() = SCSIReadParam(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+                                              BlockSizeLimit, Function(senseData As Byte()) As Boolean
+                                                                  senseRaw = senseData
+                                                                  Return True
+                                                              End Function)
+        sense = senseRaw
+        Dim DiffBytes As Int32 = CLng(sense(3)) << 24 Or CLng(sense(4)) << 16 Or CLng(sense(5)) << 8 Or sense(6)
+        If DiffBytes > 0 Then
+            Return RawData.Take(RawData.Length - DiffBytes).ToArray
+        Else
+            Return RawData
+        End If
+    End Function
 
+    Public Shared Function ReadEOWPosition(TapeDrive As String) As Byte()
+        Dim lenData As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, 0, 2, 0, 0}, 2)
+        Dim rawParam As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, lenData(0), lenData(1), 0, 0}, CInt(lenData(0)) << 8 Or lenData(1))
+        Return rawParam.Skip(4).ToArray()
+    End Function
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte) As UInt16
+        Dim sense(63) As Byte
+        Dim d As Byte() = SCSIReadParam(TapeDrive, {&H2B, 2, 0,
+                                        BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                        0, Partition, 0}, 64, Function(senseData As Byte()) As Boolean
+                                                                  sense = senseData
+                                                                  Return True
+                                                              End Function)
+        Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+        Return Add_Code
+    End Function
+    Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+        Dim paramData(paramLen - 1) As Byte
+        Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(paramLen)
+        Marshal.Copy(paramData, 0, dataBuffer, paramLen)
+        Dim senseData(63) As Byte
+        Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
+        _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        Marshal.Copy(dataBuffer, paramData, 0, paramLen)
+        Marshal.Copy(senseBuffer, senseData, 0, 64)
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(dataBuffer)
+        Marshal.FreeHGlobal(senseBuffer)
+        If senseReport IsNot Nothing Then senseReport(senseData)
+        Return paramData
+    End Function
+    Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, 4, 0}, 4)
+        Dim PageLen As Byte = Header(0)
+        Dim DescripterLen As Byte = Header(3)
+        Return SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, PageLen + 1, 0}, PageLen + 1, senseReport).Skip(4 + DescripterLen).ToArray()
+    End Function
+    Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
+        Dim Msg As String = ""
+        Select Case Add_Code
+            Case &H0
+                Msg &= "No addition sense"
+            Case &H1
+                Msg &= "Filemark detected"
+            Case &H2
+                Msg &= "End of Tape detected"
+            Case &H4
+                Msg &= "Beginning of Tape detected"
+            Case &H5
+                Msg &= "End of Data detected"
+            Case &H16
+                Msg &= "Operation in progress"
+            Case &H18
+                Msg &= "Erase operation in progress"
+            Case &H19
+                Msg &= "Locate operation in progress"
+            Case &H1A
+                Msg &= "Rewind operation in progress"
+            Case &H400
+                Msg &= "LUN not ready, cause not reportable"
+            Case &H401
+                Msg &= "LUN in process of becoming ready"
+            Case &H402
+                Msg &= "LUN not ready, Initializing command required"
+            Case &H404
+                Msg &= "LUN not ready, format in progress"
+            Case &H407
+                Msg &= "Command in progress"
+            Case &H409
+                Msg &= "LUN not ready, self-test in progress"
+            Case &H40C
+                Msg &= "LUN not accessible, port in unavailable state"
+            Case &H412
+                Msg &= "Logical unit offline"
+            Case &H800
+                Msg &= "Logical unit communication failure"
+            Case &HB00
+                Msg &= "Warning"
+            Case &HB01
+                Msg &= "Thermal limit exceeded"
+            Case &HC00
+                Msg &= "Write error"
+            Case &HE01
+                Msg &= "Information unit too short"
+            Case &HE02
+                Msg &= "Information unit too long"
+            Case &HE03
+                Msg &= "SK Illegal Request"
+            Case &H1001
+                Msg &= "Logical block guard check failed"
+            Case &H1100
+                Msg &= "Unrecovered read error"
+            Case &H1112
+                Msg &= "Media Auxiliary Memory read error"
+            Case &H1400
+                Msg &= "Recorded entity not found"
+            Case &H1403
+                Msg &= "End of Data not found"
+            Case &H1A00
+                Msg &= "Parameter list length error"
+            Case &H2000
+                Msg &= "Invalid command operation code"
+            Case &H2400
+                Msg &= "Invalid field in Command Descriptor Block"
+            Case &H2500
+                Msg &= "LUN not supported"
+            Case &H2600
+                Msg &= "Invalid field in parameter list"
+            Case &H2601
+                Msg &= "Parameter not supported"
+            Case &H2602
+                Msg &= "Parameter value invalid"
+            Case &H2604
+                Msg &= "Invalid release of persistent reservation"
+            Case &H2610
+                Msg &= "Data decryption key fail limit reached"
+            Case &H2680
+                Msg &= "Invalid CA certificate"
+            Case &H2700
+                Msg &= "Write-protected"
+            Case &H2708
+                Msg &= "Too many logical objects on partition to support operation"
+            Case &H2800
+                Msg &= "Not ready to ready transition, medium may have changed"
+            Case &H2901
+                Msg &= "Power-on reset"
+            Case &H2902
+                Msg &= "SCSI bus reset"
+            Case &H2903
+                Msg &= "Bus device reset"
+            Case &H2904
+                Msg &= "Internal firmware reboot"
+            Case &H2907
+                Msg &= "I_T nexus loss occurred"
+            Case &H2A01
+                Msg &= "Mode parameters changed"
+            Case &H2A02
+                Msg &= "Log parameters changed"
+            Case &H2A03
+                Msg &= "Reservations pre-empted"
+            Case &H2A04
+                Msg &= "Reservations released"
+            Case &H2A05
+                Msg &= "Registrations pre-empted"
+            Case &H2A06
+                Msg &= "Asymmetric access state changed"
+            Case &H2A07
+                Msg &= "Asymmetric access state transition failed"
+            Case &H2A08
+                Msg &= "Priority changed"
+            Case &H2A0D
+                Msg &= "Data encryption capabilities changed"
+            Case &H2A10
+                Msg &= "Timestamp changed"
+            Case &H2A11
+                Msg &= "Data encryption parameters changed by another initiator"
+            Case &H2A12
+                Msg &= "Data encryption parameters changed by a vendor-specific event"
+            Case &H2A13
+                Msg &= "Data Encryption Key Instance Counter has changed"
+            Case &H2A14
+                Msg &= "SA creation capabilities data has changed"
+            Case &H2A15
+                Msg &= "Medium removal prevention pre-empted"
+            Case &H2A80
+                Msg &= "Security configuration changed"
+            Case &H2C00
+                Msg &= "Command sequence invalid"
+            Case &H2C07
+                Msg &= "Previous busy status"
+            Case &H2C08
+                Msg &= "Previous task set full status"
+            Case &H2C09
+                Msg &= "Previous reservation conflict status"
+            Case &H2C0B
+                Msg &= "Not reserved"
+            Case &H2F00
+                Msg &= "Commands cleared by another initiator"
+            Case &H3000
+                Msg &= "Incompatible medium installed"
+            Case &H3001
+                Msg &= "Cannot read media, unknown format"
+            Case &H3002
+                Msg &= "Cannot read media: incompatible format"
+            Case &H3003
+                Msg &= "Cleaning cartridge installed"
+            Case &H3004
+                Msg &= "Cannot write medium"
+            Case &H3005
+                Msg &= "Cannot write medium, incompatible format"
+            Case &H3006
+                Msg &= "Cannot format, incompatible medium"
+            Case &H3007
+                Msg &= "Cleaning failure"
+            Case &H300C
+                Msg &= "WORM medium—overwrite attempted"
+            Case &H300D
+                Msg &= "WORM medium—integrity check failed"
+            Case &H3100
+                Msg &= "Medium format corrupted"
+            Case &H3700
+                Msg &= "Rounded parameter"
+            Case &H3A00
+                Msg &= "Medium not present"
+            Case &H3A04
+                Msg &= "Medium not present, Media Auxiliary Memory accessible"
+            Case &H3B00
+                Msg &= "Sequential positioning error"
+            Case &H3B0C
+                Msg &= "Position past BOM"
+            Case &H3B1C
+                Msg &= "Too many logical objects on partition to support operation."
+            Case &H3E00
+                Msg &= "Logical unit has not self-configured yet"
+            Case &H3F01
+                Msg &= "Microcode has been changed"
+            Case &H3F03
+                Msg &= "Inquiry data has changed"
+            Case &H3F05
+                Msg &= "Device identifier changed"
+            Case &H3F0E
+                Msg &= "Reported LUNs data has changed"
+            Case &H3F0F
+                Msg &= "Echo buffer overwritten"
+            Case &H4300
+                Msg &= "Message error"
+            Case &H4400
+                Msg &= "Internal target failure"
+            Case &H4500
+                Msg &= "Selection/reselection failure"
+            Case &H4700
+                Msg &= "SCSI parity error"
+            Case &H4800
+                Msg &= "Initiator Detected Error message received"
+            Case &H4900
+                Msg &= "Invalid message"
+            Case &H4B00
+                Msg &= "Data phase error"
+            Case &H4B02
+                Msg &= "Too much write data"
+            Case &H4B03
+                Msg &= "ACK/NAK timeout"
+            Case &H4B04
+                Msg &= "NAK received"
+            Case &H4B05
+                Msg &= "Data offset error"
+            Case &H4B06
+                Msg &= "Initiator response timeout"
+            Case &H4D00
+                Msg &= "Tagged overlapped command"
+            Case &H4E00
+                Msg &= "Overlapped commands"
+            Case &H5000
+                Msg &= "Write append error"
+            Case &H5200
+                Msg &= "Cartridge fault"
+            Case &H5300
+                Msg &= "Media load or eject failed"
+            Case &H5301
+                Msg &= "Unload tape failure"
+            Case &H5302
+                Msg &= "Medium removal prevented"
+            Case &H5303
+                Msg &= "Insufficient resources"
+            Case &H5304
+                Msg &= "Medium thread or unthread failure"
+            Case &H5504
+                Msg &= "Insufficient registration resources"
+            Case &H5506
+                Msg &= "Media Auxiliary Memory full"
+            Case &H5B01
+                Msg &= "Threshold condition met"
+            Case &H5D00
+                Msg &= "Failure prediction threshold exceeded"
+            Case &H5DFF
+                Msg &= "Failure prediction threshold exceeded (false)"
+            Case &H5E01
+                Msg &= "Idle condition activated by timer"
+            Case &H7400
+                Msg &= "Security error"
+            Case &H7401
+                Msg &= "Unable to decrypt data"
+            Case &H7402
+                Msg &= "Unencrypted data encountered while decrypting"
+            Case &H7403
+                Msg &= "Incorrect data encryption key"
+            Case &H7404
+                Msg &= "Cryptographic integrity validation failed"
+            Case &H7405
+                Msg &= "Key-associated data descriptors changed."
+            Case &H7408
+                Msg &= "Digital signature validation failure"
+            Case &H7409
+                Msg &= "Encryption mode mismatch on read"
+            Case &H740A
+                Msg &= "Encrypted block not RAW read-enabled"
+            Case &H740B
+                Msg &= "Incorrect encryption parameters"
+            Case &H7421
+                Msg &= "Data encryption configuration prevented"
+            Case &H7440
+                Msg &= "Authentication failed"
+            Case &H7461
+                Msg &= "External data encryption Key Manager access error"
+            Case &H7462
+                Msg &= "External data encryption Key Manager error"
+            Case &H7463
+                Msg &= "External data encryption management—key not found"
+            Case &H7464
+                Msg &= "External data encryption management—request not authorized"
+            Case &H746E
+                Msg &= "External data encryption control time-out"
+            Case &H746F
+                Msg &= "External data encryption control unknown error"
+            Case &H7471
+                Msg &= "Logical Unit access not authorized"
+            Case &H7480
+                Msg &= "KAD changed"
+            Case &H7482
+                Msg &= "Crypto KAD in CM failure"
+            Case &H8282
+                Msg &= "Drive requires cleaning"
+            Case &H8283
+                Msg &= "Bad microcode detected"
+        End Select
+        If Add_Code >> 8 = &H40 Then
+            Msg &= "Diagnostic failure on component " & Hex(Add_Code And &HFF) & "h"
+        End If
+        Return Msg
+    End Function
     Public Shared Function ParseSenseData(sense As Byte()) As String
         Dim Msg As String = ""
         Dim Fixed As Boolean = False
@@ -183,295 +542,7 @@ Public Class TapeUtils
             End If
         End If
         Msg &= "Additional code: "
-        Select Case Add_Code
-            Case &H0
-                Msg &= "No addition sense" & vbCrLf
-            Case &H1
-                Msg &= "Filemark detected" & vbCrLf
-            Case &H2
-                Msg &= "End of Tape detected" & vbCrLf
-            Case &H4
-                Msg &= "Beginning of Tape detected" & vbCrLf
-            Case &H5
-                Msg &= "End of Data detected" & vbCrLf
-            Case &H16
-                Msg &= "Operation in progress" & vbCrLf
-            Case &H18
-                Msg &= "Erase operation in progress" & vbCrLf
-            Case &H19
-                Msg &= "Locate operation in progress" & vbCrLf
-            Case &H1A
-                Msg &= "Rewind operation in progress" & vbCrLf
-            Case &H400
-                Msg &= "LUN not ready, cause not reportable" & vbCrLf
-            Case &H401
-                Msg &= "LUN in process of becoming ready" & vbCrLf
-            Case &H402
-                Msg &= "LUN not ready, Initializing command required" & vbCrLf
-            Case &H404
-                Msg &= "LUN not ready, format in progress" & vbCrLf
-            Case &H407
-                Msg &= "Command in progress" & vbCrLf
-            Case &H409
-                Msg &= "LUN not ready, self-test in progress" & vbCrLf
-            Case &H40C
-                Msg &= "LUN not accessible, port in unavailable state" & vbCrLf
-            Case &H412
-                Msg &= "Logical unit offline" & vbCrLf
-            Case &H800
-                Msg &= "Logical unit communication failure" & vbCrLf
-            Case &HB00
-                Msg &= "Warning" & vbCrLf
-            Case &HB01
-                Msg &= "Thermal limit exceeded" & vbCrLf
-            Case &HC00
-                Msg &= "Write error" & vbCrLf
-            Case &HE01
-                Msg &= "Information unit too short" & vbCrLf
-            Case &HE02
-                Msg &= "Information unit too long" & vbCrLf
-            Case &HE03
-                Msg &= "SK Illegal Request" & vbCrLf
-            Case &H1001
-                Msg &= "Logical block guard check failed" & vbCrLf
-            Case &H1100
-                Msg &= "Unrecovered read error" & vbCrLf
-            Case &H1112
-                Msg &= "Media Auxiliary Memory read error" & vbCrLf
-            Case &H1400
-                Msg &= "Recorded entity not found" & vbCrLf
-            Case &H1403
-                Msg &= "End of Data not found" & vbCrLf
-            Case &H1A00
-                Msg &= "Parameter list length error" & vbCrLf
-            Case &H2000
-                Msg &= "Invalid command operation code" & vbCrLf
-            Case &H2400
-                Msg &= "Invalid field in Command Descriptor Block" & vbCrLf
-            Case &H2500
-                Msg &= "LUN not supported" & vbCrLf
-            Case &H2600
-                Msg &= "Invalid field in parameter list" & vbCrLf
-            Case &H2601
-                Msg &= "Parameter not supported" & vbCrLf
-            Case &H2602
-                Msg &= "Parameter value invalid" & vbCrLf
-            Case &H2604
-                Msg &= "Invalid release of persistent reservation" & vbCrLf
-            Case &H2610
-                Msg &= "Data decryption key fail limit reached" & vbCrLf
-            Case &H2680
-                Msg &= "Invalid CA certificate" & vbCrLf
-            Case &H2700
-                Msg &= "Write-protected" & vbCrLf
-            Case &H2708
-                Msg &= "Too many logical objects on partition to support operation" & vbCrLf
-            Case &H2800
-                Msg &= "Not ready to ready transition, medium may have changed" & vbCrLf
-            Case &H2901
-                Msg &= "Power-on reset" & vbCrLf
-            Case &H2902
-                Msg &= "SCSI bus reset" & vbCrLf
-            Case &H2903
-                Msg &= "Bus device reset" & vbCrLf
-            Case &H2904
-                Msg &= "Internal firmware reboot" & vbCrLf
-            Case &H2907
-                Msg &= "I_T nexus loss occurred" & vbCrLf
-            Case &H2A01
-                Msg &= "Mode parameters changed" & vbCrLf
-            Case &H2A02
-                Msg &= "Log parameters changed" & vbCrLf
-            Case &H2A03
-                Msg &= "Reservations pre-empted" & vbCrLf
-            Case &H2A04
-                Msg &= "Reservations released" & vbCrLf
-            Case &H2A05
-                Msg &= "Registrations pre-empted" & vbCrLf
-            Case &H2A06
-                Msg &= "Asymmetric access state changed" & vbCrLf
-            Case &H2A07
-                Msg &= "Asymmetric access state transition failed" & vbCrLf
-            Case &H2A08
-                Msg &= "Priority changed" & vbCrLf
-            Case &H2A0D
-                Msg &= "Data encryption capabilities changed" & vbCrLf
-            Case &H2A10
-                Msg &= "Timestamp changed" & vbCrLf
-            Case &H2A11
-                Msg &= "Data encryption parameters changed by another initiator" & vbCrLf
-            Case &H2A12
-                Msg &= "Data encryption parameters changed by a vendor-specific event" & vbCrLf
-            Case &H2A13
-                Msg &= "Data Encryption Key Instance Counter has changed" & vbCrLf
-            Case &H2A14
-                Msg &= "SA creation capabilities data has changed" & vbCrLf
-            Case &H2A15
-                Msg &= "Medium removal prevention pre-empted" & vbCrLf
-            Case &H2A80
-                Msg &= "Security configuration changed" & vbCrLf
-            Case &H2C00
-                Msg &= "Command sequence invalid" & vbCrLf
-            Case &H2C07
-                Msg &= "Previous busy status" & vbCrLf
-            Case &H2C08
-                Msg &= "Previous task set full status" & vbCrLf
-            Case &H2C09
-                Msg &= "Previous reservation conflict status" & vbCrLf
-            Case &H2C0B
-                Msg &= "Not reserved" & vbCrLf
-            Case &H2F00
-                Msg &= "Commands cleared by another initiator" & vbCrLf
-            Case &H3000
-                Msg &= "Incompatible medium installed" & vbCrLf
-            Case &H3001
-                Msg &= "Cannot read media, unknown format" & vbCrLf
-            Case &H3002
-                Msg &= "Cannot read media: incompatible format" & vbCrLf
-            Case &H3003
-                Msg &= "Cleaning cartridge installed" & vbCrLf
-            Case &H3004
-                Msg &= "Cannot write medium" & vbCrLf
-            Case &H3005
-                Msg &= "Cannot write medium, incompatible format" & vbCrLf
-            Case &H3006
-                Msg &= "Cannot format, incompatible medium" & vbCrLf
-            Case &H3007
-                Msg &= "Cleaning failure" & vbCrLf
-            Case &H300C
-                Msg &= "WORM medium—overwrite attempted" & vbCrLf
-            Case &H300D
-                Msg &= "WORM medium—integrity check failed" & vbCrLf
-            Case &H3100
-                Msg &= "Medium format corrupted" & vbCrLf
-            Case &H3700
-                Msg &= "Rounded parameter" & vbCrLf
-            Case &H3A00
-                Msg &= "Medium not present" & vbCrLf
-            Case &H3A04
-                Msg &= "Medium not present, Media Auxiliary Memory accessible" & vbCrLf
-            Case &H3B00
-                Msg &= "Sequential positioning error" & vbCrLf
-            Case &H3B0C
-                Msg &= "Position past BOM" & vbCrLf
-            Case &H3B1C
-                Msg &= "Too many logical objects on partition to support operation." & vbCrLf
-            Case &H3E00
-                Msg &= "Logical unit has not self-configured yet" & vbCrLf
-            Case &H3F01
-                Msg &= "Microcode has been changed" & vbCrLf
-            Case &H3F03
-                Msg &= "Inquiry data has changed" & vbCrLf
-            Case &H3F05
-                Msg &= "Device identifier changed" & vbCrLf
-            Case &H3F0E
-                Msg &= "Reported LUNs data has changed" & vbCrLf
-            Case &H3F0F
-                Msg &= "Echo buffer overwritten" & vbCrLf
-            Case &H4300
-                Msg &= "Message error" & vbCrLf
-            Case &H4400
-                Msg &= "Internal target failure" & vbCrLf
-            Case &H4500
-                Msg &= "Selection/reselection failure" & vbCrLf
-            Case &H4700
-                Msg &= "SCSI parity error" & vbCrLf
-            Case &H4800
-                Msg &= "Initiator Detected Error message received" & vbCrLf
-            Case &H4900
-                Msg &= "Invalid message" & vbCrLf
-            Case &H4B00
-                Msg &= "Data phase error" & vbCrLf
-            Case &H4B02
-                Msg &= "Too much write data" & vbCrLf
-            Case &H4B03
-                Msg &= "ACK/NAK timeout" & vbCrLf
-            Case &H4B04
-                Msg &= "NAK received" & vbCrLf
-            Case &H4B05
-                Msg &= "Data offset error" & vbCrLf
-            Case &H4B06
-                Msg &= "Initiator response timeout" & vbCrLf
-            Case &H4D00
-                Msg &= "Tagged overlapped command" & vbCrLf
-            Case &H4E00
-                Msg &= "Overlapped commands" & vbCrLf
-            Case &H5000
-                Msg &= "Write append error" & vbCrLf
-            Case &H5200
-                Msg &= "Cartridge fault" & vbCrLf
-            Case &H5300
-                Msg &= "Media load or eject failed" & vbCrLf
-            Case &H5301
-                Msg &= "Unload tape failure" & vbCrLf
-            Case &H5302
-                Msg &= "Medium removal prevented" & vbCrLf
-            Case &H5303
-                Msg &= "Insufficient resources" & vbCrLf
-            Case &H5304
-                Msg &= "Medium thread or unthread failure" & vbCrLf
-            Case &H5504
-                Msg &= "Insufficient registration resources" & vbCrLf
-            Case &H5506
-                Msg &= "Media Auxiliary Memory full" & vbCrLf
-            Case &H5B01
-                Msg &= "Threshold condition met" & vbCrLf
-            Case &H5D00
-                Msg &= "Failure prediction threshold exceeded" & vbCrLf
-            Case &H5DFF
-                Msg &= "Failure prediction threshold exceeded (false)" & vbCrLf
-            Case &H5E01
-                Msg &= "Idle condition activated by timer" & vbCrLf
-            Case &H7400
-                Msg &= "Security error" & vbCrLf
-            Case &H7401
-                Msg &= "Unable to decrypt data" & vbCrLf
-            Case &H7402
-                Msg &= "Unencrypted data encountered while decrypting" & vbCrLf
-            Case &H7403
-                Msg &= "Incorrect data encryption key" & vbCrLf
-            Case &H7404
-                Msg &= "Cryptographic integrity validation failed" & vbCrLf
-            Case &H7405
-                Msg &= "Key-associated data descriptors changed." & vbCrLf
-            Case &H7408
-                Msg &= "Digital signature validation failure" & vbCrLf
-            Case &H7409
-                Msg &= "Encryption mode mismatch on read" & vbCrLf
-            Case &H740A
-                Msg &= "Encrypted block not RAW read-enabled" & vbCrLf
-            Case &H740B
-                Msg &= "Incorrect encryption parameters" & vbCrLf
-            Case &H7421
-                Msg &= "Data encryption configuration prevented" & vbCrLf
-            Case &H7440
-                Msg &= "Authentication failed" & vbCrLf
-            Case &H7461
-                Msg &= "External data encryption Key Manager access error" & vbCrLf
-            Case &H7462
-                Msg &= "External data encryption Key Manager error" & vbCrLf
-            Case &H7463
-                Msg &= "External data encryption management—key not found" & vbCrLf
-            Case &H7464
-                Msg &= "External data encryption management—request not authorized" & vbCrLf
-            Case &H746E
-                Msg &= "External data encryption control time-out" & vbCrLf
-            Case &H746F
-                Msg &= "External data encryption control unknown error" & vbCrLf
-            Case &H7471
-                Msg &= "Logical Unit access not authorized" & vbCrLf
-            Case &H7480
-                Msg &= "KAD changed" & vbCrLf
-            Case &H7482
-                Msg &= "Crypto KAD in CM failure" & vbCrLf
-            Case &H8282
-                Msg &= "Drive requires cleaning" & vbCrLf
-            Case &H8283
-                Msg &= "Bad microcode detected" & vbCrLf
-        End Select
-        If Add_Code >> 8 = &H40 Then
-            Msg &= "Diagnostic failure on component " & Hex(Add_Code And &HFF) & "h" & vbCrLf
-        End If
+        Msg &= ParseAdditionalSenseCode(Add_Code) & vbCrLf
         Return Msg
     End Function
     Public Shared Function ReadMAMAttributeString(tapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
@@ -670,7 +741,7 @@ Public Class TapeUtils
             Return sb.ToString
         End Function
     End Class
-    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2) As Boolean
+    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
 
@@ -688,7 +759,10 @@ Public Class TapeUtils
 
         Dim senseBuffer(64) As Byte
         Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, 60000, senseBufferPtr)
-        'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
+        If senseReport IsNot Nothing Then
+            Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
+            senseReport(senseBuffer)
+        End If
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBufferPtr)
         Marshal.FreeHGlobal(senseBufferPtr)
