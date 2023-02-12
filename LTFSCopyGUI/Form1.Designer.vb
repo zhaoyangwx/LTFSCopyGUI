@@ -60,6 +60,8 @@ Partial Class Form1
         'Label1
         '
         Me.Label1.AutoSize = True
+        Me.Label1.Font = New System.Drawing.Font("宋体", 9.0!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
+        Me.Label1.ForeColor = System.Drawing.Color.Blue
         Me.Label1.Location = New System.Drawing.Point(12, 15)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(41, 12)

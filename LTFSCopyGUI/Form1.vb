@@ -402,4 +402,54 @@ Public Class Form1
     Private Sub Button10_Click(sender As Object, e As EventArgs) Handles Button10.Click
         LTFSConfigurator.Show()
     End Sub
+
+    Private Sub Label1_Click(sender As Object, e As EventArgs) Handles Label1.Click
+        Dim patt As String = InputBox("Search kw", "Search", "")
+        If patt <> "" Then
+            Enabled = False
+            Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
+            Dim result As New System.Text.StringBuilder
+
+            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            Dim progmax As Integer = f.Length
+            Dim progval As Integer = 0
+            Dim th As New Threading.Thread(
+                Sub()
+                    Parallel.ForEach(Of IO.FileInfo)(f,
+                        Sub(fl As IO.FileInfo)
+                            Try
+                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                If sch.Contains(patt) Then
+                                    SyncLock result
+                                        result.AppendLine(fl.Name)
+                                    End SyncLock
+                                End If
+                            Catch ex As Exception
+
+                            End Try
+                            Threading.Interlocked.Increment(progval)
+                        End Sub)
+                    Invoke(Sub() Enabled = True)
+                End Sub)
+            Dim thprog As New Threading.Thread(
+                Sub()
+                    While True
+                        Threading.Thread.Sleep(200)
+                        Dim exitflag As Boolean = (progval >= progmax)
+                        Me.Invoke(
+                            Sub()
+                                TextBox2.Text = "Search for " & patt & " in file "
+                                TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
+                                SyncLock result
+                                    TextBox2.AppendText(result.ToString)
+                                End SyncLock
+                            End Sub)
+                        If exitflag Then Exit While
+                    End While
+                End Sub)
+            th.Start()
+            thprog.Start()
+        End If
+    End Sub
 End Class

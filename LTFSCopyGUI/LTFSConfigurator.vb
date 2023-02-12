@@ -35,6 +35,7 @@ Public Class LTFSConfigurator
             ComboBox1.Enabled = (CurDrive.DriveLetter = "")
             Button6.Enabled = (CurDrive.DriveLetter = "")
             Button7.Enabled = (CurDrive.DriveLetter <> "")
+            TextBox5.Text = "\\.\TAPE" & CurDrive.DevIndex
             Button8.Enabled = True
             Button9.Enabled = True
             Button10.Enabled = (CurDrive.DriveLetter <> "")
@@ -667,7 +668,7 @@ Public Class LTFSConfigurator
         End Try
         Try
             Dim Medium_Type As Byte = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 4, 8).AsNumeric
-            Dim CMData As Byte() = TapeUtils.RawDump(tapeDrive, &H10)
+            Dim CMData As Byte() = TapeUtils.ReadBuffer(tapeDrive, &H10)
             Dim Medium_ParticleType As String
             If CMData(&H40) >= &H40 Then
                 If CMData(&H6A) And &HF Then
@@ -684,6 +685,61 @@ Public Class LTFSConfigurator
             End If
             If Medium_Type = 1 Then Medium_ParticleType = "Universal Clean Cartridge"
             TextBox8.AppendText("Particle Type: " & Medium_ParticleType & vbCrLf)
+            TextBox8.AppendText(vbCrLf)
+            TextBox8.AppendText("==========DATA ON TAPE==========" & vbCrLf)
+            Try
+                Dim TapePartitionPage As Byte() = TapeUtils.ModeSense(tapeDrive, &H11)
+                Dim extraPartitionNumber As Byte = TapePartitionPage(3)
+                'TextBox8.AppendText(Byte2Hex(TapePartitionPage))
+                Dim SUnit As Byte = TapePartitionPage(6)
+                Dim UnitStr As String
+                Select Case SUnit
+                    Case 0
+                        UnitStr = "Byte"
+                    Case 3
+                        UnitStr = "KiB"
+                    Case 6
+                        UnitStr = "MiB"
+                    Case 9
+                        UnitStr = "GiB"
+                    Case 12
+                        UnitStr = "TiB"
+                    Case 15
+                        UnitStr = "PiB"
+                    Case 18
+                        UnitStr = "EiB"
+                    Case 21
+                        UnitStr = "ZiB"
+                    Case 24
+                        UnitStr = "YiB"
+                    Case Else
+                        UnitStr = "x1024^" & SUnit & " Byte"
+                End Select
+                TextBox8.AppendText("Total Partitions: " & extraPartitionNumber + 1 & vbCrLf)
+                For i As Integer = 0 To extraPartitionNumber
+                    Dim len As Integer = CInt(TapePartitionPage(8 + i * 2)) << 8 Or TapePartitionPage(8 + i * 2 + 1)
+                    TextBox8.AppendText("Partition " & i & " Size: " & len & " " & UnitStr & vbCrLf)
+                Next
+                TextBox8.AppendText(vbCrLf)
+                TextBox8.AppendText("Wraps on Tape :" & vbCrLf)
+
+                Dim EOWData As Byte() = TapeUtils.ReadEOWPosition(tapeDrive)
+                Dim LOINum As UInt64 = 0
+                For i As Integer = 0 To EOWData.Length - 12 Step 12
+                    Dim WN As Integer = CInt(EOWData(i + 0)) << 8 Or EOWData(i + 1)
+                    Dim PN As Integer = CInt(EOWData(i + 2)) << 8 Or EOWData(i + 3)
+                    Dim LOI As String = Byte2Hex({EOWData(i + 6), EOWData(i + 7), EOWData(i + 8), EOWData(i + 9), EOWData(i + 10), EOWData(i + 1)})
+                    Dim LastLOI As UInt64 = LOINum
+                    LOINum = 0
+                    For j As Integer = 0 To 5
+                        LOINum = LOINum << 8
+                        LOINum = LOINum Or EOWData(i + 6 + j)
+                    Next
+                    TextBox8.AppendText("Wrap " & WN.ToString.PadLeft(3) & ": Partition " & PN & " Block " & LOINum.ToString.PadRight(10) & "(" & LOINum - LastLOI & " blocks)" & vbCrLf)
+                Next
+            Catch ex As Exception
+                TextBox8.AppendText("Partition Page Not Available" & vbCrLf)
+            End Try
             TextBox8.AppendText(vbCrLf)
             TextBox8.AppendText("==========CM RAW DATA===========" & vbCrLf)
             TextBox8.AppendText("Length: " & CMData.Length & vbCrLf)
@@ -755,19 +811,25 @@ Public Class LTFSConfigurator
         Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
         Me.Enabled = False
         Dim ReadLen As Integer = NumericUpDown7.Value
-        Dim cdbData As Byte() = {8, 0, ReadLen >> 16 And &HFF, ReadLen >> 8 And &HFF, ReadLen And &HFF, 0}
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
-        Marshal.Copy(cdbData, 0, cdb, 6)
-        Dim readData(ReadLen - 1) As Byte
-        Dim data As IntPtr = Marshal.AllocHGlobal(ReadLen)
-        Marshal.Copy(readData, 0, data, ReadLen)
-        Dim sense As IntPtr = Marshal.AllocHGlobal(127)
-        TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, 6, data, ReadLen, 1, &HFFFF, sense)
-        Marshal.Copy(data, readData, 0, ReadLen)
-        Marshal.FreeHGlobal(cdb)
-        Marshal.FreeHGlobal(data)
-        Marshal.FreeHGlobal(sense)
-        TextBox8.Text = Byte2Hex(readData, True)
+
+        'Dim cdbData As Byte() = {8, 0, ReadLen >> 16 And &HFF, ReadLen >> 8 And &HFF, ReadLen And &HFF, 0}
+        'Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
+        'Marshal.Copy(cdbData, 0, cdb, 6)
+        'Dim readData(ReadLen - 1) As Byte
+        'Dim data As IntPtr = Marshal.AllocHGlobal(ReadLen)
+        'Marshal.Copy(readData, 0, data, ReadLen)
+        'Dim sense As IntPtr = Marshal.AllocHGlobal(127)
+        'TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, 6, data, ReadLen, 1, &HFFFF, sense)
+        'Marshal.Copy(data, readData, 0, ReadLen)
+        'Marshal.FreeHGlobal(cdb)
+        'Marshal.FreeHGlobal(data)
+        'Marshal.FreeHGlobal(sense)
+        Dim sense(63) As Byte
+        Dim readData As Byte() = TapeUtils.ReadBlock(tapeDrive, sense, ReadLen)
+        Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+        TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf & vbCrLf & "Raw data:" & vbCrLf
+        TextBox8.Text &= "Length: " & readData.Length & vbCrLf
+        TextBox8.Text &= Byte2Hex(readData, True)
         Me.Enabled = True
     End Sub
 
@@ -775,7 +837,7 @@ Public Class LTFSConfigurator
         Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
         Me.Enabled = False
         Dim BufferID = Convert.ToByte(ComboBox2.SelectedItem.Substring(0, 2), 16)
-        Dim DumpData As Byte() = TapeUtils.RawDump(tapeDrive, BufferID)
+        Dim DumpData As Byte() = TapeUtils.ReadBuffer(tapeDrive, BufferID)
         TextBox8.Text = "Buffer len=" & DumpData.Length & vbCrLf
         SaveFileDialog2.FileName = ComboBox2.SelectedItem & ".bin"
         If SaveFileDialog2.ShowDialog = DialogResult.OK Then
@@ -785,4 +847,117 @@ Public Class LTFSConfigurator
         Me.Enabled = True
     End Sub
 
+    Private Sub Label9_Click(sender As Object, e As EventArgs) Handles Label9.Click
+        Dim n As String = InputBox("Byte count?", "cdb SetBytes", "")
+        If n <> "" Then
+            If Val(n) > 0 Then
+                TextBox7.Text = ""
+                Dim sb As New StringBuilder
+                For i As Integer = 1 To Val(n)
+                    sb.Append("00 ")
+                Next
+                TextBox7.Text = sb.ToString()
+            End If
+        End If
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+        Me.Enabled = False
+        TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(tapeDrive, NumericUpDown2.Value, NumericUpDown1.Value))
+        Me.Enabled = True
+
+    End Sub
+
+    Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
+        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+        Me.Enabled = False
+        Dim param As Byte() = TapeUtils.SCSIReadParam(tapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+        Dim BOP As Boolean = param(0) >> 7 = 1
+        Dim EOP As Boolean = ((param(0) >> 6) And &H1) = 1
+        Dim LOCU As Boolean = ((param(0) >> 5) And &H1) = 1
+        Dim BYCU As Boolean = ((param(0) >> 4) And &H1) = 1
+        Dim LOLU As Boolean = ((param(0) >> 2) And &H1) = 1
+        TextBox8.Text = ""
+        TextBox8.Text &= "Partition " & param(1) & vbCrLf
+        TextBox8.Text &= "Block " & (CULng(param(4)) << 24 Or CULng(param(5)) << 16 Or CULng(param(6)) << 8 Or param(7)) & vbCrLf
+        TextBox8.Text &= vbCrLf
+        Me.Enabled = True
+        If BOP Then TextBox8.Text &= "BOM - Beginning of media" & vbCrLf
+        If EOP Then TextBox8.Text &= "EW-EOM - Early warning" & vbCrLf
+        'If LOCU Then TextBox8.Text &= "LOCU" & vbCrLf
+        'If BYCU Then TextBox8.Text &= "BYCU" & vbCrLf
+        'If LOLU Then TextBox8.Text &= "LOLU" & vbCrLf
+    End Sub
+    Public Operation_Cancel_Flag As Boolean = False
+    Private Sub Button23_Click(sender As Object, e As EventArgs) Handles Button23.Click
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            If My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
+                MessageBox.Show("保存路径已存在bin文件，操作取消")
+                Exit Sub
+            End If
+
+            For Each c As Control In Panel1.Controls
+                c.Enabled = False
+            Next
+            Panel2.Enabled = True
+            For Each c As Control In Panel2.Controls
+                c.Enabled = False
+            Next
+            Button24.Enabled = True
+            TextBox8.Text = ""
+            Dim log As Boolean = CheckBox2.Checked
+            Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+            Dim thprog As New Threading.Thread(
+                Sub()
+                    Dim ReadLen As Integer = NumericUpDown7.Value
+                    Dim FileNum As Integer = 0
+
+                    'Position
+                    Dim param As Byte() = TapeUtils.SCSIReadParam(tapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+
+                    Dim Partition As Byte = param(1)
+                    Dim Block As UInteger = 0
+                    For i As Integer = 4 To 7
+                        Block <<= 8
+                        Block = Block Or param(i)
+                    Next
+                    While True
+                        Dim sense(63) As Byte
+                        Dim readData As Byte() = TapeUtils.ReadBlock(tapeDrive, sense, ReadLen)
+                        Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                        If readData.Length > 0 Then My.Computer.FileSystem.WriteAllBytes(FolderBrowserDialog1.SelectedPath & "\" & FileNum & ".bin", readData, True)
+                        If Add_Key <> 0 Then
+                            FileNum += 1
+                        End If
+                        If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                            Operation_Cancel_Flag = False
+                            Exit While
+                        End If
+                        If log Then
+                            Invoke(Sub()
+                                       If TextBox8.Text.Length > 10000 Then TextBox8.Text = ""
+                                       TextBox8.AppendText("Processing file " & FileNum.ToString.PadRight(10) & " (Block = " & Block & ") Sense:")
+                                       TextBox8.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
+                                   End Sub)
+                        End If
+                        Block += 1
+                    End While
+                    Invoke(Sub()
+                               For Each c As Control In Panel1.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In Panel2.Controls
+                                   c.Enabled = True
+                               Next
+                           End Sub)
+                End Sub)
+            thprog.Start()
+
+        End If
+    End Sub
+
+    Private Sub Button24_Click(sender As Object, e As EventArgs) Handles Button24.Click
+        Operation_Cancel_Flag = True
+    End Sub
 End Class

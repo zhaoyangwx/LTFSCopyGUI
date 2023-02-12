@@ -131,9 +131,13 @@ Public Class HashTaskWindow
                                                           End Sub)
                                             End Sub
         Try
-            AxTChart1.Series(0).Clear()
-            AxTChart1.Axis.Bottom.Maximum = SMaxNum
-            AxTChart1.Series(0).AddArray(SpeedHistory.Count, SpeedHistory.ToArray)
+            Chart1.Series(0).Points.Clear()
+            Dim i As Integer = 0
+            For Each val As Double In SpeedHistory
+                Chart1.Series(0).Points.AddXY(i, val)
+                i += 1
+            Next
+            'Chart1.ChartAreas(0).AxisX.Maximum = SMaxNum
         Catch ex As Exception
             PrintMsg(ex.ToString)
         End Try
@@ -187,37 +191,37 @@ Public Class HashTaskWindow
 
     Private Sub SToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SToolStripMenuItem.Click
         SMaxNum = 60
-        AxTChart1.Axis.Bottom.Title.Caption = "60s"
+        Chart1.Titles(0).Text = "60s"
     End Sub
 
     Private Sub MinToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles MinToolStripMenuItem.Click
         SMaxNum = 300
-        AxTChart1.Axis.Bottom.Title.Caption = "5min"
+        Chart1.Titles(0).Text = "5min"
     End Sub
 
     Private Sub MinToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles MinToolStripMenuItem1.Click
         SMaxNum = 600
-        AxTChart1.Axis.Bottom.Title.Caption = "10min"
+        Chart1.Titles(0).Text = "10min"
     End Sub
 
     Private Sub MinToolStripMenuItem2_Click(sender As Object, e As EventArgs) Handles MinToolStripMenuItem2.Click
         SMaxNum = 1800
-        AxTChart1.Axis.Bottom.Title.Caption = "30min"
+        Chart1.Titles(0).Text = "30min"
     End Sub
 
     Private Sub HToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem.Click
         SMaxNum = 3600
-        AxTChart1.Axis.Bottom.Title.Caption = "1h"
+        Chart1.Titles(0).Text = "1h"
     End Sub
 
     Private Sub LinearToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LinearToolStripMenuItem.Click
-        AxTChart1.Axis.Left.Logarithmic = False
+        Chart1.ChartAreas(0).AxisY.IsLogarithmic = False
         LinearToolStripMenuItem.Checked = True
         LogrithmToolStripMenuItem.Checked = False
     End Sub
 
     Private Sub LogrithmToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LogrithmToolStripMenuItem.Click
-        AxTChart1.Axis.Left.Logarithmic = True
+        Chart1.ChartAreas(0).AxisY.IsLogarithmic = True
         LinearToolStripMenuItem.Checked = False
         LogrithmToolStripMenuItem.Checked = True
     End Sub
@@ -226,28 +230,28 @@ Public Class HashTaskWindow
         TextBox1.WordWrap = WordwrapToolStripMenuItem.Checked
     End Sub
 
-    Public SpeedHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
-    Public FileRateHistory As List(Of Long) = New Long(3600 * 24) {}.ToList()
+    Public SpeedHistory As List(Of Double) = New Double(3600 * 24) {}.ToList()
+    Public FileRateHistory As List(Of Double) = New Double(3600 * 24) {}.ToList()
     Public SMaxNum As Integer = 600
 
     Private Sub AllToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AllToolStripMenuItem.Click
         SMaxNum = 3600 * 24
-        AxTChart1.Axis.Bottom.Title.Caption = "1d"
+        Chart1.Titles(0).Text = "1d"
     End Sub
 
     Private Sub HToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem1.Click
         SMaxNum = 3600 * 3
-        AxTChart1.Axis.Bottom.Title.Caption = "3h"
+        Chart1.Titles(0).Text = "3h"
     End Sub
 
     Private Sub HToolStripMenuItem2_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem2.Click
         SMaxNum = 3600 * 6
-        AxTChart1.Axis.Bottom.Title.Caption = "6h"
+        Chart1.Titles(0).Text = "6h"
     End Sub
 
     Private Sub HToolStripMenuItem3_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem3.Click
         SMaxNum = 3600 * 12
-        AxTChart1.Axis.Bottom.Title.Caption = "12h"
+        Chart1.Titles(0).Text = "12h"
     End Sub
     Public Class IndexedLHashDirectory
         Public LTFSIndexDir As ltfsindex.directory
@@ -359,10 +363,20 @@ Public Class HashTaskWindow
                 FileRateHistory.RemoveAt(0)
             End While
 
-            AxTChart1.Series(0).Clear()
-            AxTChart1.Series(0).AddArray(SMaxNum, SpeedHistory.GetRange(SpeedHistory.Count - SMaxNum, SMaxNum).ToArray())
-            AxTChart1.Series(1).Clear()
-            AxTChart1.Series(1).AddArray(SMaxNum, FileRateHistory.GetRange(FileRateHistory.Count - SMaxNum, SMaxNum).ToArray())
+
+            Chart1.Series(0).Points.Clear()
+            Dim i As Integer = 0
+            For Each val As Double In SpeedHistory.GetRange(SpeedHistory.Count - SMaxNum, SMaxNum)
+                Chart1.Series(0).Points.AddXY(i, val)
+                i += 1
+            Next
+            Chart1.Series(1).Points.Clear()
+            i = 0
+            For Each val As Double In FileRateHistory.GetRange(FileRateHistory.Count - SMaxNum, SMaxNum)
+                Chart1.Series(1).Points.AddXY(i, val)
+                i += 1
+            Next
+
 
             Text = "[" & tval & "/" & tmax & "] " & IOManager.FormatSize(dval) &
                "/" & IOManager.FormatSize(dmax) & " (" &
