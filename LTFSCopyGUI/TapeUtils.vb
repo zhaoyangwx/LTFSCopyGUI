@@ -1,4 +1,5 @@
 ﻿Imports System.Runtime.InteropServices
+Imports System.Text
 
 Public Class TapeUtils
     Private Declare Function _GetTapeDriveList Lib "LtfsCommand.dll" () As IntPtr
@@ -7,7 +8,7 @@ Public Class TapeUtils
     Private Declare Function _StopLtfsService Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _RemapTapeDrives Lib "LtfsCommand.dll" () As IntPtr
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _MapTapeDrive(driveLetter As Char, tapeDrive As String, tapeIndex As Byte, ByVal logDir As String, ByVal workDir As String, showOffline As Boolean) As IntPtr
+    Private Shared Function _MapTapeDrive(driveLetter As Char, TapeDrive As String, tapeIndex As Byte, ByVal logDir As String, ByVal workDir As String, showOffline As Boolean) As IntPtr
 
     End Function
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
@@ -22,12 +23,10 @@ Public Class TapeUtils
     Private Shared Function _EjectTapeDrive(driveLetter As Char) As IntPtr
 
     End Function
-
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
     Private Shared Function _MountTapeDrive(driveLetter As Char) As IntPtr
 
     End Function
-
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
     Private Shared Function _CheckTapeMedia(driveLetter As Char) As IntPtr
 
@@ -45,7 +44,7 @@ Public Class TapeUtils
 
     End Function
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeSCSIIOCtlFull(tapeDrive As String,
+    Public Shared Function _TapeSCSIIOCtlFull(TapeDrive As String,
                                            cdb As IntPtr,
                                            cdbLength As Byte,
                                            dataBuffer As IntPtr,
@@ -55,19 +54,60 @@ Public Class TapeUtils
                                            senseBuffer As IntPtr) As Boolean
 
     End Function
-    Public Shared Function ReadAppInfo(tapeDrive As String) As String
+    Structure LPSECURITY_ATTRIBUTES
+        Dim nLength As UInt32
+        Dim lpSecurityDescriptor As UIntPtr
+        Dim bInheritHandle As Boolean
+    End Structure
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Private Shared Function _CreateFile(lpFileName As String,
+                                        dwDesiredAccess As UInt32,
+                                        dwShareMode As UInt32,
+                                        lpSecurityAttributes As IntPtr,
+                                        dwCreationDisposition As UInt32,
+                                        dwFlagsAndAttributes As UInt32,
+                                        hTemplateFile As IntPtr
+    ) As IntPtr
+
+    End Function
+    Public Shared Function CreateFile(lpFileName As String,
+                                        dwDesiredAccess As UInt32,
+                                        dwShareMode As UInt32,
+                                        lpSecurityAttributes As LPSECURITY_ATTRIBUTES,
+                                        dwCreationDisposition As UInt32,
+                                        dwFlagsAndAttributes As UInt32,
+                                        hTemplateFile As IntPtr)
+        Dim lpSecurityAttributesPtr As IntPtr
+        Marshal.StructureToPtr(lpSecurityAttributes, lpSecurityAttributesPtr, True)
+        Return _CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributesPtr, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeSCSIIOCtl(TapeDrive As String, SCSIOPCode As Byte) As IntPtr
+
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeDeviceIOCtl(TapeDrive As String, DWIOCode As UInt32) As IntPtr
+
+    End Function
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Private Shared Function _Test(ByVal a As Char) As IntPtr
+
+    End Function
+    Public Shared Function ReadAppInfo(TapeDrive As String) As String
         'TC_MAM_APPLICATION_VENDOR = 0x0800 LEN = 8
         'TC_MAM_APPLICATION_NAME = 0x0801 = 0x0800 LEN = 32
         'TC_MAM_APPLICATION_VERSION = 0x0802 = 0x0800 LEN = 8
-        Return ReadMAMAttributeString(tapeDrive, 8, 0).TrimEnd(" ") &
-            " " & ReadMAMAttributeString(tapeDrive, 8, 1).TrimEnd(" ") &
-            " " & ReadMAMAttributeString(tapeDrive, 8, 2).TrimEnd(" ")
+        Return ReadMAMAttributeString(TapeDrive, 8, 0).TrimEnd(" ") &
+            " " & ReadMAMAttributeString(TapeDrive, 8, 1).TrimEnd(" ") &
+            " " & ReadMAMAttributeString(TapeDrive, 8, 2).TrimEnd(" ")
     End Function
-    Public Shared Function ReadBarcode(tapeDrive As String) As String
+    Public Shared Function ReadBarcode(TapeDrive As String) As String
         'TC_MAM_BARCODE = 0x0806 LEN = 32
-        Return ReadMAMAttributeString(tapeDrive, 8, 6)
+        Return ReadMAMAttributeString(TapeDrive, 8, 6).TrimEnd(" ")
     End Function
-
+    Public Shared Function ReadRemainingCapacity(TapeDrive As String, Optional ByVal Partition As Byte = 0) As UInt64
+        Return MAMAttribute.FromTapeDrive(TapeDrive, &H0, Partition).AsNumeric
+    End Function
     Public Class BlockLimits
         Public MaximumBlockLength As UInt64
         Public MinimumBlockLength As UInt16
@@ -75,8 +115,8 @@ Public Class TapeUtils
             Return data.MaximumBlockLength
         End Operator
     End Class
-    Public Shared Function ReadBlockLimits(tapeDrive As String) As BlockLimits
-        Dim data As Byte() = SCSIReadParam(tapeDrive, {5, 0, 0, 0, 0, 0}, 6)
+    Public Shared Function ReadBlockLimits(TapeDrive As String) As BlockLimits
+        Dim data As Byte() = SCSIReadParam(TapeDrive, {5, 0, 0, 0, 0, 0}, 6)
         Return New BlockLimits With {.MaximumBlockLength = CULng(data(1)) << 16 Or CULng(data(2)) << 8 Or data(3),
             .MinimumBlockLength = CUShort(data(4)) << 8 Or data(5)}
     End Function
@@ -113,36 +153,91 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(sense)
         Return dumpData
     End Function
-    Public Shared Function ReadBlock(TapeDrive As String, ByRef sense As Byte(), Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
+    Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
         Dim senseRaw(63) As Byte
+        If sense Is Nothing Then sense = {}
         Dim RawData As Byte() = SCSIReadParam(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
                                               BlockSizeLimit, Function(senseData As Byte()) As Boolean
                                                                   senseRaw = senseData
                                                                   Return True
                                                               End Function)
         sense = senseRaw
-        Dim DiffBytes As Int32 = CLng(sense(3)) << 24 Or CLng(sense(4)) << 16 Or CLng(sense(5)) << 8 Or sense(6)
+        Dim DiffBytes As Int32
+        For i As Integer = 3 To 6
+            DiffBytes <<= 8
+            DiffBytes = DiffBytes Or sense(i)
+        Next
         If DiffBytes > 0 Then
             Return RawData.Take(RawData.Length - DiffBytes).ToArray
         Else
             Return RawData
         End If
     End Function
-
+    Public Shared Function ReadToFileMark(TapeDrive As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
+        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+        Dim buffer As New List(Of Byte)
+        While True
+            Dim sense(63) As Byte
+            Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
+            Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+            If readData.Length > 0 Then
+                buffer.AddRange(readData)
+            End If
+            If (Add_Key >= 1 And Add_Key <> 4) Then
+                Exit While
+            End If
+        End While
+        Return buffer.ToArray()
+    End Function
     Public Shared Function ReadEOWPosition(TapeDrive As String) As Byte()
         Dim lenData As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, 0, 2, 0, 0}, 2)
-        Dim rawParam As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, lenData(0), lenData(1), 0, 0}, CInt(lenData(0)) << 8 Or lenData(1))
+        Dim len As UInt16 = lenData(0)
+        len <<= 8
+        len = len Or lenData(1)
+        len += 2
+        Dim rawParam As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, len >> 8, len And &HFF, 0, 0}, len)
         Return rawParam.Skip(4).ToArray()
     End Function
-    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte) As UInt16
+    Public Enum LocateDestType
+        Block = 0
+        File = 1
+        EOD = 3
+    End Enum
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, Optional ByVal DestType As LocateDestType = 0) As UInt16
         Dim sense(63) As Byte
-        Dim d As Byte() = SCSIReadParam(TapeDrive, {&H2B, 2, 0,
+        'Dim d As Byte() = SCSIReadParam(TapeDrive, {&H2B, 2, 0,
+        '                                BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+        '                                0, Partition, 0}, 64, Function(senseData As Byte()) As Boolean
+        '                                                          sense = senseData
+        '                                                          Return True
+        '                                                      End Function)
+
+        SCSIReadParam(TapeDrive, {&H92, DestType << 3 Or 2, 0, Partition,
+                                        BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
                                         BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                        0, Partition, 0}, 64, Function(senseData As Byte()) As Boolean
-                                                                  sense = senseData
-                                                                  Return True
-                                                              End Function)
+                                        0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
+                                                             sense = senseData
+                                                             Return True
+                                                         End Function)
         Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+        If Add_Code <> 0 Then
+            If DestType = LocateDestType.EOD Then
+                SendSCSICommand(TapeDrive, {&H11, 3, 0, 0, 0, 0}, Nothing, 1, Function(senseData As Byte()) As Boolean
+                                                                                  sense = senseData
+                                                                                  Return True
+                                                                              End Function)
+            Else
+                SCSIReadParam(TapeDrive, {&H92, DestType << 3, 0, 0,
+                                        BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
+                                        BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                        0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
+                                                             sense = senseData
+                                                             Return True
+                                                         End Function)
+
+            End If
+            Add_Code = CInt(sense(12)) << 8 Or sense(13)
+        End If
         Return Add_Code
     End Function
     Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
@@ -167,6 +262,89 @@ Public Class TapeUtils
         Dim PageLen As Byte = Header(0)
         Dim DescripterLen As Byte = Header(3)
         Return SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, PageLen + 1, 0}, PageLen + 1, senseReport).Skip(4 + DescripterLen).ToArray()
+    End Function
+    Public Shared Function ModeSelect(TapeDrive As String, PageData As Byte(), Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        Dim data As Byte() = {0, 0, &H10, 0}.Concat(PageData)
+        Dim sense(63) As Byte
+        If data.Length < 256 Then
+            SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, data.Length, 0}, data, 0,
+                            Function(senseData As Byte()) As Boolean
+                                sense = senseData
+                                Return True
+                            End Function)
+        Else
+            data = {0, 0, 0, &H10, 0, 0, 0, 0}.Concat(PageData)
+            SendSCSICommand(TapeDrive, {&H55, &H10, 0, 0, 0, 0, 0, data.Length >> 8 And &HFF, data.Length And &HFF, 0}, data, 0,
+                            Function(senseData As Byte()) As Boolean
+                                sense = senseData
+                                Return True
+                            End Function)
+        End If
+        Return sense
+    End Function
+    Public Shared Function SetBarcode(TapeDrive As String, barcode As String) As Boolean
+        Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &H29, 0, 0}
+        Dim data As Byte() = {0, 0, 0, &H29, &H8, &H6, &H1, 0, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20,
+            &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20}
+        barcode = barcode.PadRight(32).Substring(0, 32)
+        For i As Integer = 0 To barcode.Length - 1
+            data(9 + i) = CByte(Asc(barcode(i)) And &HFF)
+        Next
+        Return SendSCSICommand(TapeDrive, cdb, data, 0)
+    End Function
+    Public Shared Function SetBlockSize(TapeDrive As String, Optional ByVal BlockSize As UInteger = &H80000) As Byte()
+        Dim sense(63) As Byte
+        SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &HC, 0},
+                        {0, 0, &H10, 8, &H58, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, 0,
+                        Function(senseData As Byte()) As Boolean
+                            sense = senseData
+                            Return True
+                        End Function)
+        Return sense
+    End Function
+    Public Enum AttributeFormat
+        Binary = &H0
+        Ascii = &H1
+        Text = &H2
+        Reserved = &H3
+    End Enum
+    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0) As Boolean
+        Dim Param_LEN As UInt64 = Data.Length + 9
+        Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
+                             Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF, 0, 0}
+        Dim param As Byte() = {Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF,
+                               PageID >> 8 And &HFF, PageID And &HFF, Format,
+                               Data.Length >> 8 And &HFF, Data.Length And &HFF}
+        param = param.Concat(Data).ToArray()
+        Return SendSCSICommand(TapeDrive, cdb, param, 0)
+    End Function
+    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0) As Boolean
+        Return SetMAMAttribute(TapeDrive, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber)
+    End Function
+    Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64, UUID As String, Optional ByVal ExtraPartitionCount As Byte = 1) As Boolean
+        Dim VCIData As Byte()
+        Dim VCI As Byte() = GetMAMAttributeBytes(TapeDrive, 0, 9)
+        If ExtraPartitionCount > 0 Then
+            VCIData = {8, 0, 0, 0, 0, VCI(VCI.Length - 4), VCI(VCI.Length - 3), VCI(VCI.Length - 2), VCI(VCI.Length - 1),
+            Generation >> 56 And &HFF, Generation >> 48 And &HFF, Generation >> 40 And &HFF, Generation >> 32 And &HFF,
+            Generation >> 24 And &HFF, Generation >> 16 And &HFF, Generation >> 8 And &HFF, Generation And &HFF,
+            block0 >> 56 And &HFF, block0 >> 48 And &HFF, block0 >> 40 And &HFF, block0 >> 32 And &HFF,
+            block0 >> 24 And &HFF, block0 >> 16 And &HFF, block0 >> 8 And &HFF, block0 And &HFF,
+            0, &H2B, &H4C, &H54, &H46, &H53, 0}
+            VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray
+            VCIData = VCIData.Concat({0, 1}).ToArray
+            Dim Succ As Boolean = SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, 0)
+            If Not Succ Then Return False
+        End If
+        VCIData = {8, 0, 0, 0, 0, VCI(VCI.Length - 4), VCI(VCI.Length - 3), VCI(VCI.Length - 2), VCI(VCI.Length - 1),
+            Generation >> 56 And &HFF, Generation >> 48 And &HFF, Generation >> 40 And &HFF, Generation >> 32 And &HFF,
+            Generation >> 24 And &HFF, Generation >> 16 And &HFF, Generation >> 8 And &HFF, Generation And &HFF,
+            block1 >> 56 And &HFF, block1 >> 48 And &HFF, block1 >> 40 And &HFF, block1 >> 32 And &HFF,
+            block1 >> 24 And &HFF, block1 >> 16 And &HFF, block1 >> 8 And &HFF, block1 And &HFF,
+            0, &H2B, &H4C, &H54, &H46, &H53, 0}
+        VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray
+        VCIData = VCIData.Concat({0, 1}).ToArray
+        Return SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount)
     End Function
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
         Dim Msg As String = ""
@@ -545,18 +723,96 @@ Public Class TapeUtils
         Msg &= ParseAdditionalSenseCode(Add_Code) & vbCrLf
         Return Msg
     End Function
-    Public Shared Function ReadMAMAttributeString(tapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
-        Return System.Text.Encoding.UTF8.GetString(GetMAMAttributeBytes(tapeDrive, PageCode_H, PageCode_L).ToArray())
+    Public Shared Function PreventMediaRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(TapeDrive, {&H1E, 0, 0, 0, 1, 0}, Nothing, 1, senseReport)
     End Function
-    Public Shared Function ReadMAMAttributeByteString(tapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
-        Return Byte2Hex(GetMAMAttributeBytes(tapeDrive, PageCode_H, PageCode_L).ToArray())
+    Public Shared Function AllowMediaRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(TapeDrive, {&H1E, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
+    End Function
+    Public Shared Function ReserveUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(TapeDrive, {&H16, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
+    End Function
+    Public Shared Function ReleaseUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(TapeDrive, {&H17, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
     End Function
 
+    Public Shared Function ReadMAMAttributeString(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
+        Return System.Text.Encoding.UTF8.GetString(GetMAMAttributeBytes(TapeDrive, PageCode_H, PageCode_L).ToArray())
+    End Function
+    Public Class PositionData
+        Public Property BOP As Boolean
+        Public Property EOP As Boolean
+        Public Property MPU As Boolean
+        Public Property PartitionNumber As UInt32
+        Public Property BlockNumber As UInt64
+        Public Property FileNumber As UInt64
+        Public Property SetNumber As UInt64
+        Public Sub New()
 
-    Public Shared Function GetMAMAttributeBytes(tapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As Byte()
+        End Sub
+        Public Sub New(TapeDrive As String)
+            Dim data As PositionData = ReadPosition(TapeDrive)
+            BOP = data.BOP
+            EOP = data.EOP
+            MPU = data.MPU
+            PartitionNumber = data.PartitionNumber
+            BlockNumber = data.BlockNumber
+            FileNumber = data.FileNumber
+            SetNumber = data.SetNumber
+        End Sub
+    End Class
+    Public Shared Function ReadPosition(TapeDrive As String) As PositionData
+        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+        Dim result As New PositionData
+        result.BOP = param(0) >> 7 And &H1
+        result.EOP = param(0) >> 6 And &H1
+        result.MPU = param(0) >> 3 And &H1
+        For i As Integer = 0 To 3
+            result.PartitionNumber <<= 8
+            result.PartitionNumber = result.PartitionNumber Or param(4 + i)
+        Next
+        For i As Integer = 0 To 7
+            result.BlockNumber <<= 8
+            result.BlockNumber = result.BlockNumber Or param(8 + i)
+            result.FileNumber <<= 8
+            result.FileNumber = result.FileNumber Or param(16 + i)
+            result.SetNumber <<= 8
+            result.SetNumber = result.SetNumber Or param(24 + i)
+        Next
+        Return result
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Byte()) As Byte()
+        Dim sense(63) As Byte
+        SendSCSICommand(TapeDrive, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+                        Function(senseData As Byte()) As Boolean
+                            sense = senseData
+                            Return True
+                        End Function)
+        Return sense
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As UInteger, Optional ByVal senseEnabled As Byte = False) As Byte()
+        Dim sense(63) As Byte
+        Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 60000, senseBufferPtr)
+        If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
+        Return {0, 0, 0}
+    End Function
+    Public Shared Function WriteFileMark(TapeDrive As String, Optional ByVal Number As UInteger = 1) As Byte()
+        Dim sense(63) As Byte
+        SendSCSICommand(TapeDrive, {&H10, 1, Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
+                        Function(senseData As Byte()) As Boolean
+                            sense = senseData
+                            Return True
+                        End Function)
+        Return sense
+    End Function
+    Public Shared Function GetMAMAttributeBytes(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte, Optional ByVal PartitionNumber As Byte = 0) As Byte()
         Dim DATA_LEN As Integer = 0
         Dim cdb As IntPtr = Marshal.AllocHGlobal(16)
-        Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, 0,
+        Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
             PageCode_H,
             PageCode_L,
             (DATA_LEN + 9) >> 24 And &HFF,
@@ -571,7 +827,7 @@ Public Class TapeUtils
         Dim Result As Byte() = {}
         Dim succ As Boolean = False
         Try
-            succ = _TapeSCSIIOCtlFull(tapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
+            succ = _TapeSCSIIOCtlFull(TapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
         Catch ex As Exception
             MessageBox.Show("SCSIIOErr")
         End Try
@@ -582,7 +838,7 @@ Public Class TapeUtils
                 Dim dataBuffer2 As IntPtr = Marshal.AllocHGlobal(DATA_LEN + 9)
                 Dim BCArray2(DATA_LEN + 8) As Byte
                 Marshal.Copy(BCArray2, 0, dataBuffer2, DATA_LEN + 9)
-                cdbData = {&H8C, 0, 0, 0, 0, 0, 0, 0,
+                cdbData = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
                     PageCode_H,
                     PageCode_L,
                     (DATA_LEN + 9) >> 24 And &HFF,
@@ -594,7 +850,7 @@ Public Class TapeUtils
                 succ = False
                 Dim senseBuffer2 As IntPtr = Marshal.AllocHGlobal(64)
                 Try
-                    succ = _TapeSCSIIOCtlFull(tapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
+                    succ = _TapeSCSIIOCtlFull(TapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
                 Catch ex As Exception
                     MessageBox.Show("SCSIIOErr2")
                 End Try
@@ -612,7 +868,8 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(senseBuffer)
         Return Result
     End Function
-    Public Shared Function Byte2Hex(bytes As Byte()) As String
+    Public Shared Function Byte2Hex(bytes As Byte(), Optional ByVal ReadablePrint As Boolean = False) As String
+        If ReadablePrint Then Return ByteArrayToString(bytes)
         If bytes Is Nothing Then Return ""
         If bytes.Length = 0 Then Return ""
         Dim sb As New System.Text.StringBuilder
@@ -625,12 +882,42 @@ Public Class TapeUtils
         Next
         Return sb.ToString()
     End Function
+    Public Shared Function ByteArrayToString(bytesArray As Byte()) As String
+        Dim strBuilder As New StringBuilder()
+        Dim rowSize As Integer = 16
+        Dim numRows As Integer = Math.Ceiling(bytesArray.Length / rowSize)
+
+        For row As Integer = 0 To numRows - 1
+            Dim rowStart As Integer = row * rowSize
+            Dim rowEnd As Integer = Math.Min((row + 1) * rowSize, bytesArray.Length)
+            Dim rowBytes As Byte() = bytesArray.Skip(rowStart).Take(rowEnd - rowStart).ToArray()
+
+            ' Append the hex values for this row
+            strBuilder.Append($"{rowStart:X8}h: ")
+            For Each b As Byte In rowBytes
+                strBuilder.Append($"{b:X2} ")
+            Next
+            strBuilder.Append(" "c, (rowSize - rowBytes.Length) * 3)
+
+            ' Append the ASCII characters for this row
+            strBuilder.Append("  ")
+            For Each b As Byte In rowBytes
+                strBuilder.Append(If(b >= 32 AndAlso b <= 126, ChrW(b), "."c))
+            Next
+
+            ' Append a newline character for the next row
+            strBuilder.AppendLine()
+        Next
+
+        Return strBuilder.ToString()
+    End Function
+
     <Serializable>
     Public Class MAMAttributeList
         Public Property Content As New List(Of MAMAttribute)
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(MAMAttributeList))
-            Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("MAM_yyyyMMdd_hhmmss.tmp")
+            Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.tmp")
             Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
             Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
             writer.Serialize(t, Me)
@@ -723,13 +1010,13 @@ Public Class TapeUtils
 
             End Set
         End Property
-        Public Shared Function FromTapeDrive(tapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As MAMAttribute
-            Dim RawData As Byte() = GetMAMAttributeBytes(tapeDrive, PageCode_H, PageCode_L)
+        Public Shared Function FromTapeDrive(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
+            Dim RawData As Byte() = GetMAMAttributeBytes(TapeDrive, PageCode_H, PageCode_L, PartitionNumber)
             If RawData.Length = 0 Then Return Nothing
             Return New MAMAttribute With {.ID = (CUShort(PageCode_H) << 8) Or PageCode_L, .RawData = RawData}
         End Function
-        Public Shared Function FromTapeDrive(tapeDrive As String, PageCode As UInt16) As MAMAttribute
-            Return FromTapeDrive(tapeDrive, (PageCode >> 8) And &HFF, PageCode And &HFF)
+        Public Shared Function FromTapeDrive(TapeDrive As String, PageCode As UInt16, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
+            Return FromTapeDrive(TapeDrive, (PageCode >> 8) And &HFF, PageCode And &HFF, PartitionNumber)
         End Function
 
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
@@ -741,7 +1028,7 @@ Public Class TapeUtils
             Return sb.ToString
         End Function
     End Class
-    Public Shared Function SendSCSICommand(tapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
 
@@ -758,7 +1045,7 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
         Dim senseBuffer(64) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, 60000, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, 60000, senseBufferPtr)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
             senseReport(senseBuffer)
@@ -768,47 +1055,6 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(senseBufferPtr)
         Return succ
     End Function
-    Structure LPSECURITY_ATTRIBUTES
-        Dim nLength As UInt32
-        Dim lpSecurityDescriptor As UIntPtr
-        Dim bInheritHandle As Boolean
-    End Structure
-
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _CreateFile(lpFileName As String,
-                                        dwDesiredAccess As UInt32,
-                                        dwShareMode As UInt32,
-                                        lpSecurityAttributes As IntPtr,
-                                        dwCreationDisposition As UInt32,
-                                        dwFlagsAndAttributes As UInt32,
-                                        hTemplateFile As IntPtr
-    ) As IntPtr
-
-    End Function
-    Public Shared Function CreateFile(lpFileName As String,
-                                        dwDesiredAccess As UInt32,
-                                        dwShareMode As UInt32,
-                                        lpSecurityAttributes As LPSECURITY_ATTRIBUTES,
-                                        dwCreationDisposition As UInt32,
-                                        dwFlagsAndAttributes As UInt32,
-                                        hTemplateFile As IntPtr)
-        Dim lpSecurityAttributesPtr As IntPtr
-        Marshal.StructureToPtr(lpSecurityAttributes, lpSecurityAttributesPtr, True)
-        Return _CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributesPtr, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeSCSIIOCtl(tapeDrive As String, SCSIOPCode As Byte) As IntPtr
-
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeDeviceIOCtl(tapeDrive As String, DWIOCode As UInt32) As IntPtr
-
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _Test(ByVal a As Char) As IntPtr
-
-    End Function
-
 
     Public Const DEFAULT_LOG_DIR As String = "C:\ProgramData\HPE\LTFS"
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
@@ -839,13 +1085,11 @@ Public Class TapeUtils
         Next
         Return LDrive
     End Function
-
     Public Shared Function GetDriveMappings() As String
         Dim p As IntPtr = _GetDriveMappings()
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
-
     Public Shared Function StartLtfsService() As String
         Dim p As IntPtr = _StartLtfsService()
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -861,13 +1105,12 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
-    Public Shared Function MapTapeDrive(driveLetter As Char, tapeDrive As String, Optional ByVal logDir As String = DEFAULT_LOG_DIR, Optional ByVal workDir As String = DEFAULT_WORK_DIR, Optional ByVal showOffline As Boolean = False) As String
-        Dim tapeIndex As Byte = Byte.Parse(tapeDrive.Substring(4))
-        Dim p As IntPtr = _MapTapeDrive(driveLetter, tapeDrive, tapeIndex, logDir, workDir, showOffline)
+    Public Shared Function MapTapeDrive(driveLetter As Char, TapeDrive As String, Optional ByVal logDir As String = DEFAULT_LOG_DIR, Optional ByVal workDir As String = DEFAULT_WORK_DIR, Optional ByVal showOffline As Boolean = False) As String
+        Dim tapeIndex As Byte = Byte.Parse(TapeDrive.Substring(4))
+        Dim p As IntPtr = _MapTapeDrive(driveLetter, TapeDrive, tapeIndex, logDir, workDir, showOffline)
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
-
     Public Shared Function UnMapTapeDrive(driveLetter As Char) As String
         Dim p As IntPtr = _UnmapTapeDrive(driveLetter)
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -892,6 +1135,364 @@ Public Class TapeUtils
         Dim p As IntPtr = _CheckTapeMedia(driveLetter)
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
+    End Function
+    Public Shared Function mkltfs(TapeDrive As String,
+                                  Optional ByVal Barcode As String = "",
+                                  Optional ByVal VolumeName As String = "",
+                                  Optional ByVal ExtraPartitionCount As Byte = 1,
+                                  Optional ByVal BlockLen As Long = 524288,
+                                  Optional ByVal ImmediateMode As Boolean = True,
+                                  Optional ByVal ProgressReport As Action(Of String) = Nothing,
+                                  Optional ByVal OnFinish As Action(Of String) = Nothing,
+                                  Optional ByVal OnError As Action(Of String) = Nothing) As Boolean
+        Dim mkltfs_op As Func(Of Boolean) =
+            Function()
+                Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
+                ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
+                If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
+
+                'Load and Thread
+                ProgressReport("Loading..")
+                If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                    ProgressReport("Load OK" & vbCrLf)
+                Else
+                    OnError("Load Fail" & vbCrLf)
+                    Return False
+                End If
+                'Erase
+                ProgressReport("Initializing tape..")
+                If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 0, 0, 0, 0}) Then
+                    ProgressReport("Initialization OK" & vbCrLf)
+                Else
+                    OnError("Initialization Fail" & vbCrLf)
+                    Return False
+                End If
+                If ExtraPartitionCount > 0 Then
+                    'Mode Select:1st Partition to Minimum 
+                    ProgressReport("MODE SELECT - Partition mode page..")
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
+                        ProgressReport("MODE SELECT 11h OK" & vbCrLf)
+                    Else
+                        OnError("MODE SELECT 11h Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Format
+                    ProgressReport("Partitioning..")
+                    If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
+                        ProgressReport("     OK" & vbCrLf)
+                    Else
+                        OnError("     Fail" & vbCrLf)
+                        Return False
+                    End If
+                End If
+                'Set Vendor
+                ProgressReport($"WRITE ATTRIBUTE: Vendor=OPEN..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H800, "OPEN".PadRight(8)) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0800 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0800 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set AppName
+                ProgressReport($"WRITE ATTRIBUTE: Application Name = LTFSCopyGUI..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H801, "LTFSCopyGUI".PadRight(32)) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0801 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0801 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set Version
+                ProgressReport($"WRITE ATTRIBUTE: Application Version={My.Application.Info.Version.ToString(3)}..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H802, My.Application.Info.Version.ToString(3).PadRight(8)) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0802 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0802 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set TextLabel
+                ProgressReport($"WRITE ATTRIBUTE: TextLabel= ..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0803 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0803 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set TLI
+                ProgressReport($"WRITE ATTRIBUTE: Localization Identifier = 0..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H805, {0}, TapeUtils.AttributeFormat.Binary) Then
+                    ProgressReport("WRITE ATTRIBUTE:0805 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE:0805 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set Barcode
+                Barcode = Barcode.PadRight(32).Substring(0, 32)
+                ProgressReport($"WRITE ATTRIBUTE: Barcode={Barcode}..")
+                If TapeUtils.SetBarcode(TapeDrive, Barcode) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0806 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0806 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set Version
+                Dim LTFSVersion As String = "2.4.0"
+                If ExtraPartitionCount = 0 Then LTFSVersion = "2.4.1"
+                ProgressReport($"WRITE ATTRIBUTE: Format Version={LTFSVersion}..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H80B, LTFSVersion.PadRight(16)) Then
+                    ProgressReport("WRITE ATTRIBUTE: 080B OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 080B Fail" & vbCrLf)
+                    Return False
+                End If
+                'Mode Select:Block Length
+                ProgressReport($"MODE SELECT - Block Size {BlockLen}..")
+                If TapeUtils.SetBlockSize(TapeDrive, BlockLen).Length > 0 Then
+                    ProgressReport($"MODE SELECT - Block Size {BlockLen} OK" & vbCrLf)
+                Else
+                    OnError($"MODE SELECT - Block Size {BlockLen} Fail" & vbCrLf)
+                    Return False
+                End If
+                'Locate
+                ProgressReport("Locate to data partition..")
+                If TapeUtils.Locate(TapeDrive, 0, ExtraPartitionCount) = 0 Then
+                    ProgressReport($"Locate P{ExtraPartitionCount}B0 OK" & vbCrLf)
+                Else
+                    OnError($"Locate P{ExtraPartitionCount}B0 Fail" & vbCrLf)
+                    Return False
+                End If
+
+                'Write VOL1Label
+                ProgressReport("Write VOL1Label..")
+                If TapeUtils.Write(TapeDrive, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
+                    ProgressReport("Write VOL1Label OK" & vbCrLf)
+                Else
+                    OnError("Write VOL1Label Fail" & vbCrLf)
+                    Return False
+                End If
+
+                'Write FileMark
+                ProgressReport("Write FileMark..")
+                If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                    ProgressReport("Write FileMark OK" & vbCrLf)
+                Else
+                    OnError("Write FileMark Fail" & vbCrLf)
+                    Return False
+                End If
+
+                Dim plabel As New ltfslabel()
+                plabel.volumeuuid = Guid.NewGuid()
+                plabel.location.partition = ltfslabel.PartitionLabel.b
+                plabel.partitions.index = ltfslabel.PartitionLabel.a
+                plabel.partitions.data = ltfslabel.PartitionLabel.b
+                plabel.blocksize = BlockLen
+
+                'Write ltfslabel
+                ProgressReport("Write ltfslabel..")
+                If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                    ProgressReport("Write ltfslabel OK" & vbCrLf)
+                Else
+                    OnError("Write ltfslabel Fail" & vbCrLf)
+                    Return False
+                End If
+
+                'Write FileMark
+                ProgressReport("Write FileMark..")
+                If TapeUtils.WriteFileMark(TapeDrive, 2).Length > 0 Then
+                    ProgressReport("Write 2FileMark OK" & vbCrLf)
+                Else
+                    OnError("Write 2FileMark Fail" & vbCrLf)
+                    Return False
+                End If
+
+                Dim pindex As New ltfsindex
+                pindex.volumeuuid = plabel.volumeuuid
+                pindex.generationnumber = 1
+                pindex.creator = plabel.creator
+                pindex.updatetime = plabel.formattime
+                pindex.location.partition = ltfslabel.PartitionLabel.b
+                pindex.location.startblock = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                pindex.previousgenerationlocation = Nothing
+                pindex.highestfileuid = 1
+                Dim block1 As ULong = pindex.location.startblock
+                pindex._directory = New List(Of ltfsindex.directory)
+                pindex._directory.Add(New ltfsindex.directory With {.name = VolumeName, .readonly = False,
+                                              .creationtime = plabel.formattime, .changetime = .creationtime,
+                                              .accesstime = .creationtime, .modifytime = .creationtime, .backuptime = .creationtime, .fileuid = 1, .contents = New ltfsindex.contentsDef()})
+
+                'Write ltfsindex
+                ProgressReport("Write ltfsindex..")
+                If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                    ProgressReport("Write ltfsindex OK" & vbCrLf)
+                Else
+                    OnError("Write ltfsindex Fail" & vbCrLf)
+                    Return False
+                End If
+
+                'Write FileMark
+                ProgressReport("Write FileMark..")
+                If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                    ProgressReport("Write FileMark OK" & vbCrLf)
+                Else
+                    OnError("Write FileMark Fail" & vbCrLf)
+                    Return False
+                End If
+                Dim block0 As ULong
+                If ExtraPartitionCount > 0 Then
+                    'Locate
+                    ProgressReport("Locate to index partition..")
+                    If TapeUtils.Locate(TapeDrive, 0, 0) = 0 Then
+                        ProgressReport("Locate P0B0 OK" & vbCrLf)
+                    Else
+                        OnError("Locate P0B0 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write VOL1Label
+                    ProgressReport("Write VOL1Label..")
+                    If TapeUtils.Write(TapeDrive, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
+                        ProgressReport("Write VOL1Label OK" & vbCrLf)
+                    Else
+                        OnError("Write VOL1Label Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write FileMark
+                    ProgressReport("Write FileMark..")
+                    If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                        ProgressReport("Write FileMark OK" & vbCrLf)
+                    Else
+                        OnError("Write FileMark Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write ltfslabel
+                    plabel.location.partition = ltfslabel.PartitionLabel.a
+                    ProgressReport("Write ltfslabel..")
+                    If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                        ProgressReport("Write ltfslabel OK" & vbCrLf)
+                    Else
+                        OnError("Write ltfslabel Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write FileMark
+                    ProgressReport("Write FileMark..")
+                    If TapeUtils.WriteFileMark(TapeDrive, 2).Length > 0 Then
+                        ProgressReport("Write FileMark OK" & vbCrLf)
+                    Else
+                        OnError("Write FileMark Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write ltfsindex
+                    pindex.previousgenerationlocation = New ltfsindex.PartitionDef()
+                    pindex.previousgenerationlocation.partition = pindex.location.partition
+                    pindex.previousgenerationlocation.startblock = pindex.location.startblock
+                    pindex.location.partition = ltfsindex.PartitionLabel.a
+                    pindex.location.startblock = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                    block0 = pindex.location.startblock
+                    ProgressReport("Write ltfsindex..")
+                    If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                        ProgressReport("Write ltfsindex OK" & vbCrLf)
+                    Else
+                        OnError("Write ltfsindex Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Write FileMark
+                    ProgressReport("Write FileMark..")
+                    If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                        ProgressReport("Write FileMark OK" & vbCrLf)
+                    Else
+                        OnError("Write FileMark Fail" & vbCrLf)
+                        Return False
+                    End If
+                End If
+                'Set DateTime
+                Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")
+                ProgressReport($"WRITE ATTRIBUTE: Written time={CurrentTime}..")
+                If TapeUtils.SetMAMAttribute(TapeDrive, &H804, CurrentTime.PadRight(12)) Then
+                    ProgressReport("WRITE ATTRIBUTE: 0804 OK" & vbCrLf)
+                Else
+                    OnError("WRITE ATTRIBUTE: 0804 Fail" & vbCrLf)
+                    Return False
+                End If
+                'Set VCI
+                ProgressReport($"WRITE ATTRIBUTE: VCI..")
+                If TapeUtils.WriteVCI(TapeDrive, pindex.generationnumber, block0, block1, pindex.volumeuuid.ToString(), ExtraPartitionCount) Then
+                    ProgressReport("WRITE VCI OK" & vbCrLf)
+                Else
+                    OnError("WRITE VCI Fail" & vbCrLf)
+                    Return False
+                End If
+
+                OnFinish("Format finished.")
+                Return True
+            End Function
+        If ImmediateMode Then
+            Return mkltfs_op()
+        Else
+            Dim th As New Threading.Thread(
+                Sub()
+                    mkltfs_op()
+                End Sub)
+            th.Start()
+            Return True
+        End If
+    End Function
+    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Action(Of Long) = Nothing) As Boolean
+        If Not ReserveUnit(TapeDrive) Then Return False
+        If Not PreventMediaRemoval(TapeDrive) Then
+            ReleaseUnit(TapeDrive)
+            Return False
+        End If
+        If Locate(TapeDrive, BlockAddress, Partition, LocateDestType.Block) <> 0 Then
+            AllowMediaRemoval(TapeDrive)
+            ReleaseUnit(TapeDrive)
+            Return False
+        End If
+        Try
+            My.Computer.FileSystem.WriteAllBytes(OutputFile, {}, False)
+        Catch ex As Exception
+            AllowMediaRemoval(TapeDrive)
+            ReleaseUnit(TapeDrive)
+            Return False
+        End Try
+        Dim fs As IO.FileStream
+        Try
+            fs = IO.File.Open(OutputFile, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite)
+        Catch ex As Exception
+            AllowMediaRemoval(TapeDrive)
+            ReleaseUnit(TapeDrive)
+            Return False
+        End Try
+        Try
+            fs.Seek(FileOffset, IO.SeekOrigin.Begin)
+            Dim ReadedSize As Long = 0
+            While ReadedSize < TotalBytes + ByteOffset And Not StopFlag
+                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, BlockSize)
+                If Data.Length = 0 Then
+                    AllowMediaRemoval(TapeDrive)
+                    ReleaseUnit(TapeDrive)
+                    Return False
+                End If
+                ReadedSize += Data.Length
+                fs.Write(Data, ByteOffset, Data.Length - ByteOffset)
+                If ProgressReport IsNot Nothing Then ProgressReport(Data.Length - ByteOffset)
+                ByteOffset = 0
+            End While
+            If StopFlag Then
+                fs.Close()
+                My.Computer.FileSystem.DeleteFile(OutputFile)
+            End If
+        Catch ex As Exception
+            fs.Close()
+            My.Computer.FileSystem.DeleteFile(OutputFile)
+            AllowMediaRemoval(TapeDrive)
+            ReleaseUnit(TapeDrive)
+            Return False
+        End Try
+        fs.Flush()
+        fs.Close()
+        Return True
+    End Function
+    Public Shared Function ParseTimeStamp(t As String) As Date
+        'yyyy-MM-ddTHH:mm:ss.fffffff00Z
+        Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
     End Function
     Public Class TapeDrive
         Public Property DevIndex As String

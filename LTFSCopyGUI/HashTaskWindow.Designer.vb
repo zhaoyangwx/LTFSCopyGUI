@@ -79,8 +79,6 @@ Partial Class HashTaskWindow
         Me.HToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.HToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.HToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.HToolStripMenuItem3 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.AllToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -186,9 +184,9 @@ Partial Class HashTaskWindow
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.HToolStripMenuItem3, Me.AllToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 280)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 236)
         '
         'SToolStripMenuItem
         '
@@ -231,18 +229,6 @@ Partial Class HashTaskWindow
         Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
         Me.HToolStripMenuItem2.Size = New System.Drawing.Size(144, 22)
         Me.HToolStripMenuItem2.Text = "6h"
-        '
-        'HToolStripMenuItem3
-        '
-        Me.HToolStripMenuItem3.Name = "HToolStripMenuItem3"
-        Me.HToolStripMenuItem3.Size = New System.Drawing.Size(144, 22)
-        Me.HToolStripMenuItem3.Text = "12h"
-        '
-        'AllToolStripMenuItem
-        '
-        Me.AllToolStripMenuItem.Name = "AllToolStripMenuItem"
-        Me.AllToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.AllToolStripMenuItem.Text = "1d"
         '
         'ToolStripSeparator1
         '
@@ -522,10 +508,8 @@ Partial Class HashTaskWindow
     Friend WithEvents WordwrapToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents ToolStripSeparator2 As ToolStripSeparator
-    Friend WithEvents AllToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents HToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents HToolStripMenuItem2 As ToolStripMenuItem
-    Friend WithEvents HToolStripMenuItem3 As ToolStripMenuItem
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents Button4 As Button
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
