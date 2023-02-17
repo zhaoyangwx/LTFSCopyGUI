@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class LTFSConfigurator
     Inherits System.Windows.Forms.Form
 
     'Form 重写 Dispose，以清理组件列表。
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,8 +20,9 @@ Partial Class LTFSConfigurator
     '注意: 以下过程是 Windows 窗体设计器所必需的
     '可以使用 Windows 窗体设计器修改它。  
     '不要使用代码编辑器修改它。
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(LTFSConfigurator))
         Me.Button1 = New System.Windows.Forms.Button()
         Me.ListBox1 = New System.Windows.Forms.ListBox()
         Me.Button2 = New System.Windows.Forms.Button()
@@ -39,16 +40,19 @@ Partial Class LTFSConfigurator
         Me.Button10 = New System.Windows.Forms.Button()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.Button27 = New System.Windows.Forms.Button()
         Me.Button14 = New System.Windows.Forms.Button()
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.Button26 = New System.Windows.Forms.Button()
+        Me.Button25 = New System.Windows.Forms.Button()
+        Me.ComboBox3 = New System.Windows.Forms.ComboBox()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button24 = New System.Windows.Forms.Button()
         Me.Button23 = New System.Windows.Forms.Button()
         Me.Button11 = New System.Windows.Forms.Button()
         Me.Button5 = New System.Windows.Forms.Button()
-        Me.Label17 = New System.Windows.Forms.Label()
         Me.Label16 = New System.Windows.Forms.Label()
         Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
         Me.NumericUpDown2 = New System.Windows.Forms.NumericUpDown()
@@ -175,7 +179,7 @@ Partial Class LTFSConfigurator
         Me.TextBox1.Location = New System.Drawing.Point(366, 35)
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(699, 21)
+        Me.TextBox1.Size = New System.Drawing.Size(618, 21)
         Me.TextBox1.TabIndex = 8
         '
         'Label2
@@ -264,6 +268,7 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.Button27)
         Me.Panel1.Controls.Add(Me.Button14)
         Me.Panel1.Controls.Add(Me.Button13)
         Me.Panel1.Controls.Add(Me.CheckBox1)
@@ -289,6 +294,17 @@ Partial Class LTFSConfigurator
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(1077, 662)
         Me.Panel1.TabIndex = 17
+        '
+        'Button27
+        '
+        Me.Button27.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button27.Enabled = False
+        Me.Button27.Location = New System.Drawing.Point(990, 33)
+        Me.Button27.Name = "Button27"
+        Me.Button27.Size = New System.Drawing.Size(75, 23)
+        Me.Button27.TabIndex = 21
+        Me.Button27.Text = "打开"
+        Me.Button27.UseVisualStyleBackColor = True
         '
         'Button14
         '
@@ -326,12 +342,14 @@ Partial Class LTFSConfigurator
         Me.Panel2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Panel2.Controls.Add(Me.Button26)
+        Me.Panel2.Controls.Add(Me.Button25)
+        Me.Panel2.Controls.Add(Me.ComboBox3)
         Me.Panel2.Controls.Add(Me.CheckBox2)
         Me.Panel2.Controls.Add(Me.Button24)
         Me.Panel2.Controls.Add(Me.Button23)
         Me.Panel2.Controls.Add(Me.Button11)
         Me.Panel2.Controls.Add(Me.Button5)
-        Me.Panel2.Controls.Add(Me.Label17)
         Me.Panel2.Controls.Add(Me.Label16)
         Me.Panel2.Controls.Add(Me.NumericUpDown1)
         Me.Panel2.Controls.Add(Me.NumericUpDown2)
@@ -367,17 +385,48 @@ Partial Class LTFSConfigurator
         Me.Panel2.Controls.Add(Me.TextBox5)
         Me.Panel2.Controls.Add(Me.Label7)
         Me.Panel2.Controls.Add(Me.Label6)
-        Me.Panel2.Location = New System.Drawing.Point(58, 62)
+        Me.Panel2.Location = New System.Drawing.Point(35, 62)
         Me.Panel2.Name = "Panel2"
-        Me.Panel2.Size = New System.Drawing.Size(941, 530)
+        Me.Panel2.Size = New System.Drawing.Size(991, 547)
         Me.Panel2.TabIndex = 18
         Me.Panel2.Visible = False
+        '
+        'Button26
+        '
+        Me.Button26.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Button26.Location = New System.Drawing.Point(270, 521)
+        Me.Button26.Name = "Button26"
+        Me.Button26.Size = New System.Drawing.Size(75, 23)
+        Me.Button26.TabIndex = 56
+        Me.Button26.Text = "format"
+        Me.Button26.UseVisualStyleBackColor = True
+        '
+        'Button25
+        '
+        Me.Button25.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button25.Location = New System.Drawing.Point(904, 375)
+        Me.Button25.Name = "Button25"
+        Me.Button25.Size = New System.Drawing.Size(75, 23)
+        Me.Button25.TabIndex = 55
+        Me.Button25.Text = "Load index"
+        Me.Button25.UseVisualStyleBackColor = True
+        '
+        'ComboBox3
+        '
+        Me.ComboBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ComboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox3.FormattingEnabled = True
+        Me.ComboBox3.Items.AddRange(New Object() {"Block", "File", "EOD"})
+        Me.ComboBox3.Location = New System.Drawing.Point(336, 433)
+        Me.ComboBox3.Name = "ComboBox3"
+        Me.ComboBox3.Size = New System.Drawing.Size(58, 20)
+        Me.ComboBox3.TabIndex = 54
         '
         'CheckBox2
         '
         Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.CheckBox2.AutoSize = True
-        Me.CheckBox2.Location = New System.Drawing.Point(664, 421)
+        Me.CheckBox2.Location = New System.Drawing.Point(713, 438)
         Me.CheckBox2.Name = "CheckBox2"
         Me.CheckBox2.Size = New System.Drawing.Size(42, 16)
         Me.CheckBox2.TabIndex = 53
@@ -388,7 +437,7 @@ Partial Class LTFSConfigurator
         '
         Me.Button24.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Button24.ForeColor = System.Drawing.Color.Red
-        Me.Button24.Location = New System.Drawing.Point(634, 416)
+        Me.Button24.Location = New System.Drawing.Point(683, 433)
         Me.Button24.Name = "Button24"
         Me.Button24.Size = New System.Drawing.Size(24, 23)
         Me.Button24.TabIndex = 52
@@ -398,7 +447,7 @@ Partial Class LTFSConfigurator
         'Button23
         '
         Me.Button23.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button23.Location = New System.Drawing.Point(553, 416)
+        Me.Button23.Location = New System.Drawing.Point(602, 433)
         Me.Button23.Name = "Button23"
         Me.Button23.Size = New System.Drawing.Size(75, 23)
         Me.Button23.TabIndex = 51
@@ -408,7 +457,7 @@ Partial Class LTFSConfigurator
         'Button11
         '
         Me.Button11.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button11.Location = New System.Drawing.Point(854, 387)
+        Me.Button11.Location = New System.Drawing.Point(904, 404)
         Me.Button11.Name = "Button11"
         Me.Button11.Size = New System.Drawing.Size(75, 23)
         Me.Button11.TabIndex = 50
@@ -418,28 +467,18 @@ Partial Class LTFSConfigurator
         'Button5
         '
         Me.Button5.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button5.Location = New System.Drawing.Point(472, 416)
+        Me.Button5.Location = New System.Drawing.Point(521, 433)
         Me.Button5.Name = "Button5"
         Me.Button5.Size = New System.Drawing.Size(75, 23)
         Me.Button5.TabIndex = 49
         Me.Button5.Text = "Locate"
         Me.Button5.UseVisualStyleBackColor = True
         '
-        'Label17
-        '
-        Me.Label17.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Label17.AutoSize = True
-        Me.Label17.Location = New System.Drawing.Point(336, 421)
-        Me.Label17.Name = "Label17"
-        Me.Label17.Size = New System.Drawing.Size(35, 12)
-        Me.Label17.TabIndex = 48
-        Me.Label17.Text = "Block"
-        '
         'Label16
         '
         Me.Label16.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label16.AutoSize = True
-        Me.Label16.Location = New System.Drawing.Point(210, 421)
+        Me.Label16.Location = New System.Drawing.Point(210, 438)
         Me.Label16.Name = "Label16"
         Me.Label16.Size = New System.Drawing.Size(59, 12)
         Me.Label16.TabIndex = 47
@@ -448,7 +487,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown1
         '
         Me.NumericUpDown1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown1.Location = New System.Drawing.Point(275, 416)
+        Me.NumericUpDown1.Location = New System.Drawing.Point(275, 433)
         Me.NumericUpDown1.Maximum = New Decimal(New Integer() {7, 0, 0, 0})
         Me.NumericUpDown1.Name = "NumericUpDown1"
         Me.NumericUpDown1.Size = New System.Drawing.Size(55, 21)
@@ -457,7 +496,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown2
         '
         Me.NumericUpDown2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown2.Location = New System.Drawing.Point(377, 416)
+        Me.NumericUpDown2.Location = New System.Drawing.Point(400, 433)
         Me.NumericUpDown2.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
         Me.NumericUpDown2.Name = "NumericUpDown2"
         Me.NumericUpDown2.Size = New System.Drawing.Size(89, 21)
@@ -467,7 +506,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label5.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Label5.AutoSize = True
-        Me.Label5.Location = New System.Drawing.Point(711, 421)
+        Me.Label5.Location = New System.Drawing.Point(761, 438)
         Me.Label5.Name = "Label5"
         Me.Label5.Size = New System.Drawing.Size(71, 12)
         Me.Label5.TabIndex = 44
@@ -477,7 +516,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label4.AutoSize = True
-        Me.Label4.Location = New System.Drawing.Point(9, 422)
+        Me.Label4.Location = New System.Drawing.Point(9, 439)
         Me.Label4.Name = "Label4"
         Me.Label4.Size = New System.Drawing.Size(29, 12)
         Me.Label4.TabIndex = 43
@@ -490,15 +529,15 @@ Partial Class LTFSConfigurator
         Me.ComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBox2.FormattingEnabled = True
         Me.ComboBox2.Items.AddRange(New Object() {"00h - Main buffer memory", "02h - Burst buffer", "10h - CM EEPROM", "11h - Mechanical EEPROM", "12h - Head assembly EEPROM", "13h - PCA EEPROM", "20h - Main buffer segments 0", "21h - Main buffer segments 1", "22h - Main buffer segments 2", "23h - Main buffer segments 3", "24h - Main buffer segments 4", "25h - Main buffer segments 5", "26h - Main buffer segments 6", "27h - Main buffer segments 7", "28h - Main buffer segments 8", "29h - Main buffer segments 9", "2Ah - Main buffer segments 10", "2Bh - Main buffer segments 11", "2Ch - Main buffer segments 12", "2Dh - Main buffer segments 13", "2Eh - Main buffer segments 14", "2Fh - Main buffer segments 15", "30h - Main buffer segments 16", "31h - Main buffer segments 17", "32h - Main buffer segments 18", "33h - Main buffer segments 19", "34h - Main buffer segments 20", "35h - Main buffer segments 21", "36h - Main buffer segments 22", "37h - Main buffer segments 23", "38h - Main buffer segments 24", "39h - Main buffer segments 25", "3Ah - Main buffer segments 26", "3Bh - Main buffer segments 27", "3Ch - Main buffer segments 28", "3Dh - Main buffer segments 29", "3Eh - Main buffer segments 30", "3Fh - Main buffer segments 31", "40h - Snapshot data buffer", "90h - Mech EPPROM Manufacturing Parameters", "91h - Mech EPPROM Drive Usage Parameters", "93h - Mech EPPROM Drive Usage Parameters(Shipped)", "94h - Mech EPPROM In-House Testing", "95h - Mech EPPROM Servo/Mech Use", "96h - Mech EPPROM Host Access Table", "97h - Mech EPPROM Partner-specific Config Table", "99h - Mech EPPROM Ethernet I/F Table", "9Ah - Mech EPPROM Certificate Table", "9Bh - Mech EPPROM Reserved", "9Ch - Mech EEPROM LTT Drive Health Rules", "9Dh - Mech EEPROM Tape Pull Usage", "A0h - Head EPPROM Manufacturing Parameters", "A1h - Head EPPROM Tuning Parameters", "A2h - Head EPPROM Resistance Parameters", "A3h - Head EPPROM Formatter Data Skew Parameters", "A4h - Head EPPROM In-House Testing", "A5h - Head EPPROM Manufacturing Use", "A6h - Head EPPROM Read/Write Tuning Parameters", "A7h - Head EPPROM Media Usage Table", "A8h - Head EPPROM Reserved", "A9h - Head EPPROM Jabil Production", "AAh - Head EPPROM Reserved", "ABh - Head EEPROM Vendor Information", "B0h - PCA EPPROM Manufacturing Parameters", "B1h - PCA EPPROM Tape Speed Parameters", "B2h - PCA EPPROM Tape Tools Area", "B3h - PCA EPPROM Thermal Data Parameters", "B4h - PCA EPPROM Tape 'A' Log", "B5h - PCA EPPROM Tape 'B' Log", "B6h - PCA EPPROM Tape 'C' Log", "B7h - PCA EPPROM Tape 'D' Log", "B8h - PCA EPPROM Write ERT Logs", "B9h - PCA EPPROM Write Fault Counters", "BAh - PCA EPPROM In-House Testing", "BBh - PCA EPPROM Read ERT Logs", "BCh - PCA EPPROM Persistent Reservation Table", "BDh - PCA EPPROM Host I/F Information Table", "BEh - PCA EPPROM NV Logs", "BFh - PCA EEPROM Physical Calbration Table", "C0h - PCA-2 EPPROM KMA Security Table", "C1h - PCA-2 EPPROM Reserved"})
-        Me.ComboBox2.Location = New System.Drawing.Point(128, 446)
+        Me.ComboBox2.Location = New System.Drawing.Point(128, 463)
         Me.ComboBox2.Name = "ComboBox2"
-        Me.ComboBox2.Size = New System.Drawing.Size(720, 20)
+        Me.ComboBox2.Size = New System.Drawing.Size(770, 20)
         Me.ComboBox2.TabIndex = 42
         '
         'Button22
         '
         Me.Button22.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button22.Location = New System.Drawing.Point(854, 445)
+        Me.Button22.Location = New System.Drawing.Point(904, 462)
         Me.Button22.Name = "Button22"
         Me.Button22.Size = New System.Drawing.Size(75, 23)
         Me.Button22.TabIndex = 41
@@ -508,7 +547,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown7
         '
         Me.NumericUpDown7.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown7.Location = New System.Drawing.Point(788, 416)
+        Me.NumericUpDown7.Location = New System.Drawing.Point(838, 433)
         Me.NumericUpDown7.Maximum = New Decimal(New Integer() {524288, 0, 0, 0})
         Me.NumericUpDown7.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.NumericUpDown7.Name = "NumericUpDown7"
@@ -519,7 +558,7 @@ Partial Class LTFSConfigurator
         'Button21
         '
         Me.Button21.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button21.Location = New System.Drawing.Point(854, 416)
+        Me.Button21.Location = New System.Drawing.Point(904, 433)
         Me.Button21.Name = "Button21"
         Me.Button21.Size = New System.Drawing.Size(75, 23)
         Me.Button21.TabIndex = 39
@@ -530,7 +569,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label14.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label14.AutoSize = True
-        Me.Label14.Location = New System.Drawing.Point(9, 450)
+        Me.Label14.Location = New System.Drawing.Point(9, 467)
         Me.Label14.Name = "Label14"
         Me.Label14.Size = New System.Drawing.Size(71, 12)
         Me.Label14.TabIndex = 38
@@ -539,7 +578,7 @@ Partial Class LTFSConfigurator
         'Button20
         '
         Me.Button20.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button20.Location = New System.Drawing.Point(128, 416)
+        Me.Button20.Location = New System.Drawing.Point(128, 433)
         Me.Button20.Name = "Button20"
         Me.Button20.Size = New System.Drawing.Size(75, 23)
         Me.Button20.TabIndex = 37
@@ -549,7 +588,7 @@ Partial Class LTFSConfigurator
         'Button19
         '
         Me.Button19.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button19.Location = New System.Drawing.Point(374, 472)
+        Me.Button19.Location = New System.Drawing.Point(374, 489)
         Me.Button19.Name = "Button19"
         Me.Button19.Size = New System.Drawing.Size(92, 23)
         Me.Button19.TabIndex = 36
@@ -559,7 +598,7 @@ Partial Class LTFSConfigurator
         'Button18
         '
         Me.Button18.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button18.Location = New System.Drawing.Point(854, 474)
+        Me.Button18.Location = New System.Drawing.Point(904, 491)
         Me.Button18.Name = "Button18"
         Me.Button18.Size = New System.Drawing.Size(75, 23)
         Me.Button18.TabIndex = 35
@@ -569,7 +608,7 @@ Partial Class LTFSConfigurator
         'Button17
         '
         Me.Button17.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button17.Location = New System.Drawing.Point(293, 472)
+        Me.Button17.Location = New System.Drawing.Point(293, 489)
         Me.Button17.Name = "Button17"
         Me.Button17.Size = New System.Drawing.Size(75, 23)
         Me.Button17.TabIndex = 34
@@ -579,7 +618,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown9
         '
         Me.NumericUpDown9.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown9.Location = New System.Drawing.Point(245, 474)
+        Me.NumericUpDown9.Location = New System.Drawing.Point(245, 491)
         Me.NumericUpDown9.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
         Me.NumericUpDown9.Name = "NumericUpDown9"
         Me.NumericUpDown9.Size = New System.Drawing.Size(42, 21)
@@ -589,7 +628,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown8
         '
         Me.NumericUpDown8.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown8.Location = New System.Drawing.Point(197, 474)
+        Me.NumericUpDown8.Location = New System.Drawing.Point(197, 491)
         Me.NumericUpDown8.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
         Me.NumericUpDown8.Name = "NumericUpDown8"
         Me.NumericUpDown8.Size = New System.Drawing.Size(42, 21)
@@ -600,7 +639,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label15.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label15.AutoSize = True
-        Me.Label15.Location = New System.Drawing.Point(132, 476)
+        Me.Label15.Location = New System.Drawing.Point(132, 493)
         Me.Label15.Name = "Label15"
         Me.Label15.Size = New System.Drawing.Size(59, 12)
         Me.Label15.TabIndex = 31
@@ -610,7 +649,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label13.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label13.AutoSize = True
-        Me.Label13.Location = New System.Drawing.Point(9, 476)
+        Me.Label13.Location = New System.Drawing.Point(9, 493)
         Me.Label13.Name = "Label13"
         Me.Label13.Size = New System.Drawing.Size(77, 12)
         Me.Label13.TabIndex = 28
@@ -636,7 +675,7 @@ Partial Class LTFSConfigurator
         'Button16
         '
         Me.Button16.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button16.Location = New System.Drawing.Point(854, 504)
+        Me.Button16.Location = New System.Drawing.Point(904, 521)
         Me.Button16.Name = "Button16"
         Me.Button16.Size = New System.Drawing.Size(75, 23)
         Me.Button16.TabIndex = 25
@@ -647,10 +686,10 @@ Partial Class LTFSConfigurator
         '
         Me.TextBox9.Anchor = CType(((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TextBox9.Location = New System.Drawing.Point(346, 504)
+        Me.TextBox9.Location = New System.Drawing.Point(412, 521)
         Me.TextBox9.MaxLength = 32
         Me.TextBox9.Name = "TextBox9"
-        Me.TextBox9.Size = New System.Drawing.Size(501, 21)
+        Me.TextBox9.Size = New System.Drawing.Size(485, 21)
         Me.TextBox9.TabIndex = 24
         Me.TextBox9.Text = "TEST00L5"
         '
@@ -658,7 +697,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label11.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label11.AutoSize = True
-        Me.Label11.Location = New System.Drawing.Point(293, 509)
+        Me.Label11.Location = New System.Drawing.Point(359, 526)
         Me.Label11.Name = "Label11"
         Me.Label11.Size = New System.Drawing.Size(47, 12)
         Me.Label11.TabIndex = 23
@@ -668,7 +707,7 @@ Partial Class LTFSConfigurator
         '
         Me.Label10.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.Label10.AutoSize = True
-        Me.Label10.Location = New System.Drawing.Point(9, 509)
+        Me.Label10.Location = New System.Drawing.Point(9, 526)
         Me.Label10.Name = "Label10"
         Me.Label10.Size = New System.Drawing.Size(83, 12)
         Me.Label10.TabIndex = 22
@@ -697,7 +736,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown6
         '
         Me.NumericUpDown6.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown6.Location = New System.Drawing.Point(128, 504)
+        Me.NumericUpDown6.Location = New System.Drawing.Point(128, 521)
         Me.NumericUpDown6.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
         Me.NumericUpDown6.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.NumericUpDown6.Name = "NumericUpDown6"
@@ -715,7 +754,7 @@ Partial Class LTFSConfigurator
         Me.TextBox8.Multiline = True
         Me.TextBox8.Name = "TextBox8"
         Me.TextBox8.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
-        Me.TextBox8.Size = New System.Drawing.Size(719, 327)
+        Me.TextBox8.Size = New System.Drawing.Size(769, 344)
         Me.TextBox8.TabIndex = 18
         '
         'TextBox7
@@ -725,13 +764,13 @@ Partial Class LTFSConfigurator
         Me.TextBox7.Location = New System.Drawing.Point(228, 56)
         Me.TextBox7.MaxLength = 2147483647
         Me.TextBox7.Name = "TextBox7"
-        Me.TextBox7.Size = New System.Drawing.Size(619, 21)
+        Me.TextBox7.Size = New System.Drawing.Size(669, 21)
         Me.TextBox7.TabIndex = 17
         '
         'Button15
         '
         Me.Button15.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button15.Location = New System.Drawing.Point(189, 504)
+        Me.Button15.Location = New System.Drawing.Point(189, 521)
         Me.Button15.Name = "Button15"
         Me.Button15.Size = New System.Drawing.Size(75, 23)
         Me.Button15.TabIndex = 16
@@ -741,7 +780,7 @@ Partial Class LTFSConfigurator
         'Button12
         '
         Me.Button12.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button12.Location = New System.Drawing.Point(854, 29)
+        Me.Button12.Location = New System.Drawing.Point(904, 29)
         Me.Button12.Name = "Button12"
         Me.Button12.Size = New System.Drawing.Size(75, 23)
         Me.Button12.TabIndex = 15
@@ -754,7 +793,7 @@ Partial Class LTFSConfigurator
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.TextBox6.Location = New System.Drawing.Point(228, 29)
         Me.TextBox6.Name = "TextBox6"
-        Me.TextBox6.Size = New System.Drawing.Size(619, 21)
+        Me.TextBox6.Size = New System.Drawing.Size(669, 21)
         Me.TextBox6.TabIndex = 14
         Me.TextBox6.Text = "1B 00 00 00 00 00"
         '
@@ -800,6 +839,7 @@ Partial Class LTFSConfigurator
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(1077, 662)
         Me.Controls.Add(Me.Panel1)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "LTFSConfigurator"
         Me.Text = "LTFSConfigurator"
         Me.Panel1.ResumeLayout(False)
@@ -870,7 +910,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents Button22 As Button
     Friend WithEvents ComboBox2 As ComboBox
     Friend WithEvents Button5 As Button
-    Friend WithEvents Label17 As Label
     Friend WithEvents Label16 As Label
     Friend WithEvents NumericUpDown1 As NumericUpDown
     Friend WithEvents NumericUpDown2 As NumericUpDown
@@ -881,4 +920,8 @@ Partial Class LTFSConfigurator
     Friend WithEvents FolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents Button24 As Button
     Friend WithEvents CheckBox2 As CheckBox
+    Friend WithEvents ComboBox3 As ComboBox
+    Friend WithEvents Button25 As Button
+    Friend WithEvents Button26 As Button
+    Friend WithEvents Button27 As Button
 End Class

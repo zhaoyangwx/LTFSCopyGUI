@@ -6,7 +6,7 @@ Public Class Form1
     Public filelist As New List(Of String)
     Public Class TapeFileInfo
         Public Property Path As String
-        Public Property Partition As ltfsindex.Partition.PartitionLabel
+        Public Property Partition As ltfsindex.PartitionLabel
         Public Property BlockNumber As Long
         Public Property FileLength As Long
     End Class
@@ -38,7 +38,7 @@ Public Class Form1
                     Invoke(Sub() Label4.Text = "4/7 读取分区信息...")
                     Parallel.ForEach(flist,
                         Sub(f As TapeFileInfo)
-                            If f.Partition = ltfsindex.Partition.PartitionLabel.a Then
+                            If f.Partition = ltfsindex.PartitionLabel.a Then
                                 SyncLock alist
                                     alist.Add(f)
                                 End SyncLock
@@ -210,7 +210,7 @@ Public Class Form1
                         End If
                         SyncLock flist
                             flist.Add(New TapeFileInfo With {.BlockNumber = 0,
-                                  .Partition = ltfsindex.Partition.PartitionLabel.a,
+                                  .Partition = ltfsindex.PartitionLabel.a,
                                   .Path = ParentPath & f.name,
                                   .FileLength = f.length})
                         End SyncLock

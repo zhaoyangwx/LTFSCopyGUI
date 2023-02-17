@@ -7,7 +7,7 @@ Public Class HashTaskWindow
     Private ddelta, fdelta As Long
     Private _BaseDirectory As String
     Public LogEnabled As Boolean = True
-    Public StartTime As String = Now.ToString("yyyyMMdd_hhmmss")
+    Public StartTime As String = Now.ToString("yyyyMMdd_HHmmss")
     Public Property BaseDirectory As String
         Set(value As String)
             _BaseDirectory = value
@@ -35,7 +35,10 @@ Public Class HashTaskWindow
                           'TextBox1.Select(TextBox1.Text.Length, 0)
                           'TextBox1.ScrollToCaret()
                           If LogEnabled Then
-                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log_" & StartTime & ".txt"), Message & vbCrLf, True)
+                              If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log")) Then
+                                  My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log"))
+                              End If
+                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log\log_" & StartTime & ".txt"), Message & vbCrLf, True)
                           End If
                       End Sub)
         Catch ex As Exception
@@ -230,14 +233,10 @@ Public Class HashTaskWindow
         TextBox1.WordWrap = WordwrapToolStripMenuItem.Checked
     End Sub
 
-    Public SpeedHistory As List(Of Double) = New Double(3600 * 24) {}.ToList()
-    Public FileRateHistory As List(Of Double) = New Double(3600 * 24) {}.ToList()
+    Public PMaxNum As Integer = 3600 * 6
+    Public SpeedHistory As List(Of Double) = (New Double(PMaxNum) {}).ToList()
+    Public FileRateHistory As List(Of Double) = (New Double(PMaxNum) {}).ToList()
     Public SMaxNum As Integer = 600
-
-    Private Sub AllToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles AllToolStripMenuItem.Click
-        SMaxNum = 3600 * 24
-        Chart1.Titles(0).Text = "1d"
-    End Sub
 
     Private Sub HToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem1.Click
         SMaxNum = 3600 * 3
@@ -249,10 +248,6 @@ Public Class HashTaskWindow
         Chart1.Titles(0).Text = "6h"
     End Sub
 
-    Private Sub HToolStripMenuItem3_Click(sender As Object, e As EventArgs) Handles HToolStripMenuItem3.Click
-        SMaxNum = 3600 * 12
-        Chart1.Titles(0).Text = "12h"
-    End Sub
     Public Class IndexedLHashDirectory
         Public LTFSIndexDir As ltfsindex.directory
         Public LHash_Dir As ltfsindex.directory
@@ -340,7 +335,6 @@ Public Class HashTaskWindow
         If NumericUpDown1.Value >= 1 Then HashTask.BufferWrite = NumericUpDown1.Value
     End Sub
 
-    Public PMaxNum As Integer = 3600 * 24
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Static d_last As Long = 0
         Static t_last As Long = 0
