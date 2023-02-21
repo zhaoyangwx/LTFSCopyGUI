@@ -248,14 +248,6 @@ Public Class HashTaskWindow
         Chart1.Titles(0).Text = "6h"
     End Sub
 
-    Public Class IndexedLHashDirectory
-        Public LTFSIndexDir As ltfsindex.directory
-        Public LHash_Dir As ltfsindex.directory
-        Public Sub New(index As ltfsindex.directory, lhash As ltfsindex.directory)
-            LTFSIndexDir = index
-            LHash_Dir = lhash
-        End Sub
-    End Class
     Public Class ldirStack
         Private ldir As New List(Of ltfsindex.directory)
         Public ReadOnly Property IsEmpty
@@ -286,11 +278,11 @@ Public Class HashTaskWindow
                 Else
                     schhash = ltfsindex.FromSchemaText(s)
                 End If
-                Dim q As New List(Of IndexedLHashDirectory)
-                q.Add(New IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
+                Dim q As New List(Of IOManager.IndexedLHashDirectory)
+                q.Add(New IOManager.IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
                 While q.Count > 0
-                    Dim qtmp As New List(Of IndexedLHashDirectory)
-                    For Each d As IndexedLHashDirectory In q
+                    Dim qtmp As New List(Of IOManager.IndexedLHashDirectory)
+                    For Each d As IOManager.IndexedLHashDirectory In q
                         For Each f As ltfsindex.file In d.LTFSIndexDir.contents._file
                             Try
                                 For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
@@ -313,7 +305,7 @@ Public Class HashTaskWindow
                         For Each sd As ltfsindex.directory In d.LTFSIndexDir.contents._directory
                             For Each dlookup As ltfsindex.directory In d.LHash_Dir.contents._directory
                                 If dlookup.name = sd.name Then
-                                    qtmp.Add(New IndexedLHashDirectory(sd, dlookup))
+                                    qtmp.Add(New IOManager.IndexedLHashDirectory(sd, dlookup))
                                     Exit For
                                 End If
                             Next

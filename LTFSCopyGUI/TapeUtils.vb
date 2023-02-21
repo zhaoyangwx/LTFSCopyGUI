@@ -829,7 +829,7 @@ Public Class TapeUtils
         Try
             succ = _TapeSCSIIOCtlFull(TapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
         Catch ex As Exception
-            MessageBox.Show("SCSIIOErr")
+            Throw New Exception("SCSIIOError")
         End Try
         Marshal.Copy(dataBuffer, BCArray, 0, DATA_LEN + 9)
         If succ Then
@@ -852,7 +852,7 @@ Public Class TapeUtils
                 Try
                     succ = _TapeSCSIIOCtlFull(TapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
                 Catch ex As Exception
-                    MessageBox.Show("SCSIIOErr2")
+                    Throw New Exception("SCSIIOError")
                 End Try
                 If succ Then
                     Marshal.Copy(dataBuffer2, BCArray2, 0, DATA_LEN + 9)
@@ -1126,6 +1126,15 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
+    Public Enum LoadOption
+        LoadThreaded = 1
+        LoadUnthreaded = 9
+        Unthread = &HA
+        Eject = 0
+    End Enum
+    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption) As Boolean
+        Return SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, LoadOption, 0})
+    End Function
     Public Shared Function MountTapeDrive(driveLetter As Char) As String
         Dim p As IntPtr = _MountTapeDrive(driveLetter)
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -1147,9 +1156,6 @@ Public Class TapeUtils
                                   Optional ByVal OnError As Action(Of String) = Nothing) As Boolean
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
-                Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
-                ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
-                If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
 
                 'Load and Thread
                 ProgressReport("Loading..")
@@ -1159,6 +1165,9 @@ Public Class TapeUtils
                     OnError("Load Fail" & vbCrLf)
                     Return False
                 End If
+                Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
+                ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
+                If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
                 'Erase
                 ProgressReport("Initializing tape..")
                 If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 0, 0, 0, 0}) Then
@@ -1170,7 +1179,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)
