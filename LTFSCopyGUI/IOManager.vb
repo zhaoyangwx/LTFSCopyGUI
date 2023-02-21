@@ -542,4 +542,13 @@ Public Class IOManager
 
 
     End Class
+    Public Class IndexedLHashDirectory
+        Public LTFSIndexDir As ltfsindex.directory
+        Public LHash_Dir As ltfsindex.directory
+        Public Sub New(index As ltfsindex.directory, lhash As ltfsindex.directory)
+            LTFSIndexDir = index
+            LHash_Dir = lhash
+        End Sub
+    End Class
+
 End Class

@@ -18,7 +18,7 @@ Public Class Form1
             Sub()
                 Try
                     Invoke(Sub() Label4.Text = "1/7 正在加载...")
-                    Dim s As String
+                    Dim s As String = ""
                     If ReloadFile Or schema Is Nothing Then s = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
                     Invoke(Sub() Label4.Text = "2/7 预处理...")
                     Invoke(Sub() Label4.Text = "3/7 解析文件...")

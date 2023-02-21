@@ -91,6 +91,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
+        Me.Button28 = New System.Windows.Forms.Button()
+        Me.Button29 = New System.Windows.Forms.Button()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -342,6 +344,8 @@ Partial Class LTFSConfigurator
         Me.Panel2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Panel2.Controls.Add(Me.Button29)
+        Me.Panel2.Controls.Add(Me.Button28)
         Me.Panel2.Controls.Add(Me.Button26)
         Me.Panel2.Controls.Add(Me.Button25)
         Me.Panel2.Controls.Add(Me.ComboBox3)
@@ -833,6 +837,26 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         Me.SaveFileDialog2.Filter = "RAW Dump | *.bin"
         '
+        'Button28
+        '
+        Me.Button28.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Button28.Location = New System.Drawing.Point(5, 375)
+        Me.Button28.Name = "Button28"
+        Me.Button28.Size = New System.Drawing.Size(119, 23)
+        Me.Button28.TabIndex = 57
+        Me.Button28.Text = "ReleaseUnit"
+        Me.Button28.UseVisualStyleBackColor = True
+        '
+        'Button29
+        '
+        Me.Button29.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Button29.Location = New System.Drawing.Point(5, 404)
+        Me.Button29.Name = "Button29"
+        Me.Button29.Size = New System.Drawing.Size(119, 23)
+        Me.Button29.TabIndex = 58
+        Me.Button29.Text = "AllowMediaRemoval"
+        Me.Button29.UseVisualStyleBackColor = True
+        '
         'LTFSConfigurator
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -924,4 +948,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents Button25 As Button
     Friend WithEvents Button26 As Button
     Friend WithEvents Button27 As Button
+    Friend WithEvents Button28 As Button
+    Friend WithEvents Button29 As Button
 End Class

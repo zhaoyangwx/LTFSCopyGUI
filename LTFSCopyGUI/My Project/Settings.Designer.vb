@@ -125,6 +125,42 @@ Namespace My
                 Me("CopyInfo") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_OverwriteExist() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_OverwriteExist"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_OverwriteExist") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("1")>  _
+        Public Property LTFSWriter_OnWriteFinished() As Byte
+            Get
+                Return CType(Me("LTFSWriter_OnWriteFinished"),Byte)
+            End Get
+            Set
+                Me("LTFSWriter_OnWriteFinished") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_AutoFlush() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_AutoFlush"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_AutoFlush") = value
+            End Set
+        End Property
     End Class
 End Namespace
 
