@@ -1329,4 +1329,8 @@ Public Class LTFSConfigurator
                                   Return True
                               End Function)
     End Sub
+
+    Private Sub Button30_Click(sender As Object, e As EventArgs) Handles Button30.Click
+        Form1.Show()
+    End Sub
 End Class

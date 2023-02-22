@@ -265,8 +265,8 @@ Public Class LTFSWriter
         Save_Settings()
     End Sub
     Public Function GetLocInfo() As String
-        If schema Is Nothing Then Return "无索引"
-        Dim info As String = ""
+        If schema Is Nothing Then Return $"未加载索引 - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}"
+        Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         Try
             SyncLock schema
                 info = $"索引{schema.generationnumber} - 分区{schema.location.partition} - 块{schema.location.startblock}"
@@ -276,6 +276,7 @@ Public Class LTFSWriter
             End SyncLock
             If CurrentHeight > 0 Then info &= $" 数据高度{CurrentHeight}"
             If Modified Then info &= "*"
+            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}"
         Catch ex As Exception
             PrintMsg("获取位置出错")
         End Try
@@ -681,6 +682,11 @@ Public Class LTFSWriter
                     data = TapeUtils.ReadToFileMark(TapeDrive)
                     PrintMsg("正在解析索引")
                     schema = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(data))
+                    If ExtraPartitionCount = 0 Then
+                        CurrentHeight = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                    Else
+                        CurrentHeight = -1
+                    End If
                     PrintMsg("保存备份文件")
                     Dim FileName As String = ""
                     If Barcode <> "" Then
@@ -708,13 +714,13 @@ Public Class LTFSWriter
                     End While
                     Modified = False
                     Me.Invoke(Sub()
-                                  Text = Barcode
+                                  Text = GetLocInfo()
                                   ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
                                   ToolStripStatusLabel1.ToolTipText = $"磁带标签:{ToolStripStatusLabel1.Text}"
                                   RefreshDisplay()
                                   RefreshCapacity()
                               End Sub)
-                    CurrentHeight = -1
+
                     PrintMsg("索引读取成功")
                 Catch ex As Exception
                     PrintMsg("索引读取失败")
@@ -1373,7 +1379,7 @@ Public Class LTFSWriter
                                             End If
                                         End If
                                         CheckFlush()
-                                        CheckClean()
+                                        CheckClean(True)
                                         fr.File.WrittenBytes += BytesReaded
                                         TotalBytesProcessed += BytesReaded
                                         CurrentBytesProcessed += BytesReaded
@@ -1833,12 +1839,14 @@ Public Class LTFSWriter
             TapeUtils.Locate(TapeDrive, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
         End If
     End Sub
-    Public Sub CheckClean()
+    Public Sub CheckClean(Optional ByVal LockVolume As Boolean = False)
         If Threading.Interlocked.Exchange(Clean, False) Then
             Dim Loc As TapeUtils.PositionData = TapeUtils.ReadPosition(TapeDrive)
+            TapeUtils.AllowMediaRemoval(TapeDrive)
             TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Unthread)
             TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadThreaded)
             TapeUtils.Locate(TapeDrive, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
+            If LockVolume Then TapeUtils.PreventMediaRemoval(TapeDrive)
         End If
     End Sub
     Private Sub LinearToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LinearToolStripMenuItem.Click

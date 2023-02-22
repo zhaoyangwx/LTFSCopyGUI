@@ -45,6 +45,8 @@ Partial Class LTFSConfigurator
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.Button29 = New System.Windows.Forms.Button()
+        Me.Button28 = New System.Windows.Forms.Button()
         Me.Button26 = New System.Windows.Forms.Button()
         Me.Button25 = New System.Windows.Forms.Button()
         Me.ComboBox3 = New System.Windows.Forms.ComboBox()
@@ -91,8 +93,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.Button28 = New System.Windows.Forms.Button()
-        Me.Button29 = New System.Windows.Forms.Button()
+        Me.Button30 = New System.Windows.Forms.Button()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -181,7 +182,7 @@ Partial Class LTFSConfigurator
         Me.TextBox1.Location = New System.Drawing.Point(366, 35)
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(618, 21)
+        Me.TextBox1.Size = New System.Drawing.Size(537, 21)
         Me.TextBox1.TabIndex = 8
         '
         'Label2
@@ -270,6 +271,7 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.Button30)
         Me.Panel1.Controls.Add(Me.Button27)
         Me.Panel1.Controls.Add(Me.Button14)
         Me.Panel1.Controls.Add(Me.Button13)
@@ -301,11 +303,11 @@ Partial Class LTFSConfigurator
         '
         Me.Button27.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.Button27.Enabled = False
-        Me.Button27.Location = New System.Drawing.Point(990, 33)
+        Me.Button27.Location = New System.Drawing.Point(909, 33)
         Me.Button27.Name = "Button27"
         Me.Button27.Size = New System.Drawing.Size(75, 23)
         Me.Button27.TabIndex = 21
-        Me.Button27.Text = "打开"
+        Me.Button27.Text = "直接读写"
         Me.Button27.UseVisualStyleBackColor = True
         '
         'Button14
@@ -394,6 +396,26 @@ Partial Class LTFSConfigurator
         Me.Panel2.Size = New System.Drawing.Size(991, 547)
         Me.Panel2.TabIndex = 18
         Me.Panel2.Visible = False
+        '
+        'Button29
+        '
+        Me.Button29.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Button29.Location = New System.Drawing.Point(5, 404)
+        Me.Button29.Name = "Button29"
+        Me.Button29.Size = New System.Drawing.Size(119, 23)
+        Me.Button29.TabIndex = 58
+        Me.Button29.Text = "AllowMediaRemoval"
+        Me.Button29.UseVisualStyleBackColor = True
+        '
+        'Button28
+        '
+        Me.Button28.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.Button28.Location = New System.Drawing.Point(5, 375)
+        Me.Button28.Name = "Button28"
+        Me.Button28.Size = New System.Drawing.Size(119, 23)
+        Me.Button28.TabIndex = 57
+        Me.Button28.Text = "ReleaseUnit"
+        Me.Button28.UseVisualStyleBackColor = True
         '
         'Button26
         '
@@ -837,25 +859,15 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         Me.SaveFileDialog2.Filter = "RAW Dump | *.bin"
         '
-        'Button28
+        'Button30
         '
-        Me.Button28.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button28.Location = New System.Drawing.Point(5, 375)
-        Me.Button28.Name = "Button28"
-        Me.Button28.Size = New System.Drawing.Size(119, 23)
-        Me.Button28.TabIndex = 57
-        Me.Button28.Text = "ReleaseUnit"
-        Me.Button28.UseVisualStyleBackColor = True
-        '
-        'Button29
-        '
-        Me.Button29.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button29.Location = New System.Drawing.Point(5, 404)
-        Me.Button29.Name = "Button29"
-        Me.Button29.Size = New System.Drawing.Size(119, 23)
-        Me.Button29.TabIndex = 58
-        Me.Button29.Text = "AllowMediaRemoval"
-        Me.Button29.UseVisualStyleBackColor = True
+        Me.Button30.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button30.Location = New System.Drawing.Point(990, 33)
+        Me.Button30.Name = "Button30"
+        Me.Button30.Size = New System.Drawing.Size(75, 23)
+        Me.Button30.TabIndex = 22
+        Me.Button30.Text = "排序复制"
+        Me.Button30.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '
@@ -950,4 +962,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents Button27 As Button
     Friend WithEvents Button28 As Button
     Friend WithEvents Button29 As Button
+    Friend WithEvents Button30 As Button
 End Class

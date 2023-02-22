@@ -271,6 +271,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="configure.ico" />
     <Content Include="LTFSCopyGUIIcon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
