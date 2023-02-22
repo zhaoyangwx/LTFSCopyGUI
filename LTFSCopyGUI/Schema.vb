@@ -52,6 +52,13 @@ Public Class ltfsindex
         <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
         <Xml.Serialization.XmlIgnore> Public WrittenBytes As Long = 0
         <Serializable>
+        Public Class xattr
+            Public Property key As String
+            Public Property value As String
+        End Class
+        Public Property extendedattributes As New List(Of extent)
+
+        <Serializable>
         Public Class extent
             Public Property fileoffset As Long
             Public Property partition As PartitionLabel
