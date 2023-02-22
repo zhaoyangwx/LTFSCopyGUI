@@ -56,7 +56,7 @@ Public Class ltfsindex
             Public Property key As String
             Public Property value As String
         End Class
-        Public Property extendedattributes As New List(Of extent)
+        Public Property extendedattributes As New List(Of xattr)
 
         <Serializable>
         Public Class extent
