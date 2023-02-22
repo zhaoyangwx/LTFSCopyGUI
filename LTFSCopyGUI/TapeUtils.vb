@@ -222,10 +222,12 @@ Public Class TapeUtils
         Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
         If Add_Code <> 0 Then
             If DestType = LocateDestType.EOD Then
-                SendSCSICommand(TapeDrive, {&H11, 3, 0, 0, 0, 0}, Nothing, 1, Function(senseData As Byte()) As Boolean
-                                                                                  sense = senseData
-                                                                                  Return True
-                                                                              End Function)
+                If Not ReadPosition(TapeDrive).EOP Then
+                    SendSCSICommand(TapeDrive, {&H11, 3, 0, 0, 0, 0}, Nothing, 1, Function(senseData As Byte()) As Boolean
+                                                                                      sense = senseData
+                                                                                      Return True
+                                                                                  End Function)
+                End If
             Else
                 SCSIReadParam(TapeDrive, {&H92, DestType << 3, 0, 0,
                                         BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
