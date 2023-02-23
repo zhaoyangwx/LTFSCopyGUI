@@ -764,7 +764,7 @@ Public Class LTFSConfigurator
                     For i As UInt16 = &H0 To &HFFFF Step 1
 
                         Try
-                            Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, i)
+                            Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, i, CByte(NumericUpDown1.Value))
                             If Attr IsNot Nothing Then
                                 Me.Invoke(Sub()
                                               TextBox8.Text = Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
@@ -982,7 +982,7 @@ Public Class LTFSConfigurator
     Private Sub Button25_Click(sender As Object, e As EventArgs) Handles Button25.Click
         Try
             Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
-            TapeUtils.Locate(tapeDrive, 3, 0, TapeUtils.LocateDestType.File)
+            TapeUtils.Locate(tapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
             TapeUtils.ReadBlock(tapeDrive)
             Dim data As Byte() = TapeUtils.ReadToFileMark(tapeDrive)
             Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
