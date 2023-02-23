@@ -16,6 +16,8 @@ Public Class LTFSWriter
     Public Property CurrentFilesProcessed As Long = 0
     Public Property CurrentHeight As Long = 0
     Public Property ExtraPartitionCount As Long = 0
+    Public Property CapReduceCount As Long = 0
+    Public Property CleanCycle As Long = 3
     Public Property AllowOperation As Boolean = True
     Public OperationLock As New Object
     Public Property Barcode As String
@@ -118,6 +120,13 @@ Public Class LTFSWriter
                     End If
                 Next
                 Flush = FlushNow
+                If FlushNow Then
+                    CapReduceCount += 1
+                    If (CapReduceCount Mod CleanCycle = 0) Then
+                        Flush = False
+                        Clean = True
+                    End If
+                End If
             End If
             SyncLock OperationLock
                 If AllowOperation Then CheckClean()
@@ -269,7 +278,7 @@ Public Class LTFSWriter
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         Try
             SyncLock schema
-                info = $"索引{schema.generationnumber} - 分区{schema.location.partition} - 块{schema.location.startblock}"
+                info &= $"索引{schema.generationnumber} - 分区{schema.location.partition} - 块{schema.location.startblock}"
                 If schema.previousgenerationlocation IsNot Nothing Then
                     If schema.previousgenerationlocation.startblock > 0 Then info &= $" (此前:分区{schema.previousgenerationlocation.partition} - 块{schema.previousgenerationlocation.startblock})"
                 End If
@@ -551,9 +560,12 @@ Public Class LTFSWriter
     End Sub
     Public Sub RefreshIndexPartition()
         Dim block1 As Long = schema.location.startblock
+        If schema.location.partition = ltfsindex.PartitionLabel.a Then
+            block1 = schema.previousgenerationlocation.startblock
+        End If
         If ExtraPartitionCount > 0 Then
             PrintMsg("正在定位")
-            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.File)
+            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
             TapeUtils.WriteFileMark(TapeDrive)
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
                 schema.previousgenerationlocation = New ltfsindex.PartitionDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
@@ -635,100 +647,6 @@ Public Class LTFSWriter
             UpdataAllIndex()
             Exit Sub
         End If
-    End Sub
-    Private Sub 读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 读取索引ToolStripMenuItem.Click
-        Dim th As New Threading.Thread(
-            Sub()
-                Try
-                    PrintMsg("正在定位")
-                    ExtraPartitionCount = TapeUtils.ModeSense(TapeDrive, &H11)(3)
-                    TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.Block)
-                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive))
-                    Dim VOL1LabelLegal As Boolean = False
-                    VOL1LabelLegal = (header.Length = 80)
-                    If VOL1LabelLegal Then VOL1LabelLegal = header.StartsWith("VOL1")
-                    If VOL1LabelLegal Then VOL1LabelLegal = (header.Substring(24, 4) = "LTFS")
-                    If Not VOL1LabelLegal Then
-                        PrintMsg("未找到VOL1")
-                        Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
-                        LockGUI(False)
-                        Exit Sub
-                    End If
-                    TapeUtils.Locate(TapeDrive, 1, 0, TapeUtils.LocateDestType.File)
-                    PrintMsg("正在读取LTFS信息")
-                    TapeUtils.ReadBlock(TapeDrive)
-                    Dim pltext As String = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
-                    plabel = ltfslabel.FromXML(pltext)
-                    TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
-                    Barcode = TapeUtils.ReadBarcode(TapeDrive)
-                    PrintMsg("正在定位")
-                    TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.File)
-                    TapeUtils.ReadBlock(TapeDrive)
-                    Dim data As Byte()
-                    If ExtraPartitionCount = 0 Then
-                        TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
-                        PrintMsg("正在读取索引")
-                        Dim FM As Long = TapeUtils.ReadPosition(TapeDrive).FileNumber
-                        If FM <= 1 Then
-                            PrintMsg("索引读取失败")
-                            Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
-                            LockGUI(False)
-                            Exit Sub
-                        End If
-                        TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.File)
-                        TapeUtils.ReadBlock(TapeDrive)
-                    End If
-                    PrintMsg("正在读取索引")
-                    data = TapeUtils.ReadToFileMark(TapeDrive)
-                    PrintMsg("正在解析索引")
-                    schema = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(data))
-                    If ExtraPartitionCount = 0 Then
-                        CurrentHeight = TapeUtils.ReadPosition(TapeDrive).BlockNumber
-                    Else
-                        CurrentHeight = -1
-                    End If
-                    PrintMsg("保存备份文件")
-                    Dim FileName As String = ""
-                    If Barcode <> "" Then
-                        FileName = Barcode
-                    Else
-                        If schema IsNot Nothing Then
-                            FileName = schema.volumeuuid.ToString()
-                        End If
-                    End If
-                    Dim outputfile As String = $"schema\LTFSIndex_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
-                    End If
-                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
-                    While True
-                        Threading.Thread.Sleep(0)
-                        SyncLock UFReadCount
-                            If UFReadCount > 0 Then Continue While
-                            UnwrittenFiles.Clear()
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            Exit While
-                        End SyncLock
-                    End While
-                    Modified = False
-                    Me.Invoke(Sub()
-                                  Text = GetLocInfo()
-                                  ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
-                                  ToolStripStatusLabel1.ToolTipText = $"磁带标签:{ToolStripStatusLabel1.Text}"
-                                  RefreshDisplay()
-                                  RefreshCapacity()
-                              End Sub)
-
-                    PrintMsg("索引读取成功")
-                Catch ex As Exception
-                    PrintMsg("索引读取失败")
-                End Try
-                LockGUI(False)
-            End Sub)
-        LockGUI()
-        th.Start()
     End Sub
     Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
         Dim FileExist As Boolean = False
@@ -1239,31 +1157,56 @@ Public Class LTFSWriter
                     Sub()
                         PrintMsg("正在提取")
                         Try
+                            StopFlag = False
+                            Dim FileList As New List(Of FileRecord)
                             Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
                             Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
-                            Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
-                                For Each f As ltfsindex.file In tapeDir.contents._file
-                                    RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
-                                Next
-                                For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                    Dim thisDir As String = My.Computer.FileSystem.CombinePath(outputDir.FullName, d.name)
-                                    Dim dirOutput As IO.DirectoryInfo
-                                    Dim RestoreTimeStamp As Boolean = Not My.Computer.FileSystem.DirectoryExists(thisDir)
-                                    If RestoreTimeStamp Then My.Computer.FileSystem.CreateDirectory(thisDir)
-                                    dirOutput = My.Computer.FileSystem.GetDirectoryInfo(thisDir)
-                                    IterDir(d, dirOutput)
-                                    If RestoreTimeStamp Then
-                                        dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
-                                        dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
-                                        dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
-                                    End If
-                                Next
-                            End Sub
-                            IterDir(selectedDir, My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath))
+                                Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
+                                    For Each f As ltfsindex.file In tapeDir.contents._file
+                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name)})
+                                        'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
+                                    Next
+                                    For Each d As ltfsindex.directory In tapeDir.contents._directory
+                                        Dim thisDir As String = My.Computer.FileSystem.CombinePath(outputDir.FullName, d.name)
+                                        Dim dirOutput As IO.DirectoryInfo
+                                        Dim RestoreTimeStamp As Boolean = Not My.Computer.FileSystem.DirectoryExists(thisDir)
+                                        If RestoreTimeStamp Then My.Computer.FileSystem.CreateDirectory(thisDir)
+                                        dirOutput = My.Computer.FileSystem.GetDirectoryInfo(thisDir)
+                                        IterDir(d, dirOutput)
+                                        If RestoreTimeStamp Then
+                                            dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
+                                            dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
+                                            dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
+                                        End If
+                                    Next
+                                End Sub
+                            PrintMsg("正在准备文件")
+                            Dim ODir As String = My.Computer.FileSystem.CombinePath(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                            If Not My.Computer.FileSystem.DirectoryExists(ODir) Then My.Computer.FileSystem.CreateDirectory(ODir)
+                            IterDir(selectedDir, My.Computer.FileSystem.GetDirectoryInfo(ODir))
+                            FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
+                                                                            If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
+                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
+                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
+                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
+                                                                            Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
+                                                                        End Function))
+                            PrintMsg("正在提取文件")
+                            Dim c As Integer = 0
+                            For Each fr As FileRecord In FileList
+                                c += 1
+                                PrintMsg($"正在提取 [{c}/{FileList.Count}]{fr.File.name}", False, $"正在提取 [{c}/{FileList.Count}]{fr.SourcePath}")
+                                RestoreFile(fr.SourcePath, fr.File)
+                                If StopFlag Then
+                                    PrintMsg("操作取消")
+                                    Exit Try
+                                End If
+                            Next
                             PrintMsg("提取完成")
                         Catch ex As Exception
+                            Invoke(Sub() MessageBox.Show(ex.ToString))
                             PrintMsg("提取出错")
-                            Invoke(Sub() MessageBox.Show("提取完成"))
                         End Try
                         LockGUI(False)
                     End Sub)
@@ -1284,6 +1227,7 @@ Public Class LTFSWriter
                         UpdataAllIndex()
                     Catch ex As Exception
                         PrintMsg("索引更新出错")
+                        LockGUI(False)
                     End Try
                 End Sub)
         LockGUI(True)
@@ -1293,6 +1237,7 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    PrintMsg("", True)
                     PrintMsg("准备写入")
                     TapeUtils.ReserveUnit(TapeDrive)
                     TapeUtils.PreventMediaRemoval(TapeDrive)
@@ -1348,7 +1293,7 @@ Public Class LTFSWriter
                                         StopFlag = True
                                         Exit For
                                     Else
-                                        PrintMsg($"磁带即将写满", True)
+                                        PrintMsg("磁带即将写满", True)
                                     End If
                                 End If
                                 fr.File.WrittenBytes += finfo.Length
@@ -1367,8 +1312,8 @@ Public Class LTFSWriter
                                     If BytesReaded > 0 Then
                                         Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
                                         Dim sense As Byte() = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
-                                        If ((sense(2) >> 6) And &H1) = 1 Then
-                                            If (sense(2) And &HF) = 13 Then
+                                        If (((sense(2) >> 6) And &H1) = 1) Then
+                                            If ((sense(2) And &HF) = 13) Then
                                                 PrintMsg("磁带已满")
                                                 Invoke(Sub() MessageBox.Show("磁带已满"))
                                                 StopFlag = True
@@ -1427,7 +1372,6 @@ Public Class LTFSWriter
                     Else
                         PrintMsg("写入取消")
                     End If
-                    PrintMsg("", True)
                 Catch ex As Exception
                     PrintMsg($"写入出错{ex.ToString}")
                 End Try
@@ -1504,67 +1448,6 @@ Public Class LTFSWriter
         LockGUI()
         th.Start()
     End Sub
-    Private Sub 读取数据区索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 读取数据区索引ToolStripMenuItem.Click
-        If ExtraPartitionCount = 0 Then
-            读取索引ToolStripMenuItem_Click(sender, e)
-            Exit Sub
-        End If
-        Dim th As New Threading.Thread(
-            Sub()
-                Try
-                    PrintMsg("正在定位")
-
-                    Dim data As Byte()
-                    Dim currentPos As TapeUtils.PositionData = TapeUtils.ReadPosition(TapeDrive)
-                    If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
-                    TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.EOD)
-                    PrintMsg("正在读取索引")
-                    Dim FM As Long = TapeUtils.ReadPosition(TapeDrive).FileNumber
-                    If FM <= 1 Then
-                        PrintMsg("索引读取失败")
-                        Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
-                        LockGUI(False)
-                        Exit Sub
-                    End If
-                    TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.File)
-                    TapeUtils.ReadBlock(TapeDrive)
-                    PrintMsg("正在读取索引")
-                    data = TapeUtils.ReadToFileMark(TapeDrive)
-                    Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
-                    End If
-                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
-                    PrintMsg("正在解析索引")
-                    schema = ltfsindex.FromSchemaText(My.Computer.FileSystem.ReadAllText(outputfile))
-                    PrintMsg("索引解析成功")
-                    While True
-                        Threading.Thread.Sleep(0)
-                        SyncLock UFReadCount
-                            If UFReadCount > 0 Then Continue While
-                            UnwrittenFiles.Clear()
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            Exit While
-                        End SyncLock
-                    End While
-                    Modified = False
-                    Me.Invoke(Sub()
-                                  ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
-                                  RefreshDisplay()
-                                  RefreshCapacity()
-                              End Sub)
-                    CurrentHeight = -1
-                    PrintMsg("索引读取成功")
-                Catch ex As Exception
-                    PrintMsg("索引读取失败")
-                End Try
-                LockGUI(False)
-            End Sub)
-        LockGUI()
-        th.Start()
-    End Sub
     Private Sub 回滚ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 回滚ToolStripMenuItem.Click
         If MessageBox.Show($"当前第{schema.generationnumber}代索引位置: 分区{schema.location.partition} 块{schema.location.startblock}{vbCrLf _
                            }上一代索引位置: 分区{schema.previousgenerationlocation.partition} 块{schema.previousgenerationlocation.startblock}{vbCrLf _
@@ -1612,6 +1495,161 @@ Public Class LTFSWriter
                               Text = GetLocInfo()
                               PrintMsg("回滚完成")
                           End Sub)
+            End Sub)
+        LockGUI()
+        th.Start()
+    End Sub
+    Private Sub 读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 读取索引ToolStripMenuItem.Click
+        Dim th As New Threading.Thread(
+            Sub()
+                Try
+                    PrintMsg("正在定位")
+                    ExtraPartitionCount = TapeUtils.ModeSense(TapeDrive, &H11)(3)
+                    TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.Block)
+                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive))
+                    Dim VOL1LabelLegal As Boolean = False
+                    VOL1LabelLegal = (header.Length = 80)
+                    If VOL1LabelLegal Then VOL1LabelLegal = header.StartsWith("VOL1")
+                    If VOL1LabelLegal Then VOL1LabelLegal = (header.Substring(24, 4) = "LTFS")
+                    If Not VOL1LabelLegal Then
+                        PrintMsg("未找到VOL1")
+                        Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
+                        LockGUI(False)
+                        Exit Sub
+                    End If
+                    TapeUtils.Locate(TapeDrive, 1, 0, TapeUtils.LocateDestType.FileMark)
+                    PrintMsg("正在读取LTFS信息")
+                    TapeUtils.ReadBlock(TapeDrive)
+                    Dim pltext As String = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
+                    plabel = ltfslabel.FromXML(pltext)
+                    TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                    Barcode = TapeUtils.ReadBarcode(TapeDrive)
+                    PrintMsg("正在定位")
+                    TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+                    TapeUtils.ReadBlock(TapeDrive)
+                    Dim data As Byte()
+                    If ExtraPartitionCount = 0 Then
+                        TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
+                        PrintMsg("正在读取索引")
+                        Dim FM As Long = TapeUtils.ReadPosition(TapeDrive).FileNumber
+                        If FM <= 1 Then
+                            PrintMsg("索引读取失败")
+                            Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
+                            LockGUI(False)
+                            Exit Sub
+                        End If
+                        TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.ReadBlock(TapeDrive)
+                    End If
+                    PrintMsg("正在读取索引")
+                    data = TapeUtils.ReadToFileMark(TapeDrive)
+                    PrintMsg("正在解析索引")
+                    schema = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(data))
+                    If ExtraPartitionCount = 0 Then
+                        CurrentHeight = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                    Else
+                        CurrentHeight = -1
+                    End If
+                    PrintMsg("保存备份文件")
+                    Dim FileName As String = ""
+                    If Barcode <> "" Then
+                        FileName = Barcode
+                    Else
+                        If schema IsNot Nothing Then
+                            FileName = schema.volumeuuid.ToString()
+                        End If
+                    End If
+                    Dim outputfile As String = $"schema\LTFSIndex_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
+                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
+                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
+                    End If
+                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
+                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+                    While True
+                        Threading.Thread.Sleep(0)
+                        SyncLock UFReadCount
+                            If UFReadCount > 0 Then Continue While
+                            UnwrittenFiles.Clear()
+                            CurrentFilesProcessed = 0
+                            CurrentBytesProcessed = 0
+                            Exit While
+                        End SyncLock
+                    End While
+                    Modified = False
+                    Me.Invoke(Sub()
+                                  Text = GetLocInfo()
+                                  ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
+                                  ToolStripStatusLabel1.ToolTipText = $"磁带标签:{ToolStripStatusLabel1.Text}"
+                                  RefreshDisplay()
+                                  RefreshCapacity()
+                              End Sub)
+
+                    PrintMsg("索引读取成功")
+                Catch ex As Exception
+                    PrintMsg("索引读取失败")
+                End Try
+                LockGUI(False)
+            End Sub)
+        LockGUI()
+        th.Start()
+    End Sub
+    Private Sub 读取数据区索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 读取数据区索引ToolStripMenuItem.Click
+        If ExtraPartitionCount = 0 Then
+            读取索引ToolStripMenuItem_Click(sender, e)
+            Exit Sub
+        End If
+        Dim th As New Threading.Thread(
+            Sub()
+                Try
+                    PrintMsg("正在定位")
+
+                    Dim data As Byte()
+                    Dim currentPos As TapeUtils.PositionData = TapeUtils.ReadPosition(TapeDrive)
+                    If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.EOD)
+                    PrintMsg("正在读取索引")
+                    Dim FM As Long = TapeUtils.ReadPosition(TapeDrive).FileNumber
+                    If FM <= 1 Then
+                        PrintMsg("索引读取失败")
+                        Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
+                        LockGUI(False)
+                        Exit Sub
+                    End If
+                    TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
+                    TapeUtils.ReadBlock(TapeDrive)
+                    PrintMsg("正在读取索引")
+                    data = TapeUtils.ReadToFileMark(TapeDrive)
+                    Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
+                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
+                    End If
+                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
+                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+                    PrintMsg("正在解析索引")
+                    schema = ltfsindex.FromSchemaText(My.Computer.FileSystem.ReadAllText(outputfile))
+                    PrintMsg("索引解析成功")
+                    While True
+                        Threading.Thread.Sleep(0)
+                        SyncLock UFReadCount
+                            If UFReadCount > 0 Then Continue While
+                            UnwrittenFiles.Clear()
+                            CurrentFilesProcessed = 0
+                            CurrentBytesProcessed = 0
+                            Exit While
+                        End SyncLock
+                    End While
+                    Modified = False
+                    Me.Invoke(Sub()
+                                  ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
+                                  RefreshDisplay()
+                                  RefreshCapacity()
+                              End Sub)
+                    CurrentHeight = -1
+                    PrintMsg("索引读取成功")
+                Catch ex As Exception
+                    PrintMsg("索引读取失败")
+                End Try
+                LockGUI(False)
             End Sub)
         LockGUI()
         th.Start()
@@ -1668,6 +1706,35 @@ Public Class LTFSWriter
             End Try
         End If
     End Sub
+    Private Sub 备份当前索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 备份当前索引ToolStripMenuItem.Click
+        Dim th As New Threading.Thread(
+            Sub()
+                Try
+                    Dim FileName As String = Barcode
+                    If FileName = "" Then FileName = schema.volumeuuid.ToString()
+                    Dim outputfile As String = $"schema\LTFSIndex_{FileName _
+                        }_GEN{schema.generationnumber _
+                        }_P{schema.location.partition _
+                        }_B{schema.location.startblock _
+                        }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
+                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
+                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
+                    End If
+                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
+                    PrintMsg("正在生成索引")
+                    Dim schtext As String = schema.GetSerializedText()
+                    PrintMsg("正在导出")
+                    My.Computer.FileSystem.WriteAllText(outputfile, schtext, False)
+                    PrintMsg("索引已备份", False, $"索引已备份至{vbCrLf}{outputfile}")
+                    Me.Invoke(Sub() MessageBox.Show($"索引已备份至{vbCrLf}{outputfile}"))
+                Catch ex As Exception
+                    PrintMsg("索引备份失败")
+                End Try
+                LockGUI(False)
+            End Sub)
+        LockGUI()
+        th.Start()
+    End Sub
     Private Sub 格式化ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 格式化ToolStripMenuItem.Click
         If MessageBox.Show("全部数据将丢失且无法恢复，是否继续？", "警告", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             While True
@@ -1682,7 +1749,7 @@ Public Class LTFSWriter
             End While
             Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-            Dim Barcode As String = TapeUtils.ReadBarcode(TapeDrive)
+            Barcode = TapeUtils.ReadBarcode(TapeDrive)
             Barcode = InputBox("设置标签", "磁带标签", Barcode)
             Dim VolumeLabel As String = InputBox("设置卷标", "LTFS卷标", Barcode)
             LockGUI()
@@ -1804,7 +1871,6 @@ Public Class LTFSWriter
             End If
         End If
     End Sub
-
     Private Sub SToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SToolStripMenuItem.Click
         SMaxNum = 60
         Chart1.Titles(0).Text = "60秒"
@@ -1894,6 +1960,7 @@ Public Class LTFSWriter
         WA2ToolStripMenuItem.Checked = True
         WA3ToolStripMenuItem.Checked = False
     End Sub
+
     Private Sub WA3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA3ToolStripMenuItem.Click
         WA0ToolStripMenuItem.Checked = False
         WA1ToolStripMenuItem.Checked = False
