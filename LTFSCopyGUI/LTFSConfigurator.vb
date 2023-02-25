@@ -12,13 +12,18 @@ Public Class LTFSConfigurator
         If dlist.Count = 0 Then Return Nothing
         Return dlist(SelectedIndex)
     End Function
-    Public ReadOnly Property TapeDrive
+    Public ReadOnly Property TapeDrive As String
         Get
             Dim result As String = ""
             Try
                 result = "\\.\TAPE" & GetCurDrive.DevIndex
             Catch ex As Exception
-                result = "\\.\TAPE0"
+                If TextBox5.Text <> "" Then
+                    result = TextBox5.Text
+                Else
+                    result = "\\.\TAPE0"
+                End If
+
             End Try
             Return result
         End Get
@@ -289,7 +294,7 @@ Public Class LTFSConfigurator
         End If
         Return sb.ToString()
     End Function
-    Private Sub Button12_Click(sender As Object, e As EventArgs) Handles Button12.Click
+    Private Sub ButtonDebugSendSCSICommand_Click(sender As Object, e As EventArgs) Handles ButtonDebugSendSCSICommand.Click
         Dim th As New Threading.Thread(
             Sub()
                 Try
@@ -398,7 +403,7 @@ Public Class LTFSConfigurator
         If Panel1.Enabled Then RefreshUI()
     End Sub
 
-    Private Sub Button15_Click(sender As Object, e As EventArgs) Handles Button15.Click
+    Private Sub ButtonDebugErase_Click(sender As Object, e As EventArgs) Handles ButtonDebugErase.Click
         If Not LoadComplete Then Exit Sub
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
@@ -508,7 +513,7 @@ Public Class LTFSConfigurator
         If Panel1.Enabled Then RefreshUI()
     End Sub
 
-    Private Sub Button16_Click(sender As Object, e As EventArgs) Handles Button16.Click
+    Private Sub ButtonDebugWriteBarcode_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBarcode.Click
         If Not LoadComplete Then Exit Sub
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
@@ -541,8 +546,8 @@ Public Class LTFSConfigurator
     Private Sub Label11_Click(sender As Object, e As EventArgs) Handles Label11.Click
     End Sub
 
-    Private Sub Button17_Click(sender As Object, e As EventArgs) Handles Button17.Click
-        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes("\\.\TAPE" & GetCurDrive().DevIndex, NumericUpDown8.Value, NumericUpDown9.Value, NumericUpDown1.Value)
+    Private Sub ButtonDebugReadMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadMAM.Click
+        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(TapeDrive, NumericUpDown8.Value, NumericUpDown9.Value, NumericUpDown1.Value)
         If ResultB.Length = 0 Then Exit Sub
         Dim Result As String = System.Text.Encoding.UTF8.GetString(ResultB)
         If Result <> "" Then TextBox8.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
@@ -611,9 +616,8 @@ Public Class LTFSConfigurator
                 Return ResultString & " << " & ResultUnit & "MiB"
         End Select
     End Function
-    Private Sub Button18_Click(sender As Object, e As EventArgs) Handles Button18.Click
+    Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
         TextBox8.Text = ""
         TextBox8.AppendText("========Application Info========" & vbCrLf)
         Try
@@ -753,10 +757,9 @@ Public Class LTFSConfigurator
         Me.Enabled = True
     End Sub
 
-    Private Sub Button19_Click(sender As Object, e As EventArgs) Handles Button19.Click
+    Private Sub ButtonDebugDumpMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpMAM.Click
         If SaveFileDialog1.ShowDialog = DialogResult.OK Then
-            Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
-            Button19.Enabled = False
+            ButtonDebugDumpMAM.Enabled = False
 
             Dim th As New Threading.Thread(
                 Sub()
@@ -789,14 +792,13 @@ Public Class LTFSConfigurator
                     Next
                     MessageBox.Show("Dump Complete")
                     MAMData.SaveSerializedText(SaveFileDialog1.FileName)
-                    Me.Invoke(Sub() Button19.Enabled = True)
+                    Me.Invoke(Sub() ButtonDebugDumpMAM.Enabled = True)
                 End Sub)
             th.Start()
         End If
     End Sub
 
-    Private Sub Button20_Click(sender As Object, e As EventArgs) Handles Button20.Click
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+    Private Sub ButtonDebugRewind_Click(sender As Object, e As EventArgs) Handles ButtonDebugRewind.Click
         Me.Enabled = False
         Dim cdbData As Byte() = {1, 0, 0, 0, 0, 0}
         Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
@@ -810,8 +812,7 @@ Public Class LTFSConfigurator
         Me.Enabled = True
     End Sub
 
-    Private Sub Button21_Click(sender As Object, e As EventArgs) Handles Button21.Click
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+    Private Sub ButtonDebugReadBlock_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBlock.Click
         Me.Enabled = False
         Dim ReadLen As Integer = NumericUpDown7.Value
 
@@ -828,7 +829,7 @@ Public Class LTFSConfigurator
         'Marshal.FreeHGlobal(data)
         'Marshal.FreeHGlobal(sense)
         Dim sense(63) As Byte
-        Dim readData As Byte() = TapeUtils.ReadBlock(tapeDrive, sense, ReadLen)
+        Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, ReadLen)
         Dim DiffBytes As Int32
         For i As Integer = 3 To 6
             DiffBytes <<= 8
@@ -845,11 +846,10 @@ Public Class LTFSConfigurator
         Me.Enabled = True
     End Sub
 
-    Private Sub Button22_Click(sender As Object, e As EventArgs) Handles Button22.Click
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+    Private Sub ButtonDebugDumpBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpBuffer.Click
         Me.Enabled = False
         Dim BufferID = Convert.ToByte(ComboBox2.SelectedItem.Substring(0, 2), 16)
-        Dim DumpData As Byte() = TapeUtils.ReadBuffer(tapeDrive, BufferID)
+        Dim DumpData As Byte() = TapeUtils.ReadBuffer(TapeDrive, BufferID)
         TextBox8.Text = "Buffer len=" & DumpData.Length & vbCrLf
         SaveFileDialog2.FileName = ComboBox2.SelectedItem & ".bin"
         If SaveFileDialog2.ShowDialog = DialogResult.OK Then
@@ -873,8 +873,7 @@ Public Class LTFSConfigurator
         End If
     End Sub
 
-    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+    Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
         TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(tapeDrive,
                                                                             NumericUpDown2.Value,
@@ -884,8 +883,7 @@ Public Class LTFSConfigurator
 
     End Sub
 
-    Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
-        Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
+    Private Sub ButtonDebugReadPosition_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadPosition.Click
         Me.Enabled = False
         Dim pos As New TapeUtils.PositionData(tapeDrive)
         'Dim param As Byte() = TapeUtils.SCSIReadParam(tapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
@@ -908,7 +906,7 @@ Public Class LTFSConfigurator
         'If LOLU Then TextBox8.Text &= "LOLU" & vbCrLf
     End Sub
     Public Operation_Cancel_Flag As Boolean = False
-    Private Sub Button23_Click(sender As Object, e As EventArgs) Handles Button23.Click
+    Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             If My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
                 MessageBox.Show("保存路径已存在bin文件，操作取消")
@@ -925,14 +923,13 @@ Public Class LTFSConfigurator
             Button24.Enabled = True
             TextBox8.Text = ""
             Dim log As Boolean = CheckBox2.Checked
-            Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
             Dim thprog As New Threading.Thread(
                 Sub()
                     Dim ReadLen As Integer = NumericUpDown7.Value
                     Dim FileNum As Integer = 0
 
                     'Position
-                    Dim param As Byte() = TapeUtils.SCSIReadParam(tapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+                    Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
 
                     Dim Partition As Byte = param(1)
                     Dim Block As UInteger = 0
@@ -942,7 +939,7 @@ Public Class LTFSConfigurator
                     Next
                     While True
                         Dim sense(63) As Byte
-                        Dim readData As Byte() = TapeUtils.ReadBlock(tapeDrive, sense, ReadLen)
+                        Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then My.Computer.FileSystem.WriteAllBytes(FolderBrowserDialog1.SelectedPath & "\" & FileNum & ".bin", readData, True)
                         If Add_Key <> 0 Then
@@ -979,12 +976,11 @@ Public Class LTFSConfigurator
         Operation_Cancel_Flag = True
     End Sub
 
-    Private Sub Button25_Click(sender As Object, e As EventArgs) Handles Button25.Click
+    Private Sub ButtonDebugDumpIndex_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpIndex.Click
         Try
-            Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
-            TapeUtils.Locate(tapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
-            TapeUtils.ReadBlock(tapeDrive)
-            Dim data As Byte() = TapeUtils.ReadToFileMark(tapeDrive)
+            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+            TapeUtils.ReadBlock(TapeDrive)
+            Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
             Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
             If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
                 My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
@@ -1000,13 +996,12 @@ Public Class LTFSConfigurator
         End Try
     End Sub
 
-    Private Sub Button26_Click(sender As Object, e As EventArgs) Handles Button26.Click
+    Private Sub ButtonDebugFormat_Click(sender As Object, e As EventArgs) Handles ButtonDebugFormat.Click
         If Not LoadComplete Then Exit Sub
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBox1.Text
-            Dim tapeDrive As String = "\\.\TAPE" & GetCurDrive().DevIndex
             Dim barcode As String = TextBox9.Text
             Dim th As New Threading.Thread(
                 Sub()
@@ -1308,7 +1303,7 @@ Public Class LTFSConfigurator
         LWF.Show()
     End Sub
 
-    Private Sub Button28_Click(sender As Object, e As EventArgs) Handles Button28.Click
+    Private Sub ButtonDebugReleaseUnit_Click(sender As Object, e As EventArgs) Handles ButtonDebugReleaseUnit.Click
         TapeUtils.ReleaseUnit(TapeDrive,
                               Function(sense As Byte()) As Boolean
                                   Invoke(Sub()
@@ -1319,7 +1314,7 @@ Public Class LTFSConfigurator
                               End Function)
     End Sub
 
-    Private Sub Button29_Click(sender As Object, e As EventArgs) Handles Button29.Click
+    Private Sub ButtonDebugAllowMediaRemoval_Click(sender As Object, e As EventArgs) Handles ButtonDebugAllowMediaRemoval.Click
         TapeUtils.AllowMediaRemoval(TapeDrive,
                               Function(sense As Byte()) As Boolean
                                   Invoke(Sub()

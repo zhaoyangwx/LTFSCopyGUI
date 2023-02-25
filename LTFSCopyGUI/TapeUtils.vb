@@ -200,7 +200,7 @@ Public Class TapeUtils
     End Function
     Public Enum LocateDestType
         Block = 0
-        File = 1
+        FileMark = 1
         EOD = 3
     End Enum
     Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, Optional ByVal DestType As LocateDestType = 0) As UInt16
@@ -323,9 +323,12 @@ Public Class TapeUtils
     Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0) As Boolean
         Return SetMAMAttribute(TapeDrive, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber)
     End Function
-    Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64, UUID As String, Optional ByVal ExtraPartitionCount As Byte = 1) As Boolean
+    Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64,
+                                    UUID As String, Optional ByVal ExtraPartitionCount As Byte = 1) As Boolean
+        WriteFileMark(TapeDrive, 0)
         Dim VCIData As Byte()
         Dim VCI As Byte() = GetMAMAttributeBytes(TapeDrive, 0, 9)
+        If VCI Is Nothing OrElse VCI.Length = 0 Then Return False
         If ExtraPartitionCount > 0 Then
             VCIData = {8, 0, 0, 0, 0, VCI(VCI.Length - 4), VCI(VCI.Length - 3), VCI(VCI.Length - 2), VCI(VCI.Length - 1),
             Generation >> 56 And &HFF, Generation >> 48 And &HFF, Generation >> 40 And &HFF, Generation >> 32 And &HFF,
@@ -344,8 +347,8 @@ Public Class TapeUtils
             block1 >> 56 And &HFF, block1 >> 48 And &HFF, block1 >> 40 And &HFF, block1 >> 32 And &HFF,
             block1 >> 24 And &HFF, block1 >> 16 And &HFF, block1 >> 8 And &HFF, block1 And &HFF,
             0, &H2B, &H4C, &H54, &H46, &H53, 0}
-        VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray
-        VCIData = VCIData.Concat({0, 1}).ToArray
+        VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray()
+        VCIData = VCIData.Concat({0, 1}).ToArray()
         Return SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount)
     End Function
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
@@ -804,7 +807,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function WriteFileMark(TapeDrive As String, Optional ByVal Number As UInteger = 1) As Byte()
         Dim sense(63) As Byte
-        SendSCSICommand(TapeDrive, {&H10, 1, Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
+        SendSCSICommand(TapeDrive, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -1427,8 +1430,7 @@ Public Class TapeUtils
                 If TapeUtils.WriteVCI(TapeDrive, pindex.generationnumber, block0, block1, pindex.volumeuuid.ToString(), ExtraPartitionCount) Then
                     ProgressReport("WRITE VCI OK" & vbCrLf)
                 Else
-                    OnError("WRITE VCI Fail" & vbCrLf)
-                    Return False
+                    ProgressReport("WRITE VCI Fail" & vbCrLf)
                 End If
 
                 OnFinish("Format finished.")
@@ -1486,6 +1488,8 @@ Public Class TapeUtils
                 If ProgressReport IsNot Nothing Then ProgressReport(Data.Length - ByteOffset)
                 ByteOffset = 0
             End While
+            AllowMediaRemoval(TapeDrive)
+            ReleaseUnit(TapeDrive)
             If StopFlag Then
                 fs.Close()
                 My.Computer.FileSystem.DeleteFile(OutputFile)

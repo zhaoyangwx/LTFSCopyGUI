@@ -40,42 +40,43 @@ Partial Class LTFSConfigurator
         Me.Button10 = New System.Windows.Forms.Button()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.Button30 = New System.Windows.Forms.Button()
         Me.Button27 = New System.Windows.Forms.Button()
         Me.Button14 = New System.Windows.Forms.Button()
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
-        Me.Button29 = New System.Windows.Forms.Button()
-        Me.Button28 = New System.Windows.Forms.Button()
-        Me.Button26 = New System.Windows.Forms.Button()
-        Me.Button25 = New System.Windows.Forms.Button()
+        Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
+        Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
+        Me.ButtonDebugFormat = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpIndex = New System.Windows.Forms.Button()
         Me.ComboBox3 = New System.Windows.Forms.ComboBox()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button24 = New System.Windows.Forms.Button()
-        Me.Button23 = New System.Windows.Forms.Button()
-        Me.Button11 = New System.Windows.Forms.Button()
-        Me.Button5 = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpTape = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadPosition = New System.Windows.Forms.Button()
+        Me.ButtonDebugLocate = New System.Windows.Forms.Button()
         Me.Label16 = New System.Windows.Forms.Label()
         Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
         Me.NumericUpDown2 = New System.Windows.Forms.NumericUpDown()
         Me.Label5 = New System.Windows.Forms.Label()
         Me.Label4 = New System.Windows.Forms.Label()
         Me.ComboBox2 = New System.Windows.Forms.ComboBox()
-        Me.Button22 = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
         Me.NumericUpDown7 = New System.Windows.Forms.NumericUpDown()
-        Me.Button21 = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadBlock = New System.Windows.Forms.Button()
         Me.Label14 = New System.Windows.Forms.Label()
-        Me.Button20 = New System.Windows.Forms.Button()
-        Me.Button19 = New System.Windows.Forms.Button()
-        Me.Button18 = New System.Windows.Forms.Button()
-        Me.Button17 = New System.Windows.Forms.Button()
+        Me.ButtonDebugRewind = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpMAM = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadMAM = New System.Windows.Forms.Button()
         Me.NumericUpDown9 = New System.Windows.Forms.NumericUpDown()
         Me.NumericUpDown8 = New System.Windows.Forms.NumericUpDown()
         Me.Label15 = New System.Windows.Forms.Label()
         Me.Label13 = New System.Windows.Forms.Label()
         Me.TextBox10 = New System.Windows.Forms.TextBox()
         Me.Label12 = New System.Windows.Forms.Label()
-        Me.Button16 = New System.Windows.Forms.Button()
+        Me.ButtonDebugWriteBarcode = New System.Windows.Forms.Button()
         Me.TextBox9 = New System.Windows.Forms.TextBox()
         Me.Label11 = New System.Windows.Forms.Label()
         Me.Label10 = New System.Windows.Forms.Label()
@@ -84,8 +85,8 @@ Partial Class LTFSConfigurator
         Me.NumericUpDown6 = New System.Windows.Forms.NumericUpDown()
         Me.TextBox8 = New System.Windows.Forms.TextBox()
         Me.TextBox7 = New System.Windows.Forms.TextBox()
-        Me.Button15 = New System.Windows.Forms.Button()
-        Me.Button12 = New System.Windows.Forms.Button()
+        Me.ButtonDebugErase = New System.Windows.Forms.Button()
+        Me.ButtonDebugSendSCSICommand = New System.Windows.Forms.Button()
         Me.TextBox6 = New System.Windows.Forms.TextBox()
         Me.TextBox5 = New System.Windows.Forms.TextBox()
         Me.Label7 = New System.Windows.Forms.Label()
@@ -93,7 +94,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.Button30 = New System.Windows.Forms.Button()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -299,6 +299,16 @@ Partial Class LTFSConfigurator
         Me.Panel1.Size = New System.Drawing.Size(1077, 662)
         Me.Panel1.TabIndex = 17
         '
+        'Button30
+        '
+        Me.Button30.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button30.Location = New System.Drawing.Point(990, 33)
+        Me.Button30.Name = "Button30"
+        Me.Button30.Size = New System.Drawing.Size(75, 23)
+        Me.Button30.TabIndex = 22
+        Me.Button30.Text = "排序复制"
+        Me.Button30.UseVisualStyleBackColor = True
+        '
         'Button27
         '
         Me.Button27.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
@@ -346,37 +356,37 @@ Partial Class LTFSConfigurator
         Me.Panel2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Panel2.Controls.Add(Me.Button29)
-        Me.Panel2.Controls.Add(Me.Button28)
-        Me.Panel2.Controls.Add(Me.Button26)
-        Me.Panel2.Controls.Add(Me.Button25)
+        Me.Panel2.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
+        Me.Panel2.Controls.Add(Me.ButtonDebugReleaseUnit)
+        Me.Panel2.Controls.Add(Me.ButtonDebugFormat)
+        Me.Panel2.Controls.Add(Me.ButtonDebugDumpIndex)
         Me.Panel2.Controls.Add(Me.ComboBox3)
         Me.Panel2.Controls.Add(Me.CheckBox2)
         Me.Panel2.Controls.Add(Me.Button24)
-        Me.Panel2.Controls.Add(Me.Button23)
-        Me.Panel2.Controls.Add(Me.Button11)
-        Me.Panel2.Controls.Add(Me.Button5)
+        Me.Panel2.Controls.Add(Me.ButtonDebugDumpTape)
+        Me.Panel2.Controls.Add(Me.ButtonDebugReadPosition)
+        Me.Panel2.Controls.Add(Me.ButtonDebugLocate)
         Me.Panel2.Controls.Add(Me.Label16)
         Me.Panel2.Controls.Add(Me.NumericUpDown1)
         Me.Panel2.Controls.Add(Me.NumericUpDown2)
         Me.Panel2.Controls.Add(Me.Label5)
         Me.Panel2.Controls.Add(Me.Label4)
         Me.Panel2.Controls.Add(Me.ComboBox2)
-        Me.Panel2.Controls.Add(Me.Button22)
+        Me.Panel2.Controls.Add(Me.ButtonDebugDumpBuffer)
         Me.Panel2.Controls.Add(Me.NumericUpDown7)
-        Me.Panel2.Controls.Add(Me.Button21)
+        Me.Panel2.Controls.Add(Me.ButtonDebugReadBlock)
         Me.Panel2.Controls.Add(Me.Label14)
-        Me.Panel2.Controls.Add(Me.Button20)
-        Me.Panel2.Controls.Add(Me.Button19)
-        Me.Panel2.Controls.Add(Me.Button18)
-        Me.Panel2.Controls.Add(Me.Button17)
+        Me.Panel2.Controls.Add(Me.ButtonDebugRewind)
+        Me.Panel2.Controls.Add(Me.ButtonDebugDumpMAM)
+        Me.Panel2.Controls.Add(Me.ButtonDebugReadInfo)
+        Me.Panel2.Controls.Add(Me.ButtonDebugReadMAM)
         Me.Panel2.Controls.Add(Me.NumericUpDown9)
         Me.Panel2.Controls.Add(Me.NumericUpDown8)
         Me.Panel2.Controls.Add(Me.Label15)
         Me.Panel2.Controls.Add(Me.Label13)
         Me.Panel2.Controls.Add(Me.TextBox10)
         Me.Panel2.Controls.Add(Me.Label12)
-        Me.Panel2.Controls.Add(Me.Button16)
+        Me.Panel2.Controls.Add(Me.ButtonDebugWriteBarcode)
         Me.Panel2.Controls.Add(Me.TextBox9)
         Me.Panel2.Controls.Add(Me.Label11)
         Me.Panel2.Controls.Add(Me.Label10)
@@ -385,8 +395,8 @@ Partial Class LTFSConfigurator
         Me.Panel2.Controls.Add(Me.NumericUpDown6)
         Me.Panel2.Controls.Add(Me.TextBox8)
         Me.Panel2.Controls.Add(Me.TextBox7)
-        Me.Panel2.Controls.Add(Me.Button15)
-        Me.Panel2.Controls.Add(Me.Button12)
+        Me.Panel2.Controls.Add(Me.ButtonDebugErase)
+        Me.Panel2.Controls.Add(Me.ButtonDebugSendSCSICommand)
         Me.Panel2.Controls.Add(Me.TextBox6)
         Me.Panel2.Controls.Add(Me.TextBox5)
         Me.Panel2.Controls.Add(Me.Label7)
@@ -397,45 +407,45 @@ Partial Class LTFSConfigurator
         Me.Panel2.TabIndex = 18
         Me.Panel2.Visible = False
         '
-        'Button29
+        'ButtonDebugAllowMediaRemoval
         '
-        Me.Button29.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button29.Location = New System.Drawing.Point(5, 404)
-        Me.Button29.Name = "Button29"
-        Me.Button29.Size = New System.Drawing.Size(119, 23)
-        Me.Button29.TabIndex = 58
-        Me.Button29.Text = "AllowMediaRemoval"
-        Me.Button29.UseVisualStyleBackColor = True
+        Me.ButtonDebugAllowMediaRemoval.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugAllowMediaRemoval.Location = New System.Drawing.Point(5, 404)
+        Me.ButtonDebugAllowMediaRemoval.Name = "ButtonDebugAllowMediaRemoval"
+        Me.ButtonDebugAllowMediaRemoval.Size = New System.Drawing.Size(119, 23)
+        Me.ButtonDebugAllowMediaRemoval.TabIndex = 58
+        Me.ButtonDebugAllowMediaRemoval.Text = "AllowMediaRemoval"
+        Me.ButtonDebugAllowMediaRemoval.UseVisualStyleBackColor = True
         '
-        'Button28
+        'ButtonDebugReleaseUnit
         '
-        Me.Button28.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button28.Location = New System.Drawing.Point(5, 375)
-        Me.Button28.Name = "Button28"
-        Me.Button28.Size = New System.Drawing.Size(119, 23)
-        Me.Button28.TabIndex = 57
-        Me.Button28.Text = "ReleaseUnit"
-        Me.Button28.UseVisualStyleBackColor = True
+        Me.ButtonDebugReleaseUnit.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugReleaseUnit.Location = New System.Drawing.Point(5, 375)
+        Me.ButtonDebugReleaseUnit.Name = "ButtonDebugReleaseUnit"
+        Me.ButtonDebugReleaseUnit.Size = New System.Drawing.Size(119, 23)
+        Me.ButtonDebugReleaseUnit.TabIndex = 57
+        Me.ButtonDebugReleaseUnit.Text = "ReleaseUnit"
+        Me.ButtonDebugReleaseUnit.UseVisualStyleBackColor = True
         '
-        'Button26
+        'ButtonDebugFormat
         '
-        Me.Button26.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button26.Location = New System.Drawing.Point(270, 521)
-        Me.Button26.Name = "Button26"
-        Me.Button26.Size = New System.Drawing.Size(75, 23)
-        Me.Button26.TabIndex = 56
-        Me.Button26.Text = "format"
-        Me.Button26.UseVisualStyleBackColor = True
+        Me.ButtonDebugFormat.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugFormat.Location = New System.Drawing.Point(270, 521)
+        Me.ButtonDebugFormat.Name = "ButtonDebugFormat"
+        Me.ButtonDebugFormat.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugFormat.TabIndex = 56
+        Me.ButtonDebugFormat.Text = "format"
+        Me.ButtonDebugFormat.UseVisualStyleBackColor = True
         '
-        'Button25
+        'ButtonDebugDumpIndex
         '
-        Me.Button25.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button25.Location = New System.Drawing.Point(904, 375)
-        Me.Button25.Name = "Button25"
-        Me.Button25.Size = New System.Drawing.Size(75, 23)
-        Me.Button25.TabIndex = 55
-        Me.Button25.Text = "Load index"
-        Me.Button25.UseVisualStyleBackColor = True
+        Me.ButtonDebugDumpIndex.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugDumpIndex.Location = New System.Drawing.Point(904, 375)
+        Me.ButtonDebugDumpIndex.Name = "ButtonDebugDumpIndex"
+        Me.ButtonDebugDumpIndex.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugDumpIndex.TabIndex = 55
+        Me.ButtonDebugDumpIndex.Text = "Load index"
+        Me.ButtonDebugDumpIndex.UseVisualStyleBackColor = True
         '
         'ComboBox3
         '
@@ -470,35 +480,35 @@ Partial Class LTFSConfigurator
         Me.Button24.Text = "■"
         Me.Button24.UseVisualStyleBackColor = True
         '
-        'Button23
+        'ButtonDebugDumpTape
         '
-        Me.Button23.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button23.Location = New System.Drawing.Point(602, 433)
-        Me.Button23.Name = "Button23"
-        Me.Button23.Size = New System.Drawing.Size(75, 23)
-        Me.Button23.TabIndex = 51
-        Me.Button23.Text = "StartDump"
-        Me.Button23.UseVisualStyleBackColor = True
+        Me.ButtonDebugDumpTape.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugDumpTape.Location = New System.Drawing.Point(602, 433)
+        Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
+        Me.ButtonDebugDumpTape.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugDumpTape.TabIndex = 51
+        Me.ButtonDebugDumpTape.Text = "StartDump"
+        Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
-        'Button11
+        'ButtonDebugReadPosition
         '
-        Me.Button11.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button11.Location = New System.Drawing.Point(904, 404)
-        Me.Button11.Name = "Button11"
-        Me.Button11.Size = New System.Drawing.Size(75, 23)
-        Me.Button11.TabIndex = 50
-        Me.Button11.Text = "Read Pos"
-        Me.Button11.UseVisualStyleBackColor = True
+        Me.ButtonDebugReadPosition.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugReadPosition.Location = New System.Drawing.Point(904, 404)
+        Me.ButtonDebugReadPosition.Name = "ButtonDebugReadPosition"
+        Me.ButtonDebugReadPosition.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugReadPosition.TabIndex = 50
+        Me.ButtonDebugReadPosition.Text = "Read Pos"
+        Me.ButtonDebugReadPosition.UseVisualStyleBackColor = True
         '
-        'Button5
+        'ButtonDebugLocate
         '
-        Me.Button5.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button5.Location = New System.Drawing.Point(521, 433)
-        Me.Button5.Name = "Button5"
-        Me.Button5.Size = New System.Drawing.Size(75, 23)
-        Me.Button5.TabIndex = 49
-        Me.Button5.Text = "Locate"
-        Me.Button5.UseVisualStyleBackColor = True
+        Me.ButtonDebugLocate.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugLocate.Location = New System.Drawing.Point(521, 433)
+        Me.ButtonDebugLocate.Name = "ButtonDebugLocate"
+        Me.ButtonDebugLocate.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugLocate.TabIndex = 49
+        Me.ButtonDebugLocate.Text = "Locate"
+        Me.ButtonDebugLocate.UseVisualStyleBackColor = True
         '
         'Label16
         '
@@ -560,15 +570,15 @@ Partial Class LTFSConfigurator
         Me.ComboBox2.Size = New System.Drawing.Size(770, 20)
         Me.ComboBox2.TabIndex = 42
         '
-        'Button22
+        'ButtonDebugDumpBuffer
         '
-        Me.Button22.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button22.Location = New System.Drawing.Point(904, 462)
-        Me.Button22.Name = "Button22"
-        Me.Button22.Size = New System.Drawing.Size(75, 23)
-        Me.Button22.TabIndex = 41
-        Me.Button22.Text = "RAWDump"
-        Me.Button22.UseVisualStyleBackColor = True
+        Me.ButtonDebugDumpBuffer.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugDumpBuffer.Location = New System.Drawing.Point(904, 462)
+        Me.ButtonDebugDumpBuffer.Name = "ButtonDebugDumpBuffer"
+        Me.ButtonDebugDumpBuffer.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugDumpBuffer.TabIndex = 41
+        Me.ButtonDebugDumpBuffer.Text = "RAWDump"
+        Me.ButtonDebugDumpBuffer.UseVisualStyleBackColor = True
         '
         'NumericUpDown7
         '
@@ -581,15 +591,15 @@ Partial Class LTFSConfigurator
         Me.NumericUpDown7.TabIndex = 40
         Me.NumericUpDown7.Value = New Decimal(New Integer() {524288, 0, 0, 0})
         '
-        'Button21
+        'ButtonDebugReadBlock
         '
-        Me.Button21.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button21.Location = New System.Drawing.Point(904, 433)
-        Me.Button21.Name = "Button21"
-        Me.Button21.Size = New System.Drawing.Size(75, 23)
-        Me.Button21.TabIndex = 39
-        Me.Button21.Text = "Read Block"
-        Me.Button21.UseVisualStyleBackColor = True
+        Me.ButtonDebugReadBlock.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugReadBlock.Location = New System.Drawing.Point(904, 433)
+        Me.ButtonDebugReadBlock.Name = "ButtonDebugReadBlock"
+        Me.ButtonDebugReadBlock.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugReadBlock.TabIndex = 39
+        Me.ButtonDebugReadBlock.Text = "Read Block"
+        Me.ButtonDebugReadBlock.UseVisualStyleBackColor = True
         '
         'Label14
         '
@@ -601,45 +611,45 @@ Partial Class LTFSConfigurator
         Me.Label14.TabIndex = 38
         Me.Label14.Text = "Read Buffer"
         '
-        'Button20
+        'ButtonDebugRewind
         '
-        Me.Button20.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button20.Location = New System.Drawing.Point(128, 433)
-        Me.Button20.Name = "Button20"
-        Me.Button20.Size = New System.Drawing.Size(75, 23)
-        Me.Button20.TabIndex = 37
-        Me.Button20.Text = "Rewind"
-        Me.Button20.UseVisualStyleBackColor = True
+        Me.ButtonDebugRewind.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugRewind.Location = New System.Drawing.Point(128, 433)
+        Me.ButtonDebugRewind.Name = "ButtonDebugRewind"
+        Me.ButtonDebugRewind.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugRewind.TabIndex = 37
+        Me.ButtonDebugRewind.Text = "Rewind"
+        Me.ButtonDebugRewind.UseVisualStyleBackColor = True
         '
-        'Button19
+        'ButtonDebugDumpMAM
         '
-        Me.Button19.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button19.Location = New System.Drawing.Point(374, 489)
-        Me.Button19.Name = "Button19"
-        Me.Button19.Size = New System.Drawing.Size(92, 23)
-        Me.Button19.TabIndex = 36
-        Me.Button19.Text = "ReadAll"
-        Me.Button19.UseVisualStyleBackColor = True
+        Me.ButtonDebugDumpMAM.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugDumpMAM.Location = New System.Drawing.Point(374, 489)
+        Me.ButtonDebugDumpMAM.Name = "ButtonDebugDumpMAM"
+        Me.ButtonDebugDumpMAM.Size = New System.Drawing.Size(92, 23)
+        Me.ButtonDebugDumpMAM.TabIndex = 36
+        Me.ButtonDebugDumpMAM.Text = "ReadAll"
+        Me.ButtonDebugDumpMAM.UseVisualStyleBackColor = True
         '
-        'Button18
+        'ButtonDebugReadInfo
         '
-        Me.Button18.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button18.Location = New System.Drawing.Point(904, 491)
-        Me.Button18.Name = "Button18"
-        Me.Button18.Size = New System.Drawing.Size(75, 23)
-        Me.Button18.TabIndex = 35
-        Me.Button18.Text = "ReadInfo"
-        Me.Button18.UseVisualStyleBackColor = True
+        Me.ButtonDebugReadInfo.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugReadInfo.Location = New System.Drawing.Point(904, 491)
+        Me.ButtonDebugReadInfo.Name = "ButtonDebugReadInfo"
+        Me.ButtonDebugReadInfo.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugReadInfo.TabIndex = 35
+        Me.ButtonDebugReadInfo.Text = "ReadInfo"
+        Me.ButtonDebugReadInfo.UseVisualStyleBackColor = True
         '
-        'Button17
+        'ButtonDebugReadMAM
         '
-        Me.Button17.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button17.Location = New System.Drawing.Point(293, 489)
-        Me.Button17.Name = "Button17"
-        Me.Button17.Size = New System.Drawing.Size(75, 23)
-        Me.Button17.TabIndex = 34
-        Me.Button17.Text = "Read"
-        Me.Button17.UseVisualStyleBackColor = True
+        Me.ButtonDebugReadMAM.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugReadMAM.Location = New System.Drawing.Point(293, 489)
+        Me.ButtonDebugReadMAM.Name = "ButtonDebugReadMAM"
+        Me.ButtonDebugReadMAM.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugReadMAM.TabIndex = 34
+        Me.ButtonDebugReadMAM.Text = "Read"
+        Me.ButtonDebugReadMAM.UseVisualStyleBackColor = True
         '
         'NumericUpDown9
         '
@@ -698,15 +708,15 @@ Partial Class LTFSConfigurator
         Me.Label12.TabIndex = 26
         Me.Label12.Text = "datadir"
         '
-        'Button16
+        'ButtonDebugWriteBarcode
         '
-        Me.Button16.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button16.Location = New System.Drawing.Point(904, 521)
-        Me.Button16.Name = "Button16"
-        Me.Button16.Size = New System.Drawing.Size(75, 23)
-        Me.Button16.TabIndex = 25
-        Me.Button16.Text = "write"
-        Me.Button16.UseVisualStyleBackColor = True
+        Me.ButtonDebugWriteBarcode.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugWriteBarcode.Location = New System.Drawing.Point(904, 521)
+        Me.ButtonDebugWriteBarcode.Name = "ButtonDebugWriteBarcode"
+        Me.ButtonDebugWriteBarcode.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugWriteBarcode.TabIndex = 25
+        Me.ButtonDebugWriteBarcode.Text = "write"
+        Me.ButtonDebugWriteBarcode.UseVisualStyleBackColor = True
         '
         'TextBox9
         '
@@ -793,25 +803,25 @@ Partial Class LTFSConfigurator
         Me.TextBox7.Size = New System.Drawing.Size(669, 21)
         Me.TextBox7.TabIndex = 17
         '
-        'Button15
+        'ButtonDebugErase
         '
-        Me.Button15.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.Button15.Location = New System.Drawing.Point(189, 521)
-        Me.Button15.Name = "Button15"
-        Me.Button15.Size = New System.Drawing.Size(75, 23)
-        Me.Button15.TabIndex = 16
-        Me.Button15.Text = "erase"
-        Me.Button15.UseVisualStyleBackColor = True
+        Me.ButtonDebugErase.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugErase.Location = New System.Drawing.Point(189, 521)
+        Me.ButtonDebugErase.Name = "ButtonDebugErase"
+        Me.ButtonDebugErase.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugErase.TabIndex = 16
+        Me.ButtonDebugErase.Text = "erase"
+        Me.ButtonDebugErase.UseVisualStyleBackColor = True
         '
-        'Button12
+        'ButtonDebugSendSCSICommand
         '
-        Me.Button12.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button12.Location = New System.Drawing.Point(904, 29)
-        Me.Button12.Name = "Button12"
-        Me.Button12.Size = New System.Drawing.Size(75, 23)
-        Me.Button12.TabIndex = 15
-        Me.Button12.Text = "send"
-        Me.Button12.UseVisualStyleBackColor = True
+        Me.ButtonDebugSendSCSICommand.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.ButtonDebugSendSCSICommand.Location = New System.Drawing.Point(904, 29)
+        Me.ButtonDebugSendSCSICommand.Name = "ButtonDebugSendSCSICommand"
+        Me.ButtonDebugSendSCSICommand.Size = New System.Drawing.Size(75, 23)
+        Me.ButtonDebugSendSCSICommand.TabIndex = 15
+        Me.ButtonDebugSendSCSICommand.Text = "send"
+        Me.ButtonDebugSendSCSICommand.UseVisualStyleBackColor = True
         '
         'TextBox6
         '
@@ -859,16 +869,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         Me.SaveFileDialog2.Filter = "RAW Dump | *.bin"
         '
-        'Button30
-        '
-        Me.Button30.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button30.Location = New System.Drawing.Point(990, 33)
-        Me.Button30.Name = "Button30"
-        Me.Button30.Size = New System.Drawing.Size(75, 23)
-        Me.Button30.TabIndex = 22
-        Me.Button30.Text = "排序复制"
-        Me.Button30.UseVisualStyleBackColor = True
-        '
         'LTFSConfigurator
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -915,52 +915,52 @@ Partial Class LTFSConfigurator
     Friend WithEvents Label7 As Label
     Friend WithEvents TextBox6 As TextBox
     Friend WithEvents TextBox5 As TextBox
-    Friend WithEvents Button12 As Button
+    Friend WithEvents ButtonDebugSendSCSICommand As Button
     Friend WithEvents Button13 As Button
     Friend WithEvents Button14 As Button
-    Friend WithEvents Button15 As Button
+    Friend WithEvents ButtonDebugErase As Button
     Friend WithEvents TextBox7 As TextBox
     Friend WithEvents TextBox8 As TextBox
     Friend WithEvents NumericUpDown6 As NumericUpDown
     Friend WithEvents Label10 As Label
     Friend WithEvents Label9 As Label
     Friend WithEvents Label8 As Label
-    Friend WithEvents Button16 As Button
+    Friend WithEvents ButtonDebugWriteBarcode As Button
     Friend WithEvents TextBox9 As TextBox
     Friend WithEvents Label11 As Label
     Friend WithEvents TextBox10 As TextBox
     Friend WithEvents Label12 As Label
-    Friend WithEvents Button17 As Button
+    Friend WithEvents ButtonDebugReadMAM As Button
     Friend WithEvents NumericUpDown9 As NumericUpDown
     Friend WithEvents NumericUpDown8 As NumericUpDown
     Friend WithEvents Label15 As Label
     Friend WithEvents Label13 As Label
-    Friend WithEvents Button18 As Button
-    Friend WithEvents Button19 As Button
+    Friend WithEvents ButtonDebugReadInfo As Button
+    Friend WithEvents ButtonDebugDumpMAM As Button
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
     Friend WithEvents Label14 As Label
-    Friend WithEvents Button20 As Button
+    Friend WithEvents ButtonDebugRewind As Button
     Friend WithEvents SaveFileDialog2 As SaveFileDialog
-    Friend WithEvents Button21 As Button
+    Friend WithEvents ButtonDebugReadBlock As Button
     Friend WithEvents NumericUpDown7 As NumericUpDown
-    Friend WithEvents Button22 As Button
+    Friend WithEvents ButtonDebugDumpBuffer As Button
     Friend WithEvents ComboBox2 As ComboBox
-    Friend WithEvents Button5 As Button
+    Friend WithEvents ButtonDebugLocate As Button
     Friend WithEvents Label16 As Label
     Friend WithEvents NumericUpDown1 As NumericUpDown
     Friend WithEvents NumericUpDown2 As NumericUpDown
     Friend WithEvents Label5 As Label
     Friend WithEvents Label4 As Label
-    Friend WithEvents Button11 As Button
-    Friend WithEvents Button23 As Button
+    Friend WithEvents ButtonDebugReadPosition As Button
+    Friend WithEvents ButtonDebugDumpTape As Button
     Friend WithEvents FolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents Button24 As Button
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents ComboBox3 As ComboBox
-    Friend WithEvents Button25 As Button
-    Friend WithEvents Button26 As Button
+    Friend WithEvents ButtonDebugDumpIndex As Button
+    Friend WithEvents ButtonDebugFormat As Button
     Friend WithEvents Button27 As Button
-    Friend WithEvents Button28 As Button
-    Friend WithEvents Button29 As Button
+    Friend WithEvents ButtonDebugReleaseUnit As Button
+    Friend WithEvents ButtonDebugAllowMediaRemoval As Button
     Friend WithEvents Button30 As Button
 End Class
