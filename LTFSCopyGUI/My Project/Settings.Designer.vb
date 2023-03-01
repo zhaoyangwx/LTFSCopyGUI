@@ -161,6 +161,18 @@ Namespace My
                 Me("LTFSWriter_AutoFlush") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("")>  _
+        Public Property LTFSWriter_FileLabel() As String
+            Get
+                Return CType(Me("LTFSWriter_FileLabel"),String)
+            End Get
+            Set
+                Me("LTFSWriter_FileLabel") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

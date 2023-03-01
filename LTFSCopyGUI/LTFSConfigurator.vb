@@ -895,7 +895,7 @@ Public Class LTFSConfigurator
         TextBox8.Text = ""
         TextBox8.Text &= "Partition " & pos.PartitionNumber & vbCrLf
         TextBox8.Text &= "Block " & pos.BlockNumber & vbCrLf
-        TextBox8.Text &= "File " & pos.FileNumber & vbCrLf
+        TextBox8.Text &= "FileMark " & pos.FileNumber & vbCrLf
         TextBox8.Text &= "Set " & pos.SetNumber & vbCrLf
         TextBox8.Text &= vbCrLf
         Me.Enabled = True

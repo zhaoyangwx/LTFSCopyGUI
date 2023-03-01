@@ -452,10 +452,10 @@ Partial Class LTFSConfigurator
         Me.ComboBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
         Me.ComboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBox3.FormattingEnabled = True
-        Me.ComboBox3.Items.AddRange(New Object() {"Block", "File", "EOD"})
+        Me.ComboBox3.Items.AddRange(New Object() {"Block", "FileMark", "EOD"})
         Me.ComboBox3.Location = New System.Drawing.Point(336, 433)
         Me.ComboBox3.Name = "ComboBox3"
-        Me.ComboBox3.Size = New System.Drawing.Size(58, 20)
+        Me.ComboBox3.Size = New System.Drawing.Size(70, 20)
         Me.ComboBox3.TabIndex = 54
         '
         'CheckBox2
@@ -532,7 +532,7 @@ Partial Class LTFSConfigurator
         'NumericUpDown2
         '
         Me.NumericUpDown2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown2.Location = New System.Drawing.Point(400, 433)
+        Me.NumericUpDown2.Location = New System.Drawing.Point(413, 433)
         Me.NumericUpDown2.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
         Me.NumericUpDown2.Name = "NumericUpDown2"
         Me.NumericUpDown2.Size = New System.Drawing.Size(89, 21)
