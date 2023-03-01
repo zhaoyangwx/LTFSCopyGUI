@@ -23,8 +23,18 @@ Public Class IOManager
             Return (l / 1024 ^ 3).ToString("F2") & " GiB"
         End If
     End Function
+    Public Shared Function SHA1(filename As String, LogFile As String()) As String
+        If LogFile.Contains("[hash] " & filename) Then
+
+            Return LogFile(Array.IndexOf(LogFile, LogFile.First(Function(s As String) As Boolean
+                                                                    Return s = "[hash] " & filename
+                                                                End Function)) + 1).TrimStart(" ").Substring(0, 40)
+        End If
+        Return ""
+    End Function
     Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
         If OnFinished Is Nothing Then
+
             Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
                 Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
                 Dim fsine As New EventedStream With {.baseStream = fsinb}
@@ -92,6 +102,7 @@ Public Class IOManager
         Public schema As ltfsindex
         Public IgnoreExisting As Boolean = True
         Private _TargetDirectory As String
+        Public LogFile As String() = {}
         Public Property TargetDirectory As String
             Set(value As String)
                 _TargetDirectory = value.TrimEnd("\")
@@ -255,7 +266,13 @@ Public Class IOManager
                                                 RaiseEvent ErrorOccured(ex.ToString)
                                             End Try
                                         End If
-                                        f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
+                                        f.sha1 = ""
+                                        If LogFile.Count > 0 Then f.sha1 = SHA1(f.fullpath, LogFile)
+                                        If f.sha1.Length <> 40 Then
+                                            f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
+                                        Else
+                                            Exit Try
+                                        End If
                                         If fout IsNot Nothing Then
                                             Try
                                                 'fob.Flush()

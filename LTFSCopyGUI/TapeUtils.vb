@@ -803,7 +803,38 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 60000, senseBufferPtr)
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(senseBufferPtr)
         Return {0, 0, 0}
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As Integer) As Byte()
+        If Data.Length <= BlockSize Then
+            Return Write(TapeDrive, Data)
+        End If
+        Dim sense(63) As Byte
+        Dim cdbData As Byte() = {}
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
+        Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(BlockSize)
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+        For i As Integer = 0 To Data.Length - 1 Step BlockSize
+            Dim TransferLen As UInteger = Math.Min(BlockSize, Data.Length - i)
+            cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
+            Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+            Marshal.Copy(Data, i, dataBuffer, TransferLen)
+            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
+            If Not succ Then
+                Marshal.Copy(senseBufferPtr, sense, 0, 64)
+                Marshal.FreeHGlobal(cdb)
+                Marshal.FreeHGlobal(dataBuffer)
+                Marshal.FreeHGlobal(senseBufferPtr)
+                Return sense
+            End If
+        Next
+        Marshal.Copy(senseBufferPtr, sense, 0, 64)
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(dataBuffer)
+        Marshal.FreeHGlobal(senseBufferPtr)
+        Return sense
     End Function
     Public Shared Function WriteFileMark(TapeDrive As String, Optional ByVal Number As UInteger = 1) As Byte()
         Dim sense(63) As Byte
@@ -1447,7 +1478,7 @@ Public Class TapeUtils
             Return True
         End If
     End Function
-    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Action(Of Long) = Nothing) As Boolean
+    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Action(Of Long) = Nothing, Optional ByVal CreateNew As Boolean = True) As Boolean
         If Not ReserveUnit(TapeDrive) Then Return False
         If Not PreventMediaRemoval(TapeDrive) Then
             ReleaseUnit(TapeDrive)
@@ -1459,7 +1490,7 @@ Public Class TapeUtils
             Return False
         End If
         Try
-            My.Computer.FileSystem.WriteAllBytes(OutputFile, {}, False)
+            If CreateNew Then My.Computer.FileSystem.WriteAllBytes(OutputFile, {}, False)
         Catch ex As Exception
             AllowMediaRemoval(TapeDrive)
             ReleaseUnit(TapeDrive)
@@ -1495,6 +1526,7 @@ Public Class TapeUtils
                 My.Computer.FileSystem.DeleteFile(OutputFile)
             End If
         Catch ex As Exception
+            MessageBox.Show(ex.ToString)
             fs.Close()
             My.Computer.FileSystem.DeleteFile(OutputFile)
             AllowMediaRemoval(TapeDrive)

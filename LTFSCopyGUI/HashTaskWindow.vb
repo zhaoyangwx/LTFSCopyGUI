@@ -7,6 +7,7 @@ Public Class HashTaskWindow
     Private ddelta, fdelta As Long
     Private _BaseDirectory As String
     Public LogEnabled As Boolean = True
+    Public Property ErrorCount As Integer = 0
     Public StartTime As String = Now.ToString("yyyyMMdd_HHmmss")
     Public Property BaseDirectory As String
         Set(value As String)
@@ -50,6 +51,9 @@ Public Class HashTaskWindow
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CheckBox1.Checked = My.Settings.ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory}
+        If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CurrentDirectory & "\recovery.log") Then
+            HashTask.LogFile = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CurrentDirectory & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        End If
         AddHandler HashTask.TaskStarted, Sub(s As String)
                                              PrintMsg(s)
                                              Me.Invoke(Sub() Button1.Text = "Pause")
@@ -82,12 +86,14 @@ Public Class HashTaskWindow
                                                                     End Try
                                                                     If result = "" Then result = "Tape Ejected."
                                                                     Me.Invoke(Sub() PrintMsg(result))
+                                                                    If ErrorCount > 0 Then PrintMsg($"{ErrorCount} errors occured.")
                                                                 End Sub)
                                                             If CheckBox3.Checked Then thEject.Start()
                                                             Button3_Click(Nothing, Nothing)
                                                         End Sub)
                                           End Sub
         AddHandler HashTask.ErrorOccured, Sub(s As String)
+                                              Threading.Interlocked.Increment(ErrorCount)
                                               PrintMsg(s)
                                           End Sub
         AddHandler HashTask.ProgressReport, Sub(s As String)

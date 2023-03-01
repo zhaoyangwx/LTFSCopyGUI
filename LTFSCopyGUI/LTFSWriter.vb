@@ -17,6 +17,7 @@ Public Class LTFSWriter
     Public Property CurrentHeight As Long = 0
     Public Property ExtraPartitionCount As Long = 0
     Public Property CapReduceCount As Long = 0
+    Public Property CapacityRefreshInterval As Integer = 30
     Public Property CleanCycle As Long = 3
     Public Property AllowOperation As Boolean = True
     Public OperationLock As New Object
@@ -110,7 +111,7 @@ Public Class LTFSWriter
                 FileRateHistory.RemoveAt(0)
             End While
 
-            If APToolStripMenuItem.Checked Then
+            If APToolStripMenuItem.Checked AndAlso fdelta = 0 Then
                 Dim FlushNow As Boolean = True
                 For j As Integer = 1 To 3
                     Dim n As Double = SpeedHistory(SpeedHistory.Count - j)
@@ -542,12 +543,13 @@ Public Class LTFSWriter
         PrintMsg("正在生成索引")
         Dim sdata As Byte() = Encoding.UTF8.GetBytes(schema.GetSerializedText())
         PrintMsg("正在写入索引")
-        While sdata.Length > 0
-            Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
-            sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
-            TapeUtils.Write(TapeDrive, wdata)
-            If sdata.Length = 0 Then Exit While
-        End While
+        TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
+        'While sdata.Length > 0
+        '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
+        '    sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
+        '    TapeUtils.Write(TapeDrive, wdata)
+        '    If sdata.Length = 0 Then Exit While
+        'End While
         TotalBytesUnindexed = 0
         If ClearCurrentStat Then
             CurrentBytesProcessed = 0
@@ -579,11 +581,12 @@ Public Class LTFSWriter
             PrintMsg("正在生成索引")
             Dim sdata As Byte() = Encoding.UTF8.GetBytes(schema.GetSerializedText())
             PrintMsg("正在写入索引")
-            While sdata.Length > 0
-                Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
-                sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
-                TapeUtils.Write(TapeDrive, wdata)
-            End While
+            TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
+            'While sdata.Length > 0
+            '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
+            '    sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
+            '    TapeUtils.Write(TapeDrive, wdata)
+            'End While
             TapeUtils.WriteFileMark(TapeDrive)
             PrintMsg("索引写入完成")
         End If
@@ -594,6 +597,7 @@ Public Class LTFSWriter
         If TotalBytesUnindexed > 0 Then
             PrintMsg("正在更新数据区索引")
             WriteCurrentIndex(False)
+            AutoDump()
         End If
         PrintMsg("正在更新索引")
         RefreshIndexPartition()
@@ -610,7 +614,10 @@ Public Class LTFSWriter
             Invoke(Sub()
                        DoEject = WA3ToolStripMenuItem.Checked OrElse MessageBox.Show("现在可以安全弹出了。是否弹出？", "提示", MessageBoxButtons.OKCancel) = DialogResult.OK
                    End Sub)
-            If DoEject Then TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+            If DoEject Then
+                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                PrintMsg("磁带已弹出")
+            End If
         End If
         Invoke(Sub()
 
@@ -871,6 +878,9 @@ Public Class LTFSWriter
 
                     End Sub
                 IterAllDirectory(d)
+                If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso TreeView1.SelectedNode.Parent.Tag IsNot Nothing AndAlso TypeOf (TreeView1.SelectedNode.Parent.Tag) Is ltfsindex.directory Then
+                    TreeView1.SelectedNode = TreeView1.SelectedNode.Parent
+                End If
                 RefreshDisplay()
             End If
         End If
@@ -1099,14 +1109,16 @@ Public Class LTFSWriter
     Public Sub RestoreFile(FileName As String, FileIndex As ltfsindex.file)
         My.Computer.FileSystem.WriteAllBytes(FileName, {}, False)
         If FileIndex.length > 0 Then
+            Dim CreateNew As Boolean = True
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
                 If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
                                          Sub(BytesReaded As Long)
                                              Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
-                                         End Sub) Then
+                                         End Sub, CreateNew) Then
                     PrintMsg($"{FileIndex.name}提取出错")
                     Exit For
                 End If
+                CreateNew = False
                 If StopFlag Then Exit Sub
             Next
         End If
@@ -1196,7 +1208,7 @@ Public Class LTFSWriter
                             Dim c As Integer = 0
                             For Each fr As FileRecord In FileList
                                 c += 1
-                                PrintMsg($"正在提取 [{c}/{FileList.Count}]{fr.File.name}", False, $"正在提取 [{c}/{FileList.Count}]{fr.SourcePath}")
+                                PrintMsg($"正在提取 [{c}/{FileList.Count}] {fr.File.name}", False, $"正在提取 [{c}/{FileList.Count}] {fr.SourcePath}")
                                 RestoreFile(fr.SourcePath, fr.File)
                                 If StopFlag Then
                                     PrintMsg("操作取消")
@@ -1281,21 +1293,42 @@ Public Class LTFSWriter
                             .fileoffset = 0}
                             fr.File.extentinfo.Add(fileextent)
                             PrintMsg($"正在写入 {fr.File.name}  大小 {IOManager.FormatSize(fr.File.length)}", False,
-                                     $"正在写入: {fr.SourcePath}{vbCrLf}大小: {IOManager.FormatSize(fr.File.length)}{vbCrLf}此前累计: {IOManager.FormatSize(TotalBytesProcessed)}")
+                                     $"正在写入: {fr.SourcePath}{vbCrLf}大小: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
+                                     }此前累计写入: {IOManager.FormatSize(TotalBytesProcessed) _
+                                     } 剩余: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
+                                     } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
                             'write to tape
                             TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
                             If finfo.Length <= plabel.blocksize Then
-                                Dim sense As Byte() = TapeUtils.Write(TapeDrive, My.Computer.FileSystem.ReadAllBytes(fr.SourcePath))
-                                If ((sense(2) >> 6) And &H1) = 1 Then
-                                    If (sense(2) And &HF) = 13 Then
-                                        PrintMsg("磁带已满")
-                                        Invoke(Sub() MessageBox.Show("磁带已满"))
-                                        StopFlag = True
-                                        Exit For
+                                Dim succ As Boolean = False
+                                While Not succ
+                                    Dim sense As Byte() = TapeUtils.Write(TapeDrive, My.Computer.FileSystem.ReadAllBytes(fr.SourcePath))
+                                    If ((sense(2) >> 6) And &H1) = 1 Then
+                                        If (sense(2) And &HF) = 13 Then
+                                            PrintMsg("磁带已满")
+                                            Invoke(Sub() MessageBox.Show("磁带已满"))
+                                            StopFlag = True
+                                            Exit For
+                                        Else
+                                            PrintMsg("磁带即将写满", True)
+                                            succ = True
+                                            Exit While
+                                        End If
+                                    ElseIf sense(2) And &HF <> 0 Then
+                                        Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                            Case DialogResult.Abort
+                                                Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                            Case DialogResult.Retry
+                                                succ = False
+                                            Case DialogResult.Ignore
+                                                succ = True
+                                                Exit While
+                                        End Select
                                     Else
-                                        PrintMsg("磁带即将写满", True)
+                                        succ = True
                                     End If
-                                End If
+                                End While
+
                                 fr.File.WrittenBytes += finfo.Length
                                 TotalBytesProcessed += finfo.Length
                                 CurrentBytesProcessed += finfo.Length
@@ -1311,18 +1344,37 @@ Public Class LTFSWriter
                                     Dim BytesReaded As Integer = fs.Read(buffer, 0, plabel.blocksize)
                                     If BytesReaded > 0 Then
                                         Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
-                                        Dim sense As Byte() = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
-                                        If (((sense(2) >> 6) And &H1) = 1) Then
-                                            If ((sense(2) And &HF) = 13) Then
-                                                PrintMsg("磁带已满")
-                                                Invoke(Sub() MessageBox.Show("磁带已满"))
-                                                StopFlag = True
-                                                fs.Close()
-                                                Exit For
+                                        Dim succ As Boolean = False
+                                        While Not succ
+                                            Dim sense As Byte() = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                            If (((sense(2) >> 6) And &H1) = 1) Then
+                                                If ((sense(2) And &HF) = 13) Then
+                                                    PrintMsg("磁带已满")
+                                                    Invoke(Sub() MessageBox.Show("磁带已满"))
+                                                    StopFlag = True
+                                                    fs.Close()
+                                                    Exit For
+                                                Else
+                                                    PrintMsg("磁带即将写满", True)
+                                                    succ = True
+                                                    Exit While
+                                                End If
+                                            ElseIf sense(2) And &HF <> 0 Then
+                                                Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                    Case DialogResult.Abort
+                                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                    Case DialogResult.Retry
+                                                        succ = False
+                                                    Case DialogResult.Ignore
+                                                        succ = True
+                                                        Exit While
+                                                End Select
                                             Else
-                                                PrintMsg("磁带即将写满", True)
+                                                succ = True
+                                                Exit While
                                             End If
-                                        End If
+                                        End While
+
                                         CheckFlush()
                                         CheckClean(True)
                                         fr.File.WrittenBytes += BytesReaded
@@ -1350,7 +1402,7 @@ Public Class LTFSWriter
                         fr.ParentDirectory.contents._file.Add(fr.File)
                         fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                         Invoke(Sub()
-                                   If (Now - LastRefresh).TotalSeconds > 10 Then RefreshCapacity()
+                                   If (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then RefreshCapacity()
                                End Sub)
                     Next
                     UFReadCount.Dec()
@@ -1373,7 +1425,8 @@ Public Class LTFSWriter
                         PrintMsg("写入取消")
                     End If
                 Catch ex As Exception
-                    PrintMsg($"写入出错{ex.ToString}")
+                    MessageBox.Show($"写入出错{ex.ToString}")
+                    PrintMsg($"写入出错{ex.Message}")
                 End Try
                 TapeUtils.ReleaseUnit(TapeDrive)
                 TapeUtils.AllowMediaRemoval(TapeDrive)
@@ -1405,11 +1458,11 @@ Public Class LTFSWriter
                     Dim CurrentPos As New TapeUtils.PositionData(TapeDrive)
                     If CurrentPos.PartitionNumber < ExtraPartitionCount Then
                         Invoke(Sub() MessageBox.Show("当前为索引区，操作取消"))
-                        Exit Sub
+                        Exit Try
                     End If
                     TapeUtils.Locate(TapeDrive, CurrentPos.BlockNumber - 1, CurrentPos.PartitionNumber, TapeUtils.LocateDestType.Block)
                     TapeUtils.WriteFileMark(TapeDrive)
-                    Dim outputfile As String = "LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
                     My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
                     PrintMsg("正在解析索引")
@@ -1464,7 +1517,7 @@ Public Class LTFSWriter
                     TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, schema.previousgenerationlocation.partition, TapeUtils.LocateDestType.Block)
                     PrintMsg("正在读取索引")
                     Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
-                    Dim outputfile As String = "LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
                     My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
                     PrintMsg("正在解析索引")
@@ -1515,7 +1568,7 @@ Public Class LTFSWriter
                         PrintMsg("未找到VOL1")
                         Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
                         LockGUI(False)
-                        Exit Sub
+                        Exit Try
                     End If
                     TapeUtils.Locate(TapeDrive, 1, 0, TapeUtils.LocateDestType.FileMark)
                     PrintMsg("正在读取LTFS信息")
@@ -1536,7 +1589,7 @@ Public Class LTFSWriter
                             PrintMsg("索引读取失败")
                             Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
                             LockGUI(False)
-                            Exit Sub
+                            Exit Try
                         End If
                         TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.FileMark)
                         TapeUtils.ReadBlock(TapeDrive)
@@ -1559,7 +1612,7 @@ Public Class LTFSWriter
                             FileName = schema.volumeuuid.ToString()
                         End If
                     End If
-                    Dim outputfile As String = $"schema\LTFSIndex_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
+                    Dim outputfile As String = $"schema\LTFSIndex_Load_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
                     If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
                         My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
                     End If
@@ -1613,13 +1666,13 @@ Public Class LTFSWriter
                         PrintMsg("索引读取失败")
                         Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
                         LockGUI(False)
-                        Exit Sub
+                        Exit Try
                     End If
                     TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
                     TapeUtils.ReadBlock(TapeDrive)
                     PrintMsg("正在读取索引")
                     data = TapeUtils.ReadToFileMark(TapeDrive)
-                    Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "schema\LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
                         My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
                     End If
@@ -1706,26 +1759,30 @@ Public Class LTFSWriter
             End Try
         End If
     End Sub
+    Public Function AutoDump() As String
+        Dim FileName As String = Barcode
+        If FileName = "" Then FileName = schema.volumeuuid.ToString()
+        Dim outputfile As String = $"schema\LTFSIndex_Autosave_{FileName _
+            }_GEN{schema.generationnumber _
+            }_P{schema.location.partition _
+            }_B{schema.location.startblock _
+            }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
+        If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
+            My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
+        End If
+        outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
+        PrintMsg("正在生成索引")
+        Dim schtext As String = schema.GetSerializedText()
+        PrintMsg("正在导出")
+        My.Computer.FileSystem.WriteAllText(outputfile, schtext, False)
+        PrintMsg("索引已备份", False, $"索引已备份至{vbCrLf}{outputfile}")
+        Return outputfile
+    End Function
     Private Sub 备份当前索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 备份当前索引ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    Dim FileName As String = Barcode
-                    If FileName = "" Then FileName = schema.volumeuuid.ToString()
-                    Dim outputfile As String = $"schema\LTFSIndex_{FileName _
-                        }_GEN{schema.generationnumber _
-                        }_P{schema.location.partition _
-                        }_B{schema.location.startblock _
-                        }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
-                    End If
-                    outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
-                    PrintMsg("正在生成索引")
-                    Dim schtext As String = schema.GetSerializedText()
-                    PrintMsg("正在导出")
-                    My.Computer.FileSystem.WriteAllText(outputfile, schtext, False)
-                    PrintMsg("索引已备份", False, $"索引已备份至{vbCrLf}{outputfile}")
+                    Dim outputfile As String = AutoDump()
                     Me.Invoke(Sub() MessageBox.Show($"索引已备份至{vbCrLf}{outputfile}"))
                 Catch ex As Exception
                     PrintMsg("索引备份失败")
@@ -1750,8 +1807,23 @@ Public Class LTFSWriter
             Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Barcode = TapeUtils.ReadBarcode(TapeDrive)
-            Barcode = InputBox("设置标签", "磁带标签", Barcode)
-            Dim VolumeLabel As String = InputBox("设置卷标", "LTFS卷标", Barcode)
+            Dim VolumeLabel As String
+            Dim Confirm As Boolean = False
+            While Not Confirm
+                Barcode = InputBox("设置标签", "磁带标签", Barcode)
+                If VolumeLabel = "" Then VolumeLabel = Barcode
+                VolumeLabel = InputBox("设置卷标", "LTFS卷标", VolumeLabel)
+
+                Select Case MessageBox.Show($"磁带标签：{Barcode}{vbCrLf}LTFS卷标：{VolumeLabel}", "确认", MessageBoxButtons.YesNoCancel)
+                    Case DialogResult.Yes
+                        Confirm = True
+                        Exit While
+                    Case DialogResult.No
+                        Confirm = False
+                    Case DialogResult.Cancel
+                        Exit Sub
+                End Select
+            End While
             LockGUI()
             Dim DefaultBlockSize As Long = 524288
             If MaxExtraPartitionAllowed = 0 Then DefaultBlockSize = 65536
@@ -1798,6 +1870,7 @@ Public Class LTFSWriter
                                 Exit For
                             End If
                         Next
+                        f.openforwrite = False
                     Catch ex As Exception
                         PrintMsg(ex.ToString)
                     End Try
@@ -1835,7 +1908,7 @@ Public Class LTFSWriter
                     ImportSHA1(schhash, False)
                 Else
                     PrintMsg("操作取消")
-                    Exit Sub
+                    Exit Try
                 End If
                 RefreshDisplay()
                 PrintMsg("导入完成")
@@ -1959,6 +2032,56 @@ Public Class LTFSWriter
         WA1ToolStripMenuItem.Checked = False
         WA2ToolStripMenuItem.Checked = True
         WA3ToolStripMenuItem.Checked = False
+    End Sub
+
+    Private Sub 校验ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 校验ToolStripMenuItem.Click
+
+    End Sub
+
+    Private Sub 校验ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 校验ToolStripMenuItem1.Click
+
+    End Sub
+
+    Private Sub 生成标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 生成标签ToolStripMenuItem.Click
+        If My.Settings.LTFSWriter_FileLabel = "" Then
+            设置标签ToolStripMenuItem_Click(sender, e)
+            Exit Sub
+        End If
+        If ListView1.Tag IsNot Nothing Then
+            Dim d As ltfsindex.directory = ListView1.Tag
+            For Each dir As ltfsindex.directory In d.contents._directory
+                If CInt(Val(dir.name)).ToString = dir.name Then
+                    Dim fExist As Boolean = False
+                    For Each f As ltfsindex.file In d.contents._file
+                        If f.name = $"{dir.name}.{My.Settings.LTFSWriter_FileLabel}" Then
+                            fExist = True
+                            Exit For
+                        End If
+                    Next
+                    If Not fExist Then
+                        Dim emptyfile As String = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "empty.file")
+                        My.Computer.FileSystem.WriteAllBytes(emptyfile, {}, False)
+                        Dim fnew As New FileRecord(emptyfile, d)
+                        fnew.File.name = $"{dir.name}.{My.Settings.LTFSWriter_FileLabel}"
+                        While True
+                            Threading.Thread.Sleep(0)
+                            SyncLock UFReadCount
+                                If UFReadCount > 0 Then Continue While
+                                UnwrittenFiles.Add(fnew)
+                                Exit While
+                            End SyncLock
+                        End While
+                    End If
+                End If
+            Next
+            PrintMsg("操作完成")
+            RefreshDisplay()
+        End If
+    End Sub
+
+    Private Sub 设置标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置标签ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_FileLabel = InputBox("设置目录标签后缀", "标签工具", My.Settings.LTFSWriter_FileLabel)
+        PrintMsg($"标签后缀已修改为 .{My.Settings.LTFSWriter_FileLabel}")
     End Sub
 
     Private Sub WA3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA3ToolStripMenuItem.Click
