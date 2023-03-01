@@ -21,7 +21,7 @@ Public Class LTFSWriter
     Public Property CleanCycle As Long = 3
     Public Property AllowOperation As Boolean = True
     Public OperationLock As New Object
-    Public Property Barcode As String
+    Public Property Barcode As String = ""
     Public Property StopFlag As Boolean = False
     Public Property Flush As Boolean = False
     Public Property Clean As Boolean = False
@@ -1751,11 +1751,16 @@ Public Class LTFSWriter
                         Exit While
                     End SyncLock
                 End While
-                MessageBox.Show($"已加载索引，请自行确保索引一致性{vbCrLf}{vbCrLf}当前磁带VCI数据：{vbCrLf}{TapeUtils.Byte2Hex(TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 8, 12, 0).RawData, True)}")
                 RefreshDisplay()
                 Modified = False
+                Dim MAM090C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 8, 12, 0)
+                Dim VCI As Byte() = {}
+                If MAM090C IsNot Nothing Then
+                    VCI = MAM090C.RawData
+                End If
+                MessageBox.Show($"已加载索引，请自行确保索引一致性{vbCrLf}{vbCrLf}当前磁带VCI数据：{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
             Catch ex As Exception
-                MessageBox.Show("文件解析失败")
+                MessageBox.Show($"文件解析出错：{ex.Message}")
             End Try
         End If
     End Sub
