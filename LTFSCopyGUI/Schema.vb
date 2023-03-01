@@ -46,6 +46,18 @@ Public Class ltfsindex
         Public Property backuptime As String
         Public Property fileuid As Long
         Public Property sha1 As String
+            Get
+                If Searializing Then Return Nothing
+                Dim result As String = GetXAttr(xattr.HashType.SHA1)
+                If result Is Nothing Then Return ""
+                Return result
+            End Get
+            Set(value As String)
+                If value Is Nothing Then Exit Property
+                If value.Length <> 40 Then Exit Property
+                SetXattr(xattr.HashType.SHA1, value)
+            End Set
+        End Property
         Public Property tag As String
         <Xml.Serialization.XmlIgnore> Public fullpath As String
 
@@ -55,8 +67,31 @@ Public Class ltfsindex
         Public Class xattr
             Public Property key As String
             Public Property value As String
+            Public Class HashType
+                Public Shared ReadOnly Property CRC32 As String = "ltfs.hash.crc32sum"
+                Public Shared ReadOnly Property MD5 As String = "ltfs.hash.md5sum"
+                Public Shared ReadOnly Property SHA1 As String = "ltfs.hash.sha1sum"
+                Public Shared ReadOnly Property SHA256 As String = "ltfs.hash.sha256sum"
+                Public Shared ReadOnly Property SHA512 As String = "ltfs.hash.sha512sum"
+            End Class
         End Class
         Public Property extendedattributes As New List(Of xattr)
+        Public Function GetXAttr(key As String) As String
+            For Each x As xattr In extendedattributes
+                If x.key.ToLower = key.ToLower Then Return x.value
+            Next
+            Return Nothing
+        End Function
+
+        Public Sub SetXattr(key As String, value As String)
+            For Each x As xattr In extendedattributes
+                If x.key.ToLower = key.ToLower Then
+                    x.value = value
+                    Exit Sub
+                End If
+            Next
+            extendedattributes.Add(New xattr With {.key = key, .value = value})
+        End Sub
 
         <Serializable>
         Public Class extent
@@ -92,7 +127,42 @@ Public Class ltfsindex
     End Class
     Public Property _file As New List(Of file)
     Public Property _directory As New List(Of directory)
+    <Xml.Serialization.XmlIgnore> Public Shared Searializing As Boolean = False
+    Public Sub Standarize()
+        Exit Sub
+        Dim q As New List(Of directory)
+        For Each f As file In _file
+            If f.sha1 IsNot Nothing Then
+                If f.sha1.Length = 40 Then
+                    f.SetXattr("ltfs.hash.sha1sum", f.sha1)
+                End If
+                f.sha1 = Nothing
+            End If
+        Next
+        For Each d As directory In _directory
+            q.Add(d)
+        Next
+        While q.Count > 0
+            Dim qn As New List(Of directory)
+            For Each d As directory In q
+                For Each fn As file In d.contents._file
+                    If fn.sha1 IsNot Nothing Then
+                        If fn.sha1.Length = 40 Then
+                            fn.SetXattr("ltfs.hash.sha1sum", fn.sha1)
+                        End If
+                        fn.sha1 = Nothing
+                    End If
+                Next
+                For Each dn As directory In d.contents._directory
+                    qn.Add(dn)
+                Next
+            Next
+            q = qn
+        End While
+    End Sub
     Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+        Searializing = True
+        Me.Standarize()
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
@@ -100,6 +170,7 @@ Public Class ltfsindex
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
         writer.Serialize(t, Me, ns)
         ms.Close()
+        Searializing = False
         Dim soutp As New IO.StreamReader(tmpf)
 
         Dim sout As New System.Text.StringBuilder
@@ -137,7 +208,9 @@ Public Class ltfsindex
         s = s.Replace("%25", "%")
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim t As IO.TextReader = New IO.StringReader(s)
-        Return CType(reader.Deserialize(t), ltfsindex)
+        Dim result As ltfsindex = CType(reader.Deserialize(t), ltfsindex)
+        result.Standarize()
+        Return result
     End Function
     Public Function Clone() As ltfsindex
         Return (FromXML(GetSerializedText(False)))

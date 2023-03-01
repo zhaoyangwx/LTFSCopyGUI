@@ -40,7 +40,7 @@ Public Class LTFSConfigurator
                 Button8.Enabled = False
                 Button9.Enabled = False
                 Button10.Enabled = False
-                Button27.Enabled = False
+                'Button27.Enabled = False
                 Exit Property
             End If
             TextBox1.Text = CurDrive.ToString()

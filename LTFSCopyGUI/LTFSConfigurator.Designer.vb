@@ -312,7 +312,6 @@ Partial Class LTFSConfigurator
         'Button27
         '
         Me.Button27.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button27.Enabled = False
         Me.Button27.Location = New System.Drawing.Point(909, 33)
         Me.Button27.Name = "Button27"
         Me.Button27.Size = New System.Drawing.Size(75, 23)
