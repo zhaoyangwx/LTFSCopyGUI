@@ -765,6 +765,13 @@ Public Class TapeUtils
             FileNumber = data.FileNumber
             SetNumber = data.SetNumber
         End Sub
+        Public Overrides Function ToString() As String
+            Dim Xtrs As String = " "
+            If BOP Then Xtrs &= "BOP"
+            If EOP Then Xtrs &= "EOP"
+            If MPU Then Xtrs &= "MPU"
+            Return $"P{PartitionNumber} B{BlockNumber} FM{FileNumber} SET{SetNumber}{Xtrs}"
+        End Function
     End Class
     Public Shared Function ReadPosition(TapeDrive As String) As PositionData
         Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32)

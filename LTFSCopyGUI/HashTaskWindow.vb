@@ -7,6 +7,7 @@ Public Class HashTaskWindow
     Private ddelta, fdelta As Long
     Private _BaseDirectory As String
     Public LogEnabled As Boolean = True
+    Public schPath As String = Form1.TextBox1.Text
     Public Property ErrorCount As Integer = 0
     Public StartTime As String = Now.ToString("yyyyMMdd_HHmmss")
     Public Property BaseDirectory As String
@@ -30,7 +31,7 @@ Public Class HashTaskWindow
     Public Sub PrintMsg(Message As String)
         Try
             Me.Invoke(Sub()
-                          'If TextBox1.Text.Length > 20000 Then TextBox1.Text = Mid(TextBox1.Text, 18000)
+                          If TextBox1.Text.Length > 20000 Then TextBox1.Text = Mid(TextBox1.Text, 18000)
 
                           TextBox1.AppendText(Message & vbCrLf)
                           'TextBox1.Select(TextBox1.Text.Length, 0)
@@ -276,54 +277,64 @@ Public Class HashTaskWindow
     End Class
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-            Try
-                Dim schhash As ltfsindex
-                Dim s As String = My.Computer.FileSystem.ReadAllText(OpenFileDialog1.FileName)
-                If s.Contains("XMLSchema") Then
-                    schhash = ltfsindex.FromXML(s)
-                Else
-                    schhash = ltfsindex.FromSchemaText(s)
-                End If
-                Dim q As New List(Of IOManager.IndexedLHashDirectory)
-                q.Add(New IOManager.IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
-                While q.Count > 0
-                    Dim qtmp As New List(Of IOManager.IndexedLHashDirectory)
-                    For Each d As IOManager.IndexedLHashDirectory In q
-                        For Each f As ltfsindex.file In d.LTFSIndexDir.contents._file
-                            Try
-                                For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
-                                    If flookup.name = f.name And flookup.length = f.length Then
-                                        If flookup.sha1 IsNot Nothing Then
-                                            If flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
-                                                PrintMsg("")
-                                                PrintMsg(f.name)
-                                                PrintMsg("    " & f.sha1 & " -> " & flookup.sha1)
-                                                f.sha1 = flookup.sha1
+            Dim th As New Threading.Thread(
+                Sub()
+                    Try
+                        Dim schhash As ltfsindex
+                        Dim s As String = My.Computer.FileSystem.ReadAllText(OpenFileDialog1.FileName)
+                        If s.Contains("XMLSchema") Then
+                            schhash = ltfsindex.FromXML(s)
+                        Else
+                            schhash = ltfsindex.FromSchemaText(s)
+                        End If
+                        Dim q As New List(Of IOManager.IndexedLHashDirectory)
+                        q.Add(New IOManager.IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
+                        While q.Count > 0
+                            Dim qtmp As New List(Of IOManager.IndexedLHashDirectory)
+                            For Each d As IOManager.IndexedLHashDirectory In q
+                                For Each f As ltfsindex.file In d.LTFSIndexDir.contents._file
+                                    Try
+                                        For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
+                                            If flookup.name = f.name And flookup.length = f.length Then
+                                                If flookup.sha1 IsNot Nothing Then
+                                                    If flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
+                                                        PrintMsg("")
+                                                        PrintMsg(f.name)
+                                                        PrintMsg("    " & f.sha1 & " -> " & flookup.sha1)
+                                                        f.sha1 = flookup.sha1
+                                                    End If
+                                                End If
+                                                Exit For
                                             End If
-                                        End If
-                                        Exit For
-                                    End If
+                                        Next
+                                    Catch ex As Exception
+                                        PrintMsg(ex.ToString)
+                                    End Try
                                 Next
-                            Catch ex As Exception
-                                PrintMsg(ex.ToString)
-                            End Try
-                        Next
-                        For Each sd As ltfsindex.directory In d.LTFSIndexDir.contents._directory
-                            For Each dlookup As ltfsindex.directory In d.LHash_Dir.contents._directory
-                                If dlookup.name = sd.name Then
-                                    qtmp.Add(New IOManager.IndexedLHashDirectory(sd, dlookup))
-                                    Exit For
-                                End If
+                                For Each sd As ltfsindex.directory In d.LTFSIndexDir.contents._directory
+                                    For Each dlookup As ltfsindex.directory In d.LHash_Dir.contents._directory
+                                        If dlookup.name = sd.name Then
+                                            qtmp.Add(New IOManager.IndexedLHashDirectory(sd, dlookup))
+                                            Exit For
+                                        End If
+                                    Next
+                                Next
                             Next
-                        Next
-                    Next
-                    q = qtmp
-                End While
+                            q = qtmp
+                        End While
 
-            Catch ex As Exception
-                PrintMsg(ex.ToString)
-            End Try
-            PrintMsg("Finished")
+                    Catch ex As Exception
+                        PrintMsg(ex.ToString)
+                    End Try
+                    PrintMsg("Finished")
+                    Invoke(Sub()
+                               TextBox1.Visible = True
+                               Me.Enabled = True
+                           End Sub)
+                End Sub)
+            TextBox1.Visible = False
+            Me.Enabled = False
+            th.Start()
         End If
 
     End Sub
@@ -395,7 +406,7 @@ Public Class HashTaskWindow
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         If schema IsNot Nothing Then
-            SaveFileDialog1.FileName = Form1.TextBox1.Text
+            SaveFileDialog1.FileName = schPath
             If SaveFileDialog1.ShowDialog = DialogResult.OK Then
                 My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False, New System.Text.UTF8Encoding(False))
                 PrintMsg("Saved to " & SaveFileDialog1.FileName)
