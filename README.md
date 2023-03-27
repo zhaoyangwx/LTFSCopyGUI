@@ -25,5 +25,9 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
 ---
 
+演示视频（bilibili）：BV1j24y177PF  BV1Gy4y1f7WP
+
+---
+
 
 **欢迎加入LTO磁带技术交流QQ群 433387693**
