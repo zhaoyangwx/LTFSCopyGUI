@@ -843,6 +843,9 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(senseBufferPtr)
         Return sense
     End Function
+    Public Shared Function Flush(TapeDrive As String) As Byte()
+        Return WriteFileMark(TapeDrive, 0)
+    End Function
     Public Shared Function WriteFileMark(TapeDrive As String, Optional ByVal Number As UInteger = 1) As Byte()
         Dim sense(63) As Byte
         SendSCSICommand(TapeDrive, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
@@ -1071,7 +1074,7 @@ Public Class TapeUtils
             Return sb.ToString
         End Function
     End Class
-    Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
 
@@ -1087,8 +1090,9 @@ Public Class TapeUtils
 
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
-        Dim senseBuffer(64) As Byte
+        Dim senseBuffer(63) As Byte
         Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, 60000, senseBufferPtr)
+        If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
             senseReport(senseBuffer)
@@ -1211,6 +1215,16 @@ Public Class TapeUtils
                 Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
                 ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
                 If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
+
+                'Set Capacity
+                ProgressReport("Set Capacity..")
+                If TapeUtils.SendSCSICommand(TapeDrive, {&HB, 0, 0, &HFF, &HFF, 0}) Then
+                    ProgressReport("Load OK" & vbCrLf)
+                Else
+                    OnError("Load Fail" & vbCrLf)
+                    Return False
+                End If
+
                 'Erase
                 ProgressReport("Initializing tape..")
                 If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 0, 0, 0, 0}) Then

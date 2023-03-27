@@ -185,6 +185,18 @@ Namespace My
                 Me("LTFSWriter_LogEnabled") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_ForceIndex() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ForceIndex"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ForceIndex") = value
+            End Set
+        End Property
     End Class
 End Namespace
 
