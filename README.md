@@ -22,6 +22,9 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
 新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能
 
+如需启用加密可在加载磁带后使用 **[VulpesSARL/LTOEnc](https://github.com/VulpesSARL/LTOEnc)**
+
+对于开启加密的磁带，请不要启用容量缺失检测，否则重新装带会重置驱动器加密密钥导致写入失败。
 
 ---
 
