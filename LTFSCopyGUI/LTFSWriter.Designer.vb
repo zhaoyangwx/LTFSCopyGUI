@@ -139,9 +139,11 @@ Partial Class LTFSWriter
         Me.WA2ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripTextBox1 = New System.Windows.Forms.ToolStripTextBox()
+        Me.限速不限制ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.APToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
         Me.启用日志记录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.总是更新数据区索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.回退ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.清除当前索引后数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -294,79 +296,79 @@ Partial Class LTFSWriter
         '
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 358)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(149, 336)
         '
         '提取ToolStripMenuItem
         '
         Me.提取ToolStripMenuItem.Name = "提取ToolStripMenuItem"
-        Me.提取ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.提取ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.提取ToolStripMenuItem.Text = "提取"
         '
         '校验ToolStripMenuItem
         '
         Me.校验ToolStripMenuItem.Name = "校验ToolStripMenuItem"
-        Me.校验ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.校验ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.校验ToolStripMenuItem.Text = "校验"
         Me.校验ToolStripMenuItem.Visible = False
         '
         '定位到起始块ToolStripMenuItem
         '
         Me.定位到起始块ToolStripMenuItem.Name = "定位到起始块ToolStripMenuItem"
-        Me.定位到起始块ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.定位到起始块ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.定位到起始块ToolStripMenuItem.Text = "定位到起始块"
         '
         'ToolStripSeparator2
         '
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator2.Size = New System.Drawing.Size(145, 6)
         '
         '重命名文件ToolStripMenuItem
         '
         Me.重命名文件ToolStripMenuItem.Name = "重命名文件ToolStripMenuItem"
-        Me.重命名文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.重命名文件ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.重命名文件ToolStripMenuItem.Text = "重命名文件"
         '
         '重命名目录ToolStripMenuItem
         '
         Me.重命名目录ToolStripMenuItem.Name = "重命名目录ToolStripMenuItem"
-        Me.重命名目录ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.重命名目录ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.重命名目录ToolStripMenuItem.Text = "重命名目录"
         '
         'ToolStripSeparator3
         '
         Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
-        Me.ToolStripSeparator3.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator3.Size = New System.Drawing.Size(145, 6)
         '
         '导入文件ToolStripMenuItem
         '
         Me.导入文件ToolStripMenuItem.Image = CType(resources.GetObject("导入文件ToolStripMenuItem.Image"), System.Drawing.Image)
         Me.导入文件ToolStripMenuItem.Name = "导入文件ToolStripMenuItem"
-        Me.导入文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.导入文件ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.导入文件ToolStripMenuItem.Text = "导入文件"
         '
         '添加文件ToolStripMenuItem
         '
         Me.添加文件ToolStripMenuItem.Name = "添加文件ToolStripMenuItem"
-        Me.添加文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.添加文件ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.添加文件ToolStripMenuItem.Text = "添加文件"
         '
         '添加目录ToolStripMenuItem
         '
         Me.添加目录ToolStripMenuItem.Name = "添加目录ToolStripMenuItem"
-        Me.添加目录ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.添加目录ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.添加目录ToolStripMenuItem.Text = "添加目录"
         '
         '新建目录ToolStripMenuItem
         '
         Me.新建目录ToolStripMenuItem.Name = "新建目录ToolStripMenuItem"
-        Me.新建目录ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.新建目录ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.新建目录ToolStripMenuItem.Text = "新建目录"
         '
         '选项ToolStripMenuItem
         '
         Me.选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.覆盖已有文件ToolStripMenuItem})
         Me.选项ToolStripMenuItem.Name = "选项ToolStripMenuItem"
-        Me.选项ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.选项ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.选项ToolStripMenuItem.Text = "选项"
         '
         '覆盖已有文件ToolStripMenuItem
@@ -379,35 +381,35 @@ Partial Class LTFSWriter
         'ToolStripSeparator4
         '
         Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
-        Me.ToolStripSeparator4.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator4.Size = New System.Drawing.Size(145, 6)
         '
         '删除文件ToolStripMenuItem
         '
         Me.删除文件ToolStripMenuItem.Name = "删除文件ToolStripMenuItem"
-        Me.删除文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.删除文件ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.删除文件ToolStripMenuItem.Text = "删除文件"
         '
         '删除目录ToolStripMenuItem
         '
         Me.删除目录ToolStripMenuItem.Name = "删除目录ToolStripMenuItem"
-        Me.删除目录ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.删除目录ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.删除目录ToolStripMenuItem.Text = "删除目录"
         '
         'ToolStripSeparator8
         '
         Me.ToolStripSeparator8.Name = "ToolStripSeparator8"
-        Me.ToolStripSeparator8.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator8.Size = New System.Drawing.Size(145, 6)
         '
         '生成标签ToolStripMenuItem
         '
         Me.生成标签ToolStripMenuItem.Name = "生成标签ToolStripMenuItem"
-        Me.生成标签ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.生成标签ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.生成标签ToolStripMenuItem.Text = "生成标签"
         '
         '设置标签ToolStripMenuItem
         '
         Me.设置标签ToolStripMenuItem.Name = "设置标签ToolStripMenuItem"
-        Me.设置标签ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.设置标签ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.设置标签ToolStripMenuItem.Text = "设置标签"
         '
         'ImageList1
@@ -706,7 +708,7 @@ Partial Class LTFSWriter
         '
         Me.索引ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.读取索引ToolStripMenuItem, Me.读取数据区索引ToolStripMenuItem, Me.加载外部索引ToolStripMenuItem, Me.备份当前索引ToolStripMenuItem})
         Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
-        Me.索引ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.索引ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.索引ToolStripMenuItem.Text = "索引操作"
         '
         '读取索引ToolStripMenuItem
@@ -738,7 +740,7 @@ Partial Class LTFSWriter
         '
         Me.数据操作ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入数据ToolStripMenuItem, Me.更新数据区索引ToolStripMenuItem, Me.更新全部索引ToolStripMenuItem})
         Me.数据操作ToolStripMenuItem.Name = "数据操作ToolStripMenuItem"
-        Me.数据操作ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.数据操作ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.数据操作ToolStripMenuItem.Text = "数据操作"
         '
         '写入数据ToolStripMenuItem
@@ -765,13 +767,13 @@ Partial Class LTFSWriter
         'ToolStripSeparator5
         '
         Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
-        Me.ToolStripSeparator5.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator5.Size = New System.Drawing.Size(121, 6)
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.APToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem})
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.限速不限制ToolStripMenuItem, Me.APToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
-        Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(180, 22)
+        Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(124, 22)
         Me.自动化ToolStripMenuItem1.Text = "自动化"
         '
         'ToolStripTextBox2
@@ -828,6 +830,12 @@ Partial Class LTFSWriter
         Me.ToolStripTextBox1.Size = New System.Drawing.Size(160, 16)
         Me.ToolStripTextBox1.Text = "-----------写入时------------"
         '
+        '限速不限制ToolStripMenuItem
+        '
+        Me.限速不限制ToolStripMenuItem.Name = "限速不限制ToolStripMenuItem"
+        Me.限速不限制ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.限速不限制ToolStripMenuItem.Text = "限速：无限制"
+        '
         'APToolStripMenuItem
         '
         Me.APToolStripMenuItem.CheckOnClick = True
@@ -847,16 +855,23 @@ Partial Class LTFSWriter
         Me.启用日志记录ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
         Me.启用日志记录ToolStripMenuItem.Text = "启用日志记录"
         '
+        '总是更新数据区索引ToolStripMenuItem
+        '
+        Me.总是更新数据区索引ToolStripMenuItem.CheckOnClick = True
+        Me.总是更新数据区索引ToolStripMenuItem.Name = "总是更新数据区索引ToolStripMenuItem"
+        Me.总是更新数据区索引ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.总是更新数据区索引ToolStripMenuItem.Text = "总是更新数据区索引"
+        '
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
-        Me.ToolStripSeparator6.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator6.Size = New System.Drawing.Size(121, 6)
         '
         '回退ToolStripMenuItem
         '
         Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem})
         Me.回退ToolStripMenuItem.Name = "回退ToolStripMenuItem"
-        Me.回退ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.回退ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.回退ToolStripMenuItem.Text = "回退"
         '
         '清除当前索引后数据ToolStripMenuItem
@@ -968,7 +983,7 @@ Partial Class LTFSWriter
         '
         Me.ToolStripStatusLabel3.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.ToolStripStatusLabel3.Name = "ToolStripStatusLabel3"
-        Me.ToolStripStatusLabel3.Size = New System.Drawing.Size(1063, 21)
+        Me.ToolStripStatusLabel3.Size = New System.Drawing.Size(1032, 21)
         Me.ToolStripStatusLabel3.Spring = True
         Me.ToolStripStatusLabel3.Text = " "
         '
@@ -1207,4 +1222,6 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripButton5 As ToolStripButton
     Friend WithEvents 校验源文件ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripButton6 As ToolStripButton
+    Friend WithEvents 总是更新数据区索引ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 限速不限制ToolStripMenuItem As ToolStripMenuItem
 End Class

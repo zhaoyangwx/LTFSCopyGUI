@@ -181,6 +181,7 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationEvents.vb" />
     <Compile Include="FileBrowser.Designer.vb">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </Compile>
@@ -270,9 +271,6 @@
     </None>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="fc.png" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="stdole">

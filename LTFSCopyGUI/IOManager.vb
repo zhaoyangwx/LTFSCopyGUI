@@ -35,7 +35,7 @@ Public Class IOManager
     Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
         If OnFinished Is Nothing Then
 
-            Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+            Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                 Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
                 Dim fsine As New EventedStream With {.baseStream = fsinb}
                 AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
@@ -101,6 +101,7 @@ Public Class IOManager
         Public Property BufferWrite As Integer = 4 * 1024 * 1024
         Public schema As ltfsindex
         Public IgnoreExisting As Boolean = True
+        Public ReportSkip As Boolean = True
         Private _TargetDirectory As String
         Public LogFile As String() = {}
         Public Property TargetDirectory As String
@@ -227,6 +228,7 @@ Public Class IOManager
                         RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
+                            Dim SkipCurrent As Boolean = False
                             Try
                                 If TargetDirectory <> "" Then f_outpath = "\\?\" & My.Computer.FileSystem.CombinePath(TargetDirectory, f.fullpath)
                                 f.fullpath = "\\?\" & My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
@@ -306,7 +308,8 @@ Public Class IOManager
                                         RaiseEvent ErrorOccured(ex.ToString)
                                     End Try
                                 Else
-                                    RaiseEvent ProgressReport("[skip] " & f.fullpath)
+                                    SkipCurrent = True
+                                    If ReportSkip Then RaiseEvent ProgressReport("[skip] " & f.fullpath)
                                 End If
                             Catch ex As Exception
                                 If fout IsNot Nothing Then
@@ -332,7 +335,7 @@ Public Class IOManager
                                 Threading.Interlocked.Add(hashedSize, f.length)
                                 RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
                                 RaiseEvent ProgressReport("#tval" & progval)
-                                RaiseEvent ProgressReport("  " & f.sha1 & "  " & f.length & vbCrLf)
+                                If ReportSkip OrElse (Not SkipCurrent) Then RaiseEvent ProgressReport("  " & f.sha1 & "  " & f.length & vbCrLf)
                                 RaiseEvent ProgressReport("#ssum" & hashedSize)
                             End SyncLock
 
