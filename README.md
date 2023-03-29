@@ -28,7 +28,7 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
 ---
 
-演示视频（bilibili）：BV1j24y177PF  BV1Gy4y1f7WP
+演示视频（bilibili）：**[BV1j24y177PF](https://www.bilibili.com/video/BV1j24y177PF)**  **[BV1Gy4y1f7WP](https://www.bilibili.com/video/BV1Gy4y1f7WP)**
 
 ---
 
