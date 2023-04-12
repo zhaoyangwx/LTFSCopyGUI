@@ -63,6 +63,9 @@ Public Class ltfsindex
 
         <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
         <Xml.Serialization.XmlIgnore> Public WrittenBytes As Long = 0
+        <Xml.Serialization.XmlIgnore> Public TempObj As Object
+        <Xml.Serialization.XmlIgnore> Public SHA1ForeColor As Color = Color.Black
+        <Xml.Serialization.XmlIgnore> Public ItemForeColor As Color = Color.Black
         <Serializable>
         Public Class xattr
             Public Property key As String
@@ -164,7 +167,7 @@ Public Class ltfsindex
         Searializing = True
         Me.Standarize()
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
+        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
@@ -242,7 +245,7 @@ End Class
     Public Property compression As Boolean = True
     Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfslabel))
-        Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
+        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})

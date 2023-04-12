@@ -1,11 +1,17 @@
-﻿Imports System.Runtime.InteropServices
+﻿Imports System.ComponentModel
+Imports System.Runtime.InteropServices
 Imports System.Text
 
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
     Private _SelectedIndex As Integer
     Public Function GetCurDrive() As TapeUtils.TapeDrive
-        Dim dlist As List(Of TapeUtils.TapeDrive) = DeviceList
+        Dim dlist As List(Of TapeUtils.TapeDrive)
+        If CheckBox3.Checked OrElse LastDeviceList Is Nothing Then
+            dlist = DeviceList
+        Else
+            dlist = LastDeviceList
+        End If
         If dlist.Count <> ListBox1.Items.Count Then
             RefreshUI()
         End If
@@ -27,6 +33,14 @@ Public Class LTFSConfigurator
             End Try
             Return result
         End Get
+    End Property
+    Public Property ConfTapeDrive As String
+        Get
+            Return TextBox5.Text
+        End Get
+        Set(value As String)
+            TextBox5.Text = value
+        End Set
     End Property
 
     Public Property SelectedIndex As Integer
@@ -62,9 +76,11 @@ Public Class LTFSConfigurator
             Return _SelectedIndex
         End Get
     End Property
+    Public Property LastDeviceList As List(Of TapeUtils.TapeDrive)
     Public ReadOnly Property DeviceList As List(Of TapeUtils.TapeDrive)
         Get
-            Return TapeUtils.GetTapeDriveList()
+            LastDeviceList = TapeUtils.GetTapeDriveList()
+            Return LastDeviceList
         End Get
     End Property
     Public ReadOnly Property AvailableDriveLetters As List(Of Char)
@@ -83,10 +99,12 @@ Public Class LTFSConfigurator
             Return Result
         End Get
     End Property
-    Public Sub RefreshUI()
+    Public Sub RefreshUI(Optional RefreshDevList As Boolean = True)
         LoadComplete = False
         ListBox1.Items.Clear()
-        For Each D As TapeUtils.TapeDrive In DeviceList
+        Dim DevList As List(Of TapeUtils.TapeDrive)
+        If RefreshDevList OrElse LastDeviceList Is Nothing Then DevList = DeviceList Else DevList = LastDeviceList
+        For Each D As TapeUtils.TapeDrive In DevList
             ListBox1.Items.Add(D.ToString())
         Next
         ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
@@ -114,6 +132,7 @@ Public Class LTFSConfigurator
 
     Private Sub LTFSConfigurator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         RefreshUI()
+        CheckBox3.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBox2.SelectedIndex = 2
         ComboBox3.SelectedIndex = 0
         LoadComplete = True
@@ -140,7 +159,7 @@ Public Class LTFSConfigurator
     Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
         If Not LoadComplete Then Exit Sub
         _SelectedIndex = ListBox1.SelectedIndex
-        RefreshUI()
+        RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
@@ -154,7 +173,7 @@ Public Class LTFSConfigurator
                 TextBox2.AppendText(result)
             End If
         End If
-        RefreshUI()
+        RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
@@ -168,7 +187,7 @@ Public Class LTFSConfigurator
                 TextBox2.AppendText(result)
             End If
         End If
-        RefreshUI()
+        RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
@@ -193,12 +212,12 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
 
     End Sub
 
@@ -222,12 +241,12 @@ Public Class LTFSConfigurator
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button10_Click(sender As Object, e As EventArgs) Handles Button10.Click
@@ -241,7 +260,7 @@ Public Class LTFSConfigurator
                 TextBox2.AppendText(result)
             End If
         End If
-        RefreshUI()
+        RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
@@ -314,7 +333,7 @@ Public Class LTFSConfigurator
 
                     Dim senseBuffer(63) As Byte
                     Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
-                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TextBox5.Text, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, 60000, senseBufferPtr)
+                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, 60000, senseBufferPtr)
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
@@ -365,12 +384,12 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button14_Click(sender As Object, e As EventArgs) Handles Button14.Click
@@ -395,21 +414,19 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub ButtonDebugErase_Click(sender As Object, e As EventArgs) Handles ButtonDebugErase.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
-        If CurDrive IsNot Nothing Then
-            Panel1.Enabled = False
-            Dim dL As Char = ComboBox1.Text
-            Dim th As New Threading.Thread(
+        Panel1.Enabled = False
+        Dim dL As Char = ComboBox1.Text
+        Dim th As New Threading.Thread(
                 Sub()
                     Invoke(Sub() TextBox8.Text = "Start erase ..." & vbCrLf)
                     Try
@@ -417,7 +434,7 @@ Public Class LTFSConfigurator
 
                         'Load and Thread
                         Invoke(Sub() TextBox8.AppendText("Loading.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -426,7 +443,7 @@ Public Class LTFSConfigurator
 
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, 1, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -435,7 +452,7 @@ Public Class LTFSConfigurator
 
                         'Format
                         Invoke(Sub() TextBox8.AppendText("Partitioning.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -444,7 +461,7 @@ Public Class LTFSConfigurator
                         For i As Integer = 1 To NumericUpDown6.Value
                             'Unthread
                             Invoke(Sub() TextBox8.AppendText("Unthreading.."))
-                            If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
+                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
                                 Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                             Else
                                 Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -452,7 +469,7 @@ Public Class LTFSConfigurator
                             End If
                             'Thread
                             Invoke(Sub() TextBox8.AppendText("Threading.."))
-                            If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
                                 Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                             Else
                                 Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -460,7 +477,7 @@ Public Class LTFSConfigurator
                             End If
                             'Erase
                             Invoke(Sub() TextBox8.AppendText("Erasing " & i & "/" & NumericUpDown6.Value & ".."))
-                            If TapeUtils.SendSCSICommand(TapeDrive, {&H19, 1, 0, 0, 0, 0}) Then
+                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}) Then
                                 Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                             Else
                                 Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -469,7 +486,7 @@ Public Class LTFSConfigurator
                         Next
                         'Unthread
                         Invoke(Sub() TextBox8.AppendText("Unthreading.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -477,7 +494,7 @@ Public Class LTFSConfigurator
                         End If
                         'Thread
                         Invoke(Sub() TextBox8.AppendText("Threading.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -485,7 +502,7 @@ Public Class LTFSConfigurator
                         End If
                         'Remove Partition
                         Invoke(Sub() TextBox8.AppendText("Reinitializing.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 0, 0, 0, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 0, 0, 0, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -493,7 +510,7 @@ Public Class LTFSConfigurator
                         End If
                         'Unload
                         Invoke(Sub() TextBox8.AppendText("Unloading.."))
-                        If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 0, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 0, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -505,49 +522,45 @@ Public Class LTFSConfigurator
                     Invoke(Sub() TextBox8.AppendText("Erase finished."))
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
-            th.Start()
-        End If
-        If Panel1.Enabled Then RefreshUI()
+        th.Start()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub ButtonDebugWriteBarcode_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBarcode.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
-        If CurDrive IsNot Nothing Then
-            Panel1.Enabled = False
-            Dim barcode As String = TextBox9.Text
-            Dim th As New Threading.Thread(
+        Panel1.Enabled = False
+        Dim barcode As String = TextBox9.Text
+        Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String = ""
                     Try
-                        result &= TapeUtils.SetBarcode(TapeDrive, barcode)
+                        result &= TapeUtils.SetBarcode(ConfTapeDrive, barcode)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " Barcode已修改为 " & barcode
+                               If result = "" Then result = "驱动器 " & ConfTapeDrive & " Barcode已修改为 " & barcode
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI()
+                               RefreshUI(CheckBox3.Checked)
                            End Sub)
                 End Sub)
-            th.Start()
-        End If
-        If Panel1.Enabled Then RefreshUI()
+        th.Start()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Label11_Click(sender As Object, e As EventArgs) Handles Label11.Click
     End Sub
 
     Private Sub ButtonDebugReadMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadMAM.Click
-        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(TapeDrive, NumericUpDown8.Value, NumericUpDown9.Value, NumericUpDown1.Value)
+        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, NumericUpDown8.Value, NumericUpDown9.Value, NumericUpDown1.Value)
         If ResultB.Length = 0 Then Exit Sub
         Dim Result As String = System.Text.Encoding.UTF8.GetString(ResultB)
         If Result <> "" Then TextBox8.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
@@ -621,13 +634,15 @@ Public Class LTFSConfigurator
         TextBox8.Text = ""
         TextBox8.AppendText("========Application Info========" & vbCrLf)
         Try
-            Dim BC As String = TapeUtils.ReadBarcode(tapeDrive)
+            Dim BC As String
+            BC = TapeUtils.ReadBarcode(ConfTapeDrive)
+            BC = TapeUtils.ReadBarcode(ConfTapeDrive)
             TextBox8.AppendText("Barcode: " & BC & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Barcode: Not Available" & vbCrLf)
         End Try
         Try
-            Dim AppInfo As String = TapeUtils.ReadAppInfo(tapeDrive)
+            Dim AppInfo As String = TapeUtils.ReadAppInfo(ConfTapeDrive)
             TextBox8.AppendText("Application: " & AppInfo & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Application: Not Available" & vbCrLf)
@@ -635,19 +650,19 @@ Public Class LTFSConfigurator
         TextBox8.AppendText(vbCrLf)
         TextBox8.AppendText("==========Medium Usage==========" & vbCrLf)
         Try
-            Dim LoadCount As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 0, 3).AsNumeric
+            Dim LoadCount As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
             TextBox8.AppendText("Load count: " & LoadCount & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Load count: Not Available" & vbCrLf)
         End Try
         Try
-            Dim TotalWriteMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 2, &H20).AsNumeric
+            Dim TotalWriteMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
             TextBox8.AppendText("Total write: " & ReduceDataUnit(TotalWriteMBytes) & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Total write: Not Available" & vbCrLf)
         End Try
         Try
-            Dim TotalReadMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 2, &H21).AsNumeric
+            Dim TotalReadMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
             TextBox8.AppendText("Total read: " & ReduceDataUnit(TotalReadMBytes) & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Total read: Not Available" & vbCrLf)
@@ -656,26 +671,26 @@ Public Class LTFSConfigurator
         TextBox8.AppendText(vbCrLf)
         TextBox8.AppendText("=========Medium Identity========" & vbCrLf)
         Try
-            Dim Medium_SN As String = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 4, 1).AsString
+            Dim Medium_SN As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 1).AsString
             TextBox8.AppendText("Serial number: " & Medium_SN & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Serial number: Not Available" & vbCrLf)
         End Try
         Try
-            Dim Medium_Manufacturer As String = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 4, 0).AsString
+            Dim Medium_Manufacturer As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
             TextBox8.AppendText("Manufacturer: " & Medium_Manufacturer & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Manufacturer: Not Available" & vbCrLf)
         End Try
         Try
-            Dim Medium_Man_Date As String = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 4, 6).AsString
+            Dim Medium_Man_Date As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
             TextBox8.AppendText("Manufacture date: " & Medium_Man_Date & vbCrLf)
         Catch ex As Exception
             TextBox8.AppendText("Manufacture date: Not Available" & vbCrLf)
         End Try
         Try
-            Dim Medium_Type As Byte = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, 4, 8).AsNumeric
-            Dim CMData As Byte() = TapeUtils.ReadBuffer(tapeDrive, &H10)
+            Dim Medium_Type As Byte = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 8).AsNumeric
+            Dim CMData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, &H10)
             Dim Medium_ParticleType As String
             If CMData(&H40) >= &H40 Then
                 If CMData(&H6A) And &HF Then
@@ -695,7 +710,7 @@ Public Class LTFSConfigurator
             TextBox8.AppendText(vbCrLf)
             TextBox8.AppendText("==========DATA ON TAPE==========" & vbCrLf)
             Try
-                Dim TapePartitionPage As Byte() = TapeUtils.ModeSense(tapeDrive, &H11)
+                Dim TapePartitionPage As Byte() = TapeUtils.ModeSense(ConfTapeDrive, &H11)
                 Dim extraPartitionNumber As Byte = TapePartitionPage(3)
                 'TextBox8.AppendText(Byte2Hex(TapePartitionPage))
                 Dim SUnit As Byte = TapePartitionPage(6)
@@ -730,7 +745,7 @@ Public Class LTFSConfigurator
                 TextBox8.AppendText(vbCrLf)
                 TextBox8.AppendText("Wraps on Tape :" & vbCrLf)
 
-                Dim EOWData As Byte() = TapeUtils.ReadEOWPosition(tapeDrive)
+                Dim EOWData As Byte() = TapeUtils.ReadEOWPosition(ConfTapeDrive)
                 Dim LOINum As UInt64 = 0
                 For i As Integer = 0 To EOWData.Length - 12 Step 12
                     Dim WN As Integer = CInt(EOWData(i + 0)) << 8 Or EOWData(i + 1)
@@ -767,7 +782,7 @@ Public Class LTFSConfigurator
                     For i As UInt16 = &H0 To &HFFFF Step 1
 
                         Try
-                            Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(tapeDrive, i, CByte(NumericUpDown1.Value))
+                            Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, i, CByte(NumericUpDown1.Value))
                             If Attr IsNot Nothing Then
                                 Me.Invoke(Sub()
                                               TextBox8.Text = Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
@@ -805,7 +820,7 @@ Public Class LTFSConfigurator
         Marshal.Copy(cdbData, 0, cdb, 6)
         Dim data As IntPtr = Marshal.AllocHGlobal(1)
         Dim sense As IntPtr = Marshal.AllocHGlobal(127)
-        TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, 6, data, 0, 2, 60000, sense)
+        TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, 6, data, 0, 2, 60000, sense)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(data)
         Marshal.FreeHGlobal(sense)
@@ -823,13 +838,13 @@ Public Class LTFSConfigurator
         'Dim data As IntPtr = Marshal.AllocHGlobal(ReadLen)
         'Marshal.Copy(readData, 0, data, ReadLen)
         'Dim sense As IntPtr = Marshal.AllocHGlobal(127)
-        'TapeUtils._TapeSCSIIOCtlFull(tapeDrive, cdb, 6, data, ReadLen, 1, &HFFFF, sense)
+        'TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, 6, data, ReadLen, 1, &HFFFF, sense)
         'Marshal.Copy(data, readData, 0, ReadLen)
         'Marshal.FreeHGlobal(cdb)
         'Marshal.FreeHGlobal(data)
         'Marshal.FreeHGlobal(sense)
         Dim sense(63) As Byte
-        Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, ReadLen)
+        Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
         Dim DiffBytes As Int32
         For i As Integer = 3 To 6
             DiffBytes <<= 8
@@ -849,7 +864,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugDumpBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpBuffer.Click
         Me.Enabled = False
         Dim BufferID = Convert.ToByte(ComboBox2.SelectedItem.Substring(0, 2), 16)
-        Dim DumpData As Byte() = TapeUtils.ReadBuffer(TapeDrive, BufferID)
+        Dim DumpData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, BufferID)
         TextBox8.Text = "Buffer len=" & DumpData.Length & vbCrLf
         SaveFileDialog2.FileName = ComboBox2.SelectedItem & ".bin"
         If SaveFileDialog2.ShowDialog = DialogResult.OK Then
@@ -875,7 +890,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
-        TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(tapeDrive,
+        TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(ConfTapeDrive,
                                                                             NumericUpDown2.Value,
                                                                             NumericUpDown1.Value,
                                                                             System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBox3.SelectedItem)))
@@ -885,8 +900,8 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugReadPosition_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadPosition.Click
         Me.Enabled = False
-        Dim pos As New TapeUtils.PositionData(tapeDrive)
-        'Dim param As Byte() = TapeUtils.SCSIReadParam(tapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+        Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
+        'Dim param As Byte() = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         'Dim BOP As Boolean = param(0) >> 7 = 1
         'Dim EOP As Boolean = ((param(0) >> 6) And &H1) = 1
         'Dim LOCU As Boolean = ((param(0) >> 5) And &H1) = 1
@@ -929,7 +944,7 @@ Public Class LTFSConfigurator
                     Dim FileNum As Integer = 0
 
                     'Position
-                    Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+                    Dim param As Byte() = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
 
                     Dim Partition As Byte = param(1)
                     Dim Block As UInteger = 0
@@ -939,7 +954,7 @@ Public Class LTFSConfigurator
                     Next
                     While True
                         Dim sense(63) As Byte
-                        Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, ReadLen)
+                        Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then My.Computer.FileSystem.WriteAllBytes(FolderBrowserDialog1.SelectedPath & "\" & FileNum & ".bin", readData, True)
                         If Add_Key <> 0 Then
@@ -978,14 +993,14 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugDumpIndex_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpIndex.Click
         Try
-            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
-            TapeUtils.ReadBlock(TapeDrive)
-            Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
+            TapeUtils.Locate(ConfTapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+            TapeUtils.ReadBlock(ConfTapeDrive)
+            Dim data As Byte() = TapeUtils.ReadToFileMark(ConfTapeDrive)
             Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-            If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema")) Then
-                My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "schema"))
+            If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
+                My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
             End If
-            outputfile = My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, outputfile)
+            outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
             My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
             Form1.Invoke(Sub()
                              Form1.TextBox1.Text = outputfile
@@ -998,27 +1013,25 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugFormat_Click(sender As Object, e As EventArgs) Handles ButtonDebugFormat.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
-        If CurDrive IsNot Nothing Then
-            Panel1.Enabled = False
-            Dim dL As Char = ComboBox1.Text
-            Dim barcode As String = TextBox9.Text
-            Dim th As New Threading.Thread(
+        Panel1.Enabled = False
+        Dim dL As Char = ComboBox1.Text
+        Dim barcode As String = TextBox9.Text
+        Dim th As New Threading.Thread(
                 Sub()
                     Invoke(Sub() TextBox8.Text = "Start format ..." & vbCrLf)
                     Try
                         'Load and Thread
                         Invoke(Sub() TextBox8.AppendText("Loading.."))
-                        If TapeUtils.SendSCSICommand(tapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
                             Exit Try
                         End If
-                        Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(tapeDrive, &H11)(2)
+                        Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(ConfTapeDrive, &H11)(2)
                         'Erase
                         Invoke(Sub() TextBox8.AppendText("Initializing tape.."))
-                        If TapeUtils.SendSCSICommand(tapeDrive, {4, 0, 0, 0, 0, 0}) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 0, 0, 0, 0}) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1026,7 +1039,7 @@ Public Class LTFSConfigurator
                         End If
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Partition mode page.."))
-                        If TapeUtils.SendSCSICommand(tapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1035,7 +1048,7 @@ Public Class LTFSConfigurator
 
                         'Format
                         Invoke(Sub() TextBox8.AppendText("Partitioning.."))
-                        If TapeUtils.SendSCSICommand(tapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1043,7 +1056,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set Vendor
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Vendor=OPEN.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H800, "OPEN".PadRight(8)) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H800, "OPEN".PadRight(8)) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1051,7 +1064,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set AppName
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Application name = LTFSCopyGUI.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H801, "LTFSCopyGUI".PadRight(32)) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H801, "LTFSCopyGUI".PadRight(32)) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1059,7 +1072,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set Version
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Application Version={My.Application.Info.Version.ToString(3)}.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H802, My.Application.Info.Version.ToString(3).PadRight(8)) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H802, My.Application.Info.Version.ToString(3).PadRight(8)) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1067,7 +1080,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set TextLabel
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: TextLabel= .."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1075,7 +1088,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set TLI
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Localization Identifier = 0.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H805, {0}, TapeUtils.AttributeFormat.Binary) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H805, {0}, TapeUtils.AttributeFormat.Binary) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1083,7 +1096,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set Barcode
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Barcode={barcode}.."))
-                        If TapeUtils.SetBarcode(tapeDrive, barcode) Then
+                        If TapeUtils.SetBarcode(ConfTapeDrive, barcode) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1091,7 +1104,7 @@ Public Class LTFSConfigurator
                         End If
                         'Set Version
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Format Version=2.4.0.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H80B, "2.4.0".PadRight(16)) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H80B, "2.4.0".PadRight(16)) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1102,7 +1115,7 @@ Public Class LTFSConfigurator
 
                         'Mode Select:Block Length
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Block size.."))
-                        If TapeUtils.SetBlockSize(tapeDrive, 524288).Length > 0 Then
+                        If TapeUtils.SetBlockSize(ConfTapeDrive, 524288).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1111,7 +1124,7 @@ Public Class LTFSConfigurator
 
                         'Locate
                         Invoke(Sub() TextBox8.AppendText("Locate to data partition.."))
-                        If TapeUtils.Locate(tapeDrive, 0, 1) = 0 Then
+                        If TapeUtils.Locate(ConfTapeDrive, 0, 1) = 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1120,7 +1133,7 @@ Public Class LTFSConfigurator
 
                         'Write VOL1Label
                         Invoke(Sub() TextBox8.AppendText("Write VOL1Label.."))
-                        If TapeUtils.Write(tapeDrive, New Vol1Label().GenerateRawData(barcode)).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, New Vol1Label().GenerateRawData(barcode)).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1129,7 +1142,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1145,7 +1158,7 @@ Public Class LTFSConfigurator
 
                         'Write ltfslabel
                         Invoke(Sub() TextBox8.AppendText("Write ltfslabel.."))
-                        If TapeUtils.Write(tapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1154,7 +1167,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive, 2).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive, 2).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1167,7 +1180,7 @@ Public Class LTFSConfigurator
                         pindex.creator = plabel.creator
                         pindex.updatetime = plabel.formattime
                         pindex.location.partition = ltfsindex.PartitionLabel.b
-                        pindex.location.startblock = TapeUtils.ReadPosition(tapeDrive).BlockNumber
+                        pindex.location.startblock = TapeUtils.ReadPosition(ConfTapeDrive).BlockNumber
                         pindex.previousgenerationlocation = Nothing
                         pindex.highestfileuid = 1
                         Dim block1 As ULong = pindex.location.startblock
@@ -1178,7 +1191,7 @@ Public Class LTFSConfigurator
 
                         'Write ltfsindex
                         Invoke(Sub() TextBox8.AppendText("Write ltfsindex.."))
-                        If TapeUtils.Write(tapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1187,7 +1200,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1196,7 +1209,7 @@ Public Class LTFSConfigurator
 
                         'Locate
                         Invoke(Sub() TextBox8.AppendText("Locate to index partition.."))
-                        If TapeUtils.Locate(tapeDrive, 0, 0) = 0 Then
+                        If TapeUtils.Locate(ConfTapeDrive, 0, 0) = 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1205,7 +1218,7 @@ Public Class LTFSConfigurator
 
                         'Write VOL1Label
                         Invoke(Sub() TextBox8.AppendText("Write VOL1Label.."))
-                        If TapeUtils.Write(tapeDrive, New Vol1Label().GenerateRawData(barcode)).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, New Vol1Label().GenerateRawData(barcode)).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1214,7 +1227,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1224,7 +1237,7 @@ Public Class LTFSConfigurator
                         'Write ltfslabel
                         plabel.location.partition = ltfslabel.PartitionLabel.a
                         Invoke(Sub() TextBox8.AppendText("Write ltfslabel.."))
-                        If TapeUtils.Write(tapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1233,7 +1246,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive, 2).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive, 2).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1245,10 +1258,10 @@ Public Class LTFSConfigurator
                         pindex.previousgenerationlocation.partition = pindex.location.partition
                         pindex.previousgenerationlocation.startblock = pindex.location.startblock
                         pindex.location.partition = ltfsindex.PartitionLabel.a
-                        pindex.location.startblock = TapeUtils.ReadPosition(tapeDrive).BlockNumber
+                        pindex.location.startblock = TapeUtils.ReadPosition(ConfTapeDrive).BlockNumber
                         Dim block0 As ULong = pindex.location.startblock
                         Invoke(Sub() TextBox8.AppendText("Write ltfsindex.."))
-                        If TapeUtils.Write(tapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                        If TapeUtils.Write(ConfTapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1257,7 +1270,7 @@ Public Class LTFSConfigurator
 
                         'Write FileMark
                         Invoke(Sub() TextBox8.AppendText("Write FileMark.."))
-                        If TapeUtils.WriteFileMark(tapeDrive).Length > 0 Then
+                        If TapeUtils.WriteFileMark(ConfTapeDrive).Length > 0 Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1267,7 +1280,7 @@ Public Class LTFSConfigurator
                         'Set DateTime
                         Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: Written time={CurrentTime}.."))
-                        If TapeUtils.SetMAMAttribute(tapeDrive, &H804, CurrentTime.PadRight(12)) Then
+                        If TapeUtils.SetMAMAttribute(ConfTapeDrive, &H804, CurrentTime.PadRight(12)) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1276,7 +1289,7 @@ Public Class LTFSConfigurator
 
                         'Set VCI
                         Invoke(Sub() TextBox8.AppendText($"WRITE ATTRIBUTE: VCI.."))
-                        If TapeUtils.WriteVCI(tapeDrive, pindex.generationnumber, block0, block1, pindex.volumeuuid.ToString()) Then
+                        If TapeUtils.WriteVCI(ConfTapeDrive, pindex.generationnumber, block0, block1, pindex.volumeuuid.ToString()) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -1293,18 +1306,18 @@ Public Class LTFSConfigurator
                     End Try
                     Invoke(Sub() Panel1.Enabled = True)
                 End Sub)
-            th.Start()
-        End If
-        If Panel1.Enabled Then RefreshUI()
+        th.Start()
+        If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
-        Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive}
-        LWF.Show()
+        Process.Start(Application.ExecutablePath, $"-t {TapeDrive}")
+        'Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive}
+        'LWF.Show()
     End Sub
 
     Private Sub ButtonDebugReleaseUnit_Click(sender As Object, e As EventArgs) Handles ButtonDebugReleaseUnit.Click
-        TapeUtils.ReleaseUnit(TapeDrive,
+        TapeUtils.ReleaseUnit(ConfTapeDrive,
                               Function(sense As Byte()) As Boolean
                                   Invoke(Sub()
                                              TextBox8.Text = "RELEASE UNIT" & vbCrLf
@@ -1315,7 +1328,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonDebugAllowMediaRemoval_Click(sender As Object, e As EventArgs) Handles ButtonDebugAllowMediaRemoval.Click
-        TapeUtils.AllowMediaRemoval(TapeDrive,
+        TapeUtils.AllowMediaRemoval(ConfTapeDrive,
                               Function(sense As Byte()) As Boolean
                                   Invoke(Sub()
                                              TextBox8.Text = "ALLOW MEDIA REMOVAL" & vbCrLf
@@ -1327,5 +1340,10 @@ Public Class LTFSConfigurator
 
     Private Sub Button30_Click(sender As Object, e As EventArgs) Handles Button30.Click
         Form1.Show()
+    End Sub
+
+    Private Sub LTFSConfigurator_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        My.Settings.LTFSConf_AutoRefresh = CheckBox3.Checked
+        My.Settings.Save()
     End Sub
 End Class

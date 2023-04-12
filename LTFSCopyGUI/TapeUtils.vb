@@ -284,6 +284,9 @@ Public Class TapeUtils
         End If
         Return sense
     End Function
+    Public Shared Function ReadDensityCode(TapeDrive As String) As Byte
+        Return SCSIReadParam(TapeDrive, {&H1A, 0, 0, 0, &HC, 0}, 12)(4)
+    End Function
     Public Shared Function SetBarcode(TapeDrive As String, barcode As String) As Boolean
         Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &H29, 0, 0}
         Dim data As Byte() = {0, 0, 0, &H29, &H8, &H6, &H1, 0, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20,
@@ -296,8 +299,9 @@ Public Class TapeUtils
     End Function
     Public Shared Function SetBlockSize(TapeDrive As String, Optional ByVal BlockSize As UInteger = &H80000) As Byte()
         Dim sense(63) As Byte
+        Dim DensityCode As Byte = ReadDensityCode(TapeDrive)
         SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &HC, 0},
-                        {0, 0, &H10, 8, &H58, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, 0,
+                        {0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -963,7 +967,7 @@ Public Class TapeUtils
         Public Property Content As New List(Of MAMAttribute)
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(MAMAttributeList))
-            Dim tmpf As String = My.Computer.FileSystem.CurrentDirectory & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.tmp")
+            Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.tmp")
             Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
             Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
             writer.Serialize(t, Me)
@@ -1499,7 +1503,7 @@ Public Class TapeUtils
             Return True
         End If
     End Function
-    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Action(Of Long) = Nothing, Optional ByVal CreateNew As Boolean = True) As Boolean
+    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True) As Boolean
         If Not ReserveUnit(TapeDrive) Then Return False
         If Not PreventMediaRemoval(TapeDrive) Then
             ReleaseUnit(TapeDrive)
@@ -1528,8 +1532,8 @@ Public Class TapeUtils
         Try
             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
             Dim ReadedSize As Long = 0
-            While ReadedSize < TotalBytes + ByteOffset And Not StopFlag
-                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, BlockSize)
+            While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
+                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, Math.Min(BlockSize, TotalBytes + ByteOffset - ReadedSize))
                 If Data.Length = 0 Then
                     AllowMediaRemoval(TapeDrive)
                     ReleaseUnit(TapeDrive)
@@ -1537,7 +1541,7 @@ Public Class TapeUtils
                 End If
                 ReadedSize += Data.Length
                 fs.Write(Data, ByteOffset, Data.Length - ByteOffset)
-                If ProgressReport IsNot Nothing Then ProgressReport(Data.Length - ByteOffset)
+                If ProgressReport IsNot Nothing Then StopFlag = ProgressReport(Data.Length - ByteOffset)
                 ByteOffset = 0
             End While
             AllowMediaRemoval(TapeDrive)
@@ -1545,6 +1549,9 @@ Public Class TapeUtils
             If StopFlag Then
                 fs.Close()
                 My.Computer.FileSystem.DeleteFile(OutputFile)
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+                Return True
             End If
         Catch ex As Exception
             MessageBox.Show(ex.ToString)

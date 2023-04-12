@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports System.Security.Cryptography
+Imports System.Threading
 Imports LTFSCopyGUI
 
 Public Class IOManager
@@ -569,6 +571,84 @@ Public Class IOManager
             LTFSIndexDir = index
             LHash_Dir = lhash
         End Sub
+    End Class
+
+    Public Class SHA1BlockwiseCalculator
+        Private sha1 As SHA1
+        Private resultBytes As Byte()
+        Private Lock As New Object
+        Public StopFlag As Boolean = False
+        Private thStarted As Boolean = False
+        Structure QueueBlock
+            Public block As Byte()
+            Public Len As Integer
+        End Structure
+        Private q As New Queue(Of QueueBlock)
+        Dim thHashAsync As New Threading.Thread(
+            Sub()
+                While Not StopFlag
+                    SyncLock Lock
+                        If q.Count > 0 Then
+                            Dim blk As QueueBlock
+                            SyncLock q
+                                blk = q.Dequeue()
+                            End SyncLock
+                            With blk
+                                If .Len = -1 Then .Len = .block.Length
+                                sha1.TransformBlock(.block, 0, .Len, .block, 0)
+                            End With
+                        End If
+                    End SyncLock
+                    Threading.Thread.Sleep(0)
+                End While
+            End Sub)
+        Public Sub New()
+            sha1 = SHA1.Create()
+        End Sub
+
+        Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
+            While q.Count > 0
+                Threading.Thread.Sleep(0)
+            End While
+            SyncLock Lock
+                If Len = -1 Then Len = block.Length
+                sha1.TransformBlock(block, 0, Len, block, 0)
+            End SyncLock
+        End Sub
+        Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = -1)
+            SyncLock Lock
+                If Not thStarted Then
+                    thHashAsync.Start()
+                    thStarted = True
+                End If
+            End SyncLock
+            If Len = -1 Then Len = block.Length
+            While q.Count > 0
+                Threading.Thread.Sleep(0)
+            End While
+            SyncLock Lock
+                SyncLock q
+                    q.Enqueue(New QueueBlock With {.block = block, .Len = Len})
+                End SyncLock
+            End SyncLock
+        End Sub
+        Public Sub ProcessFinalBlock()
+            While q.Count > 0
+                Threading.Thread.Sleep(0)
+            End While
+            SyncLock Lock
+                sha1.TransformFinalBlock({}, 0, 0)
+                resultBytes = sha1.Hash
+            End SyncLock
+            StopFlag = True
+        End Sub
+        Public ReadOnly Property SHA1Value As String
+            Get
+                SyncLock Lock
+                    Return BitConverter.ToString(resultBytes).Replace("-", "").ToUpper()
+                End SyncLock
+            End Get
+        End Property
     End Class
 
 End Class

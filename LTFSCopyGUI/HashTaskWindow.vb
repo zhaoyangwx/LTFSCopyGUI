@@ -38,10 +38,10 @@ Public Class HashTaskWindow
                           'TextBox1.Select(TextBox1.Text.Length, 0)
                           'TextBox1.ScrollToCaret()
                           If LogEnabled Then
-                              If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log")) Then
-                                  My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log"))
+                              If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log")) Then
+                                  My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log"))
                               End If
-                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(My.Computer.FileSystem.CurrentDirectory, "log\log_" & StartTime & ".txt"), Message & vbCrLf, True)
+                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log\log_" & StartTime & ".txt"), Message & vbCrLf, True)
                           End If
                       End Sub)
         Catch ex As Exception
@@ -53,8 +53,8 @@ Public Class HashTaskWindow
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CheckBox1.Checked = My.Settings.ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory, .ReportSkip = Not DisableSkipInfo}
-        If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CurrentDirectory & "\recovery.log") Then
-            HashTask.LogFile = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CurrentDirectory & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        If My.Computer.FileSystem.FileExists(Application.StartupPath & "\recovery.log") Then
+            HashTask.LogFile = My.Computer.FileSystem.ReadAllText(Application.StartupPath & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         End If
         AddHandler HashTask.TaskStarted, Sub(s As String)
                                              PrintMsg(s)
