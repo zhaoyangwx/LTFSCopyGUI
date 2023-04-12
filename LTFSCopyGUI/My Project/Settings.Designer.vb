@@ -197,6 +197,78 @@ Namespace My
                 Me("LTFSWriter_ForceIndex") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+        Public Property LTFSConf_AutoRefresh() As Boolean
+            Get
+                Return CType(Me("LTFSConf_AutoRefresh"),Boolean)
+            End Get
+            Set
+                Me("LTFSConf_AutoRefresh") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("3")>  _
+        Public Property LTFSWriter_CleanCycle() As Integer
+            Get
+                Return CType(Me("LTFSWriter_CleanCycle"),Integer)
+            End Get
+            Set
+                Me("LTFSWriter_CleanCycle") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_HashOnWriting() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_HashOnWriting"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_HashOnWriting") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_HashAsync() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_HashAsync"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_HashAsync") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("38654705664")>  _
+        Public Property LTFSWriter_IndexWriteInterval() As Long
+            Get
+                Return CType(Me("LTFSWriter_IndexWriteInterval"),Long)
+            End Get
+            Set
+                Me("LTFSWriter_IndexWriteInterval") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("30")>  _
+        Public Property LTFSWriter_CapacityRefreshInterval() As Integer
+            Get
+                Return CType(Me("LTFSWriter_CapacityRefreshInterval"),Integer)
+            End Get
+            Set
+                Me("LTFSWriter_CapacityRefreshInterval") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

@@ -94,6 +94,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
+        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -271,6 +272,7 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.CheckBox3)
         Me.Panel1.Controls.Add(Me.Button30)
         Me.Panel1.Controls.Add(Me.Button27)
         Me.Panel1.Controls.Add(Me.Button14)
@@ -868,6 +870,18 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         Me.SaveFileDialog2.Filter = "RAW Dump | *.bin"
         '
+        'CheckBox3
+        '
+        Me.CheckBox3.AutoSize = True
+        Me.CheckBox3.Checked = True
+        Me.CheckBox3.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox3.Location = New System.Drawing.Point(93, 631)
+        Me.CheckBox3.Name = "CheckBox3"
+        Me.CheckBox3.Size = New System.Drawing.Size(72, 16)
+        Me.CheckBox3.TabIndex = 23
+        Me.CheckBox3.Text = "自动刷新"
+        Me.CheckBox3.UseVisualStyleBackColor = True
+        '
         'LTFSConfigurator
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -962,4 +976,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonDebugReleaseUnit As Button
     Friend WithEvents ButtonDebugAllowMediaRemoval As Button
     Friend WithEvents Button30 As Button
+    Friend WithEvents CheckBox3 As CheckBox
 End Class
