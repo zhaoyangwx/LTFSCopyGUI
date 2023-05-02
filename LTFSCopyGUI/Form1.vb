@@ -403,7 +403,7 @@ Public Class Form1
         LTFSConfigurator.Show()
     End Sub
 
-    Private Sub Label1_Click(sender As Object, e As EventArgs) Handles Label1.Click
+    Private Sub 查找ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找ToolStripMenuItem.Click
         Dim patt As String = InputBox("Search kw", "Search", "")
         If patt <> "" Then
             Enabled = False
@@ -451,5 +451,68 @@ Public Class Form1
             th.Start()
             thprog.Start()
         End If
+    End Sub
+
+    Private Sub 错误检查ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 错误检查ToolStripMenuItem.Click
+        Enabled = False
+        Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
+        Dim result As New System.Text.StringBuilder
+
+        If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
+        Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+        Dim progmax As Integer = f.Length
+        Dim progval As Integer = 0
+
+        Dim th As New Threading.Thread(
+            Sub()
+                Parallel.ForEach(f,
+                    Sub(fl As IO.FileInfo)
+                        Try
+                            Dim extlist As New List(Of ltfsindex.file.extent)
+                            Dim sch As ltfsindex = ltfsindex.FromSchemaText(My.Computer.FileSystem.ReadAllText(fl.FullName))
+                            ltfsindex.WSort(sch._directory,
+                                            Sub(fid As ltfsindex.file)
+                                                For Each ext As ltfsindex.file.extent In fid.extentinfo
+                                                    ext.TempInfo = fid
+                                                    extlist.Add(ext)
+                                                Next
+                                            End Sub, Nothing)
+                            extlist.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
+                                                                                      If a.startblock <> b.startblock Then
+                                                                                          Return a.startblock.CompareTo(b.startblock)
+                                                                                      Else
+                                                                                          Return a.byteoffset.CompareTo(b.byteoffset)
+                                                                                      End If
+                                                                                  End Function))
+                            For i As Integer = 1 To extlist.Count - 1
+                                If extlist(i).startblock * 524288 + extlist(i).byteoffset < extlist(i - 1).startblock * 524288 + extlist(i - 1).byteoffset + extlist(i - 1).bytecount Then
+                                    result.AppendLine($"Error with {fl.Name}: fid {CType(extlist(i).TempInfo, ltfsindex.file).fileuid}")
+                                End If
+                            Next
+                        Catch ex As Exception
+                            result.Append(ex.ToString)
+                        End Try
+                        Threading.Interlocked.Increment(progval)
+                    End Sub)
+                Invoke(Sub() Enabled = True)
+            End Sub)
+        Dim thprog As New Threading.Thread(
+            Sub()
+                While True
+                    Threading.Thread.Sleep(200)
+                    Dim exitflag As Boolean = (progval >= progmax)
+                    Me.Invoke(
+                        Sub()
+                            TextBox2.Text = "Checking files..."
+                            TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
+                            SyncLock result
+                                TextBox2.AppendText(result.ToString)
+                            End SyncLock
+                        End Sub)
+                    If exitflag Then Exit While
+                End While
+            End Sub)
+        th.Start()
+        thprog.Start()
     End Sub
 End Class

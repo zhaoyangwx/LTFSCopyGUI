@@ -103,6 +103,7 @@ Public Class ltfsindex
             Public Property startblock As Long
             Public Property byteoffset As Long
             Public Property bytecount As Long
+            <Xml.Serialization.XmlIgnore> Public Property TempInfo As Object
         End Class
         Public Property extentinfo As New List(Of extent)
     End Class
@@ -167,7 +168,7 @@ Public Class ltfsindex
         Searializing = True
         Me.Standarize()
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
+        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.fffffff.tmp")
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
@@ -218,6 +219,22 @@ Public Class ltfsindex
     Public Function Clone() As ltfsindex
         Return (FromXML(GetSerializedText(False)))
     End Function
+    Public Shared Sub WSort(d As List(Of directory), OnFileFound As Action(Of file), OnDirectoryFound As Action(Of directory))
+        Dim q As List(Of directory) = d
+        While q.Count > 0
+            Dim q2 As New List(Of directory)
+            For Each dq As directory In q
+                If OnDirectoryFound IsNot Nothing Then OnDirectoryFound(dq)
+                For Each fi As file In dq.contents._file
+                    If OnFileFound IsNot Nothing Then OnFileFound(fi)
+                Next
+                For Each di As directory In dq.contents._directory
+                    q2.Add(di)
+                Next
+            Next
+            q = q2
+        End While
+    End Sub
 End Class
 
 <Serializable> Public Class ltfslabel

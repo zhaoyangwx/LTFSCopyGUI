@@ -168,6 +168,23 @@ SCSI命令执行失败")
                                 CloseConsole()
                                 End
                             End If
+                        Case "-gt"
+                            If i < param.Count - 2 Then
+                                Dim Num1 As Byte = Byte.Parse(param(i + 1))
+                                Dim Num2 As Byte = Byte.Parse(param(i + 2))
+                                InitConsole()
+                                Console.WriteLine($"{TapeUtils.GX256.Times(Num1, Num2)}")
+                                CloseConsole()
+                                End
+                            End If
+                        Case "-crc"
+                            If i < param.Count - 1 Then
+                                Dim Num1 As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 1))
+                                InitConsole()
+                                Console.WriteLine($"{TapeUtils.Byte2Hex(TapeUtils.GX256.CalcCRC(Num1))}")
+                                CloseConsole()
+                                End
+                            End If
                         Case Else
                             Try
                                 InitConsole()

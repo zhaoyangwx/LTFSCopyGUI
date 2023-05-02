@@ -588,7 +588,7 @@ Public Class IOManager
             Sub()
                 While Not StopFlag
                     SyncLock Lock
-                        If q.Count > 0 Then
+                        While q.Count > 0
                             Dim blk As QueueBlock
                             SyncLock q
                                 blk = q.Dequeue()
@@ -597,9 +597,9 @@ Public Class IOManager
                                 If .Len = -1 Then .Len = .block.Length
                                 sha1.TransformBlock(.block, 0, .Len, .block, 0)
                             End With
-                        End If
+                        End While
                     End SyncLock
-                    Threading.Thread.Sleep(0)
+                    Threading.Thread.Sleep(1)
                 End While
             End Sub)
         Public Sub New()
@@ -608,7 +608,7 @@ Public Class IOManager
 
         Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
             While q.Count > 0
-                Threading.Thread.Sleep(0)
+                Threading.Thread.Sleep(1)
             End While
             SyncLock Lock
                 If Len = -1 Then Len = block.Length
@@ -623,7 +623,7 @@ Public Class IOManager
                 End If
             End SyncLock
             If Len = -1 Then Len = block.Length
-            While q.Count > 0
+            While q.Count > 32
                 Threading.Thread.Sleep(0)
             End While
             SyncLock Lock
@@ -634,7 +634,7 @@ Public Class IOManager
         End Sub
         Public Sub ProcessFinalBlock()
             While q.Count > 0
-                Threading.Thread.Sleep(0)
+                Threading.Thread.Sleep(1)
             End While
             SyncLock Lock
                 sha1.TransformFinalBlock({}, 0, 0)
@@ -651,4 +651,11 @@ Public Class IOManager
         End Property
     End Class
 
+End Class
+Public Class ExplorerUtils
+    Implements IComparer(Of String)
+    Declare Unicode Function StrCmpLogicalW Lib "shlwapi.dll" (ByVal s1 As String, ByVal s2 As String) As Int32
+    Public Function Compare(ByVal x As String, ByVal y As String) As Integer Implements System.Collections.Generic.IComparer(Of String).Compare
+        Return StrCmpLogicalW(x, y)
+    End Function
 End Class

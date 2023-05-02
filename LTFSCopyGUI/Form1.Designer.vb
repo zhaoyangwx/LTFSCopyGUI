@@ -22,11 +22,15 @@ Partial Class Form1
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.Button2 = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.查找ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.错误检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -45,6 +49,7 @@ Partial Class Form1
         Me.Button8 = New System.Windows.Forms.Button()
         Me.Button9 = New System.Windows.Forms.Button()
         Me.Button10 = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -60,8 +65,6 @@ Partial Class Form1
         'Label1
         '
         Me.Label1.AutoSize = True
-        Me.Label1.Font = New System.Drawing.Font("宋体", 9.0!, System.Drawing.FontStyle.Underline, System.Drawing.GraphicsUnit.Point, CType(134, Byte))
-        Me.Label1.ForeColor = System.Drawing.Color.Blue
         Me.Label1.Location = New System.Drawing.Point(12, 15)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(41, 12)
@@ -81,12 +84,31 @@ Partial Class Form1
         'Button2
         '
         Me.Button2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button2.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Button2.Location = New System.Drawing.Point(536, 11)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(73, 23)
         Me.Button2.TabIndex = 3
         Me.Button2.Text = "加载"
         Me.Button2.UseVisualStyleBackColor = True
+        '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(125, 48)
+        '
+        '查找ToolStripMenuItem
+        '
+        Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
+        Me.查找ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
+        Me.查找ToolStripMenuItem.Text = "查找"
+        '
+        '错误检查ToolStripMenuItem
+        '
+        Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
+        Me.错误检查ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
+        Me.错误检查ToolStripMenuItem.Text = "错误检查"
         '
         'TextBox2
         '
@@ -281,6 +303,7 @@ Partial Class Form1
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "Form1"
         Me.Text = "磁带文件排序"
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -308,4 +331,7 @@ Partial Class Form1
     Friend WithEvents Button8 As Button
     Friend WithEvents Button9 As Button
     Friend WithEvents Button10 As Button
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents 查找ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 错误检查ToolStripMenuItem As ToolStripMenuItem
 End Class
