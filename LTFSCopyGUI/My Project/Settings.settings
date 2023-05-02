@@ -45,10 +45,10 @@
       <Value Profile="(Default)">3</Value>
     </Setting>
     <Setting Name="LTFSWriter_HashOnWriting" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="LTFSWriter_HashAsync" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="LTFSWriter_IndexWriteInterval" Type="System.Int64" Scope="User">
       <Value Profile="(Default)">38654705664</Value>

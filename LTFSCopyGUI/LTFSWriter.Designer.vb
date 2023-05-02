@@ -184,6 +184,7 @@ Partial Class LTFSWriter
         Me.ToolStripButton5 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton6 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
+        Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -640,7 +641,7 @@ Partial Class LTFSWriter
         Me.Chart1.Text = "Chart1"
         Title1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
         Title1.Name = "Title1"
-        Title1.Text = "10 min"
+        Title1.Text = "10分钟"
         Title2.BackColor = System.Drawing.Color.Transparent
         Title2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Left
         Title2.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
@@ -755,7 +756,7 @@ Partial Class LTFSWriter
         '
         Me.索引ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.读取索引ToolStripMenuItem, Me.读取数据区索引ToolStripMenuItem, Me.加载外部索引ToolStripMenuItem, Me.备份当前索引ToolStripMenuItem})
         Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
-        Me.索引ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.索引ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.索引ToolStripMenuItem.Text = "索引操作"
         '
         '读取索引ToolStripMenuItem
@@ -787,7 +788,7 @@ Partial Class LTFSWriter
         '
         Me.数据操作ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入数据ToolStripMenuItem, Me.更新数据区索引ToolStripMenuItem, Me.更新全部索引ToolStripMenuItem})
         Me.数据操作ToolStripMenuItem.Name = "数据操作ToolStripMenuItem"
-        Me.数据操作ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.数据操作ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.数据操作ToolStripMenuItem.Text = "数据操作"
         '
         '写入数据ToolStripMenuItem
@@ -814,13 +815,13 @@ Partial Class LTFSWriter
         'ToolStripSeparator5
         '
         Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
-        Me.ToolStripSeparator5.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator5.Size = New System.Drawing.Size(121, 6)
         '
         '自动化ToolStripMenuItem1
         '
         Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
-        Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(180, 22)
+        Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(124, 22)
         Me.自动化ToolStripMenuItem1.Text = "自动化"
         '
         'ToolStripTextBox2
@@ -889,7 +890,7 @@ Partial Class LTFSWriter
         Me.异步校验CPU占用高ToolStripMenuItem.CheckOnClick = True
         Me.异步校验CPU占用高ToolStripMenuItem.Name = "异步校验CPU占用高ToolStripMenuItem"
         Me.异步校验CPU占用高ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.异步校验CPU占用高ToolStripMenuItem.Text = "异步校验（CPU占用高）"
+        Me.异步校验CPU占用高ToolStripMenuItem.Text = "异步校验"
         '
         '索引间隔36GiBToolStripMenuItem
         '
@@ -944,13 +945,13 @@ Partial Class LTFSWriter
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
-        Me.ToolStripSeparator6.Size = New System.Drawing.Size(177, 6)
+        Me.ToolStripSeparator6.Size = New System.Drawing.Size(121, 6)
         '
         '回退ToolStripMenuItem
         '
         Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem})
         Me.回退ToolStripMenuItem.Name = "回退ToolStripMenuItem"
-        Me.回退ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.回退ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
         Me.回退ToolStripMenuItem.Text = "回退"
         '
         '清除当前索引后数据ToolStripMenuItem
@@ -1156,6 +1157,10 @@ Partial Class LTFSWriter
         Me.ToolStripButton3.Size = New System.Drawing.Size(23, 22)
         Me.ToolStripButton3.Text = "安全弹出"
         '
+        'Timer2
+        '
+        Me.Timer2.Enabled = True
+        '
         'LTFSWriter
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -1314,4 +1319,5 @@ Partial Class LTFSWriter
     Friend WithEvents 异步校验CPU占用高ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 索引间隔36GiBToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 容量刷新间隔30sToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Timer2 As Timer
 End Class

@@ -46,11 +46,11 @@ Public Class LTFSWriter
     End Property
     Public Property ExtraPartitionCount As Long = 0
     Public Property CapReduceCount As Long = 0
-    Public Property CapacityRefreshInterval
+    Public Property CapacityRefreshInterval As Integer
         Get
             Return My.Settings.LTFSWriter_CapacityRefreshInterval
         End Get
-        Set(value)
+        Set(value As Integer)
             value = Math.Max(0, value)
             My.Settings.LTFSWriter_CapacityRefreshInterval = value
             If value = 0 Then
@@ -76,6 +76,8 @@ Public Class LTFSWriter
         End Get
     End Property
     Public Property SpeedLimitLastTriggerTime As Date = Now
+    Public CheckCount As Integer = 0
+    Public Property CheckCycle As Integer = 10
     Public Property CleanCycle
         Set(value)
             value = Math.Max(0, value)
@@ -104,11 +106,12 @@ Public Class LTFSWriter
     Public OperationLock As New Object
     Public Property Barcode As String = ""
     Public Property StopFlag As Boolean = False
+    Public Property Pause As Boolean = False
     Public Property Flush As Boolean = False
     Public Property Clean As Boolean = False
     Public Property Clean_last As Date = Now
     Public Property Session_Start_Time As Date = Now
-    Public logFile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss")}.log")
+    Public logFile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
     Public Property SilentMode As Boolean = False
     Public Property SilentAutoEject As Boolean = False
     Public BufferedBytes As Long = 0
@@ -171,9 +174,17 @@ Public Class LTFSWriter
         My.Settings.LTFSWriter_HashAsync = 异步校验CPU占用高ToolStripMenuItem.Checked
         My.Settings.Save()
     End Sub
-    Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False)
+    Private Text3 As String = "", Text5 As String = ""
+    Private TextT3 As String = "", TextT5 As String = ""
+    Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
+        ToolStripStatusLabel3.Text = Text3
+        ToolStripStatusLabel3.ToolTipText = TextT3
+        ToolStripStatusLabel5.Text = Text5
+        ToolStripStatusLabel5.ToolTipText = TextT5
+    End Sub
+    Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False, Optional ByVal ForceLog As Boolean = False)
         Me.Invoke(Sub()
-                      If LogOnly OrElse My.Settings.LTFSWriter_LogEnabled Then
+                      If ForceLog OrElse My.Settings.LTFSWriter_LogEnabled Then
                           Dim logType As String = "info"
                           If Warning Then logType = "warn"
                           Dim ExtraMsg As String = ""
@@ -188,11 +199,11 @@ Public Class LTFSWriter
                       If LogOnly Then Exit Sub
                       If TooltipText = "" Then TooltipText = s
                       If Not Warning Then
-                          ToolStripStatusLabel3.Text = s
-                          ToolStripStatusLabel3.ToolTipText = TooltipText
+                          Text3 = s
+                          TextT3 = TooltipText
                       Else
-                          ToolStripStatusLabel5.Text = s
-                          ToolStripStatusLabel5.ToolTipText = TooltipText
+                          Text5 = s
+                          TextT5 = TooltipText
                       End If
                   End Sub)
     End Sub
@@ -387,9 +398,20 @@ Public Class LTFSWriter
 
     End Sub
     Private Sub LTFSWriter_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        Static ForceCloseCount As Integer = 0
         e.Cancel = False
         If Not AllowOperation Then
-            MessageBox.Show("请等待操作完成")
+            If ForceCloseCount < 3 Then
+                MessageBox.Show("请等待操作完成")
+            Else
+                If MessageBox.Show("操作进行中，是否强制退出？", "警告", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                    Save_Settings()
+                    e.Cancel = False
+                    End
+                    Exit Sub
+                End If
+            End If
+            ForceCloseCount += 1
             e.Cancel = True
             Exit Sub
         End If
@@ -519,8 +541,12 @@ Public Class LTFSWriter
     End Sub
     Private Sub ToolStripStatusLabel2_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel2.Click
         Try
-            RefreshCapacity()
-            PrintMsg("可用容量已刷新")
+            If AllowOperation Then
+                RefreshCapacity()
+                PrintMsg("可用容量已刷新")
+            Else
+                LastRefresh = Now - New TimeSpan(0, 0, CapacityRefreshInterval)
+            End If
         Catch ex As Exception
             PrintMsg("可用容量刷新失败")
         End Try
@@ -820,46 +846,52 @@ Public Class LTFSWriter
             Exit Sub
         End If
     End Sub
+    Public Property ParallelAdd As Boolean = False
+    Public ExplorerComparer As New ExplorerUtils()
     Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
-        Dim FileExist As Boolean = False
-        '检查磁带已有文件
-        SyncLock d.contents._file
-            For Each oldf As ltfsindex.file In d.contents._file
-                If oldf.name.ToLower = f.Name.ToLower Then
-                    If OverWrite Then d.contents._file.Remove(oldf)
-                    FileExist = True
-                End If
-            Next
-        End SyncLock
-        If FileExist And (Not OverWrite) Then Exit Sub
-        '检查写入队列
-        If Not FileExist Then
+        Try
+            Dim FileExist As Boolean = False
+            '检查磁带已有文件
+            SyncLock d.contents._file
+                For Each oldf As ltfsindex.file In d.contents._file
+                    If oldf.name.ToLower = f.Name.ToLower Then
+                        If OverWrite Then d.contents._file.Remove(oldf)
+                        FileExist = True
+                    End If
+                Next
+            End SyncLock
+            If FileExist And (Not OverWrite) Then Exit Sub
+            '检查写入队列
+            If Not FileExist Then
+                While True
+                    Threading.Thread.Sleep(0)
+                    SyncLock UFReadCount
+                        If UFReadCount > 0 Then Continue While
+                        For Each oldf As FileRecord In UnwrittenFiles
+                            If oldf.ParentDirectory Is d AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
+                                oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
+                                UnwrittenFiles.Remove(oldf)
+                                FileExist = True
+                                Exit For
+                            End If
+                        Next
+                        Exit While
+                    End SyncLock
+                End While
+            End If
+            '添加到队列
+            Dim frnew As New FileRecord(f.FullName, d)
             While True
                 Threading.Thread.Sleep(0)
                 SyncLock UFReadCount
                     If UFReadCount > 0 Then Continue While
-                    For Each oldf As FileRecord In UnwrittenFiles
-                        If oldf.ParentDirectory Is d AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                            oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
-                            UnwrittenFiles.Remove(oldf)
-                            FileExist = True
-                            Exit For
-                        End If
-                    Next
+                    UnwrittenFiles.Add(frnew)
                     Exit While
                 End SyncLock
             End While
-        End If
-        '添加到队列
-        Dim frnew As New FileRecord(f.FullName, d)
-        While True
-            Threading.Thread.Sleep(0)
-            SyncLock UFReadCount
-                If UFReadCount > 0 Then Continue While
-                UnwrittenFiles.Add(frnew)
-                Exit While
-            End SyncLock
-        End While
+        Catch ex As Exception
+            Invoke(Sub() MessageBox.Show(ex.ToString()))
+        End Try
     End Sub
     Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
         Dim dirExist As Boolean = False
@@ -885,48 +917,104 @@ Public Class LTFSWriter
                   .readonly = False
                   }
             d1.contents._directory.Add(dT)
-            schema.highestfileuid += 1
+            Threading.Interlocked.Increment(schema.highestfileuid)
         End If
-        For Each f As IO.FileInfo In dnew1.GetFiles()
-            Dim FileExist As Boolean = False
-            '检查已有文件
-            SyncLock dT.contents._file
-                For Each fe As ltfsindex.file In dT.contents._file
-                    If fe.name = f.Name Then
-                        FileExist = True
-                        If OverWrite Then dT.contents._file.Remove(fe)
-                    End If
-                Next
-            End SyncLock
-            If FileExist And (Not OverWrite) Then Continue For
-            '检查写入队列
-            If Not FileExist Then
-                While True
-                    Threading.Thread.Sleep(0)
-                    SyncLock UFReadCount
-                        If UFReadCount > 0 Then Continue While
-                        For Each oldf As FileRecord In UnwrittenFiles
-                            If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
-                                UnwrittenFiles.Remove(oldf)
+        If Not ParallelAdd Then
+            For Each f As IO.FileInfo In dnew1.GetFiles()
+                Try
+                    Dim FileExist As Boolean = False
+                    '检查已有文件
+                    SyncLock dT.contents._file
+                        For Each fe As ltfsindex.file In dT.contents._file
+                            If fe.name = f.Name Then
                                 FileExist = True
-                                Exit For
+                                If OverWrite Then dT.contents._file.Remove(fe)
                             End If
                         Next
-                        Exit While
                     End SyncLock
-                End While
-            End If
-            '添加到队列
-            While True
-                Threading.Thread.Sleep(0)
-                SyncLock UFReadCount
-                    If UFReadCount > 0 Then Continue While
-                    UnwrittenFiles.Add(New FileRecord(f.FullName, dT))
-                    Exit While
-                End SyncLock
-            End While
-        Next
+                    If FileExist And (Not OverWrite) Then Continue For
+                    '检查写入队列
+                    If Not FileExist Then
+                        While True
+                            Threading.Thread.Sleep(0)
+                            SyncLock UFReadCount
+                                If UFReadCount > 0 Then Continue While
+                                For Each oldf As FileRecord In UnwrittenFiles
+                                    If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
+                                        oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
+                                        UnwrittenFiles.Remove(oldf)
+                                        FileExist = True
+                                        Exit For
+                                    End If
+                                Next
+                                Exit While
+                            End SyncLock
+                        End While
+                    End If
+                    '添加到队列
+                    While True
+                        Threading.Thread.Sleep(0)
+                        SyncLock UFReadCount
+                            If UFReadCount > 0 Then Continue While
+                            UnwrittenFiles.Add(New FileRecord(f.FullName, dT))
+                            Exit While
+                        End SyncLock
+                    End While
+                Catch ex As Exception
+                    Invoke(Sub() MessageBox.Show(ex.ToString()))
+                End Try
+            Next
+        Else
+            Parallel.ForEach(dnew1.GetFiles(),
+                Sub(f As IO.FileInfo)
+                    Try
+                        Dim FileExist As Boolean = False
+                        '检查已有文件
+                        SyncLock dT.contents._file
+                            For Each fe As ltfsindex.file In dT.contents._file
+                                If fe.name = f.Name Then
+                                    FileExist = True
+                                    If OverWrite Then dT.contents._file.Remove(fe)
+                                End If
+                            Next
+                        End SyncLock
+                        If FileExist And (Not OverWrite) Then Exit Sub
+                        '检查写入队列
+                        If Not FileExist Then
+                            While True
+                                Threading.Thread.Sleep(0)
+                                SyncLock UFReadCount
+                                    If UFReadCount > 0 Then Continue While
+                                    For Each oldf As FileRecord In UnwrittenFiles
+                                        If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
+                                            oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
+                                            UnwrittenFiles.Remove(oldf)
+                                            FileExist = True
+                                            Exit For
+                                        End If
+                                    Next
+                                    Exit While
+                                End SyncLock
+                            End While
+                        End If
+                        '添加到队列
+                        While True
+                            Threading.Thread.Sleep(0)
+                            SyncLock UFReadCount
+                                If UFReadCount > 0 Then Continue While
+                                UnwrittenFiles.Add(New FileRecord(f.FullName, dT))
+                                Exit While
+                            End SyncLock
+                        End While
+                    Catch ex As Exception
+                        Invoke(Sub() MessageBox.Show(ex.ToString()))
+                    End Try
+                End Sub)
+        End If
+        Dim dl As List(Of IO.DirectoryInfo) = dnew1.GetDirectories().ToList()
+        dl.Sort(New Comparison(Of IO.DirectoryInfo)(Function(a As IO.DirectoryInfo, b As IO.DirectoryInfo) As Integer
+                                                        Return ExplorerComparer.Compare(a.Name, b.Name)
+                                                    End Function))
         For Each dn As IO.DirectoryInfo In dnew1.GetDirectories()
             AddDirectry(dn, dT, OverWrite)
         Next
@@ -1091,6 +1179,7 @@ Public Class LTFSWriter
             Dim d As ltfsindex.directory = ListView1.Tag
             Dim newname As String = InputBox("新文件名", "重命名", f.name)
             If newname = f.name Then Exit Sub
+            If newname = "" Then Exit Sub
             If (newname.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
                 MessageBox.Show("文件名存在非法字符")
                 Exit Sub
@@ -1116,7 +1205,7 @@ Public Class LTFSWriter
             SyncLock ListView1.SelectedItems
                 For Each ItemSelected As ListViewItem In ListView1.SelectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
-                        Dim f As ltfsindex.file = ListView1.SelectedItems.Item(0).Tag
+                        Dim f As ltfsindex.file = ItemSelected.Tag
                         Dim d As ltfsindex.directory = ListView1.Tag
                         If d.contents.UnwrittenFiles.Contains(f) Then
                             While True
@@ -1127,8 +1216,7 @@ Public Class LTFSWriter
                                         If fr.File Is f Then
                                             fr.RemoveUnwritten()
                                             UnwrittenFiles.Remove(fr)
-                                            RefreshDisplay()
-                                            Exit Sub
+                                            Exit For
                                         End If
                                     Next
                                     Exit While
@@ -1138,45 +1226,41 @@ Public Class LTFSWriter
                         If d.contents._file.Contains(f) Then
                             d.contents._file.Remove(f)
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                            RefreshDisplay()
                         End If
                     End If
                 Next
             End SyncLock
+            RefreshDisplay()
         End If
     End Sub
     Private Sub 添加文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 添加文件ToolStripMenuItem.Click
         If ListView1.Tag IsNot Nothing AndAlso OpenFileDialog1.ShowDialog = DialogResult.OK Then
             Dim d As ltfsindex.directory = ListView1.Tag
-            For Each fpath As String In OpenFileDialog1.FileNames
-                Dim f As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fpath)
-                Try
-                    AddFile(f, d, 覆盖已有文件ToolStripMenuItem.Checked)
-                    PrintMsg("文件添加成功")
-                Catch ex As Exception
-                    PrintMsg("文件添加失败")
-                    MessageBox.Show(ex.ToString())
-                End Try
-            Next
-            RefreshDisplay()
+            Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
+            AddFileOrDir(d, OpenFileDialog1.FileNames, overwrite)
+            'For Each fpath As String In OpenFileDialog1.FileNames
+            '    Dim f As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fpath)
+            '    Try
+            '        AddFile(f, d, 覆盖已有文件ToolStripMenuItem.Checked)
+            '        PrintMsg("文件添加成功")
+            '    Catch ex As Exception
+            '        PrintMsg("文件添加失败")
+            '        MessageBox.Show(ex.ToString())
+            '    End Try
+            'Next
+            'RefreshDisplay()
         End If
     End Sub
-    Private Sub ListView1_DragEnter(sender As Object, e As DragEventArgs) Handles ListView1.DragEnter
-        If MenuStrip1.Enabled = False Then
-            PrintMsg("当前无法进行拖放操作")
-            Exit Sub
-        End If
-        If ListView1.Tag IsNot Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
-            Dim Paths As String() = e.Data.GetData(GetType(String()))
-            Dim d As ltfsindex.directory = ListView1.Tag
-            Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
-            Dim th As New Threading.Thread(
+    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False)
+        Dim th As New Threading.Thread(
                 Sub()
                     StopFlag = False
                     PrintMsg($"正在添加{Paths.Length}个项目")
-                    Dim i As Integer = 0
-                    For Each path As String In Paths
-                        i += 1
+                    Dim numi As Integer = 0
+                    Dim PList As List(Of String) = Paths.ToList()
+                    PList.Sort(ExplorerComparer)
+                    For Each path As String In PList
+                        Dim i As Integer = Threading.Interlocked.Increment(numi)
                         If StopFlag Then Exit For
                         Try
                             If My.Computer.FileSystem.FileExists(path) Then
@@ -1192,47 +1276,70 @@ Public Class LTFSWriter
                             Invoke(Sub() MessageBox.Show(ex.ToString()))
                         End Try
                     Next
+
+                    If ParallelAdd Then UnwrittenFiles.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                                              Return ExplorerComparer.Compare(a.SourcePath, b.SourcePath)
+                                                                                          End Function))
                     RefreshDisplay()
                     PrintMsg("添加完成")
                     LockGUI(False)
                 End Sub)
-            LockGUI()
-            th.Start()
+        LockGUI()
+        th.Start()
+    End Sub
+    Private Sub ListView1_DragEnter(sender As Object, e As DragEventArgs) Handles ListView1.DragEnter
+        If MenuStrip1.Enabled = False Then
+            PrintMsg("当前无法进行拖放操作")
+            Exit Sub
+        End If
+        If ListView1.Tag IsNot Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
+            Dim Paths As String() = e.Data.GetData(GetType(String()))
+            Dim d As ltfsindex.directory = ListView1.Tag
+            Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
+            AddFileOrDir(d, Paths, overwrite)
         End If
     End Sub
     Private Sub 导入文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 导入文件ToolStripMenuItem.Click
         If ListView1.Tag IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             Dim dnew As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath)
+            Dim Paths As New List(Of String)
+            For Each f As IO.FileInfo In dnew.GetFiles("*", IO.SearchOption.TopDirectoryOnly)
+                Paths.Add(f.FullName)
+            Next
+            For Each f As IO.DirectoryInfo In dnew.GetDirectories("*", IO.SearchOption.TopDirectoryOnly)
+                Paths.Add(f.FullName)
+            Next
             Dim d As ltfsindex.directory = ListView1.Tag
-            Try
-                ConcatDirectory(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
-                PrintMsg("导入成功")
-            Catch ex As Exception
-                PrintMsg("导入失败")
-                MessageBox.Show(ex.ToString())
-            End Try
-            RefreshDisplay()
+            AddFileOrDir(d, Paths.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
+            'Try
+            '    ConcatDirectory(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
+            '    PrintMsg("导入成功")
+            'Catch ex As Exception
+            '    PrintMsg("导入失败")
+            '    MessageBox.Show(ex.ToString())
+            'End Try
+            'RefreshDisplay()
         End If
     End Sub
     Private Sub 添加目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 添加目录ToolStripMenuItem.Click
-
         If ListView1.Tag IsNot Nothing Then
             Dim COFD As New CommonOpenFileDialog
             COFD.Multiselect = True
             COFD.IsFolderPicker = True
             If COFD.ShowDialog = CommonFileDialogResult.Ok Then
-                For Each dirSelected As String In COFD.FileNames
-                    Dim dnew As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(dirSelected)
-                    Dim d As ltfsindex.directory = ListView1.Tag
-                    Try
-                        AddDirectry(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
-                        PrintMsg("目录添加成功")
-                    Catch ex As Exception
-                        PrintMsg("目录添加失败")
-                        MessageBox.Show(ex.ToString())
-                    End Try
-                Next
-                RefreshDisplay()
+                Dim d As ltfsindex.directory = ListView1.Tag
+                AddFileOrDir(ListView1.Tag, COFD.FileNames, 覆盖已有文件ToolStripMenuItem.Checked)
+                'For Each dirSelected As String In COFD.FileNames
+                '    Dim dnew As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(dirSelected)
+                '    Try
+                '        AddDirectry(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
+                '        PrintMsg("目录添加成功")
+                '    Catch ex As Exception
+                '        PrintMsg("目录添加失败")
+                '        MessageBox.Show(ex.ToString())
+                '    End Try
+                'Next
+                'RefreshDisplay()
             End If
         End If
     End Sub
@@ -1513,7 +1620,21 @@ Public Class LTFSWriter
                                     Dim succ As Boolean = False
                                     Dim FileData As Byte() = fr.ReadAllBytes()
                                     While Not succ
-                                        Dim sense As Byte() = TapeUtils.Write(TapeDrive, FileData)
+                                        Dim sense As Byte()
+                                        Try
+                                            sense = TapeUtils.Write(TapeDrive, FileData)
+                                        Catch ex As Exception
+                                            Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                Case DialogResult.Abort
+                                                    Throw ex
+                                                Case DialogResult.Retry
+                                                    succ = False
+                                                Case DialogResult.Ignore
+                                                    succ = True
+                                                    Exit While
+                                            End Select
+                                            Continue While
+                                        End Try
                                         If ((sense(2) >> 6) And &H1) = 1 Then
                                             If (sense(2) And &HF) = 13 Then
                                                 PrintMsg("磁带已满")
@@ -1563,8 +1684,10 @@ Public Class LTFSWriter
                                     While Not StopFlag
                                         Dim buffer(plabel.blocksize - 1) As Byte
                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
-                                        If SpeedLimit > 0 Then
-                                            While ((plabel.blocksize / 1048576) / (Now - SpeedLimitLastTriggerTime).TotalSeconds) > SpeedLimit
+                                        CheckCount += 1
+                                        If CheckCount >= CheckCycle Then CheckCount = 0
+                                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
+                                            While ((plabel.blocksize * CheckCycle / 1048576) / (Now - SpeedLimitLastTriggerTime).TotalSeconds) > SpeedLimit
                                                 Threading.Thread.Sleep(0)
                                             End While
                                             SpeedLimitLastTriggerTime = Now
@@ -1573,7 +1696,21 @@ Public Class LTFSWriter
                                             Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
                                             Dim succ As Boolean = False
                                             While Not succ
-                                                Dim sense As Byte() = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                Dim sense As Byte()
+                                                Try
+                                                    sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                Catch ex As Exception
+                                                    Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                        Case DialogResult.Abort
+                                                            Throw ex
+                                                        Case DialogResult.Retry
+                                                            succ = False
+                                                        Case DialogResult.Ignore
+                                                            succ = True
+                                                            Exit While
+                                                    End Select
+                                                    Continue While
+                                                End Try
                                                 If (((sense(2) >> 6) And &H1) = 1) Then
                                                     If ((sense(2) And &HF) = 13) Then
                                                         PrintMsg("磁带已满")
@@ -1638,9 +1775,6 @@ Public Class LTFSWriter
                                 TotalFilesProcessed += 1
                                 CurrentFilesProcessed += 1
                             End If
-                            If StopFlag Then
-                                Exit For
-                            End If
                             'mark as written
                             fr.ParentDirectory.contents._file.Add(fr.File)
                             fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
@@ -1654,6 +1788,12 @@ Public Class LTFSWriter
                             MessageBox.Show($"写入出错{ex.ToString}")
                             PrintMsg($"写入出错{ex.Message}")
                         End Try
+                        While Pause
+                            Threading.Thread.Sleep(10)
+                        End While
+                        If StopFlag Then
+                            Exit For
+                        End If
                     Next
                     UFReadCount.Dec()
                     Me.Invoke(Sub() Timer1_Tick(sender, e))
@@ -2326,9 +2466,11 @@ Public Class LTFSWriter
         LogrithmToolStripMenuItem.Checked = True
     End Sub
     Private Sub ToolStripDropDownButton1_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton1.Click
+        Pause = True
         If MessageBox.Show("此时取消会丢失未写完的文件，是否继续", "警告", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             StopFlag = True
         End If
+        Pause = False
     End Sub
     Private Sub ToolStripDropDownButton2_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton2.Click
         Flush = True
@@ -2364,24 +2506,27 @@ Public Class LTFSWriter
         Dim HT As New IOManager.SHA1BlockwiseCalculator
         If FileIndex.length > 0 Then
             Dim CreateNew As Boolean = True
-            FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
-                                                                                   Return a.fileoffset.CompareTo(b.fileoffset)
-                                                                               End Function))
-
+            If FileIndex.extentinfo.Count > 1 Then FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
+                                                                                                                          Return a.fileoffset.CompareTo(b.fileoffset)
+                                                                                                                      End Function))
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                TapeUtils.Locate(TapeDrive, fe.startblock, fe.partition)
+                Dim p As New TapeUtils.PositionData(TapeDrive)
+                If p.BlockNumber <> fe.startblock OrElse p.PartitionNumber <> fe.partition Then
+                    TapeUtils.Locate(TapeDrive, fe.startblock, fe.partition)
+                End If
                 Dim TotalBytesToRead As Long = fe.bytecount
-                Dim blk As Byte() = TapeUtils.ReadBlock(TapeDrive)
+                Dim blk As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
                 If fe.byteoffset > 0 Then blk = blk.Skip(fe.byteoffset).ToArray()
                 TotalBytesToRead -= blk.Length
                 HT.Propagate(blk)
                 Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                 Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                 While TotalBytesToRead > 0
-                    blk = TapeUtils.ReadBlock(TapeDrive)
-                    If blk.Length > TotalBytesToRead Then blk = blk.Take(TotalBytesToRead).ToArray()
+                    blk = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                    Dim blklen As Integer = blk.Length
+                    If blklen > TotalBytesToRead Then blklen = TotalBytesToRead
                     TotalBytesToRead -= blk.Length
-                    HT.Propagate(blk)
+                    HT.Propagate(blk, blklen)
                     Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                     Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                     If StopFlag Then Return ""
@@ -2530,7 +2675,9 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 限速不限制ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 限速不限制ToolStripMenuItem.Click
-        SpeedLimit = Val(InputBox("设置写入限速 (MiB/s)", "设置", SpeedLimit))
+        Dim sin As String = InputBox("设置写入限速 (MiB/s)", "设置", SpeedLimit)
+        If sin = "" Then Exit Sub
+        SpeedLimit = Val(sin)
     End Sub
 
     Private Sub 重装带前清洁次数3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 重装带前清洁次数3ToolStripMenuItem.Click
@@ -2573,7 +2720,7 @@ Public Class LTFSWriter
                                                 FileIndex.SHA1ForeColor = Color.DarkGreen
                                             Else
                                                 FileIndex.SHA1ForeColor = Color.Red
-                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", LogOnly:=True)
+                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", ForceLog:=True)
                                             End If
                                         End If
                                     End If
@@ -2677,7 +2824,7 @@ Public Class LTFSWriter
                                                         fr.File.SHA1ForeColor = Color.Green
                                                     Else
                                                         fr.File.SHA1ForeColor = Color.Red
-                                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", LogOnly:=True)
+                                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
                                                     End If
                                                 End If
                                             End If
@@ -2744,6 +2891,7 @@ Public Class LTFSWriter
     Private Sub 容量刷新间隔30sToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 容量刷新间隔30sToolStripMenuItem.Click
         CapacityRefreshInterval = Val(InputBox("设置容量刷新间隔（秒）", "设置", CapacityRefreshInterval))
     End Sub
+
 
     Private Sub WA3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA3ToolStripMenuItem.Click
         WA0ToolStripMenuItem.Checked = False

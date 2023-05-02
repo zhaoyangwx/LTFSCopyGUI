@@ -40,6 +40,7 @@ Partial Class LTFSConfigurator
         Me.Button10 = New System.Windows.Forms.Button()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.Button30 = New System.Windows.Forms.Button()
         Me.Button27 = New System.Windows.Forms.Button()
         Me.Button14 = New System.Windows.Forms.Button()
@@ -94,7 +95,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -300,6 +300,19 @@ Partial Class LTFSConfigurator
         Me.Panel1.Name = "Panel1"
         Me.Panel1.Size = New System.Drawing.Size(1077, 662)
         Me.Panel1.TabIndex = 17
+        '
+        'CheckBox3
+        '
+        Me.CheckBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CheckBox3.AutoSize = True
+        Me.CheckBox3.Checked = True
+        Me.CheckBox3.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox3.Location = New System.Drawing.Point(93, 631)
+        Me.CheckBox3.Name = "CheckBox3"
+        Me.CheckBox3.Size = New System.Drawing.Size(72, 16)
+        Me.CheckBox3.TabIndex = 23
+        Me.CheckBox3.Text = "自动刷新"
+        Me.CheckBox3.UseVisualStyleBackColor = True
         '
         'Button30
         '
@@ -869,18 +882,6 @@ Partial Class LTFSConfigurator
         '
         Me.SaveFileDialog2.FileName = "CM.bin"
         Me.SaveFileDialog2.Filter = "RAW Dump | *.bin"
-        '
-        'CheckBox3
-        '
-        Me.CheckBox3.AutoSize = True
-        Me.CheckBox3.Checked = True
-        Me.CheckBox3.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBox3.Location = New System.Drawing.Point(93, 631)
-        Me.CheckBox3.Name = "CheckBox3"
-        Me.CheckBox3.Size = New System.Drawing.Size(72, 16)
-        Me.CheckBox3.TabIndex = 23
-        Me.CheckBox3.Text = "自动刷新"
-        Me.CheckBox3.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '

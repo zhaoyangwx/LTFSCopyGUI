@@ -799,11 +799,13 @@ Public Class TapeUtils
     End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte()) As Byte()
         Dim sense(63) As Byte
-        SendSCSICommand(TapeDrive, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+        Dim succ As Boolean =
+            SendSCSICommand(TapeDrive, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
                         End Function)
+        If Not succ Then Throw New Exception("SCSI Failure")
         Return sense
     End Function
     Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As UInteger, Optional ByVal senseEnabled As Byte = False) As Byte()
@@ -816,6 +818,7 @@ Public Class TapeUtils
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
+        If Not succ Then Throw New Exception("SCSI Failure")
         Return {0, 0, 0}
     End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As Integer) As Byte()
@@ -838,6 +841,7 @@ Public Class TapeUtils
                 Marshal.FreeHGlobal(cdb)
                 Marshal.FreeHGlobal(dataBuffer)
                 Marshal.FreeHGlobal(senseBufferPtr)
+                Throw New Exception("SCSI Failure")
                 Return sense
             End If
         Next
@@ -967,7 +971,10 @@ Public Class TapeUtils
         Public Property Content As New List(Of MAMAttribute)
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(MAMAttributeList))
-            Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.tmp")
+            Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.fffffff.tmp")
+            While My.Computer.FileSystem.FileExists(tmpf)
+                tmpf = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.fffffff.tmp")
+            End While
             Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
             Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
             writer.Serialize(t, Me)
@@ -1590,6 +1597,60 @@ Public Class TapeUtils
             If DriveLetter <> "" Then o &= " (" & DriveLetter & ":)"
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
+        End Function
+    End Class
+    Public Class GX256
+        Public Shared ExpTable(255) As Byte
+        Public Shared LogTable(255) As Byte
+        Public Shared Sub Initialization()
+            ExpTable(0) = 1
+            For i As Integer = 1 To 255
+                Dim tempval As Integer = (CInt(ExpTable(i - 1)) << 1) 'Xor ExpTable(i - 1)
+                If tempval > 255 Then tempval = tempval Xor &H11D
+                ExpTable(i) = tempval And &HFF
+            Next
+            For i As Integer = 0 To 254
+                LogTable(ExpTable(i)) = CByte(i And &HFF)
+            Next
+        End Sub
+        Public Shared Function Times(a As Byte, b As Byte) As Byte
+            If ExpTable(0) = 0 Then Initialization()
+            If a <> 0 AndAlso b <> 0 Then
+                Return ExpTable((LogTable(a) + CUInt(LogTable(b))) Mod 255)
+            Else
+                Return 0
+            End If
+            'Dim result As Byte = 0
+            'Dim num1 As Byte = a
+            'For i As Integer = 0 To 7
+            '    Dim num2 As Byte = b
+            '    For j As Integer = 0 To 7
+            '        If (num1 Mod 2) = 1 AndAlso (num2 Mod 2) = 1 Then result = result Xor ExpTable(i + j)
+            '        num2 >>= 1
+            '    Next
+            '    num1 >>= 1
+            'Next
+            'Return result
+        End Function
+        Public Shared Function CalcCRC(Data As Byte()) As Byte()
+            If ExpTable(0) = 0 Then
+                Initialization()
+                'Console.WriteLine(Byte2Hex(ExpTable))
+                'Console.WriteLine(Byte2Hex(LogTable))
+                'Console.WriteLine($"{ExpTable(201)} {ExpTable(246)}")
+            End If
+            'Console.WriteLine(Byte2Hex(Data))
+            Dim R0 As Byte = 0, R1 As Byte = 0, R2 As Byte = 0, R3 As Byte = 0
+            Dim TmpVal As Byte = 0
+            For i As Integer = 0 To Data.Length - 1
+                'Console.WriteLine(Byte2Hex({R3, R2, R1, R0}))
+                TmpVal = R3 Xor Data(i)
+                R3 = R2 Xor Times(ExpTable(201), TmpVal)
+                R2 = R1 Xor Times(ExpTable(246), TmpVal)
+                R1 = R0 Xor Times(ExpTable(201), TmpVal)
+                R0 = TmpVal
+            Next
+            Return {R3, R2, R1, R0}
         End Function
     End Class
 End Class
