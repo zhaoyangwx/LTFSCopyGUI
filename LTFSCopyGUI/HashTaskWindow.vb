@@ -419,7 +419,8 @@ Public Class HashTaskWindow
         If schema IsNot Nothing Then
             SaveFileDialog1.FileName = schPath
             If SaveFileDialog1.ShowDialog = DialogResult.OK Then
-                My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False, New System.Text.UTF8Encoding(False))
+                'My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False, New System.Text.UTF8Encoding(False))
+                schema.SaveFile(SaveFileDialog1.FileName)
                 PrintMsg("Saved to " & SaveFileDialog1.FileName)
             End If
         End If

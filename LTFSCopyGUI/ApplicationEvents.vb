@@ -64,7 +64,7 @@ Namespace My
                                 Dim indexFile As String = param(i + 1).TrimStart("""").TrimEnd("""")
 
                                 If My.Computer.FileSystem.FileExists(indexFile) Then
-                                    Dim LWF As New LTFSWriter With {.Barcode = "索引查看", .TapeDrive = ""}
+                                    Dim LWF As New LTFSWriter With {.Barcode = "索引查看", .TapeDrive = "", .OfflineMode = True}
                                     Dim OnLWFLoad As New EventHandler(Sub()
                                                                           LWF.Invoke(Sub()
                                                                                          LWF.LoadIndexFile(indexFile, True)

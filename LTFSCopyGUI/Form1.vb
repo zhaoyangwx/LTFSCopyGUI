@@ -381,8 +381,9 @@ Public Class Form1
                 Else
                     schema = ltfsindex.FromSchemaText(s)
                 End If
-                Dim tnew As String = schema.GetSerializedText
-                My.Computer.FileSystem.WriteAllText(fl.FullName, tnew, False, New System.Text.UTF8Encoding(False))
+                schema.SaveFile(fl.FullName)
+                'Dim tnew As String = schema.GetSerializedText
+                'My.Computer.FileSystem.WriteAllText(fl.FullName, tnew, False, New System.Text.UTF8Encoding(False))
                 TextBox2.AppendText(fl.FullName & vbCrLf)
             Next
         Catch ex As Exception
@@ -469,7 +470,7 @@ Public Class Form1
                     Sub(fl As IO.FileInfo)
                         Try
                             Dim extlist As New List(Of ltfsindex.file.extent)
-                            Dim sch As ltfsindex = ltfsindex.FromSchemaText(My.Computer.FileSystem.ReadAllText(fl.FullName))
+                            Dim sch As ltfsindex = ltfsindex.FromSchFile(fl.FullName)
                             ltfsindex.WSort(sch._directory,
                                             Sub(fid As ltfsindex.file)
                                                 For Each ext As ltfsindex.file.extent In fid.extentinfo
@@ -514,5 +515,130 @@ Public Class Form1
             End Sub)
         th.Start()
         thprog.Start()
+    End Sub
+
+    Private Sub 合并文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 合并文件ToolStripMenuItem.Click
+        Dim patt As String = InputBox("Search kw", "Search", "")
+        If patt <> "" Then
+            Enabled = False
+            Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
+            Dim result As New ltfsindex
+            result._directory = New List(Of ltfsindex.directory)
+            result._directory.Add(New ltfsindex.directory With {.name = $"Search_{patt}"})
+            Dim infoText As New System.Text.StringBuilder
+            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            Dim progmax As Integer = f.Length
+            Dim progval As Integer = 0
+            Dim th As New Threading.Thread(
+                Sub()
+                    Parallel.ForEach(Of IO.FileInfo)(f,
+                        Sub(fl As IO.FileInfo)
+                            Try
+                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                If sch.Contains(patt) Then
+                                    SyncLock infoText
+                                        infoText.AppendLine(fl.Name)
+                                    End SyncLock
+                                    Dim rsch As ltfsindex = ltfsindex.FromSchemaText(sch)
+                                    result._directory(0).contents._file.AddRange(rsch._directory(0).contents._file)
+                                    result._directory(0).contents._directory.AddRange(rsch._directory(0).contents._directory)
+                                End If
+                            Catch ex As Exception
+
+                            End Try
+                            Threading.Interlocked.Increment(progval)
+                        End Sub)
+                    schema = result
+                    Invoke(Sub() Enabled = True)
+                End Sub)
+            Dim thprog As New Threading.Thread(
+                Sub()
+                    While True
+                        Threading.Thread.Sleep(200)
+                        Dim exitflag As Boolean = (progval >= progmax)
+                        Me.Invoke(
+                            Sub()
+                                TextBox2.Text = "Search for " & patt & " in file "
+                                TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
+                                SyncLock infoText
+                                    TextBox2.AppendText(infoText.ToString)
+                                End SyncLock
+                            End Sub)
+                        If exitflag Then Exit While
+                    End While
+                End Sub)
+            th.Start()
+            thprog.Start()
+        End If
+    End Sub
+
+    Private Sub 未校验检查ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 未校验检查ToolStripMenuItem.Click
+        Dim patt As String = InputBox("Search kw", "Search", "")
+        If patt <> "" Then
+            Enabled = False
+            Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
+            Dim infoText As New System.Text.StringBuilder
+            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            Dim progmax As Integer = f.Length
+            Dim progval As Integer = 0
+            Dim th As New Threading.Thread(
+                Sub()
+                    Parallel.ForEach(Of IO.FileInfo)(f,
+                        Sub(fl As IO.FileInfo)
+                            Try
+                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                If sch.Contains(patt) Then
+                                    Dim UNum As Integer = 0
+                                    Dim result As New Text.StringBuilder
+                                    result.AppendLine(fl.Name)
+                                    Dim rsch As ltfsindex = ltfsindex.FromSchemaText(sch)
+                                    Dim q As New List(Of ltfsindex.directory)
+                                    q.AddRange(rsch._directory)
+                                    While q.Count > 0
+                                        Dim q2 As New List(Of ltfsindex.directory)
+                                        For Each d As ltfsindex.directory In q
+                                            For Each f2 As ltfsindex.file In d.contents._file
+                                                If f2.sha1.Length <> 40 Then
+                                                    result.AppendLine($"--[{f2.fileuid}]{f2.name}")
+                                                    Threading.Interlocked.Increment(UNum)
+                                                End If
+                                            Next
+                                            q2.AddRange(d.contents._directory)
+                                        Next
+                                        q = q2
+                                    End While
+                                    If UNum = 0 Then Exit Try
+                                    SyncLock infoText
+                                        infoText.AppendLine(result.ToString())
+                                    End SyncLock
+                                End If
+                            Catch ex As Exception
+
+                            End Try
+                            Threading.Interlocked.Increment(progval)
+                        End Sub)
+                    Invoke(Sub() Enabled = True)
+                End Sub)
+            Dim thprog As New Threading.Thread(
+                Sub()
+                    While True
+                        Threading.Thread.Sleep(200)
+                        Dim exitflag As Boolean = (progval >= progmax)
+                        Me.Invoke(
+                            Sub()
+                                TextBox2.Text = "Search for " & patt & " in file "
+                                TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
+                                SyncLock infoText
+                                    TextBox2.AppendText(infoText.ToString)
+                                End SyncLock
+                            End Sub)
+                        If exitflag Then Exit While
+                    End While
+                End Sub)
+            th.Start()
+            thprog.Start()
+        End If
     End Sub
 End Class

@@ -102,6 +102,7 @@ Partial Class LTFSWriter
         Me.ToolStripSeparator8 = New System.Windows.Forms.ToolStripSeparator()
         Me.生成标签ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.设置标签ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.复制选中信息ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.TreeView1 = New System.Windows.Forms.TreeView()
@@ -113,6 +114,7 @@ Partial Class LTFSWriter
         Me.仅验证ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.重命名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.统计ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.Chart1 = New System.Windows.Forms.DataVisualization.Charting.Chart()
         Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
@@ -150,6 +152,8 @@ Partial Class LTFSWriter
         Me.索引间隔36GiBToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.容量刷新间隔30sToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.限速不限制ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.预读文件数5ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.文件缓存32MiBToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.APToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.重装带前清洁次数3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
@@ -306,9 +310,9 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.复制选中信息ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(149, 336)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(149, 358)
         '
         '提取ToolStripMenuItem
         '
@@ -405,8 +409,8 @@ Partial Class LTFSWriter
         '
         Me.覆盖已有文件ToolStripMenuItem.CheckOnClick = True
         Me.覆盖已有文件ToolStripMenuItem.Name = "覆盖已有文件ToolStripMenuItem"
-        Me.覆盖已有文件ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
-        Me.覆盖已有文件ToolStripMenuItem.Text = "覆盖已有文件"
+        Me.覆盖已有文件ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.覆盖已有文件ToolStripMenuItem.Text = "覆盖已有文件（如果不同）"
         '
         'ToolStripSeparator4
         '
@@ -441,6 +445,12 @@ Partial Class LTFSWriter
         Me.设置标签ToolStripMenuItem.Name = "设置标签ToolStripMenuItem"
         Me.设置标签ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
         Me.设置标签ToolStripMenuItem.Text = "设置标签"
+        '
+        '复制选中信息ToolStripMenuItem
+        '
+        Me.复制选中信息ToolStripMenuItem.Name = "复制选中信息ToolStripMenuItem"
+        Me.复制选中信息ToolStripMenuItem.Size = New System.Drawing.Size(148, 22)
+        Me.复制选中信息ToolStripMenuItem.Text = "复制选中信息"
         '
         'ImageList1
         '
@@ -483,9 +493,9 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip3
         '
-        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem})
+        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
-        Me.ContextMenuStrip3.Size = New System.Drawing.Size(113, 92)
+        Me.ContextMenuStrip3.Size = New System.Drawing.Size(113, 114)
         '
         '提取ToolStripMenuItem1
         '
@@ -529,6 +539,12 @@ Partial Class LTFSWriter
         Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
         Me.删除ToolStripMenuItem.Size = New System.Drawing.Size(112, 22)
         Me.删除ToolStripMenuItem.Text = "删除"
+        '
+        '统计ToolStripMenuItem
+        '
+        Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
+        Me.统计ToolStripMenuItem.Size = New System.Drawing.Size(112, 22)
+        Me.统计ToolStripMenuItem.Text = "统计"
         '
         'SplitContainer2
         '
@@ -819,7 +835,7 @@ Partial Class LTFSWriter
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem})
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
         Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(124, 22)
         Me.自动化ToolStripMenuItem1.Text = "自动化"
@@ -909,6 +925,18 @@ Partial Class LTFSWriter
         Me.限速不限制ToolStripMenuItem.Name = "限速不限制ToolStripMenuItem"
         Me.限速不限制ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
         Me.限速不限制ToolStripMenuItem.Text = "限速：无限制"
+        '
+        '预读文件数5ToolStripMenuItem
+        '
+        Me.预读文件数5ToolStripMenuItem.Name = "预读文件数5ToolStripMenuItem"
+        Me.预读文件数5ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.预读文件数5ToolStripMenuItem.Text = "预读文件数：0"
+        '
+        '文件缓存32MiBToolStripMenuItem
+        '
+        Me.文件缓存32MiBToolStripMenuItem.Name = "文件缓存32MiBToolStripMenuItem"
+        Me.文件缓存32MiBToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.文件缓存32MiBToolStripMenuItem.Text = "文件缓存：32 MiB"
         '
         'APToolStripMenuItem
         '
@@ -1320,4 +1348,8 @@ Partial Class LTFSWriter
     Friend WithEvents 索引间隔36GiBToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 容量刷新间隔30sToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents Timer2 As Timer
+    Friend WithEvents 复制选中信息ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 统计ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 预读文件数5ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 文件缓存32MiBToolStripMenuItem As ToolStripMenuItem
 End Class

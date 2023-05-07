@@ -168,7 +168,7 @@ Public Class ltfsindex
         Searializing = True
         Me.Standarize()
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.fffffff.tmp")
+        Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
@@ -176,10 +176,9 @@ Public Class ltfsindex
         ms.Close()
         Searializing = False
         Dim soutp As New IO.StreamReader(tmpf)
-
         Dim sout As New System.Text.StringBuilder
         While Not soutp.EndOfStream
-            Dim sline As String = soutp.ReadLine
+            Dim sline As String = soutp.ReadLine()
             If sline.StartsWith("<?xml") Then
                 sline = sline.Replace("utf-8", "UTF-8")
             End If
@@ -199,6 +198,41 @@ Public Class ltfsindex
         My.Computer.FileSystem.DeleteFile(tmpf)
         Return sout.ToString()
     End Function
+    Public Function SaveFile(FileName As String) As Boolean
+        Searializing = True
+        Me.Standarize()
+        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+        Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+        Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
+        Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
+        Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
+        writer.Serialize(t, Me, ns)
+        t.Close()
+        ms.Close()
+        Searializing = False
+        Dim soutp As New IO.StreamReader(tmpf)
+
+        Dim sout As New IO.StreamWriter(FileName, False, New Text.UTF8Encoding(False))
+        While Not soutp.EndOfStream
+            Dim sline As String = soutp.ReadLine()
+            If sline.StartsWith("<?xml") Then
+                sline = sline.Replace("utf-8", "UTF-8")
+            End If
+            sline = sline.Replace("xmlns:v", "version")
+            sline = sline.Replace("<_file />", "")
+            sline = sline.Replace("<_directory />", "")
+            sline = sline.Replace("<_file>", "")
+            sline = sline.Replace("</_file>", "")
+            sline = sline.Replace("<_directory>", "")
+            sline = sline.Replace("</_directory>", "")
+            sline = sline.TrimEnd(" ").TrimStart(" ")
+            If sline.Length > 0 Then sout.WriteLine(sline)
+        End While
+        soutp.Close()
+        sout.Close()
+        My.Computer.FileSystem.DeleteFile(tmpf)
+        Return True
+    End Function
     Public Shared Function FromXML(s As String) As ltfsindex
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim t As IO.TextReader = New IO.StringReader(s)
@@ -216,8 +250,35 @@ Public Class ltfsindex
         result.Standarize()
         Return result
     End Function
+    Public Shared Function FromSchFile(FileName As String) As ltfsindex
+        Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+        Dim sin As New IO.StreamReader(FileName)
+        Dim soutx As New IO.StreamWriter(tmpf, False, New Text.UTF8Encoding(False))
+        While Not sin.EndOfStream
+            Dim s As String = sin.ReadLine()
+            s = s.Replace("<directory>", "<_directory><directory>")
+            s = s.Replace("</directory>", "</directory></_directory>")
+            s = s.Replace("<file>", "<_file><file>")
+            s = s.Replace("</file>", "</file></_file>")
+            s = s.Replace("%25", "%")
+            If s.Length > 0 Then soutx.writeline(s)
+        End While
+        sin.Close()
+        soutx.Close()
+        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+        Dim t As IO.StreamReader = New IO.StreamReader(tmpf)
+        Dim result As ltfsindex = CType(reader.Deserialize(t), ltfsindex)
+        t.Close()
+        result.Standarize()
+        My.Computer.FileSystem.DeleteFile(tmpf)
+        Return result
+    End Function
     Public Function Clone() As ltfsindex
-        Return (FromXML(GetSerializedText(False)))
+        Dim tmpf As String = $"{Application.StartupPath}\LWI_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+        Me.SaveFile(tmpf)
+        Dim result As ltfsindex = ltfsindex.FromSchFile(tmpf)
+        My.Computer.FileSystem.DeleteFile(tmpf)
+        Return result
     End Function
     Public Shared Sub WSort(d As List(Of directory), OnFileFound As Action(Of file), OnDirectoryFound As Action(Of directory))
         Dim q As List(Of directory) = d
@@ -262,7 +323,7 @@ End Class
     Public Property compression As Boolean = True
     Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfslabel))
-        Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("LCG_yyyyMMdd_HHmmss.tmp")
+        Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss")}.tmp"
         Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
         Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
         Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
