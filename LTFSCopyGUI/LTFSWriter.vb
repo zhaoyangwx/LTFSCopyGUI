@@ -1913,7 +1913,6 @@ Public Class LTFSWriter
                             Exit For
                         End If
                         UnwrittenFiles.Remove(fr)
-                        fr = Nothing
                         WriteList(i) = Nothing
                     Next
                     Marshal.FreeHGlobal(wBufferPtr)
