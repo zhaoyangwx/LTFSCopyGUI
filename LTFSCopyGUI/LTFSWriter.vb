@@ -298,7 +298,7 @@ Public Class LTFSWriter
         Public ParentDirectory As ltfsindex.directory
         Public SourcePath As String
         Public File As ltfsindex.file
-        Public Buffer As Byte() = {}
+        Public Buffer As Byte()
         Private OperationLock As New Object
         Public Sub RemoveUnwritten()
             ParentDirectory.contents.UnwrittenFiles.Remove(File)
@@ -347,16 +347,16 @@ Public Class LTFSWriter
         Public Sub BeginOpen(Optional BufferSize As Integer = 0, Optional ByVal BlockSize As Integer = 524288)
             If File.length <= BlockSize Then Exit Sub
             SyncLock OperationLock
-                    If fs IsNot Nothing Then Exit Sub
-                End SyncLock
-                If BufferSize = 0 Then BufferSize = My.Settings.LTFSWriter_PreLoadBytes
-                If BufferSize = 0 Then BufferSize = 524288
-                Task.Run(Sub()
-                             SyncLock OperationLock
-                                 If fs IsNot Nothing Then Exit Sub
-                                 fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                             End SyncLock
-                         End Sub)
+                If fs IsNot Nothing Then Exit Sub
+            End SyncLock
+            If BufferSize = 0 Then BufferSize = My.Settings.LTFSWriter_PreLoadBytes
+            If BufferSize = 0 Then BufferSize = 524288
+            Task.Run(Sub()
+                         SyncLock OperationLock
+                             If fs IsNot Nothing Then Exit Sub
+                             fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                         End SyncLock
+                     End Sub)
         End Sub
         Public Function Read(array As Byte(), offset As Integer, count As Integer) As Integer
             Return fs.Read(array, offset, count)
@@ -369,6 +369,7 @@ Public Class LTFSWriter
             Task.Run(Sub()
                          fs.Close()
                          fs.Dispose()
+                         fs = Nothing
                      End Sub)
         End Sub
         Public Function ReadAllBytes() As Byte()
@@ -1690,17 +1691,19 @@ Public Class LTFSWriter
                     UFReadCount.Dec()
                     Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
                     Dim BytesReaded As Integer
-                    If My.Settings.LTFSWriter_PreLoadNum > 0 Then
-                        For j As Integer = 0 To My.Settings.LTFSWriter_PreLoadNum
-                            If j <WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
+                    Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadNum
+                    If PNum > 0 Then
+                        For j As Integer = 0 To PNum
+                            If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
                         Next
                     End If
                     Dim HashTaskAwaitNumber As Integer = 0
                     Threading.ThreadPool.SetMaxThreads(256, 256)
                     Threading.ThreadPool.SetMinThreads(128, 128)
                     For i As Integer = 0 To WriteList.Count - 1
-                        If My.Settings.LTFSWriter_PreLoadNum > 0 AndAlso i + My.Settings.LTFSWriter_PreLoadNum < WriteList.Count Then
-                            WriteList(i + My.Settings.LTFSWriter_PreLoadNum).BeginOpen(BlockSize:=plabel.blocksize)
+                        PNum = My.Settings.LTFSWriter_PreLoadNum
+                        If PNum > 0 AndAlso i + PNum < WriteList.Count Then
+                            WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
                         End If
                         Dim fr As FileRecord = WriteList(i)
                         Try
@@ -1909,6 +1912,9 @@ Public Class LTFSWriter
                         If StopFlag Then
                             Exit For
                         End If
+                        UnwrittenFiles.Remove(fr)
+                        fr = Nothing
+                        WriteList(i) = Nothing
                     Next
                     Marshal.FreeHGlobal(wBufferPtr)
                     While HashTaskAwaitNumber > 0
