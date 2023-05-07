@@ -31,6 +31,7 @@ Partial Class Form1
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.查找ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.错误检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.合并文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -49,6 +50,7 @@ Partial Class Form1
         Me.Button8 = New System.Windows.Forms.Button()
         Me.Button9 = New System.Windows.Forms.Button()
         Me.Button10 = New System.Windows.Forms.Button()
+        Me.未校验检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -94,21 +96,27 @@ Partial Class Form1
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem, Me.未校验检查ToolStripMenuItem, Me.合并文件ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(125, 48)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 114)
         '
         '查找ToolStripMenuItem
         '
         Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
-        Me.查找ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
+        Me.查找ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.查找ToolStripMenuItem.Text = "查找"
         '
         '错误检查ToolStripMenuItem
         '
         Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
-        Me.错误检查ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
+        Me.错误检查ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
         Me.错误检查ToolStripMenuItem.Text = "错误检查"
+        '
+        '合并文件ToolStripMenuItem
+        '
+        Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
+        Me.合并文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.合并文件ToolStripMenuItem.Text = "合并文件"
         '
         'TextBox2
         '
@@ -276,6 +284,12 @@ Partial Class Form1
         Me.Button10.Text = "驱动器操作"
         Me.Button10.UseVisualStyleBackColor = True
         '
+        '未校验检查ToolStripMenuItem
+        '
+        Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
+        Me.未校验检查ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.未校验检查ToolStripMenuItem.Text = "未校验检查"
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -334,4 +348,6 @@ Partial Class Form1
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
     Friend WithEvents 查找ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 错误检查ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 合并文件ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 未校验检查ToolStripMenuItem As ToolStripMenuItem
 End Class

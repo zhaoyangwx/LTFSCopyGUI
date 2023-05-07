@@ -269,6 +269,30 @@ Namespace My
                 Me("LTFSWriter_CapacityRefreshInterval") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("0")>  _
+        Public Property LTFSWriter_PreLoadNum() As Integer
+            Get
+                Return CType(Me("LTFSWriter_PreLoadNum"),Integer)
+            End Get
+            Set
+                Me("LTFSWriter_PreLoadNum") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("8388608")>  _
+        Public Property LTFSWriter_PreLoadBytes() As Integer
+            Get
+                Return CType(Me("LTFSWriter_PreLoadBytes"),Integer)
+            End Get
+            Set
+                Me("LTFSWriter_PreLoadBytes") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

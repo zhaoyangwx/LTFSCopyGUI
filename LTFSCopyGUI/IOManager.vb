@@ -584,7 +584,7 @@ Public Class IOManager
             Public Len As Integer
         End Structure
         Private q As New Queue(Of QueueBlock)
-        Dim thHashAsync As New Threading.Thread(
+        Dim thHashAsync As New Task(
             Sub()
                 While Not StopFlag
                     SyncLock Lock
@@ -597,10 +597,12 @@ Public Class IOManager
                                 If .Len = -1 Then .Len = .block.Length
                                 sha1.TransformBlock(.block, 0, .Len, .block, 0)
                             End With
+                            blk.block = {}
                         End While
                     End SyncLock
                     Threading.Thread.Sleep(1)
                 End While
+
             End Sub)
         Public Sub New()
             sha1 = SHA1.Create()

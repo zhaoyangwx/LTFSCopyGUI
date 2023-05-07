@@ -156,7 +156,8 @@ Public Class TapeUtils
     Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
         Dim senseRaw(63) As Byte
         If sense Is Nothing Then sense = {}
-        Dim RawData As Byte() = SCSIReadParam(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+
+        Dim RawDataU As IntPtr = SCSIReadParamUnmanaged(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
                                               BlockSizeLimit, Function(senseData As Byte()) As Boolean
                                                                   senseRaw = senseData
                                                                   Return True
@@ -167,11 +168,11 @@ Public Class TapeUtils
             DiffBytes <<= 8
             DiffBytes = DiffBytes Or sense(i)
         Next
-        If DiffBytes > 0 Then
-            Return RawData.Take(RawData.Length - DiffBytes).ToArray
-        Else
-            Return RawData
-        End If
+        Dim DataLen As Integer = BlockSizeLimit - DiffBytes
+        Dim RawData(DataLen - 1) As Byte
+        Marshal.Copy(RawDataU, RawData, 0, DataLen)
+        Marshal.FreeHGlobal(RawDataU)
+        Return RawData
     End Function
     Public Shared Function ReadToFileMark(TapeDrive As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
         Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
@@ -188,6 +189,23 @@ Public Class TapeUtils
             End If
         End While
         Return buffer.ToArray()
+    End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Boolean
+        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+        Dim buffer As New IO.FileStream(outputFileName, IO.FileMode.Create, IO.FileAccess.ReadWrite, IO.FileShare.Read)
+        While True
+            Dim sense(63) As Byte
+            Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
+            Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+            If readData.Length > 0 Then
+                buffer.Write(readData, 0, readData.Length)
+            End If
+            If (Add_Key >= 1 And Add_Key <> 4) Then
+                Exit While
+            End If
+        End While
+        buffer.Close()
+        Return True
     End Function
     Public Shared Function ReadEOWPosition(TapeDrive As String) As Byte()
         Dim lenData As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, 0, 2, 0, 0}, 2)
@@ -258,6 +276,21 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(senseBuffer)
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return paramData
+    End Function
+    Public Shared Function SCSIReadParamUnmanaged(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As IntPtr
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+        Dim paramData(paramLen - 1) As Byte
+        Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(paramLen)
+        Marshal.Copy(paramData, 0, dataBuffer, paramLen)
+        Dim senseData(63) As Byte
+        Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
+        _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        Marshal.Copy(senseBuffer, senseData, 0, 64)
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(senseBuffer)
+        If senseReport IsNot Nothing Then senseReport(senseData)
+        Return dataBuffer
     End Function
     Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
         Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, 4, 0}, 4)
@@ -808,7 +841,7 @@ Public Class TapeUtils
         If Not succ Then Throw New Exception("SCSI Failure")
         Return sense
     End Function
-    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As UInteger, Optional ByVal senseEnabled As Byte = False) As Byte()
+    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As Integer, Optional ByVal senseEnabled As Boolean = False) As Byte()
         Dim sense(63) As Byte
         Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
@@ -850,6 +883,43 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(dataBuffer)
         Marshal.FreeHGlobal(senseBufferPtr)
         Return sense
+    End Function
+    Public Shared Function Write(TapeDrive As String, sourceFile As String, Optional ByVal BlockLen As Integer = 524288, Optional ByVal senseEnabled As Boolean = False) As Byte()
+        Dim sense(63) As Byte
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+        Dim DataBuffer(BlockLen - 1) As Byte
+        Dim DataPtr As IntPtr = Marshal.AllocHGlobal(BlockLen)
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
+        Dim fs As New IO.FileStream(sourceFile, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+        Dim DataLen As Integer = fs.Read(DataBuffer, 0, BlockLen)
+        Dim succ As Boolean
+        While DataLen > 0
+            Dim cdbData As Byte() = {&HA, 0, DataLen >> 16 And &HFF, DataLen >> 8 And &HFF, DataLen And &HFF, 0}
+            Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+            Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
+            Do
+                succ = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                If succ Then
+                    Exit Do
+                Else
+                    Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                        Case DialogResult.Abort
+                            Exit While
+                        Case DialogResult.Retry
+                        Case DialogResult.Ignore
+                            Exit Do
+                    End Select
+                End If
+            Loop
+            DataLen = fs.Read(DataBuffer, 0, BlockLen)
+        End While
+        If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
+        fs.Close()
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(DataPtr)
+        Marshal.FreeHGlobal(senseBufferPtr)
+        If Not succ Then Throw New Exception("SCSI Failure")
+        Return {0, 0, 0}
     End Function
     Public Shared Function Flush(TapeDrive As String) As Byte()
         Return WriteFileMark(TapeDrive, 0)
