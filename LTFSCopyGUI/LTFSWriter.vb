@@ -406,10 +406,10 @@ Public Class LTFSWriter
     End Class
     Public UFReadCount As IntLock = 0
     Public UnwrittenFiles As New List(Of FileRecord)
-    Public Property ProgressbarOverrideSize As ULong = 0
+    Public Property UnwrittenSizeOverrideValue As ULong = 0
     Public ReadOnly Property UnwrittenSize
         Get
-            If ProgressbarOverrideSize > 0 Then Return ProgressbarOverrideSize
+            If UnwrittenSizeOverrideValue > 0 Then Return UnwrittenSizeOverrideValue
             If UnwrittenFiles Is Nothing Then Return 0
             Dim result As Long = 0
 
@@ -423,10 +423,10 @@ Public Class LTFSWriter
             Return result
         End Get
     End Property
-    Public Property ProgressbarOverrideCount As ULong = 0
+    Public Property UnwrittenCountOverwriteValue As ULong = 0
     Public ReadOnly Property UnwrittenCount
         Get
-            If ProgressbarOverrideCount > 0 Then Return ProgressbarOverrideCount
+            If UnwrittenCountOverwriteValue > 0 Then Return UnwrittenCountOverwriteValue
             Return UnwrittenFiles.Count
         End Get
     End Property
@@ -1518,10 +1518,10 @@ Public Class LTFSWriter
                         Try
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
-                            ProgressbarOverrideSize = 0
-                            ProgressbarOverrideCount = flist.Count
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = flist.Count
                             For Each FI As ltfsindex.file In flist
-                                ProgressbarOverrideSize += FI.length
+                                UnwrittenSizeOverrideValue += FI.length
                             Next
                             PrintMsg("正在提取")
                             StopFlag = False
@@ -1537,8 +1537,8 @@ Public Class LTFSWriter
                             PrintMsg("提取出错")
                         End Try
                         StopFlag = False
-                        ProgressbarOverrideSize = 0
-                        ProgressbarOverrideCount = 0
+                        UnwrittenSizeOverrideValue = 0
+                        UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
                         PrintMsg("提取完成")
                         Invoke(Sub() MessageBox.Show("提取完成"))
@@ -1589,10 +1589,10 @@ Public Class LTFSWriter
                                                                         End Function))
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
-                            ProgressbarOverrideSize = 0
-                            ProgressbarOverrideCount = FileList.Count
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = FileList.Count
                             For Each FI As FileRecord In FileList
-                                ProgressbarOverrideSize += FI.File.length
+                                UnwrittenSizeOverrideValue += FI.File.length
                             Next
                             PrintMsg("正在提取文件")
                             Dim c As Integer = 0
@@ -1610,8 +1610,8 @@ Public Class LTFSWriter
                             Invoke(Sub() MessageBox.Show(ex.ToString))
                             PrintMsg("提取出错")
                         End Try
-                        ProgressbarOverrideSize = 0
-                        ProgressbarOverrideCount = 0
+                        UnwrittenSizeOverrideValue = 0
+                        UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
                     End Sub)
             LockGUI()
@@ -1681,14 +1681,16 @@ Public Class LTFSWriter
                     UFReadCount.Inc()
                     CurrentFilesProcessed = 0
                     CurrentBytesProcessed = 0
-                    ProgressbarOverrideSize = 0
-                    ProgressbarOverrideCount = 0
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverwriteValue = 0
                     Dim WriteList As New List(Of FileRecord)
                     UFReadCount.Inc()
                     For Each fr As FileRecord In UnwrittenFiles
                         WriteList.Add(fr)
                     Next
                     UFReadCount.Dec()
+                    UnwrittenCountOverwriteValue = UnwrittenCount
+                    UnwrittenSizeOverrideValue = UnwrittenSize
                     Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
                     Dim BytesReaded As Integer
                     Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadNum
@@ -1926,6 +1928,8 @@ Public Class LTFSWriter
                         SyncLock UFReadCount
                             If UFReadCount > 0 Then Continue While
                             UnwrittenFiles.Clear()
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = 0
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             Exit While
@@ -2829,10 +2833,10 @@ Public Class LTFSWriter
                             StopFlag = False
                             CurrentBytesProcessed = 0
                             CurrentFilesProcessed = 0
-                            ProgressbarOverrideSize = 0
-                            ProgressbarOverrideCount = flist.Count
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = flist.Count
                             For Each FI As ltfsindex.file In flist
-                                ProgressbarOverrideSize += FI.length
+                                UnwrittenSizeOverrideValue += FI.length
                             Next
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
@@ -2877,8 +2881,8 @@ Public Class LTFSWriter
                         Catch ex As Exception
                             PrintMsg("校验出错")
                         End Try
-                        ProgressbarOverrideSize = 0
-                        ProgressbarOverrideCount = 0
+                        UnwrittenSizeOverrideValue = 0
+                        UnwrittenCountOverwriteValue = 0
                         StopFlag = False
                         LockGUI(False)
                         RefreshDisplay()
@@ -2929,10 +2933,10 @@ Public Class LTFSWriter
                                                                                 End Function))
                                     CurrentBytesProcessed = 0
                                     CurrentFilesProcessed = 0
-                                    ProgressbarOverrideSize = 0
-                                    ProgressbarOverrideCount = FileList.Count
+                                    UnwrittenSizeOverrideValue = 0
+                                    UnwrittenCountOverwriteValue = FileList.Count
                                     For Each FI As FileRecord In FileList
-                                        ProgressbarOverrideSize += FI.File.length
+                                        UnwrittenSizeOverrideValue += FI.File.length
                                     Next
                                     PrintMsg("正在校验")
                                     Dim c As Integer = 0
@@ -2982,8 +2986,8 @@ Public Class LTFSWriter
                                     Invoke(Sub() MessageBox.Show(ex.ToString))
                                     PrintMsg("校验出错")
                                 End Try
-                                ProgressbarOverrideSize = 0
-                                ProgressbarOverrideCount = 0
+                                UnwrittenSizeOverrideValue = 0
+                                UnwrittenCountOverwriteValue = 0
                                 LockGUI(False)
                                 RefreshDisplay()
                             End Sub)
