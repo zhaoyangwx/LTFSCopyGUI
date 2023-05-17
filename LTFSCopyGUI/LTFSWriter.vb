@@ -298,7 +298,7 @@ Public Class LTFSWriter
         Public ParentDirectory As ltfsindex.directory
         Public SourcePath As String
         Public File As ltfsindex.file
-        Public Buffer As Byte()
+        Public Buffer As Byte() = Nothing
         Private OperationLock As New Object
         Public Sub RemoveUnwritten()
             ParentDirectory.contents.UnwrittenFiles.Remove(File)
@@ -307,6 +307,7 @@ Public Class LTFSWriter
 
         End Sub
         Public Sub New(Path As String, ParentDir As ltfsindex.directory)
+            If Not Path.StartsWith("\\") Then Path = $"\\?\{Path}"
             ParentDirectory = ParentDir
             SourcePath = Path
             Dim finf As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(SourcePath)
@@ -318,34 +319,70 @@ Public Class LTFSWriter
                 .openforwrite = False}
             With File
                 Try
-                    .creationtime = finf.CreationTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+                    .creationtime = finf.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                 Catch ex As Exception
-                    .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+                    .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                 End Try
                 Try
-                    .modifytime = finf.LastWriteTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+                    .modifytime = finf.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                 Catch ex As Exception
                     .modifytime = .creationtime
                 End Try
                 Try
-                    .accesstime = finf.LastAccessTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+                    .accesstime = finf.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                 Catch ex As Exception
                     .accesstime = .creationtime
                 End Try
                 .changetime = .modifytime
-                .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+                .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
             End With
             ParentDirectory.contents.UnwrittenFiles.Add(File)
         End Sub
         Public fs As IO.FileStream
+        Public fsB As IO.BufferedStream
+        Public fsPreRead As IO.FileStream
+        Public PreReadOffset As Long = 0
+        Public PreReadByteCount As Long = 0
+        Public PreReadOffsetLock As New Object
+        Public Event PreReadFinished()
+        'Public ReadOnly Property PreReadEnabled
+        '    Get
+        '        Return (My.Settings.LTFSWriter_PreLoadNum = 0)
+        '    End Get
+        'End Property
+        Const PreReadBufferSize As Long = 16777216
+        Const PreReadBlockSize As Long = 8388608
+        Public PreReadBuffer As Byte() = Nothing
+        Public Sub PreReadThread()
+            If PreReadBuffer Is Nothing Then ReDim PreReadBuffer(PreReadBufferSize * 2 - 1)
+            While True
+                Dim rBytes As Long = fsPreRead.Read(PreReadBuffer, PreReadByteCount Mod PreReadBufferSize, PreReadBlockSize)
+                If rBytes = 0 Then Exit While
+                Threading.Interlocked.Add(PreReadByteCount, rBytes)
+                While PreReadByteCount - PreReadOffset >= PreReadBufferSize
+                    Threading.Thread.Sleep(1)
+                End While
+            End While
+            RaiseEvent PreReadFinished()
+        End Sub
         Public Sub Open(Optional BufferSize As Integer = 16777216)
             SyncLock OperationLock
                 If fs IsNot Nothing Then Exit Sub
                 fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                'If PreReadEnabled Then
+                fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                Task.Run(Sub() PreReadThread())
+                ' Else
+                fsB = New IO.BufferedStream(fs, PreReadBufferSize)
+                'End If
             End SyncLock
         End Sub
         Public Sub BeginOpen(Optional BufferSize As Integer = 0, Optional ByVal BlockSize As Integer = 524288)
-            If File.length <= BlockSize Then Exit Sub
+            If File.length <= BlockSize Then
+                If Buffer IsNot Nothing Then Exit Sub
+                Buffer = My.Computer.FileSystem.ReadAllBytes(SourcePath)
+                Exit Sub
+            End If
             SyncLock OperationLock
                 If fs IsNot Nothing Then Exit Sub
             End SyncLock
@@ -355,27 +392,61 @@ Public Class LTFSWriter
                          SyncLock OperationLock
                              If fs IsNot Nothing Then Exit Sub
                              fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                             'If PreReadEnabled Then
+                             fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                             Task.Run(Sub() PreReadThread())
+                             'Else
+                             fsB = New IO.BufferedStream(fs, PreReadBufferSize)
+                             'End If
                          End SyncLock
                      End Sub)
         End Sub
         Public Function Read(array As Byte(), offset As Integer, count As Integer) As Integer
-            Return fs.Read(array, offset, count)
+            'If PreReadEnabled Then
+            SyncLock PreReadOffsetLock
+                PreReadOffset = Math.Max(fs.Position, PreReadOffset)
+            End SyncLock
+            'Return fs.Read(array, offset, count)
+            'Else
+            Return fsB.Read(array, offset, count)
+            'End If
         End Function
         Public Sub Close()
+            If fsB IsNot Nothing Then
+                fsB.Close()
+                fsB.Dispose()
+                fsB = Nothing
+            End If
+
             fs.Close()
             fs.Dispose()
+            fs = Nothing
+            If fsPreRead IsNot Nothing Then
+                fsPreRead.Close()
+                fsPreRead.Dispose()
+                fsPreRead = Nothing
+            End If
         End Sub
         Public Sub CloseAsync()
             Task.Run(Sub()
                          fs.Close()
                          fs.Dispose()
                          fs = Nothing
+                         'If PreReadEnabled Then
+                         fsPreRead.Close()
+                         fsPreRead.Dispose()
+                         fsPreRead = Nothing
+                         'Else
+                         fsB.Close()
+                         fsB.Dispose()
+                         fsB = Nothing
+                         ' End If
                      End Sub)
         End Sub
         Public Function ReadAllBytes() As Byte()
             If Buffer IsNot Nothing AndAlso Buffer.Length > 0 Then
                 Dim result As Byte() = Buffer
-                Buffer = {}
+                Buffer = Nothing
                 Return result
             Else
                 Return My.Computer.FileSystem.ReadAllBytes(SourcePath)
@@ -764,7 +835,7 @@ Public Class LTFSWriter
         End If
         TapeUtils.WriteFileMark(TapeDrive)
         schema.generationnumber += 1
-        schema.updatetime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+        schema.updatetime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
         schema.location.partition = ltfsindex.PartitionLabel.b
         schema.previousgenerationlocation = New ltfsindex.PartitionDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
         CurrentPos = GetPos
@@ -790,6 +861,7 @@ Public Class LTFSWriter
             CurrentFilesProcessed = 0
         End If
         TapeUtils.WriteFileMark(TapeDrive)
+        TapeUtils.Flush(TapeDrive)
         PrintMsg("索引写入完成")
         CurrentPos = GetPos
         CurrentHeight = CurrentPos.BlockNumber
@@ -912,12 +984,12 @@ Public Class LTFSWriter
         End If
         Dim validtime As String = ""
         Try
-            validtime = f.LastWriteTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+            validtime = f.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
             If validtime <> f0.modifytime Then
                 Result = False
             End If
         Catch ex As Exception
-            validtime = f.CreationTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+            validtime = f.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
             If validtime <> f0.modifytime Then
                 Result = False
             End If
@@ -991,12 +1063,12 @@ Public Class LTFSWriter
         If Not dirExist Then
             dT = New ltfsindex.directory With {
                   .name = dnew1.Name,
-                  .creationtime = dnew1.CreationTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                  .creationtime = dnew1.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                   .fileuid = schema.highestfileuid + 1,
-                  .accesstime = dnew1.LastAccessTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
-                  .modifytime = dnew1.LastWriteTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                  .accesstime = dnew1.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
+                  .modifytime = dnew1.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                   .changetime = .modifytime,
-                  .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                  .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                   .readonly = False
                   }
             d1.contents._directory.Add(dT)
@@ -1169,12 +1241,12 @@ Public Class LTFSWriter
             If Not dirExist Then
                 dT = New ltfsindex.directory With {
                                             .name = dn.Name,
-                                            .creationtime = dn.CreationTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                                            .creationtime = dn.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                                             .fileuid = schema.highestfileuid + 1,
-                                            .accesstime = dn.LastAccessTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
-                                            .modifytime = dn.LastWriteTimeUtc.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                                            .accesstime = dn.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
+                                            .modifytime = dn.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                                             .changetime = .modifytime,
-                                            .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                                            .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                                             .readonly = False
                                             }
                 d1.contents._directory.Add(dT)
@@ -1351,6 +1423,7 @@ Public Class LTFSWriter
                     Dim PList As List(Of String) = Paths.ToList()
                     PList.Sort(ExplorerComparer)
                     For Each path As String In PList
+                        If Not path.StartsWith("\\") Then path = $"\\?\{path}"
                         Dim i As Integer = Threading.Interlocked.Increment(numi)
                         If StopFlag Then Exit For
                         Try
@@ -1454,7 +1527,7 @@ Public Class LTFSWriter
 
                 Dim newdir As New ltfsindex.directory With {
                     .name = s,
-                    .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z"),
+                    .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
                     .fileuid = schema.highestfileuid + 1,
                     .backuptime = .creationtime,
                     .accesstime = .creationtime,
@@ -1475,28 +1548,110 @@ Public Class LTFSWriter
         RenameDir()
     End Sub
     Public Sub RestoreFile(FileName As String, FileIndex As ltfsindex.file)
-        My.Computer.FileSystem.WriteAllBytes(FileName, {}, False)
+        If Not FileName.StartsWith("\\") Then FileName = $"\\?\{FileName}"
+        Dim FileExist As Boolean = True
+        If Not IO.File.Exists(FileName) Then
+            FileExist = False
+        Else
+            Dim finfo As New IO.FileInfo(FileName)
+            If finfo.Length <> FileIndex.length Then
+                FileExist = False
+            ElseIf finfo.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.creationtime Then
+                FileExist = False
+            ElseIf finfo.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.accesstime Then
+                FileExist = False
+            ElseIf finfo.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.modifytime Then
+                FileExist = False
+            End If
+            If Not FileExist Then PrintMsg($"覆盖不同文件：{FileName} {finfo.Length}->{FileIndex.length}{vbCrLf _
+                                                  }ct{finfo.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")}->{FileIndex.creationtime}{vbCrLf _
+                                                  }at{finfo.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")}->{FileIndex.accesstime}{vbCrLf _
+                                                  }wt{finfo.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")}->{FileIndex.modifytime}{vbCrLf _
+                                                  }", LogOnly:=True)
+        End If
+        If FileExist Then
+            Threading.Interlocked.Increment(CurrentFilesProcessed)
+            Threading.Interlocked.Increment(TotalFilesProcessed)
+            Exit Sub
+        End If
+        If IO.File.Exists(FileName) Then
+            IO.File.Delete(FileName)
+        End If
+        IO.File.WriteAllBytes(FileName, {})
         If FileIndex.length > 0 Then
-            Dim CreateNew As Boolean = True
+            Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.Asynchronous)
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
-                                         Function(BytesReaded As Long)
-                                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
-                                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
-                                             Return StopFlag
-                                         End Function, CreateNew) Then
+                Dim succ As Boolean = False
+                Do
+                    Dim BlockAddress As Long = fe.startblock
+                    Dim ByteOffset As Long = fe.byteoffset
+                    Dim FileOffset As Long = fe.fileoffset
+                    Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
+                    Dim TotalBytes As Long = fe.bytecount
+                    Dim p As New TapeUtils.PositionData(TapeDrive)
+                    If p.BlockNumber <> BlockAddress OrElse p.PartitionNumber <> Partition Then
+                        TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
+                    End If
+                    fs.Seek(FileOffset, IO.SeekOrigin.Begin)
+                    Dim ReadedSize As Long = 0
+                    While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
+                        Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
+                        Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
+                        If Data.Length <> len OrElse len = 0 Then
+                            PrintMsg($"Error reading at p{p.PartitionNumber}b{p.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
+                            succ = False
+                            Exit Do
+                        End If
+                        ReadedSize += len
+                        fs.Write(Data, ByteOffset, len - ByteOffset)
+
+                        Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
+                        Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
+                        ByteOffset = 0
+                    End While
+                    If StopFlag Then
+                        fs.Close()
+                        IO.File.Delete(FileName)
+                        succ = True
+                        Exit Do
+                    End If
+                    succ = True
+                    Exit Do
+                Loop
+
+                If Not succ Then
                     PrintMsg($"{FileIndex.name}提取出错")
                     Exit For
                 End If
-                CreateNew = False
+                'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
+                '                         Function(BytesReaded As Long)
+                '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
+                '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
+                '                             Return StopFlag
+                '                         End Function, CreateNew, False) Then
+                '    PrintMsg($"{FileIndex.name}提取出错")
+                '    Exit For
+                'End If
                 If StopFlag Then Exit Sub
             Next
+            Task.Run(Sub()
+                         fs.Flush()
+                         fs.Close()
+
+                         Dim finfo As New IO.FileInfo(FileName)
+                         finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
+                         finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+                         finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
+                         finfo.IsReadOnly = FileIndex.readonly
+                     End Sub)
+        Else
+            Dim finfo As New IO.FileInfo(FileName)
+            finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
+            finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+            finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
+            finfo.IsReadOnly = FileIndex.readonly
         End If
-        Dim finfo As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(FileName)
-        finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-        finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
-        finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
-        finfo.IsReadOnly = FileIndex.readonly
+
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
     End Sub
@@ -1525,6 +1680,8 @@ Public Class LTFSWriter
                             Next
                             PrintMsg("正在提取")
                             StopFlag = False
+                            TapeUtils.ReserveUnit(TapeDrive)
+                            TapeUtils.PreventMediaRemoval(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
                                 Dim FileName As String = My.Computer.FileSystem.CombinePath(BasePath, FileIndex.name)
                                 RestoreFile(FileName, FileIndex)
@@ -1536,6 +1693,8 @@ Public Class LTFSWriter
                         Catch ex As Exception
                             PrintMsg("提取出错")
                         End Try
+                        TapeUtils.AllowMediaRemoval(TapeDrive)
+                        TapeUtils.ReleaseUnit(TapeDrive)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
@@ -1565,7 +1724,7 @@ Public Class LTFSWriter
                                         Dim thisDir As String = My.Computer.FileSystem.CombinePath(outputDir.FullName, d.name)
                                         Dim dirOutput As IO.DirectoryInfo
                                         Dim RestoreTimeStamp As Boolean = Not My.Computer.FileSystem.DirectoryExists(thisDir)
-                                        If RestoreTimeStamp Then My.Computer.FileSystem.CreateDirectory(thisDir)
+                                        If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
                                         dirOutput = My.Computer.FileSystem.GetDirectoryInfo(thisDir)
                                         IterDir(d, dirOutput)
                                         If RestoreTimeStamp Then
@@ -1577,7 +1736,8 @@ Public Class LTFSWriter
                                 End Sub
                             PrintMsg("正在准备文件")
                             Dim ODir As String = My.Computer.FileSystem.CombinePath(FolderBrowserDialog1.SelectedPath, selectedDir.name)
-                            If Not My.Computer.FileSystem.DirectoryExists(ODir) Then My.Computer.FileSystem.CreateDirectory(ODir)
+                            If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
+                            If Not My.Computer.FileSystem.DirectoryExists(ODir) Then IO.Directory.CreateDirectory(ODir)
                             IterDir(selectedDir, My.Computer.FileSystem.GetDirectoryInfo(ODir))
                             FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
                                                                             If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
@@ -1596,6 +1756,8 @@ Public Class LTFSWriter
                             Next
                             PrintMsg("正在提取文件")
                             Dim c As Integer = 0
+                            TapeUtils.ReserveUnit(TapeDrive)
+                            TapeUtils.PreventMediaRemoval(TapeDrive)
                             For Each fr As FileRecord In FileList
                                 c += 1
                                 PrintMsg($"正在提取 [{c}/{FileList.Count}] {fr.File.name}", False, $"正在提取 [{c}/{FileList.Count}] {fr.SourcePath}")
@@ -1610,6 +1772,8 @@ Public Class LTFSWriter
                             Invoke(Sub() MessageBox.Show(ex.ToString))
                             PrintMsg("提取出错")
                         End Try
+                        TapeUtils.AllowMediaRemoval(TapeDrive)
+                        TapeUtils.ReleaseUnit(TapeDrive)
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
@@ -1676,6 +1840,13 @@ Public Class LTFSWriter
                             p = GetPos
                             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                         End If
+                    Else
+                        Dim p As TapeUtils.PositionData = GetPos
+                        If MessageBox.Show($"当前位置P{p.PartitionNumber} B{p.BlockNumber}，会丢失该位置后的数据，继续？", "数据写入警告", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+
+                        Else
+                            Exit Sub
+                        End If
                     End If
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     UFReadCount.Inc()
@@ -1683,246 +1854,270 @@ Public Class LTFSWriter
                     CurrentBytesProcessed = 0
                     UnwrittenSizeOverrideValue = 0
                     UnwrittenCountOverwriteValue = 0
-                    Dim WriteList As New List(Of FileRecord)
-                    UFReadCount.Inc()
-                    For Each fr As FileRecord In UnwrittenFiles
-                        WriteList.Add(fr)
-                    Next
-                    UFReadCount.Dec()
-                    UnwrittenCountOverwriteValue = UnwrittenCount
-                    UnwrittenSizeOverrideValue = UnwrittenSize
-                    Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
-                    Dim BytesReaded As Integer
-                    Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadNum
-                    If PNum > 0 Then
-                        For j As Integer = 0 To PNum
-                            If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
+                    If UnwrittenFiles.Count > 0 Then
+                        Dim WriteList As New List(Of FileRecord)
+                        UFReadCount.Inc()
+                        For Each fr As FileRecord In UnwrittenFiles
+                            WriteList.Add(fr)
                         Next
-                    End If
-                    Dim HashTaskAwaitNumber As Integer = 0
-                    Threading.ThreadPool.SetMaxThreads(256, 256)
-                    Threading.ThreadPool.SetMinThreads(128, 128)
-                    For i As Integer = 0 To WriteList.Count - 1
-                        PNum = My.Settings.LTFSWriter_PreLoadNum
-                        If PNum > 0 AndAlso i + PNum < WriteList.Count Then
-                            WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
+                        UFReadCount.Dec()
+                        UnwrittenCountOverwriteValue = UnwrittenCount
+                        UnwrittenSizeOverrideValue = UnwrittenSize
+                        Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
+
+                        Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadNum
+                        If PNum > 0 Then
+                            For j As Integer = 0 To PNum
+                                If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
+                            Next
                         End If
-                        Dim fr As FileRecord = WriteList(i)
-                        Try
-                            Dim finfo As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fr.SourcePath)
-                            fr.File.fileuid = schema.highestfileuid + 1
-                            schema.highestfileuid += 1
-                            If finfo.Length > 0 Then
-                                Dim p As TapeUtils.PositionData = GetPos
-                                If p.EOP Then PrintMsg("磁带即将写满", True)
-                                Dim fileextent As New ltfsindex.file.extent With
-                            {.partition = ltfsindex.PartitionLabel.b,
-                            .startblock = p.BlockNumber,
-                            .bytecount = finfo.Length,
-                            .byteoffset = 0,
-                            .fileoffset = 0}
-                                fr.File.extentinfo.Add(fileextent)
-                                PrintMsg($"正在写入 {fr.File.name}  大小 {IOManager.FormatSize(fr.File.length)}", False,
-                                     $"正在写入: {fr.SourcePath}{vbCrLf}大小: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
-                                     }此前累计写入: {IOManager.FormatSize(TotalBytesProcessed) _
-                                     } 剩余: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
-                                     } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
-                                'write to tape
-                                TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
-                                If finfo.Length <= plabel.blocksize Then
-                                    Dim succ As Boolean = False
-                                    Dim FileData As Byte() = fr.ReadAllBytes()
-                                    While Not succ
-                                        Dim sense As Byte()
-                                        Try
-                                            sense = TapeUtils.Write(TapeDrive, FileData)
-                                        Catch ex As Exception
-                                            Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
-                                                Case DialogResult.Abort
-                                                    Throw ex
-                                                Case DialogResult.Retry
-                                                    succ = False
-                                                Case DialogResult.Ignore
-                                                    succ = True
-                                                    Exit While
-                                            End Select
-                                            Continue While
-                                        End Try
-                                        If ((sense(2) >> 6) And &H1) = 1 Then
-                                            If (sense(2) And &HF) = 13 Then
-                                                PrintMsg("磁带已满")
-                                                Invoke(Sub() MessageBox.Show("磁带已满"))
-                                                StopFlag = True
-                                                Exit For
-                                            Else
-                                                PrintMsg("磁带即将写满", True)
-                                                succ = True
-                                                Exit While
-                                            End If
-                                        ElseIf sense(2) And &HF <> 0 Then
-                                            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                                            Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
-                                                Case DialogResult.Abort
-                                                    Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                Case DialogResult.Retry
-                                                    succ = False
-                                                Case DialogResult.Ignore
-                                                    succ = True
-                                                    Exit While
-                                            End Select
-                                        Else
-                                            succ = True
-                                        End If
-                                    End While
-                                    If succ AndAlso HashOnWrite Then
-                                        Task.Run(Sub()
-                                                     Threading.Interlocked.Increment(HashTaskAwaitNumber)
-                                                     Dim sh As New IOManager.SHA1BlockwiseCalculator
-                                                     sh.Propagate(FileData)
-                                                     sh.ProcessFinalBlock()
-                                                     fr.File.sha1 = sh.SHA1Value
-                                                     Threading.Interlocked.Decrement(HashTaskAwaitNumber)
-                                                 End Sub)
-                                    End If
-                                    If fr.fs IsNot Nothing Then fr.Close()
-                                    fr.File.WrittenBytes += finfo.Length
-                                    TotalBytesProcessed += finfo.Length
-                                    CurrentBytesProcessed += finfo.Length
-                                    TotalFilesProcessed += 1
-                                    CurrentFilesProcessed += 1
-                                    TotalBytesUnindexed += finfo.Length
-                                Else
-                                    'Dim fs As New IO.FileStream(fr.SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, 512, True)
-                                    fr.Open()
-                                    Dim sh As IOManager.SHA1BlockwiseCalculator = Nothing
-                                    If HashOnWrite Then sh = New IOManager.SHA1BlockwiseCalculator
-                                    While Not StopFlag
-                                        Dim buffer(plabel.blocksize - 1) As Byte
-                                        BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
-                                        CheckCount += 1
-                                        If CheckCount >= CheckCycle Then CheckCount = 0
-                                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
-                                            While ((plabel.blocksize * CheckCycle / 1048576) / (Now - SpeedLimitLastTriggerTime).TotalSeconds) > SpeedLimit
-                                                Threading.Thread.Sleep(0)
-                                            End While
-                                            SpeedLimitLastTriggerTime = Now
-                                        End If
-                                        If BytesReaded > 0 Then
-                                            Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
-                                            Dim succ As Boolean = False
-                                            While Not succ
-                                                Dim sense As Byte()
-                                                Try
-                                                    sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
-                                                Catch ex As Exception
-                                                    Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
-                                                        Case DialogResult.Abort
-                                                            Throw ex
-                                                        Case DialogResult.Retry
-                                                            succ = False
-                                                        Case DialogResult.Ignore
-                                                            succ = True
-                                                            Exit While
-                                                    End Select
-                                                    Continue While
-                                                End Try
-                                                If (((sense(2) >> 6) And &H1) = 1) Then
-                                                    If ((sense(2) And &HF) = 13) Then
-                                                        PrintMsg("磁带已满")
-                                                        Invoke(Sub() MessageBox.Show("磁带已满"))
-                                                        StopFlag = True
-                                                        fr.Close()
-                                                        Exit For
-                                                    Else
-                                                        PrintMsg("磁带即将写满", True)
+                        Dim HashTaskAwaitNumber As Integer = 0
+                        Threading.ThreadPool.SetMaxThreads(256, 256)
+                        Threading.ThreadPool.SetMinThreads(128, 128)
+                        Dim ExitForFlag As Boolean = False
+                        For i As Integer = 0 To WriteList.Count - 1
+                            If i < WriteList.Count - 1 Then
+                                Dim CFNum As Integer = i
+                                AddHandler WriteList(CFNum).PreReadFinished,
+                                Sub()
+                                    WriteList(CFNum + 1).BeginOpen()
+                                End Sub
+                            End If
+                            If ExitForFlag Then Exit For
+                            PNum = My.Settings.LTFSWriter_PreLoadNum
+                            If PNum > 0 AndAlso i + PNum < WriteList.Count Then
+                                WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
+                            End If
+                            Dim fr As FileRecord = WriteList(i)
+                            Try
+                                Dim finfo As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fr.SourcePath)
+                                fr.File.fileuid = schema.highestfileuid + 1
+                                schema.highestfileuid += 1
+                                If finfo.Length > 0 Then
+                                    Dim p As TapeUtils.PositionData = GetPos
+                                    If p.EOP Then PrintMsg("磁带即将写满", True)
+                                    Dim fileextent As New ltfsindex.file.extent With
+                                        {.partition = ltfsindex.PartitionLabel.b,
+                                        .startblock = p.BlockNumber,
+                                        .bytecount = finfo.Length,
+                                        .byteoffset = 0,
+                                        .fileoffset = 0}
+                                    fr.File.extentinfo.Add(fileextent)
+                                    PrintMsg($"正在写入 {fr.File.name}  大小 {IOManager.FormatSize(fr.File.length)}", False,
+                                         $"正在写入: {fr.SourcePath}{vbCrLf}大小: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
+                                         }此前累计写入: {IOManager.FormatSize(TotalBytesProcessed) _
+                                         } 剩余: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
+                                         } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
+                                    'write to tape
+                                    TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                                    If finfo.Length <= plabel.blocksize Then
+                                        Dim succ As Boolean = False
+                                        Dim FileData As Byte() = fr.ReadAllBytes()
+                                        While Not succ
+                                            Dim sense As Byte()
+                                            Try
+                                                sense = TapeUtils.Write(TapeDrive, FileData)
+                                            Catch ex As Exception
+                                                Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                    Case DialogResult.Abort
+                                                        Throw ex
+                                                    Case DialogResult.Retry
+                                                        succ = False
+                                                    Case DialogResult.Ignore
                                                         succ = True
                                                         Exit While
-                                                    End If
-                                                ElseIf sense(2) And &HF <> 0 Then
-                                                    Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
-                                                        Case DialogResult.Abort
-                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                        Case DialogResult.Retry
-                                                            succ = False
-                                                        Case DialogResult.Ignore
-                                                            succ = True
-                                                            Exit While
-                                                    End Select
+                                                End Select
+                                                Continue While
+                                            End Try
+                                            If ((sense(2) >> 6) And &H1) = 1 Then
+                                                If (sense(2) And &HF) = 13 Then
+                                                    PrintMsg("磁带已满")
+                                                    Invoke(Sub() MessageBox.Show("磁带已满"))
+                                                    StopFlag = True
+                                                    Exit For
                                                 Else
+                                                    PrintMsg("磁带即将写满", True)
                                                     succ = True
                                                     Exit While
                                                 End If
-                                            End While
-                                            If sh IsNot Nothing AndAlso succ Then
-                                                If 异步校验CPU占用高ToolStripMenuItem.Checked Then
-                                                    sh.PropagateAsync(buffer, BytesReaded)
-                                                Else
-                                                    sh.Propagate(buffer, BytesReaded)
-                                                End If
+                                            ElseIf sense(2) And &HF <> 0 Then
+                                                PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+                                                Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                    Case DialogResult.Abort
+                                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                    Case DialogResult.Retry
+                                                        succ = False
+                                                    Case DialogResult.Ignore
+                                                        succ = True
+                                                        Exit While
+                                                End Select
+                                            Else
+                                                succ = True
                                             End If
-                                            CheckFlush()
-                                            CheckClean(True)
-                                            fr.File.WrittenBytes += BytesReaded
-                                            TotalBytesProcessed += BytesReaded
-                                            CurrentBytesProcessed += BytesReaded
-                                            TotalBytesUnindexed += BytesReaded
-                                        Else
-                                            Exit While
+                                        End While
+                                        If succ AndAlso HashOnWrite Then
+                                            Task.Run(Sub()
+                                                         Threading.Interlocked.Increment(HashTaskAwaitNumber)
+                                                         Dim sh As New IOManager.SHA1BlockwiseCalculator
+                                                         sh.Propagate(FileData)
+                                                         sh.ProcessFinalBlock()
+                                                         fr.File.sha1 = sh.SHA1Value
+                                                         Threading.Interlocked.Decrement(HashTaskAwaitNumber)
+                                                     End Sub)
                                         End If
-                                    End While
-                                    fr.CloseAsync()
+                                        If fr.fs IsNot Nothing Then fr.Close()
+                                        fr.File.WrittenBytes += finfo.Length
+                                        TotalBytesProcessed += finfo.Length
+                                        CurrentBytesProcessed += finfo.Length
+                                        TotalFilesProcessed += 1
+                                        CurrentFilesProcessed += 1
+                                        TotalBytesUnindexed += finfo.Length
+                                    Else
+                                        'Dim fs As New IO.FileStream(fr.SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, 512, True)
+                                        fr.Open()
+                                        'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
+                                        Dim sh As IOManager.SHA1BlockwiseCalculator = Nothing
+                                        If HashOnWrite Then sh = New IOManager.SHA1BlockwiseCalculator
+                                        Dim LastWriteTask As Task = Nothing
+                                        Dim ExitWhileFlag As Boolean = False
+                                        While Not StopFlag
+                                            Dim buffer(plabel.blocksize - 1) As Byte
+                                            Dim BytesReaded As Integer = fr.Read(buffer, 0, plabel.blocksize)
+                                            If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                            If ExitWhileFlag Then Exit While
+                                            LastWriteTask = Task.Run(
+                                                Sub()
+                                                    If BytesReaded > 0 Then
+                                                        CheckCount += 1
+                                                        If CheckCount >= CheckCycle Then CheckCount = 0
+                                                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
+                                                            Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                                                            While ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
+                                                                Threading.Thread.Sleep(0)
+                                                            End While
+                                                            SpeedLimitLastTriggerTime = Now
+                                                        End If
+                                                        Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
+                                                        Dim succ As Boolean = False
+                                                        While Not succ
+                                                            Dim sense As Byte()
+                                                            Try
+                                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                            Catch ex As Exception
+                                                                Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                                    Case DialogResult.Abort
+                                                                        Throw ex
+                                                                    Case DialogResult.Retry
+                                                                        succ = False
+                                                                    Case DialogResult.Ignore
+                                                                        succ = True
+                                                                        Exit While
+                                                                End Select
+                                                                Continue While
+                                                            End Try
+                                                            If (((sense(2) >> 6) And &H1) = 1) Then
+                                                                If ((sense(2) And &HF) = 13) Then
+                                                                    PrintMsg("磁带已满")
+                                                                    Invoke(Sub() MessageBox.Show("磁带已满"))
+                                                                    StopFlag = True
+                                                                    fr.Close()
+                                                                    ExitForFlag = True
+                                                                    Exit Sub
+                                                                Else
+                                                                    PrintMsg("磁带即将写满", True)
+                                                                    succ = True
+                                                                    Exit While
+                                                                End If
+                                                            ElseIf sense(2) And &HF <> 0 Then
+                                                                Select Case MessageBox.Show($"写入出错{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+                                                                    Case DialogResult.Abort
+                                                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                                    Case DialogResult.Retry
+                                                                        succ = False
+                                                                    Case DialogResult.Ignore
+                                                                        succ = True
+                                                                        Exit While
+                                                                End Select
+                                                            Else
+                                                                succ = True
+                                                                Exit While
+                                                            End If
+                                                        End While
+                                                        If sh IsNot Nothing AndAlso succ Then
+                                                            If 异步校验CPU占用高ToolStripMenuItem.Checked Then
+                                                                sh.PropagateAsync(buffer, BytesReaded)
+                                                            Else
+                                                                sh.Propagate(buffer, BytesReaded)
+                                                            End If
+                                                        End If
+                                                        If Flush Then CheckFlush()
+                                                        If Clean Then CheckClean(True)
+                                                        fr.File.WrittenBytes += BytesReaded
+                                                        TotalBytesProcessed += BytesReaded
+                                                        CurrentBytesProcessed += BytesReaded
+                                                        TotalBytesUnindexed += BytesReaded
+                                                    Else
+                                                        ExitWhileFlag = True
+                                                    End If
+                                                End Sub)
+                                        End While
+                                        If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                        fr.CloseAsync()
 
-                                    If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
-                                        Threading.Interlocked.Increment(HashTaskAwaitNumber)
-                                        Task.Run(Sub()
-                                                     sh.ProcessFinalBlock()
-                                                     fr.File.sha1 = sh.SHA1Value
-                                                     sh.StopFlag = True
-                                                     Threading.Interlocked.Decrement(HashTaskAwaitNumber)
-                                                 End Sub)
-                                    ElseIf sh IsNot Nothing Then
-                                        sh.StopFlag = True
+                                        If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
+                                            Threading.Interlocked.Increment(HashTaskAwaitNumber)
+                                            Task.Run(Sub()
+                                                         sh.ProcessFinalBlock()
+                                                         fr.File.sha1 = sh.SHA1Value
+                                                         sh.StopFlag = True
+                                                         Threading.Interlocked.Decrement(HashTaskAwaitNumber)
+                                                     End Sub)
+                                        ElseIf sh IsNot Nothing Then
+                                            sh.StopFlag = True
+                                        End If
+                                        TotalFilesProcessed += 1
+                                        CurrentFilesProcessed += 1
                                     End If
+                                    p = GetPos
+                                    If p.EOP Then PrintMsg("磁带即将写满", True)
+                                    PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
+                                    CurrentHeight = p.BlockNumber
+                                Else
+                                    fr.File.sha1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+                                    TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
                                 End If
-                                p = GetPos
-                                If p.EOP Then PrintMsg("磁带即将写满", True)
-                                PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-                                CurrentHeight = p.BlockNumber
-                            Else
-                                fr.File.sha1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
-                                TotalBytesUnindexed += 1
-                                TotalFilesProcessed += 1
-                                CurrentFilesProcessed += 1
+                                'mark as written
+                                fr.ParentDirectory.contents._file.Add(fr.File)
+                                fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
+                                If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                                CheckUnindexedDataSizeLimit()
+                                Invoke(Sub()
+                                           If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then RefreshCapacity()
+                                       End Sub)
+                            Catch ex As Exception
+                                MessageBox.Show($"写入出错{ex.ToString}")
+                                PrintMsg($"写入出错{ex.Message}")
+                            End Try
+                            While Pause
+                                Threading.Thread.Sleep(10)
+                            End While
+                            If StopFlag Then
+                                Exit For
                             End If
-                            'mark as written
-                            fr.ParentDirectory.contents._file.Add(fr.File)
-                            fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
-                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                            CheckUnindexedDataSizeLimit()
-                            Invoke(Sub()
-                                       If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then RefreshCapacity()
-                                   End Sub)
-                        Catch ex As Exception
-                            MessageBox.Show($"写入出错{ex.ToString}")
-                            PrintMsg($"写入出错{ex.Message}")
-                        End Try
-                        While Pause
-                            Threading.Thread.Sleep(10)
+                            UnwrittenFiles.Remove(fr)
+                            WriteList(i) = Nothing
+                        Next
+                        Marshal.FreeHGlobal(wBufferPtr)
+                        While HashTaskAwaitNumber > 0
+                            Threading.Thread.Sleep(1)
                         End While
-                        If StopFlag Then
-                            Exit For
-                        End If
-                        UnwrittenFiles.Remove(fr)
-                        WriteList(i) = Nothing
-                    Next
-                    Marshal.FreeHGlobal(wBufferPtr)
-                    While HashTaskAwaitNumber > 0
-                        Threading.Thread.Sleep(1)
-                    End While
+                    End If
+
                     UFReadCount.Dec()
                     Me.Invoke(Sub() Timer1_Tick(sender, e))
+                    Dim TotalBytesWritten As Long = UnwrittenSizeOverrideValue
                     While True
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
@@ -1936,10 +2131,9 @@ Public Class LTFSWriter
                         End SyncLock
                     End While
                     Modified = True
-                    TapeUtils.Flush(TapeDrive)
                     If Not StopFlag Then
                         Dim TimeCost As TimeSpan = Now - StartTime
-                        OnWriteFinishMessage = ($"写入完成，耗时{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")}")
+                        OnWriteFinishMessage = ($"写入完成，耗时{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")} 平均速度{IOManager.FormatSize(TotalBytesWritten \ TimeCost.TotalSeconds)}/s")
                         Me.Invoke(Sub() OnWriteFinished())
                     Else
                         OnWriteFinishMessage = ("写入取消")
@@ -1948,6 +2142,7 @@ Public Class LTFSWriter
                     MessageBox.Show($"写入出错{ex.ToString}")
                     PrintMsg($"写入出错{ex.Message}")
                 End Try
+                TapeUtils.Flush(TapeDrive)
                 TapeUtils.ReleaseUnit(TapeDrive)
                 TapeUtils.AllowMediaRemoval(TapeDrive)
                 Invoke(Sub()
@@ -2192,7 +2387,7 @@ Public Class LTFSWriter
                     Me.Invoke(Sub()
                                   Text = GetLocInfo()
                                   ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
-                                  ToolStripStatusLabel1.ToolTipText = $"磁带标签:{ToolStripStatusLabel1.Text}"
+                                  ToolStripStatusLabel1.ToolTipText = $"磁带标签:{ToolStripStatusLabel1.Text}{vbCrLf}块大小:{plabel.blocksize}"
                                   RefreshDisplay()
                                   RefreshCapacity()
                               End Sub)
@@ -3068,6 +3263,22 @@ Public Class LTFSWriter
         文件缓存32MiBToolStripMenuItem.Text = $"文件缓存：{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
     End Sub
 
+    Private Sub 文件详情ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 文件详情ToolStripMenuItem.Click
+        Dim result As New StringBuilder
+        If ListView1.Tag IsNot Nothing AndAlso
+        ListView1.SelectedItems IsNot Nothing AndAlso
+        ListView1.SelectedItems.Count > 0 Then
+            SyncLock ListView1.SelectedItems
+                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+                    If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
+                        Dim f As ltfsindex.file = ItemSelected.Tag
+                        result.AppendLine(f.GetSerializedText())
+                    End If
+                Next
+            End SyncLock
+        End If
+        MessageBox.Show(result.ToString)
+    End Sub
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
         IndexWriteInterval = Val(InputBox("设置索引间隔（字节）", "设置", IndexWriteInterval))

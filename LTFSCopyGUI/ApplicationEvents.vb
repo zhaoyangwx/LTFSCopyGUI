@@ -39,10 +39,13 @@ Namespace My
 
             Else
                 Dim param() As String = e.CommandLine.ToArray()
-
+                Dim IndexRead As Boolean = True
                 For i As Integer = 0 To param.Count - 1
                     If param(i).StartsWith("/") Then param(i) = "-" & param(i).TrimStart("/")
+
                     Select Case param(i)
+                        Case "-s"
+                            IndexRead = False
                         Case "-t"
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -55,7 +58,7 @@ Namespace My
                                 Else
 
                                 End If
-                                Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive}
+                                Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = Not IndexRead}
                                 Me.MainForm = LWF
                                 Exit For
                             End If
@@ -189,7 +192,7 @@ SCSI命令执行失败")
                             Try
                                 InitConsole()
                                 Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}
-
+  -s                                            不要自动读取索引
   -t <drive>                                    直接读写
   ├  -t 0
   ├  -t TAPE0

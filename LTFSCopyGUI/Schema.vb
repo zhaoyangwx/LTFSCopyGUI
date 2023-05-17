@@ -106,6 +106,13 @@ Public Class ltfsindex
             <Xml.Serialization.XmlIgnore> Public Property TempInfo As Object
         End Class
         Public Property extentinfo As New List(Of extent)
+        Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            writer.Serialize(t, Me)
+            Return sb.ToString()
+        End Function
     End Class
     <Serializable>
     Public Class directory
@@ -122,6 +129,14 @@ Public Class ltfsindex
 
         <Xml.Serialization.XmlIgnore> Public fullpath As String
         <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
+
+        Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(directory))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            writer.Serialize(t, Me)
+            Return sb.ToString()
+        End Function
     End Class
     <Serializable>
     Public Class contentsDef
@@ -300,7 +315,7 @@ End Class
 
 <Serializable> Public Class ltfslabel
     Public Property creator As String = My.Application.Info.ProductName & " " & My.Application.Info.Version.ToString(3) & " - Windows - TapeUtils"
-    Public Property formattime As String = Now.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss.fffffff00Z")
+    Public Property formattime As String = Now.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
     Public Property volumeuuid As Guid
     <Serializable>
     Public Enum PartitionLabel
