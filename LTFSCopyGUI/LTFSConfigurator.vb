@@ -952,13 +952,20 @@ Public Class LTFSConfigurator
                         Block <<= 8
                         Block = Block Or param(i)
                     Next
+                    Dim BlkNum As Integer = Block
                     While True
                         Dim sense(63) As Byte
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
-                        If readData.Length > 0 Then My.Computer.FileSystem.WriteAllBytes(FolderBrowserDialog1.SelectedPath & "\" & FileNum & ".bin", readData, True)
+                        If readData.Length > 0 Then
+                            My.Computer.FileSystem.WriteAllBytes($"{FolderBrowserDialog1.SelectedPath}\FM{FileNum}_BLK{BlkNum}.bin", readData, True)
+                            If Not readData.Length = ReadLen Then
+                                BlkNum = Block
+                            End If
+                        End If
                         If Add_Key <> 0 Then
                             FileNum += 1
+                            BlkNum = Block
                         End If
                         If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
                             Operation_Cancel_Flag = False

@@ -153,7 +153,7 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(sense)
         Return dumpData
     End Function
-    Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
+    Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
         Dim senseRaw(63) As Byte
         If sense Is Nothing Then sense = {}
 
@@ -168,6 +168,7 @@ Public Class TapeUtils
             DiffBytes <<= 8
             DiffBytes = DiffBytes Or sense(i)
         Next
+        If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
         Dim DataLen As Integer = BlockSizeLimit - DiffBytes
         Dim RawData(DataLen - 1) As Byte
         Marshal.Copy(RawDataU, RawData, 0, DataLen)
@@ -852,7 +853,7 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
         If Not succ Then Throw New Exception("SCSI Failure")
-        Return {0, 0, 0}
+        Return sense
     End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As Integer) As Byte()
         If Data.Length <= BlockSize Then
@@ -1580,65 +1581,75 @@ Public Class TapeUtils
             Return True
         End If
     End Function
-    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True) As Boolean
-        If Not ReserveUnit(TapeDrive) Then Return False
-        If Not PreventMediaRemoval(TapeDrive) Then
+    Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True, Optional LockDrive As Boolean = True) As Boolean
+        If LockDrive AndAlso Not ReserveUnit(TapeDrive) Then Return False
+        If LockDrive AndAlso Not PreventMediaRemoval(TapeDrive) Then
             ReleaseUnit(TapeDrive)
             Return False
         End If
         If Locate(TapeDrive, BlockAddress, Partition, LocateDestType.Block) <> 0 Then
-            AllowMediaRemoval(TapeDrive)
-            ReleaseUnit(TapeDrive)
+            If LockDrive Then
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+            End If
             Return False
         End If
         Try
-            If CreateNew Then My.Computer.FileSystem.WriteAllBytes(OutputFile, {}, False)
+            If CreateNew Then IO.File.WriteAllBytes(OutputFile, {})
         Catch ex As Exception
-            AllowMediaRemoval(TapeDrive)
-            ReleaseUnit(TapeDrive)
+            If LockDrive Then
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+            End If
             Return False
         End Try
         Dim fs As IO.FileStream
         Try
-            fs = IO.File.Open(OutputFile, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite)
+            fs = New IO.FileStream(OutputFile, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.SequentialScan)
         Catch ex As Exception
-            AllowMediaRemoval(TapeDrive)
-            ReleaseUnit(TapeDrive)
+            If LockDrive Then
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+            End If
             Return False
         End Try
         Try
             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
             Dim ReadedSize As Long = 0
             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
-                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, Math.Min(BlockSize, TotalBytes + ByteOffset - ReadedSize))
-                If Data.Length = 0 Then
-                    AllowMediaRemoval(TapeDrive)
-                    ReleaseUnit(TapeDrive)
+                Dim len As Integer = Math.Min(BlockSize, TotalBytes + ByteOffset - ReadedSize)
+                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, len)
+                If Data.Length <> len OrElse len = 0 Then
+                    If LockDrive Then
+                        AllowMediaRemoval(TapeDrive)
+                        ReleaseUnit(TapeDrive)
+                    End If
                     Return False
                 End If
-                ReadedSize += Data.Length
-                fs.Write(Data, ByteOffset, Data.Length - ByteOffset)
-                If ProgressReport IsNot Nothing Then StopFlag = ProgressReport(Data.Length - ByteOffset)
+                ReadedSize += len
+                fs.Write(Data, ByteOffset, len - ByteOffset)
+                If ProgressReport IsNot Nothing Then StopFlag = ProgressReport(len - ByteOffset)
                 ByteOffset = 0
             End While
-            AllowMediaRemoval(TapeDrive)
-            ReleaseUnit(TapeDrive)
+            If LockDrive Then
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+            End If
             If StopFlag Then
                 fs.Close()
                 My.Computer.FileSystem.DeleteFile(OutputFile)
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
                 Return True
             End If
         Catch ex As Exception
             MessageBox.Show(ex.ToString)
             fs.Close()
             My.Computer.FileSystem.DeleteFile(OutputFile)
-            AllowMediaRemoval(TapeDrive)
-            ReleaseUnit(TapeDrive)
+            If LockDrive Then
+                AllowMediaRemoval(TapeDrive)
+                ReleaseUnit(TapeDrive)
+            End If
             Return False
         End Try
-        fs.Flush()
         fs.Close()
         Return True
     End Function

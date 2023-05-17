@@ -597,7 +597,7 @@ Public Class IOManager
                                 If .Len = -1 Then .Len = .block.Length
                                 sha1.TransformBlock(.block, 0, .Len, .block, 0)
                             End With
-                            blk.block = {}
+                            blk.block = Nothing
                         End While
                     End SyncLock
                     Threading.Thread.Sleep(1)
