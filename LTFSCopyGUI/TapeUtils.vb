@@ -2,6 +2,29 @@
 Imports System.Text
 
 Public Class TapeUtils
+#Region "winapi"
+    <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function SetupDiEnumDeviceInterfaces(
+        DeviceInfoSet As IntPtr,
+        DeviceInfoData As IntPtr,
+        InterfaceClassGuid As IntPtr,
+        MemberIndex As UInt64,
+        DeviceInterfaceData As IntPtr) As Boolean
+    End Function
+    <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function DeviceIoControl(
+        HDevice As IntPtr,
+        dwIoControlCode As UInt32,
+        lpInBuffer As IntPtr,
+        nInBufferSize As UInt32,
+        lpOutBuffer As IntPtr,
+        nOutBufferSize As UInt32,
+        ByRef lpBytesReturned As UInt32,
+        lpOverlapped As IntPtr) As Boolean
+    End Function
+
+#End Region
+
     Private Declare Function _GetTapeDriveList Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _GetDriveMappings Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _StartLtfsService Lib "LtfsCommand.dll" () As IntPtr
@@ -175,6 +198,13 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(RawDataU)
         Return RawData
     End Function
+    Public Shared Function ReadFileMark(TapeDrive As String, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim data As Byte() = ReadBlock(TapeDrive, sense)
+        If data.Length = 0 Then Return True
+        Dim p As New PositionData(TapeDrive)
+        Locate(TapeDrive, p.BlockNumber - 1, p.PartitionNumber)
+        Return False
+    End Function
     Public Shared Function ReadToFileMark(TapeDrive As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
         Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         Dim buffer As New List(Of Byte)
@@ -286,7 +316,17 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        While Not _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+            Marshal.Copy(senseBuffer, senseData, 0, 64)
+            Select Case MessageBox.Show($"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+                Case DialogResult.Abort
+                    Throw New Exception("SCSI Error")
+                Case DialogResult.Retry
+
+                Case DialogResult.Ignore
+                    Exit While
+            End Select
+        End While
         Marshal.Copy(senseBuffer, senseData, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBuffer)
@@ -295,7 +335,9 @@ Public Class TapeUtils
     End Function
     Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
         Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, 4, 0}, 4)
+        If Header.Length = 0 Then Return {0, 0, 0, 0}
         Dim PageLen As Byte = Header(0)
+        If PageLen = 0 Then Return {0, 0, 0, 0}
         Dim DescripterLen As Byte = Header(3)
         Return SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, PageLen + 1, 0}, PageLen + 1, senseReport).Skip(4 + DescripterLen).ToArray()
     End Function
@@ -1189,6 +1231,7 @@ Public Class TapeUtils
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
     Public Shared Function GetTapeDriveList() As List(Of TapeDrive)
         Dim p As IntPtr = _GetTapeDriveList()
+        'MessageBox.Show(Marshal.PtrToStringAnsi(p))
         Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         Dim LDrive As New List(Of TapeDrive)
         For Each t As String In s

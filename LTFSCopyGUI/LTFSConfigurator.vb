@@ -338,7 +338,7 @@ Public Class LTFSConfigurator
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
                                   TextBox8.Text = "DataBuffer" & vbCrLf
-                                  TextBox8.Text &= Byte2Hex(dataData)
+                                  TextBox8.Text &= Byte2Hex(dataData, True)
                                   TextBox8.Text &= vbCrLf & vbCrLf & "SenseBuffer" & vbCrLf
                                   TextBox8.Text &= Byte2Hex(senseBuffer) & vbCrLf
                                   TextBox8.Text &= TapeUtils.ParseSenseData(senseBuffer) & vbCrLf
