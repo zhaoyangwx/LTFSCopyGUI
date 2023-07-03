@@ -62,5 +62,8 @@
     <Setting Name="LTFSWriter_PreLoadBytes" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">8388608</Value>
     </Setting>
+    <Setting Name="LTFSWriter_DisablePartition" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -160,6 +160,7 @@ Partial Class LTFSWriter
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
         Me.启用日志记录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.总是更新数据区索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.禁用分区ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.回退ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.清除当前索引后数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -842,7 +843,7 @@ Partial Class LTFSWriter
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem})
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
         Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(124, 22)
         Me.自动化ToolStripMenuItem1.Text = "自动化"
@@ -976,6 +977,13 @@ Partial Class LTFSWriter
         Me.总是更新数据区索引ToolStripMenuItem.Name = "总是更新数据区索引ToolStripMenuItem"
         Me.总是更新数据区索引ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
         Me.总是更新数据区索引ToolStripMenuItem.Text = "总是更新数据区索引"
+        '
+        '禁用分区ToolStripMenuItem
+        '
+        Me.禁用分区ToolStripMenuItem.CheckOnClick = True
+        Me.禁用分区ToolStripMenuItem.Name = "禁用分区ToolStripMenuItem"
+        Me.禁用分区ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
+        Me.禁用分区ToolStripMenuItem.Text = "禁用分区（LTO3需勾选）"
         '
         'ToolStripSeparator6
         '
@@ -1205,6 +1213,7 @@ Partial Class LTFSWriter
         Me.Controls.Add(Me.StatusStrip1)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
+        Me.DoubleBuffered = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "LTFSWriter"
@@ -1360,4 +1369,5 @@ Partial Class LTFSWriter
     Friend WithEvents 预读文件数5ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 文件缓存32MiBToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 文件详情ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 禁用分区ToolStripMenuItem As ToolStripMenuItem
 End Class
