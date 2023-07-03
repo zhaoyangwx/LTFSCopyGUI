@@ -111,6 +111,16 @@ Public Class LTFSWriter
     Public Property Flush As Boolean = False
     Public Property Clean As Boolean = False
     Public Property Clean_last As Date = Now
+    Public Property DisablePartition As Boolean
+        Get
+            Return My.Settings.LTFSWriter_DisablePartition
+        End Get
+        Set(value As Boolean)
+            My.Settings.LTFSWriter_DisablePartition = value
+            My.Settings.Save()
+            TapeUtils.AllowPartition = Not DisablePartition
+        End Set
+    End Property
     Public Property Session_Start_Time As Date = Now
     Public logFile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
     Public Property SilentMode As Boolean = False
@@ -123,6 +133,9 @@ Public Class LTFSWriter
     Public FileRateHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
 
     Public FileDroper As FileDropHandler
+    Public Event LTFSLoaded()
+    Public Event WriteFinished()
+    Public Event TapeEjected()
 
     Public Sub Load_Settings()
         覆盖已有文件ToolStripMenuItem.Checked = My.Settings.LTFSWriter_OverwriteExist
@@ -155,6 +168,8 @@ Public Class LTFSWriter
         异步校验CPU占用高ToolStripMenuItem.Checked = My.Settings.LTFSWriter_HashAsync
         预读文件数5ToolStripMenuItem.Text = $"预读文件数：{My.Settings.LTFSWriter_PreLoadNum}"
         文件缓存32MiBToolStripMenuItem.Text = $"文件缓存：{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
+        禁用分区ToolStripMenuItem.Checked = DisablePartition
+        TapeUtils.AllowPartition = Not DisablePartition
         CleanCycle = CleanCycle
         IndexWriteInterval = IndexWriteInterval
         CapacityRefreshInterval = CapacityRefreshInterval
@@ -592,6 +607,13 @@ Public Class LTFSWriter
                End Sub)
 
     End Sub
+    Public Function GetCapacityMegaBytes() As Long
+        If ExtraPartitionCount > 0 Then
+            Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+        Else
+            Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
+        End If
+    End Function
     Public Sub RefreshDisplay()
         Invoke(
             Sub()
@@ -926,6 +948,7 @@ Public Class LTFSWriter
         If SilentMode Then
             If SilentAutoEject Then
                 TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                RaiseEvent TapeEjected()
             End If
         Else
             Dim DoEject As Boolean = False
@@ -935,6 +958,7 @@ Public Class LTFSWriter
             If DoEject Then
                 TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
                 PrintMsg("磁带已弹出")
+                RaiseEvent TapeEjected()
             End If
         End If
         Invoke(Sub()
@@ -2158,6 +2182,7 @@ Public Class LTFSWriter
                                更新数据区索引ToolStripMenuItem_Click(sender, e)
                            End If
                            PrintMsg(OnWriteFinishMessage)
+                           RaiseEvent WriteFinished()
                        End Sub)
             End Sub)
         StopFlag = False
@@ -2334,16 +2359,20 @@ Public Class LTFSWriter
                         TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         PrintMsg("正在读取索引")
-                        Dim p As TapeUtils.PositionData = GetPos
-                        Dim FM As Long = p.FileNumber
-                        PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-                        If FM <= 1 Then
-                            PrintMsg("索引读取失败")
-                            Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
-                            LockGUI(False)
-                            Exit Try
+                        If DisablePartition Then
+                            TapeUtils.Space6(TapeDrive, -2, TapeUtils.LocateDestType.FileMark)
+                        Else
+                            Dim p As TapeUtils.PositionData = GetPos
+                            Dim FM As Long = p.FileNumber
+                            PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
+                            If FM <= 1 Then
+                                PrintMsg("索引读取失败")
+                                Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
+                                LockGUI(False)
+                                Exit Try
+                            End If
+                            TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.FileMark)
                         End If
-                        TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.FileMark)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         TapeUtils.ReadFileMark(TapeDrive)
                     End If
@@ -2398,11 +2427,13 @@ Public Class LTFSWriter
                               End Sub)
 
                     PrintMsg("索引读取成功")
+                    LockGUI(False)
+                    Invoke(Sub() RaiseEvent LTFSLoaded())
                 Catch ex As Exception
                     PrintMsg("索引读取失败")
                     PrintMsg(ex.ToString, LogOnly:=True)
+                    LockGUI(False)
                 End Try
-                LockGUI(False)
             End Sub)
         LockGUI()
         th.Start()
@@ -2425,14 +2456,19 @@ Public Class LTFSWriter
                     PrintMsg("正在读取索引")
                     currentPos = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
-                    Dim FM As Long = currentPos.FileNumber
-                    If FM <= 1 Then
-                        PrintMsg("索引读取失败")
-                        Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
-                        LockGUI(False)
-                        Exit Try
+                    If DisablePartition Then
+                        TapeUtils.Space6(TapeDrive, -2, TapeUtils.LocateDestType.FileMark)
+                    Else
+                        Dim FM As Long = currentPos.FileNumber
+                        If FM <= 1 Then
+                            PrintMsg("索引读取失败")
+                            Invoke(Sub() MessageBox.Show("非LTFS格式", "错误"))
+                            LockGUI(False)
+                            Exit Try
+                        End If
+                        TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
                     End If
-                    TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
+
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg("正在读取索引")
                     data = TapeUtils.ReadToFileMark(TapeDrive)
@@ -2598,6 +2634,7 @@ Public Class LTFSWriter
             End While
             LockGUI()
             Dim DefaultBlockSize As Long = 524288
+
             If MaxExtraPartitionAllowed = 0 Then DefaultBlockSize = 65536
             TapeUtils.mkltfs(TapeDrive, Barcode, VolumeLabel, MaxExtraPartitionAllowed, DefaultBlockSize, False,
                 Sub(Message As String)
@@ -2946,6 +2983,7 @@ Public Class LTFSWriter
                         Invoke(Sub()
                                    LockGUI(False)
                                    RefreshDisplay()
+                                   RaiseEvent TapeEjected()
                                End Sub)
                     Catch ex As Exception
                         PrintMsg("索引更新出错")
@@ -3285,6 +3323,10 @@ Public Class LTFSWriter
             End SyncLock
         End If
         MessageBox.Show(result.ToString)
+    End Sub
+
+    Private Sub 禁用分区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 禁用分区ToolStripMenuItem.Click
+        DisablePartition = 禁用分区ToolStripMenuItem.Checked
     End Sub
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click

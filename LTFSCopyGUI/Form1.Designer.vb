@@ -31,6 +31,7 @@ Partial Class Form1
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.查找ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.错误检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.未校验检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.合并文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
@@ -50,7 +51,7 @@ Partial Class Form1
         Me.Button8 = New System.Windows.Forms.Button()
         Me.Button9 = New System.Windows.Forms.Button()
         Me.Button10 = New System.Windows.Forms.Button()
-        Me.未校验检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -98,24 +99,30 @@ Partial Class Form1
         '
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem, Me.未校验检查ToolStripMenuItem, Me.合并文件ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(181, 114)
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(137, 92)
         '
         '查找ToolStripMenuItem
         '
         Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
-        Me.查找ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.查找ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
         Me.查找ToolStripMenuItem.Text = "查找"
         '
         '错误检查ToolStripMenuItem
         '
         Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
-        Me.错误检查ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.错误检查ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
         Me.错误检查ToolStripMenuItem.Text = "错误检查"
+        '
+        '未校验检查ToolStripMenuItem
+        '
+        Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
+        Me.未校验检查ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
+        Me.未校验检查ToolStripMenuItem.Text = "未校验检查"
         '
         '合并文件ToolStripMenuItem
         '
         Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
-        Me.合并文件ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
+        Me.合并文件ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
         Me.合并文件ToolStripMenuItem.Text = "合并文件"
         '
         'TextBox2
@@ -123,11 +130,11 @@ Partial Class Form1
         Me.TextBox2.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
             Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TextBox2.Location = New System.Drawing.Point(14, 105)
+        Me.TextBox2.Location = New System.Drawing.Point(14, 95)
         Me.TextBox2.Multiline = True
         Me.TextBox2.Name = "TextBox2"
         Me.TextBox2.ScrollBars = System.Windows.Forms.ScrollBars.Both
-        Me.TextBox2.Size = New System.Drawing.Size(595, 306)
+        Me.TextBox2.Size = New System.Drawing.Size(595, 316)
         Me.TextBox2.TabIndex = 4
         Me.TextBox2.WordWrap = False
         '
@@ -284,17 +291,25 @@ Partial Class Form1
         Me.Button10.Text = "驱动器操作"
         Me.Button10.UseVisualStyleBackColor = True
         '
-        '未校验检查ToolStripMenuItem
+        'CheckBox2
         '
-        Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
-        Me.未校验检查ToolStripMenuItem.Size = New System.Drawing.Size(180, 22)
-        Me.未校验检查ToolStripMenuItem.Text = "未校验检查"
+        Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
+        Me.CheckBox2.AutoSize = True
+        Me.CheckBox2.Checked = True
+        Me.CheckBox2.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox2.Location = New System.Drawing.Point(95, 421)
+        Me.CheckBox2.Name = "CheckBox2"
+        Me.CheckBox2.Size = New System.Drawing.Size(72, 16)
+        Me.CheckBox2.TabIndex = 19
+        Me.CheckBox2.Text = "robocopy"
+        Me.CheckBox2.UseVisualStyleBackColor = True
         '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(621, 452)
+        Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.Button10)
         Me.Controls.Add(Me.Button9)
         Me.Controls.Add(Me.Button8)
@@ -350,4 +365,5 @@ Partial Class Form1
     Friend WithEvents 错误检查ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 合并文件ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 未校验检查ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents CheckBox2 As CheckBox
 End Class

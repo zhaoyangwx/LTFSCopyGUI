@@ -84,43 +84,28 @@ Public Class Form1
                     If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\")
                     tdir &= "\"
                     If Not CheckBox1.Checked Then
-                        p.Append("Partition" & vbTab & "Startblock" & vbTab & "Length" & vbTab & "Path" & vbCrLf)
-                        For Each f As TapeFileInfo In alist
+                        p.Append($"Partition{vbTab}Startblock{vbTab}Length{vbTab}Path{vbCrLf}")
+                        For Each f As TapeFileInfo In alist.Concat(blist)
                             p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
                             filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
-                                stepval = ran.Next(100, 1000)
-                            End If
-
-                        Next
-                        For Each f As TapeFileInfo In blist
-                            p.Append(f.Partition.ToString & vbTab & f.BlockNumber & vbTab & f.FileLength & vbTab & f.Path & vbCrLf)
-                            filelist.Add(f.Path)
-                            Threading.Interlocked.Increment(counter)
-                            If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
+                                Invoke(Sub() Label4.Text = $"6/7 生成输出内容...{counter}/{total}")
                                 stepval = ran.Next(100, 1000)
                             End If
                         Next
                     Else
                         p.Append("chcp 65001" & vbCrLf)
-                        For Each f As TapeFileInfo In alist
-                            p.Append("echo f|xcopy /D /Y """ & fdir & f.Path & """ """ & tdir & f.Path & """" & vbCrLf)
-                            filelist.Add(f.Path)
-                            Threading.Interlocked.Increment(counter)
-                            If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
-                                stepval = ran.Next(100, 1000)
+                        For Each f As TapeFileInfo In alist.Concat(blist)
+                            If CheckBox2.Checked Then
+                                p.Append($"echo f|robocopy ""{fdir}{f.Path}"" ""{tdir }{f.Path}"" /Copy:D /MIR /W:10 /R:10 /J{vbCrLf}")
+                            Else
+                                p.Append($"echo f|xcopy /J /D /Y ""{fdir}{f.Path}"" ""{tdir }{f.Path}""{vbCrLf}")
                             End If
-                        Next
-                        For Each f As TapeFileInfo In blist
-                            p.Append("echo f|xcopy /D /Y """ & fdir & f.Path & """ """ & tdir & f.Path & """" & vbCrLf)
                             filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = "6/7 生成输出内容..." & counter & "/" & total)
+                                Invoke(Sub() Label4.Text = $"6/7 生成输出内容...{counter}/{total}")
                                 stepval = ran.Next(100, 1000)
                             End If
                         Next
@@ -155,8 +140,8 @@ Public Class Form1
     End Sub
     Public Function LookforXMLEndPosition(ByRef s As String, ByVal Target As String, ByVal StartPos As String) As Long
         Dim i As Integer = StartPos
-        Dim TargetBra As String = "<" & Target & ">"
-        Dim TargetKet As String = "</" & Target & ">"
+        Dim TargetBra As String = $"<{Target}>"
+        Dim TargetKet As String = $"</{Target}>"
         While i < s.Length - 1
             i += 1
             If s.Substring(i, TargetBra.Length).Equals(TargetBra) Then
@@ -251,31 +236,6 @@ Public Class Form1
         If schema Is Nothing Then Exit Sub
         Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = TextBox3.Text, .TargetDirectory = TextBox4.Text}
         hw.Show()
-        Exit Sub
-        Dim f As New Form With {.Height = 300, .Width = 800, .Text = "群主福利", .FormBorderStyle = FormBorderStyle.None, .StartPosition = FormStartPosition.CenterScreen}
-        Dim p As New ProgressBar With {.Parent = f, .Maximum = 10000, .Value = 1, .Top = f.Height / 2, .Left = 80, .Width = f.Width - 160, .Height = 20}
-        Dim l0 As New Label With {.Parent = f, .Top = 0, .Left = 0, .Text = f.Text}
-        Dim l As New Label With {.Parent = f, .Top = f.Height / 4, .Text = "挂机100小时送5元优惠券", .AutoSize = True}
-        l.Left = f.Width / 2 - l.Width
-        l.Font = New Font(l.Font.FontFamily, l.Font.Size * 2)
-        Dim l2 As New Label With {.Parent = f, .Top = p.Top, .Left = 10, .Text = "当前进度：0.01%"}
-        l2.Top -= (p.Height - l2.Height)
-        p.Left = l2.Left + l2.Width + 20
-        Dim thprog As New Threading.Thread(
-            Sub()
-                Dim starttime As Date = Now
-                While True
-                    Threading.Thread.Sleep(100)
-                    Dim prog As Decimal = (Now - starttime).TotalSeconds / (New TimeSpan(100, 0, 0)).TotalSeconds
-                    f.Invoke(
-                        Sub()
-                            p.Value = Math.Min(p.Maximum, prog * p.Maximum)
-                            l2.Text = "当前进度：" & Math.Round(prog * 100, 2) & "%"
-                        End Sub)
-                End While
-            End Sub)
-        thprog.Start()
-        f.Show()
     End Sub
 
     Private Sub Form1_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing

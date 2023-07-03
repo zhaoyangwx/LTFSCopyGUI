@@ -116,6 +116,7 @@ Public Class TapeUtils
     Private Shared Function _Test(ByVal a As Char) As IntPtr
 
     End Function
+    Public Shared AllowPartition As Boolean = True
     Public Shared Function ReadAppInfo(TapeDrive As String) As String
         'TC_MAM_APPLICATION_VENDOR = 0x0800 LEN = 8
         'TC_MAM_APPLICATION_NAME = 0x0801 = 0x0800 LEN = 32
@@ -260,14 +261,24 @@ Public Class TapeUtils
         '                                                          sense = senseData
         '                                                          Return True
         '                                                      End Function)
+        Dim CP As Byte = 0
+        If ReadPosition(TapeDrive).PartitionNumber <> Partition Then CP = 1
+        If AllowPartition OrElse DestType <> 0 Then
+            SCSIReadParam(TapeDrive, {&H92, DestType << 3 Or CP << 1, 0, Partition,
+                                            BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
+                                            BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                            0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
+                                                                 sense = senseData
+                                                                 Return True
+                                                             End Function)
+        Else
+            SCSIReadParam(TapeDrive, {&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                            0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
+                                                              sense = senseData
+                                                              Return True
+                                                          End Function)
+        End If
 
-        SCSIReadParam(TapeDrive, {&H92, DestType << 3 Or 2, 0, Partition,
-                                        BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
-                                        BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                        0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
-                                                             sense = senseData
-                                                             Return True
-                                                         End Function)
         Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
         If Add_Code <> 0 Then
             If DestType = LocateDestType.EOD Then
@@ -277,6 +288,9 @@ Public Class TapeUtils
                                                                                       Return True
                                                                                   End Function)
                 End If
+            ElseIf DestType = LocateDestType.FileMark Then
+                Locate(TapeDrive, 0, 0)
+                Space6(TapeDrive, BlockAddress, LocateDestType.FileMark)
             Else
                 SCSIReadParam(TapeDrive, {&H92, DestType << 3, 0, 0,
                                         BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
@@ -289,6 +303,16 @@ Public Class TapeUtils
             End If
             Add_Code = CInt(sense(12)) << 8 Or sense(13)
         End If
+        Return Add_Code
+    End Function
+    Public Shared Function Space6(TapeDrive As String, Count As Integer, Optional ByVal Code As LocateDestType = 0) As UInt16
+        Dim sense(63) As Byte
+        SCSIReadParam(TapeDrive, {&H11, Code, Count >> 16 And &HFF, Count >> 8 And &HFF, Count And &HFF,
+                                            0}, 64, Function(senseData As Byte()) As Boolean
+                                                        sense = senseData
+                                                        Return True
+                                                    End Function)
+        Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
         Return Add_Code
     End Function
     Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
@@ -854,23 +878,34 @@ Public Class TapeUtils
         End Function
     End Class
     Public Shared Function ReadPosition(TapeDrive As String) As PositionData
-        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+        Dim param As Byte()
         Dim result As New PositionData
-        result.BOP = param(0) >> 7 And &H1
-        result.EOP = param(0) >> 6 And &H1
-        result.MPU = param(0) >> 3 And &H1
-        For i As Integer = 0 To 3
-            result.PartitionNumber <<= 8
-            result.PartitionNumber = result.PartitionNumber Or param(4 + i)
-        Next
-        For i As Integer = 0 To 7
-            result.BlockNumber <<= 8
-            result.BlockNumber = result.BlockNumber Or param(8 + i)
-            result.FileNumber <<= 8
-            result.FileNumber = result.FileNumber Or param(16 + i)
-            result.SetNumber <<= 8
-            result.SetNumber = result.SetNumber Or param(24 + i)
-        Next
+        If AllowPartition Then
+            param = SCSIReadParam(TapeDrive, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+            result.BOP = param(0) >> 7 And &H1
+            result.EOP = param(0) >> 6 And &H1
+            result.MPU = param(0) >> 3 And &H1
+            For i As Integer = 0 To 3
+                result.PartitionNumber <<= 8
+                result.PartitionNumber = result.PartitionNumber Or param(4 + i)
+            Next
+            For i As Integer = 0 To 7
+                result.BlockNumber <<= 8
+                result.BlockNumber = result.BlockNumber Or param(8 + i)
+                result.FileNumber <<= 8
+                result.FileNumber = result.FileNumber Or param(16 + i)
+                result.SetNumber <<= 8
+                result.SetNumber = result.SetNumber Or param(24 + i)
+            Next
+        Else
+            param = SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+            result.BOP = param(0) >> 7 And &H1
+            result.EOP = param(0) >> 6 And &H1
+            For i As Integer = 0 To 3
+                result.BlockNumber <<= 8
+                result.BlockNumber = result.BlockNumber Or param(4 + i)
+            Next
+        End If
         Return result
     End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte()) As Byte()
@@ -1339,6 +1374,7 @@ Public Class TapeUtils
                 End If
                 Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
                 ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
+                If Not AllowPartition Then ExtraPartitionCount = 0
                 If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
 
                 'Set Capacity
