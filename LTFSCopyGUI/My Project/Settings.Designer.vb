@@ -305,6 +305,18 @@ Namespace My
                 Me("LTFSWriter_DisablePartition") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute(" 非商业许可")>  _
+        Public Property License() As String
+            Get
+                Return CType(Me("License"),String)
+            End Get
+            Set
+                Me("License") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

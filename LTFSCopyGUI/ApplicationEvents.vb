@@ -35,6 +35,28 @@ Namespace My
             FreeConsole()
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "license.key")) Then
+                Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
+                If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
+                    rsa.FromXmlString(My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                Else
+                    rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
+                End If
+                Dim lic_string = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"))
+                Try
+                    Dim key As Byte() = Convert.FromBase64String(lic_string)
+                    lic_string = System.Text.Encoding.UTF8.GetString(rsa.Decrypt(key, False))
+                    My.Settings.License = lic_string
+                Catch ex As Exception
+                    If rsa.PublicOnly Then
+                        MessageBox.Show("许可证无效")
+                    Else
+                        My.Settings.License = lic_string
+                        lic_string = Convert.ToBase64String(rsa.Encrypt(System.Text.Encoding.UTF8.GetBytes(lic_string), False))
+                        My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"), lic_string, False)
+                    End If
+                End Try
+            End If
             If e.CommandLine.Count = 0 Then
 
             Else
@@ -191,7 +213,7 @@ SCSI命令执行失败")
                         Case Else
                             Try
                                 InitConsole()
-                                Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}
+                                Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}{My.Settings.License}
   -s                                            不要自动读取索引
   -t <drive>                                    直接读写
   ├  -t 0

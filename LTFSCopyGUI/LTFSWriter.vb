@@ -569,7 +569,7 @@ Public Class LTFSWriter
         Save_Settings()
     End Sub
     Public Function GetLocInfo() As String
-        If schema Is Nothing Then Return $"未加载索引 - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}"
+        If schema Is Nothing Then Return $"未加载索引 - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         Try
             SyncLock schema
@@ -580,7 +580,7 @@ Public Class LTFSWriter
             End SyncLock
             If CurrentHeight > 0 Then info &= $" 数据高度{CurrentHeight}"
             If Modified Then info &= "*"
-            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}"
+            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         Catch ex As Exception
             PrintMsg("获取位置出错")
         End Try
