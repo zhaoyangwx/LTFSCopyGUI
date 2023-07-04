@@ -35,6 +35,7 @@ Namespace My
             FreeConsole()
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            My.Settings.License = " 非商业许可"
             If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
                 If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
