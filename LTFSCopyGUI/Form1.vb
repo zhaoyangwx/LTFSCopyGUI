@@ -215,6 +215,7 @@ Public Class Form1
         TextBox3.Text = My.Settings.Src
         TextBox4.Text = My.Settings.Dest
         CheckBox1.Checked = My.Settings.GenCMD
+        Text = $"磁带文件排序 - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         LoadComplete = True
     End Sub
 

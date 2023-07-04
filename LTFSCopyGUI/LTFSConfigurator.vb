@@ -135,6 +135,7 @@ Public Class LTFSConfigurator
         CheckBox3.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBox2.SelectedIndex = 2
         ComboBox3.SelectedIndex = 0
+        Text = $"LTFSConfigurator - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         LoadComplete = True
     End Sub
 

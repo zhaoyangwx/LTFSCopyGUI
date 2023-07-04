@@ -65,5 +65,8 @@
     <Setting Name="LTFSWriter_DisablePartition" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="License" Type="System.String" Scope="User">
+      <Value Profile="(Default)"> 非商业许可</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
