@@ -25,7 +25,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>3.3.10.%2a</ApplicationVersion>
+    <ApplicationVersion>3.4.1.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -239,18 +239,46 @@
     <EmbeddedResource Include="FileBrowser.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FileBrowser.zh-Hant.resx">
+      <DependentUpon>FileBrowser.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FileBrowser.zh.resx">
+      <DependentUpon>FileBrowser.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.en.resx">
+      <DependentUpon>Form1.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.zh-Hant.resx">
       <DependentUpon>Form1.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="HashTaskWindow.resx">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="HashTaskWindow.zh-Hant.resx">
+      <DependentUpon>HashTaskWindow.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LTFSConfigurator.en.resx">
+      <DependentUpon>LTFSConfigurator.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LTFSConfigurator.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LTFSConfigurator.zh-Hant.resx">
+      <DependentUpon>LTFSConfigurator.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LTFSWriter.en.resx">
+      <DependentUpon>LTFSWriter.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSWriter.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="LTFSWriter.zh-Hant.resx">
+      <DependentUpon>LTFSWriter.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.en.resx" />
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>

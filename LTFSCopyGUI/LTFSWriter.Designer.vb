@@ -62,6 +62,19 @@ Partial Class LTFSWriter
         Dim Title1 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title2 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title3 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
+        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+        Me.TreeView1 = New System.Windows.Forms.TreeView()
+        Me.ContextMenuStrip3 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.提取ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.校验ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.计算并更新ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.跳过已有校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.仅验证ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.重命名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.统计ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
+        Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.ListView1 = New System.Windows.Forms.ListView()
         Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
@@ -104,31 +117,18 @@ Partial Class LTFSWriter
         Me.设置标签ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.复制选中信息ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.文件详情ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
-        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-        Me.TreeView1 = New System.Windows.Forms.TreeView()
-        Me.ContextMenuStrip3 = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.提取ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.校验ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.计算并更新ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.跳过已有校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.仅验证ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.重命名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.统计ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.Chart1 = New System.Windows.Forms.DataVisualization.Charting.Chart()
         Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.SToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.MinToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.MinToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.MinToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.HToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.HToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.HToolStripMenuItem2 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.S60ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.Min5ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.Min10ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.Min30ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.H1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.H3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.H6ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
         Me.LinearToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.LogarithmicToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.MenuStrip1 = New System.Windows.Forms.MenuStrip()
         Me.磁带ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -150,12 +150,17 @@ Partial Class LTFSWriter
         Me.ToolStripTextBox1 = New System.Windows.Forms.ToolStripTextBox()
         Me.计算校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.异步校验CPU占用高ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.去重SHA1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.索引间隔36GiBToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.容量刷新间隔30sToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.限速不限制ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.预读文件数5ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.文件缓存32MiBToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.APToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.容量缺失检测参数ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.速度下限ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.速度上限ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.持续时间ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.重装带前清洁次数3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
         Me.启用日志记录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -191,7 +196,179 @@ Partial Class LTFSWriter
         Me.ToolStripButton6 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
-        Me.ContextMenuStrip1.SuspendLayout()
+        Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.Panel7 = New System.Windows.Forms.Panel()
+        Me.ResText_CHashing = New System.Windows.Forms.Label()
+        Me.ResText_Size = New System.Windows.Forms.Label()
+        Me.ResText_Skip = New System.Windows.Forms.Label()
+        Me.ResText_WrittenTotal = New System.Windows.Forms.Label()
+        Me.ResText_Remaining = New System.Windows.Forms.Label()
+        Me.ResText_Writing = New System.Windows.Forms.Label()
+        Me.ResText_WErr = New System.Windows.Forms.Label()
+        Me.ResText_VOF = New System.Windows.Forms.Label()
+        Me.ResText_WFTime = New System.Windows.Forms.Label()
+        Me.ResText_AvgS = New System.Windows.Forms.Label()
+        Me.ResText_WCnd = New System.Windows.Forms.Label()
+        Me.ResText_RestoreErr = New System.Windows.Forms.Label()
+        Me.ResText_Restoring = New System.Windows.Forms.Label()
+        Me.ResText_OpCancelled = New System.Windows.Forms.Label()
+        Me.ResText_RestFin = New System.Windows.Forms.Label()
+        Me.ResText_PrepFile = New System.Windows.Forms.Label()
+        Me.ResText_RestFile = New System.Windows.Forms.Label()
+        Me.ResText_PrepW = New System.Windows.Forms.Label()
+        Me.Panel6 = New System.Windows.Forms.Panel()
+        Me.ResText_DelConfrm = New System.Windows.Forms.Label()
+        Me.ResText_DirName = New System.Windows.Forms.Label()
+        Me.ResText_RenameDir = New System.Windows.Forms.Label()
+        Me.ResText_DirNIllegal = New System.Windows.Forms.Label()
+        Me.ResText_DirNExist = New System.Windows.Forms.Label()
+        Me.ResText_NFName = New System.Windows.Forms.Label()
+        Me.ResText_Rename = New System.Windows.Forms.Label()
+        Me.ResText_FNIllegal = New System.Windows.Forms.Label()
+        Me.ResText_FNExist = New System.Windows.Forms.Label()
+        Me.ResText_Files_C = New System.Windows.Forms.Label()
+        Me.ResText_Adding = New System.Windows.Forms.Label()
+        Me.ResText_Items_x = New System.Windows.Forms.Label()
+        Me.ResText_AddFin = New System.Windows.Forms.Label()
+        Me.ResText_DLFin = New System.Windows.Forms.Label()
+        Me.ResText_DragNA = New System.Windows.Forms.Label()
+        Me.ResText_DLT = New System.Windows.Forms.Label()
+        Me.ResText_NewDir = New System.Windows.Forms.Label()
+        Me.ResText_DLS = New System.Windows.Forms.Label()
+        Me.ResText_OverwritingDF = New System.Windows.Forms.Label()
+        Me.Panel5 = New System.Windows.Forms.Panel()
+        Me.ResText_FileRateBT = New System.Windows.Forms.Label()
+        Me.ResText_SpeedBT = New System.Windows.Forms.Label()
+        Me.ResText_C0 = New System.Windows.Forms.Label()
+        Me.ResText_C1 = New System.Windows.Forms.Label()
+        Me.ResText_C2 = New System.Windows.Forms.Label()
+        Me.ResText_S0 = New System.Windows.Forms.Label()
+        Me.ResText_S1 = New System.Windows.Forms.Label()
+        Me.ResText_S2 = New System.Windows.Forms.Label()
+        Me.ResText_S3 = New System.Windows.Forms.Label()
+        Me.ResText_Byte = New System.Windows.Forms.Label()
+        Me.ResText_S4 = New System.Windows.Forms.Label()
+        Me.ResText_FSizeP = New System.Windows.Forms.Label()
+        Me.ResText_ErrP = New System.Windows.Forms.Label()
+        Me.ResText_FCountP = New System.Windows.Forms.Label()
+        Me.ResText_X0 = New System.Windows.Forms.Label()
+        Me.ResText_HFin = New System.Windows.Forms.Label()
+        Me.ResText_NIndex = New System.Windows.Forms.Label()
+        Me.ResText_HErr = New System.Windows.Forms.Label()
+        Me.ResText_Index = New System.Windows.Forms.Label()
+        Me.ResText_Hashing = New System.Windows.Forms.Label()
+        Me.ResText_Partition = New System.Windows.Forms.Label()
+        Me.ResText_Block = New System.Windows.Forms.Label()
+        Me.ResText_Previous = New System.Windows.Forms.Label()
+        Me.ResText_Located = New System.Windows.Forms.Label()
+        Me.ResText_Ejd = New System.Windows.Forms.Label()
+        Me.ResText_WritePointer = New System.Windows.Forms.Label()
+        Me.ResText_RPosErr = New System.Windows.Forms.Label()
+        Me.ResText_CapRem = New System.Windows.Forms.Label()
+        Me.ResText_RCErr = New System.Windows.Forms.Label()
+        Me.ResText_DNW = New System.Windows.Forms.Label()
+        Me.ResText_RDErr = New System.Windows.Forms.Label()
+        Me.ResText_CRef = New System.Windows.Forms.Label()
+        Me.ResText_CRefErr = New System.Windows.Forms.Label()
+        Me.ResText_NavErr = New System.Windows.Forms.Label()
+        Me.ResText_Locating = New System.Windows.Forms.Label()
+        Me.ResText_WriteWarning = New System.Windows.Forms.Label()
+        Me.ResText_EWEOM = New System.Windows.Forms.Label()
+        Me.Panel4 = New System.Windows.Forms.Panel()
+        Me.ResText_NHWrn = New System.Windows.Forms.Label()
+        Me.ResText_X1 = New System.Windows.Forms.Label()
+        Me.ResText_X2 = New System.Windows.Forms.Label()
+        Me.ResText_X3 = New System.Windows.Forms.Label()
+        Me.ResText_PEj = New System.Windows.Forms.Label()
+        Me.ResText_WErrSCSI = New System.Windows.Forms.Label()
+        Me.ResText_WFUp = New System.Windows.Forms.Label()
+        Me.ResText_ILdedP = New System.Windows.Forms.Label()
+        Me.ResText_DataLossWarning = New System.Windows.Forms.Label()
+        Me.ResText_SHA1Overw = New System.Windows.Forms.Label()
+        Me.ResText_SetH1 = New System.Windows.Forms.Label()
+        Me.ResText_SetH2 = New System.Windows.Forms.Label()
+        Me.ResText_SetH3 = New System.Windows.Forms.Label()
+        Me.ResText_CancelConfirm = New System.Windows.Forms.Label()
+        Me.ResText_ClearWC = New System.Windows.Forms.Label()
+        Me.ResText_RB4 = New System.Windows.Forms.Label()
+        Me.Panel3 = New System.Windows.Forms.Panel()
+        Me.ResText_GI = New System.Windows.Forms.Label()
+        Me.ResText_WI = New System.Windows.Forms.Label()
+        Me.ResText_WIF = New System.Windows.Forms.Label()
+        Me.ResText_UDI = New System.Windows.Forms.Label()
+        Me.ResText_UI = New System.Windows.Forms.Label()
+        Me.ResText_IUd = New System.Windows.Forms.Label()
+        Me.ResText_DPIUed = New System.Windows.Forms.Label()
+        Me.ResText_RI = New System.Windows.Forms.Label()
+        Me.ResText_Exporting = New System.Windows.Forms.Label()
+        Me.ResText_Imported = New System.Windows.Forms.Label()
+        Me.ResText_IAErrp = New System.Windows.Forms.Label()
+        Me.ResText_AI = New System.Windows.Forms.Label()
+        Me.ResText_VCID = New System.Windows.Forms.Label()
+        Me.ResText_Importing = New System.Windows.Forms.Label()
+        Me.ResText_AISucc = New System.Windows.Forms.Label()
+        Me.ResText_FmtFail = New System.Windows.Forms.Label()
+        Me.ResText_IndexBaked = New System.Windows.Forms.Label()
+        Me.ResText_FmtFin = New System.Windows.Forms.Label()
+        Me.ResText_IndexBak2 = New System.Windows.Forms.Label()
+        Me.ResText_LTFSVolumeN2 = New System.Windows.Forms.Label()
+        Me.ResText_IUErr = New System.Windows.Forms.Label()
+        Me.ResText_Barcode2 = New System.Windows.Forms.Label()
+        Me.ResText_CurPos = New System.Windows.Forms.Label()
+        Me.ResText_LTFSVolumeN = New System.Windows.Forms.Label()
+        Me.ResText_IndexNAllowed = New System.Windows.Forms.Label()
+        Me.ResText_SetVolumeN = New System.Windows.Forms.Label()
+        Me.ResText_DPIWritten = New System.Windows.Forms.Label()
+        Me.ResText_SetBarcode = New System.Windows.Forms.Label()
+        Me.ResText_IndexBakF = New System.Windows.Forms.Label()
+        Me.ResText_DPIWFailed = New System.Windows.Forms.Label()
+        Me.ResText_IPCanc = New System.Windows.Forms.Label()
+        Me.ResText_RollBacked = New System.Windows.Forms.Label()
+        Me.ResText_BlkSize = New System.Windows.Forms.Label()
+        Me.ResText_RFailed = New System.Windows.Forms.Label()
+        Me.ResText_Barcode = New System.Windows.Forms.Label()
+        Me.ResText_RBFin = New System.Windows.Forms.Label()
+        Me.ResText_RB1 = New System.Windows.Forms.Label()
+        Me.ResText_RBing = New System.Windows.Forms.Label()
+        Me.ResText_RB2 = New System.Windows.Forms.Label()
+        Me.ResText_RB3 = New System.Windows.Forms.Label()
+        Me.ResText_IRFailed = New System.Windows.Forms.Label()
+        Me.ResText_IRSucc = New System.Windows.Forms.Label()
+        Me.ResText_NVOL1 = New System.Windows.Forms.Label()
+        Me.ResText_NLTFS = New System.Windows.Forms.Label()
+        Me.ResText_RLTFSInfo = New System.Windows.Forms.Label()
+        Me.ResText_SvBak = New System.Windows.Forms.Label()
+        Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.ResText_Warning = New System.Windows.Forms.Label()
+        Me.ResText_Hint = New System.Windows.Forms.Label()
+        Me.ResText_Confirm = New System.Windows.Forms.Label()
+        Me.ResText_OpSucc = New System.Windows.Forms.Label()
+        Me.ResText_Error = New System.Windows.Forms.Label()
+        Me.ResText_Setting = New System.Windows.Forms.Label()
+        Me.ResText_ = New System.Windows.Forms.Label()
+        Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.ResText_SSMin = New System.Windows.Forms.Label()
+        Me.ResText_SFB = New System.Windows.Forms.Label()
+        Me.ResText_SSMax = New System.Windows.Forms.Label()
+        Me.ResText_SPreR = New System.Windows.Forms.Label()
+        Me.ResText_SSTime = New System.Windows.Forms.Label()
+        Me.ResText_SCIntv = New System.Windows.Forms.Label()
+        Me.ResText_SIIntv = New System.Windows.Forms.Label()
+        Me.ResText_CLNCS = New System.Windows.Forms.Label()
+        Me.ResText_WLimS = New System.Windows.Forms.Label()
+        Me.ResText_NoIndex = New System.Windows.Forms.Label()
+        Me.ResText_IndexInterval = New System.Windows.Forms.Label()
+        Me.ResText_CRDisabled = New System.Windows.Forms.Label()
+        Me.ResText_CRIntv = New System.Windows.Forms.Label()
+        Me.ResText_NoSLim = New System.Windows.Forms.Label()
+        Me.ResText_SLim = New System.Windows.Forms.Label()
+        Me.ResText_RBCoff = New System.Windows.Forms.Label()
+        Me.ResText_RBC = New System.Windows.Forms.Label()
+        Me.ResText_PFC = New System.Windows.Forms.Label()
+        Me.ResText_FB = New System.Windows.Forms.Label()
+        Me.ResText_SMin = New System.Windows.Forms.Label()
+        Me.ResText_SMax = New System.Windows.Forms.Label()
+        Me.ResText_STime = New System.Windows.Forms.Label()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -201,264 +378,90 @@ Partial Class LTFSWriter
         Me.SplitContainer2.Panel1.SuspendLayout()
         Me.SplitContainer2.Panel2.SuspendLayout()
         Me.SplitContainer2.SuspendLayout()
+        Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.Chart1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStrip2.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
         Me.StatusStrip1.SuspendLayout()
         Me.ToolStrip1.SuspendLayout()
+        Me.GroupBox1.SuspendLayout()
+        Me.Panel7.SuspendLayout()
+        Me.Panel6.SuspendLayout()
+        Me.Panel5.SuspendLayout()
+        Me.Panel4.SuspendLayout()
+        Me.Panel3.SuspendLayout()
+        Me.Panel2.SuspendLayout()
+        Me.Panel1.SuspendLayout()
         Me.SuspendLayout()
         '
-        'ListView1
+        'SplitContainer1
         '
-        Me.ListView1.AllowColumnReorder = True
-        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_sha1, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
-        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
-        Me.ListView1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.ListView1.Location = New System.Drawing.Point(0, 0)
-        Me.ListView1.Name = "ListView1"
-        Me.ListView1.ShowGroups = False
-        Me.ListView1.ShowItemToolTips = True
-        Me.ListView1.Size = New System.Drawing.Size(1070, 465)
-        Me.ListView1.SmallImageList = Me.ImageList1
-        Me.ListView1.TabIndex = 0
-        Me.ListView1.UseCompatibleStateImageBehavior = False
-        Me.ListView1.View = System.Windows.Forms.View.Details
+        resources.ApplyResources(Me.SplitContainer1, "SplitContainer1")
+        Me.SplitContainer1.Name = "SplitContainer1"
         '
-        'Column_name
+        'SplitContainer1.Panel1
         '
-        Me.Column_name.Text = "名称"
-        Me.Column_name.Width = 178
+        resources.ApplyResources(Me.SplitContainer1.Panel1, "SplitContainer1.Panel1")
+        Me.SplitContainer1.Panel1.Controls.Add(Me.TreeView1)
         '
-        'Column_length
+        'SplitContainer1.Panel2
         '
-        Me.Column_length.DisplayIndex = 7
-        Me.Column_length.Text = "大小（字节）"
-        Me.Column_length.TextAlign = System.Windows.Forms.HorizontalAlignment.Right
-        Me.Column_length.Width = 88
+        resources.ApplyResources(Me.SplitContainer1.Panel2, "SplitContainer1.Panel2")
+        Me.SplitContainer1.Panel2.Controls.Add(Me.SplitContainer2)
         '
-        'Column_creationtime
+        'TreeView1
         '
-        Me.Column_creationtime.DisplayIndex = 1
-        Me.Column_creationtime.Text = "创建时间"
-        Me.Column_creationtime.Width = 63
+        resources.ApplyResources(Me.TreeView1, "TreeView1")
+        Me.TreeView1.ContextMenuStrip = Me.ContextMenuStrip3
+        Me.TreeView1.ImageList = Me.ImageList1
+        Me.TreeView1.Name = "TreeView1"
         '
-        'Column_sha1
+        'ContextMenuStrip3
         '
-        Me.Column_sha1.Text = "SHA1"
-        Me.Column_sha1.Width = 261
+        resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
+        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem})
+        Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
         '
-        'Column_fileuid
+        '提取ToolStripMenuItem1
         '
-        Me.Column_fileuid.Text = "文件序号"
+        resources.ApplyResources(Me.提取ToolStripMenuItem1, "提取ToolStripMenuItem1")
+        Me.提取ToolStripMenuItem1.Name = "提取ToolStripMenuItem1"
         '
-        'Column_openforwrite
+        '校验ToolStripMenuItem1
         '
-        Me.Column_openforwrite.DisplayIndex = 9
-        Me.Column_openforwrite.Text = "文件已打开"
-        Me.Column_openforwrite.Width = 80
+        resources.ApplyResources(Me.校验ToolStripMenuItem1, "校验ToolStripMenuItem1")
+        Me.校验ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem1, Me.跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem1})
+        Me.校验ToolStripMenuItem1.Name = "校验ToolStripMenuItem1"
         '
-        'Column_readonly
+        '计算并更新ToolStripMenuItem1
         '
-        Me.Column_readonly.DisplayIndex = 10
-        Me.Column_readonly.Text = "只读"
+        resources.ApplyResources(Me.计算并更新ToolStripMenuItem1, "计算并更新ToolStripMenuItem1")
+        Me.计算并更新ToolStripMenuItem1.Name = "计算并更新ToolStripMenuItem1"
         '
-        'Column_changetime
+        '跳过已有校验ToolStripMenuItem
         '
-        Me.Column_changetime.DisplayIndex = 11
-        Me.Column_changetime.Text = "更新时间"
-        Me.Column_changetime.Width = 73
+        resources.ApplyResources(Me.跳过已有校验ToolStripMenuItem, "跳过已有校验ToolStripMenuItem")
+        Me.跳过已有校验ToolStripMenuItem.Name = "跳过已有校验ToolStripMenuItem"
         '
-        'Column_modifytime
+        '仅验证ToolStripMenuItem1
         '
-        Me.Column_modifytime.DisplayIndex = 12
-        Me.Column_modifytime.Text = "修改时间"
+        resources.ApplyResources(Me.仅验证ToolStripMenuItem1, "仅验证ToolStripMenuItem1")
+        Me.仅验证ToolStripMenuItem1.Name = "仅验证ToolStripMenuItem1"
         '
-        'Column_accesstime
+        '重命名ToolStripMenuItem
         '
-        Me.Column_accesstime.DisplayIndex = 13
-        Me.Column_accesstime.Text = "访问时间"
+        resources.ApplyResources(Me.重命名ToolStripMenuItem, "重命名ToolStripMenuItem")
+        Me.重命名ToolStripMenuItem.Name = "重命名ToolStripMenuItem"
         '
-        'Column_backuptime
+        '删除ToolStripMenuItem
         '
-        Me.Column_backuptime.DisplayIndex = 14
-        Me.Column_backuptime.Text = "备份时间"
+        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
+        Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
         '
-        'Column_tag
+        '统计ToolStripMenuItem
         '
-        Me.Column_tag.DisplayIndex = 15
-        Me.Column_tag.Text = "备注"
-        '
-        'Column_StartBlock
-        '
-        Me.Column_StartBlock.DisplayIndex = 5
-        Me.Column_StartBlock.Text = "起始区块"
-        '
-        'Column_Partition
-        '
-        Me.Column_Partition.DisplayIndex = 6
-        Me.Column_Partition.Text = "所在分区"
-        '
-        'Column_FriendlyLen
-        '
-        Me.Column_FriendlyLen.DisplayIndex = 2
-        Me.Column_FriendlyLen.Text = "大小"
-        Me.Column_FriendlyLen.Width = 84
-        '
-        'Column_writtenBytes
-        '
-        Me.Column_writtenBytes.DisplayIndex = 8
-        Me.Column_writtenBytes.Text = "本次已写入"
-        Me.Column_writtenBytes.Width = 88
-        '
-        'ContextMenuStrip1
-        '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.复制选中信息ToolStripMenuItem, Me.文件详情ToolStripMenuItem})
-        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(161, 380)
-        '
-        '提取ToolStripMenuItem
-        '
-        Me.提取ToolStripMenuItem.Name = "提取ToolStripMenuItem"
-        Me.提取ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.提取ToolStripMenuItem.Text = "提取"
-        '
-        '校验ToolStripMenuItem
-        '
-        Me.校验ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem, Me.计算并跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem})
-        Me.校验ToolStripMenuItem.Name = "校验ToolStripMenuItem"
-        Me.校验ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.校验ToolStripMenuItem.Text = "校验"
-        '
-        '计算并更新ToolStripMenuItem
-        '
-        Me.计算并更新ToolStripMenuItem.Name = "计算并更新ToolStripMenuItem"
-        Me.计算并更新ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.计算并更新ToolStripMenuItem.Text = "计算并更新"
-        '
-        '计算并跳过已有校验ToolStripMenuItem
-        '
-        Me.计算并跳过已有校验ToolStripMenuItem.Name = "计算并跳过已有校验ToolStripMenuItem"
-        Me.计算并跳过已有校验ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.计算并跳过已有校验ToolStripMenuItem.Text = "计算并跳过已有校验"
-        '
-        '仅验证ToolStripMenuItem
-        '
-        Me.仅验证ToolStripMenuItem.Name = "仅验证ToolStripMenuItem"
-        Me.仅验证ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.仅验证ToolStripMenuItem.Text = "仅验证"
-        '
-        '定位到起始块ToolStripMenuItem
-        '
-        Me.定位到起始块ToolStripMenuItem.Name = "定位到起始块ToolStripMenuItem"
-        Me.定位到起始块ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.定位到起始块ToolStripMenuItem.Text = "定位到起始块"
-        '
-        'ToolStripSeparator2
-        '
-        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(157, 6)
-        '
-        '重命名文件ToolStripMenuItem
-        '
-        Me.重命名文件ToolStripMenuItem.Name = "重命名文件ToolStripMenuItem"
-        Me.重命名文件ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.重命名文件ToolStripMenuItem.Text = "重命名文件"
-        '
-        '重命名目录ToolStripMenuItem
-        '
-        Me.重命名目录ToolStripMenuItem.Name = "重命名目录ToolStripMenuItem"
-        Me.重命名目录ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.重命名目录ToolStripMenuItem.Text = "重命名目录"
-        '
-        'ToolStripSeparator3
-        '
-        Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
-        Me.ToolStripSeparator3.Size = New System.Drawing.Size(157, 6)
-        '
-        '导入文件ToolStripMenuItem
-        '
-        Me.导入文件ToolStripMenuItem.Image = CType(resources.GetObject("导入文件ToolStripMenuItem.Image"), System.Drawing.Image)
-        Me.导入文件ToolStripMenuItem.Name = "导入文件ToolStripMenuItem"
-        Me.导入文件ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.导入文件ToolStripMenuItem.Text = "导入文件"
-        '
-        '添加文件ToolStripMenuItem
-        '
-        Me.添加文件ToolStripMenuItem.Name = "添加文件ToolStripMenuItem"
-        Me.添加文件ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.添加文件ToolStripMenuItem.Text = "添加文件"
-        '
-        '添加目录ToolStripMenuItem
-        '
-        Me.添加目录ToolStripMenuItem.Name = "添加目录ToolStripMenuItem"
-        Me.添加目录ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.添加目录ToolStripMenuItem.Text = "添加目录"
-        '
-        '新建目录ToolStripMenuItem
-        '
-        Me.新建目录ToolStripMenuItem.Name = "新建目录ToolStripMenuItem"
-        Me.新建目录ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.新建目录ToolStripMenuItem.Text = "新建目录"
-        '
-        '选项ToolStripMenuItem
-        '
-        Me.选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.覆盖已有文件ToolStripMenuItem})
-        Me.选项ToolStripMenuItem.Name = "选项ToolStripMenuItem"
-        Me.选项ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.选项ToolStripMenuItem.Text = "选项"
-        '
-        '覆盖已有文件ToolStripMenuItem
-        '
-        Me.覆盖已有文件ToolStripMenuItem.CheckOnClick = True
-        Me.覆盖已有文件ToolStripMenuItem.Name = "覆盖已有文件ToolStripMenuItem"
-        Me.覆盖已有文件ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.覆盖已有文件ToolStripMenuItem.Text = "覆盖已有文件（如果不同）"
-        '
-        'ToolStripSeparator4
-        '
-        Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
-        Me.ToolStripSeparator4.Size = New System.Drawing.Size(157, 6)
-        '
-        '删除文件ToolStripMenuItem
-        '
-        Me.删除文件ToolStripMenuItem.Name = "删除文件ToolStripMenuItem"
-        Me.删除文件ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.删除文件ToolStripMenuItem.Text = "删除文件"
-        '
-        '删除目录ToolStripMenuItem
-        '
-        Me.删除目录ToolStripMenuItem.Name = "删除目录ToolStripMenuItem"
-        Me.删除目录ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.删除目录ToolStripMenuItem.Text = "删除目录"
-        '
-        'ToolStripSeparator8
-        '
-        Me.ToolStripSeparator8.Name = "ToolStripSeparator8"
-        Me.ToolStripSeparator8.Size = New System.Drawing.Size(157, 6)
-        '
-        '生成标签ToolStripMenuItem
-        '
-        Me.生成标签ToolStripMenuItem.Name = "生成标签ToolStripMenuItem"
-        Me.生成标签ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.生成标签ToolStripMenuItem.Text = "生成标签"
-        '
-        '设置标签ToolStripMenuItem
-        '
-        Me.设置标签ToolStripMenuItem.Name = "设置标签ToolStripMenuItem"
-        Me.设置标签ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.设置标签ToolStripMenuItem.Text = "设置标签"
-        '
-        '复制选中信息ToolStripMenuItem
-        '
-        Me.复制选中信息ToolStripMenuItem.Name = "复制选中信息ToolStripMenuItem"
-        Me.复制选中信息ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.复制选中信息ToolStripMenuItem.Text = "复制选中文件名"
-        '
-        '文件详情ToolStripMenuItem
-        '
-        Me.文件详情ToolStripMenuItem.Name = "文件详情ToolStripMenuItem"
-        Me.文件详情ToolStripMenuItem.Size = New System.Drawing.Size(160, 22)
-        Me.文件详情ToolStripMenuItem.Text = "文件详情"
+        resources.ApplyResources(Me.统计ToolStripMenuItem, "统计ToolStripMenuItem")
+        Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
         '
         'ImageList1
         '
@@ -468,112 +471,230 @@ Partial Class LTFSWriter
         Me.ImageList1.Images.SetKeyName(1, "Dir.png")
         Me.ImageList1.Images.SetKeyName(2, "File.png")
         '
-        'SplitContainer1
-        '
-        Me.SplitContainer1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.SplitContainer1.Location = New System.Drawing.Point(9, 28)
-        Me.SplitContainer1.Name = "SplitContainer1"
-        '
-        'SplitContainer1.Panel1
-        '
-        Me.SplitContainer1.Panel1.Controls.Add(Me.TreeView1)
-        '
-        'SplitContainer1.Panel2
-        '
-        Me.SplitContainer1.Panel2.Controls.Add(Me.SplitContainer2)
-        Me.SplitContainer1.Size = New System.Drawing.Size(1328, 618)
-        Me.SplitContainer1.SplitterDistance = 254
-        Me.SplitContainer1.TabIndex = 2
-        '
-        'TreeView1
-        '
-        Me.TreeView1.ContextMenuStrip = Me.ContextMenuStrip3
-        Me.TreeView1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.TreeView1.ImageIndex = 0
-        Me.TreeView1.ImageList = Me.ImageList1
-        Me.TreeView1.Location = New System.Drawing.Point(0, 0)
-        Me.TreeView1.Name = "TreeView1"
-        Me.TreeView1.SelectedImageIndex = 0
-        Me.TreeView1.Size = New System.Drawing.Size(254, 618)
-        Me.TreeView1.TabIndex = 0
-        '
-        'ContextMenuStrip3
-        '
-        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem})
-        Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
-        Me.ContextMenuStrip3.Size = New System.Drawing.Size(113, 114)
-        '
-        '提取ToolStripMenuItem1
-        '
-        Me.提取ToolStripMenuItem1.Name = "提取ToolStripMenuItem1"
-        Me.提取ToolStripMenuItem1.Size = New System.Drawing.Size(112, 22)
-        Me.提取ToolStripMenuItem1.Text = "提取"
-        '
-        '校验ToolStripMenuItem1
-        '
-        Me.校验ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem1, Me.跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem1})
-        Me.校验ToolStripMenuItem1.Name = "校验ToolStripMenuItem1"
-        Me.校验ToolStripMenuItem1.Size = New System.Drawing.Size(112, 22)
-        Me.校验ToolStripMenuItem1.Text = "校验"
-        '
-        '计算并更新ToolStripMenuItem1
-        '
-        Me.计算并更新ToolStripMenuItem1.Name = "计算并更新ToolStripMenuItem1"
-        Me.计算并更新ToolStripMenuItem1.Size = New System.Drawing.Size(184, 22)
-        Me.计算并更新ToolStripMenuItem1.Text = "计算并更新"
-        '
-        '跳过已有校验ToolStripMenuItem
-        '
-        Me.跳过已有校验ToolStripMenuItem.Name = "跳过已有校验ToolStripMenuItem"
-        Me.跳过已有校验ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.跳过已有校验ToolStripMenuItem.Text = "计算并跳过已有校验"
-        '
-        '仅验证ToolStripMenuItem1
-        '
-        Me.仅验证ToolStripMenuItem1.Name = "仅验证ToolStripMenuItem1"
-        Me.仅验证ToolStripMenuItem1.Size = New System.Drawing.Size(184, 22)
-        Me.仅验证ToolStripMenuItem1.Text = "仅验证"
-        '
-        '重命名ToolStripMenuItem
-        '
-        Me.重命名ToolStripMenuItem.Name = "重命名ToolStripMenuItem"
-        Me.重命名ToolStripMenuItem.Size = New System.Drawing.Size(112, 22)
-        Me.重命名ToolStripMenuItem.Text = "重命名"
-        '
-        '删除ToolStripMenuItem
-        '
-        Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
-        Me.删除ToolStripMenuItem.Size = New System.Drawing.Size(112, 22)
-        Me.删除ToolStripMenuItem.Text = "删除"
-        '
-        '统计ToolStripMenuItem
-        '
-        Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
-        Me.统计ToolStripMenuItem.Size = New System.Drawing.Size(112, 22)
-        Me.统计ToolStripMenuItem.Text = "统计"
-        '
         'SplitContainer2
         '
-        Me.SplitContainer2.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.SplitContainer2.Location = New System.Drawing.Point(0, 0)
+        resources.ApplyResources(Me.SplitContainer2, "SplitContainer2")
         Me.SplitContainer2.Name = "SplitContainer2"
-        Me.SplitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal
         '
         'SplitContainer2.Panel1
         '
+        resources.ApplyResources(Me.SplitContainer2.Panel1, "SplitContainer2.Panel1")
         Me.SplitContainer2.Panel1.Controls.Add(Me.ListView1)
         '
         'SplitContainer2.Panel2
         '
+        resources.ApplyResources(Me.SplitContainer2.Panel2, "SplitContainer2.Panel2")
         Me.SplitContainer2.Panel2.Controls.Add(Me.Chart1)
-        Me.SplitContainer2.Size = New System.Drawing.Size(1070, 618)
-        Me.SplitContainer2.SplitterDistance = 465
-        Me.SplitContainer2.TabIndex = 17
+        '
+        'ListView1
+        '
+        resources.ApplyResources(Me.ListView1, "ListView1")
+        Me.ListView1.AllowColumnReorder = True
+        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_sha1, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
+        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.ListView1.Name = "ListView1"
+        Me.ListView1.ShowGroups = False
+        Me.ListView1.ShowItemToolTips = True
+        Me.ListView1.SmallImageList = Me.ImageList1
+        Me.ListView1.UseCompatibleStateImageBehavior = False
+        Me.ListView1.View = System.Windows.Forms.View.Details
+        '
+        'Column_name
+        '
+        resources.ApplyResources(Me.Column_name, "Column_name")
+        '
+        'Column_length
+        '
+        resources.ApplyResources(Me.Column_length, "Column_length")
+        '
+        'Column_creationtime
+        '
+        resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
+        '
+        'Column_sha1
+        '
+        resources.ApplyResources(Me.Column_sha1, "Column_sha1")
+        '
+        'Column_fileuid
+        '
+        resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
+        '
+        'Column_openforwrite
+        '
+        resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
+        '
+        'Column_readonly
+        '
+        resources.ApplyResources(Me.Column_readonly, "Column_readonly")
+        '
+        'Column_changetime
+        '
+        resources.ApplyResources(Me.Column_changetime, "Column_changetime")
+        '
+        'Column_modifytime
+        '
+        resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
+        '
+        'Column_accesstime
+        '
+        resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
+        '
+        'Column_backuptime
+        '
+        resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
+        '
+        'Column_tag
+        '
+        resources.ApplyResources(Me.Column_tag, "Column_tag")
+        '
+        'Column_StartBlock
+        '
+        resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
+        '
+        'Column_Partition
+        '
+        resources.ApplyResources(Me.Column_Partition, "Column_Partition")
+        '
+        'Column_FriendlyLen
+        '
+        resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
+        '
+        'Column_writtenBytes
+        '
+        resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
+        '
+        'ContextMenuStrip1
+        '
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.复制选中信息ToolStripMenuItem, Me.文件详情ToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        '
+        '提取ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.提取ToolStripMenuItem, "提取ToolStripMenuItem")
+        Me.提取ToolStripMenuItem.Name = "提取ToolStripMenuItem"
+        '
+        '校验ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.校验ToolStripMenuItem, "校验ToolStripMenuItem")
+        Me.校验ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem, Me.计算并跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem})
+        Me.校验ToolStripMenuItem.Name = "校验ToolStripMenuItem"
+        '
+        '计算并更新ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.计算并更新ToolStripMenuItem, "计算并更新ToolStripMenuItem")
+        Me.计算并更新ToolStripMenuItem.Name = "计算并更新ToolStripMenuItem"
+        '
+        '计算并跳过已有校验ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.计算并跳过已有校验ToolStripMenuItem, "计算并跳过已有校验ToolStripMenuItem")
+        Me.计算并跳过已有校验ToolStripMenuItem.Name = "计算并跳过已有校验ToolStripMenuItem"
+        '
+        '仅验证ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.仅验证ToolStripMenuItem, "仅验证ToolStripMenuItem")
+        Me.仅验证ToolStripMenuItem.Name = "仅验证ToolStripMenuItem"
+        '
+        '定位到起始块ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.定位到起始块ToolStripMenuItem, "定位到起始块ToolStripMenuItem")
+        Me.定位到起始块ToolStripMenuItem.Name = "定位到起始块ToolStripMenuItem"
+        '
+        'ToolStripSeparator2
+        '
+        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        '
+        '重命名文件ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.重命名文件ToolStripMenuItem, "重命名文件ToolStripMenuItem")
+        Me.重命名文件ToolStripMenuItem.Name = "重命名文件ToolStripMenuItem"
+        '
+        '重命名目录ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.重命名目录ToolStripMenuItem, "重命名目录ToolStripMenuItem")
+        Me.重命名目录ToolStripMenuItem.Name = "重命名目录ToolStripMenuItem"
+        '
+        'ToolStripSeparator3
+        '
+        resources.ApplyResources(Me.ToolStripSeparator3, "ToolStripSeparator3")
+        Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
+        '
+        '导入文件ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.导入文件ToolStripMenuItem, "导入文件ToolStripMenuItem")
+        Me.导入文件ToolStripMenuItem.Name = "导入文件ToolStripMenuItem"
+        '
+        '添加文件ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.添加文件ToolStripMenuItem, "添加文件ToolStripMenuItem")
+        Me.添加文件ToolStripMenuItem.Name = "添加文件ToolStripMenuItem"
+        '
+        '添加目录ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.添加目录ToolStripMenuItem, "添加目录ToolStripMenuItem")
+        Me.添加目录ToolStripMenuItem.Name = "添加目录ToolStripMenuItem"
+        '
+        '新建目录ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.新建目录ToolStripMenuItem, "新建目录ToolStripMenuItem")
+        Me.新建目录ToolStripMenuItem.Name = "新建目录ToolStripMenuItem"
+        '
+        '选项ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.选项ToolStripMenuItem, "选项ToolStripMenuItem")
+        Me.选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.覆盖已有文件ToolStripMenuItem})
+        Me.选项ToolStripMenuItem.Name = "选项ToolStripMenuItem"
+        '
+        '覆盖已有文件ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.覆盖已有文件ToolStripMenuItem, "覆盖已有文件ToolStripMenuItem")
+        Me.覆盖已有文件ToolStripMenuItem.CheckOnClick = True
+        Me.覆盖已有文件ToolStripMenuItem.Name = "覆盖已有文件ToolStripMenuItem"
+        '
+        'ToolStripSeparator4
+        '
+        resources.ApplyResources(Me.ToolStripSeparator4, "ToolStripSeparator4")
+        Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
+        '
+        '删除文件ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.删除文件ToolStripMenuItem, "删除文件ToolStripMenuItem")
+        Me.删除文件ToolStripMenuItem.Name = "删除文件ToolStripMenuItem"
+        '
+        '删除目录ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.删除目录ToolStripMenuItem, "删除目录ToolStripMenuItem")
+        Me.删除目录ToolStripMenuItem.Name = "删除目录ToolStripMenuItem"
+        '
+        'ToolStripSeparator8
+        '
+        resources.ApplyResources(Me.ToolStripSeparator8, "ToolStripSeparator8")
+        Me.ToolStripSeparator8.Name = "ToolStripSeparator8"
+        '
+        '生成标签ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.生成标签ToolStripMenuItem, "生成标签ToolStripMenuItem")
+        Me.生成标签ToolStripMenuItem.Name = "生成标签ToolStripMenuItem"
+        '
+        '设置标签ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.设置标签ToolStripMenuItem, "设置标签ToolStripMenuItem")
+        Me.设置标签ToolStripMenuItem.Name = "设置标签ToolStripMenuItem"
+        '
+        '复制选中信息ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.复制选中信息ToolStripMenuItem, "复制选中信息ToolStripMenuItem")
+        Me.复制选中信息ToolStripMenuItem.Name = "复制选中信息ToolStripMenuItem"
+        '
+        '文件详情ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.文件详情ToolStripMenuItem, "文件详情ToolStripMenuItem")
+        Me.文件详情ToolStripMenuItem.Name = "文件详情ToolStripMenuItem"
         '
         'Chart1
         '
+        resources.ApplyResources(Me.Chart1, "Chart1")
         Me.Chart1.AntiAliasing = System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles.Graphics
         Me.Chart1.BorderlineColor = System.Drawing.Color.Silver
         Me.Chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
@@ -609,9 +730,6 @@ Partial Class LTFSWriter
         ChartArea1.Name = "ChartArea1"
         Me.Chart1.ChartAreas.Add(ChartArea1)
         Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
-        Me.Chart1.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.Chart1.Location = New System.Drawing.Point(0, 0)
-        Me.Chart1.Margin = New System.Windows.Forms.Padding(0)
         Me.Chart1.Name = "Chart1"
         Series1.BorderWidth = 2
         Series1.ChartArea = "ChartArea1"
@@ -659,10 +777,7 @@ Partial Class LTFSWriter
         Series2.YValuesPerPoint = 2
         Me.Chart1.Series.Add(Series1)
         Me.Chart1.Series.Add(Series2)
-        Me.Chart1.Size = New System.Drawing.Size(1070, 149)
         Me.Chart1.SuppressExceptions = True
-        Me.Chart1.TabIndex = 16
-        Me.Chart1.Text = "Chart1"
         Title1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
         Title1.Name = "Title1"
         Title1.Text = "10分钟"
@@ -695,437 +810,386 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip2
         '
-        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem})
+        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
+        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.S60ToolStripMenuItem, Me.Min5ToolStripMenuItem, Me.Min10ToolStripMenuItem, Me.Min30ToolStripMenuItem, Me.H1ToolStripMenuItem, Me.H3ToolStripMenuItem, Me.H6ToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogarithmicToolStripMenuItem})
         Me.ContextMenuStrip2.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip2.Size = New System.Drawing.Size(115, 208)
         '
-        'SToolStripMenuItem
+        'S60ToolStripMenuItem
         '
-        Me.SToolStripMenuItem.Name = "SToolStripMenuItem"
-        Me.SToolStripMenuItem.Size = New System.Drawing.Size(114, 22)
-        Me.SToolStripMenuItem.Text = "60秒"
+        resources.ApplyResources(Me.S60ToolStripMenuItem, "S60ToolStripMenuItem")
+        Me.S60ToolStripMenuItem.Name = "S60ToolStripMenuItem"
         '
-        'MinToolStripMenuItem
+        'Min5ToolStripMenuItem
         '
-        Me.MinToolStripMenuItem.Name = "MinToolStripMenuItem"
-        Me.MinToolStripMenuItem.Size = New System.Drawing.Size(114, 22)
-        Me.MinToolStripMenuItem.Text = "5分钟"
+        resources.ApplyResources(Me.Min5ToolStripMenuItem, "Min5ToolStripMenuItem")
+        Me.Min5ToolStripMenuItem.Name = "Min5ToolStripMenuItem"
         '
-        'MinToolStripMenuItem1
+        'Min10ToolStripMenuItem
         '
-        Me.MinToolStripMenuItem1.Name = "MinToolStripMenuItem1"
-        Me.MinToolStripMenuItem1.Size = New System.Drawing.Size(114, 22)
-        Me.MinToolStripMenuItem1.Text = "10分钟"
+        resources.ApplyResources(Me.Min10ToolStripMenuItem, "Min10ToolStripMenuItem")
+        Me.Min10ToolStripMenuItem.Name = "Min10ToolStripMenuItem"
         '
-        'MinToolStripMenuItem2
+        'Min30ToolStripMenuItem
         '
-        Me.MinToolStripMenuItem2.Name = "MinToolStripMenuItem2"
-        Me.MinToolStripMenuItem2.Size = New System.Drawing.Size(114, 22)
-        Me.MinToolStripMenuItem2.Text = "30分钟"
+        resources.ApplyResources(Me.Min30ToolStripMenuItem, "Min30ToolStripMenuItem")
+        Me.Min30ToolStripMenuItem.Name = "Min30ToolStripMenuItem"
         '
-        'HToolStripMenuItem
+        'H1ToolStripMenuItem
         '
-        Me.HToolStripMenuItem.Name = "HToolStripMenuItem"
-        Me.HToolStripMenuItem.Size = New System.Drawing.Size(114, 22)
-        Me.HToolStripMenuItem.Text = "1小时"
+        resources.ApplyResources(Me.H1ToolStripMenuItem, "H1ToolStripMenuItem")
+        Me.H1ToolStripMenuItem.Name = "H1ToolStripMenuItem"
         '
-        'HToolStripMenuItem1
+        'H3ToolStripMenuItem
         '
-        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
-        Me.HToolStripMenuItem1.Size = New System.Drawing.Size(114, 22)
-        Me.HToolStripMenuItem1.Text = "3小时"
+        resources.ApplyResources(Me.H3ToolStripMenuItem, "H3ToolStripMenuItem")
+        Me.H3ToolStripMenuItem.Name = "H3ToolStripMenuItem"
         '
-        'HToolStripMenuItem2
+        'H6ToolStripMenuItem
         '
-        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
-        Me.HToolStripMenuItem2.Size = New System.Drawing.Size(114, 22)
-        Me.HToolStripMenuItem2.Text = "6小时"
+        resources.ApplyResources(Me.H6ToolStripMenuItem, "H6ToolStripMenuItem")
+        Me.H6ToolStripMenuItem.Name = "H6ToolStripMenuItem"
         '
         'ToolStripSeparator1
         '
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(111, 6)
         '
         'LinearToolStripMenuItem
         '
+        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
         Me.LinearToolStripMenuItem.CheckOnClick = True
         Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
-        Me.LinearToolStripMenuItem.Size = New System.Drawing.Size(114, 22)
-        Me.LinearToolStripMenuItem.Text = "线性"
         '
-        'LogrithmToolStripMenuItem
+        'LogarithmicToolStripMenuItem
         '
-        Me.LogrithmToolStripMenuItem.CheckOnClick = True
-        Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
-        Me.LogrithmToolStripMenuItem.Size = New System.Drawing.Size(114, 22)
-        Me.LogrithmToolStripMenuItem.Text = "对数"
+        resources.ApplyResources(Me.LogarithmicToolStripMenuItem, "LogarithmicToolStripMenuItem")
+        Me.LogarithmicToolStripMenuItem.CheckOnClick = True
+        Me.LogarithmicToolStripMenuItem.Name = "LogarithmicToolStripMenuItem"
         '
         'MenuStrip1
         '
+        resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.磁带ToolStripMenuItem, Me.数据ToolStripMenuItem})
-        Me.MenuStrip1.Location = New System.Drawing.Point(0, 0)
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.MenuStrip1.Size = New System.Drawing.Size(1349, 25)
-        Me.MenuStrip1.TabIndex = 3
-        Me.MenuStrip1.Text = "MenuStrip1"
         '
         '磁带ToolStripMenuItem
         '
+        resources.ApplyResources(Me.磁带ToolStripMenuItem, "磁带ToolStripMenuItem")
         Me.磁带ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.索引ToolStripMenuItem, Me.数据操作ToolStripMenuItem, Me.ToolStripSeparator5, Me.自动化ToolStripMenuItem1, Me.ToolStripSeparator6, Me.回退ToolStripMenuItem})
         Me.磁带ToolStripMenuItem.Name = "磁带ToolStripMenuItem"
-        Me.磁带ToolStripMenuItem.Size = New System.Drawing.Size(44, 21)
-        Me.磁带ToolStripMenuItem.Text = "磁带"
         '
         '索引ToolStripMenuItem
         '
+        resources.ApplyResources(Me.索引ToolStripMenuItem, "索引ToolStripMenuItem")
         Me.索引ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.读取索引ToolStripMenuItem, Me.读取数据区索引ToolStripMenuItem, Me.加载外部索引ToolStripMenuItem, Me.备份当前索引ToolStripMenuItem})
         Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
-        Me.索引ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
-        Me.索引ToolStripMenuItem.Text = "索引操作"
         '
         '读取索引ToolStripMenuItem
         '
+        resources.ApplyResources(Me.读取索引ToolStripMenuItem, "读取索引ToolStripMenuItem")
         Me.读取索引ToolStripMenuItem.Name = "读取索引ToolStripMenuItem"
-        Me.读取索引ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.读取索引ToolStripMenuItem.Text = "读取索引"
         '
         '读取数据区索引ToolStripMenuItem
         '
+        resources.ApplyResources(Me.读取数据区索引ToolStripMenuItem, "读取数据区索引ToolStripMenuItem")
         Me.读取数据区索引ToolStripMenuItem.Name = "读取数据区索引ToolStripMenuItem"
-        Me.读取数据区索引ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.读取数据区索引ToolStripMenuItem.Text = "读取数据区最新索引"
         '
         '加载外部索引ToolStripMenuItem
         '
+        resources.ApplyResources(Me.加载外部索引ToolStripMenuItem, "加载外部索引ToolStripMenuItem")
         Me.加载外部索引ToolStripMenuItem.Name = "加载外部索引ToolStripMenuItem"
-        Me.加载外部索引ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.加载外部索引ToolStripMenuItem.Text = "加载外部索引"
         '
         '备份当前索引ToolStripMenuItem
         '
-        Me.备份当前索引ToolStripMenuItem.Image = CType(resources.GetObject("备份当前索引ToolStripMenuItem.Image"), System.Drawing.Image)
+        resources.ApplyResources(Me.备份当前索引ToolStripMenuItem, "备份当前索引ToolStripMenuItem")
         Me.备份当前索引ToolStripMenuItem.Name = "备份当前索引ToolStripMenuItem"
-        Me.备份当前索引ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.备份当前索引ToolStripMenuItem.Text = "备份当前索引"
         '
         '数据操作ToolStripMenuItem
         '
+        resources.ApplyResources(Me.数据操作ToolStripMenuItem, "数据操作ToolStripMenuItem")
         Me.数据操作ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入数据ToolStripMenuItem, Me.更新数据区索引ToolStripMenuItem, Me.更新全部索引ToolStripMenuItem})
         Me.数据操作ToolStripMenuItem.Name = "数据操作ToolStripMenuItem"
-        Me.数据操作ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
-        Me.数据操作ToolStripMenuItem.Text = "数据操作"
         '
         '写入数据ToolStripMenuItem
         '
-        Me.写入数据ToolStripMenuItem.Image = CType(resources.GetObject("写入数据ToolStripMenuItem.Image"), System.Drawing.Image)
+        resources.ApplyResources(Me.写入数据ToolStripMenuItem, "写入数据ToolStripMenuItem")
         Me.写入数据ToolStripMenuItem.Name = "写入数据ToolStripMenuItem"
-        Me.写入数据ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.写入数据ToolStripMenuItem.Text = "写入数据"
         '
         '更新数据区索引ToolStripMenuItem
         '
-        Me.更新数据区索引ToolStripMenuItem.Enabled = False
+        resources.ApplyResources(Me.更新数据区索引ToolStripMenuItem, "更新数据区索引ToolStripMenuItem")
         Me.更新数据区索引ToolStripMenuItem.Name = "更新数据区索引ToolStripMenuItem"
-        Me.更新数据区索引ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.更新数据区索引ToolStripMenuItem.Text = "更新数据区索引"
         '
         '更新全部索引ToolStripMenuItem
         '
-        Me.更新全部索引ToolStripMenuItem.Image = CType(resources.GetObject("更新全部索引ToolStripMenuItem.Image"), System.Drawing.Image)
+        resources.ApplyResources(Me.更新全部索引ToolStripMenuItem, "更新全部索引ToolStripMenuItem")
         Me.更新全部索引ToolStripMenuItem.Name = "更新全部索引ToolStripMenuItem"
-        Me.更新全部索引ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.更新全部索引ToolStripMenuItem.Text = "更新全部索引（安全弹出）"
         '
         'ToolStripSeparator5
         '
+        resources.ApplyResources(Me.ToolStripSeparator5, "ToolStripSeparator5")
         Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
-        Me.ToolStripSeparator5.Size = New System.Drawing.Size(121, 6)
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem})
+        resources.ApplyResources(Me.自动化ToolStripMenuItem1, "自动化ToolStripMenuItem1")
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重SHA1ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
-        Me.自动化ToolStripMenuItem1.Size = New System.Drawing.Size(124, 22)
-        Me.自动化ToolStripMenuItem1.Text = "自动化"
         '
         'ToolStripTextBox2
         '
+        resources.ApplyResources(Me.ToolStripTextBox2, "ToolStripTextBox2")
         Me.ToolStripTextBox2.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
         Me.ToolStripTextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.ToolStripTextBox2.Enabled = False
         Me.ToolStripTextBox2.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.ToolStripTextBox2.Name = "ToolStripTextBox2"
         Me.ToolStripTextBox2.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
         Me.ToolStripTextBox2.ReadOnly = True
-        Me.ToolStripTextBox2.Size = New System.Drawing.Size(160, 16)
-        Me.ToolStripTextBox2.Text = "---------写入完成后---------"
         '
         'WA0ToolStripMenuItem
         '
+        resources.ApplyResources(Me.WA0ToolStripMenuItem, "WA0ToolStripMenuItem")
         Me.WA0ToolStripMenuItem.CheckOnClick = True
         Me.WA0ToolStripMenuItem.Name = "WA0ToolStripMenuItem"
-        Me.WA0ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.WA0ToolStripMenuItem.Text = "什么都不做"
         '
         'WA1ToolStripMenuItem
         '
+        resources.ApplyResources(Me.WA1ToolStripMenuItem, "WA1ToolStripMenuItem")
         Me.WA1ToolStripMenuItem.Checked = True
         Me.WA1ToolStripMenuItem.CheckOnClick = True
         Me.WA1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.WA1ToolStripMenuItem.Name = "WA1ToolStripMenuItem"
-        Me.WA1ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.WA1ToolStripMenuItem.Text = "更新数据区索引"
         '
         'WA2ToolStripMenuItem
         '
+        resources.ApplyResources(Me.WA2ToolStripMenuItem, "WA2ToolStripMenuItem")
         Me.WA2ToolStripMenuItem.CheckOnClick = True
         Me.WA2ToolStripMenuItem.Name = "WA2ToolStripMenuItem"
-        Me.WA2ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.WA2ToolStripMenuItem.Text = "更新全部索引"
         '
         'WA3ToolStripMenuItem
         '
+        resources.ApplyResources(Me.WA3ToolStripMenuItem, "WA3ToolStripMenuItem")
         Me.WA3ToolStripMenuItem.CheckOnClick = True
         Me.WA3ToolStripMenuItem.Name = "WA3ToolStripMenuItem"
-        Me.WA3ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.WA3ToolStripMenuItem.Text = "更新全部索引并弹出"
         '
         'ToolStripTextBox1
         '
+        resources.ApplyResources(Me.ToolStripTextBox1, "ToolStripTextBox1")
         Me.ToolStripTextBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
         Me.ToolStripTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
-        Me.ToolStripTextBox1.Enabled = False
         Me.ToolStripTextBox1.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.ToolStripTextBox1.Name = "ToolStripTextBox1"
         Me.ToolStripTextBox1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
         Me.ToolStripTextBox1.ReadOnly = True
-        Me.ToolStripTextBox1.Size = New System.Drawing.Size(160, 16)
-        Me.ToolStripTextBox1.Text = "-----------写入时------------"
         '
         '计算校验ToolStripMenuItem
         '
+        resources.ApplyResources(Me.计算校验ToolStripMenuItem, "计算校验ToolStripMenuItem")
         Me.计算校验ToolStripMenuItem.CheckOnClick = True
         Me.计算校验ToolStripMenuItem.Name = "计算校验ToolStripMenuItem"
-        Me.计算校验ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.计算校验ToolStripMenuItem.Text = "计算校验"
         '
         '异步校验CPU占用高ToolStripMenuItem
         '
+        resources.ApplyResources(Me.异步校验CPU占用高ToolStripMenuItem, "异步校验CPU占用高ToolStripMenuItem")
         Me.异步校验CPU占用高ToolStripMenuItem.CheckOnClick = True
         Me.异步校验CPU占用高ToolStripMenuItem.Name = "异步校验CPU占用高ToolStripMenuItem"
-        Me.异步校验CPU占用高ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.异步校验CPU占用高ToolStripMenuItem.Text = "异步校验"
+        '
+        '去重SHA1ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.去重SHA1ToolStripMenuItem, "去重SHA1ToolStripMenuItem")
+        Me.去重SHA1ToolStripMenuItem.Name = "去重SHA1ToolStripMenuItem"
         '
         '索引间隔36GiBToolStripMenuItem
         '
+        resources.ApplyResources(Me.索引间隔36GiBToolStripMenuItem, "索引间隔36GiBToolStripMenuItem")
         Me.索引间隔36GiBToolStripMenuItem.Name = "索引间隔36GiBToolStripMenuItem"
-        Me.索引间隔36GiBToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.索引间隔36GiBToolStripMenuItem.Text = "索引间隔：36 GiB"
         '
         '容量刷新间隔30sToolStripMenuItem
         '
+        resources.ApplyResources(Me.容量刷新间隔30sToolStripMenuItem, "容量刷新间隔30sToolStripMenuItem")
         Me.容量刷新间隔30sToolStripMenuItem.Name = "容量刷新间隔30sToolStripMenuItem"
-        Me.容量刷新间隔30sToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.容量刷新间隔30sToolStripMenuItem.Text = "容量刷新间隔：30s"
         '
         '限速不限制ToolStripMenuItem
         '
+        resources.ApplyResources(Me.限速不限制ToolStripMenuItem, "限速不限制ToolStripMenuItem")
         Me.限速不限制ToolStripMenuItem.Name = "限速不限制ToolStripMenuItem"
-        Me.限速不限制ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.限速不限制ToolStripMenuItem.Text = "限速：无限制"
         '
         '预读文件数5ToolStripMenuItem
         '
+        resources.ApplyResources(Me.预读文件数5ToolStripMenuItem, "预读文件数5ToolStripMenuItem")
         Me.预读文件数5ToolStripMenuItem.Name = "预读文件数5ToolStripMenuItem"
-        Me.预读文件数5ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.预读文件数5ToolStripMenuItem.Text = "预读文件数：0"
         '
         '文件缓存32MiBToolStripMenuItem
         '
+        resources.ApplyResources(Me.文件缓存32MiBToolStripMenuItem, "文件缓存32MiBToolStripMenuItem")
         Me.文件缓存32MiBToolStripMenuItem.Name = "文件缓存32MiBToolStripMenuItem"
-        Me.文件缓存32MiBToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.文件缓存32MiBToolStripMenuItem.Text = "文件缓存：32 MiB"
         '
         'APToolStripMenuItem
         '
+        resources.ApplyResources(Me.APToolStripMenuItem, "APToolStripMenuItem")
         Me.APToolStripMenuItem.CheckOnClick = True
         Me.APToolStripMenuItem.Name = "APToolStripMenuItem"
-        Me.APToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.APToolStripMenuItem.Text = "检测到容量缺失自动停顿"
+        '
+        '容量缺失检测参数ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.容量缺失检测参数ToolStripMenuItem, "容量缺失检测参数ToolStripMenuItem")
+        Me.容量缺失检测参数ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.速度下限ToolStripMenuItem, Me.速度上限ToolStripMenuItem, Me.持续时间ToolStripMenuItem})
+        Me.容量缺失检测参数ToolStripMenuItem.Name = "容量缺失检测参数ToolStripMenuItem"
+        '
+        '速度下限ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.速度下限ToolStripMenuItem, "速度下限ToolStripMenuItem")
+        Me.速度下限ToolStripMenuItem.Name = "速度下限ToolStripMenuItem"
+        '
+        '速度上限ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.速度上限ToolStripMenuItem, "速度上限ToolStripMenuItem")
+        Me.速度上限ToolStripMenuItem.Name = "速度上限ToolStripMenuItem"
+        '
+        '持续时间ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.持续时间ToolStripMenuItem, "持续时间ToolStripMenuItem")
+        Me.持续时间ToolStripMenuItem.Name = "持续时间ToolStripMenuItem"
         '
         '重装带前清洁次数3ToolStripMenuItem
         '
+        resources.ApplyResources(Me.重装带前清洁次数3ToolStripMenuItem, "重装带前清洁次数3ToolStripMenuItem")
         Me.重装带前清洁次数3ToolStripMenuItem.Name = "重装带前清洁次数3ToolStripMenuItem"
-        Me.重装带前清洁次数3ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.重装带前清洁次数3ToolStripMenuItem.Text = "重装带前清洁次数：3"
         '
         'ToolStripSeparator7
         '
+        resources.ApplyResources(Me.ToolStripSeparator7, "ToolStripSeparator7")
         Me.ToolStripSeparator7.Name = "ToolStripSeparator7"
-        Me.ToolStripSeparator7.Size = New System.Drawing.Size(217, 6)
         '
         '启用日志记录ToolStripMenuItem
         '
+        resources.ApplyResources(Me.启用日志记录ToolStripMenuItem, "启用日志记录ToolStripMenuItem")
         Me.启用日志记录ToolStripMenuItem.CheckOnClick = True
         Me.启用日志记录ToolStripMenuItem.Name = "启用日志记录ToolStripMenuItem"
-        Me.启用日志记录ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.启用日志记录ToolStripMenuItem.Text = "启用日志记录"
         '
         '总是更新数据区索引ToolStripMenuItem
         '
+        resources.ApplyResources(Me.总是更新数据区索引ToolStripMenuItem, "总是更新数据区索引ToolStripMenuItem")
         Me.总是更新数据区索引ToolStripMenuItem.CheckOnClick = True
         Me.总是更新数据区索引ToolStripMenuItem.Name = "总是更新数据区索引ToolStripMenuItem"
-        Me.总是更新数据区索引ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.总是更新数据区索引ToolStripMenuItem.Text = "总是更新数据区索引"
         '
         '禁用分区ToolStripMenuItem
         '
+        resources.ApplyResources(Me.禁用分区ToolStripMenuItem, "禁用分区ToolStripMenuItem")
         Me.禁用分区ToolStripMenuItem.CheckOnClick = True
         Me.禁用分区ToolStripMenuItem.Name = "禁用分区ToolStripMenuItem"
-        Me.禁用分区ToolStripMenuItem.Size = New System.Drawing.Size(220, 22)
-        Me.禁用分区ToolStripMenuItem.Text = "禁用分区（LTO3需勾选）"
         '
         'ToolStripSeparator6
         '
+        resources.ApplyResources(Me.ToolStripSeparator6, "ToolStripSeparator6")
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
-        Me.ToolStripSeparator6.Size = New System.Drawing.Size(121, 6)
         '
         '回退ToolStripMenuItem
         '
+        resources.ApplyResources(Me.回退ToolStripMenuItem, "回退ToolStripMenuItem")
         Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem})
         Me.回退ToolStripMenuItem.Name = "回退ToolStripMenuItem"
-        Me.回退ToolStripMenuItem.Size = New System.Drawing.Size(124, 22)
-        Me.回退ToolStripMenuItem.Text = "回退"
         '
         '清除当前索引后数据ToolStripMenuItem
         '
+        resources.ApplyResources(Me.清除当前索引后数据ToolStripMenuItem, "清除当前索引后数据ToolStripMenuItem")
         Me.清除当前索引后数据ToolStripMenuItem.Name = "清除当前索引后数据ToolStripMenuItem"
-        Me.清除当前索引后数据ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.清除当前索引后数据ToolStripMenuItem.Text = "清除当前索引后数据"
         '
         '回滚ToolStripMenuItem
         '
+        resources.ApplyResources(Me.回滚ToolStripMenuItem, "回滚ToolStripMenuItem")
         Me.回滚ToolStripMenuItem.Name = "回滚ToolStripMenuItem"
-        Me.回滚ToolStripMenuItem.Size = New System.Drawing.Size(184, 22)
-        Me.回滚ToolStripMenuItem.Text = "回滚至上一代"
         '
         '数据ToolStripMenuItem
         '
+        resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem})
         Me.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem"
-        Me.数据ToolStripMenuItem.Size = New System.Drawing.Size(44, 21)
-        Me.数据ToolStripMenuItem.Text = "数据"
         '
         '格式化ToolStripMenuItem
         '
+        resources.ApplyResources(Me.格式化ToolStripMenuItem, "格式化ToolStripMenuItem")
         Me.格式化ToolStripMenuItem.Name = "格式化ToolStripMenuItem"
-        Me.格式化ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
-        Me.格式化ToolStripMenuItem.Text = "格式化"
         '
         '设置高度ToolStripMenuItem
         '
+        resources.ApplyResources(Me.设置高度ToolStripMenuItem, "设置高度ToolStripMenuItem")
         Me.设置高度ToolStripMenuItem.Name = "设置高度ToolStripMenuItem"
-        Me.设置高度ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
-        Me.设置高度ToolStripMenuItem.Text = "设置高度"
         '
         '合并SHA1ToolStripMenuItem
         '
-        Me.合并SHA1ToolStripMenuItem.Image = CType(resources.GetObject("合并SHA1ToolStripMenuItem.Image"), System.Drawing.Image)
+        resources.ApplyResources(Me.合并SHA1ToolStripMenuItem, "合并SHA1ToolStripMenuItem")
         Me.合并SHA1ToolStripMenuItem.Name = "合并SHA1ToolStripMenuItem"
-        Me.合并SHA1ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
-        Me.合并SHA1ToolStripMenuItem.Text = "合并SHA1"
         '
         '校验源文件ToolStripMenuItem
         '
-        Me.校验源文件ToolStripMenuItem.Image = CType(resources.GetObject("校验源文件ToolStripMenuItem.Image"), System.Drawing.Image)
+        resources.ApplyResources(Me.校验源文件ToolStripMenuItem, "校验源文件ToolStripMenuItem")
         Me.校验源文件ToolStripMenuItem.Name = "校验源文件ToolStripMenuItem"
-        Me.校验源文件ToolStripMenuItem.Size = New System.Drawing.Size(136, 22)
-        Me.校验源文件ToolStripMenuItem.Text = "校验源文件"
         '
         'StatusStrip1
         '
-        Me.StatusStrip1.AutoSize = False
+        resources.ApplyResources(Me.StatusStrip1, "StatusStrip1")
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripDropDownButton1, Me.ToolStripDropDownButton2, Me.ToolStripDropDownButton3, Me.ToolStripStatusLabel1, Me.ToolStripStatusLabel4, Me.ToolStripStatusLabel3, Me.ToolStripProgressBar1, Me.ToolStripStatusLabel5, Me.ToolStripStatusLabel2})
-        Me.StatusStrip1.Location = New System.Drawing.Point(0, 652)
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.ShowItemToolTips = True
-        Me.StatusStrip1.Size = New System.Drawing.Size(1349, 26)
-        Me.StatusStrip1.TabIndex = 4
-        Me.StatusStrip1.Text = "StatusStrip1"
         '
         'ToolStripDropDownButton1
         '
+        resources.ApplyResources(Me.ToolStripDropDownButton1, "ToolStripDropDownButton1")
         Me.ToolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton1.ForeColor = System.Drawing.Color.Red
-        Me.ToolStripDropDownButton1.Image = CType(resources.GetObject("ToolStripDropDownButton1.Image"), System.Drawing.Image)
-        Me.ToolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripDropDownButton1.Name = "ToolStripDropDownButton1"
         Me.ToolStripDropDownButton1.ShowDropDownArrow = False
-        Me.ToolStripDropDownButton1.Size = New System.Drawing.Size(19, 24)
-        Me.ToolStripDropDownButton1.Text = "■"
-        Me.ToolStripDropDownButton1.ToolTipText = "取消当前操作"
         '
         'ToolStripDropDownButton2
         '
+        resources.ApplyResources(Me.ToolStripDropDownButton2, "ToolStripDropDownButton2")
         Me.ToolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton2.ForeColor = System.Drawing.Color.Blue
-        Me.ToolStripDropDownButton2.Image = CType(resources.GetObject("ToolStripDropDownButton2.Image"), System.Drawing.Image)
-        Me.ToolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripDropDownButton2.Name = "ToolStripDropDownButton2"
         Me.ToolStripDropDownButton2.ShowDropDownArrow = False
-        Me.ToolStripDropDownButton2.Size = New System.Drawing.Size(18, 24)
-        Me.ToolStripDropDownButton2.Text = "F"
-        Me.ToolStripDropDownButton2.ToolTipText = "刷新写入缓存"
         '
         'ToolStripDropDownButton3
         '
+        resources.ApplyResources(Me.ToolStripDropDownButton3, "ToolStripDropDownButton3")
         Me.ToolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.ToolStripDropDownButton3.Image = CType(resources.GetObject("ToolStripDropDownButton3.Image"), System.Drawing.Image)
-        Me.ToolStripDropDownButton3.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripDropDownButton3.Name = "ToolStripDropDownButton3"
         Me.ToolStripDropDownButton3.ShowDropDownArrow = False
-        Me.ToolStripDropDownButton3.Size = New System.Drawing.Size(20, 24)
-        Me.ToolStripDropDownButton3.Text = "C"
-        Me.ToolStripDropDownButton3.ToolTipText = "清洁磁头"
         '
         'ToolStripStatusLabel1
         '
+        resources.ApplyResources(Me.ToolStripStatusLabel1, "ToolStripStatusLabel1")
         Me.ToolStripStatusLabel1.BorderSides = CType((System.Windows.Forms.ToolStripStatusLabelBorderSides.Left Or System.Windows.Forms.ToolStripStatusLabelBorderSides.Right), System.Windows.Forms.ToolStripStatusLabelBorderSides)
         Me.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
-        Me.ToolStripStatusLabel1.Size = New System.Drawing.Size(16, 21)
-        Me.ToolStripStatusLabel1.Text = " "
         '
         'ToolStripStatusLabel4
         '
+        resources.ApplyResources(Me.ToolStripStatusLabel4, "ToolStripStatusLabel4")
         Me.ToolStripStatusLabel4.Name = "ToolStripStatusLabel4"
-        Me.ToolStripStatusLabel4.Size = New System.Drawing.Size(16, 21)
-        Me.ToolStripStatusLabel4.Text = "  "
         '
         'ToolStripStatusLabel3
         '
+        resources.ApplyResources(Me.ToolStripStatusLabel3, "ToolStripStatusLabel3")
         Me.ToolStripStatusLabel3.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.ToolStripStatusLabel3.Name = "ToolStripStatusLabel3"
-        Me.ToolStripStatusLabel3.Size = New System.Drawing.Size(1063, 21)
         Me.ToolStripStatusLabel3.Spring = True
-        Me.ToolStripStatusLabel3.Text = " "
         '
         'ToolStripProgressBar1
         '
+        resources.ApplyResources(Me.ToolStripProgressBar1, "ToolStripProgressBar1")
         Me.ToolStripProgressBar1.Maximum = 10000
         Me.ToolStripProgressBar1.Name = "ToolStripProgressBar1"
-        Me.ToolStripProgressBar1.Size = New System.Drawing.Size(100, 20)
         '
         'ToolStripStatusLabel5
         '
+        resources.ApplyResources(Me.ToolStripStatusLabel5, "ToolStripStatusLabel5")
         Me.ToolStripStatusLabel5.Name = "ToolStripStatusLabel5"
-        Me.ToolStripStatusLabel5.Size = New System.Drawing.Size(0, 21)
         '
         'ToolStripStatusLabel2
         '
+        resources.ApplyResources(Me.ToolStripStatusLabel2, "ToolStripStatusLabel2")
         Me.ToolStripStatusLabel2.Name = "ToolStripStatusLabel2"
-        Me.ToolStripStatusLabel2.Size = New System.Drawing.Size(80, 21)
-        Me.ToolStripStatusLabel2.Text = "可用空间未知"
         '
         'Timer1
         '
@@ -1134,91 +1198,1109 @@ Partial Class LTFSWriter
         '
         'OpenFileDialog1
         '
+        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
         Me.OpenFileDialog1.Multiselect = True
+        '
+        'FolderBrowserDialog1
+        '
+        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
         '
         'ToolStrip1
         '
-        Me.ToolStrip1.Dock = System.Windows.Forms.DockStyle.None
+        resources.ApplyResources(Me.ToolStrip1, "ToolStrip1")
         Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton3})
-        Me.ToolStrip1.Location = New System.Drawing.Point(99, 0)
         Me.ToolStrip1.Name = "ToolStrip1"
-        Me.ToolStrip1.Size = New System.Drawing.Size(150, 25)
-        Me.ToolStrip1.TabIndex = 5
-        Me.ToolStrip1.Text = "ToolStrip1"
         '
         'ToolStripButton1
         '
+        resources.ApplyResources(Me.ToolStripButton1, "ToolStripButton1")
         Me.ToolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton1.Image = CType(resources.GetObject("ToolStripButton1.Image"), System.Drawing.Image)
-        Me.ToolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton1.Name = "ToolStripButton1"
-        Me.ToolStripButton1.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton1.Text = "导入文件"
         '
         'ToolStripButton2
         '
+        resources.ApplyResources(Me.ToolStripButton2, "ToolStripButton2")
         Me.ToolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton2.Image = CType(resources.GetObject("ToolStripButton2.Image"), System.Drawing.Image)
-        Me.ToolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton2.Name = "ToolStripButton2"
-        Me.ToolStripButton2.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton2.Text = "写入磁带"
         '
         'ToolStripButton4
         '
+        resources.ApplyResources(Me.ToolStripButton4, "ToolStripButton4")
         Me.ToolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton4.Image = CType(resources.GetObject("ToolStripButton4.Image"), System.Drawing.Image)
-        Me.ToolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton4.Name = "ToolStripButton4"
-        Me.ToolStripButton4.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton4.Text = "备份索引"
         '
         'ToolStripButton5
         '
+        resources.ApplyResources(Me.ToolStripButton5, "ToolStripButton5")
         Me.ToolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton5.Image = CType(resources.GetObject("ToolStripButton5.Image"), System.Drawing.Image)
-        Me.ToolStripButton5.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton5.Name = "ToolStripButton5"
-        Me.ToolStripButton5.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton5.Text = "合并SHA1"
         '
         'ToolStripButton6
         '
+        resources.ApplyResources(Me.ToolStripButton6, "ToolStripButton6")
         Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton6.Image = CType(resources.GetObject("ToolStripButton6.Image"), System.Drawing.Image)
-        Me.ToolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton6.Name = "ToolStripButton6"
-        Me.ToolStripButton6.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton6.Text = "校验源文件"
         '
         'ToolStripButton3
         '
+        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
         Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton3.Image = CType(resources.GetObject("ToolStripButton3.Image"), System.Drawing.Image)
-        Me.ToolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta
         Me.ToolStripButton3.Name = "ToolStripButton3"
-        Me.ToolStripButton3.Size = New System.Drawing.Size(23, 22)
-        Me.ToolStripButton3.Text = "安全弹出"
         '
         'Timer2
         '
         Me.Timer2.Enabled = True
         '
+        'GroupBox1
+        '
+        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
+        Me.GroupBox1.Controls.Add(Me.Panel7)
+        Me.GroupBox1.Controls.Add(Me.Panel6)
+        Me.GroupBox1.Controls.Add(Me.Panel5)
+        Me.GroupBox1.Controls.Add(Me.Panel4)
+        Me.GroupBox1.Controls.Add(Me.Panel3)
+        Me.GroupBox1.Controls.Add(Me.Panel2)
+        Me.GroupBox1.Controls.Add(Me.ResText_)
+        Me.GroupBox1.Controls.Add(Me.Panel1)
+        Me.GroupBox1.Name = "GroupBox1"
+        Me.GroupBox1.TabStop = False
+        '
+        'Panel7
+        '
+        resources.ApplyResources(Me.Panel7, "Panel7")
+        Me.Panel7.Controls.Add(Me.ResText_CHashing)
+        Me.Panel7.Controls.Add(Me.ResText_Size)
+        Me.Panel7.Controls.Add(Me.ResText_Skip)
+        Me.Panel7.Controls.Add(Me.ResText_WrittenTotal)
+        Me.Panel7.Controls.Add(Me.ResText_Remaining)
+        Me.Panel7.Controls.Add(Me.ResText_Writing)
+        Me.Panel7.Controls.Add(Me.ResText_WErr)
+        Me.Panel7.Controls.Add(Me.ResText_VOF)
+        Me.Panel7.Controls.Add(Me.ResText_WFTime)
+        Me.Panel7.Controls.Add(Me.ResText_AvgS)
+        Me.Panel7.Controls.Add(Me.ResText_WCnd)
+        Me.Panel7.Controls.Add(Me.ResText_RestoreErr)
+        Me.Panel7.Controls.Add(Me.ResText_Restoring)
+        Me.Panel7.Controls.Add(Me.ResText_OpCancelled)
+        Me.Panel7.Controls.Add(Me.ResText_RestFin)
+        Me.Panel7.Controls.Add(Me.ResText_PrepFile)
+        Me.Panel7.Controls.Add(Me.ResText_RestFile)
+        Me.Panel7.Controls.Add(Me.ResText_PrepW)
+        Me.Panel7.Name = "Panel7"
+        '
+        'ResText_CHashing
+        '
+        resources.ApplyResources(Me.ResText_CHashing, "ResText_CHashing")
+        Me.ResText_CHashing.Name = "ResText_CHashing"
+        '
+        'ResText_Size
+        '
+        resources.ApplyResources(Me.ResText_Size, "ResText_Size")
+        Me.ResText_Size.Name = "ResText_Size"
+        '
+        'ResText_Skip
+        '
+        resources.ApplyResources(Me.ResText_Skip, "ResText_Skip")
+        Me.ResText_Skip.Name = "ResText_Skip"
+        '
+        'ResText_WrittenTotal
+        '
+        resources.ApplyResources(Me.ResText_WrittenTotal, "ResText_WrittenTotal")
+        Me.ResText_WrittenTotal.Name = "ResText_WrittenTotal"
+        '
+        'ResText_Remaining
+        '
+        resources.ApplyResources(Me.ResText_Remaining, "ResText_Remaining")
+        Me.ResText_Remaining.Name = "ResText_Remaining"
+        '
+        'ResText_Writing
+        '
+        resources.ApplyResources(Me.ResText_Writing, "ResText_Writing")
+        Me.ResText_Writing.Name = "ResText_Writing"
+        '
+        'ResText_WErr
+        '
+        resources.ApplyResources(Me.ResText_WErr, "ResText_WErr")
+        Me.ResText_WErr.Name = "ResText_WErr"
+        '
+        'ResText_VOF
+        '
+        resources.ApplyResources(Me.ResText_VOF, "ResText_VOF")
+        Me.ResText_VOF.Name = "ResText_VOF"
+        '
+        'ResText_WFTime
+        '
+        resources.ApplyResources(Me.ResText_WFTime, "ResText_WFTime")
+        Me.ResText_WFTime.Name = "ResText_WFTime"
+        '
+        'ResText_AvgS
+        '
+        resources.ApplyResources(Me.ResText_AvgS, "ResText_AvgS")
+        Me.ResText_AvgS.Name = "ResText_AvgS"
+        '
+        'ResText_WCnd
+        '
+        resources.ApplyResources(Me.ResText_WCnd, "ResText_WCnd")
+        Me.ResText_WCnd.Name = "ResText_WCnd"
+        '
+        'ResText_RestoreErr
+        '
+        resources.ApplyResources(Me.ResText_RestoreErr, "ResText_RestoreErr")
+        Me.ResText_RestoreErr.Name = "ResText_RestoreErr"
+        '
+        'ResText_Restoring
+        '
+        resources.ApplyResources(Me.ResText_Restoring, "ResText_Restoring")
+        Me.ResText_Restoring.Name = "ResText_Restoring"
+        '
+        'ResText_OpCancelled
+        '
+        resources.ApplyResources(Me.ResText_OpCancelled, "ResText_OpCancelled")
+        Me.ResText_OpCancelled.Name = "ResText_OpCancelled"
+        '
+        'ResText_RestFin
+        '
+        resources.ApplyResources(Me.ResText_RestFin, "ResText_RestFin")
+        Me.ResText_RestFin.Name = "ResText_RestFin"
+        '
+        'ResText_PrepFile
+        '
+        resources.ApplyResources(Me.ResText_PrepFile, "ResText_PrepFile")
+        Me.ResText_PrepFile.Name = "ResText_PrepFile"
+        '
+        'ResText_RestFile
+        '
+        resources.ApplyResources(Me.ResText_RestFile, "ResText_RestFile")
+        Me.ResText_RestFile.Name = "ResText_RestFile"
+        '
+        'ResText_PrepW
+        '
+        resources.ApplyResources(Me.ResText_PrepW, "ResText_PrepW")
+        Me.ResText_PrepW.Name = "ResText_PrepW"
+        '
+        'Panel6
+        '
+        resources.ApplyResources(Me.Panel6, "Panel6")
+        Me.Panel6.Controls.Add(Me.ResText_DelConfrm)
+        Me.Panel6.Controls.Add(Me.ResText_DirName)
+        Me.Panel6.Controls.Add(Me.ResText_RenameDir)
+        Me.Panel6.Controls.Add(Me.ResText_DirNIllegal)
+        Me.Panel6.Controls.Add(Me.ResText_DirNExist)
+        Me.Panel6.Controls.Add(Me.ResText_NFName)
+        Me.Panel6.Controls.Add(Me.ResText_Rename)
+        Me.Panel6.Controls.Add(Me.ResText_FNIllegal)
+        Me.Panel6.Controls.Add(Me.ResText_FNExist)
+        Me.Panel6.Controls.Add(Me.ResText_Files_C)
+        Me.Panel6.Controls.Add(Me.ResText_Adding)
+        Me.Panel6.Controls.Add(Me.ResText_Items_x)
+        Me.Panel6.Controls.Add(Me.ResText_AddFin)
+        Me.Panel6.Controls.Add(Me.ResText_DLFin)
+        Me.Panel6.Controls.Add(Me.ResText_DragNA)
+        Me.Panel6.Controls.Add(Me.ResText_DLT)
+        Me.Panel6.Controls.Add(Me.ResText_NewDir)
+        Me.Panel6.Controls.Add(Me.ResText_DLS)
+        Me.Panel6.Controls.Add(Me.ResText_OverwritingDF)
+        Me.Panel6.Name = "Panel6"
+        '
+        'ResText_DelConfrm
+        '
+        resources.ApplyResources(Me.ResText_DelConfrm, "ResText_DelConfrm")
+        Me.ResText_DelConfrm.Name = "ResText_DelConfrm"
+        '
+        'ResText_DirName
+        '
+        resources.ApplyResources(Me.ResText_DirName, "ResText_DirName")
+        Me.ResText_DirName.Name = "ResText_DirName"
+        '
+        'ResText_RenameDir
+        '
+        resources.ApplyResources(Me.ResText_RenameDir, "ResText_RenameDir")
+        Me.ResText_RenameDir.Name = "ResText_RenameDir"
+        '
+        'ResText_DirNIllegal
+        '
+        resources.ApplyResources(Me.ResText_DirNIllegal, "ResText_DirNIllegal")
+        Me.ResText_DirNIllegal.Name = "ResText_DirNIllegal"
+        '
+        'ResText_DirNExist
+        '
+        resources.ApplyResources(Me.ResText_DirNExist, "ResText_DirNExist")
+        Me.ResText_DirNExist.Name = "ResText_DirNExist"
+        '
+        'ResText_NFName
+        '
+        resources.ApplyResources(Me.ResText_NFName, "ResText_NFName")
+        Me.ResText_NFName.Name = "ResText_NFName"
+        '
+        'ResText_Rename
+        '
+        resources.ApplyResources(Me.ResText_Rename, "ResText_Rename")
+        Me.ResText_Rename.Name = "ResText_Rename"
+        '
+        'ResText_FNIllegal
+        '
+        resources.ApplyResources(Me.ResText_FNIllegal, "ResText_FNIllegal")
+        Me.ResText_FNIllegal.Name = "ResText_FNIllegal"
+        '
+        'ResText_FNExist
+        '
+        resources.ApplyResources(Me.ResText_FNExist, "ResText_FNExist")
+        Me.ResText_FNExist.Name = "ResText_FNExist"
+        '
+        'ResText_Files_C
+        '
+        resources.ApplyResources(Me.ResText_Files_C, "ResText_Files_C")
+        Me.ResText_Files_C.Name = "ResText_Files_C"
+        '
+        'ResText_Adding
+        '
+        resources.ApplyResources(Me.ResText_Adding, "ResText_Adding")
+        Me.ResText_Adding.Name = "ResText_Adding"
+        '
+        'ResText_Items_x
+        '
+        resources.ApplyResources(Me.ResText_Items_x, "ResText_Items_x")
+        Me.ResText_Items_x.Name = "ResText_Items_x"
+        '
+        'ResText_AddFin
+        '
+        resources.ApplyResources(Me.ResText_AddFin, "ResText_AddFin")
+        Me.ResText_AddFin.Name = "ResText_AddFin"
+        '
+        'ResText_DLFin
+        '
+        resources.ApplyResources(Me.ResText_DLFin, "ResText_DLFin")
+        Me.ResText_DLFin.Name = "ResText_DLFin"
+        '
+        'ResText_DragNA
+        '
+        resources.ApplyResources(Me.ResText_DragNA, "ResText_DragNA")
+        Me.ResText_DragNA.Name = "ResText_DragNA"
+        '
+        'ResText_DLT
+        '
+        resources.ApplyResources(Me.ResText_DLT, "ResText_DLT")
+        Me.ResText_DLT.Name = "ResText_DLT"
+        '
+        'ResText_NewDir
+        '
+        resources.ApplyResources(Me.ResText_NewDir, "ResText_NewDir")
+        Me.ResText_NewDir.Name = "ResText_NewDir"
+        '
+        'ResText_DLS
+        '
+        resources.ApplyResources(Me.ResText_DLS, "ResText_DLS")
+        Me.ResText_DLS.Name = "ResText_DLS"
+        '
+        'ResText_OverwritingDF
+        '
+        resources.ApplyResources(Me.ResText_OverwritingDF, "ResText_OverwritingDF")
+        Me.ResText_OverwritingDF.Name = "ResText_OverwritingDF"
+        '
+        'Panel5
+        '
+        resources.ApplyResources(Me.Panel5, "Panel5")
+        Me.Panel5.Controls.Add(Me.ResText_FileRateBT)
+        Me.Panel5.Controls.Add(Me.ResText_SpeedBT)
+        Me.Panel5.Controls.Add(Me.ResText_C0)
+        Me.Panel5.Controls.Add(Me.ResText_C1)
+        Me.Panel5.Controls.Add(Me.ResText_C2)
+        Me.Panel5.Controls.Add(Me.ResText_S0)
+        Me.Panel5.Controls.Add(Me.ResText_S1)
+        Me.Panel5.Controls.Add(Me.ResText_S2)
+        Me.Panel5.Controls.Add(Me.ResText_S3)
+        Me.Panel5.Controls.Add(Me.ResText_Byte)
+        Me.Panel5.Controls.Add(Me.ResText_S4)
+        Me.Panel5.Controls.Add(Me.ResText_FSizeP)
+        Me.Panel5.Controls.Add(Me.ResText_ErrP)
+        Me.Panel5.Controls.Add(Me.ResText_FCountP)
+        Me.Panel5.Controls.Add(Me.ResText_X0)
+        Me.Panel5.Controls.Add(Me.ResText_HFin)
+        Me.Panel5.Controls.Add(Me.ResText_NIndex)
+        Me.Panel5.Controls.Add(Me.ResText_HErr)
+        Me.Panel5.Controls.Add(Me.ResText_Index)
+        Me.Panel5.Controls.Add(Me.ResText_Hashing)
+        Me.Panel5.Controls.Add(Me.ResText_Partition)
+        Me.Panel5.Controls.Add(Me.ResText_Block)
+        Me.Panel5.Controls.Add(Me.ResText_Previous)
+        Me.Panel5.Controls.Add(Me.ResText_Located)
+        Me.Panel5.Controls.Add(Me.ResText_Ejd)
+        Me.Panel5.Controls.Add(Me.ResText_WritePointer)
+        Me.Panel5.Controls.Add(Me.ResText_RPosErr)
+        Me.Panel5.Controls.Add(Me.ResText_CapRem)
+        Me.Panel5.Controls.Add(Me.ResText_RCErr)
+        Me.Panel5.Controls.Add(Me.ResText_DNW)
+        Me.Panel5.Controls.Add(Me.ResText_RDErr)
+        Me.Panel5.Controls.Add(Me.ResText_CRef)
+        Me.Panel5.Controls.Add(Me.ResText_CRefErr)
+        Me.Panel5.Controls.Add(Me.ResText_NavErr)
+        Me.Panel5.Controls.Add(Me.ResText_Locating)
+        Me.Panel5.Controls.Add(Me.ResText_WriteWarning)
+        Me.Panel5.Controls.Add(Me.ResText_EWEOM)
+        Me.Panel5.Name = "Panel5"
+        '
+        'ResText_FileRateBT
+        '
+        resources.ApplyResources(Me.ResText_FileRateBT, "ResText_FileRateBT")
+        Me.ResText_FileRateBT.Name = "ResText_FileRateBT"
+        '
+        'ResText_SpeedBT
+        '
+        resources.ApplyResources(Me.ResText_SpeedBT, "ResText_SpeedBT")
+        Me.ResText_SpeedBT.Name = "ResText_SpeedBT"
+        '
+        'ResText_C0
+        '
+        resources.ApplyResources(Me.ResText_C0, "ResText_C0")
+        Me.ResText_C0.Name = "ResText_C0"
+        '
+        'ResText_C1
+        '
+        resources.ApplyResources(Me.ResText_C1, "ResText_C1")
+        Me.ResText_C1.Name = "ResText_C1"
+        '
+        'ResText_C2
+        '
+        resources.ApplyResources(Me.ResText_C2, "ResText_C2")
+        Me.ResText_C2.Name = "ResText_C2"
+        '
+        'ResText_S0
+        '
+        resources.ApplyResources(Me.ResText_S0, "ResText_S0")
+        Me.ResText_S0.Name = "ResText_S0"
+        '
+        'ResText_S1
+        '
+        resources.ApplyResources(Me.ResText_S1, "ResText_S1")
+        Me.ResText_S1.Name = "ResText_S1"
+        '
+        'ResText_S2
+        '
+        resources.ApplyResources(Me.ResText_S2, "ResText_S2")
+        Me.ResText_S2.Name = "ResText_S2"
+        '
+        'ResText_S3
+        '
+        resources.ApplyResources(Me.ResText_S3, "ResText_S3")
+        Me.ResText_S3.Name = "ResText_S3"
+        '
+        'ResText_Byte
+        '
+        resources.ApplyResources(Me.ResText_Byte, "ResText_Byte")
+        Me.ResText_Byte.Name = "ResText_Byte"
+        '
+        'ResText_S4
+        '
+        resources.ApplyResources(Me.ResText_S4, "ResText_S4")
+        Me.ResText_S4.Name = "ResText_S4"
+        '
+        'ResText_FSizeP
+        '
+        resources.ApplyResources(Me.ResText_FSizeP, "ResText_FSizeP")
+        Me.ResText_FSizeP.Name = "ResText_FSizeP"
+        '
+        'ResText_ErrP
+        '
+        resources.ApplyResources(Me.ResText_ErrP, "ResText_ErrP")
+        Me.ResText_ErrP.Name = "ResText_ErrP"
+        '
+        'ResText_FCountP
+        '
+        resources.ApplyResources(Me.ResText_FCountP, "ResText_FCountP")
+        Me.ResText_FCountP.Name = "ResText_FCountP"
+        '
+        'ResText_X0
+        '
+        resources.ApplyResources(Me.ResText_X0, "ResText_X0")
+        Me.ResText_X0.Name = "ResText_X0"
+        '
+        'ResText_HFin
+        '
+        resources.ApplyResources(Me.ResText_HFin, "ResText_HFin")
+        Me.ResText_HFin.Name = "ResText_HFin"
+        '
+        'ResText_NIndex
+        '
+        resources.ApplyResources(Me.ResText_NIndex, "ResText_NIndex")
+        Me.ResText_NIndex.Name = "ResText_NIndex"
+        '
+        'ResText_HErr
+        '
+        resources.ApplyResources(Me.ResText_HErr, "ResText_HErr")
+        Me.ResText_HErr.Name = "ResText_HErr"
+        '
+        'ResText_Index
+        '
+        resources.ApplyResources(Me.ResText_Index, "ResText_Index")
+        Me.ResText_Index.Name = "ResText_Index"
+        '
+        'ResText_Hashing
+        '
+        resources.ApplyResources(Me.ResText_Hashing, "ResText_Hashing")
+        Me.ResText_Hashing.Name = "ResText_Hashing"
+        '
+        'ResText_Partition
+        '
+        resources.ApplyResources(Me.ResText_Partition, "ResText_Partition")
+        Me.ResText_Partition.Name = "ResText_Partition"
+        '
+        'ResText_Block
+        '
+        resources.ApplyResources(Me.ResText_Block, "ResText_Block")
+        Me.ResText_Block.Name = "ResText_Block"
+        '
+        'ResText_Previous
+        '
+        resources.ApplyResources(Me.ResText_Previous, "ResText_Previous")
+        Me.ResText_Previous.Name = "ResText_Previous"
+        '
+        'ResText_Located
+        '
+        resources.ApplyResources(Me.ResText_Located, "ResText_Located")
+        Me.ResText_Located.Name = "ResText_Located"
+        '
+        'ResText_Ejd
+        '
+        resources.ApplyResources(Me.ResText_Ejd, "ResText_Ejd")
+        Me.ResText_Ejd.Name = "ResText_Ejd"
+        '
+        'ResText_WritePointer
+        '
+        resources.ApplyResources(Me.ResText_WritePointer, "ResText_WritePointer")
+        Me.ResText_WritePointer.Name = "ResText_WritePointer"
+        '
+        'ResText_RPosErr
+        '
+        resources.ApplyResources(Me.ResText_RPosErr, "ResText_RPosErr")
+        Me.ResText_RPosErr.Name = "ResText_RPosErr"
+        '
+        'ResText_CapRem
+        '
+        resources.ApplyResources(Me.ResText_CapRem, "ResText_CapRem")
+        Me.ResText_CapRem.Name = "ResText_CapRem"
+        '
+        'ResText_RCErr
+        '
+        resources.ApplyResources(Me.ResText_RCErr, "ResText_RCErr")
+        Me.ResText_RCErr.Name = "ResText_RCErr"
+        '
+        'ResText_DNW
+        '
+        resources.ApplyResources(Me.ResText_DNW, "ResText_DNW")
+        Me.ResText_DNW.Name = "ResText_DNW"
+        '
+        'ResText_RDErr
+        '
+        resources.ApplyResources(Me.ResText_RDErr, "ResText_RDErr")
+        Me.ResText_RDErr.Name = "ResText_RDErr"
+        '
+        'ResText_CRef
+        '
+        resources.ApplyResources(Me.ResText_CRef, "ResText_CRef")
+        Me.ResText_CRef.Name = "ResText_CRef"
+        '
+        'ResText_CRefErr
+        '
+        resources.ApplyResources(Me.ResText_CRefErr, "ResText_CRefErr")
+        Me.ResText_CRefErr.Name = "ResText_CRefErr"
+        '
+        'ResText_NavErr
+        '
+        resources.ApplyResources(Me.ResText_NavErr, "ResText_NavErr")
+        Me.ResText_NavErr.Name = "ResText_NavErr"
+        '
+        'ResText_Locating
+        '
+        resources.ApplyResources(Me.ResText_Locating, "ResText_Locating")
+        Me.ResText_Locating.Name = "ResText_Locating"
+        '
+        'ResText_WriteWarning
+        '
+        resources.ApplyResources(Me.ResText_WriteWarning, "ResText_WriteWarning")
+        Me.ResText_WriteWarning.Name = "ResText_WriteWarning"
+        '
+        'ResText_EWEOM
+        '
+        resources.ApplyResources(Me.ResText_EWEOM, "ResText_EWEOM")
+        Me.ResText_EWEOM.Name = "ResText_EWEOM"
+        '
+        'Panel4
+        '
+        resources.ApplyResources(Me.Panel4, "Panel4")
+        Me.Panel4.Controls.Add(Me.ResText_NHWrn)
+        Me.Panel4.Controls.Add(Me.ResText_X1)
+        Me.Panel4.Controls.Add(Me.ResText_X2)
+        Me.Panel4.Controls.Add(Me.ResText_X3)
+        Me.Panel4.Controls.Add(Me.ResText_PEj)
+        Me.Panel4.Controls.Add(Me.ResText_WErrSCSI)
+        Me.Panel4.Controls.Add(Me.ResText_WFUp)
+        Me.Panel4.Controls.Add(Me.ResText_ILdedP)
+        Me.Panel4.Controls.Add(Me.ResText_DataLossWarning)
+        Me.Panel4.Controls.Add(Me.ResText_SHA1Overw)
+        Me.Panel4.Controls.Add(Me.ResText_SetH1)
+        Me.Panel4.Controls.Add(Me.ResText_SetH2)
+        Me.Panel4.Controls.Add(Me.ResText_SetH3)
+        Me.Panel4.Controls.Add(Me.ResText_CancelConfirm)
+        Me.Panel4.Controls.Add(Me.ResText_ClearWC)
+        Me.Panel4.Controls.Add(Me.ResText_RB4)
+        Me.Panel4.Name = "Panel4"
+        '
+        'ResText_NHWrn
+        '
+        resources.ApplyResources(Me.ResText_NHWrn, "ResText_NHWrn")
+        Me.ResText_NHWrn.Name = "ResText_NHWrn"
+        '
+        'ResText_X1
+        '
+        resources.ApplyResources(Me.ResText_X1, "ResText_X1")
+        Me.ResText_X1.Name = "ResText_X1"
+        '
+        'ResText_X2
+        '
+        resources.ApplyResources(Me.ResText_X2, "ResText_X2")
+        Me.ResText_X2.Name = "ResText_X2"
+        '
+        'ResText_X3
+        '
+        resources.ApplyResources(Me.ResText_X3, "ResText_X3")
+        Me.ResText_X3.Name = "ResText_X3"
+        '
+        'ResText_PEj
+        '
+        resources.ApplyResources(Me.ResText_PEj, "ResText_PEj")
+        Me.ResText_PEj.Name = "ResText_PEj"
+        '
+        'ResText_WErrSCSI
+        '
+        resources.ApplyResources(Me.ResText_WErrSCSI, "ResText_WErrSCSI")
+        Me.ResText_WErrSCSI.Name = "ResText_WErrSCSI"
+        '
+        'ResText_WFUp
+        '
+        resources.ApplyResources(Me.ResText_WFUp, "ResText_WFUp")
+        Me.ResText_WFUp.Name = "ResText_WFUp"
+        '
+        'ResText_ILdedP
+        '
+        resources.ApplyResources(Me.ResText_ILdedP, "ResText_ILdedP")
+        Me.ResText_ILdedP.Name = "ResText_ILdedP"
+        '
+        'ResText_DataLossWarning
+        '
+        resources.ApplyResources(Me.ResText_DataLossWarning, "ResText_DataLossWarning")
+        Me.ResText_DataLossWarning.Name = "ResText_DataLossWarning"
+        '
+        'ResText_SHA1Overw
+        '
+        resources.ApplyResources(Me.ResText_SHA1Overw, "ResText_SHA1Overw")
+        Me.ResText_SHA1Overw.Name = "ResText_SHA1Overw"
+        '
+        'ResText_SetH1
+        '
+        resources.ApplyResources(Me.ResText_SetH1, "ResText_SetH1")
+        Me.ResText_SetH1.Name = "ResText_SetH1"
+        '
+        'ResText_SetH2
+        '
+        resources.ApplyResources(Me.ResText_SetH2, "ResText_SetH2")
+        Me.ResText_SetH2.Name = "ResText_SetH2"
+        '
+        'ResText_SetH3
+        '
+        resources.ApplyResources(Me.ResText_SetH3, "ResText_SetH3")
+        Me.ResText_SetH3.Name = "ResText_SetH3"
+        '
+        'ResText_CancelConfirm
+        '
+        resources.ApplyResources(Me.ResText_CancelConfirm, "ResText_CancelConfirm")
+        Me.ResText_CancelConfirm.Name = "ResText_CancelConfirm"
+        '
+        'ResText_ClearWC
+        '
+        resources.ApplyResources(Me.ResText_ClearWC, "ResText_ClearWC")
+        Me.ResText_ClearWC.Name = "ResText_ClearWC"
+        '
+        'ResText_RB4
+        '
+        resources.ApplyResources(Me.ResText_RB4, "ResText_RB4")
+        Me.ResText_RB4.Name = "ResText_RB4"
+        '
+        'Panel3
+        '
+        resources.ApplyResources(Me.Panel3, "Panel3")
+        Me.Panel3.Controls.Add(Me.ResText_GI)
+        Me.Panel3.Controls.Add(Me.ResText_WI)
+        Me.Panel3.Controls.Add(Me.ResText_WIF)
+        Me.Panel3.Controls.Add(Me.ResText_UDI)
+        Me.Panel3.Controls.Add(Me.ResText_UI)
+        Me.Panel3.Controls.Add(Me.ResText_IUd)
+        Me.Panel3.Controls.Add(Me.ResText_DPIUed)
+        Me.Panel3.Controls.Add(Me.ResText_RI)
+        Me.Panel3.Controls.Add(Me.ResText_Exporting)
+        Me.Panel3.Controls.Add(Me.ResText_Imported)
+        Me.Panel3.Controls.Add(Me.ResText_IAErrp)
+        Me.Panel3.Controls.Add(Me.ResText_AI)
+        Me.Panel3.Controls.Add(Me.ResText_VCID)
+        Me.Panel3.Controls.Add(Me.ResText_Importing)
+        Me.Panel3.Controls.Add(Me.ResText_AISucc)
+        Me.Panel3.Controls.Add(Me.ResText_FmtFail)
+        Me.Panel3.Controls.Add(Me.ResText_IndexBaked)
+        Me.Panel3.Controls.Add(Me.ResText_FmtFin)
+        Me.Panel3.Controls.Add(Me.ResText_IndexBak2)
+        Me.Panel3.Controls.Add(Me.ResText_LTFSVolumeN2)
+        Me.Panel3.Controls.Add(Me.ResText_IUErr)
+        Me.Panel3.Controls.Add(Me.ResText_Barcode2)
+        Me.Panel3.Controls.Add(Me.ResText_CurPos)
+        Me.Panel3.Controls.Add(Me.ResText_LTFSVolumeN)
+        Me.Panel3.Controls.Add(Me.ResText_IndexNAllowed)
+        Me.Panel3.Controls.Add(Me.ResText_SetVolumeN)
+        Me.Panel3.Controls.Add(Me.ResText_DPIWritten)
+        Me.Panel3.Controls.Add(Me.ResText_SetBarcode)
+        Me.Panel3.Controls.Add(Me.ResText_IndexBakF)
+        Me.Panel3.Controls.Add(Me.ResText_DPIWFailed)
+        Me.Panel3.Controls.Add(Me.ResText_IPCanc)
+        Me.Panel3.Controls.Add(Me.ResText_RollBacked)
+        Me.Panel3.Controls.Add(Me.ResText_BlkSize)
+        Me.Panel3.Controls.Add(Me.ResText_RFailed)
+        Me.Panel3.Controls.Add(Me.ResText_Barcode)
+        Me.Panel3.Controls.Add(Me.ResText_RBFin)
+        Me.Panel3.Controls.Add(Me.ResText_RB1)
+        Me.Panel3.Controls.Add(Me.ResText_RBing)
+        Me.Panel3.Controls.Add(Me.ResText_RB2)
+        Me.Panel3.Controls.Add(Me.ResText_RB3)
+        Me.Panel3.Controls.Add(Me.ResText_IRFailed)
+        Me.Panel3.Controls.Add(Me.ResText_IRSucc)
+        Me.Panel3.Controls.Add(Me.ResText_NVOL1)
+        Me.Panel3.Controls.Add(Me.ResText_NLTFS)
+        Me.Panel3.Controls.Add(Me.ResText_RLTFSInfo)
+        Me.Panel3.Controls.Add(Me.ResText_SvBak)
+        Me.Panel3.Name = "Panel3"
+        '
+        'ResText_GI
+        '
+        resources.ApplyResources(Me.ResText_GI, "ResText_GI")
+        Me.ResText_GI.Name = "ResText_GI"
+        '
+        'ResText_WI
+        '
+        resources.ApplyResources(Me.ResText_WI, "ResText_WI")
+        Me.ResText_WI.Name = "ResText_WI"
+        '
+        'ResText_WIF
+        '
+        resources.ApplyResources(Me.ResText_WIF, "ResText_WIF")
+        Me.ResText_WIF.Name = "ResText_WIF"
+        '
+        'ResText_UDI
+        '
+        resources.ApplyResources(Me.ResText_UDI, "ResText_UDI")
+        Me.ResText_UDI.Name = "ResText_UDI"
+        '
+        'ResText_UI
+        '
+        resources.ApplyResources(Me.ResText_UI, "ResText_UI")
+        Me.ResText_UI.Name = "ResText_UI"
+        '
+        'ResText_IUd
+        '
+        resources.ApplyResources(Me.ResText_IUd, "ResText_IUd")
+        Me.ResText_IUd.Name = "ResText_IUd"
+        '
+        'ResText_DPIUed
+        '
+        resources.ApplyResources(Me.ResText_DPIUed, "ResText_DPIUed")
+        Me.ResText_DPIUed.Name = "ResText_DPIUed"
+        '
+        'ResText_RI
+        '
+        resources.ApplyResources(Me.ResText_RI, "ResText_RI")
+        Me.ResText_RI.Name = "ResText_RI"
+        '
+        'ResText_Exporting
+        '
+        resources.ApplyResources(Me.ResText_Exporting, "ResText_Exporting")
+        Me.ResText_Exporting.Name = "ResText_Exporting"
+        '
+        'ResText_Imported
+        '
+        resources.ApplyResources(Me.ResText_Imported, "ResText_Imported")
+        Me.ResText_Imported.Name = "ResText_Imported"
+        '
+        'ResText_IAErrp
+        '
+        resources.ApplyResources(Me.ResText_IAErrp, "ResText_IAErrp")
+        Me.ResText_IAErrp.Name = "ResText_IAErrp"
+        '
+        'ResText_AI
+        '
+        resources.ApplyResources(Me.ResText_AI, "ResText_AI")
+        Me.ResText_AI.Name = "ResText_AI"
+        '
+        'ResText_VCID
+        '
+        resources.ApplyResources(Me.ResText_VCID, "ResText_VCID")
+        Me.ResText_VCID.Name = "ResText_VCID"
+        '
+        'ResText_Importing
+        '
+        resources.ApplyResources(Me.ResText_Importing, "ResText_Importing")
+        Me.ResText_Importing.Name = "ResText_Importing"
+        '
+        'ResText_AISucc
+        '
+        resources.ApplyResources(Me.ResText_AISucc, "ResText_AISucc")
+        Me.ResText_AISucc.Name = "ResText_AISucc"
+        '
+        'ResText_FmtFail
+        '
+        resources.ApplyResources(Me.ResText_FmtFail, "ResText_FmtFail")
+        Me.ResText_FmtFail.Name = "ResText_FmtFail"
+        '
+        'ResText_IndexBaked
+        '
+        resources.ApplyResources(Me.ResText_IndexBaked, "ResText_IndexBaked")
+        Me.ResText_IndexBaked.Name = "ResText_IndexBaked"
+        '
+        'ResText_FmtFin
+        '
+        resources.ApplyResources(Me.ResText_FmtFin, "ResText_FmtFin")
+        Me.ResText_FmtFin.Name = "ResText_FmtFin"
+        '
+        'ResText_IndexBak2
+        '
+        resources.ApplyResources(Me.ResText_IndexBak2, "ResText_IndexBak2")
+        Me.ResText_IndexBak2.Name = "ResText_IndexBak2"
+        '
+        'ResText_LTFSVolumeN2
+        '
+        resources.ApplyResources(Me.ResText_LTFSVolumeN2, "ResText_LTFSVolumeN2")
+        Me.ResText_LTFSVolumeN2.Name = "ResText_LTFSVolumeN2"
+        '
+        'ResText_IUErr
+        '
+        resources.ApplyResources(Me.ResText_IUErr, "ResText_IUErr")
+        Me.ResText_IUErr.Name = "ResText_IUErr"
+        '
+        'ResText_Barcode2
+        '
+        resources.ApplyResources(Me.ResText_Barcode2, "ResText_Barcode2")
+        Me.ResText_Barcode2.Name = "ResText_Barcode2"
+        '
+        'ResText_CurPos
+        '
+        resources.ApplyResources(Me.ResText_CurPos, "ResText_CurPos")
+        Me.ResText_CurPos.Name = "ResText_CurPos"
+        '
+        'ResText_LTFSVolumeN
+        '
+        resources.ApplyResources(Me.ResText_LTFSVolumeN, "ResText_LTFSVolumeN")
+        Me.ResText_LTFSVolumeN.Name = "ResText_LTFSVolumeN"
+        '
+        'ResText_IndexNAllowed
+        '
+        resources.ApplyResources(Me.ResText_IndexNAllowed, "ResText_IndexNAllowed")
+        Me.ResText_IndexNAllowed.Name = "ResText_IndexNAllowed"
+        '
+        'ResText_SetVolumeN
+        '
+        resources.ApplyResources(Me.ResText_SetVolumeN, "ResText_SetVolumeN")
+        Me.ResText_SetVolumeN.Name = "ResText_SetVolumeN"
+        '
+        'ResText_DPIWritten
+        '
+        resources.ApplyResources(Me.ResText_DPIWritten, "ResText_DPIWritten")
+        Me.ResText_DPIWritten.Name = "ResText_DPIWritten"
+        '
+        'ResText_SetBarcode
+        '
+        resources.ApplyResources(Me.ResText_SetBarcode, "ResText_SetBarcode")
+        Me.ResText_SetBarcode.Name = "ResText_SetBarcode"
+        '
+        'ResText_IndexBakF
+        '
+        resources.ApplyResources(Me.ResText_IndexBakF, "ResText_IndexBakF")
+        Me.ResText_IndexBakF.Name = "ResText_IndexBakF"
+        '
+        'ResText_DPIWFailed
+        '
+        resources.ApplyResources(Me.ResText_DPIWFailed, "ResText_DPIWFailed")
+        Me.ResText_DPIWFailed.Name = "ResText_DPIWFailed"
+        '
+        'ResText_IPCanc
+        '
+        resources.ApplyResources(Me.ResText_IPCanc, "ResText_IPCanc")
+        Me.ResText_IPCanc.Name = "ResText_IPCanc"
+        '
+        'ResText_RollBacked
+        '
+        resources.ApplyResources(Me.ResText_RollBacked, "ResText_RollBacked")
+        Me.ResText_RollBacked.Name = "ResText_RollBacked"
+        '
+        'ResText_BlkSize
+        '
+        resources.ApplyResources(Me.ResText_BlkSize, "ResText_BlkSize")
+        Me.ResText_BlkSize.Name = "ResText_BlkSize"
+        '
+        'ResText_RFailed
+        '
+        resources.ApplyResources(Me.ResText_RFailed, "ResText_RFailed")
+        Me.ResText_RFailed.Name = "ResText_RFailed"
+        '
+        'ResText_Barcode
+        '
+        resources.ApplyResources(Me.ResText_Barcode, "ResText_Barcode")
+        Me.ResText_Barcode.Name = "ResText_Barcode"
+        '
+        'ResText_RBFin
+        '
+        resources.ApplyResources(Me.ResText_RBFin, "ResText_RBFin")
+        Me.ResText_RBFin.Name = "ResText_RBFin"
+        '
+        'ResText_RB1
+        '
+        resources.ApplyResources(Me.ResText_RB1, "ResText_RB1")
+        Me.ResText_RB1.Name = "ResText_RB1"
+        '
+        'ResText_RBing
+        '
+        resources.ApplyResources(Me.ResText_RBing, "ResText_RBing")
+        Me.ResText_RBing.Name = "ResText_RBing"
+        '
+        'ResText_RB2
+        '
+        resources.ApplyResources(Me.ResText_RB2, "ResText_RB2")
+        Me.ResText_RB2.Name = "ResText_RB2"
+        '
+        'ResText_RB3
+        '
+        resources.ApplyResources(Me.ResText_RB3, "ResText_RB3")
+        Me.ResText_RB3.Name = "ResText_RB3"
+        '
+        'ResText_IRFailed
+        '
+        resources.ApplyResources(Me.ResText_IRFailed, "ResText_IRFailed")
+        Me.ResText_IRFailed.Name = "ResText_IRFailed"
+        '
+        'ResText_IRSucc
+        '
+        resources.ApplyResources(Me.ResText_IRSucc, "ResText_IRSucc")
+        Me.ResText_IRSucc.Name = "ResText_IRSucc"
+        '
+        'ResText_NVOL1
+        '
+        resources.ApplyResources(Me.ResText_NVOL1, "ResText_NVOL1")
+        Me.ResText_NVOL1.Name = "ResText_NVOL1"
+        '
+        'ResText_NLTFS
+        '
+        resources.ApplyResources(Me.ResText_NLTFS, "ResText_NLTFS")
+        Me.ResText_NLTFS.Name = "ResText_NLTFS"
+        '
+        'ResText_RLTFSInfo
+        '
+        resources.ApplyResources(Me.ResText_RLTFSInfo, "ResText_RLTFSInfo")
+        Me.ResText_RLTFSInfo.Name = "ResText_RLTFSInfo"
+        '
+        'ResText_SvBak
+        '
+        resources.ApplyResources(Me.ResText_SvBak, "ResText_SvBak")
+        Me.ResText_SvBak.Name = "ResText_SvBak"
+        '
+        'Panel2
+        '
+        resources.ApplyResources(Me.Panel2, "Panel2")
+        Me.Panel2.Controls.Add(Me.ResText_Warning)
+        Me.Panel2.Controls.Add(Me.ResText_Hint)
+        Me.Panel2.Controls.Add(Me.ResText_Confirm)
+        Me.Panel2.Controls.Add(Me.ResText_OpSucc)
+        Me.Panel2.Controls.Add(Me.ResText_Error)
+        Me.Panel2.Controls.Add(Me.ResText_Setting)
+        Me.Panel2.Name = "Panel2"
+        '
+        'ResText_Warning
+        '
+        resources.ApplyResources(Me.ResText_Warning, "ResText_Warning")
+        Me.ResText_Warning.Name = "ResText_Warning"
+        '
+        'ResText_Hint
+        '
+        resources.ApplyResources(Me.ResText_Hint, "ResText_Hint")
+        Me.ResText_Hint.Name = "ResText_Hint"
+        '
+        'ResText_Confirm
+        '
+        resources.ApplyResources(Me.ResText_Confirm, "ResText_Confirm")
+        Me.ResText_Confirm.Name = "ResText_Confirm"
+        '
+        'ResText_OpSucc
+        '
+        resources.ApplyResources(Me.ResText_OpSucc, "ResText_OpSucc")
+        Me.ResText_OpSucc.Name = "ResText_OpSucc"
+        '
+        'ResText_Error
+        '
+        resources.ApplyResources(Me.ResText_Error, "ResText_Error")
+        Me.ResText_Error.Name = "ResText_Error"
+        '
+        'ResText_Setting
+        '
+        resources.ApplyResources(Me.ResText_Setting, "ResText_Setting")
+        Me.ResText_Setting.Name = "ResText_Setting"
+        '
+        'ResText_
+        '
+        resources.ApplyResources(Me.ResText_, "ResText_")
+        Me.ResText_.Name = "ResText_"
+        '
+        'Panel1
+        '
+        resources.ApplyResources(Me.Panel1, "Panel1")
+        Me.Panel1.Controls.Add(Me.ResText_SSMin)
+        Me.Panel1.Controls.Add(Me.ResText_SFB)
+        Me.Panel1.Controls.Add(Me.ResText_SSMax)
+        Me.Panel1.Controls.Add(Me.ResText_SPreR)
+        Me.Panel1.Controls.Add(Me.ResText_SSTime)
+        Me.Panel1.Controls.Add(Me.ResText_SCIntv)
+        Me.Panel1.Controls.Add(Me.ResText_SIIntv)
+        Me.Panel1.Controls.Add(Me.ResText_CLNCS)
+        Me.Panel1.Controls.Add(Me.ResText_WLimS)
+        Me.Panel1.Controls.Add(Me.ResText_NoIndex)
+        Me.Panel1.Controls.Add(Me.ResText_IndexInterval)
+        Me.Panel1.Controls.Add(Me.ResText_CRDisabled)
+        Me.Panel1.Controls.Add(Me.ResText_CRIntv)
+        Me.Panel1.Controls.Add(Me.ResText_NoSLim)
+        Me.Panel1.Controls.Add(Me.ResText_SLim)
+        Me.Panel1.Controls.Add(Me.ResText_RBCoff)
+        Me.Panel1.Controls.Add(Me.ResText_RBC)
+        Me.Panel1.Controls.Add(Me.ResText_PFC)
+        Me.Panel1.Controls.Add(Me.ResText_FB)
+        Me.Panel1.Controls.Add(Me.ResText_SMin)
+        Me.Panel1.Controls.Add(Me.ResText_SMax)
+        Me.Panel1.Controls.Add(Me.ResText_STime)
+        Me.Panel1.Name = "Panel1"
+        '
+        'ResText_SSMin
+        '
+        resources.ApplyResources(Me.ResText_SSMin, "ResText_SSMin")
+        Me.ResText_SSMin.Name = "ResText_SSMin"
+        '
+        'ResText_SFB
+        '
+        resources.ApplyResources(Me.ResText_SFB, "ResText_SFB")
+        Me.ResText_SFB.Name = "ResText_SFB"
+        '
+        'ResText_SSMax
+        '
+        resources.ApplyResources(Me.ResText_SSMax, "ResText_SSMax")
+        Me.ResText_SSMax.Name = "ResText_SSMax"
+        '
+        'ResText_SPreR
+        '
+        resources.ApplyResources(Me.ResText_SPreR, "ResText_SPreR")
+        Me.ResText_SPreR.Name = "ResText_SPreR"
+        '
+        'ResText_SSTime
+        '
+        resources.ApplyResources(Me.ResText_SSTime, "ResText_SSTime")
+        Me.ResText_SSTime.Name = "ResText_SSTime"
+        '
+        'ResText_SCIntv
+        '
+        resources.ApplyResources(Me.ResText_SCIntv, "ResText_SCIntv")
+        Me.ResText_SCIntv.Name = "ResText_SCIntv"
+        '
+        'ResText_SIIntv
+        '
+        resources.ApplyResources(Me.ResText_SIIntv, "ResText_SIIntv")
+        Me.ResText_SIIntv.Name = "ResText_SIIntv"
+        '
+        'ResText_CLNCS
+        '
+        resources.ApplyResources(Me.ResText_CLNCS, "ResText_CLNCS")
+        Me.ResText_CLNCS.Name = "ResText_CLNCS"
+        '
+        'ResText_WLimS
+        '
+        resources.ApplyResources(Me.ResText_WLimS, "ResText_WLimS")
+        Me.ResText_WLimS.Name = "ResText_WLimS"
+        '
+        'ResText_NoIndex
+        '
+        resources.ApplyResources(Me.ResText_NoIndex, "ResText_NoIndex")
+        Me.ResText_NoIndex.Name = "ResText_NoIndex"
+        '
+        'ResText_IndexInterval
+        '
+        resources.ApplyResources(Me.ResText_IndexInterval, "ResText_IndexInterval")
+        Me.ResText_IndexInterval.Name = "ResText_IndexInterval"
+        '
+        'ResText_CRDisabled
+        '
+        resources.ApplyResources(Me.ResText_CRDisabled, "ResText_CRDisabled")
+        Me.ResText_CRDisabled.Name = "ResText_CRDisabled"
+        '
+        'ResText_CRIntv
+        '
+        resources.ApplyResources(Me.ResText_CRIntv, "ResText_CRIntv")
+        Me.ResText_CRIntv.Name = "ResText_CRIntv"
+        '
+        'ResText_NoSLim
+        '
+        resources.ApplyResources(Me.ResText_NoSLim, "ResText_NoSLim")
+        Me.ResText_NoSLim.Name = "ResText_NoSLim"
+        '
+        'ResText_SLim
+        '
+        resources.ApplyResources(Me.ResText_SLim, "ResText_SLim")
+        Me.ResText_SLim.Name = "ResText_SLim"
+        '
+        'ResText_RBCoff
+        '
+        resources.ApplyResources(Me.ResText_RBCoff, "ResText_RBCoff")
+        Me.ResText_RBCoff.Name = "ResText_RBCoff"
+        '
+        'ResText_RBC
+        '
+        resources.ApplyResources(Me.ResText_RBC, "ResText_RBC")
+        Me.ResText_RBC.Name = "ResText_RBC"
+        '
+        'ResText_PFC
+        '
+        resources.ApplyResources(Me.ResText_PFC, "ResText_PFC")
+        Me.ResText_PFC.Name = "ResText_PFC"
+        '
+        'ResText_FB
+        '
+        resources.ApplyResources(Me.ResText_FB, "ResText_FB")
+        Me.ResText_FB.Name = "ResText_FB"
+        '
+        'ResText_SMin
+        '
+        resources.ApplyResources(Me.ResText_SMin, "ResText_SMin")
+        Me.ResText_SMin.Name = "ResText_SMin"
+        '
+        'ResText_SMax
+        '
+        resources.ApplyResources(Me.ResText_SMax, "ResText_SMax")
+        Me.ResText_SMax.Name = "ResText_SMax"
+        '
+        'ResText_STime
+        '
+        resources.ApplyResources(Me.ResText_STime, "ResText_STime")
+        Me.ResText_STime.Name = "ResText_STime"
+        '
         'LTFSWriter
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
+        resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1349, 678)
+        Me.Controls.Add(Me.GroupBox1)
         Me.Controls.Add(Me.ToolStrip1)
         Me.Controls.Add(Me.StatusStrip1)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
         Me.DoubleBuffered = True
-        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "LTFSWriter"
-        Me.Text = "LTFSWriter"
-        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1228,6 +2310,7 @@ Partial Class LTFSWriter
         Me.SplitContainer2.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer2, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer2.ResumeLayout(False)
+        Me.ContextMenuStrip1.ResumeLayout(False)
         CType(Me.Chart1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStrip2.ResumeLayout(False)
         Me.MenuStrip1.ResumeLayout(False)
@@ -1236,6 +2319,22 @@ Partial Class LTFSWriter
         Me.StatusStrip1.PerformLayout()
         Me.ToolStrip1.ResumeLayout(False)
         Me.ToolStrip1.PerformLayout()
+        Me.GroupBox1.ResumeLayout(False)
+        Me.GroupBox1.PerformLayout()
+        Me.Panel7.ResumeLayout(False)
+        Me.Panel7.PerformLayout()
+        Me.Panel6.ResumeLayout(False)
+        Me.Panel6.PerformLayout()
+        Me.Panel5.ResumeLayout(False)
+        Me.Panel5.PerformLayout()
+        Me.Panel4.ResumeLayout(False)
+        Me.Panel4.PerformLayout()
+        Me.Panel3.ResumeLayout(False)
+        Me.Panel3.PerformLayout()
+        Me.Panel2.ResumeLayout(False)
+        Me.Panel2.PerformLayout()
+        Me.Panel1.ResumeLayout(False)
+        Me.Panel1.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1284,16 +2383,16 @@ Partial Class LTFSWriter
     Friend WithEvents 更新数据区索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents SplitContainer2 As SplitContainer
     Friend WithEvents ContextMenuStrip2 As ContextMenuStrip
-    Friend WithEvents SToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents MinToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents MinToolStripMenuItem1 As ToolStripMenuItem
-    Friend WithEvents MinToolStripMenuItem2 As ToolStripMenuItem
-    Friend WithEvents HToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents HToolStripMenuItem1 As ToolStripMenuItem
-    Friend WithEvents HToolStripMenuItem2 As ToolStripMenuItem
+    Friend WithEvents S60ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Min5ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Min10ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Min30ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents H1ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents H3ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents H6ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents LinearToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents LogrithmToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents LogarithmicToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents Column_StartBlock As ColumnHeader
     Friend WithEvents Column_Partition As ColumnHeader
     Friend WithEvents Column_FriendlyLen As ColumnHeader
@@ -1370,4 +2469,182 @@ Partial Class LTFSWriter
     Friend WithEvents 文件缓存32MiBToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 文件详情ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 禁用分区ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 容量缺失检测参数ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 速度下限ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 速度上限ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 持续时间ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 去重SHA1ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents GroupBox1 As GroupBox
+    Friend WithEvents ResText_NoIndex As Label
+    Friend WithEvents ResText_IndexInterval As Label
+    Friend WithEvents ResText_CRDisabled As Label
+    Friend WithEvents ResText_CRIntv As Label
+    Friend WithEvents ResText_NoSLim As Label
+    Friend WithEvents ResText_ As Label
+    Friend WithEvents ResText_SLim As Label
+    Friend WithEvents ResText_RBC As Label
+    Friend WithEvents ResText_RBCoff As Label
+    Friend WithEvents ResText_X1 As Label
+    Friend WithEvents ResText_X0 As Label
+    Friend WithEvents ResText_ErrP As Label
+    Friend WithEvents ResText_S4 As Label
+    Friend WithEvents ResText_S3 As Label
+    Friend WithEvents ResText_S2 As Label
+    Friend WithEvents ResText_S1 As Label
+    Friend WithEvents ResText_S0 As Label
+    Friend WithEvents ResText_C2 As Label
+    Friend WithEvents ResText_C1 As Label
+    Friend WithEvents ResText_C0 As Label
+    Friend WithEvents ResText_STime As Label
+    Friend WithEvents ResText_SMax As Label
+    Friend WithEvents ResText_SMin As Label
+    Friend WithEvents ResText_FB As Label
+    Friend WithEvents ResText_PFC As Label
+    Friend WithEvents ResText_X3 As Label
+    Friend WithEvents ResText_X2 As Label
+    Friend WithEvents ResText_Warning As Label
+    Friend WithEvents ResText_CRef As Label
+    Friend WithEvents ResText_RDErr As Label
+    Friend WithEvents ResText_DNW As Label
+    Friend WithEvents ResText_RCErr As Label
+    Friend WithEvents ResText_CapRem As Label
+    Friend WithEvents ResText_RPosErr As Label
+    Friend WithEvents ResText_WritePointer As Label
+    Friend WithEvents ResText_Previous As Label
+    Friend WithEvents ResText_Block As Label
+    Friend WithEvents ResText_Partition As Label
+    Friend WithEvents ResText_Index As Label
+    Friend WithEvents ResText_NIndex As Label
+    Friend WithEvents ResText_CRefErr As Label
+    Friend WithEvents ResText_AISucc As Label
+    Friend WithEvents ResText_AI As Label
+    Friend WithEvents ResText_RI As Label
+    Friend WithEvents ResText_PrepW As Label
+    Friend WithEvents ResText_IUErr As Label
+    Friend WithEvents ResText_RestFile As Label
+    Friend WithEvents ResText_PrepFile As Label
+    Friend WithEvents ResText_RestFin As Label
+    Friend WithEvents ResText_OpCancelled As Label
+    Friend WithEvents ResText_Restoring As Label
+    Friend WithEvents ResText_RestoreErr As Label
+    Friend WithEvents ResText_OverwritingDF As Label
+    Friend WithEvents ResText_NewDir As Label
+    Friend WithEvents ResText_DragNA As Label
+    Friend WithEvents ResText_AddFin As Label
+    Friend WithEvents ResText_Items_x As Label
+    Friend WithEvents ResText_Adding As Label
+    Friend WithEvents ResText_Files_C As Label
+    Friend WithEvents ResText_FNExist As Label
+    Friend WithEvents ResText_FNIllegal As Label
+    Friend WithEvents ResText_Rename As Label
+    Friend WithEvents ResText_NFName As Label
+    Friend WithEvents ResText_DirNExist As Label
+    Friend WithEvents ResText_DirNIllegal As Label
+    Friend WithEvents ResText_RenameDir As Label
+    Friend WithEvents ResText_DirName As Label
+    Friend WithEvents ResText_DelConfrm As Label
+    Friend WithEvents ResText_Ejd As Label
+    Friend WithEvents ResText_PEj As Label
+    Friend WithEvents ResText_IUd As Label
+    Friend WithEvents ResText_UI As Label
+    Friend WithEvents ResText_UDI As Label
+    Friend WithEvents ResText_Locating As Label
+    Friend WithEvents ResText_WIF As Label
+    Friend WithEvents ResText_WI As Label
+    Friend WithEvents ResText_GI As Label
+    Friend WithEvents ResText_IndexNAllowed As Label
+    Friend WithEvents ResText_CurPos As Label
+    Friend WithEvents ResText_NavErr As Label
+    Friend WithEvents ResText_Hint As Label
+    Friend WithEvents ResText_Confirm As Label
+    Friend WithEvents ResText_NHWrn As Label
+    Friend WithEvents ResText_WriteWarning As Label
+    Friend WithEvents ResText_EWEOM As Label
+    Friend WithEvents ResText_Size As Label
+    Friend WithEvents ResText_CHashing As Label
+    Friend WithEvents ResText_WrittenTotal As Label
+    Friend WithEvents ResText_Skip As Label
+    Friend WithEvents ResText_Remaining As Label
+    Friend WithEvents ResText_Writing As Label
+    Friend WithEvents ResText_WErrSCSI As Label
+    Friend WithEvents ResText_VOF As Label
+    Friend WithEvents ResText_WErr As Label
+    Friend WithEvents ResText_AvgS As Label
+    Friend WithEvents ResText_WFTime As Label
+    Friend WithEvents ResText_WFUp As Label
+    Friend WithEvents ResText_WCnd As Label
+    Friend WithEvents ResText_OpSucc As Label
+    Friend WithEvents ResText_IPCanc As Label
+    Friend WithEvents ResText_RollBacked As Label
+    Friend WithEvents ResText_RFailed As Label
+    Friend WithEvents ResText_RB4 As Label
+    Friend WithEvents ResText_RB3 As Label
+    Friend WithEvents ResText_RB2 As Label
+    Friend WithEvents ResText_RB1 As Label
+    Friend WithEvents ResText_RBFin As Label
+    Friend WithEvents ResText_RBing As Label
+    Friend WithEvents ResText_RLTFSInfo As Label
+    Friend WithEvents ResText_NLTFS As Label
+    Friend WithEvents ResText_NVOL1 As Label
+    Friend WithEvents ResText_Error As Label
+    Friend WithEvents ResText_SvBak As Label
+    Friend WithEvents ResText_BlkSize As Label
+    Friend WithEvents ResText_Barcode As Label
+    Friend WithEvents ResText_IRFailed As Label
+    Friend WithEvents ResText_IRSucc As Label
+    Friend WithEvents ResText_DPIUed As Label
+    Friend WithEvents ResText_DPIWFailed As Label
+    Friend WithEvents ResText_DPIWritten As Label
+    Friend WithEvents ResText_VCID As Label
+    Friend WithEvents ResText_ILdedP As Label
+    Friend WithEvents ResText_IAErrp As Label
+    Friend WithEvents ResText_IndexBak2 As Label
+    Friend WithEvents ResText_IndexBaked As Label
+    Friend WithEvents ResText_Exporting As Label
+    Friend WithEvents ResText_IndexBakF As Label
+    Friend WithEvents ResText_DataLossWarning As Label
+    Friend WithEvents ResText_SetBarcode As Label
+    Friend WithEvents ResText_LTFSVolumeN As Label
+    Friend WithEvents ResText_SetVolumeN As Label
+    Friend WithEvents ResText_LTFSVolumeN2 As Label
+    Friend WithEvents ResText_Barcode2 As Label
+    Friend WithEvents ResText_FmtFail As Label
+    Friend WithEvents ResText_FmtFin As Label
+    Friend WithEvents ResText_SHA1Overw As Label
+    Friend WithEvents ResText_Imported As Label
+    Friend WithEvents ResText_Importing As Label
+    Friend WithEvents ResText_SetH3 As Label
+    Friend WithEvents ResText_SetH2 As Label
+    Friend WithEvents ResText_SetH1 As Label
+    Friend WithEvents ResText_Located As Label
+    Friend WithEvents ResText_CancelConfirm As Label
+    Friend WithEvents ResText_ClearWC As Label
+    Friend WithEvents ResText_DLFin As Label
+    Friend WithEvents ResText_DLT As Label
+    Friend WithEvents ResText_DLS As Label
+    Friend WithEvents ResText_Setting As Label
+    Friend WithEvents ResText_CLNCS As Label
+    Friend WithEvents ResText_WLimS As Label
+    Friend WithEvents ResText_Hashing As Label
+    Friend WithEvents ResText_HErr As Label
+    Friend WithEvents ResText_HFin As Label
+    Friend WithEvents ResText_FSizeP As Label
+    Friend WithEvents ResText_FCountP As Label
+    Friend WithEvents ResText_Byte As Label
+    Friend WithEvents ResText_SFB As Label
+    Friend WithEvents ResText_SPreR As Label
+    Friend WithEvents ResText_SCIntv As Label
+    Friend WithEvents ResText_SIIntv As Label
+    Friend WithEvents ResText_SSTime As Label
+    Friend WithEvents ResText_SSMax As Label
+    Friend WithEvents ResText_SSMin As Label
+    Friend WithEvents Panel1 As Panel
+    Friend WithEvents Panel2 As Panel
+    Friend WithEvents Panel3 As Panel
+    Friend WithEvents Panel5 As Panel
+    Friend WithEvents Panel4 As Panel
+    Friend WithEvents Panel6 As Panel
+    Friend WithEvents Panel7 As Panel
+    Friend WithEvents ResText_FileRateBT As Label
+    Friend WithEvents ResText_SpeedBT As Label
 End Class

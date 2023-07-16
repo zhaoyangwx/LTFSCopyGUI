@@ -23,6 +23,7 @@ Partial Class HashTaskWindow
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(HashTaskWindow))
         Dim ChartArea1 As System.Windows.Forms.DataVisualization.Charting.ChartArea = New System.Windows.Forms.DataVisualization.Charting.ChartArea()
         Dim Series1 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
         Dim DataPoint1 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
@@ -61,7 +62,6 @@ Partial Class HashTaskWindow
         Dim Title1 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title2 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title3 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
-        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(HashTaskWindow))
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.Button1 = New System.Windows.Forms.Button()
@@ -102,80 +102,46 @@ Partial Class HashTaskWindow
         '
         'TextBox1
         '
-        Me.TextBox1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.TextBox1.Location = New System.Drawing.Point(0, 0)
-        Me.TextBox1.Margin = New System.Windows.Forms.Padding(0)
-        Me.TextBox1.MaxLength = 30000
-        Me.TextBox1.Multiline = True
+        resources.ApplyResources(Me.TextBox1, "TextBox1")
         Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both
-        Me.TextBox1.Size = New System.Drawing.Size(707, 250)
-        Me.TextBox1.TabIndex = 0
         '
         'ProgressBar1
         '
-        Me.ProgressBar1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ProgressBar1.Location = New System.Drawing.Point(12, 12)
+        resources.ApplyResources(Me.ProgressBar1, "ProgressBar1")
         Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(707, 23)
-        Me.ProgressBar1.TabIndex = 1
         '
         'Button1
         '
-        Me.Button1.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button1.Location = New System.Drawing.Point(287, 462)
+        resources.ApplyResources(Me.Button1, "Button1")
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(75, 23)
-        Me.Button1.TabIndex = 2
-        Me.Button1.Text = "Start"
         Me.Button1.UseVisualStyleBackColor = True
         '
         'Button2
         '
-        Me.Button2.Anchor = System.Windows.Forms.AnchorStyles.Bottom
-        Me.Button2.Location = New System.Drawing.Point(368, 462)
+        resources.ApplyResources(Me.Button2, "Button2")
         Me.Button2.Name = "Button2"
-        Me.Button2.Size = New System.Drawing.Size(75, 23)
-        Me.Button2.TabIndex = 3
-        Me.Button2.Text = "Stop"
         Me.Button2.UseVisualStyleBackColor = True
         '
         'CheckBox1
         '
-        Me.CheckBox1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.CheckBox1.AutoSize = True
-        Me.CheckBox1.Location = New System.Drawing.Point(12, 466)
+        resources.ApplyResources(Me.CheckBox1, "CheckBox1")
         Me.CheckBox1.Name = "CheckBox1"
-        Me.CheckBox1.Size = New System.Drawing.Size(60, 16)
-        Me.CheckBox1.TabIndex = 4
-        Me.CheckBox1.Text = "ReHash"
         Me.CheckBox1.UseVisualStyleBackColor = True
         '
         'Button3
         '
-        Me.Button3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button3.Location = New System.Drawing.Point(644, 462)
+        resources.ApplyResources(Me.Button3, "Button3")
         Me.Button3.Name = "Button3"
-        Me.Button3.Size = New System.Drawing.Size(75, 23)
-        Me.Button3.TabIndex = 5
-        Me.Button3.Text = "SaveIndex"
         Me.Button3.UseVisualStyleBackColor = True
         '
         'SaveFileDialog1
         '
-        Me.SaveFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
+        resources.ApplyResources(Me.SaveFileDialog1, "SaveFileDialog1")
         '
         'ProgressBar2
         '
-        Me.ProgressBar2.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.ProgressBar2.Location = New System.Drawing.Point(12, 41)
+        resources.ApplyResources(Me.ProgressBar2, "ProgressBar2")
         Me.ProgressBar2.Name = "ProgressBar2"
-        Me.ProgressBar2.Size = New System.Drawing.Size(707, 23)
-        Me.ProgressBar2.TabIndex = 6
         '
         'Timer1
         '
@@ -184,110 +150,93 @@ Partial Class HashTaskWindow
         '
         'ContextMenuStrip1
         '
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ContextMenuStrip1.Size = New System.Drawing.Size(145, 236)
         '
         'SToolStripMenuItem
         '
+        resources.ApplyResources(Me.SToolStripMenuItem, "SToolStripMenuItem")
         Me.SToolStripMenuItem.Name = "SToolStripMenuItem"
-        Me.SToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.SToolStripMenuItem.Text = "60s"
         '
         'MinToolStripMenuItem
         '
+        resources.ApplyResources(Me.MinToolStripMenuItem, "MinToolStripMenuItem")
         Me.MinToolStripMenuItem.Name = "MinToolStripMenuItem"
-        Me.MinToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.MinToolStripMenuItem.Text = "5min"
         '
         'MinToolStripMenuItem1
         '
+        resources.ApplyResources(Me.MinToolStripMenuItem1, "MinToolStripMenuItem1")
         Me.MinToolStripMenuItem1.Name = "MinToolStripMenuItem1"
-        Me.MinToolStripMenuItem1.Size = New System.Drawing.Size(144, 22)
-        Me.MinToolStripMenuItem1.Text = "10min"
         '
         'MinToolStripMenuItem2
         '
+        resources.ApplyResources(Me.MinToolStripMenuItem2, "MinToolStripMenuItem2")
         Me.MinToolStripMenuItem2.Name = "MinToolStripMenuItem2"
-        Me.MinToolStripMenuItem2.Size = New System.Drawing.Size(144, 22)
-        Me.MinToolStripMenuItem2.Text = "30min"
         '
         'HToolStripMenuItem
         '
+        resources.ApplyResources(Me.HToolStripMenuItem, "HToolStripMenuItem")
         Me.HToolStripMenuItem.Name = "HToolStripMenuItem"
-        Me.HToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.HToolStripMenuItem.Text = "1h"
         '
         'HToolStripMenuItem1
         '
+        resources.ApplyResources(Me.HToolStripMenuItem1, "HToolStripMenuItem1")
         Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
-        Me.HToolStripMenuItem1.Size = New System.Drawing.Size(144, 22)
-        Me.HToolStripMenuItem1.Text = "3h"
         '
         'HToolStripMenuItem2
         '
+        resources.ApplyResources(Me.HToolStripMenuItem2, "HToolStripMenuItem2")
         Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
-        Me.HToolStripMenuItem2.Size = New System.Drawing.Size(144, 22)
-        Me.HToolStripMenuItem2.Text = "6h"
         '
         'ToolStripSeparator1
         '
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        Me.ToolStripSeparator1.Size = New System.Drawing.Size(141, 6)
         '
         'LinearToolStripMenuItem
         '
+        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
         Me.LinearToolStripMenuItem.CheckOnClick = True
         Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
-        Me.LinearToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.LinearToolStripMenuItem.Text = "Linear"
         '
         'LogrithmToolStripMenuItem
         '
+        resources.ApplyResources(Me.LogrithmToolStripMenuItem, "LogrithmToolStripMenuItem")
         Me.LogrithmToolStripMenuItem.CheckOnClick = True
         Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
-        Me.LogrithmToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.LogrithmToolStripMenuItem.Text = "Logarithmic"
         '
         'ToolStripSeparator2
         '
+        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        Me.ToolStripSeparator2.Size = New System.Drawing.Size(141, 6)
         '
         'WordwrapToolStripMenuItem
         '
+        resources.ApplyResources(Me.WordwrapToolStripMenuItem, "WordwrapToolStripMenuItem")
         Me.WordwrapToolStripMenuItem.Checked = True
         Me.WordwrapToolStripMenuItem.CheckOnClick = True
         Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
-        Me.WordwrapToolStripMenuItem.Size = New System.Drawing.Size(144, 22)
-        Me.WordwrapToolStripMenuItem.Text = "Wordwrap"
         '
         'SplitContainer1
         '
-        Me.SplitContainer1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.SplitContainer1.Location = New System.Drawing.Point(12, 70)
+        resources.ApplyResources(Me.SplitContainer1, "SplitContainer1")
         Me.SplitContainer1.Name = "SplitContainer1"
-        Me.SplitContainer1.Orientation = System.Windows.Forms.Orientation.Horizontal
         '
         'SplitContainer1.Panel1
         '
+        resources.ApplyResources(Me.SplitContainer1.Panel1, "SplitContainer1.Panel1")
         Me.SplitContainer1.Panel1.Controls.Add(Me.Chart1)
         '
         'SplitContainer1.Panel2
         '
+        resources.ApplyResources(Me.SplitContainer1.Panel2, "SplitContainer1.Panel2")
         Me.SplitContainer1.Panel2.Controls.Add(Me.TextBox1)
-        Me.SplitContainer1.Size = New System.Drawing.Size(707, 383)
-        Me.SplitContainer1.SplitterDistance = 129
-        Me.SplitContainer1.TabIndex = 10
         '
         'Chart1
         '
-        Me.Chart1.Anchor = CType((((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Bottom) _
-            Or System.Windows.Forms.AnchorStyles.Left) _
-            Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        resources.ApplyResources(Me.Chart1, "Chart1")
         Me.Chart1.AntiAliasing = System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles.Graphics
         Me.Chart1.BorderlineColor = System.Drawing.Color.Silver
         Me.Chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
@@ -322,8 +271,6 @@ Partial Class HashTaskWindow
         ChartArea1.InnerPlotPosition.Y = 7.21773!
         ChartArea1.Name = "ChartArea1"
         Me.Chart1.ChartAreas.Add(ChartArea1)
-        Me.Chart1.Location = New System.Drawing.Point(0, 0)
-        Me.Chart1.Margin = New System.Windows.Forms.Padding(0)
         Me.Chart1.Name = "Chart1"
         Series1.BorderWidth = 2
         Series1.ChartArea = "ChartArea1"
@@ -371,10 +318,7 @@ Partial Class HashTaskWindow
         Series2.YValuesPerPoint = 2
         Me.Chart1.Series.Add(Series1)
         Me.Chart1.Series.Add(Series2)
-        Me.Chart1.Size = New System.Drawing.Size(707, 129)
         Me.Chart1.SuppressExceptions = True
-        Me.Chart1.TabIndex = 15
-        Me.Chart1.Text = "Chart1"
         Title1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
         Title1.Name = "Title1"
         Title1.Text = "10 min"
@@ -407,58 +351,39 @@ Partial Class HashTaskWindow
         '
         'CheckBox2
         '
-        Me.CheckBox2.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.CheckBox2.AutoSize = True
-        Me.CheckBox2.Location = New System.Drawing.Point(78, 466)
+        resources.ApplyResources(Me.CheckBox2, "CheckBox2")
         Me.CheckBox2.Name = "CheckBox2"
-        Me.CheckBox2.Size = New System.Drawing.Size(48, 16)
-        Me.CheckBox2.TabIndex = 11
-        Me.CheckBox2.Text = "Copy"
         Me.CheckBox2.UseVisualStyleBackColor = True
         '
         'Button4
         '
-        Me.Button4.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.Button4.Location = New System.Drawing.Point(563, 462)
+        resources.ApplyResources(Me.Button4, "Button4")
         Me.Button4.Name = "Button4"
-        Me.Button4.Size = New System.Drawing.Size(75, 23)
-        Me.Button4.TabIndex = 12
-        Me.Button4.Text = "LoadHash"
         Me.Button4.UseVisualStyleBackColor = True
         '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        Me.OpenFileDialog1.Filter = "schema|*.schema|xml|*.xml|所有文件|*.*"
+        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
         '
         'NumericUpDown1
         '
-        Me.NumericUpDown1.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.NumericUpDown1.Location = New System.Drawing.Point(209, 462)
+        resources.ApplyResources(Me.NumericUpDown1, "NumericUpDown1")
         Me.NumericUpDown1.Maximum = New Decimal(New Integer() {-133, 4, 0, 0})
         Me.NumericUpDown1.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.NumericUpDown1.Name = "NumericUpDown1"
-        Me.NumericUpDown1.Size = New System.Drawing.Size(72, 21)
-        Me.NumericUpDown1.TabIndex = 13
         Me.NumericUpDown1.Value = New Decimal(New Integer() {4194304, 0, 0, 0})
-        Me.NumericUpDown1.Visible = False
         '
         'CheckBox3
         '
-        Me.CheckBox3.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.CheckBox3.AutoSize = True
-        Me.CheckBox3.Location = New System.Drawing.Point(132, 466)
+        resources.ApplyResources(Me.CheckBox3, "CheckBox3")
         Me.CheckBox3.Name = "CheckBox3"
-        Me.CheckBox3.Size = New System.Drawing.Size(78, 16)
-        Me.CheckBox3.TabIndex = 14
-        Me.CheckBox3.Text = "AutoEject"
         Me.CheckBox3.UseVisualStyleBackColor = True
         '
         'HashTaskWindow
         '
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
+        resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(731, 497)
         Me.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Controls.Add(Me.CheckBox3)
         Me.Controls.Add(Me.NumericUpDown1)
@@ -471,9 +396,7 @@ Partial Class HashTaskWindow
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.ProgressBar1)
-        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "HashTaskWindow"
-        Me.Text = "HashTaskWindow"
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)

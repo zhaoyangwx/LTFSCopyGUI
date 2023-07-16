@@ -59,5 +59,80 @@ Namespace My.Resources
                 resourceCulture = value
             End Set
         End Property
+        
+        '''<summary>
+        '''  查找类似 设置Barcode失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrBCSFail() As String
+            Get
+                Return ResourceManager.GetString("StrBCSFail", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 -s                                            不要自动读取索引
+        '''  -t &lt;drive&gt;                                    直接读写
+        '''  ├  -t 0
+        '''  ├  -t TAPE0
+        '''  └  -t \\.\TAPE0
+        '''                                           
+        '''  -f &lt;file&gt;                                     查看本地索引文件：
+        '''  └   -f C:\tmp\ltfs\000000.schema
+        '''                                           
+        '''  -c                                            LTFSConfigurator
+        '''                                           
+        '''  -rb &lt;drive&gt;                                   读Barcode
+        '''  ├ [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrCMDHelpText() As String
+            Get
+                Return ResourceManager.GetString("StrCMDHelpText", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似  非商业许可 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrDefaultLicense() As String
+            Get
+                Return ResourceManager.GetString("StrDefaultLicense", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引查看 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrIndexView() As String
+            Get
+                Return ResourceManager.GetString("StrIndexView", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 许可证无效 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrLicenseInvalid() As String
+            Get
+                Return ResourceManager.GetString("StrLicenseInvalid", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 SCSI命令执行失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrSCSIFail() As String
+            Get
+                Return ResourceManager.GetString("StrSCSIFail", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 SCSI命令执行成功 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property StrSCSISucc() As String
+            Get
+                Return ResourceManager.GetString("StrSCSISucc", resourceCulture)
+            End Get
+        End Property
     End Module
 End Namespace

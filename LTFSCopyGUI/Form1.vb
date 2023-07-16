@@ -17,11 +17,11 @@ Public Class Form1
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    Invoke(Sub() Label4.Text = "1/7 正在加载...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(0))
                     Dim s As String = ""
                     If ReloadFile Or schema Is Nothing Then s = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
-                    Invoke(Sub() Label4.Text = "2/7 预处理...")
-                    Invoke(Sub() Label4.Text = "3/7 解析文件...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(1))
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(2))
 
                     If ReloadFile Or schema Is Nothing Then
                         If s.Contains("XMLSchema") Then
@@ -35,7 +35,7 @@ Public Class Form1
                     ScanFile(contents, flist, "")
                     Dim alist As New List(Of TapeFileInfo)
                     Dim blist As New List(Of TapeFileInfo)
-                    Invoke(Sub() Label4.Text = "4/7 读取分区信息...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(3))
                     Parallel.ForEach(flist,
                         Sub(f As TapeFileInfo)
                             If f.Partition = ltfsindex.PartitionLabel.a Then
@@ -48,7 +48,7 @@ Public Class Form1
                                 End SyncLock
                             End If
                         End Sub)
-                    Invoke(Sub() Label4.Text = "5/7 文件排序中...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(4))
                     Parallel.ForEach({alist, blist},
                         Sub(nlist As List(Of TapeFileInfo))
                             If nlist Is alist Then
@@ -70,7 +70,7 @@ Public Class Form1
                             End If
                         End Sub)
                     filelist = New List(Of String)
-                    Invoke(Sub() Label4.Text = "6/7 生成输出内容...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(5))
                     Dim counter As Integer = 0
                     Dim total As Integer = alist.Count + blist.Count
                     Dim ran As New Random
@@ -90,7 +90,7 @@ Public Class Form1
                             filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = $"6/7 生成输出内容...{counter}/{total}")
+                                Invoke(Sub() Label4.Text = $"{SchemaLoadText.Items(5)}{counter}/{total}")
                                 stepval = ran.Next(100, 1000)
                             End If
                         Next
@@ -105,12 +105,12 @@ Public Class Form1
                             filelist.Add(f.Path)
                             Threading.Interlocked.Increment(counter)
                             If counter Mod stepval = 0 Then
-                                Invoke(Sub() Label4.Text = $"6/7 生成输出内容...{counter}/{total}")
+                                Invoke(Sub() Label4.Text = $"{SchemaLoadText.Items(5)}{counter}/{total}")
                                 stepval = ran.Next(100, 1000)
                             End If
                         Next
                     End If
-                    Invoke(Sub() Label4.Text = "7/7 完成...")
+                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(6))
                     Invoke(Sub() TextBox2.Text = p.ToString)
                 Catch ex As Exception
                     Invoke(Sub() TextBox2.Text = ex.Message)
@@ -215,7 +215,7 @@ Public Class Form1
         TextBox3.Text = My.Settings.Src
         TextBox4.Text = My.Settings.Dest
         CheckBox1.Checked = My.Settings.GenCMD
-        Text = $"磁带文件排序 - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+        Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         LoadComplete = True
     End Sub
 
