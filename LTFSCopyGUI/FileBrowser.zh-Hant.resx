@@ -117,45 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="StrBCSFail" xml:space="preserve">
-    <value>设置Barcode失败</value>
-  </data>
-  <data name="StrCMDHelpText" xml:space="preserve">
-    <value>-s                                            不要自动读取索引
-  -t &lt;drive&gt;                                    直接读写
-  ├  -t 0
-  ├  -t TAPE0
-  └  -t \\.\TAPE0
-                                           
-  -f &lt;file&gt;                                     查看本地索引文件：
-  └   -f C:\tmp\ltfs\000000.schema
-                                           
-  -c                                            LTFSConfigurator
-                                           
-  -rb &lt;drive&gt;                                   读Barcode
-  ├  -rb 0
-  ├  -rb TAPE0
-  └  -rb \\.\TAPE0
-                                           
-  -wb &lt;drive&gt; &lt;barcode&gt;                         写Barcode
-  └  -wb TAPE0 A00123L5                     
-                                           
-  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt;          SCSI命令执行
-  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1</value>
-  </data>
-  <data name="StrDefaultLicense" xml:space="preserve">
-    <value> 非商业许可</value>
-  </data>
-  <data name="StrIndexView" xml:space="preserve">
-    <value>索引查看</value>
-  </data>
-  <data name="StrLicenseInvalid" xml:space="preserve">
-    <value>许可证无效</value>
-  </data>
-  <data name="StrSCSIFail" xml:space="preserve">
-    <value>SCSI命令执行失败</value>
-  </data>
-  <data name="StrSCSISucc" xml:space="preserve">
-    <value>SCSI命令执行成功</value>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>Inherit</value>
   </data>
 </root>

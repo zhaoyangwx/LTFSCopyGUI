@@ -50,6 +50,7 @@ Public Class LTFSConfigurator
             Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
             If CurDrive Is Nothing Then
                 Button6.Enabled = False
+                Button27.Enabled = False
                 Button7.Enabled = False
                 Button8.Enabled = False
                 Button9.Enabled = False
@@ -65,6 +66,7 @@ Public Class LTFSConfigurator
             End If
             ComboBox1.Enabled = (CurDrive.DriveLetter = "")
             Button6.Enabled = (CurDrive.DriveLetter = "")
+            Button27.Enabled = (CurDrive.DriveLetter = "")
             Button7.Enabled = (CurDrive.DriveLetter <> "")
             TextBox5.Text = TapeDrive
             Button8.Enabled = True
@@ -169,7 +171,7 @@ Public Class LTFSConfigurator
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBox1.Text <> "" Then
                 Dim result As String = TapeUtils.MapTapeDrive(ComboBox1.Text, "TAPE" & CurDrive.DevIndex)
-                If result = "" Then result = "已将驱动器 TAPE" & CurDrive.DevIndex & " 挂载到" & ComboBox1.Text & ":"
+                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " <=> " & ComboBox1.Text & ":"
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -183,7 +185,7 @@ Public Class LTFSConfigurator
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" Then
                 Dim result As String = TapeUtils.UnMapTapeDrive(ComboBox1.Text)
-                If result = "" Then result = "已卸载驱动器 TAPE" & CurDrive.DevIndex & " 的盘符" & ComboBox1.Text & ":"
+                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " <=> ---" & ComboBox1.Text
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -207,7 +209,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已加载磁带"
+                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " loaded"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -238,7 +240,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已弹出磁带"
+                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " ejected"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                                Panel1.Enabled = True
@@ -256,7 +258,7 @@ Public Class LTFSConfigurator
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" And ComboBox1.Text <> "" Then
                 Dim result As String = TapeUtils.MountTapeDrive(ComboBox1.Text)
-                If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已挂载"
+                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " mounted"
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -379,7 +381,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已进仓"
+                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " loaded (unthread)"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -409,7 +411,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 TAPE" & CurDrive.DevIndex & " 已退带"
+                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " unthreaded"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -544,7 +546,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "驱动器 " & ConfTapeDrive & " Barcode已修改为 " & barcode
+                               If result = "" Then result = ConfTapeDrive & " Barcode = " & barcode
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -925,7 +927,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             If My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
-                MessageBox.Show("保存路径已存在bin文件，操作取消")
+                MessageBox.Show("File exist: *.bin; Cancelled.")
                 Exit Sub
             End If
 

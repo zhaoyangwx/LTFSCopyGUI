@@ -68,5 +68,17 @@
     <Setting Name="License" Type="System.String" Scope="User">
       <Value Profile="(Default)"> 非商业许可</Value>
     </Setting>
+    <Setting Name="LTFSWriter_AutoCleanDownLim" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">70</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_AutoCleanUpperLim" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">82</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_AutoCleanTimeThreashould" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_DeDupe" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -117,45 +117,45 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DefaultLicense" xml:space="preserve">
+    <value> Non-commercial License</value>
+  </data>
+  <data name="LicenseInvalid" xml:space="preserve">
+    <value>License invalid</value>
+  </data>
   <data name="StrBCSFail" xml:space="preserve">
-    <value>设置Barcode失败</value>
+    <value>Barcode write fail</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>-s                                            不要自动读取索引
-  -t &lt;drive&gt;                                    直接读写
+    <value>-s                                            Disable index reading
+  -t &lt;drive&gt;                                    LTFSWriter
   ├  -t 0
   ├  -t TAPE0
   └  -t \\.\TAPE0
                                            
-  -f &lt;file&gt;                                     查看本地索引文件：
+  -f &lt;file&gt;                                     Index viewer
   └   -f C:\tmp\ltfs\000000.schema
                                            
   -c                                            LTFSConfigurator
                                            
-  -rb &lt;drive&gt;                                   读Barcode
+  -rb &lt;drive&gt;                                   Barcode read
   ├  -rb 0
   ├  -rb TAPE0
   └  -rb \\.\TAPE0
                                            
-  -wb &lt;drive&gt; &lt;barcode&gt;                         写Barcode
+  -wb &lt;drive&gt; &lt;barcode&gt;                         Barcode write
   └  -wb TAPE0 A00123L5                     
                                            
-  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt;          SCSI命令执行
+  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt;          SCSI command execute
   └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1</value>
   </data>
-  <data name="StrDefaultLicense" xml:space="preserve">
-    <value> 非商业许可</value>
-  </data>
   <data name="StrIndexView" xml:space="preserve">
-    <value>索引查看</value>
-  </data>
-  <data name="StrLicenseInvalid" xml:space="preserve">
-    <value>许可证无效</value>
+    <value>Index view</value>
   </data>
   <data name="StrSCSIFail" xml:space="preserve">
-    <value>SCSI命令执行失败</value>
+    <value>SCSI command fail</value>
   </data>
   <data name="StrSCSISucc" xml:space="preserve">
-    <value>SCSI命令执行成功</value>
+    <value>SCSI command success</value>
   </data>
 </root>

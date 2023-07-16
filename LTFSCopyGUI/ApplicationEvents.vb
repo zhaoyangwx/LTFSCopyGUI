@@ -35,7 +35,16 @@ Namespace My
             FreeConsole()
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            My.Settings.License = " 非商业许可"
+            If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
+                Try
+                    Dim lang As String = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "lang.ini"))
+                    Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
+                    Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
+                Catch ex As Exception
+
+                End Try
+            End If
+            My.Settings.License = Resources.StrDefaultLicense
             If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
                 If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
@@ -50,7 +59,7 @@ Namespace My
                     My.Settings.License = lic_string
                 Catch ex As Exception
                     If rsa.PublicOnly Then
-                        MessageBox.Show("许可证无效")
+                        MessageBox.Show(Resources.StrLicenseInvalid)
                     Else
                         My.Settings.License = lic_string
                         lic_string = Convert.ToBase64String(rsa.Encrypt(System.Text.Encoding.UTF8.GetBytes(lic_string), False))
@@ -90,11 +99,11 @@ Namespace My
                                 Dim indexFile As String = param(i + 1).TrimStart("""").TrimEnd("""")
 
                                 If My.Computer.FileSystem.FileExists(indexFile) Then
-                                    Dim LWF As New LTFSWriter With {.Barcode = "索引查看", .TapeDrive = "", .OfflineMode = True}
+                                    Dim LWF As New LTFSWriter With {.Barcode = Resources.StrIndexView, .TapeDrive = "", .OfflineMode = True}
                                     Dim OnLWFLoad As New EventHandler(Sub()
                                                                           LWF.Invoke(Sub()
                                                                                          LWF.LoadIndexFile(indexFile, True)
-                                                                                         LWF.ToolStripStatusLabel1.Text = "索引查看"
+                                                                                         LWF.ToolStripStatusLabel1.Text = Resources.StrIndexView
                                                                                      End Sub)
                                                                           RemoveHandler LWF.Load, OnLWFLoad
                                                                       End Sub
@@ -142,7 +151,7 @@ Namespace My
                                 If TapeUtils.SetBarcode(TapeDrive, Barcode) Then
                                     Console.WriteLine($"{TapeDrive}{vbCrLf}Barcode->{TapeUtils.ReadBarcode(TapeDrive)}")
                                 Else
-                                    Console.WriteLine($"{TapeDrive}{vbCrLf}设置Barcode失败")
+                                    Console.WriteLine($"{TapeDrive}{vbCrLf}{Resources.StrBCSFail}")
                                 End If
                                 CloseConsole()
                                 End
@@ -176,7 +185,7 @@ param:
 {TapeUtils.Byte2Hex(data)}
 dataDir:{dataDir}
 
-SCSI命令执行成功
+{Resources.StrSCSISucc}
 sense:
 {TapeUtils.Byte2Hex(sense)}
 {TapeUtils.ParseSenseData(sense)}")
@@ -188,7 +197,7 @@ param:
 {TapeUtils.Byte2Hex(data)}
 dataDir:{dataDir}
 
-SCSI命令执行失败")
+{Resources.StrSCSIFail}")
                                 End If
 
                                 CloseConsole()
@@ -215,27 +224,7 @@ SCSI命令执行失败")
                             Try
                                 InitConsole()
                                 Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}{My.Settings.License}
-  -s                                            不要自动读取索引
-  -t <drive>                                    直接读写
-  ├  -t 0
-  ├  -t TAPE0
-  └  -t \\.\TAPE0
-                                           
-  -f <file>                                     查看本地索引文件：
-  └   -f C:\tmp\ltfs\000000.schema
-                                           
-  -c                                            LTFSConfigurator
-                                           
-  -rb <drive>                                   读Barcode
-  ├  -rb 0
-  ├  -rb TAPE0
-  └  -rb \\.\TAPE0
-                                           
-  -wb <drive> <barcode>                         写Barcode
-  └  -wb TAPE0 A00123L5                     
-                                           
-  -raw <drive> <cdb> <param> <dataDir>          SCSI命令执行
-  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1")
+{Resources.StrCMDHelpText}")
 
                                 CloseConsole()
                                 End

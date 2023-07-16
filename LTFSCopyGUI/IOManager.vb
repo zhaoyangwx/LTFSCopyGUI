@@ -40,7 +40,7 @@ Public Class IOManager
             Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                 Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
                 Dim fsine As New EventedStream With {.baseStream = fsinb}
-                AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
+                If OnFileReading IsNot Nothing Then AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
                 'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
                 Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
                 If fs IsNot Nothing Then fs.fs = fsin

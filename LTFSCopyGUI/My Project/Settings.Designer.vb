@@ -317,6 +317,54 @@ Namespace My
                 Me("License") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("70")>  _
+        Public Property LTFSWriter_AutoCleanDownLim() As Double
+            Get
+                Return CType(Me("LTFSWriter_AutoCleanDownLim"),Double)
+            End Get
+            Set
+                Me("LTFSWriter_AutoCleanDownLim") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("82")>  _
+        Public Property LTFSWriter_AutoCleanUpperLim() As Double
+            Get
+                Return CType(Me("LTFSWriter_AutoCleanUpperLim"),Double)
+            End Get
+            Set
+                Me("LTFSWriter_AutoCleanUpperLim") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("3")>  _
+        Public Property LTFSWriter_AutoCleanTimeThreashould() As Integer
+            Get
+                Return CType(Me("LTFSWriter_AutoCleanTimeThreashould"),Integer)
+            End Get
+            Set
+                Me("LTFSWriter_AutoCleanTimeThreashould") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_DeDupe() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_DeDupe"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_DeDupe") = value
+            End Set
+        End Property
     End Class
 End Namespace
 
