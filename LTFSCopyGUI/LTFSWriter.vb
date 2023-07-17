@@ -1961,10 +1961,11 @@ Public Class LTFSWriter
                                     Dim dupe As Boolean = False
                                     If My.Settings.LTFSWriter_DeDupe Then
                                         Dim dupeFile As ltfsindex.file = Nothing
+                                        Dim sha1value As String = ""
                                         For Each fref As ltfsindex.file In AllFile
                                             If fref.length = finfo.Length AndAlso fref.sha1 <> "" Then
                                                 PrintMsg($"{ResText_CHashing.Text}: {fr.File.name}  {ResText_Size.Text} {IOManager.FormatSize(fr.File.length)}")
-                                                Dim sha1value As String = IOManager.SHA1(fr.SourcePath)
+                                                If sha1value = "" Then sha1value = IOManager.SHA1(fr.SourcePath)
                                                 If fref.sha1.Equals(sha1value) Then
                                                     fr.File.sha1 = sha1value
                                                     dupe = True
@@ -2681,10 +2682,12 @@ Public Class LTFSWriter
                     Exit While
                 End SyncLock
             End While
+            'nop
+            TapeUtils.ReadPosition(TapeDrive)
             Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Barcode = TapeUtils.ReadBarcode(TapeDrive)
-            Dim VolumeLabel As String
+            Dim VolumeLabel As String = ""
             Dim Confirm As Boolean = False
             While Not Confirm
                 Barcode = InputBox(ResText_SetBarcode.Text, ResText_Barcode.Text, Barcode)
