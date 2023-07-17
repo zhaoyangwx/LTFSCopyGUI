@@ -47,23 +47,36 @@ Namespace My
             My.Settings.License = Resources.StrDefaultLicense
             If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
+
                 If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
                     rsa.FromXmlString(My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
                 Else
                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                 End If
                 Dim lic_string = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"))
+
                 Try
-                    Dim key As Byte() = Convert.FromBase64String(lic_string)
-                    lic_string = System.Text.Encoding.UTF8.GetString(rsa.Decrypt(key, False))
-                    My.Settings.License = lic_string
+                    Dim LicStr As String() = lic_string.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                    Dim strBody As String = LicStr(0)
+                    Dim strSign As String = LicStr(1)
+                    Dim bSign As Byte() = Convert.FromBase64String(strSign)
+                    Dim bLicStr As Byte() = Convert.FromBase64String(strBody)
+                    'lic_string = System.Text.Encoding.UTF8.GetString(rsa.Decrypt(key, False))
+                    If rsa.VerifyData(bLicStr, "SHA256", bSign) Then
+                        My.Settings.License = System.Text.Encoding.UTF8.GetString(bLicStr)
+                    Else
+                        Throw New Exception()
+                    End If
                 Catch ex As Exception
                     If rsa.PublicOnly Then
                         MessageBox.Show(Resources.StrLicenseInvalid)
                     Else
                         My.Settings.License = lic_string
-                        lic_string = Convert.ToBase64String(rsa.Encrypt(System.Text.Encoding.UTF8.GetBytes(lic_string), False))
-                        My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"), lic_string, False)
+                        Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(lic_string)
+                        Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
+                        Dim strBody As String = Convert.ToBase64String(bLicStr)
+                        Dim strSign As String = Convert.ToBase64String(bSign)
+                        My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"), $"{strBody}{vbCrLf}{strSign}", False)
                     End If
                 End Try
             End If
