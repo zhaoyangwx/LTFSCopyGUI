@@ -22,7 +22,14 @@
 
 如果OEM驱动器没有安装驱动，可以使用设备路径例如\\.\GLOBALROOT\Device\00000043
 
+#### LTFSCopyGUI.exe CLI
 
+LTFSCopyGUI.exe /?查看命令行用法
+目前支持功能
+    -t
+    -rb
+    -wb
+    -raw
 
 ### 更新说明
 
