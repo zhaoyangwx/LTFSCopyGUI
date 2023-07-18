@@ -40,3 +40,7 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 **欢迎加入LTO磁带技术交流QQ群 433387693**
 
 软著登字第11348107号
+
+**如何赞助**
+【闲鱼】https://m.tb.cn/h.50pjyT4?tk=cIcWdGlA835 CZ0001 「我在闲鱼发布了【LTFSCopyGUI软件商用许可/技术支持/个性化冠名服务】」
+点击链接直接打开
