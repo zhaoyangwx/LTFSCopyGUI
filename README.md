@@ -4,23 +4,43 @@
 
 ## LTFS文件排序复制工具
 
-排序生成脚本功能适用HP LTFS，直接读写不依赖HPLTFS，HP/IBM驱动器都可以
+### 主要功能
+
+#### 索引排序生成复制脚本
+
+排序生成脚本功能适用HP LTFS
+
+LTFSCopyGUI.exe：根据离线索引schema文件，对文件存放的block进行排序，并产生命令行用来复制文件。若Partition A有文件，先复制Partition A的文件。
 
 读文件前需先Load-Eject一次磁带以刷新schema文件，默认位置在C:\tmp\ltfs
 
-读取schema文件，对文件存放的block进行排序，并产生命令行用来复制文件。
+#### 磁带挂载管理/直接读写
 
-若Partition A有文件，先复制Partition A的文件
+LTFSConfigurator.exe
 
-新增校验功能，可覆盖保存原schema文件(建议另存到别处，防止被覆盖)
+盘符挂载适用HPLTFS
 
-新增复制功能，边校验边复制文件
+直接读写适用HP/IBM或者第三方OEM驱动器
+
+如果OEM驱动器没有安装驱动，可以使用设备路径例如\\.\GLOBALROOT\Device\00000043
+
+
+
+### 更新说明
+
+1. 最初的功能：排序生成脚本
+
+2. 新增校验功能，可覆盖保存原schema文件(建议另存到别处，防止被覆盖)
+
+3. 新增复制功能，边校验边复制文件
+
+4. 更多驱动器控制功能、SCSI命令直接发送、磁带标签修改、磁带信息读取
 
 LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
-更多驱动器控制功能、SCSI命令直接发送、磁带标签修改、磁带信息读取
+5. 新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能
 
-新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能
+## 关于加密
 
 如需启用加密可在加载磁带后使用 **[VulpesSARL/LTOEnc](https://github.com/VulpesSARL/LTOEnc)** 或者直接发送SECURITY PROTOCOL相关SCSI指令设置驱动器密钥
 
