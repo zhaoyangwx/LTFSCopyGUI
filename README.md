@@ -4,7 +4,7 @@
 
 ## LTFS文件排序复制工具
 
-适用HP LTFS
+排序生成脚本功能适用HP LTFS，直接读写不依赖HPLTFS，HP/IBM驱动器都可以
 
 读文件前需先Load-Eject一次磁带以刷新schema文件，默认位置在C:\tmp\ltfs
 
