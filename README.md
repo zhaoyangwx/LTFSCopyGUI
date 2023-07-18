@@ -27,10 +27,10 @@
 LTFSCopyGUI.exe /?查看命令行用法
 
 ##### 目前支持功能
-    -t
-    -rb
-    -wb
-    -raw
+    LTFSCopyGUI.exe -t
+    LTFSCopyGUI.exe -rb
+    LTFSCopyGUI.exe -wb
+    LTFSCopyGUI.exe -raw
 
 ### 更新说明
 
