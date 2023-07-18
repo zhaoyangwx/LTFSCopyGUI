@@ -25,7 +25,8 @@
 #### LTFSCopyGUI.exe CLI
 
 LTFSCopyGUI.exe /?查看命令行用法
-目前支持功能
+
+## 目前支持功能
     -t
     -rb
     -wb
