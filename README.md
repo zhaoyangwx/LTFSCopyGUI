@@ -53,7 +53,7 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 对于开启加密的磁带，请不要启用容量缺失检测，否则重新装带会重置驱动器加密密钥导致写入失败。
 
 ### How to switch language:
-    lang.ini to set language
+    lang.ini to set language (Currently en for English, zh for Chinese Simplified. zh Default)
     if no lang.ini exist, will follow system language setting
 
 ---
