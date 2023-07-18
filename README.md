@@ -46,13 +46,13 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
 5. 新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能
 
-## 关于加密
+### 关于加密
 
 如需启用加密可在加载磁带后使用 **[VulpesSARL/LTOEnc](https://github.com/VulpesSARL/LTOEnc)** 或者直接发送SECURITY PROTOCOL相关SCSI指令设置驱动器密钥
 
 对于开启加密的磁带，请不要启用容量缺失检测，否则重新装带会重置驱动器加密密钥导致写入失败。
 
-## How to switch language:
+### How to switch language:
     lang.ini to set language
     if no lang.ini exist, will follow system language setting
 
