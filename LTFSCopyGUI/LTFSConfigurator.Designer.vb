@@ -47,6 +47,7 @@ Partial Class LTFSConfigurator
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.CheckBox4 = New System.Windows.Forms.CheckBox()
         Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
         Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
         Me.ButtonDebugFormat = New System.Windows.Forms.Button()
@@ -200,7 +201,6 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
-        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Controls.Add(Me.CheckBox3)
         Me.Panel1.Controls.Add(Me.Button30)
         Me.Panel1.Controls.Add(Me.Button27)
@@ -224,6 +224,7 @@ Partial Class LTFSConfigurator
         Me.Panel1.Controls.Add(Me.Label1)
         Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Controls.Add(Me.TextBox1)
+        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Name = "Panel1"
         '
         'CheckBox3
@@ -267,6 +268,7 @@ Partial Class LTFSConfigurator
         'Panel2
         '
         resources.ApplyResources(Me.Panel2, "Panel2")
+        Me.Panel2.Controls.Add(Me.CheckBox4)
         Me.Panel2.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
         Me.Panel2.Controls.Add(Me.ButtonDebugReleaseUnit)
         Me.Panel2.Controls.Add(Me.ButtonDebugFormat)
@@ -313,6 +315,12 @@ Partial Class LTFSConfigurator
         Me.Panel2.Controls.Add(Me.Label7)
         Me.Panel2.Controls.Add(Me.Label6)
         Me.Panel2.Name = "Panel2"
+        '
+        'CheckBox4
+        '
+        resources.ApplyResources(Me.CheckBox4, "CheckBox4")
+        Me.CheckBox4.Name = "CheckBox4"
+        Me.CheckBox4.UseVisualStyleBackColor = True
         '
         'ButtonDebugAllowMediaRemoval
         '
@@ -409,7 +417,7 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.ComboBox2, "ComboBox2")
         Me.ComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBox2.FormattingEnabled = True
-        Me.ComboBox2.Items.AddRange(New Object() {resources.GetString("ComboBox2.Items"), resources.GetString("ComboBox2.Items1"), resources.GetString("ComboBox2.Items2"), resources.GetString("ComboBox2.Items3"), resources.GetString("ComboBox2.Items4"), resources.GetString("ComboBox2.Items5"), resources.GetString("ComboBox2.Items6"), resources.GetString("ComboBox2.Items7"), resources.GetString("ComboBox2.Items8"), resources.GetString("ComboBox2.Items9"), resources.GetString("ComboBox2.Items10"), resources.GetString("ComboBox2.Items11"), resources.GetString("ComboBox2.Items12"), resources.GetString("ComboBox2.Items13"), resources.GetString("ComboBox2.Items14"), resources.GetString("ComboBox2.Items15"), resources.GetString("ComboBox2.Items16"), resources.GetString("ComboBox2.Items17"), resources.GetString("ComboBox2.Items18"), resources.GetString("ComboBox2.Items19"), resources.GetString("ComboBox2.Items20"), resources.GetString("ComboBox2.Items21"), resources.GetString("ComboBox2.Items22"), resources.GetString("ComboBox2.Items23"), resources.GetString("ComboBox2.Items24"), resources.GetString("ComboBox2.Items25"), resources.GetString("ComboBox2.Items26"), resources.GetString("ComboBox2.Items27"), resources.GetString("ComboBox2.Items28"), resources.GetString("ComboBox2.Items29"), resources.GetString("ComboBox2.Items30"), resources.GetString("ComboBox2.Items31"), resources.GetString("ComboBox2.Items32"), resources.GetString("ComboBox2.Items33"), resources.GetString("ComboBox2.Items34"), resources.GetString("ComboBox2.Items35"), resources.GetString("ComboBox2.Items36"), resources.GetString("ComboBox2.Items37"), resources.GetString("ComboBox2.Items38"), resources.GetString("ComboBox2.Items39"), resources.GetString("ComboBox2.Items40"), resources.GetString("ComboBox2.Items41"), resources.GetString("ComboBox2.Items42"), resources.GetString("ComboBox2.Items43"), resources.GetString("ComboBox2.Items44"), resources.GetString("ComboBox2.Items45"), resources.GetString("ComboBox2.Items46"), resources.GetString("ComboBox2.Items47"), resources.GetString("ComboBox2.Items48"), resources.GetString("ComboBox2.Items49"), resources.GetString("ComboBox2.Items50"), resources.GetString("ComboBox2.Items51"), resources.GetString("ComboBox2.Items52"), resources.GetString("ComboBox2.Items53"), resources.GetString("ComboBox2.Items54"), resources.GetString("ComboBox2.Items55"), resources.GetString("ComboBox2.Items56"), resources.GetString("ComboBox2.Items57"), resources.GetString("ComboBox2.Items58"), resources.GetString("ComboBox2.Items59"), resources.GetString("ComboBox2.Items60"), resources.GetString("ComboBox2.Items61"), resources.GetString("ComboBox2.Items62"), resources.GetString("ComboBox2.Items63"), resources.GetString("ComboBox2.Items64"), resources.GetString("ComboBox2.Items65"), resources.GetString("ComboBox2.Items66"), resources.GetString("ComboBox2.Items67"), resources.GetString("ComboBox2.Items68"), resources.GetString("ComboBox2.Items69"), resources.GetString("ComboBox2.Items70"), resources.GetString("ComboBox2.Items71"), resources.GetString("ComboBox2.Items72"), resources.GetString("ComboBox2.Items73"), resources.GetString("ComboBox2.Items74"), resources.GetString("ComboBox2.Items75"), resources.GetString("ComboBox2.Items76"), resources.GetString("ComboBox2.Items77"), resources.GetString("ComboBox2.Items78"), resources.GetString("ComboBox2.Items79"), resources.GetString("ComboBox2.Items80")})
+        Me.ComboBox2.Items.AddRange(New Object() {resources.GetString("ComboBox2.Items"), resources.GetString("ComboBox2.Items1"), resources.GetString("ComboBox2.Items2"), resources.GetString("ComboBox2.Items3"), resources.GetString("ComboBox2.Items4"), resources.GetString("ComboBox2.Items5"), resources.GetString("ComboBox2.Items6"), resources.GetString("ComboBox2.Items7"), resources.GetString("ComboBox2.Items8"), resources.GetString("ComboBox2.Items9"), resources.GetString("ComboBox2.Items10"), resources.GetString("ComboBox2.Items11"), resources.GetString("ComboBox2.Items12"), resources.GetString("ComboBox2.Items13"), resources.GetString("ComboBox2.Items14"), resources.GetString("ComboBox2.Items15"), resources.GetString("ComboBox2.Items16"), resources.GetString("ComboBox2.Items17"), resources.GetString("ComboBox2.Items18"), resources.GetString("ComboBox2.Items19"), resources.GetString("ComboBox2.Items20"), resources.GetString("ComboBox2.Items21"), resources.GetString("ComboBox2.Items22"), resources.GetString("ComboBox2.Items23"), resources.GetString("ComboBox2.Items24"), resources.GetString("ComboBox2.Items25"), resources.GetString("ComboBox2.Items26"), resources.GetString("ComboBox2.Items27"), resources.GetString("ComboBox2.Items28"), resources.GetString("ComboBox2.Items29"), resources.GetString("ComboBox2.Items30"), resources.GetString("ComboBox2.Items31"), resources.GetString("ComboBox2.Items32"), resources.GetString("ComboBox2.Items33"), resources.GetString("ComboBox2.Items34"), resources.GetString("ComboBox2.Items35"), resources.GetString("ComboBox2.Items36"), resources.GetString("ComboBox2.Items37"), resources.GetString("ComboBox2.Items38"), resources.GetString("ComboBox2.Items39"), resources.GetString("ComboBox2.Items40"), resources.GetString("ComboBox2.Items41"), resources.GetString("ComboBox2.Items42"), resources.GetString("ComboBox2.Items43"), resources.GetString("ComboBox2.Items44"), resources.GetString("ComboBox2.Items45"), resources.GetString("ComboBox2.Items46"), resources.GetString("ComboBox2.Items47"), resources.GetString("ComboBox2.Items48"), resources.GetString("ComboBox2.Items49"), resources.GetString("ComboBox2.Items50"), resources.GetString("ComboBox2.Items51"), resources.GetString("ComboBox2.Items52"), resources.GetString("ComboBox2.Items53"), resources.GetString("ComboBox2.Items54"), resources.GetString("ComboBox2.Items55"), resources.GetString("ComboBox2.Items56"), resources.GetString("ComboBox2.Items57"), resources.GetString("ComboBox2.Items58"), resources.GetString("ComboBox2.Items59"), resources.GetString("ComboBox2.Items60"), resources.GetString("ComboBox2.Items61"), resources.GetString("ComboBox2.Items62"), resources.GetString("ComboBox2.Items63"), resources.GetString("ComboBox2.Items64"), resources.GetString("ComboBox2.Items65"), resources.GetString("ComboBox2.Items66"), resources.GetString("ComboBox2.Items67"), resources.GetString("ComboBox2.Items68"), resources.GetString("ComboBox2.Items69"), resources.GetString("ComboBox2.Items70"), resources.GetString("ComboBox2.Items71"), resources.GetString("ComboBox2.Items72"), resources.GetString("ComboBox2.Items73"), resources.GetString("ComboBox2.Items74"), resources.GetString("ComboBox2.Items75"), resources.GetString("ComboBox2.Items76"), resources.GetString("ComboBox2.Items77"), resources.GetString("ComboBox2.Items78"), resources.GetString("ComboBox2.Items79"), resources.GetString("ComboBox2.Items80"), resources.GetString("ComboBox2.Items81")})
         Me.ComboBox2.Name = "ComboBox2"
         '
         'ButtonDebugDumpBuffer
@@ -587,10 +595,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
-        'FolderBrowserDialog1
-        '
-        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -683,4 +687,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonDebugAllowMediaRemoval As Button
     Friend WithEvents Button30 As Button
     Friend WithEvents CheckBox3 As CheckBox
+    Friend WithEvents CheckBox4 As CheckBox
 End Class
