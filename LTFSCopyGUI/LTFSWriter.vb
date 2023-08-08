@@ -1,6 +1,7 @@
 ﻿Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
 
 Public Class LTFSWriter
@@ -1615,71 +1616,86 @@ Public Class LTFSWriter
         End If
         IO.File.WriteAllBytes(FileName, {})
         If FileIndex.length > 0 Then
-            Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.Asynchronous)
-            For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                Dim succ As Boolean = False
-                Do
-                    Dim BlockAddress As Long = fe.startblock
-                    Dim ByteOffset As Long = fe.byteoffset
-                    Dim FileOffset As Long = fe.fileoffset
-                    Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
-                    Dim TotalBytes As Long = fe.bytecount
-                    Dim p As New TapeUtils.PositionData(TapeDrive)
-                    If p.BlockNumber <> BlockAddress OrElse p.PartitionNumber <> Partition Then
-                        TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
-                    End If
-                    fs.Seek(FileOffset, IO.SeekOrigin.Begin)
-                    Dim ReadedSize As Long = 0
-                    While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
-                        Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                        Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
-                        If Data.Length <> len OrElse len = 0 Then
-                            PrintMsg($"Error reading at p{p.PartitionNumber}b{p.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
-                            succ = False
+            Dim reffile As String = ""
+            If FileIndex.TempObj IsNot Nothing AndAlso TypeOf FileIndex.TempObj Is ltfsindex.file.refFile Then reffile = CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName.ToString()
+            If reffile <> "" AndAlso IO.File.Exists(reffile) Then
+                IO.File.Copy(reffile, FileName, True)
+                Dim finfo As New IO.FileInfo(FileName)
+                finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
+                finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+                finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
+                finfo.IsReadOnly = FileIndex.readonly
+                Threading.Interlocked.Add(TotalBytesProcessed, FileIndex.length)
+                Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
+            Else
+                If FileIndex.TempObj Is Nothing OrElse TypeOf FileIndex.TempObj IsNot ltfsindex.file.refFile Then FileIndex.TempObj = New ltfsindex.file.refFile()
+                CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName = FileName
+                Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.Asynchronous)
+                For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
+                    Dim succ As Boolean = False
+                    Do
+                        Dim BlockAddress As Long = fe.startblock
+                        Dim ByteOffset As Long = fe.byteoffset
+                        Dim FileOffset As Long = fe.fileoffset
+                        Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
+                        Dim TotalBytes As Long = fe.bytecount
+                        Dim p As New TapeUtils.PositionData(TapeDrive)
+                        If p.BlockNumber <> BlockAddress OrElse p.PartitionNumber <> Partition Then
+                            TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
+                        End If
+                        fs.Seek(FileOffset, IO.SeekOrigin.Begin)
+                        Dim ReadedSize As Long = 0
+                        While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
+                            Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
+                            Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
+                            If Data.Length <> len OrElse len = 0 Then
+                                PrintMsg($"Error reading at p{p.PartitionNumber}b{p.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
+                                succ = False
+                                Exit Do
+                            End If
+                            ReadedSize += len
+                            fs.Write(Data, ByteOffset, len - ByteOffset)
+
+                            Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
+                            Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
+                            ByteOffset = 0
+                        End While
+                        If StopFlag Then
+                            fs.Close()
+                            IO.File.Delete(FileName)
+                            succ = True
                             Exit Do
                         End If
-                        ReadedSize += len
-                        fs.Write(Data, ByteOffset, len - ByteOffset)
-
-                        Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
-                        Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
-                        ByteOffset = 0
-                    End While
-                    If StopFlag Then
-                        fs.Close()
-                        IO.File.Delete(FileName)
                         succ = True
                         Exit Do
+                    Loop
+
+                    If Not succ Then
+                        PrintMsg($"{FileIndex.name}{ResText_RestoreErr.Text}")
+                        Exit For
                     End If
-                    succ = True
-                    Exit Do
-                Loop
+                    'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
+                    '                         Function(BytesReaded As Long)
+                    '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
+                    '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
+                    '                             Return StopFlag
+                    '                         End Function, CreateNew, False) Then
+                    '    PrintMsg($"{FileIndex.name}提取出错")
+                    '    Exit For
+                    'End If
+                    If StopFlag Then Exit Sub
+                Next
+                fs.Flush()
+                fs.Close()
+                Task.Run(Sub()
+                             Dim finfo As New IO.FileInfo(FileName)
+                             finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
+                             finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+                             finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
+                             finfo.IsReadOnly = FileIndex.readonly
+                         End Sub)
+            End If
 
-                If Not succ Then
-                    PrintMsg($"{FileIndex.name}{ResText_RestoreErr.Text}")
-                    Exit For
-                End If
-                'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
-                '                         Function(BytesReaded As Long)
-                '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
-                '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
-                '                             Return StopFlag
-                '                         End Function, CreateNew, False) Then
-                '    PrintMsg($"{FileIndex.name}提取出错")
-                '    Exit For
-                'End If
-                If StopFlag Then Exit Sub
-            Next
-            Task.Run(Sub()
-                         fs.Flush()
-                         fs.Close()
-
-                         Dim finfo As New IO.FileInfo(FileName)
-                         finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-                         finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
-                         finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
-                         finfo.IsReadOnly = FileIndex.readonly
-                     End Sub)
         Else
             Dim finfo As New IO.FileInfo(FileName)
             finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
@@ -1753,6 +1769,7 @@ Public Class LTFSWriter
                             Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
                                 Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
                                     For Each f As ltfsindex.file In tapeDir.contents._file
+                                        f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
                                         FileList.Add(New FileRecord With {.File = f, .SourcePath = My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name)})
                                         'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
                                     Next
@@ -1783,6 +1800,11 @@ Public Class LTFSWriter
                                                                             If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
                                                                             Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
                                                                         End Function))
+                            For i As Integer = 1 To FileList.Count - 1
+                                If FileList(i).File.length = FileList(i - 1).File.length AndAlso FileList(i).File.sha1 = FileList(i - 1).File.sha1 Then
+                                    FileList(i).File.TempObj = FileList(i - 1).File.TempObj
+                                End If
+                            Next
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
@@ -2988,10 +3010,12 @@ Public Class LTFSWriter
         If ListView1.Tag IsNot Nothing Then
             Dim d As ltfsindex.directory = ListView1.Tag
             For Each dir As ltfsindex.directory In d.contents._directory
-                If CInt(Val(dir.name)).ToString = dir.name Then
+                If My.Settings.LTFSWriter_FileLabel = " " OrElse CInt(Val(dir.name)).ToString = dir.name Then
+                    Dim fl As String = $".{My.Settings.LTFSWriter_FileLabel}"
+                    If fl = ". " Then fl = ""
                     Dim fExist As Boolean = False
                     For Each f As ltfsindex.file In d.contents._file
-                        If f.name = $"{dir.name}.{My.Settings.LTFSWriter_FileLabel}" Then
+                        If f.name = $"{dir.name}{fl}" Then
                             fExist = True
                             Exit For
                         End If
@@ -3000,7 +3024,7 @@ Public Class LTFSWriter
                         Dim emptyfile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, "empty.file")
                         My.Computer.FileSystem.WriteAllBytes(emptyfile, {}, False)
                         Dim fnew As New FileRecord(emptyfile, d)
-                        fnew.File.name = $"{dir.name}.{My.Settings.LTFSWriter_FileLabel}"
+                        fnew.File.name = $"{dir.name}{fl}"
                         While True
                             Threading.Thread.Sleep(0)
                             SyncLock UFReadCount
@@ -3430,6 +3454,446 @@ Public Class LTFSWriter
         去重SHA1ToolStripMenuItem.Checked = My.Settings.LTFSWriter_DeDupe
         My.Settings.Save()
     End Sub
+    Public Class LTFSMountFSBase
+        Inherits Fsp.FileSystemBase
+        Public LW As LTFSWriter
+        Public VolumeLabel As String
+        Public TapeDrive As String
+        Public Const ALLOCATION_UNIT As Integer = 4096
+
+        Protected Shared Sub ThrowIoExceptionWithHResult(ByVal HResult As Int32)
+            Throw New IO.IOException(Nothing, HResult)
+        End Sub
+
+        Protected Shared Sub ThrowIoExceptionWithWin32(ByVal [Error] As Int32)
+            ThrowIoExceptionWithHResult(CType((2147942400 Or [Error]), Int32))
+            'TODO: checked/unchecked is not supported at this time
+        End Sub
+        Protected Shared Sub ThrowIoExceptionWithNtStatus(ByVal Status As Int32)
+            ThrowIoExceptionWithWin32(CType(Win32FromNtStatus(Status), Int32))
+        End Sub
+        Public Overrides Function ExceptionHandler(ByVal ex As Exception) As Int32
+            Dim HResult As Int32 = ex.HResult
+            If (2147942400 _
+                    = (HResult And 4294901760)) Then
+                Return NtStatusFromWin32((CType(HResult, UInt32) And 65535))
+            End If
+            Return STATUS_UNEXPECTED_IO_ERROR
+        End Function
+        Class FileDesc
+
+            Public Stream As IO.FileStream
+
+            Public DirInfo As IO.DirectoryInfo
+
+            Public FileSystemInfos() As DictionaryEntry
+
+            Public Sub New(ByVal Stream As IO.FileStream)
+                MyBase.New
+                Me.Stream = Me.Stream
+            End Sub
+
+            Public Sub New(ByVal DirInfo As IO.DirectoryInfo)
+                MyBase.New
+                Me.DirInfo = Me.DirInfo
+            End Sub
+
+            Public Shared Sub GetFileInfoFromFileSystemInfo(ByVal Info As IO.FileSystemInfo, ByRef FileInfo As FileInfo)
+                FileInfo.FileAttributes = CType(Info.Attributes, UInt32)
+                FileInfo.ReparseTag = 0
+                If TypeOf Info Is System.IO.FileInfo Then
+                    FileInfo.FileSize = CType(Info, IO.FileInfo).Length
+                Else
+                    FileInfo.FileSize = 0
+                End If
+                FileInfo.AllocationSize = ((FileInfo.FileSize _
+                    + (ALLOCATION_UNIT - 1)) _
+                    / (ALLOCATION_UNIT * ALLOCATION_UNIT))
+                FileInfo.CreationTime = CType(Info.CreationTimeUtc.ToFileTimeUtc, UInt64)
+                FileInfo.LastAccessTime = CType(Info.LastAccessTimeUtc.ToFileTimeUtc, UInt64)
+                FileInfo.LastWriteTime = CType(Info.LastWriteTimeUtc.ToFileTimeUtc, UInt64)
+                FileInfo.ChangeTime = FileInfo.LastWriteTime
+                FileInfo.IndexNumber = 0
+                FileInfo.HardLinks = 0
+            End Sub
+
+            Public Function GetFileInfo(ByRef FileInfo As FileInfo) As Int32
+                If (Not (Me.Stream) Is Nothing) Then
+                    Dim Info As BY_HANDLE_FILE_INFORMATION
+                    If Not FileDesc.GetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, Info) Then
+                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                    End If
+
+                    FileInfo.FileAttributes = Info.dwFileAttributes
+                    FileInfo.ReparseTag = 0
+                    FileInfo.FileSize = CType(Me.Stream.Length, UInt64)
+                    FileInfo.AllocationSize = ((FileInfo.FileSize _
+                        + (ALLOCATION_UNIT - 1)) _
+                        / (ALLOCATION_UNIT * ALLOCATION_UNIT))
+                    FileInfo.CreationTime = Info.ftCreationTime
+                    FileInfo.LastAccessTime = Info.ftLastAccessTime
+                    FileInfo.LastWriteTime = Info.ftLastWriteTime
+                    FileInfo.ChangeTime = FileInfo.LastWriteTime
+                    FileInfo.IndexNumber = 0
+                    FileInfo.HardLinks = 0
+                Else
+                    GetFileInfoFromFileSystemInfo(Me.DirInfo, FileInfo)
+                End If
+
+                Return STATUS_SUCCESS
+            End Function
+
+            Public Sub SetBasicInfo(ByVal FileAttributes As UInt32, ByVal CreationTime As UInt64, ByVal LastAccessTime As UInt64, ByVal LastWriteTime As UInt64)
+                If (0 = FileAttributes) Then
+                    FileAttributes = CType(System.IO.FileAttributes.Normal, UInt32)
+                End If
+
+                If (Not (Me.Stream) Is Nothing) Then
+                    Dim Info As FILE_BASIC_INFO
+                    If (-1 <> FileAttributes) Then
+                        Info.FileAttributes = FileAttributes
+                    End If
+
+                    If (0 <> CreationTime) Then
+                        Info.CreationTime = CreationTime
+                    End If
+
+                    If (0 <> LastAccessTime) Then
+                        Info.LastAccessTime = LastAccessTime
+                    End If
+
+                    If (0 <> LastWriteTime) Then
+                        Info.LastWriteTime = LastWriteTime
+                    End If
+
+                    If Not FileDesc.SetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, 0, Info, CType(Marshal.SizeOf(Info), UInt32)) Then
+                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                    End If
+
+                Else
+                    If (-1 <> FileAttributes) Then
+                        Me.DirInfo.Attributes = CType(FileAttributes, System.IO.FileAttributes)
+                    End If
+
+                    'TODO: checked/unchecked is not supported at this time
+                    If (0 <> CreationTime) Then
+                        Me.DirInfo.CreationTimeUtc = DateTime.FromFileTimeUtc(CType(CreationTime, Int64))
+                    End If
+
+                    If (0 <> LastAccessTime) Then
+                        Me.DirInfo.LastAccessTimeUtc = DateTime.FromFileTimeUtc(CType(LastAccessTime, Int64))
+                    End If
+
+                    If (0 <> LastWriteTime) Then
+                        Me.DirInfo.LastWriteTimeUtc = DateTime.FromFileTimeUtc(CType(LastWriteTime, Int64))
+                    End If
+
+                End If
+
+            End Sub
+
+            Public Function GetFileAttributes() As UInt32
+                Dim FileInfo As FileInfo
+                Me.GetFileInfo(FileInfo)
+                Return FileInfo.FileAttributes
+            End Function
+
+            Public Sub SetFileAttributes(ByVal FileAttributes As UInt32)
+                Me.SetBasicInfo(FileAttributes, 0, 0, 0)
+            End Sub
+
+            Public Function GetSecurityDescriptor() As Byte()
+                If (Not (Me.Stream) Is Nothing) Then
+                    Return Me.Stream.GetAccessControl.GetSecurityDescriptorBinaryForm
+                Else
+                    Return Me.DirInfo.GetAccessControl.GetSecurityDescriptorBinaryForm
+                End If
+
+            End Function
+
+            Public Sub SetSecurityDescriptor(ByVal Sections As Security.AccessControl.AccessControlSections, ByVal SecurityDescriptor() As Byte)
+                Dim SecurityInformation As Int32 = 0
+                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Owner)) Then
+                    SecurityInformation = (SecurityInformation Or 1)
+                End If
+
+                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Group)) Then
+                    SecurityInformation = (SecurityInformation Or 2)
+                End If
+
+                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Access)) Then
+                    SecurityInformation = (SecurityInformation Or 4)
+                End If
+
+                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Audit)) Then
+                    SecurityInformation = (SecurityInformation Or 8)
+                End If
+
+                If (Not (Me.Stream) Is Nothing) Then
+                    If Not FileDesc.SetKernelObjectSecurity(Me.Stream.SafeFileHandle.DangerousGetHandle, SecurityInformation, SecurityDescriptor) Then
+                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                    End If
+
+                ElseIf Not FileDesc.SetFileSecurityW(Me.DirInfo.FullName, SecurityInformation, SecurityDescriptor) Then
+                    ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                End If
+
+            End Sub
+
+            Public Sub SetDisposition(ByVal Safe As Boolean)
+                If (Not (Me.Stream) Is Nothing) Then
+                    Dim Info As FILE_DISPOSITION_INFO
+                    Info.DeleteFile = True
+                    If Not FileDesc.SetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, 4, Info, CType(Marshal.SizeOf(Info), UInt32)) Then
+                        If Not Safe Then
+                            ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                        End If
+
+                    End If
+
+                Else
+                    Try
+                        Me.DirInfo.Delete
+                    Catch ex As Exception
+                        If Not Safe Then
+                            ThrowIoExceptionWithHResult(ex.HResult)
+                        End If
+
+                    End Try
+
+                End If
+
+            End Sub
+
+            Public Shared Sub Rename(ByVal FileName As String, ByVal NewFileName As String, ByVal ReplaceIfExists As Boolean)
+                Dim param As Integer
+                If ReplaceIfExists Then param = 1 Else param = 0
+                If Not MoveFileExW(FileName, NewFileName, param) Then
+                    ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
+                End If
+
+            End Sub
+
+            <StructLayout(LayoutKind.Sequential, Pack:=4)>
+            Private Structure BY_HANDLE_FILE_INFORMATION
+
+                Public dwFileAttributes As UInt32
+
+                Public ftCreationTime As UInt64
+
+                Public ftLastAccessTime As UInt64
+
+                Public ftLastWriteTime As UInt64
+
+                Public dwVolumeSerialNumber As UInt32
+
+                Public nFileSizeHigh As UInt32
+
+                Public nFileSizeLow As UInt32
+
+                Public nNumberOfLinks As UInt32
+
+                Public nFileIndexHigh As UInt32
+
+                Public nFileIndexLow As UInt32
+            End Structure
+
+            <StructLayout(LayoutKind.Sequential)>
+            Private Structure FILE_BASIC_INFO
+
+                Public CreationTime As UInt64
+
+                Public LastAccessTime As UInt64
+
+                Public LastWriteTime As UInt64
+
+                Public ChangeTime As UInt64
+
+                Public FileAttributes As UInt32
+            End Structure
+
+            <StructLayout(LayoutKind.Sequential)>
+            Private Structure FILE_DISPOSITION_INFO
+
+                Public DeleteFile As Boolean
+            End Structure
+
+            Private Declare Function GetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByRef lpFileInformation As BY_HANDLE_FILE_INFORMATION) As Boolean
+
+            Private Overloads Declare Function SetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByVal FileInformationClass As Int32, ByRef lpFileInformation As FILE_BASIC_INFO, ByVal dwBufferSize As UInt32) As Boolean
+
+            Private Overloads Declare Function SetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByVal FileInformationClass As Int32, ByRef lpFileInformation As FILE_DISPOSITION_INFO, ByVal dwBufferSize As UInt32) As Boolean
+
+            Private Declare Function MoveFileExW Lib "kernel32.dll" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String, ByVal dwFlags As UInt32) As Boolean
+
+            Private Declare Function SetFileSecurityW Lib "advapi32.dll" (ByVal FileName As String, ByVal SecurityInformation As Int32, ByVal SecurityDescriptor() As Byte) As Boolean
+
+            Private Declare Function SetKernelObjectSecurity Lib "advapi32.dll" (ByVal Handle As IntPtr, ByVal SecurityInformation As Int32, ByVal SecurityDescriptor() As Byte) As Boolean
+        End Class
+        Public Overrides Function Init(Host0 As Object) As Integer
+            Dim Host As Fsp.FileSystemHost = CType(Host0, Fsp.FileSystemHost)
+            Try
+                Host.NamedStreams = False
+                Host.FileSystemName = "LTFS"
+                Host.MaxComponentLength = 65535
+                Host.UnicodeOnDisk = True
+                Host.CaseSensitiveSearch = False
+                Host.CasePreservedNames = True
+                Host.PersistentAcls = False
+                Host.FileInfoTimeout = 10 * 1000
+                Host.VolumeSerialNumber = 0
+                Host.SectorSize = 4096
+                Host.SectorSize = LW.plabel.blocksize
+                Host.VolumeCreationTime = TapeUtils.ParseTimeStamp(LW.plabel.formattime).ToFileTimeUtc()
+
+            Catch ex As Exception
+                MessageBox.Show(ex.ToString)
+            End Try
+            Return STATUS_SUCCESS
+        End Function
+        Private Class DirectoryEntryComparer
+            Implements IComparer
+            Public Function Compare(ByVal x As Object, ByVal y As Object) As Integer Implements IComparer.Compare
+                Return String.Compare(CType(CType(x, DictionaryEntry).Key, String), CType(CType(y, DictionaryEntry).Key, String))
+            End Function
+        End Class
+        Dim _DirectoryEntryComparer As DirectoryEntryComparer = New DirectoryEntryComparer
+        Public Sub New(path0 As String)
+            TapeDrive = path0
+        End Sub
+        Public Overrides Function GetVolumeInfo(<Out> ByRef VolumeInfo As VolumeInfo) As Int32
+            VolumeInfo = New Fsp.Interop.VolumeInfo
+            VolumeLabel = LW.schema._directory(0).name
+            Try
+                VolumeInfo.TotalSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 1, LW.ExtraPartitionCount).AsNumeric << 20
+                VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
+                VolumeInfo.SetVolumeLabel(VolumeLabel)
+            Catch ex As Exception
+                MessageBox.Show(ex.ToString)
+            End Try
+            Return STATUS_SUCCESS
+        End Function
+        Public Overrides Function ReadDirectoryEntry(FileNode As Object, FileDesc0 As Object, Pattern As String, Marker As String, ByRef Context As Object, <Out> ByRef FileName As String, <Out> ByRef FileInfo As FileInfo) As Boolean
+
+            Dim FileDesc As FileDesc = CType(FileDesc0, FileDesc)
+            If FileDesc.FileSystemInfos IsNot Nothing Then
+                If Pattern IsNot Nothing Then
+                    Pattern = Pattern.Replace("<", "*").Replace(">", "?").Replace("""", ".")
+                Else
+                    Pattern = "*"
+                End If
+                Dim [Enum] As IEnumerable = FileDesc.DirInfo.EnumerateFileSystemInfos(Pattern)
+                Dim List As New SortedList()
+                If FileDesc.DirInfo IsNot Nothing AndAlso FileDesc.DirInfo.Parent IsNot Nothing Then
+                    List.Add(".", FileDesc.DirInfo)
+                    List.Add("..", FileDesc.DirInfo.Parent)
+                End If
+                For Each info As IO.FileSystemInfo In [Enum]
+                    List.Add(info.Name, info)
+                Next
+                List.CopyTo(FileDesc.FileSystemInfos, 0)
+            End If
+            Dim Index As Integer
+            If Context Is Nothing Then
+                Index = 0
+                If Marker IsNot Nothing Then
+                    Index = Array.BinarySearch(FileDesc.FileSystemInfos, New DictionaryEntry(Marker, Nothing), _DirectoryEntryComparer)
+                    If Index >= 0 Then
+                        Index += 1
+                    Else
+                        Index = -Index
+                    End If
+                End If
+            Else
+                Index = CInt(Context)
+            End If
+            If (FileDesc.FileSystemInfos.Length > Index) Then
+                Context = Index + 1
+                FileName = CType(FileDesc.FileSystemInfos(Index).Key, String)
+                FileDesc.GetFileInfoFromFileSystemInfo(CType(FileDesc.FileSystemInfos(Index).Value, IO.FileSystemInfo), FileInfo)
+                Return True
+            Else
+                FileName = ""
+                FileInfo = New FileInfo
+                Return False
+            End If
+        End Function
+    End Class
+
+    Public Class LTFSMountFuseSvc
+        Inherits Fsp.Service
+        Public LW As LTFSWriter
+        Public _Host As Fsp.FileSystemHost
+        Public TapeDrive As String = ""
+        Public ReadOnly Property MountPath As String
+            Get
+                Return TapeDrive.Split({"\"}, StringSplitOptions.RemoveEmptyEntries).Last
+            End Get
+        End Property
+        Public Sub New()
+            MyBase.New("LTFSMountFuseServie")
+        End Sub
+
+        Protected Overrides Sub OnStart(Args As String())
+            Dim Host As New Fsp.FileSystemHost(New LTFSMountFSBase(TapeDrive) With {.LW = LW})
+            Host.Prefix = $"\ltfs\{MountPath}"
+            Host.FileSystemName = "LTFS"
+            Dim Code As Integer = Host.Mount("L:", Nothing, True, 0)
+            _Host = Host
+            MessageBox.Show($"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
+        End Sub
+        Protected Overrides Sub OnStop()
+            _Host.Unmount()
+            _Host = Nothing
+        End Sub
+    End Class
+    Private Sub 挂载盘符只读ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 挂载盘符只读ToolStripMenuItem.Click
+        '挂载
+        Dim DriveLoc As String = TapeDrive
+        If DriveLoc = "" Then DriveLoc = "\\.\TAPE0"
+        Dim MountPath As String = DriveLoc.Split({"\"}, StringSplitOptions.RemoveEmptyEntries).ToList.Last
+        Dim svc As New LTFSMountFuseSvc()
+        svc.LW = Me
+        svc.TapeDrive = DriveLoc
+
+        Task.Run(
+            Sub()
+                svc.Run()
+            End Sub)
+
+        MessageBox.Show($"Mounted as \\ltfs\{svc.MountPath}{vbCrLf}Press OK to unmount")
+
+        '卸载
+        svc.Stop()
+        MessageBox.Show($"Unmounted. Code={svc.ExitCode}")
+    End Sub
+
+    Private Sub 子目录列表ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 子目录列表ToolStripMenuItem.Click
+        Dim result As New StringBuilder
+        If ListView1.Tag IsNot Nothing AndAlso TypeOf (ListView1.Tag) Is ltfsindex.directory Then
+            For Each Dir As ltfsindex.directory In CType(ListView1.Tag, ltfsindex.directory).contents._directory
+                result.AppendLine(Dir.name)
+            Next
+        End If
+        Clipboard.SetText(result.ToString)
+    End Sub
+
+    Private Sub 文件详情ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 文件详情ToolStripMenuItem1.Click
+        Dim result As New StringBuilder
+        If ListView1.Tag IsNot Nothing AndAlso
+        ListView1.SelectedItems IsNot Nothing AndAlso
+        ListView1.SelectedItems.Count > 0 Then
+            SyncLock ListView1.SelectedItems
+                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+                    If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
+                        Dim f As ltfsindex.file = ItemSelected.Tag
+                        result.AppendLine(f.GetSerializedText())
+                    End If
+                Next
+            End SyncLock
+        End If
+        Clipboard.SetText(result.ToString)
+    End Sub
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
         IndexWriteInterval = Val(InputBox(ResText_SIIntv.Text, ResText_Setting.Text, IndexWriteInterval))
@@ -3567,7 +4031,7 @@ Public NotInheritable Class FileDropHandler
             Dim sb = New StringBuilder(262)
             Dim charLength = sb.Capacity
             Dim i As UInteger = 0
-            Do While (i < fileCount)
+            Do While (i <fileCount)
                 If (DragQueryFile(handle, i, sb, charLength) > 0) Then
                     fileNames(i) = sb.ToString
                 End If

@@ -135,7 +135,7 @@ Public Class LTFSConfigurator
     Private Sub LTFSConfigurator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         RefreshUI()
         CheckBox3.Checked = My.Settings.LTFSConf_AutoRefresh
-        ComboBox2.SelectedIndex = 2
+        ComboBox2.SelectedIndex = 3
         ComboBox3.SelectedIndex = 0
         Text = $"LTFSConfigurator - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         LoadComplete = True
@@ -268,6 +268,7 @@ Public Class LTFSConfigurator
 
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBox1.CheckedChanged
         Panel2.Visible = CheckBox1.Checked
+        Button27.Enabled = True
     End Sub
 
     Public Function HexStringToByteArray(s As String) As Byte()
@@ -287,33 +288,38 @@ Public Class LTFSConfigurator
         Return dataList.ToArray()
     End Function
     Public Shared Function Byte2Hex(bytes As Byte(), Optional ByVal TextShow As Boolean = False) As String
+        Const HalfWidthChars As String = "~!@#$%^&*()_+-=|\ <>?,./:;""''{}[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         If bytes Is Nothing Then Return ""
         If bytes.Length = 0 Then Return ""
         Dim sb As New StringBuilder
         Dim tb As String = ""
+        Dim ln As New StringBuilder
         For i As Integer = 0 To bytes.Length - 1
             If i Mod 16 = 0 And TextShow Then
-                sb.Append(Hex(i).PadLeft(6) & "h:  ")
+                ln.Append("|" & Hex(i).PadLeft(5) & "h: ")
             End If
-            sb.Append(Convert.ToString((bytes(i) And &HFF) + &H100, 16).Substring(1).ToUpper)
-            sb.Append(" ")
+            ln.Append(Convert.ToString((bytes(i) And &HFF) + &H100, 16).Substring(1).ToUpper)
+            ln.Append(" ")
             Dim c As Char = Chr(bytes(i))
-            If Char.IsControl(c) Then
+            If Not HalfWidthChars.Contains(c) Then
                 tb &= "."
             Else
                 tb &= c
             End If
             If i Mod 16 = 15 Then
                 If TextShow Then
-                    sb.Append("    " & tb)
+                    ln.Append(tb)
                 End If
+                sb.Append(ln.ToString().PadRight(74) & "|")
                 sb.Append(vbCrLf)
+                ln = New StringBuilder()
                 tb = ""
             End If
         Next
         If TextShow And tb <> "" Then
-            sb.Append("    " & tb)
+            ln.Append(tb)
         End If
+        If ln.Length > 0 Then sb.Append(ln.ToString().PadRight(74) & "|")
         Return sb.ToString()
     End Function
     Private Sub ButtonDebugSendSCSICommand_Click(sender As Object, e As EventArgs) Handles ButtonDebugSendSCSICommand.Click
@@ -634,144 +640,301 @@ Public Class LTFSConfigurator
     End Function
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
-        TextBox8.Text = ""
-        TextBox8.AppendText("========Application Info========" & vbCrLf)
+        Dim CMInfo As TapeUtils.CMParser = Nothing
         Try
-            Dim BC As String
-            BC = TapeUtils.ReadBarcode(ConfTapeDrive)
-            BC = TapeUtils.ReadBarcode(ConfTapeDrive)
-            TextBox8.AppendText("Barcode: " & BC & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Barcode: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim AppInfo As String = TapeUtils.ReadAppInfo(ConfTapeDrive)
-            TextBox8.AppendText("Application: " & AppInfo & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Application: Not Available" & vbCrLf)
-        End Try
-        TextBox8.AppendText(vbCrLf)
-        TextBox8.AppendText("==========Medium Usage==========" & vbCrLf)
-        Try
-            Dim LoadCount As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
-            TextBox8.AppendText("Load count: " & LoadCount & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Load count: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim TotalWriteMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
-            TextBox8.AppendText("Total write: " & ReduceDataUnit(TotalWriteMBytes) & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Total write: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim TotalReadMBytes As Int64 = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
-            TextBox8.AppendText("Total read: " & ReduceDataUnit(TotalReadMBytes) & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Total read: Not Available" & vbCrLf)
-        End Try
-        'TextBox8.AppendText("Tape pulled: " & TapePulledMeter & " m" & vbCrLf)
-        TextBox8.AppendText(vbCrLf)
-        TextBox8.AppendText("=========Medium Identity========" & vbCrLf)
-        Try
-            Dim Medium_SN As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 1).AsString
-            TextBox8.AppendText("Serial number: " & Medium_SN & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Serial number: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim Medium_Manufacturer As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
-            TextBox8.AppendText("Manufacturer: " & Medium_Manufacturer & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Manufacturer: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim Medium_Man_Date As String = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
-            TextBox8.AppendText("Manufacture date: " & Medium_Man_Date & vbCrLf)
-        Catch ex As Exception
-            TextBox8.AppendText("Manufacture date: Not Available" & vbCrLf)
-        End Try
-        Try
-            Dim Medium_Type As Byte = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 8).AsNumeric
-            Dim CMData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, &H10)
-            Dim Medium_ParticleType As String
-            If CMData(&H40) >= &H40 Then
-                If CMData(&H6A) And &HF Then
-                    Medium_ParticleType = "BaFe"
-                Else
-                    Medium_ParticleType = "MP"
-                End If
-            Else
-                If CMData(&H6A) Then
-                    Medium_ParticleType = "BaFe"
-                Else
-                    Medium_ParticleType = "MP"
-                End If
-            End If
-            If Medium_Type = 1 Then Medium_ParticleType = "Universal Clean Cartridge"
-            TextBox8.AppendText("Particle Type: " & Medium_ParticleType & vbCrLf)
-            TextBox8.AppendText(vbCrLf)
-            TextBox8.AppendText("==========DATA ON TAPE==========" & vbCrLf)
-            Try
-                Dim TapePartitionPage As Byte() = TapeUtils.ModeSense(ConfTapeDrive, &H11)
-                Dim extraPartitionNumber As Byte = TapePartitionPage(3)
-                'TextBox8.AppendText(Byte2Hex(TapePartitionPage))
-                Dim SUnit As Byte = TapePartitionPage(6)
-                Dim UnitStr As String
-                Select Case SUnit
-                    Case 0
-                        UnitStr = "Byte"
-                    Case 3
-                        UnitStr = "KiB"
-                    Case 6
-                        UnitStr = "MiB"
-                    Case 9
-                        UnitStr = "GiB"
-                    Case 12
-                        UnitStr = "TiB"
-                    Case 15
-                        UnitStr = "PiB"
-                    Case 18
-                        UnitStr = "EiB"
-                    Case 21
-                        UnitStr = "ZiB"
-                    Case 24
-                        UnitStr = "YiB"
-                    Case Else
-                        UnitStr = "x1024^" & SUnit & " Byte"
-                End Select
-                TextBox8.AppendText("Total Partitions: " & extraPartitionNumber + 1 & vbCrLf)
-                For i As Integer = 0 To extraPartitionNumber
-                    Dim len As Integer = CInt(TapePartitionPage(8 + i * 2)) << 8 Or TapePartitionPage(8 + i * 2 + 1)
-                    TextBox8.AppendText("Partition " & i & " Size: " & len & " " & UnitStr & vbCrLf)
-                Next
-                TextBox8.AppendText(vbCrLf)
-                TextBox8.AppendText("Wraps on Tape :" & vbCrLf)
+            CMInfo = New TapeUtils.CMParser(TapeDrive)
 
-                Dim EOWData As Byte() = TapeUtils.ReadEOWPosition(ConfTapeDrive)
-                Dim LOINum As UInt64 = 0
-                For i As Integer = 0 To EOWData.Length - 12 Step 12
-                    Dim WN As Integer = CInt(EOWData(i + 0)) << 8 Or EOWData(i + 1)
-                    Dim PN As Integer = CInt(EOWData(i + 2)) << 8 Or EOWData(i + 3)
-                    Dim LOI As String = Byte2Hex({EOWData(i + 6), EOWData(i + 7), EOWData(i + 8), EOWData(i + 9), EOWData(i + 10), EOWData(i + 11)})
-                    Dim LastLOI As UInt64 = LOINum
-                    LOINum = 0
-                    For j As Integer = 0 To 5
-                        LOINum <<= 8
-                        LOINum = LOINum Or EOWData(i + 6 + j)
-                    Next
-                    TextBox8.AppendText("Wrap " & WN.ToString.PadLeft(3) & ": Partition " & PN & " Block " & LOINum.ToString.PadRight(10) & "(" & LOINum - LastLOI & " blocks)" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf)
+        End Try
+        TextBox8.Text = ""
+        TextBox8.AppendText("+=========================== APPLICATION INFO ============================+" & vbCrLf)
+        Try
+            Dim BC As String = CMInfo.ApplicationSpecificData.Barcode
+            'BC = TapeUtils.ReadBarcode(ConfTapeDrive)
+            'BC = TapeUtils.ReadBarcode(ConfTapeDrive)
+            TextBox8.AppendText(("| Barcode: ".PadRight(28) & BC).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Barcode: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        Try
+            Dim AppInfo As String = $"{CMInfo.ApplicationSpecificData.Application_vendor} {CMInfo.ApplicationSpecificData.Application_name} {CMInfo.ApplicationSpecificData.Application_version}" ' TapeUtils.ReadAppInfo(ConfTapeDrive)
+            TextBox8.AppendText(("| Application: ".PadRight(28) & AppInfo).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Application: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        TextBox8.AppendText("+============================= MEDIUM USAGE ==============================+" & vbCrLf)
+        If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then
+            Try
+                Dim LoadCount As Int64 = CMInfo.StatusData.ThreadCount ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                TextBox8.AppendText(("| Cleans performed: ".PadRight(28) & LoadCount).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Cleans performed: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim CleanRemain As Int64 = CMInfo.a_CleansRemaining ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                TextBox8.AppendText(("| Cleans remain: ".PadRight(28) & CleanRemain).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Cleans remain: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim TapeLen As Int64 = CMInfo.CartridgeMfgData.TapeLength ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                Dim LastLoc As Int64 = CMInfo.StatusData.LastLocation ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                TextBox8.AppendText(("| Used length: ".PadRight(28) & $"{(LastLoc / 4).ToString("f2")} m / {((TapeLen / 4) - 11).ToString("f2")} m").PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Used length: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+
+        Else
+            Try
+                Dim LoadCount As Int64 = CMInfo.StatusData.ThreadCount ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                TextBox8.AppendText(("| Load count: ".PadRight(28) & LoadCount).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Load count: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim TotalWriteMBytes As Int64 = CMInfo.CartridgeMfgData.KB_PER_DATASET
+                TotalWriteMBytes *= CMInfo.UsageData(0).LifeSetsWritten
+                TotalWriteMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
+                TextBox8.AppendText(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteMBytes)).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Total write: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim TotalReadMBytes As Int64 = CMInfo.CartridgeMfgData.KB_PER_DATASET
+                TotalReadMBytes *= CMInfo.UsageData(0).LifeSetsRead
+                TotalReadMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
+                TextBox8.AppendText(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadMBytes)).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Total read: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Full volume equivalents: ".PadRight(28) & ((CMInfo.UsageData(0).LifeSetsRead + CMInfo.UsageData(0).LifeSetsWritten) / (CMInfo.a_SetsPerWrap * CMInfo.a_NWraps)).ToString("f2") & " FVE").PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Full volume equivalents: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Write retries: ".PadRight(28) & CMInfo.UsageData(0).LifeWriteRetries).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Write retries: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Read retries: ".PadRight(28) & CMInfo.UsageData(0).LifeReadRetries).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Read retries: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Unrecovered writes: ".PadRight(28) & CMInfo.UsageData(0).LifeUnRecovWrites).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Unrecovered writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Unrecovered reads: ".PadRight(28) & CMInfo.UsageData(0).LifeUnRecovReads).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Unrecovered reads: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Suspended writes: ".PadRight(28) & CMInfo.UsageData(0).LifeSuspendedWrites).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Suspended writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Suspended append writes: ".PadRight(28) & CMInfo.UsageData(0).LifeSuspAppendWrites).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Suspended append writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                TextBox8.AppendText(("| Fatal suspended writes: ".PadRight(28) & CMInfo.UsageData(0).LifeFatalSuspWrites).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                TextBox8.AppendText(("| Fatal suspended writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+        End If
+
+        'Try
+        '    Dim TapeMetresPulled As Int64 = CMInfo.UsageData(0).LifeTapeMetresPulled
+        '    If TapeMetresPulled <= 0 Then Throw New Exception("TMP Not available")
+        '    TextBox8.AppendText(" Tape pulled: ".PadRight(28) & TapeMetresPulled & " m" & vbCrLf)
+        'Catch ex As Exception
+        '    TextBox8.AppendText(" Tape pulled: ".PadRight(28) & "Not available" & vbCrLf)
+        'End Try
+        TextBox8.AppendText("+============================ MEDIUM IDENTITY ============================+" & vbCrLf)
+        Try
+            Dim Medium_Format As String = $"{CMInfo.CartridgeMfgData.Format} (MC 0x{CMInfo.CartridgeMfgData.MediaCode.ToString("X4")} DC 0x{CMInfo.CartridgeMfgData.DENSITY_CODE.ToString("X2")})"
+            TextBox8.AppendText(("| Format: ".PadRight(28) & Medium_Format).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Format: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        Try
+            Dim Medium_SN As String = CMInfo.CartridgeMfgData.CartridgeSN ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 1).AsString
+            TextBox8.AppendText(("| Serial number: ".PadRight(28) & Medium_SN).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Serial number: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        Try
+            Dim Medium_Manufacturer As String = CMInfo.CartridgeMfgData.TapeVendor 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
+            TextBox8.AppendText(("| Manufacturer: ".PadRight(28) & Medium_Manufacturer).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Manufacturer: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        Try
+            Dim Medium_Man_Date As String = CMInfo.CartridgeMfgData.MfgDate 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
+            TextBox8.AppendText(("| Manufacture date: ".PadRight(28) & Medium_Man_Date).PadRight(74) & "|" & vbCrLf)
+        Catch ex As Exception
+            TextBox8.AppendText(("| Manufacture date: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+        End Try
+        Try
+            ' Dim Medium_Type As Byte = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 8).AsNumeric
+            Dim CMData As Byte() = CMInfo.a_CMBuffer
+            Dim Medium_ParticleType As String = CMInfo.CartridgeMfgData.ParticleType.ToString()
+            'If CMData(&H40) >= &H40 Then
+            '    If CMData(&H6A) And &HF Then
+            '        Medium_ParticleType = "BaFe"
+            '    Else
+            '        Medium_ParticleType = "MP"
+            '    End If
+            'Else
+            '    If CMData(&H6A) Then
+            '        Medium_ParticleType = "BaFe"
+            '    Else
+            '        Medium_ParticleType = "MP"
+            '    End If
+            'End If
+            'If Medium_Type = 1 Then Medium_ParticleType = "Universal Clean Cartridge"
+            If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Medium_ParticleType = "Universal Clean Cartridge"
+            TextBox8.AppendText(("| Particle type: ".PadRight(28) & Medium_ParticleType).PadRight(74) & "|" & vbCrLf)
+            TextBox8.AppendText("+============================= DATA ON TAPE ==============================+" & vbCrLf)
+            Try
+                'Dim TapePartitionPage As Byte() = TapeUtils.ModeSense(ConfTapeDrive, &H11)
+                'Dim extraPartitionNumber As Byte = TapePartitionPage(3)
+                ''TextBox8.AppendText(Byte2Hex(TapePartitionPage))
+                'Dim SUnit As Byte = TapePartitionPage(6)
+                'Dim UnitStr As String
+                'Select Case SUnit
+                '    Case 0
+                '        UnitStr = "Byte"
+                '    Case 3
+                '        UnitStr = "KiB"
+                '    Case 6
+                '        UnitStr = "MiB"
+                '    Case 9
+                '        UnitStr = "GiB"
+                '    Case 12
+                '        UnitStr = "TiB"
+                '    Case 15
+                '        UnitStr = "PiB"
+                '    Case 18
+                '        UnitStr = "EiB"
+                '    Case 21
+                '        UnitStr = "ZiB"
+                '    Case 24
+                '        UnitStr = "YiB"
+                '    Case Else
+                '        UnitStr = "x1024^" & SUnit & " Byte"
+                'End Select
+                'TextBox8.AppendText(" Total Partitions: ".PadRight(28) & extraPartitionNumber + 1 & vbCrLf)
+                'For i As Integer = 0 To extraPartitionNumber
+                '    Dim len As Integer = CInt(TapePartitionPage(8 + i * 2)) << 8 Or TapePartitionPage(8 + i * 2 + 1)
+                '    TextBox8.AppendText($" Partition {i} Size: ".PadRight(28) & len & " " & UnitStr & vbCrLf)
+                'Next
+                Dim DataWrapList As New List(Of Integer)
+                Dim DataWrapNum As Integer = 0
+                For Each l As Double In CMInfo.TapeDirectoryData.CapacityLoss
+                    If l = -3 Then
+                        If DataWrapNum > 0 Then
+                            DataWrapList.Add(DataWrapNum)
+                            DataWrapNum = 0
+                        End If
+                    Else
+                        DataWrapNum += 1
+                    End If
+                Next
+                If DataWrapNum > 0 Then DataWrapList.Add(DataWrapNum)
+
+                TextBox8.AppendText（("| Total partitions: ".PadRight(28) & DataWrapList.Count).PadRight(74) & "|" & vbCrLf)
+                For i As Integer = 0 To DataWrapList.Count - 1
+                    Dim nWrap As Long = DataWrapList(i)
+                    Dim len As Long = nWrap * CMInfo.CartridgeMfgData.MB_PER_WRAP
+                    TextBox8.AppendText（($"| Partition {i} size: ".PadRight(28) & ReduceDataUnit(len).PadRight(12) & $"[{nWrap.ToString().PadLeft(3)} wraps]").PadRight(74) & "|" & vbCrLf)
+                Next
+                'Exit Try
+                '
+                'TextBox8.AppendText(vbCrLf)
+                'TextBox8.AppendText("Wraps on Tape :" & vbCrLf)
+                '
+                'Dim EOWData As Byte() = TapeUtils.ReadEOWPosition(ConfTapeDrive)
+                'Dim LOINum As UInt64 = 0
+                'For i As Integer = 0 To EOWData.Length - 12 Step 12
+                '    Dim WN As Integer = CInt(EOWData(i + 0)) << 8 Or EOWData(i + 1)
+                '    Dim PN As Integer = CInt(EOWData(i + 2)) << 8 Or EOWData(i + 3)
+                '    Dim LOI As String = Byte2Hex({EOWData(i + 6), EOWData(i + 7), EOWData(i + 8), EOWData(i + 9), EOWData(i + 10), EOWData(i + 11)})
+                '    Dim LastLOI As UInt64 = LOINum
+                '    LOINum = 0
+                '    For j As Integer = 0 To 5
+                '        LOINum <<= 8
+                '        LOINum = LOINum Or EOWData(i + 6 + j)
+                '    Next
+                '    TextBox8.AppendText("Wrap " & WN.ToString.PadLeft(3) & ": Partition " & PN & " Block " & LOINum.ToString.PadRight(10) & "(" & LOINum - LastLOI & " blocks)" & vbCrLf)
+                'Next
+            Catch ex As Exception
+                TextBox8.AppendText("Partition page not available" & vbCrLf)
+            End Try
+            Dim wares As New StringBuilder
+            Dim nLossDS As Long = 0
+            Try
+                If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
+                wares.AppendLine("+============================= WRAP ANALYSIS =============================+")
+                wares.AppendLine("| Wrap | Start Block |  End Block  | Filemark |      Set      | Capacity  |")
+                wares.AppendLine("|------+-------------+-------------+----------+---------------+-----------|")
+                Dim StartBlock As Integer = 0
+                For wn As Integer = 0 To CMInfo.a_NWraps - 1
+                    Dim StartBlockStr As String = StartBlock.ToString()
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Or CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
+                    Dim EndBlock As Integer = StartBlock + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
+                    wares.Append($"| {wn.ToString().PadLeft(3)}  |")
+                    wares.Append($" {StartBlockStr.PadLeft(10)}  |")
+                    If StartBlockStr <> "" Then
+                        wares.Append($"  {EndBlock.ToString.PadLeft(10)} |")
+                    Else
+                        wares.Append($"  {"".PadLeft(10)} |")
+                    End If
+                    wares.Append($"  {CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount.ToString().PadLeft(5)}   |")
+                    wares.Append($" {CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data.ToString().PadLeft(5)} / {CMInfo.a_SetsPerWrap.ToString().PadRight(5)} |")
+                    StartBlock += CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
+                        nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
+                        wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
+                        StartBlock = 0
+                        wares.Append($"           |")
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
+                        wares.Append($"  >>EOD<<  |")
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then
+                        StartBlock = 0
+                        wares.Append($"  *GUARD*  |")
+                    End If
+                    wares.AppendLine()
                 Next
             Catch ex As Exception
-                TextBox8.AppendText("Partition Page Not Available" & vbCrLf)
+                wares.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
             End Try
+            TextBox8.AppendText("| Estimated capacity loss: ".PadRight(28) & IOManager.FormatSize(nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000).PadRight(74) & "|" & vbCrLf)
+            TextBox8.AppendText(wares.ToString())
+
+            TextBox8.AppendText("+============================== CM RAW DATA ==============================+" & vbCrLf)
+            TextBox8.AppendText(("| Length: " & CMData.Length).PadRight(74) & "|" & vbCrLf)
+            TextBox8.AppendText(Byte2Hex(CMData, True))
+            TextBox8.AppendText("+=========================================================================+")
             TextBox8.AppendText(vbCrLf)
-            TextBox8.AppendText("==========CM RAW DATA===========" & vbCrLf)
-            TextBox8.AppendText("Length: " & CMData.Length & vbCrLf)
-            TextBox8.Text &= (Byte2Hex(CMData, True))
+            If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
+                TextBox8.AppendText(CMInfo.GetSerializedText())
+                TextBox8.AppendText(vbCrLf)
+            End If
         Catch ex As Exception
-            TextBox8.AppendText("Particle Type: Not Available" & vbCrLf)
+            TextBox8.AppendText("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
         End Try
+        TextBox8.Select(0, 0)
+        TextBox8.ScrollToCaret()
         Me.Enabled = True
     End Sub
 
@@ -858,7 +1021,7 @@ Public Class LTFSConfigurator
         TextBox8.Text &= "Length: " & readData.Length & vbCrLf
         If DiffBytes < 0 Then
             TextBox8.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
-            TextBox8.Text &= "Excess data is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
+            TextBox8.Text &= "Excess data Is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
         End If
         TextBox8.Text &= Byte2Hex(readData, True)
         Me.Enabled = True
@@ -919,6 +1082,7 @@ Public Class LTFSConfigurator
         Me.Enabled = True
         If pos.BOP Then TextBox8.Text &= "BOM - Beginning of media" & vbCrLf
         If pos.EOP Then TextBox8.Text &= "EW-EOM - Early warning" & vbCrLf
+        If pos.EOD Then TextBox8.Text &= "End of Data detected" & vbCrLf
         'If LOCU Then TextBox8.Text &= "LOCU" & vbCrLf
         'If BYCU Then TextBox8.Text &= "BYCU" & vbCrLf
         'If LOLU Then TextBox8.Text &= "LOLU" & vbCrLf
@@ -1321,7 +1485,12 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
-        Process.Start(Application.ExecutablePath, $"-t {TapeDrive}")
+        Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {TapeDrive}"
+        Try
+            Process.Start(My.Computer.FileSystem.CombinePath(Application.StartupPath, "PsExec64.exe"), $"-accepteula -s -i -d {appcmd}")
+        Catch ex As Exception
+            Process.Start(Application.ExecutablePath, $"-t {TapeDrive}")
+        End Try
         'Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive}
         'LWF.Show()
     End Sub

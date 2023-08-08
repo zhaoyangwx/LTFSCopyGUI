@@ -59,8 +59,10 @@ Public Class ltfsindex
             End Set
         End Property
         Public Property tag As String
+        Public Class refFile
+            Public FileName As String
+        End Class
         <Xml.Serialization.XmlIgnore> Public fullpath As String
-
         <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
         <Xml.Serialization.XmlIgnore> Public WrittenBytes As Long = 0
         <Xml.Serialization.XmlIgnore> Public TempObj As Object
@@ -110,8 +112,10 @@ Public Class ltfsindex
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
             Dim sb As New Text.StringBuilder
             Dim t As New IO.StringWriter(sb)
-            writer.Serialize(t, Me)
-            Return sb.ToString()
+            Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "1")})
+            writer.Serialize(t, Me, ns)
+            sb.Remove(0, 41)
+            Return sb.ToString().Replace("<file xmlns:v=""1""", "<file")
         End Function
     End Class
     <Serializable>

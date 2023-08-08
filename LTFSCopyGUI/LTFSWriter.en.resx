@@ -126,7 +126,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADu
-        CQAAAk1TRnQBSQFMAgEBAwEAAewBAgHsAQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBAwEAAfwBAgH8AQIBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -420,17 +420,35 @@
   <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
     <value>Set label</value>
   </data>
-  <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>243, 22</value>
-  </data>
-  <data name="复制选中信息ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Copy selected file names</value>
-  </data>
   <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 22</value>
   </data>
   <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
     <value>File details</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 22</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
+  <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>190, 22</value>
+  </data>
+  <data name="复制选中信息ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Selected file name</value>
+  </data>
+  <data name="子目录列表ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>190, 22</value>
+  </data>
+  <data name="子目录列表ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Sub directory name</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>190, 22</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>File info</value>
   </data>
   <data name="S60ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>144, 22</value>
@@ -475,7 +493,7 @@
     <value>Tape</value>
   </data>
   <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>143, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Index</value>
@@ -520,7 +538,7 @@
     <value>Export backup</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>143, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>Data</value>
@@ -561,10 +579,10 @@
     <value>Update all indexes (Eject tape)</value>
   </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>140, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>143, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Automation</value>
@@ -711,10 +729,10 @@
     <value>Disable partitioning (Required for LTO3 driver)</value>
   </data>
   <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>140, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>143, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
     <value>Roll back</value>
@@ -772,6 +790,9 @@
   </data>
   <data name="校验源文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>Calculate SHA1 from source file</value>
+  </data>
+  <data name="挂载盘符只读ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>284, 22</value>
   </data>
   <data name="ToolStripDropDownButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
