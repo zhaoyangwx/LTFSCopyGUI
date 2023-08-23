@@ -22,7 +22,7 @@
 
 **${\color{red}{\textrm{使用直接读写功能时，请勿挂载盘符}}}$**
 
-如果OEM驱动器没有安装驱动，可以使用设备路径例如\\.\GLOBALROOT\Device\00000043
+如果OEM驱动器没有安装驱动，可以使用设备路径例如\\\\.\GLOBALROOT\Device\00000043
 
 #### LTFSCopyGUI.exe CLI
 
