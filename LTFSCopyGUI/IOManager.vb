@@ -14,15 +14,19 @@ Public Class IOManager
         End Sub
     End Class
     Public Event ErrorOccured(s As String)
-    Public Shared Function FormatSize(l As Long) As String
+    Public Shared Function FormatSize(l As Long, Optional ByVal More As Boolean = False) As String
         If l < 1024 Then
             Return l & " Bytes"
         ElseIf l < 1024 ^ 2 Then
             Return (l / 1024).ToString("F2") & " KiB"
         ElseIf l < 1024 ^ 3 Then
             Return (l / 1024 ^ 2).ToString("F2") & " MiB"
-        Else
+        ElseIf Not More OrElse l < 1024 ^ 4 Then
             Return (l / 1024 ^ 3).ToString("F2") & " GiB"
+        ElseIf l < 1024 ^ 5 Then
+            Return (l / 1024 ^ 4).ToString("F2") & " TiB"
+        Else
+            Return (l / 1024 ^ 5).ToString("F2") & " PiB"
         End If
     End Function
     Public Shared Function SHA1(filename As String, LogFile As String()) As String
