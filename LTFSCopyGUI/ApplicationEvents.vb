@@ -34,6 +34,12 @@ Namespace My
             System.Windows.Forms.SendKeys.SendWait("{ENTER}")
             FreeConsole()
         End Sub
+        Public Sub CheckUAC(e As StartupEventArgs)
+            If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
+                Process.Start(New ProcessStartInfo With {.FileName = Windows.Forms.Application.ExecutablePath, .Verb = "runas", .Arguments = String.Join(" ", e.CommandLine)})
+                End
+            End If
+        End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
             If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
                 Try
@@ -92,6 +98,7 @@ Namespace My
                         Case "-s"
                             IndexRead = False
                         Case "-t"
+                            CheckUAC(e)
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
                                 If TapeDrive.StartsWith("TAPE") Then
@@ -127,9 +134,11 @@ Namespace My
                                 Exit For
                             End If
                         Case "-c"
+                            CheckUAC(e)
                             Me.MainForm = LTFSConfigurator
                             Exit For
                         Case "-rb"
+                            CheckUAC(e)
                             InitConsole()
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -148,6 +157,7 @@ Namespace My
                                 End
                             End If
                         Case "-wb"
+                            CheckUAC(e)
                             InitConsole()
                             If i < param.Count - 2 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -170,6 +180,7 @@ Namespace My
                                 End
                             End If
                         Case "-raw"
+                            CheckUAC(e)
                             InitConsole()
                             If i < param.Count - 4 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -185,12 +196,16 @@ Namespace My
                                 Dim cdb As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 2))
                                 Dim data As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 3))
                                 Dim dataDir As Integer = Val(param(i + 4))
+                                Dim TimeOut As Integer = 60000
+                                If i + 5 <= param.Length - 1 Then
+                                    TimeOut = Val(param(i + 5))
+                                End If
                                 Dim sense As Byte() = {}
 
                                 If TapeUtils.SendSCSICommand(TapeDrive, cdb, data, dataDir, Function(s As Byte())
                                                                                                 sense = s
                                                                                                 Return True
-                                                                                            End Function) Then
+                                                                                            End Function, TimeOut) Then
                                     Console.WriteLine($"{TapeDrive}
 cdb:
 {TapeUtils.Byte2Hex(cdb)}
@@ -209,6 +224,7 @@ cdb:
 param:
 {TapeUtils.Byte2Hex(data)}
 dataDir:{dataDir}
+
 
 {Resources.StrSCSIFail}")
                                 End If

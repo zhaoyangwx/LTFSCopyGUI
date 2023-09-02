@@ -502,6 +502,18 @@ Public Class Form1
                                         infoText.AppendLine(fl.Name)
                                     End SyncLock
                                     Dim rsch As ltfsindex = ltfsindex.FromSchemaText(sch)
+                                    Dim qf As New List(Of ltfsindex.directory)
+                                    qf.AddRange(rsch._directory)
+                                    While qf.Count > 0
+                                        Dim qf2 As New List(Of ltfsindex.directory)
+                                        For Each d As ltfsindex.directory In qf
+                                            For Each fr As ltfsindex.file In d.contents._file
+                                                fr.extendedattributes.Add(New ltfsindex.file.xattr With {.key = "Barcode", .value = fl.Name.Substring(0, fl.Name.Length - fl.Extension.Length)})
+                                            Next
+                                            qf2.AddRange(d.contents._directory)
+                                        Next
+                                        qf = qf2
+                                    End While
                                     result._directory(0).contents._file.AddRange(rsch._directory(0).contents._file)
                                     result._directory(0).contents._directory.AddRange(rsch._directory(0).contents._directory)
                                 End If
@@ -510,6 +522,42 @@ Public Class Form1
                             End Try
                             Threading.Interlocked.Increment(progval)
                         End Sub)
+                    Dim q As New List(Of ltfsindex.directory)
+                    q.Add(result._directory(0))
+                    While q.Count > 0
+                        Dim q2 As New List(Of ltfsindex.directory)
+                        For Each d As ltfsindex.directory In q
+                            With d.contents._directory
+                                For i As Integer = .Count - 1 To 1 Step -1
+                                    For j As Integer = 0 To i - 1
+                                        If .ElementAt(i).name.Equals(.ElementAt(j).name) Then
+                                            .ElementAt(j).contents._file.AddRange(.ElementAt(i).contents._file)
+                                            .ElementAt(j).contents._directory.AddRange(.ElementAt(i).contents._directory)
+                                            .RemoveAt(i)
+                                            Exit For
+                                        End If
+                                    Next
+                                Next
+                            End With
+                            q2.AddRange(d.contents._directory)
+                        Next
+                        q = q2
+                    End While
+
+                    result._directory(0).contents._directory.Sort(New Comparison(Of ltfsindex.directory)(
+                                                                  Function(a As ltfsindex.directory, b As ltfsindex.directory) As Integer
+                                                                      Return a.name.CompareTo(b.name)
+                                                                  End Function))
+                    result._directory(0).contents._file.Sort(New Comparison(Of ltfsindex.file)(
+                                                             Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
+                                                                 If a.GetXAttr("Barcode") IsNot Nothing AndAlso
+                                                                    b.GetXAttr("Barcode") IsNot Nothing AndAlso
+                                                                    a.GetXAttr("Barcode") <> b.GetXAttr("Barcode") Then
+                                                                     Return a.GetXAttr("Barcode").CompareTo(b.GetXAttr("Barcode"))
+                                                                 End If
+                                                                 Return a.name.CompareTo(b.name)
+                                                             End Function))
+
                     schema = result
                     Invoke(Sub() Enabled = True)
                 End Sub)

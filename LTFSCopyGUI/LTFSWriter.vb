@@ -1972,7 +1972,6 @@ Public Class LTFSWriter
                                 WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
                             End If
                             Dim fr As FileRecord = WriteList(i)
-
                             Try
                                 Dim finfo As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fr.SourcePath)
                                 fr.File.fileuid = schema.highestfileuid + 1
@@ -2112,8 +2111,9 @@ Public Class LTFSWriter
                                                         If CheckCount >= CheckCycle Then CheckCount = 0
                                                         If SpeedLimit > 0 AndAlso CheckCount = 0 Then
                                                             Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
-                                                            While ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
+                                                            While SpeedLimit > 0 AndAlso ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
                                                                 Threading.Thread.Sleep(0)
+                                                                ts = (Now - SpeedLimitLastTriggerTime).TotalSeconds
                                                             End While
                                                             SpeedLimitLastTriggerTime = Now
                                                         End If
@@ -3481,116 +3481,57 @@ Public Class LTFSWriter
             Return STATUS_UNEXPECTED_IO_ERROR
         End Function
         Class FileDesc
-
-            Public Stream As IO.FileStream
-
-            Public DirInfo As IO.DirectoryInfo
+            Public IsDirectory As Boolean
+            Public LTFSFile As ltfsindex.file
+            Public LTFSDirectory As ltfsindex.directory
+            Public Parent As ltfsindex.directory
 
             Public FileSystemInfos() As DictionaryEntry
 
-            Public Sub New(ByVal Stream As IO.FileStream)
-                MyBase.New
-                Me.Stream = Me.Stream
-            End Sub
 
-            Public Sub New(ByVal DirInfo As IO.DirectoryInfo)
-                MyBase.New
-                Me.DirInfo = Me.DirInfo
-            End Sub
-
-            Public Shared Sub GetFileInfoFromFileSystemInfo(ByVal Info As IO.FileSystemInfo, ByRef FileInfo As FileInfo)
-                FileInfo.FileAttributes = CType(Info.Attributes, UInt32)
-                FileInfo.ReparseTag = 0
-                If TypeOf Info Is System.IO.FileInfo Then
-                    FileInfo.FileSize = CType(Info, IO.FileInfo).Length
-                Else
-                    FileInfo.FileSize = 0
-                End If
-                FileInfo.AllocationSize = ((FileInfo.FileSize _
-                    + (ALLOCATION_UNIT - 1)) _
-                    / (ALLOCATION_UNIT * ALLOCATION_UNIT))
-                FileInfo.CreationTime = CType(Info.CreationTimeUtc.ToFileTimeUtc, UInt64)
-                FileInfo.LastAccessTime = CType(Info.LastAccessTimeUtc.ToFileTimeUtc, UInt64)
-                FileInfo.LastWriteTime = CType(Info.LastWriteTimeUtc.ToFileTimeUtc, UInt64)
-                FileInfo.ChangeTime = FileInfo.LastWriteTime
-                FileInfo.IndexNumber = 0
-                FileInfo.HardLinks = 0
-            End Sub
+            Public Enum dwFilAttributesValue As UInteger
+                FILE_ATTRIBUTE_ARCHIVE = &H20
+                FILE_ATTRIBUTE_COMPRESSED = &H800
+                FILE_ATTRIBUTE_DIRECTORY = &H10
+                FILE_ATTRIBUTE_ENCRYPTED = &H4000
+                FILE_ATTRIBUTE_HIDDEN = &H2
+                FILE_ATTRIBUTE_NORMAL = &H80
+                FILE_ATTRIBUTE_OFFLINE = &H1000
+                FILE_ATTRIBUTE_READONLY = &H1
+                FILE_ATTRIBUTE_REPARSE_POINT = &H400
+                FILE_ATTRIBUTE_SPARSE_FILE = &H200
+                FILE_ATTRIBUTE_SYSTEM = &H4
+                FILE_ATTRIBUTE_TEMPORARY = &H100
+                FILE_ATTRIBUTE_VIRTUAL = &H10000
+            End Enum
 
             Public Function GetFileInfo(ByRef FileInfo As FileInfo) As Int32
-                If (Not (Me.Stream) Is Nothing) Then
-                    Dim Info As BY_HANDLE_FILE_INFORMATION
-                    If Not FileDesc.GetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, Info) Then
-                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                    End If
-
-                    FileInfo.FileAttributes = Info.dwFileAttributes
+                If (Not IsDirectory) Then
+                    FileInfo.FileAttributes = dwFilAttributesValue.FILE_ATTRIBUTE_OFFLINE Or dwFilAttributesValue.FILE_ATTRIBUTE_ARCHIVE
+                    If LTFSFile.readonly Then FileInfo.FileAttributes = FileInfo.FileAttributes Or dwFilAttributesValue.FILE_ATTRIBUTE_READONLY
                     FileInfo.ReparseTag = 0
-                    FileInfo.FileSize = CType(Me.Stream.Length, UInt64)
-                    FileInfo.AllocationSize = ((FileInfo.FileSize _
-                        + (ALLOCATION_UNIT - 1)) _
-                        / (ALLOCATION_UNIT * ALLOCATION_UNIT))
-                    FileInfo.CreationTime = Info.ftCreationTime
-                    FileInfo.LastAccessTime = Info.ftLastAccessTime
-                    FileInfo.LastWriteTime = Info.ftLastWriteTime
-                    FileInfo.ChangeTime = FileInfo.LastWriteTime
+                    FileInfo.FileSize = LTFSFile.length
+                    FileInfo.AllocationSize = (FileInfo.FileSize + ALLOCATION_UNIT - 1) / ALLOCATION_UNIT * ALLOCATION_UNIT
+                    FileInfo.CreationTime = TapeUtils.ParseTimeStamp(LTFSFile.creationtime).Ticks
+                    FileInfo.LastAccessTime = TapeUtils.ParseTimeStamp(LTFSFile.accesstime).Ticks
+                    FileInfo.LastWriteTime = TapeUtils.ParseTimeStamp(LTFSFile.changetime).Ticks
+                    FileInfo.ChangeTime = TapeUtils.ParseTimeStamp(LTFSFile.changetime).Ticks
                     FileInfo.IndexNumber = 0
                     FileInfo.HardLinks = 0
                 Else
-                    GetFileInfoFromFileSystemInfo(Me.DirInfo, FileInfo)
+                    FileInfo.FileAttributes = dwFilAttributesValue.FILE_ATTRIBUTE_OFFLINE Or dwFilAttributesValue.FILE_ATTRIBUTE_DIRECTORY
+                    FileInfo.ReparseTag = 0
+                    FileInfo.FileSize = 0
+                    FileInfo.AllocationSize = 0
+                    FileInfo.CreationTime = TapeUtils.ParseTimeStamp(LTFSDirectory.creationtime).Ticks
+                    FileInfo.LastAccessTime = TapeUtils.ParseTimeStamp(LTFSDirectory.accesstime).Ticks
+                    FileInfo.LastWriteTime = TapeUtils.ParseTimeStamp(LTFSDirectory.changetime).Ticks
+                    FileInfo.ChangeTime = TapeUtils.ParseTimeStamp(LTFSDirectory.changetime).Ticks
+                    FileInfo.IndexNumber = 0
+                    FileInfo.HardLinks = 0
                 End If
-
                 Return STATUS_SUCCESS
             End Function
-
-            Public Sub SetBasicInfo(ByVal FileAttributes As UInt32, ByVal CreationTime As UInt64, ByVal LastAccessTime As UInt64, ByVal LastWriteTime As UInt64)
-                If (0 = FileAttributes) Then
-                    FileAttributes = CType(System.IO.FileAttributes.Normal, UInt32)
-                End If
-
-                If (Not (Me.Stream) Is Nothing) Then
-                    Dim Info As FILE_BASIC_INFO
-                    If (-1 <> FileAttributes) Then
-                        Info.FileAttributes = FileAttributes
-                    End If
-
-                    If (0 <> CreationTime) Then
-                        Info.CreationTime = CreationTime
-                    End If
-
-                    If (0 <> LastAccessTime) Then
-                        Info.LastAccessTime = LastAccessTime
-                    End If
-
-                    If (0 <> LastWriteTime) Then
-                        Info.LastWriteTime = LastWriteTime
-                    End If
-
-                    If Not FileDesc.SetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, 0, Info, CType(Marshal.SizeOf(Info), UInt32)) Then
-                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                    End If
-
-                Else
-                    If (-1 <> FileAttributes) Then
-                        Me.DirInfo.Attributes = CType(FileAttributes, System.IO.FileAttributes)
-                    End If
-
-                    'TODO: checked/unchecked is not supported at this time
-                    If (0 <> CreationTime) Then
-                        Me.DirInfo.CreationTimeUtc = DateTime.FromFileTimeUtc(CType(CreationTime, Int64))
-                    End If
-
-                    If (0 <> LastAccessTime) Then
-                        Me.DirInfo.LastAccessTimeUtc = DateTime.FromFileTimeUtc(CType(LastAccessTime, Int64))
-                    End If
-
-                    If (0 <> LastWriteTime) Then
-                        Me.DirInfo.LastWriteTimeUtc = DateTime.FromFileTimeUtc(CType(LastWriteTime, Int64))
-                    End If
-
-                End If
-
-            End Sub
 
             Public Function GetFileAttributes() As UInt32
                 Dim FileInfo As FileInfo
@@ -3598,153 +3539,24 @@ Public Class LTFSWriter
                 Return FileInfo.FileAttributes
             End Function
 
-            Public Sub SetFileAttributes(ByVal FileAttributes As UInt32)
-                Me.SetBasicInfo(FileAttributes, 0, 0, 0)
-            End Sub
-
-            Public Function GetSecurityDescriptor() As Byte()
-                If (Not (Me.Stream) Is Nothing) Then
-                    Return Me.Stream.GetAccessControl.GetSecurityDescriptorBinaryForm
-                Else
-                    Return Me.DirInfo.GetAccessControl.GetSecurityDescriptorBinaryForm
-                End If
-
-            End Function
-
-            Public Sub SetSecurityDescriptor(ByVal Sections As Security.AccessControl.AccessControlSections, ByVal SecurityDescriptor() As Byte)
-                Dim SecurityInformation As Int32 = 0
-                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Owner)) Then
-                    SecurityInformation = (SecurityInformation Or 1)
-                End If
-
-                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Group)) Then
-                    SecurityInformation = (SecurityInformation Or 2)
-                End If
-
-                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Access)) Then
-                    SecurityInformation = (SecurityInformation Or 4)
-                End If
-
-                If (0 <> (Sections And Security.AccessControl.AccessControlSections.Audit)) Then
-                    SecurityInformation = (SecurityInformation Or 8)
-                End If
-
-                If (Not (Me.Stream) Is Nothing) Then
-                    If Not FileDesc.SetKernelObjectSecurity(Me.Stream.SafeFileHandle.DangerousGetHandle, SecurityInformation, SecurityDescriptor) Then
-                        ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                    End If
-
-                ElseIf Not FileDesc.SetFileSecurityW(Me.DirInfo.FullName, SecurityInformation, SecurityDescriptor) Then
-                    ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                End If
-
-            End Sub
-
-            Public Sub SetDisposition(ByVal Safe As Boolean)
-                If (Not (Me.Stream) Is Nothing) Then
-                    Dim Info As FILE_DISPOSITION_INFO
-                    Info.DeleteFile = True
-                    If Not FileDesc.SetFileInformationByHandle(Me.Stream.SafeFileHandle.DangerousGetHandle, 4, Info, CType(Marshal.SizeOf(Info), UInt32)) Then
-                        If Not Safe Then
-                            ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                        End If
-
-                    End If
-
-                Else
-                    Try
-                        Me.DirInfo.Delete
-                    Catch ex As Exception
-                        If Not Safe Then
-                            ThrowIoExceptionWithHResult(ex.HResult)
-                        End If
-
-                    End Try
-
-                End If
-
-            End Sub
-
-            Public Shared Sub Rename(ByVal FileName As String, ByVal NewFileName As String, ByVal ReplaceIfExists As Boolean)
-                Dim param As Integer
-                If ReplaceIfExists Then param = 1 Else param = 0
-                If Not MoveFileExW(FileName, NewFileName, param) Then
-                    ThrowIoExceptionWithWin32(Marshal.GetLastWin32Error)
-                End If
-
-            End Sub
-
-            <StructLayout(LayoutKind.Sequential, Pack:=4)>
-            Private Structure BY_HANDLE_FILE_INFORMATION
-
-                Public dwFileAttributes As UInt32
-
-                Public ftCreationTime As UInt64
-
-                Public ftLastAccessTime As UInt64
-
-                Public ftLastWriteTime As UInt64
-
-                Public dwVolumeSerialNumber As UInt32
-
-                Public nFileSizeHigh As UInt32
-
-                Public nFileSizeLow As UInt32
-
-                Public nNumberOfLinks As UInt32
-
-                Public nFileIndexHigh As UInt32
-
-                Public nFileIndexLow As UInt32
-            End Structure
-
-            <StructLayout(LayoutKind.Sequential)>
-            Private Structure FILE_BASIC_INFO
-
-                Public CreationTime As UInt64
-
-                Public LastAccessTime As UInt64
-
-                Public LastWriteTime As UInt64
-
-                Public ChangeTime As UInt64
-
-                Public FileAttributes As UInt32
-            End Structure
-
-            <StructLayout(LayoutKind.Sequential)>
-            Private Structure FILE_DISPOSITION_INFO
-
-                Public DeleteFile As Boolean
-            End Structure
-
-            Private Declare Function GetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByRef lpFileInformation As BY_HANDLE_FILE_INFORMATION) As Boolean
-
-            Private Overloads Declare Function SetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByVal FileInformationClass As Int32, ByRef lpFileInformation As FILE_BASIC_INFO, ByVal dwBufferSize As UInt32) As Boolean
-
-            Private Overloads Declare Function SetFileInformationByHandle Lib "kernel32.dll" (ByVal hFile As IntPtr, ByVal FileInformationClass As Int32, ByRef lpFileInformation As FILE_DISPOSITION_INFO, ByVal dwBufferSize As UInt32) As Boolean
-
-            Private Declare Function MoveFileExW Lib "kernel32.dll" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String, ByVal dwFlags As UInt32) As Boolean
-
-            Private Declare Function SetFileSecurityW Lib "advapi32.dll" (ByVal FileName As String, ByVal SecurityInformation As Int32, ByVal SecurityDescriptor() As Byte) As Boolean
-
-            Private Declare Function SetKernelObjectSecurity Lib "advapi32.dll" (ByVal Handle As IntPtr, ByVal SecurityInformation As Int32, ByVal SecurityDescriptor() As Byte) As Boolean
         End Class
         Public Overrides Function Init(Host0 As Object) As Integer
             Dim Host As Fsp.FileSystemHost = CType(Host0, Fsp.FileSystemHost)
             Try
-                Host.NamedStreams = False
-                Host.FileSystemName = "LTFS"
+                Host.SectorSize = 4096
+                Host.SectorsPerAllocationUnit = LW.plabel.blocksize \ Host.SectorSize
                 Host.MaxComponentLength = 65535
-                Host.UnicodeOnDisk = True
+                Host.FileInfoTimeout = 10 * 1000
                 Host.CaseSensitiveSearch = False
                 Host.CasePreservedNames = True
+                Host.UnicodeOnDisk = True
                 Host.PersistentAcls = False
-                Host.FileInfoTimeout = 10 * 1000
-                Host.VolumeSerialNumber = 0
-                Host.SectorSize = 4096
-                Host.SectorSize = LW.plabel.blocksize
+                Host.PostCleanupWhenModifiedOnly = True
+                Host.PassQueryDirectoryPattern = True
+                Host.FlushAndPurgeOnCleanup = True
+                Host.FileSystemName = "LTFS"
                 Host.VolumeCreationTime = TapeUtils.ParseTimeStamp(LW.plabel.formattime).ToFileTimeUtc()
+                Host.VolumeSerialNumber = 0
 
             Catch ex As Exception
                 MessageBox.Show(ex.ToString)
@@ -3762,59 +3574,245 @@ Public Class LTFSWriter
             TapeDrive = path0
         End Sub
         Public Overrides Function GetVolumeInfo(<Out> ByRef VolumeInfo As VolumeInfo) As Int32
-            VolumeInfo = New Fsp.Interop.VolumeInfo
+            VolumeInfo = New VolumeInfo()
             VolumeLabel = LW.schema._directory(0).name
             Try
                 VolumeInfo.TotalSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 1, LW.ExtraPartitionCount).AsNumeric << 20
                 VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
-                VolumeInfo.SetVolumeLabel(VolumeLabel)
+                'VolumeInfo.SetVolumeLabel(VolumeLabel)
             Catch ex As Exception
                 MessageBox.Show(ex.ToString)
             End Try
             Return STATUS_SUCCESS
         End Function
+
+        Public Overrides Function GetSecurityByName(FileName As String, ByRef FileAttributes As UInteger, ByRef SecurityDescriptor() As Byte) As Integer
+            If LW.schema._directory.Count = 0 Then Throw New Exception("Not LTFS formatted")
+            Dim path As String() = FileName.Split({"\"}, StringSplitOptions.RemoveEmptyEntries)
+            Dim filedesc As New FileDesc
+            Dim FileInfo As New FileInfo
+            If path.Length = 0 Then
+                filedesc = New FileDesc With {.IsDirectory = True, .LTFSDirectory = LW.schema._directory(0)}
+                filedesc.GetFileInfo(FileInfo)
+                FileAttributes = FileInfo.FileAttributes
+                Return STATUS_SUCCESS
+            End If
+            Dim FileExist As Boolean = False
+
+            Dim LTFSDir As ltfsindex.directory = LW.schema._directory(0)
+            For i As Integer = 0 To path.Length - 2
+                Dim dirFound As Boolean = False
+                For Each d As ltfsindex.directory In LTFSDir.contents._directory
+                    If d.name = path(i) Then
+                        LTFSDir = d
+                        dirFound = True
+                        Exit For
+                    End If
+                Next
+                If Not dirFound Then Return STATUS_NOT_FOUND
+            Next
+            For Each d As ltfsindex.directory In LTFSDir.contents._directory
+                If d.name = path(path.Length - 1) Then
+                    FileExist = True
+                    filedesc = New FileDesc With {.IsDirectory = True, .LTFSDirectory = d}
+                    Exit For
+                End If
+            Next
+            If Not FileExist Then
+                For Each f As ltfsindex.file In LTFSDir.contents._file
+                    If f.name = path(path.Length - 1) Then
+                        FileExist = True
+                        filedesc = New FileDesc With {.IsDirectory = False, .LTFSFile = f, .Parent = LTFSDir}
+                    End If
+                Next
+            End If
+            If FileExist Then
+                filedesc.GetFileInfo(FileInfo)
+            End If
+            FileAttributes = FileInfo.FileAttributes
+            Return STATUS_SUCCESS
+        End Function
+        Public Overrides Function Open(FileName As String,
+                                       CreateOptions As UInteger,
+                                       GrantedAccess As UInteger,
+                                       ByRef FileNode As Object,
+                                       ByRef FileDesc As Object,
+                                       ByRef FileInfo As FileInfo,
+                                       ByRef NormalizedName As String) As Integer
+            Try
+                FileNode = New Object()
+                NormalizedName = ""
+                If LW.schema._directory.Count = 0 Then Throw New Exception("Not LTFS formatted")
+                Dim path As String() = FileName.Split({"\"}, StringSplitOptions.RemoveEmptyEntries)
+                If path.Length = 0 Then
+                    FileDesc = New FileDesc With {.IsDirectory = True, .LTFSDirectory = LW.schema._directory(0)}
+                    Dim status As Integer = CType(FileDesc, FileDesc).GetFileInfo(FileInfo)
+                    Return status
+                End If
+                Dim FileExist As Boolean = False
+
+                Dim LTFSDir As ltfsindex.directory = LW.schema._directory(0)
+                For i As Integer = 0 To path.Length - 2
+                    Dim dirFound As Boolean = False
+                    For Each d As ltfsindex.directory In LTFSDir.contents._directory
+                        If d.name = path(i) Then
+                            LTFSDir = d
+                            Exit For
+                        End If
+                    Next
+                    If Not dirFound Then Return STATUS_NOT_FOUND
+                Next
+                For Each d As ltfsindex.directory In LTFSDir.contents._directory
+                    If d.name = path(path.Length - 1) Then
+                        FileExist = True
+                        FileDesc = New FileDesc With {.IsDirectory = True, .LTFSDirectory = d}
+                        Exit For
+                    End If
+                Next
+                If Not FileExist Then
+                    For Each f As ltfsindex.file In LTFSDir.contents._file
+                        If f.name = path(path.Length - 1) Then
+                            FileExist = True
+                            FileDesc = New FileDesc With {.IsDirectory = False, .LTFSFile = f, .Parent = LTFSDir}
+                        End If
+                    Next
+                End If
+                If FileExist Then
+                    Return CType(FileDesc, FileDesc).GetFileInfo(FileInfo)
+                End If
+            Catch ex As Exception
+                Throw
+            End Try
+            Return STATUS_NOT_FOUND
+        End Function
+        Public Overrides Sub Close(FileNode As Object, FileDesc As Object)
+
+        End Sub
+        Public Overrides Function Read(FileNode As Object,
+                                       FileDesc As Object,
+                                       Buffer As IntPtr,
+                                       Offset As ULong,
+                                       Length As UInteger,
+                                       ByRef BytesTransferred As UInteger) As Integer
+            If FileDesc Is Nothing OrElse TypeOf FileDesc IsNot FileDesc Then Return STATUS_NOT_FOUND
+            Try
+                With CType(FileDesc, FileDesc)
+                    If .IsDirectory Then Return STATUS_NOT_FOUND
+                    If .LTFSFile Is Nothing Then Return STATUS_NOT_FOUND
+                    If Offset >= .LTFSFile.length Then ThrowIoExceptionWithNtStatus(STATUS_END_OF_FILE)
+                    .LTFSFile.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
+                                                                                           Return (a.fileoffset).CompareTo(b.fileoffset)
+                                                                                       End Function))
+                    Dim BufferOffset As Long = 0
+                    For ei As Integer = 0 To .LTFSFile.extentinfo.Count - 1
+                        With .LTFSFile.extentinfo(ei)
+                            If Offset >= .fileoffset + .bytecount Then Continue For
+                            Dim CurrentFileOffset As Long = .fileoffset
+
+                            TapeUtils.Locate(TapeDrive, .startblock, .partition)
+
+                            Dim blkBuffer As Byte() = TapeUtils.ReadBlock(TapeDrive)
+                            CurrentFileOffset += blkBuffer.Length - .byteoffset
+                            While CurrentFileOffset <= Offset
+                                blkBuffer = TapeUtils.ReadBlock(TapeDrive)
+                                CurrentFileOffset += blkBuffer.Length
+                            End While
+                            Dim FirstBlockByteOffset As Integer = blkBuffer.Length - (CurrentFileOffset - Offset)
+                            Marshal.Copy(blkBuffer, FirstBlockByteOffset, Buffer, blkBuffer.Length - FirstBlockByteOffset)
+                            BufferOffset += blkBuffer.Length - FirstBlockByteOffset
+                            While BufferOffset < .bytecount
+                                blkBuffer = TapeUtils.ReadBlock(TapeDrive)
+                                Marshal.Copy(blkBuffer, 0, New IntPtr(Buffer.ToInt64 + BufferOffset), Math.Min(blkBuffer.Length, .bytecount - BufferOffset))
+                                BufferOffset += Math.Min(blkBuffer.Length, .bytecount - BufferOffset)
+                            End While
+                        End With
+                    Next
+                    Return STATUS_SUCCESS
+                End With
+            Catch ex As Exception
+                Return STATUS_FILE_CORRUPT_ERROR
+            End Try
+        End Function
+        Public Overrides Function GetFileInfo(FileNode As Object, FileDesc As Object, ByRef FileInfo As FileInfo) As Integer
+            Dim result As Integer = CType(FileDesc, FileDesc).GetFileInfo(FileInfo)
+            Return result
+        End Function
+
         Public Overrides Function ReadDirectoryEntry(FileNode As Object, FileDesc0 As Object, Pattern As String, Marker As String, ByRef Context As Object, <Out> ByRef FileName As String, <Out> ByRef FileInfo As FileInfo) As Boolean
 
             Dim FileDesc As FileDesc = CType(FileDesc0, FileDesc)
-            If FileDesc.FileSystemInfos IsNot Nothing Then
+            If FileDesc.FileSystemInfos Is Nothing Then
                 If Pattern IsNot Nothing Then
                     Pattern = Pattern.Replace("<", "*").Replace(">", "?").Replace("""", ".")
                 Else
                     Pattern = "*"
                 End If
-                Dim [Enum] As IEnumerable = FileDesc.DirInfo.EnumerateFileSystemInfos(Pattern)
-                Dim List As New SortedList()
-                If FileDesc.DirInfo IsNot Nothing AndAlso FileDesc.DirInfo.Parent IsNot Nothing Then
-                    List.Add(".", FileDesc.DirInfo)
-                    List.Add("..", FileDesc.DirInfo.Parent)
+                Dim lst As New SortedList()
+                If FileDesc.LTFSDirectory IsNot Nothing AndAlso FileDesc.Parent IsNot Nothing Then
+                    lst.Add(".", FileDesc.LTFSDirectory)
+                    lst.Add("..", FileDesc.Parent)
                 End If
-                For Each info As IO.FileSystemInfo In [Enum]
-                    List.Add(info.Name, info)
+                For Each d As ltfsindex.directory In FileDesc.LTFSDirectory.contents._directory
+                    If d.name Like Pattern Then
+                        lst.Add(d.name, d)
+                    End If
                 Next
-                List.CopyTo(FileDesc.FileSystemInfos, 0)
+                For Each f As ltfsindex.file In FileDesc.LTFSDirectory.contents._file
+                    If f.name Like Pattern Then
+                        lst.Add(f.name, f)
+                    End If
+                Next
             End If
-            Dim Index As Integer
+            Dim index As Long = 0
             If Context Is Nothing Then
-                Index = 0
                 If Marker IsNot Nothing Then
-                    Index = Array.BinarySearch(FileDesc.FileSystemInfos, New DictionaryEntry(Marker, Nothing), _DirectoryEntryComparer)
-                    If Index >= 0 Then
-                        Index += 1
+                    index = Array.BinarySearch(FileDesc.FileSystemInfos, New DictionaryEntry(Marker, Nothing), _DirectoryEntryComparer)
+                    If index >= 0 Then
+                        index += 1
                     Else
-                        Index = -Index
+                        index = -index
                     End If
                 End If
             Else
-                Index = CInt(Context)
+                index = CLng(Context)
             End If
-            If (FileDesc.FileSystemInfos.Length > Index) Then
-                Context = Index + 1
-                FileName = CType(FileDesc.FileSystemInfos(Index).Key, String)
-                FileDesc.GetFileInfoFromFileSystemInfo(CType(FileDesc.FileSystemInfos(Index).Value, IO.FileSystemInfo), FileInfo)
+            If FileDesc.FileSystemInfos.Length > index Then
+                Context = index + 1
+                FileName = FileDesc.FileSystemInfos(index).Key
+                FileInfo = New FileInfo()
+                With FileDesc.FileSystemInfos(index)
+                    If TypeOf FileDesc.FileSystemInfos(index).Value Is ltfsindex.directory Then
+                        With CType(FileDesc.FileSystemInfos(index).Value, ltfsindex.directory)
+                            FileInfo.FileAttributes = FileDesc.dwFilAttributesValue.FILE_ATTRIBUTE_OFFLINE Or FileDesc.dwFilAttributesValue.FILE_ATTRIBUTE_DIRECTORY
+                            FileInfo.ReparseTag = 0
+                            FileInfo.FileSize = 0
+                            FileInfo.AllocationSize = 0
+                            FileInfo.CreationTime = TapeUtils.ParseTimeStamp(.creationtime).Ticks
+                            FileInfo.LastAccessTime = TapeUtils.ParseTimeStamp(.accesstime).Ticks
+                            FileInfo.LastWriteTime = TapeUtils.ParseTimeStamp(.changetime).Ticks
+                            FileInfo.ChangeTime = TapeUtils.ParseTimeStamp(.changetime).Ticks
+                            FileInfo.IndexNumber = 0
+                            FileInfo.HardLinks = 0
+                        End With
+                    ElseIf TypeOf FileDesc.FileSystemInfos(index).Value Is ltfsindex.file Then
+                        With CType(FileDesc.FileSystemInfos(index).Value, ltfsindex.file)
+                            FileInfo.FileAttributes = FileDesc.dwFilAttributesValue.FILE_ATTRIBUTE_OFFLINE Or FileDesc.dwFilAttributesValue.FILE_ATTRIBUTE_ARCHIVE
+                            If .readonly Then FileInfo.FileAttributes = FileInfo.FileAttributes Or FileDesc.dwFilAttributesValue.FILE_ATTRIBUTE_READONLY
+                            FileInfo.ReparseTag = 0
+                            FileInfo.FileSize = .length
+                            FileInfo.CreationTime = TapeUtils.ParseTimeStamp(.creationtime).Ticks
+                            FileInfo.LastAccessTime = TapeUtils.ParseTimeStamp(.accesstime).Ticks
+                            FileInfo.LastWriteTime = TapeUtils.ParseTimeStamp(.changetime).Ticks
+                            FileInfo.ChangeTime = TapeUtils.ParseTimeStamp(.changetime).Ticks
+                            FileInfo.IndexNumber = 0
+                            FileInfo.HardLinks = 0
+                        End With
+                    End If
+                End With
                 Return True
             Else
                 FileName = ""
-                FileInfo = New FileInfo
+                FileInfo = New FileInfo()
                 Return False
             End If
         End Function
@@ -3840,7 +3838,7 @@ Public Class LTFSWriter
             Host.FileSystemName = "LTFS"
             Dim Code As Integer = Host.Mount("L:", Nothing, True, 0)
             _Host = Host
-            MessageBox.Show($"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
+            'MessageBox.Show($"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
         End Sub
         Protected Overrides Sub OnStop()
             _Host.Unmount()
@@ -3852,7 +3850,7 @@ Public Class LTFSWriter
         Dim DriveLoc As String = TapeDrive
         If DriveLoc = "" Then DriveLoc = "\\.\TAPE0"
         Dim MountPath As String = DriveLoc.Split({"\"}, StringSplitOptions.RemoveEmptyEntries).ToList.Last
-        Dim svc As New LTFSMountFuseSvc()
+        Static svc As New LTFSMountFuseSvc()
         svc.LW = Me
         svc.TapeDrive = DriveLoc
 
