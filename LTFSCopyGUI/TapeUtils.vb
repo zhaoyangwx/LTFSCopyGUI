@@ -1843,7 +1843,7 @@ Public Class TapeUtils
         <Xml.Serialization.XmlIgnore> Public a_Buffer As Byte()
         <Xml.Serialization.XmlIgnore> Public at_Offset As Byte()
         <Xml.Serialization.XmlIgnore> Public a_Length As Integer = 0
-        Public a_CleansRemaining As Integer = 1
+        Public a_CleansRemaining As Integer = 0
         Public a_CleanLength As Double
         Public a_NWraps As Integer = 0
         Public a_TapeDirLength As Integer = 16
@@ -2308,7 +2308,7 @@ Public Class TapeUtils
             End Property
 
             Public MfgDate As String
-            Public TapeLength As Integer = -1
+            Public TapeLength As Integer = 0
             Public MediaCode As Integer
             Public ParticleType As particle
             Public SubstrateType As substrate
@@ -2393,7 +2393,7 @@ Public Class TapeUtils
         <Serializable> Public Class TapeStatus
             Public ThreadCount As Integer
             Public EncryptedData As Boolean
-            Public LastLocation As Integer = -1
+            Public LastLocation As Integer = 0
         End Class
         <Serializable> Public Class Initialisation
             Public LP1 As Integer
@@ -2926,27 +2926,27 @@ Public Class TapeUtils
                         End With
                     End If
 
-                    'for cleaning tapes, check if expired
-                    If CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).Format.Contains("Clean") Then
-                        'cleaning length depends on drive type
-                        If False Then
-                            'LTO1
-                            a_CleanLength = 18.5
-                        Else
-                            a_CleanLength = 5.5
-                        End If
-                        If CType(g_CM(gtype.status, False), TapeStatus).LastLocation >= 0 AndAlso CType(g_CM(gtype.cartridge_mfg, False), Cartridge_mfg).TapeLength >= 0 Then
-                            a_CleansRemaining = CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).TapeLength / 4 - 11
-                            a_CleansRemaining -= CType(g_CM(gtype.status, createNew:=False), TapeStatus).LastLocation / 4
-                            a_CleansRemaining /= a_CleanLength
-                            If a_CleansRemaining <= 0 Then
-                                CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).Format &= " (expired)"
-                            End If
-                        End If
-                    End If
+
                 End With
             End If
-
+            'for cleaning tapes, check if expired
+            If CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).Format.Contains("Clean") Then
+                'cleaning length depends on drive type
+                If False Then
+                    'LTO1
+                    a_CleanLength = 18.5
+                Else
+                    a_CleanLength = 5.5
+                End If
+                If CType(g_CM(gtype.status, False), TapeStatus).LastLocation >= 0 AndAlso CType(g_CM(gtype.cartridge_mfg, False), Cartridge_mfg).TapeLength >= 0 Then
+                    a_CleansRemaining = CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).TapeLength / 4 - 11
+                    a_CleansRemaining -= CType(g_CM(gtype.status, createNew:=False), TapeStatus).LastLocation / 4
+                    a_CleansRemaining /= a_CleanLength
+                    If a_CleansRemaining <= 0 Then
+                        CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).Format &= " (expired)"
+                    End If
+                End If
+            End If
 
             '===================== Parse the initialisation page =====================
             a_Key = &H101
