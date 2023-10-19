@@ -79,8 +79,20 @@ Public Class ltfsindex
                 Public Shared ReadOnly Property SHA256 As String = "ltfs.hash.sha256sum"
                 Public Shared ReadOnly Property SHA512 As String = "ltfs.hash.sha512sum"
             End Class
+            Public Shared Function FromXMLList(s As String) As List(Of xattr)
+                Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
+                Dim t As IO.TextReader = New IO.StringReader(s)
+                Return CType(reader.Deserialize(t), List(Of xattr))
+            End Function
         End Class
         Public Property extendedattributes As New List(Of xattr)
+        Public Function GetXAttrText() As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            writer.Serialize(t, extendedattributes)
+            Return sb.ToString()
+        End Function
         Public Function GetXAttr(key As String) As String
             For Each x As xattr In extendedattributes
                 If x.key.ToLower = key.ToLower Then Return x.value
@@ -117,6 +129,7 @@ Public Class ltfsindex
             sb.Remove(0, 41)
             Return sb.ToString().Replace("<file xmlns:v=""1""", "<file")
         End Function
+
     End Class
     <Serializable>
     Public Class directory
@@ -273,23 +286,28 @@ Public Class ltfsindex
         Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
         Dim sin As New IO.StreamReader(FileName)
         Dim soutx As New IO.StreamWriter(tmpf, False, New Text.UTF8Encoding(False))
-        While Not sin.EndOfStream
-            Dim s As String = sin.ReadLine()
-            s = s.Replace("<directory>", "<_directory><directory>")
-            s = s.Replace("</directory>", "</directory></_directory>")
-            s = s.Replace("<file>", "<_file><file>")
-            s = s.Replace("</file>", "</file></_file>")
-            s = s.Replace("%25", "%")
-            If s.Length > 0 Then soutx.writeline(s)
-        End While
-        sin.Close()
-        soutx.Close()
-        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim t As IO.StreamReader = New IO.StreamReader(tmpf)
-        Dim result As ltfsindex = CType(reader.Deserialize(t), ltfsindex)
-        t.Close()
-        result.Standarize()
-        My.Computer.FileSystem.DeleteFile(tmpf)
+        Dim result As ltfsindex
+        Try
+            While Not sin.EndOfStream
+                Dim s As String = sin.ReadLine()
+                s = s.Replace("<directory>", "<_directory><directory>")
+                s = s.Replace("</directory>", "</directory></_directory>")
+                s = s.Replace("<file>", "<_file><file>")
+                s = s.Replace("</file>", "</file></_file>")
+                s = s.Replace("%25", "%")
+                If s.Length > 0 Then soutx.WriteLine(s)
+            End While
+            sin.Close()
+            soutx.Close()
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+            Dim t As IO.StreamReader = New IO.StreamReader(tmpf)
+            result = CType(reader.Deserialize(t), ltfsindex)
+            t.Close()
+            result.Standarize()
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString)
+        End Try
+        IO.File.Delete(tmpf)
         Return result
     End Function
     Public Function Clone() As ltfsindex

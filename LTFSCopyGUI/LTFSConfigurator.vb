@@ -136,6 +136,7 @@ Public Class LTFSConfigurator
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-c"})
             Me.Close()
+            Exit Sub
         End If
         RefreshUI()
         CheckBox3.Checked = My.Settings.LTFSConf_AutoRefresh
@@ -490,7 +491,7 @@ Public Class LTFSConfigurator
                             End If
                             'Erase
                             Invoke(Sub() TextBox8.AppendText("Erasing " & i & "/" & NumericUpDown6.Value & ".."))
-                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}) Then
+                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=320) Then
                                 Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                             Else
                                 Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -822,7 +823,8 @@ Public Class LTFSConfigurator
                     If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
                         nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
                         CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                        wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
+                        'wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
+                        wares.Append($" { (CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data / CMInfo.a_SetsPerWrap * 100).ToString("f2").PadLeft(7)}%  |")
                     ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
                         StartBlock = 0
                         wares.Append($"           |")
@@ -891,6 +893,9 @@ Public Class LTFSConfigurator
         End Try
         TextBox8.Select(0, 0)
         TextBox8.ScrollToCaret()
+        If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+            IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{CMInfo.ApplicationSpecificData.Barcode}.txt", TextBox8.Text)
+        End If
         Me.Enabled = True
     End Sub
 

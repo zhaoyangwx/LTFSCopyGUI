@@ -268,8 +268,10 @@ Public Class LTFSWriter
                         Exit For
                     End If
                 Next
-                If CapReduceCount > 0 Then ToolStripDropDownButton3.ToolTipText = $"{ResText_C1.Text}{vbCrLf}{ResText_C1.Text}{CapReduceCount}{vbCrLf}"
-                If CapReduceCount >= CleanCycle Then ToolStripDropDownButton3.ToolTipText &= $"{ResText_C2.Text}{Clean_last.ToString("yyyy/MM/dd HH:mm:ss")}"
+                If CapReduceCount > 0 Then
+                    ToolStripDropDownButton3.ToolTipText = $"{ResText_C0.Text}{vbCrLf}{ResText_C1.Text}{CapReduceCount}{vbCrLf}"
+                    If CapReduceCount >= CleanCycle Then ToolStripDropDownButton3.ToolTipText &= $"{ResText_C2.Text}{Clean_last.ToString("yyyy/MM/dd HH:mm:ss")}"
+                End If
                 Flush = FlushNow
                 If FlushNow Then
                     CapReduceCount += 1
@@ -296,7 +298,7 @@ Public Class LTFSWriter
             Next
             Dim USize As Long = UnwrittenSize
             Dim UFile As Long = UnwrittenCount
-            ToolStripStatusLabel4.Text = ""
+            ToolStripStatusLabel4.Text = " "
             ToolStripStatusLabel4.Text &= $"{ResText_S0.Text}{IOManager.FormatSize(ddelta)}/s"
             ToolStripStatusLabel4.Text &= $"  {ResText_S1.Text}{IOManager.FormatSize(TotalBytesProcessed)}"
             If CurrentBytesProcessed > 0 Then ToolStripStatusLabel4.Text &= $"({IOManager.FormatSize(CurrentBytesProcessed)})"
@@ -333,7 +335,7 @@ Public Class LTFSWriter
             If Not Path.StartsWith("\\") Then Path = $"\\?\{Path}"
             ParentDirectory = ParentDir
             SourcePath = Path
-            Dim finf As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(SourcePath)
+            Dim finf As IO.FileInfo = New IO.FileInfo(SourcePath)
             File = New ltfsindex.file With {
                 .name = finf.Name,
                 .fileuid = -1,
@@ -358,6 +360,16 @@ Public Class LTFSWriter
                 End Try
                 .changetime = .modifytime
                 .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                Try
+                    If IO.File.Exists(Path & ".xattr") Then
+                        Dim x As String = IO.File.ReadAllText(Path & ".xattr")
+                        Dim xlist As List(Of ltfsindex.file.xattr) = ltfsindex.file.xattr.FromXMLList(x)
+                        If .extendedattributes Is Nothing Then .extendedattributes = New List(Of ltfsindex.file.xattr)
+                        .extendedattributes.AddRange(xlist)
+                    End If
+                Catch ex As Exception
+                    MessageBox.Show(ex.ToString())
+                End Try
             End With
             ParentDirectory.contents.UnwrittenFiles.Add(File)
         End Sub
@@ -1034,6 +1046,7 @@ Public Class LTFSWriter
     End Function
     Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
         Try
+            If f.Extension.ToLower = ".xattr" Then Exit Sub
             Dim FileExist As Boolean = False
             Dim SameFile As Boolean = False
             '检查磁带已有文件
@@ -1112,6 +1125,7 @@ Public Class LTFSWriter
                 Try
                     Dim FileExist As Boolean = False
                     Dim SameFile As Boolean = False
+                    If f.Extension.ToLower = ".xattr" Then Continue For
                     '检查已有文件
                     SyncLock dT.contents._file
                         For i As Integer = dT.contents._file.Count - 1 To 0 Step -1
@@ -1162,6 +1176,7 @@ Public Class LTFSWriter
                     Try
                         Dim FileExist As Boolean = False
                         Dim SameFile As Boolean = False
+                        If f.Extension.ToLower = ".xattr" Then Exit Sub
                         '检查已有文件
                         SyncLock dT.contents._file
                             For i As Integer = dT.contents._file.Count - 1 To 0 Step -1
@@ -2306,7 +2321,7 @@ Public Class LTFSWriter
                     TapeUtils.WriteFileMark(TapeDrive)
                     PrintMsg($"FileMark written", LogOnly:=True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim outputfile As String = "LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
                     My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
                     PrintMsg(ResText_AI.Text)
@@ -2375,7 +2390,7 @@ Public Class LTFSWriter
                     PrintMsg(ResText_RI.Text)
                     Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim outputfile As String = "LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "schema\LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
                     My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
                     PrintMsg(ResText_AI.Text)
@@ -2564,7 +2579,7 @@ Public Class LTFSWriter
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg(ResText_RI.Text)
                     data = TapeUtils.ReadToFileMark(TapeDrive)
-                    Dim outputfile As String = "schema\LTFSIndex_Load_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
                         My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
                     End If
@@ -3066,8 +3081,8 @@ Public Class LTFSWriter
                             PrintMsg(ResText_UDI.Text)
                             WriteCurrentIndex(False)
                             TapeUtils.Flush(TapeDrive)
-                            AutoDump()
                         End If
+                        AutoDump()
                         PrintMsg(ResText_UI.Text)
                         RefreshIndexPartition()
                         TapeUtils.ReleaseUnit(TapeDrive)
@@ -3239,94 +3254,94 @@ Public Class LTFSWriter
     End Sub
     Public Sub HashSelectedDir(selectedDir As ltfsindex.directory, Overwrite As Boolean, ValidateOnly As Boolean)
         Dim th As New Threading.Thread(
-                            Sub()
-                                PrintMsg(ResText_Hashing.Text)
-                                Try
-                                    StopFlag = False
-                                    Dim FileList As New List(Of FileRecord)
-                                    Dim IterDir As Action(Of ltfsindex.directory, String) =
-                                        Sub(tapeDir As ltfsindex.directory, outputDir As String)
-                                            For Each f As ltfsindex.file In tapeDir.contents._file
-                                                FileList.Add(New FileRecord With {.File = f, .SourcePath = outputDir & "\" & f.name})
-                                                'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
-                                            Next
-                                            For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                                Dim dirOutput As String = outputDir & "\" & d.name
-                                                IterDir(d, dirOutput)
-                                            Next
-                                        End Sub
-                                    PrintMsg(ResText_PrepFile.Text)
-                                    Dim ODir As String = selectedDir.name
-                                    'If Not My.Computer.FileSystem.DirectoryExists(ODir) Then My.Computer.FileSystem.CreateDirectory(ODir)
-                                    IterDir(selectedDir, ODir)
-                                    FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
-                                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
-                                                                                    If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
-                                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
-                                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
-                                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
-                                                                                    Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
-                                                                                End Function))
-                                    CurrentBytesProcessed = 0
-                                    CurrentFilesProcessed = 0
-                                    UnwrittenSizeOverrideValue = 0
-                                    UnwrittenCountOverwriteValue = FileList.Count
-                                    For Each FI As FileRecord In FileList
-                                        UnwrittenSizeOverrideValue += FI.File.length
-                                    Next
-                                    PrintMsg(ResText_Hashing.Text)
-                                    Dim c As Integer = 0
-                                    For Each fr As FileRecord In FileList
-                                        c += 1
-                                        PrintMsg($"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.File.name} {ResText_Size.Text}:{IOManager.FormatSize(fr.File.length)}", False, $"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.SourcePath} {ResText_Size.Text}:{fr.File.length}")
-                                        If ValidateOnly Then
-                                            If fr.File.sha1 = "" OrElse (Not fr.File.SHA1ForeColor.Equals(Color.Black)) Then
-                                                'skip
-                                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
-                                                Threading.Interlocked.Increment(CurrentFilesProcessed)
-                                            Else
-                                                Dim result As String = CalculateSHA1(fr.File)
-                                                If result <> "" Then
-                                                    If fr.File.sha1 = result Then
-                                                        fr.File.SHA1ForeColor = Color.Green
-                                                    Else
-                                                        fr.File.SHA1ForeColor = Color.Red
-                                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
-                                                    End If
-                                                End If
-                                            End If
-                                        ElseIf Overwrite Then
-                                            Dim result As String = CalculateSHA1(fr.File)
-                                            fr.File.sha1 = result
-                                            fr.File.SHA1ForeColor = Color.Blue
-                                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                        Else
-                                            If fr.File.sha1 = "" Then
-                                                Dim result As String = CalculateSHA1(fr.File)
-                                                fr.File.sha1 = result
-                                                fr.File.SHA1ForeColor = Color.Blue
-                                                If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                            Else
-                                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
-                                                Threading.Interlocked.Increment(CurrentFilesProcessed)
-                                            End If
-                                        End If
+            Sub()
+                PrintMsg(ResText_Hashing.Text)
+                Try
+                    StopFlag = False
+                    Dim FileList As New List(Of FileRecord)
+                    Dim IterDir As Action(Of ltfsindex.directory, String) =
+                        Sub(tapeDir As ltfsindex.directory, outputDir As String)
+                            For Each f As ltfsindex.file In tapeDir.contents._file
+                                FileList.Add(New FileRecord With {.File = f, .SourcePath = outputDir & "\" & f.name})
+                                'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
+                            Next
+                            For Each d As ltfsindex.directory In tapeDir.contents._directory
+                                Dim dirOutput As String = outputDir & "\" & d.name
+                                IterDir(d, dirOutput)
+                            Next
+                        End Sub
+                    PrintMsg(ResText_PrepFile.Text)
+                    Dim ODir As String = selectedDir.name
+                    'If Not My.Computer.FileSystem.DirectoryExists(ODir) Then My.Computer.FileSystem.CreateDirectory(ODir)
+                    IterDir(selectedDir, ODir)
+                    FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
+                                                                    If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
+                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
+                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
+                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
+                                                                    Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
+                                                                End Function))
+                    CurrentBytesProcessed = 0
+                    CurrentFilesProcessed = 0
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverwriteValue = FileList.Count
+                    For Each FI As FileRecord In FileList
+                        UnwrittenSizeOverrideValue += FI.File.length
+                    Next
+                    PrintMsg(ResText_Hashing.Text)
+                    Dim c As Integer = 0
+                    For Each fr As FileRecord In FileList
+                        c += 1
+                        PrintMsg($"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.File.name} {ResText_Size.Text}:{IOManager.FormatSize(fr.File.length)}", False, $"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.SourcePath} {ResText_Size.Text}:{fr.File.length}")
+                        If ValidateOnly Then
+                            If fr.File.sha1 = "" OrElse (Not fr.File.SHA1ForeColor.Equals(Color.Black)) Then
+                                'skip
+                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
+                                Threading.Interlocked.Increment(CurrentFilesProcessed)
+                            Else
+                                Dim result As String = CalculateSHA1(fr.File)
+                                If result <> "" Then
+                                    If fr.File.sha1 = result Then
+                                        fr.File.SHA1ForeColor = Color.Green
+                                    Else
+                                        fr.File.SHA1ForeColor = Color.Red
+                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
+                                    End If
+                                End If
+                            End If
+                        ElseIf Overwrite Then
+                            Dim result As String = CalculateSHA1(fr.File)
+                            fr.File.sha1 = result
+                            fr.File.SHA1ForeColor = Color.Blue
+                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                        Else
+                            If fr.File.sha1 = "" Then
+                                Dim result As String = CalculateSHA1(fr.File)
+                                fr.File.sha1 = result
+                                fr.File.SHA1ForeColor = Color.Blue
+                                If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                            Else
+                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
+                                Threading.Interlocked.Increment(CurrentFilesProcessed)
+                            End If
+                        End If
 
-                                        If StopFlag Then
-                                            PrintMsg(ResText_OpCancelled.Text)
-                                            Exit Try
-                                        End If
-                                    Next
-                                    PrintMsg(ResText_HFin.Text)
-                                Catch ex As Exception
-                                    Invoke(Sub() MessageBox.Show(ex.ToString))
-                                    PrintMsg(ResText_HErr.Text)
-                                End Try
-                                UnwrittenSizeOverrideValue = 0
-                                UnwrittenCountOverwriteValue = 0
-                                LockGUI(False)
-                                RefreshDisplay()
-                            End Sub)
+                        If StopFlag Then
+                            PrintMsg(ResText_OpCancelled.Text)
+                            Exit Try
+                        End If
+                    Next
+                    PrintMsg(ResText_HFin.Text)
+                Catch ex As Exception
+                    Invoke(Sub() MessageBox.Show(ex.ToString))
+                    PrintMsg(ResText_HErr.Text)
+                End Try
+                UnwrittenSizeOverrideValue = 0
+                UnwrittenCountOverwriteValue = 0
+                LockGUI(False)
+                RefreshDisplay()
+            End Sub)
         LockGUI()
         th.Start()
     End Sub
@@ -3886,6 +3901,23 @@ Public Class LTFSWriter
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = ItemSelected.Tag
                         result.AppendLine(f.GetSerializedText())
+                    End If
+                Next
+            End SyncLock
+        End If
+        Clipboard.SetText(result.ToString)
+    End Sub
+
+    Private Sub XAttrToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles XAttrToolStripMenuItem.Click
+        Dim result As New StringBuilder
+        If ListView1.Tag IsNot Nothing AndAlso
+        ListView1.SelectedItems IsNot Nothing AndAlso
+        ListView1.SelectedItems.Count > 0 Then
+            SyncLock ListView1.SelectedItems
+                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+                    If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
+                        Dim f As ltfsindex.file = ItemSelected.Tag
+                        result.AppendLine(f.GetXAttrText())
                     End If
                 Next
             End SyncLock
