@@ -1486,4 +1486,37 @@ Public Class LTFSConfigurator
         My.Settings.LTFSConf_AutoRefresh = CheckBox3.Checked
         My.Settings.Save()
     End Sub
+
+    Private Sub ButtonDebugDumpTape_MouseUp(sender As Object, e As MouseEventArgs) Handles ButtonDebugDumpTape.MouseUp
+        If Not e.Button = MouseButtons.Right Then Exit Sub
+        If MessageBox.Show("Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+                Dim fname As String = OpenFileDialog1.FileName
+                Dim th As New Threading.Thread(
+                    Sub()
+                        Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                        If fs.Length = 0 Then
+                            TapeUtils.WriteFileMark(ConfTapeDrive)
+                            Invoke(Sub()
+                                       TextBox8.Text = $"Filemark written."
+                                       Panel1.Enabled = True
+                                   End Sub)
+                        Else
+                            Invoke(Sub() TextBox8.Text = $"Writing: {fname}")
+                            Dim buffer(NumericUpDown7.Value - 1) As Byte
+                            While fs.Read(buffer, 0, buffer.Length) > 0
+                                TapeUtils.Write(ConfTapeDrive, buffer)
+                            End While
+                            Invoke(Sub()
+                                       TextBox8.Text = $"Write finished: {fname}"
+                                       Panel1.Enabled = True
+                                   End Sub)
+                        End If
+                        fs.Close()
+                    End Sub)
+                Panel1.Enabled = False
+                th.Start()
+            End If
+        End If
+    End Sub
 End Class

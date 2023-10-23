@@ -96,6 +96,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
+        Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -369,6 +370,7 @@ Partial Class LTFSConfigurator
         '
         'ButtonDebugDumpTape
         '
+        Me.ButtonDebugDumpTape.AllowDrop = True
         resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
@@ -595,6 +597,10 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
+        'OpenFileDialog1
+        '
+        Me.OpenFileDialog1.FileName = "OpenFileDialog1"
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -688,4 +694,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents Button30 As Button
     Friend WithEvents CheckBox3 As CheckBox
     Friend WithEvents CheckBox4 As CheckBox
+    Friend WithEvents OpenFileDialog1 As OpenFileDialog
 End Class
