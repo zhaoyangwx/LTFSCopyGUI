@@ -650,4 +650,19 @@ Public Class Form1
             thprog.Start()
         End If
     End Sub
+
+    Private Sub 查看ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查看ToolStripMenuItem.Click
+        Dim LWF As New LTFSWriter With {.Barcode = "BROWSE", .TapeDrive = "", .OfflineMode = True}
+        Dim OnLWFLoad As New EventHandler(Sub()
+                                              LWF.Invoke(Sub()
+                                                             LWF.schema = schema
+                                                             LWF.RefreshDisplay()
+                                                             LWF.ToolStripStatusLabel1.Text = "BROWSE"
+                                                         End Sub)
+                                              RemoveHandler LWF.Load, OnLWFLoad
+                                          End Sub
+            )
+        AddHandler LWF.Load, OnLWFLoad
+        LWF.Show()
+    End Sub
 End Class

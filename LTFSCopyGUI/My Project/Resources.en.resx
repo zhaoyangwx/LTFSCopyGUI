@@ -127,7 +127,7 @@
     <value>Barcode write fail</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>-s                                            Disable index reading
+    <value>  -s                                            Disable index reading
   -t &lt;drive&gt;                                    LTFSWriter
   ├  -t 0
   ├  -t TAPE0
@@ -146,8 +146,8 @@
   -wb &lt;drive&gt; &lt;barcode&gt;                         Barcode write
   └  -wb TAPE0 A00123L5                     
                                            
-  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt;          SCSI command execute
-  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1</value>
+  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; &lt;timeout, default=60000&gt;         SCSI command execute
+  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600</value>
   </data>
   <data name="StrIndexView" xml:space="preserve">
     <value>Index view</value>

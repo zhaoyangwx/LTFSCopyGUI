@@ -856,13 +856,15 @@ Public Class LTFSWriter
     Private Sub TreeView1_Click(sender As Object, e As EventArgs) Handles TreeView1.Click
         TriggerTreeView1Event()
     End Sub
-    Public Sub CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False)
+    Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False) As Boolean
         If (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush Then
             WriteCurrentIndex(False, False)
             TotalBytesUnindexed = 0
             Invoke(Sub() Text = GetLocInfo())
+            Return True
         End If
-    End Sub
+        Return False
+    End Function
     Public Sub WriteCurrentIndex(Optional ByVal GotoEOD As Boolean = True, Optional ByVal ClearCurrentStat As Boolean = True)
         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
         If GotoEOD Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.EOD)
@@ -1599,6 +1601,7 @@ Public Class LTFSWriter
     Private Sub 重命名目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 重命名目录ToolStripMenuItem.Click
         RenameDir()
     End Sub
+    Dim RestorePosition As TapeUtils.PositionData
     Public Sub RestoreFile(FileName As String, FileIndex As ltfsindex.file)
         If Not FileName.StartsWith("\\") Then FileName = $"\\?\{FileName}"
         Dim FileExist As Boolean = True
@@ -1654,17 +1657,21 @@ Public Class LTFSWriter
                         Dim FileOffset As Long = fe.fileoffset
                         Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
                         Dim TotalBytes As Long = fe.bytecount
-                        Dim p As New TapeUtils.PositionData(TapeDrive)
-                        If p.BlockNumber <> BlockAddress OrElse p.PartitionNumber <> Partition Then
+                        'Dim p As New TapeUtils.PositionData(TapeDrive)
+                        If RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
                             TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
+                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
                         End If
                         fs.Seek(FileOffset, IO.SeekOrigin.Begin)
                         Dim ReadedSize As Long = 0
                         While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                             Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
                             Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
+                            SyncLock RestorePosition
+                                RestorePosition.BlockNumber += 1
+                            End SyncLock
                             If Data.Length <> len OrElse len = 0 Then
-                                PrintMsg($"Error reading at p{p.PartitionNumber}b{p.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
+                                PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
                                 succ = False
                                 Exit Do
                             End If
@@ -1749,6 +1756,7 @@ Public Class LTFSWriter
                             StopFlag = False
                             TapeUtils.ReserveUnit(TapeDrive)
                             TapeUtils.PreventMediaRemoval(TapeDrive)
+                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
                                 Dim FileName As String = My.Computer.FileSystem.CombinePath(BasePath, FileIndex.name)
                                 RestoreFile(FileName, FileIndex)
@@ -1831,6 +1839,7 @@ Public Class LTFSWriter
                             Dim c As Integer = 0
                             TapeUtils.ReserveUnit(TapeDrive)
                             TapeUtils.PreventMediaRemoval(TapeDrive)
+                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each fr As FileRecord In FileList
                                 c += 1
                                 PrintMsg($"{ResText_Restoring.Text} [{c}/{FileList.Count}] {fr.File.name}", False, $"{ResText_Restoring.Text} [{c}/{FileList.Count}] {fr.SourcePath}")
@@ -1973,6 +1982,8 @@ Public Class LTFSWriter
                             End While
                         End If
 
+                        Dim p As New TapeUtils.PositionData(TapeDrive)
+                        TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
                         For i As Integer = 0 To WriteList.Count - 1
                             If i < WriteList.Count - 1 Then
                                 Dim CFNum As Integer = i
@@ -1992,7 +2003,7 @@ Public Class LTFSWriter
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
                                 If finfo.Length > 0 Then
-                                    Dim p As TapeUtils.PositionData = GetPos
+                                    'Dim p As New TapeUtils.PositionData(TapeDrive)
                                     If p.EOP Then PrintMsg(ResText_EWEOM.Text, True)
                                     Dim dupe As Boolean = False
                                     If My.Settings.LTFSWriter_DeDupe Then
@@ -2043,7 +2054,6 @@ Public Class LTFSWriter
                                              } {ResText_Remaining.Text}: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
                                              } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
                                         'write to tape
-                                        TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
                                         If finfo.Length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData As Byte() = fr.ReadAllBytes()
@@ -2051,6 +2061,9 @@ Public Class LTFSWriter
                                                 Dim sense As Byte()
                                                 Try
                                                     sense = TapeUtils.Write(TapeDrive, FileData)
+                                                    SyncLock p
+                                                        p.BlockNumber += 1
+                                                    End SyncLock
                                                 Catch ex As Exception
                                                     Select Case MessageBox.Show(ResText_WErrSCSI.Text, ResText_Warning.Text, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
@@ -2061,6 +2074,7 @@ Public Class LTFSWriter
                                                             succ = True
                                                             Exit While
                                                     End Select
+                                                    p = New TapeUtils.PositionData(TapeDrive)
                                                     Continue While
                                                 End Try
                                                 If ((sense(2) >> 6) And &H1) = 1 Then
@@ -2085,6 +2099,7 @@ Public Class LTFSWriter
                                                             succ = True
                                                             Exit While
                                                     End Select
+                                                    p = New TapeUtils.PositionData(TapeDrive)
                                                 Else
                                                     succ = True
                                                 End If
@@ -2138,6 +2153,9 @@ Public Class LTFSWriter
                                                             Dim sense As Byte()
                                                             Try
                                                                 sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                                SyncLock p
+                                                                    p.BlockNumber += 1
+                                                                End SyncLock
                                                             Catch ex As Exception
                                                                 Select Case MessageBox.Show(ResText_WErrSCSI.Text, ResText_Warning.Text, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
@@ -2148,6 +2166,7 @@ Public Class LTFSWriter
                                                                         succ = True
                                                                         Exit While
                                                                 End Select
+                                                                p = New TapeUtils.PositionData(TapeDrive)
                                                                 Continue While
                                                             End Try
                                                             If (((sense(2) >> 6) And &H1) = 1) Then
@@ -2173,6 +2192,7 @@ Public Class LTFSWriter
                                                                         succ = True
                                                                         Exit While
                                                                 End Select
+                                                                p = New TapeUtils.PositionData(TapeDrive)
                                                             Else
                                                                 succ = True
                                                                 Exit While
@@ -2228,7 +2248,7 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                CheckUnindexedDataSizeLimit()
+                                If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(TapeDrive)
                                 Invoke(Sub()
                                            If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then RefreshCapacity()
                                        End Sub)
@@ -2988,12 +3008,16 @@ Public Class LTFSWriter
                                                                                                                           Return a.fileoffset.CompareTo(b.fileoffset)
                                                                                                                       End Function))
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                Dim p As New TapeUtils.PositionData(TapeDrive)
-                If p.BlockNumber <> fe.startblock OrElse p.PartitionNumber <> fe.partition Then
+
+                If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> fe.partition Then
                     TapeUtils.Locate(TapeDrive, fe.startblock, fe.partition)
+                    RestorePosition = New TapeUtils.PositionData(TapeDrive)
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
                 Dim blk As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                SyncLock RestorePosition
+                    RestorePosition.BlockNumber += 1
+                End SyncLock
                 If fe.byteoffset > 0 Then blk = blk.Skip(fe.byteoffset).ToArray()
                 TotalBytesToRead -= blk.Length
                 HT.Propagate(blk)
@@ -3001,6 +3025,9 @@ Public Class LTFSWriter
                 Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                 While TotalBytesToRead > 0
                     blk = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                    SyncLock RestorePosition
+                        RestorePosition.BlockNumber += 1
+                    End SyncLock
                     Dim blklen As Integer = blk.Length
                     If blklen > TotalBytesToRead Then blklen = TotalBytesToRead
                     TotalBytesToRead -= blk.Length
@@ -3189,6 +3216,7 @@ Public Class LTFSWriter
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
                             Next
+                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
                                     If FileIndex.sha1 = "" OrElse (Not FileIndex.SHA1ForeColor.Equals(Color.Black)) Then
@@ -3291,6 +3319,7 @@ Public Class LTFSWriter
                     Next
                     PrintMsg(ResText_Hashing.Text)
                     Dim c As Integer = 0
+                    RestorePosition = New TapeUtils.PositionData(TapeDrive)
                     For Each fr As FileRecord In FileList
                         c += 1
                         PrintMsg($"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.File.name} {ResText_Size.Text}:{IOManager.FormatSize(fr.File.length)}", False, $"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.SourcePath} {ResText_Size.Text}:{fr.File.length}")
