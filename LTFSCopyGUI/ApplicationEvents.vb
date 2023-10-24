@@ -111,6 +111,7 @@ Namespace My
 
                                 End If
                                 Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = Not IndexRead}
+                                If Not IndexRead Then LWF.ExtraPartitionCount = 1
                                 Me.MainForm = LWF
                                 Exit For
                             End If
