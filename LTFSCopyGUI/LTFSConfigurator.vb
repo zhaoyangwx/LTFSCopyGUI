@@ -1503,7 +1503,7 @@ Public Class LTFSConfigurator
                                    End Sub)
                         Else
                             Invoke(Sub() TextBox8.Text = $"Writing: {fname}")
-                            Dim buffer(NumericUpDown7.Value - 1) As Byte
+                            Dim buffer(Math.Min(NumericUpDown7.Value - 1, fs.Length - 1)) As Byte
                             While fs.Read(buffer, 0, buffer.Length) > 0
                                 TapeUtils.Write(ConfTapeDrive, buffer)
                             End While

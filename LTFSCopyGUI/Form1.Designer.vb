@@ -33,6 +33,7 @@ Partial Class Form1
         Me.错误检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.未校验检查ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.合并文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.查看ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.Label2 = New System.Windows.Forms.Label()
@@ -55,7 +56,6 @@ Partial Class Form1
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.SchemaLoadText = New System.Windows.Forms.ListBox()
         Me.FormTitle = New System.Windows.Forms.Label()
-        Me.查看ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.SuspendLayout()
@@ -85,29 +85,34 @@ Partial Class Form1
         '
         'ContextMenuStrip1
         '
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem, Me.未校验检查ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.查看ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
         '查找ToolStripMenuItem
         '
-        Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
         resources.ApplyResources(Me.查找ToolStripMenuItem, "查找ToolStripMenuItem")
+        Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
         '
         '错误检查ToolStripMenuItem
         '
-        Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
         resources.ApplyResources(Me.错误检查ToolStripMenuItem, "错误检查ToolStripMenuItem")
+        Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
         '
         '未校验检查ToolStripMenuItem
         '
-        Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
         resources.ApplyResources(Me.未校验检查ToolStripMenuItem, "未校验检查ToolStripMenuItem")
+        Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
         '
         '合并文件ToolStripMenuItem
         '
-        Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
         resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
+        Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
+        '
+        '查看ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.查看ToolStripMenuItem, "查看ToolStripMenuItem")
+        Me.查看ToolStripMenuItem.Name = "查看ToolStripMenuItem"
         '
         'TextBox2
         '
@@ -186,6 +191,10 @@ Partial Class Form1
         Me.Button7.Name = "Button7"
         Me.Button7.UseVisualStyleBackColor = True
         '
+        'FolderBrowserDialog1
+        '
+        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
+        '
         'Button8
         '
         resources.ApplyResources(Me.Button8, "Button8")
@@ -214,16 +223,16 @@ Partial Class Form1
         '
         'GroupBox1
         '
+        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
         Me.GroupBox1.Controls.Add(Me.SchemaLoadText)
         Me.GroupBox1.Controls.Add(Me.FormTitle)
-        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.TabStop = False
         '
         'SchemaLoadText
         '
-        Me.SchemaLoadText.FormattingEnabled = True
         resources.ApplyResources(Me.SchemaLoadText, "SchemaLoadText")
+        Me.SchemaLoadText.FormattingEnabled = True
         Me.SchemaLoadText.Items.AddRange(New Object() {resources.GetString("SchemaLoadText.Items"), resources.GetString("SchemaLoadText.Items1"), resources.GetString("SchemaLoadText.Items2"), resources.GetString("SchemaLoadText.Items3"), resources.GetString("SchemaLoadText.Items4"), resources.GetString("SchemaLoadText.Items5"), resources.GetString("SchemaLoadText.Items6")})
         Me.SchemaLoadText.Name = "SchemaLoadText"
         '
@@ -231,11 +240,6 @@ Partial Class Form1
         '
         resources.ApplyResources(Me.FormTitle, "FormTitle")
         Me.FormTitle.Name = "FormTitle"
-        '
-        '查看ToolStripMenuItem
-        '
-        Me.查看ToolStripMenuItem.Name = "查看ToolStripMenuItem"
-        resources.ApplyResources(Me.查看ToolStripMenuItem, "查看ToolStripMenuItem")
         '
         'Form1
         '
