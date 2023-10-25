@@ -4026,6 +4026,7 @@ Public Class LTFSWriter
         svc.schema = schema
         svc.TapeDrive = TapeDrive
         svc.BlockSize = plabel.blocksize
+        svc.ExtraPartitionCount = ExtraPartitionCount
         svc.StartService()
         MessageBox.Show($"Service running on port {svc.port}.")
         svc.StopService()

@@ -1,6 +1,8 @@
 ﻿Imports System.IO
+Imports System.Security.Claims
 Imports System.Threading
 Imports FubarDev.FtpServer
+Imports FubarDev.FtpServer.AccountManagement
 Imports FubarDev.FtpServer.BackgroundTransfer
 Imports FubarDev.FtpServer.FileSystem
 Imports FubarDev.FtpServer.FileSystem.Unix
@@ -9,6 +11,7 @@ Imports Microsoft.Extensions.DependencyInjection
 Public Class FTPService
     Public TapeDrive As String
     Public BlockSize As Integer = 524288
+    Public ExtraPartitionCount As Integer = 1
     Public port As Integer
     Public schema As ltfsindex
     Public Services As ServiceCollection
@@ -78,11 +81,11 @@ Public Class FTPService
         End Sub
         Public ReadOnly Property FileInfo As ltfsindex.file
         Public ReadOnly Property Size As Long Implements IUnixFileEntry.Size
-                Get
-                    Return FileInfo.length
-                End Get
-            End Property
-        End Class
+            Get
+                Return FileInfo.length
+            End Get
+        End Property
+    End Class
     Public Class LTFSDirectoryEntry
         Inherits LTFSFileSystemEntry
         Implements IUnixDirectoryEntry
@@ -111,11 +114,13 @@ Public Class FTPService
         Implements IUnixFileSystem
         Public Property TapeDrive As String
         Public Property BlockSize As Integer = 524288
-        Public Sub New(rootPath As ltfsindex.directory, ByVal drive As String, ByVal blksize As Integer)
+        Public Property ExtraPartitionCount As Integer = 1
+        Public Sub New(rootPath As ltfsindex.directory, ByVal drive As String, ByVal blksize As Integer, ByVal _extraPartitionCount As Integer)
             FileSystemEntryComparer = StringComparer.OrdinalIgnoreCase
             Root = New LTFSDirectoryEntry(rootPath, True)
             TapeDrive = drive
             BlockSize = blksize
+            ExtraPartitionCount = _extraPartitionCount
         End Sub
 
         Public ReadOnly Property SupportsAppend As Boolean Implements IUnixFileSystem.SupportsAppend
@@ -177,7 +182,7 @@ Public Class FTPService
 
         Public Function OpenReadAsync(fileEntry As IUnixFileEntry, startPosition As Long, cancellationToken As CancellationToken) As Task(Of Stream) Implements IUnixFileSystem.OpenReadAsync
             Dim fileInfo As ltfsindex.file = CType(fileEntry, LTFSFileEntry).FileInfo
-            Dim input As New IOManager.LTFSFileStream(fileInfo, TapeDrive, BlockSize)
+            Dim input As New IOManager.LTFSFileStream(fileInfo, TapeDrive, BlockSize, ExtraPartitionCount)
             Dim rstream As New BufferedStream(input, 524288)
             rstream.Seek(startPosition, SeekOrigin.Begin)
             Return Task.FromResult(Of Stream)(rstream)
@@ -204,49 +209,81 @@ Public Class FTPService
         Private ReadOnly Property _root As ltfsindex.directory
         Private ReadOnly Property _drive As String
         Private ReadOnly Property _blocksize As Integer
+        Private ReadOnly Property _extraPartitionCount As Integer
         Public Sub New(options As Microsoft.Extensions.Options.IOptions(Of LTFSFileSystemOptions))
             _root = options.Value.Root
             _drive = options.Value.TapeDrive
             _blocksize = options.Value.BlockSize
+            _extraPartitionCount = options.Value.ExtraPartitionCount
         End Sub
         Public Function Create(accountInformation As IAccountInformation) As Task(Of IUnixFileSystem) Implements IFileSystemClassFactory.Create
-            Return Task.FromResult(Of IUnixFileSystem)(New LTFSFileSystem(_root, _drive, _blocksize))
+            Return Task.FromResult(Of IUnixFileSystem)(New LTFSFileSystem(_root, _drive, _blocksize, _extraPartitionCount))
         End Function
     End Class
     Public Class LTFSFileSystemOptions
         Public Property Root As ltfsindex.directory
         Public Property TapeDrive As String
         Public Property BlockSize As Integer
+        Public Property ExtraPartitionCount As Integer
     End Class
     Public Shared Function UseLTFSFileSystem(builder As IFtpServerBuilder) As IFtpServerBuilder
         builder.Services.AddSingleton(Of IFileSystemClassFactory, LTFSFileSystemProvider)()
         Return builder
     End Function
+    Public Class NoPasswdMembershipProvider
+        Implements AccountManagement.IMembershipProviderAsync
+        Public Shared Function CreateAnonymousPrincipal(email As String) As ClaimsPrincipal
+            Dim anonymousClaims As List(Of Claim) =
+               {New Claim(ClaimsIdentity.DefaultNameClaimType, "anonymous"),
+                New Claim(ClaimTypes.Anonymous, String.Empty),
+                New Claim(ClaimsIdentity.DefaultRoleClaimType, "anonymous"),
+                New Claim(ClaimsIdentity.DefaultRoleClaimType, "guest"),
+                New Claim(ClaimTypes.AuthenticationMethod, "anonymous")}.ToList()
+            If (Not String.IsNullOrWhiteSpace(email)) Then anonymousClaims.Add(New Claim(ClaimTypes.Email, email, ClaimValueTypes.Email))
+            Dim identity As New ClaimsIdentity(anonymousClaims, "anonymous")
+            Dim principal As New ClaimsPrincipal(identity)
+            Return principal
+        End Function
+        Public Function ValidateUserAsync(username As String, password As String, Optional cancellationToken As CancellationToken = Nothing) As Task(Of MemberValidationResult) Implements IMembershipProviderAsync.ValidateUserAsync
+            Return Task.FromResult(New MemberValidationResult(MemberValidationStatus.Anonymous, CreateAnonymousPrincipal(password)))
+        End Function
+
+        Public Function ValidateUserAsync(username As String, password As String) As Task(Of MemberValidationResult) Implements IMembershipProvider.ValidateUserAsync
+            Return ValidateUserAsync(username, password, CancellationToken.None)
+        End Function
+
+        Public Function LogOutAsync(principal As ClaimsPrincipal, Optional cancellationToken As CancellationToken = Nothing) As Task Implements IMembershipProviderAsync.LogOutAsync
+            Return Task.CompletedTask
+        End Function
+    End Class
     Public Sub StartService()
-        If schema Is Nothing Then Exit Sub
-        Services = New ServiceCollection()
-        Services.Configure(
+            If schema Is Nothing Then Exit Sub
+            Services = New ServiceCollection()
+            Services.Configure(
             Sub(opt As LTFSFileSystemOptions)
                 opt.Root = schema._directory(0)
                 opt.TapeDrive = TapeDrive
                 opt.BlockSize = BlockSize
+                opt.ExtraPartitionCount = ExtraPartitionCount
             End Sub)
-        Services.AddFtpServer(
+
+            Services.AddFtpServer(
             Sub(builder As IFtpServerBuilder)
                 UseLTFSFileSystem(builder)
-                builder.EnableAnonymousAuthentication
+                builder.Services.AddSingleton(Of IMembershipProvider, NoPasswdMembershipProvider)()
             End Sub)
-        Services.Configure(
+
+
+            Services.Configure(
             Sub(opt As FtpServerOptions)
                 opt.ServerAddress = "0.0.0.0"
                 opt.Port = port
             End Sub)
-        With Services.BuildServiceProvider
-            ftpServerHost = .GetRequiredService(Of IFtpServerHost)
-            ftpServerHost.StartAsync(Threading.CancellationToken.None)
-        End With
-    End Sub
-
+            With Services.BuildServiceProvider
+                ftpServerHost = .GetRequiredService(Of IFtpServerHost)
+                ftpServerHost.StartAsync(Threading.CancellationToken.None)
+            End With
+        End Sub
 
     Public Sub StopService()
         ftpServerHost.StopAsync(Threading.CancellationToken.None).Wait()
