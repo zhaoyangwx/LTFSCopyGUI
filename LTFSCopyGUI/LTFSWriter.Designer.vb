@@ -180,6 +180,7 @@ Partial Class LTFSWriter
         Me.合并SHA1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验源文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.挂载盘符只读ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.启动FTP服务只读ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.StatusStrip1 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripDropDownButton1 = New System.Windows.Forms.ToolStripDropDownButton()
         Me.ToolStripDropDownButton2 = New System.Windows.Forms.ToolStripDropDownButton()
@@ -1126,7 +1127,7 @@ Partial Class LTFSWriter
         '
         '数据ToolStripMenuItem
         '
-        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem})
+        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem})
         Me.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem"
         resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         '
@@ -1154,6 +1155,11 @@ Partial Class LTFSWriter
         '
         resources.ApplyResources(Me.挂载盘符只读ToolStripMenuItem, "挂载盘符只读ToolStripMenuItem")
         Me.挂载盘符只读ToolStripMenuItem.Name = "挂载盘符只读ToolStripMenuItem"
+        '
+        '启动FTP服务只读ToolStripMenuItem
+        '
+        Me.启动FTP服务只读ToolStripMenuItem.Name = "启动FTP服务只读ToolStripMenuItem"
+        resources.ApplyResources(Me.启动FTP服务只读ToolStripMenuItem, "启动FTP服务只读ToolStripMenuItem")
         '
         'StatusStrip1
         '
@@ -2690,4 +2696,5 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripStatusLabel3 As ToolStripStatusLabel
     Friend WithEvents ToolStripStatusLabel1 As ToolStripStatusLabel
     Friend WithEvents XAttrToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 启动FTP服务只读ToolStripMenuItem As ToolStripMenuItem
 End Class
