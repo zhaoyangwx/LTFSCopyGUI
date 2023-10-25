@@ -662,10 +662,12 @@ Public Class IOManager
         Public ReadOnly Property FileInfo As ltfsindex.file
         Public Property TapeDrive As String
         Public Property BlockSize As Integer
-        Public Sub New(file As ltfsindex.file, drive As String, blksize As Integer)
+        Public Property ExtraPartitionCount As Integer
+        Public Sub New(file As ltfsindex.file, drive As String, blksize As Integer, xtrPCount As Integer)
             FileInfo = file
             TapeDrive = drive
             BlockSize = blksize
+            ExtraPartitionCount = xtrPCount
             FileInfo.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(
                                      Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
                                          Return a.fileoffset.CompareTo(b.fileoffset)
@@ -705,10 +707,10 @@ Public Class IOManager
             Next
             Return Nothing
         End Function
-        Public Function WithinExtent(offset As Long, ext As ltfsindex.file.extent) As Boolean
+        Public Function WithinExtent(offset As Long, partition As Integer, ext As ltfsindex.file.extent) As Boolean
             If ext Is Nothing Then Return False
             With ext
-                Return .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset
+                Return .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset AndAlso partition = Math.Min(ExtraPartitionCount, ext.partition)
             End With
         End Function
         Public Overrides Property Position As Long
@@ -719,7 +721,7 @@ Public Class IOManager
                 If value < 0 Then value = 0
                 If value >= FileInfo.length Then value = FileInfo.length - 1
                 Dim ext As ltfsindex.file.extent = GetExtent(value)
-                TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, ext.partition)
+                TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, Math.Min(ExtraPartitionCount, ext.partition))
                 _Position = value
             End Set
         End Property
@@ -751,11 +753,13 @@ Public Class IOManager
         Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
             Dim rBytes As Integer = 0
             Dim fCurrentPos As Long = Position
+            Dim CUrrentP As Integer = New TapeUtils.PositionData(TapeDrive).PartitionNumber
             Dim ext As ltfsindex.file.extent = Nothing
             While rBytes < count
-                If Not WithinExtent(fCurrentPos, ext) Then
+                If Not WithinExtent(fCurrentPos, CUrrentP, ext) Then
                     ext = GetExtent(fCurrentPos)
                     Position = fCurrentPos
+                    CUrrentP = New TapeUtils.PositionData(TapeDrive).PartitionNumber
                 End If
                 If ext Is Nothing Then Exit While
                 Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
