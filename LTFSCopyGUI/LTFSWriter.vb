@@ -4019,6 +4019,19 @@ Public Class LTFSWriter
         Clipboard.SetText(result.ToString)
     End Sub
 
+    Private Sub 启动FTP服务只读ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动FTP服务只读ToolStripMenuItem.Click
+        Dim svc As New FTPService()
+
+        svc.port = Integer.Parse(InputBox("Port", "FTP Service", "8021"))
+        svc.schema = schema
+        svc.TapeDrive = TapeDrive
+        svc.BlockSize = plabel.blocksize
+        svc.StartService()
+        MessageBox.Show($"Service running on port {svc.port}.")
+        svc.StopService()
+        MessageBox.Show("Service stopped.")
+    End Sub
+
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
         IndexWriteInterval = Val(InputBox(ResText_SIIntv.Text, ResText_Setting.Text, IndexWriteInterval))
     End Sub

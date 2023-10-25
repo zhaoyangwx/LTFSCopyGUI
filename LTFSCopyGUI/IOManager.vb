@@ -657,6 +657,122 @@ Public Class IOManager
         End Property
     End Class
 
+    Public Class LTFSFileStream
+        Inherits Stream
+        Public ReadOnly Property FileInfo As ltfsindex.file
+        Public Property TapeDrive As String
+        Public Property BlockSize As Integer
+        Public Sub New(file As ltfsindex.file, drive As String, blksize As Integer)
+            FileInfo = file
+            TapeDrive = drive
+            BlockSize = blksize
+            FileInfo.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(
+                                     Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
+                                         Return a.fileoffset.CompareTo(b.fileoffset)
+                                     End Function))
+        End Sub
+        Public Overrides ReadOnly Property CanRead As Boolean
+            Get
+                Return TapeDrive <> ""
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property CanSeek As Boolean
+            Get
+                Return CanRead
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property CanWrite As Boolean
+            Get
+                Return False
+            End Get
+        End Property
+
+        Public Overrides ReadOnly Property Length As Long
+            Get
+                Return FileInfo.length
+            End Get
+        End Property
+        Private _Position As Long
+        Public Function GetExtent(offset As Long)
+            For i As Integer = 0 To FileInfo.extentinfo.Count - 1
+                With FileInfo.extentinfo(i)
+                    If .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset Then
+                        Return FileInfo.extentinfo(i)
+                    End If
+                End With
+            Next
+            Return Nothing
+        End Function
+        Public Function WithinExtent(offset As Long, ext As ltfsindex.file.extent) As Boolean
+            If ext Is Nothing Then Return False
+            With ext
+                Return .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset
+            End With
+        End Function
+        Public Overrides Property Position As Long
+            Get
+                Return _Position
+            End Get
+            Set(value As Long)
+                If value < 0 Then value = 0
+                If value >= FileInfo.length Then value = FileInfo.length - 1
+                Dim ext As ltfsindex.file.extent = GetExtent(value)
+                TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, ext.partition)
+                _Position = value
+            End Set
+        End Property
+
+        Public Overrides Sub Flush()
+
+        End Sub
+
+        Public Overrides Sub SetLength(value As Long)
+            Throw New NotImplementedException()
+        End Sub
+
+        Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
+            Throw New NotImplementedException()
+        End Sub
+
+        Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
+            Select Case origin
+                Case SeekOrigin.Begin
+                    Position = offset
+                Case SeekOrigin.Current
+                    Position = Position + offset
+                Case SeekOrigin.End
+                    Position = Length + offset
+            End Select
+            Return Position
+        End Function
+
+        Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
+            Dim rBytes As Integer = 0
+            Dim fCurrentPos As Long = Position
+            Dim ext As ltfsindex.file.extent = Nothing
+            While rBytes < count
+                If Not WithinExtent(fCurrentPos, ext) Then
+                    ext = GetExtent(fCurrentPos)
+                    Position = fCurrentPos
+                End If
+                If ext Is Nothing Then Exit While
+                Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
+                Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
+                Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
+                Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
+                Dim bytesReaded As Integer = data.Length - fByteOffset
+                Dim destIndex As Integer = offset + rBytes
+                Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))
+                rBytes += bytesReaded
+                fCurrentPos += bytesReaded
+            End While
+            _Position = fCurrentPos
+            Return rBytes
+        End Function
+    End Class
+
 End Class
 Public Class ExplorerUtils
     Implements IComparer(Of String)

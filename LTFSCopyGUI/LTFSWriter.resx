@@ -200,7 +200,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADu
-        CQAAAk1TRnQBSQFMAgEBAwEAAZwBBwGcAQcBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CQAAAk1TRnQBSQFMAgEBAwEAAbABBwGwAQcBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1079,13 +1079,13 @@
     <value>磁带</value>
   </data>
   <data name="格式化ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="格式化ToolStripMenuItem.Text" xml:space="preserve">
     <value>格式化</value>
   </data>
   <data name="设置高度ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="设置高度ToolStripMenuItem.Text" xml:space="preserve">
     <value>设置高度</value>
@@ -1104,7 +1104,7 @@
 </value>
   </data>
   <data name="合并SHA1ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="合并SHA1ToolStripMenuItem.Text" xml:space="preserve">
     <value>合并SHA1</value>
@@ -1121,7 +1121,7 @@
 </value>
   </data>
   <data name="校验源文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="校验源文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>校验源文件</value>
@@ -1130,10 +1130,16 @@
     <value>False</value>
   </data>
   <data name="挂载盘符只读ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="挂载盘符只读ToolStripMenuItem.Text" xml:space="preserve">
     <value>挂载盘符（只读）</value>
+  </data>
+  <data name="启动FTP服务只读ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>192, 22</value>
+  </data>
+  <data name="启动FTP服务只读ToolStripMenuItem.Text" xml:space="preserve">
+    <value>启动FTP服务（只读）</value>
   </data>
   <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>44, 21</value>
@@ -1259,7 +1265,7 @@
     <value> </value>
   </data>
   <data name="ToolStripStatusLabel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1048, 21</value>
+    <value>1079, 21</value>
   </data>
   <data name="ToolStripStatusLabel4.Text" xml:space="preserve">
     <value>  </value>
@@ -8499,6 +8505,12 @@
     <value>挂载盘符只读ToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;挂载盘符只读ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;启动FTP服务只读ToolStripMenuItem.Name" xml:space="preserve">
+    <value>启动FTP服务只读ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;启动FTP服务只读ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;ToolStripDropDownButton1.Name" xml:space="preserve">
