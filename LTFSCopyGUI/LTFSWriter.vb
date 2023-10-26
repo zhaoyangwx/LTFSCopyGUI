@@ -4021,7 +4021,9 @@ Public Class LTFSWriter
 
     Private Sub 启动FTP服务只读ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动FTP服务只读ToolStripMenuItem.Click
         Dim svc As New FTPService()
-
+        AddHandler svc.LogPrint, Sub(s As String)
+                                     PrintMsg($"FTPSVC> {s}")
+                                 End Sub
         svc.port = Integer.Parse(InputBox("Port", "FTP Service", "8021"))
         svc.schema = schema
         svc.TapeDrive = TapeDrive

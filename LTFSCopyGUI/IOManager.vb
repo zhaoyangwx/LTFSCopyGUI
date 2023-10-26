@@ -659,6 +659,7 @@ Public Class IOManager
 
     Public Class LTFSFileStream
         Inherits Stream
+        Public Event LogPrint(s As String)
         Public ReadOnly Property FileInfo As ltfsindex.file
         Public Property TapeDrive As String
         Public Property BlockSize As Integer
@@ -726,7 +727,13 @@ Public Class IOManager
                     If value < 0 Then value = 0
                     If value >= FileInfo.length Then value = FileInfo.length - 1
                     Dim ext As ltfsindex.file.extent = GetExtent(value)
-                    TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, Math.Min(ExtraPartitionCount, ext.partition))
+                    Dim p As New TapeUtils.PositionData(TapeDrive)
+                    Dim targetBlock As Long = ext.startblock + (value - ext.fileoffset) \ BlockSize
+                    Dim targetPartition As Integer = Math.Min(ExtraPartitionCount, ext.partition)
+                    If p.BlockNumber <> targetBlock OrElse p.PartitionNumber <> targetPartition Then
+                        RaiseEvent LogPrint($"LOCATE {TapeDrive} B{targetBlock}P{targetPartition} (File position {value})")
+                        TapeUtils.Locate(TapeDrive, targetBlock, targetPartition)
+                    End If
                     _Position = value
                 End SyncLock
             End Set
@@ -746,6 +753,7 @@ Public Class IOManager
 
         Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
             SyncLock ReadLock
+                RaiseEvent LogPrint($"Seek Offset {offset} Origin {origin}")
                 Select Case origin
                     Case SeekOrigin.Begin
                         Position = offset
@@ -760,6 +768,7 @@ Public Class IOManager
         Public Shared ReadLock As New Object
         Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
             SyncLock ReadLock
+                RaiseEvent LogPrint($"ReadFile: Offset {offset} Count{count}")
                 Dim rBytes As Integer = 0
                 Dim fCurrentPos As Long = Position
                 Dim CUrrentP As Integer = New TapeUtils.PositionData(TapeDrive).PartitionNumber
