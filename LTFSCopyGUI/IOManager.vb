@@ -663,6 +663,7 @@ Public Class IOManager
         Public Property TapeDrive As String
         Public Property BlockSize As Integer
         Public Property ExtraPartitionCount As Integer
+        Public Shared OperationLock As New Object
         Public Sub New(file As ltfsindex.file, drive As String, blksize As Integer, xtrPCount As Integer)
             FileInfo = file
             TapeDrive = drive
@@ -698,13 +699,16 @@ Public Class IOManager
         End Property
         Private _Position As Long
         Public Function GetExtent(offset As Long)
-            For i As Integer = 0 To FileInfo.extentinfo.Count - 1
-                With FileInfo.extentinfo(i)
-                    If .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset Then
-                        Return FileInfo.extentinfo(i)
-                    End If
-                End With
-            Next
+            SyncLock OperationLock
+                For i As Integer = 0 To FileInfo.extentinfo.Count - 1
+                    With FileInfo.extentinfo(i)
+                        If .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset Then
+                            Return FileInfo.extentinfo(i)
+                        End If
+                    End With
+                Next
+            End SyncLock
+
             Return Nothing
         End Function
         Public Function WithinExtent(offset As Long, partition As Integer, ext As ltfsindex.file.extent) As Boolean
@@ -718,11 +722,13 @@ Public Class IOManager
                 Return _Position
             End Get
             Set(value As Long)
-                If value < 0 Then value = 0
-                If value >= FileInfo.length Then value = FileInfo.length - 1
-                Dim ext As ltfsindex.file.extent = GetExtent(value)
-                TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, Math.Min(ExtraPartitionCount, ext.partition))
-                _Position = value
+                SyncLock OperationLock
+                    If value < 0 Then value = 0
+                    If value >= FileInfo.length Then value = FileInfo.length - 1
+                    Dim ext As ltfsindex.file.extent = GetExtent(value)
+                    TapeUtils.Locate(TapeDrive, ext.startblock + (Position - ext.fileoffset) \ BlockSize, Math.Min(ExtraPartitionCount, ext.partition))
+                    _Position = value
+                End SyncLock
             End Set
         End Property
 
@@ -739,41 +745,45 @@ Public Class IOManager
         End Sub
 
         Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
-            Select Case origin
-                Case SeekOrigin.Begin
-                    Position = offset
-                Case SeekOrigin.Current
-                    Position = Position + offset
-                Case SeekOrigin.End
-                    Position = Length + offset
-            End Select
-            Return Position
+            SyncLock ReadLock
+                Select Case origin
+                    Case SeekOrigin.Begin
+                        Position = offset
+                    Case SeekOrigin.Current
+                        Position = Position + offset
+                    Case SeekOrigin.End
+                        Position = Length + offset
+                End Select
+                Return Position
+            End SyncLock
         End Function
-
+        Public Shared ReadLock As New Object
         Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
-            Dim rBytes As Integer = 0
-            Dim fCurrentPos As Long = Position
-            Dim CUrrentP As Integer = New TapeUtils.PositionData(TapeDrive).PartitionNumber
-            Dim ext As ltfsindex.file.extent = Nothing
-            While rBytes < count
-                If Not WithinExtent(fCurrentPos, CUrrentP, ext) Then
-                    ext = GetExtent(fCurrentPos)
-                    Position = fCurrentPos
-                    CUrrentP = New TapeUtils.PositionData(TapeDrive).PartitionNumber
-                End If
-                If ext Is Nothing Then Exit While
-                Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
-                Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
-                Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
-                Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
-                Dim bytesReaded As Integer = data.Length - fByteOffset
-                Dim destIndex As Integer = offset + rBytes
-                Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))
-                rBytes += bytesReaded
-                fCurrentPos += bytesReaded
-            End While
-            _Position = fCurrentPos
-            Return rBytes
+            SyncLock ReadLock
+                Dim rBytes As Integer = 0
+                Dim fCurrentPos As Long = Position
+                Dim CUrrentP As Integer = New TapeUtils.PositionData(TapeDrive).PartitionNumber
+                Dim ext As ltfsindex.file.extent = Nothing
+                While rBytes < count
+                    If Not WithinExtent(fCurrentPos, CUrrentP, ext) Then
+                        ext = GetExtent(fCurrentPos)
+                        Position = fCurrentPos
+                        CUrrentP = New TapeUtils.PositionData(TapeDrive).PartitionNumber
+                    End If
+                    If ext Is Nothing Then Exit While
+                    Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
+                    Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
+                    Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
+                    Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
+                    Dim bytesReaded As Integer = data.Length - fByteOffset
+                    Dim destIndex As Integer = offset + rBytes
+                    Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))
+                    rBytes += bytesReaded
+                    fCurrentPos += bytesReaded
+                End While
+                _Position = fCurrentPos
+                Return rBytes
+            End SyncLock
         End Function
     End Class
 
