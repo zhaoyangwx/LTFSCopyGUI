@@ -183,7 +183,7 @@ Public Class FTPService
         Public Function OpenReadAsync(fileEntry As IUnixFileEntry, startPosition As Long, cancellationToken As CancellationToken) As Task(Of Stream) Implements IUnixFileSystem.OpenReadAsync
             Dim fileInfo As ltfsindex.file = CType(fileEntry, LTFSFileEntry).FileInfo
             Dim input As New IOManager.LTFSFileStream(fileInfo, TapeDrive, BlockSize, ExtraPartitionCount)
-            Dim rstream As New BufferedStream(input, 524288)
+            Dim rstream As New BufferedStream(input, 134217728)
             rstream.Seek(startPosition, SeekOrigin.Begin)
             Return Task.FromResult(Of Stream)(rstream)
         End Function
