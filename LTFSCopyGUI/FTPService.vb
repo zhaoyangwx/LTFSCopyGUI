@@ -17,6 +17,7 @@ Public Class FTPService
     Public Services As ServiceCollection
     Public ftpServerHost As IFtpServerHost
 
+    Public Event LogPrint(s As String)
     Public MustInherit Class LTFSFileSystemEntry
         Implements IUnixFileSystemEntry
         Public AccMode As New Generic.GenericAccessMode(True, False, True)
@@ -34,14 +35,22 @@ Public Class FTPService
         End Sub
         Public Sub New(fsInfo As ltfsindex.file)
             FileInfo = fsInfo
-            LastWriteTime = New DateTimeOffset(ParseTimeStamp(fsInfo.changetime))
-            CreatedTime = New DateTimeOffset(ParseTimeStamp(fsInfo.creationtime))
+            Try
+                CreatedTime = New DateTimeOffset(ParseTimeStamp(fsInfo.creationtime))
+                LastWriteTime = New DateTimeOffset(ParseTimeStamp(fsInfo.changetime))
+            Catch ex As Exception
+
+            End Try
             Name = fsInfo.name
         End Sub
         Public Sub New(fsInfo As ltfsindex.directory)
             DirectoryInfo = fsInfo
-            LastWriteTime = New DateTimeOffset(ParseTimeStamp(fsInfo.changetime))
-            CreatedTime = New DateTimeOffset(ParseTimeStamp(fsInfo.creationtime))
+            Try
+                CreatedTime = New DateTimeOffset(ParseTimeStamp(fsInfo.creationtime))
+                LastWriteTime = New DateTimeOffset(ParseTimeStamp(fsInfo.changetime))
+            Catch ex As Exception
+
+            End Try
             Name = fsInfo.name
         End Sub
         Public ReadOnly Property Name As String Implements IUnixFileSystemEntry.Name
@@ -115,12 +124,17 @@ Public Class FTPService
         Public Property TapeDrive As String
         Public Property BlockSize As Integer = 524288
         Public Property ExtraPartitionCount As Integer = 1
-        Public Sub New(rootPath As ltfsindex.directory, ByVal drive As String, ByVal blksize As Integer, ByVal _extraPartitionCount As Integer)
+        Public Event LogPrint(s As String)
+        Public Sub New(rootPath As ltfsindex.directory, ByVal drive As String, ByVal blksize As Integer, ByVal _extraPartitionCount As Integer, Optional ByVal LogHandler As Action(Of String) = Nothing)
             FileSystemEntryComparer = StringComparer.OrdinalIgnoreCase
             Root = New LTFSDirectoryEntry(rootPath, True)
             TapeDrive = drive
             BlockSize = blksize
             ExtraPartitionCount = _extraPartitionCount
+            If LogHandler IsNot Nothing Then AddHandler LogPrint,
+                Sub(s As String)
+                    LogHandler(s)
+                End Sub
         End Sub
 
         Public ReadOnly Property SupportsAppend As Boolean Implements IUnixFileSystem.SupportsAppend
@@ -182,7 +196,11 @@ Public Class FTPService
 
         Public Function OpenReadAsync(fileEntry As IUnixFileEntry, startPosition As Long, cancellationToken As CancellationToken) As Task(Of Stream) Implements IUnixFileSystem.OpenReadAsync
             Dim fileInfo As ltfsindex.file = CType(fileEntry, LTFSFileEntry).FileInfo
+            RaiseEvent LogPrint($"OpenReadAsync file={fileInfo.name} position={startPosition}")
             Dim input As New IOManager.LTFSFileStream(fileInfo, TapeDrive, BlockSize, ExtraPartitionCount)
+            AddHandler input.LogPrint, Sub(s As String)
+                                           RaiseEvent LogPrint(s)
+                                       End Sub
             Dim rstream As New BufferedStream(input, 134217728)
             rstream.Seek(startPosition, SeekOrigin.Begin)
             Return Task.FromResult(Of Stream)(rstream)
@@ -210,14 +228,16 @@ Public Class FTPService
         Private ReadOnly Property _drive As String
         Private ReadOnly Property _blocksize As Integer
         Private ReadOnly Property _extraPartitionCount As Integer
+        Public ReadOnly Property LogHandler As Action(Of String)
         Public Sub New(options As Microsoft.Extensions.Options.IOptions(Of LTFSFileSystemOptions))
             _root = options.Value.Root
             _drive = options.Value.TapeDrive
             _blocksize = options.Value.BlockSize
             _extraPartitionCount = options.Value.ExtraPartitionCount
+            LogHandler = options.Value.LogHandler
         End Sub
         Public Function Create(accountInformation As IAccountInformation) As Task(Of IUnixFileSystem) Implements IFileSystemClassFactory.Create
-            Return Task.FromResult(Of IUnixFileSystem)(New LTFSFileSystem(_root, _drive, _blocksize, _extraPartitionCount))
+            Return Task.FromResult(Of IUnixFileSystem)(New LTFSFileSystem(_root, _drive, _blocksize, _extraPartitionCount, LogHandler))
         End Function
     End Class
     Public Class LTFSFileSystemOptions
@@ -225,6 +245,7 @@ Public Class FTPService
         Public Property TapeDrive As String
         Public Property BlockSize As Integer
         Public Property ExtraPartitionCount As Integer
+        Public Property LogHandler As Action(Of String)
     End Class
     Public Shared Function UseLTFSFileSystem(builder As IFtpServerBuilder) As IFtpServerBuilder
         builder.Services.AddSingleton(Of IFileSystemClassFactory, LTFSFileSystemProvider)()
@@ -265,6 +286,9 @@ Public Class FTPService
                 opt.TapeDrive = TapeDrive
                 opt.BlockSize = BlockSize
                 opt.ExtraPartitionCount = ExtraPartitionCount
+                opt.LogHandler = Sub(s As String)
+                                     RaiseEvent LogPrint(s)
+                                 End Sub
             End Sub)
 
             Services.AddFtpServer(
@@ -290,7 +314,11 @@ Public Class FTPService
     End Sub
     Public Shared Function ParseTimeStamp(t As String) As Date
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z
-        Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
+        Try
+            Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
+        Catch ex As Exception
+            Return New Date()
+        End Try
     End Function
 
 End Class
