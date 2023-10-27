@@ -610,7 +610,7 @@ Public Class LTFSWriter
     Public Sub RefreshCapacity()
         Invoke(Sub()
                    Try
-                       Dim cap0 As Long '= TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
+                       Dim cap0 As Long = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
                        Dim cap1 As Long
                        Dim loss As Long
                        Dim CMInfo As New TapeUtils.CMParser(TapeDrive)
@@ -644,30 +644,6 @@ Public Class LTFSWriter
                                    gw = True
                                End If
                            End If
-                       Next
-                       DataSize.Add(CurrSize)
-                       Dim DataWrapList As New List(Of Integer)
-                       Dim DataWrapNum As Integer = 0
-                       For Each l As Double In CMInfo.TapeDirectoryData.CapacityLoss
-                           If l = -3 Then
-                               If DataWrapNum > 0 Then
-                                   DataWrapList.Add(DataWrapNum)
-                                   DataWrapNum = 0
-                               End If
-                           Else
-                               DataWrapNum += 1
-                           End If
-                       Next
-                       If DataWrapNum > 0 Then DataWrapList.Add(DataWrapNum)
-                       For i As Integer = 0 To DataWrapList.Count - 1
-                           Dim nWrap As Long = DataWrapList(i)
-                           Dim len As Long = nWrap * CMInfo.CartridgeMfgData.MB_PER_WRAP
-
-                           Dim WrittenSize As String = ""
-                           If DataSize.Count = DataWrapList.Count Then
-                               WrittenSize = $"{IOManager.FormatSize(DataSize(i) * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1024, True)} / "
-                           End If
-                           If i = 0 Then cap0 = len Else cap1 = len
                        Next
                        loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
                        If ExtraPartitionCount > 0 Then
