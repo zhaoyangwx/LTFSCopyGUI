@@ -273,11 +273,11 @@ dataDir:{dataDir}
                                 End If
                                 Dim P0Size As UInt16 = 1
                                 If i + 7 <= param.Length - 1 Then
-                                    P0Size = P0Size And Val(param(i + 7))
+                                    P0Size = &HFFFF And Val(param(i + 7))
                                 End If
                                 Dim P1Size As UInt16 = &HFFFF
                                 If i + 8 <= param.Length - 1 Then
-                                    P1Size = P1Size And Val(param(i + 8))
+                                    P1Size = &HFFFF And Val(param(i + 8))
                                 End If
 
                                 Dim sense As Byte() = {}
