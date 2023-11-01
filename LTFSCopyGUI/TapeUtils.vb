@@ -1373,7 +1373,10 @@ Public Class TapeUtils
                                   Optional ByVal ImmediateMode As Boolean = True,
                                   Optional ByVal ProgressReport As Action(Of String) = Nothing,
                                   Optional ByVal OnFinish As Action(Of String) = Nothing,
-                                  Optional ByVal OnError As Action(Of String) = Nothing) As Boolean
+                                  Optional ByVal OnError As Action(Of String) = Nothing,
+                                  Optional ByVal Capacity As UInt16 = &HFFFF,
+                                  Optional ByVal P0Size As UInt16 = 1,
+                                  Optional ByVal P1Size As UInt16 = &HFFFF) As Boolean
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
 
@@ -1392,7 +1395,7 @@ Public Class TapeUtils
 
                 'Set Capacity
                 ProgressReport("Set Capacity..")
-                If TapeUtils.SendSCSICommand(TapeDrive, {&HB, 0, 0, &HFF, &HFF, 0}) Then
+                If TapeUtils.SendSCSICommand(TapeDrive, {&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}) Then
                     ProgressReport("Load OK" & vbCrLf)
                 Else
                     OnError("Load Fail" & vbCrLf)
@@ -1410,7 +1413,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, 0, 1, &HFF, &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)

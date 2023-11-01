@@ -127,7 +127,7 @@
     <value>Barcode write fail</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>  -s                                            Disable index reading
+    <value>-s                                            Disable index reading
   -t &lt;drive&gt;                                    LTFSWriter
   ├  -t 0
   ├  -t TAPE0
@@ -146,8 +146,34 @@
   -wb &lt;drive&gt; &lt;barcode&gt;                         Barcode write
   └  -wb TAPE0 A00123L5                     
                                            
+  -mkltfs &lt;drive&gt; [&lt;Barcode&gt; &lt;Volume Label&gt; &lt;Partition&gt; &lt;Capacity&gt; &lt;BlockLen&gt; &lt;P0Size&gt; &lt;P1Size&gt;]
+                                                Format LTFS Volume
+  *  Optional Parameters
+  *  Barcode: 0-20 ASCII characters. Default=empty
+  *  Volume Label: Unicode string. Default=empty
+  *  Partition: 0 or 1. Default=1 (partitioned)
+  *  Capacity: 0-65535. Default=65535 (Full length)
+  *  BlockLen：1-2097152. Default=524288
+  *  P0Size：Partition 0 Size in GB, will round up to nearest multiple-of-two wraps. Default=1
+  *  P1Size：Partition 1 Size in GB, will round up to nearest multiple-of-two wraps. Default=65535
+  *  If one Partition Size field is set to 65535, the corresponding partition will occupy whatever capacity remains after satisfying the specified size for the other partitions. At most one partition size may be set to 65535.
+  *  If no Partition Size field is set to 65535, the sum of the specified partition sizes must not exceed the total available capacity
+  ├  -mkltfs TAPE0 (= -mkltfs TAPE0 "" "" 1 65535 524288 1 65535)
+  ├  -mkltfs TAPE0
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234"
+  ├  -mkltfs TAPE0 "" "" 1 48000
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234" 1 65535 65536
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234" 0
+  └  -mkltfs TAPE0 C01234L5 "Tape 1234" 1 65535 524288 75 65535
+                                           
   -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; &lt;timeout, default=60000&gt;         SCSI command execute
   └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600</value>
+  </data>
+  <data name="StrFormatError" xml:space="preserve">
+    <value>Format failed</value>
+  </data>
+  <data name="StrFormatFin" xml:space="preserve">
+    <value>Format finished</value>
   </data>
   <data name="StrIndexView" xml:space="preserve">
     <value>Index view</value>
