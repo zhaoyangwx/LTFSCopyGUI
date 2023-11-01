@@ -233,6 +233,74 @@ dataDir:{dataDir}
                                 CloseConsole()
                                 End
                             End If
+                        Case "-mkltfs"
+                            CheckUAC(e)
+                            InitConsole()
+                            If i < param.Count - 7 Then
+                                Dim TapeDrive As String = param(i + 1)
+                                If TapeDrive.StartsWith("TAPE") Then
+                                    TapeDrive = "\\.\" & TapeDrive
+                                ElseIf TapeDrive.StartsWith("\\.\") Then
+                                    'Do Nothing
+                                ElseIf TapeDrive = Val(TapeDrive).ToString Then
+                                    TapeDrive = "\\.\TAPE" & TapeDrive
+                                Else
+
+                                End If
+                                Dim Barcode As String = ""
+                                If i + 4 <= param.Length - 1 Then
+                                    Barcode = param(i + 2).Replace("""", "")
+                                    If Barcode.Length > 20 Then Barcode = Barcode.Substring(0, 20)
+                                End If
+
+                                Dim VolLabel As String = ""
+                                If i + 4 <= param.Length - 1 Then
+                                    VolLabel = param(i + 3).Replace("""", "")
+                                End If
+
+                                Dim Partition As Byte = 1
+                                If i + 4 <= param.Length - 1 Then
+                                    Partition = Partition And Val(param(i + 4))
+                                End If
+
+                                Dim Capacity As UInt16 = &HFFFF
+                                If i + 5 <= param.Length - 1 Then
+                                    Capacity = Capacity And Val(param(i + 5))
+                                End If
+                                Dim BlockLen As Integer = 524288
+                                If i + 6 <= param.Length - 1 Then
+                                    BlockLen = Val(param(i + 6))
+                                End If
+                                Dim P0Size As UInt16 = 1
+                                If i + 7 <= param.Length - 1 Then
+                                    P0Size = P0Size And Val(param(i + 7))
+                                End If
+                                Dim P1Size As UInt16 = &HFFFF
+                                If i + 8 <= param.Length - 1 Then
+                                    P1Size = P1Size And Val(param(i + 8))
+                                End If
+
+                                Dim sense As Byte() = {}
+                                If TapeUtils.mkltfs(TapeDrive, Barcode, VolLabel, Partition, BlockLen, True,
+                                    Sub(s As String)
+                                        'ProgReport
+                                        Console.WriteLine(s)
+                                    End Sub,
+                                    Sub(s As String)
+                                        'OnFin
+                                        Console.WriteLine(s)
+                                    End Sub,
+                                    Sub(s As String)
+                                        'OnErr
+                                        Console.WriteLine(s)
+                                    End Sub, Capacity, P0Size, P1Size) Then
+                                    Console.WriteLine(Resources.StrFormatFin)
+                                Else
+                                    Console.WriteLine(Resources.StrFormatError)
+                                End If
+                                CloseConsole()
+                                End
+                            End If
                         Case "-gt"
                             If i < param.Count - 2 Then
                                 Dim Num1 As Byte = Byte.Parse(param(i + 1))

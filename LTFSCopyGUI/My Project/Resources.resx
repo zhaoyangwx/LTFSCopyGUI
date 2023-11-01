@@ -121,7 +121,7 @@
     <value>设置Barcode失败</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>  -s                                            不要自动读取索引
+    <value>-s                                            不要自动读取索引
   -t &lt;drive&gt;                                    直接读写
   ├  -t 0
   ├  -t TAPE0
@@ -140,11 +140,38 @@
   -wb &lt;drive&gt; &lt;barcode&gt;                         写Barcode
   └  -wb TAPE0 A00123L5                     
                                            
-  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; &lt;timeout, default=60000&gt;         SCSI命令执行
+  -mkltfs &lt;drive&gt; [&lt;Barcode&gt; &lt;Volume Label&gt; &lt;Partition&gt; &lt;Capacity&gt; &lt;BlockLen&gt; &lt;P0Size&gt; &lt;P1Size&gt;]
+                                                格式化LTFS
+  *  可选参数
+  *  Barcode: 条码，0-20个ASCII字符，默认为空
+  *  Volume Label: 卷标，任意长度Unicode字符，默认为空
+  *  Partition: 是否分区，0或者1，默认为1
+  *  Capacity: 磁带容量，0-65535，默认为65535
+  *  BlockLen: 块大小，1-2097152，默认为524288
+  *  P0Size: 分区0大小，单位为GB，将向上取整到偶数个wrap，默认为1
+  *  P1Size: 分区1大小，单位为GB，将向上取整到偶数个wrap，默认为65535
+  *  P0Size和P1Size至多一个为65535，表示取剩余空间
+  *  P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量
+  ├  -mkltfs TAPE0 (= -mkltfs TAPE0 "" "" 1 65535 524288 1 65535)
+  ├  -mkltfs TAPE0
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234"
+  ├  -mkltfs TAPE0 "" "" 1 48000
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234" 1 65535 65536
+  ├  -mkltfs TAPE0 C01234L5 "Tape 1234" 0
+  └  -mkltfs TAPE0 C01234L5 "Tape 1234" 1 65535 524288 75 65535
+                                           
+  -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
+                                                SCSI命令执行
   └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600</value>
   </data>
   <data name="StrDefaultLicense" xml:space="preserve">
     <value> 非商业许可</value>
+  </data>
+  <data name="StrFormatError" xml:space="preserve">
+    <value>格式化失败</value>
+  </data>
+  <data name="StrFormatFin" xml:space="preserve">
+    <value>格式化操作完成</value>
   </data>
   <data name="StrIndexView" xml:space="preserve">
     <value>索引查看</value>
