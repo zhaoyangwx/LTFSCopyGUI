@@ -613,47 +613,57 @@ Public Class LTFSWriter
                        Dim cap0 As Long = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
                        Dim cap1 As Long
                        Dim loss As Long
-                       Dim CMInfo As New TapeUtils.CMParser(TapeDrive)
-                       Dim nLossDS As Long = 0
-                       Dim DataSize As New List(Of Long)
-                       If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
-                       Dim StartBlock As Integer = 0
-                       Dim CurrSize As Long = 0
-                       Dim gw As Boolean = False
-                       For wn As Integer = 0 To CMInfo.a_NWraps - 1
-                           Dim StartBlockStr As String = StartBlock.ToString()
-                           If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Or CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
-                           Dim EndBlock As Integer = StartBlock + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
-                           If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
-                           StartBlock += CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
-                           If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
-                               nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
-                               CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                               'wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
-                           ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
-                               StartBlock = 0
-                           ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
-                               CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                           ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then
-                               StartBlock = 0
-                               If gw Then
-                                   DataSize.Add(CurrSize)
-                                   CurrSize = 0
-                                   gw = False
-                               Else
-                                   gw = True
+
+                       If My.Settings.LTFSWriter_ShowLoss Then
+                           TapeUtils.Flush(TapeDrive)
+                           Dim CMInfo As New TapeUtils.CMParser(TapeDrive)
+                           Dim nLossDS As Long = 0
+                           Dim DataSize As New List(Of Long)
+                           If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
+                           Dim StartBlock As Integer = 0
+                           Dim CurrSize As Long = 0
+                           Dim gw As Boolean = False
+                           For wn As Integer = 0 To CMInfo.a_NWraps - 1
+                               Dim StartBlockStr As String = StartBlock.ToString()
+                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Or CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
+                               Dim EndBlock As Integer = StartBlock + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
+                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
+                               StartBlock += CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
+                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
+                                   nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
+                                   CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                                   'wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
+                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
+                                   StartBlock = 0
+                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
+                                   CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then
+                                   StartBlock = 0
+                                   If gw Then
+                                       DataSize.Add(CurrSize)
+                                       CurrSize = 0
+                                       gw = False
+                                   Else
+                                       gw = True
+                                   End If
                                End If
-                           End If
-                       Next
-                       loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
+                           Next
+                           loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
+
+                       End If
+
+
                        If ExtraPartitionCount > 0 Then
                            cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
-                           ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)} Loss:{IOManager.FormatSize(loss)}"
+                           ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)} Loss:{IOManager.FormatSize(loss)}"
-
                        Else
-                           ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)} Loss:{IOManager.FormatSize(loss)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} Loss:{IOManager.FormatSize(loss)}"
+                           ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)}"
+                       End If
+                       If My.Settings.LTFSWriter_ShowLoss Then
+                           ToolStripStatusLabel2.Text &= $" Loss:{IOManager.FormatSize(loss)}"
+                           ToolStripStatusLabel2.ToolTipText &= $" Loss:{IOManager.FormatSize(loss)}"
                        End If
                        LastRefresh = Now
                    Catch ex As Exception
@@ -2040,8 +2050,8 @@ Public Class LTFSWriter
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
                                 If finfo.Length > 0 Then
-                                    'Dim p As New TapeUtils.PositionData(TapeDrive)
-                                    If p.EOP Then PrintMsg(ResText_EWEOM.Text, True)
+                                    'p = New TapeUtils.PositionData(TapeDrive)
+                                    'If p.EOP Then PrintMsg(ResText_EWEOM.Text, True)
                                     Dim dupe As Boolean = False
                                     If My.Settings.LTFSWriter_DeDupe Then
                                         Dim dupeFile As ltfsindex.file = Nothing
@@ -2287,7 +2297,16 @@ Public Class LTFSWriter
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                 If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(TapeDrive)
                                 Invoke(Sub()
-                                           If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then RefreshCapacity()
+                                           If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
+                                               p = New TapeUtils.PositionData(TapeDrive)
+                                               RefreshCapacity()
+                                               Dim p2 As New TapeUtils.PositionData(TapeDrive)
+                                               If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                                                   If MessageBox.Show($"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
+                                                       StopFlag = True
+                                                   End If
+                                               End If
+                                           End If
                                        End Sub)
                             Catch ex As Exception
                                 MessageBox.Show($"{ResText_WErr.Text}{ex.ToString}")
@@ -4009,6 +4028,12 @@ Public Class LTFSWriter
         MessageBox.Show($"Service running on port {svc.port}.")
         svc.StopService()
         MessageBox.Show("Service stopped.")
+    End Sub
+
+    Private Sub 右下角显示容量损失ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 右下角显示容量损失ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_ShowLoss = Not My.Settings.LTFSWriter_ShowLoss
+        右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
+        My.Settings.Save()
     End Sub
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
