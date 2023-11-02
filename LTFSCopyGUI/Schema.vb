@@ -283,7 +283,7 @@ Public Class ltfsindex
         Return result
     End Function
     Public Shared Function FromSchFile(FileName As String) As ltfsindex
-        Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+        Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}_{ Guid.NewGuid().ToString()}.tmp"
         Dim sin As New IO.StreamReader(FileName)
         Dim soutx As New IO.StreamWriter(tmpf, False, New Text.UTF8Encoding(False))
         Dim result As ltfsindex
