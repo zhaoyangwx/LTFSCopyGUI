@@ -31,6 +31,7 @@ LTFSCopyGUI.exe /?查看命令行用法
     LTFSCopyGUI.exe -rb
     LTFSCopyGUI.exe -wb
     LTFSCopyGUI.exe -raw
+    LTFSCopyGUI.exe -mkltfs
 
 ### 更新说明
 
