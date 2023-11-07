@@ -12,8 +12,6 @@
 
 根据离线索引schema文件，对文件存放的block进行排序，并产生命令行用来复制文件。若Partition A有文件，先复制Partition A的文件。
 
-读文件前需先Load-Eject一次磁带以刷新schema文件，默认位置在C:\tmp\ltfs
-
 #### LTFSConfigurator.exe：磁带挂载管理/直接读写
 
 盘符挂载适用HPLTFS
