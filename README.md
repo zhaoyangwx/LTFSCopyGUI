@@ -45,7 +45,7 @@ LTFSCopyGUI.exe /?查看命令行用法
 
 LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
-5. 新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能
+5. 新增LTFS直接读写（无需挂载），LTO4模拟LTFS数据区功能，FTP服务器（只读）
 
 ### 关于加密
 
