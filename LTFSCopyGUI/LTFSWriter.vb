@@ -1167,7 +1167,11 @@ Public Class LTFSWriter
             Threading.Interlocked.Increment(schema.highestfileuid)
         End If
         If Not ParallelAdd Then
-            For Each f As IO.FileInfo In dnew1.GetFiles()
+            Dim flist As List(Of IO.FileInfo) = dnew1.GetFiles().ToList()
+            flist.Sort(New Comparison(Of IO.FileInfo)(Function(a As IO.FileInfo, b As IO.FileInfo) As Integer
+                                                          Return ExplorerComparer.Compare(a.Name, b.Name)
+                                                      End Function))
+            For Each f As IO.FileInfo In flist
                 Try
                     Dim FileExist As Boolean = False
                     Dim SameFile As Boolean = False

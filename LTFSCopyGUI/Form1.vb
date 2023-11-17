@@ -279,7 +279,7 @@ Public Class Form1
             schema = New ltfsindex
             Dim fid As Integer = 0
             Dim RootDir As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(TextBox3.Text)
-            Dim BasePath As String = RootDir.Parent.FullName
+            'Dim BasePath As String = RootDir.Parent.FullName
             Dim q As New List(Of IndexedDirectory)
             q.Add(New IndexedDirectory(New ltfsindex.directory With {.name = RootDir.Name}, RootDir))
             schema._directory.Add(q(0).LTFSIndexDir)
@@ -289,10 +289,30 @@ Public Class Form1
                     d.LTFSIndexDir.contents._file = New List(Of ltfsindex.file)
                     For Each f As IO.FileInfo In d.IO_Dir.GetFiles
                         Threading.Interlocked.Add(fid, 1)
-                        d.LTFSIndexDir.contents._file.Add(New ltfsindex.file With {.name = f.Name, .length = f.Length, .extentinfo = New List(Of ltfsindex.file.extent)({New ltfsindex.file.extent With {.startblock = fid}})})
+                        Dim fnew As New ltfsindex.file With {
+                             .name = f.Name,
+                             .length = f.Length,
+                             .extentinfo = New List(Of ltfsindex.file.extent)({New ltfsindex.file.extent With {.startblock = fid}})}
+                        Try
+                            fnew.creationtime = f.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            fnew.accesstime = f.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            fnew.modifytime = f.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            fnew.changetime = fnew.modifytime
+                        Catch ex As Exception
+
+                        End Try
+                        d.LTFSIndexDir.contents._file.Add(fnew)
                     Next
                     For Each sd As IO.DirectoryInfo In d.IO_Dir.GetDirectories
                         Dim ld As New ltfsindex.directory With {.name = sd.Name}
+                        Try
+                            ld.creationtime = sd.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            ld.accesstime = sd.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            ld.modifytime = sd.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            ld.changetime = ld.modifytime
+                        Catch ex As Exception
+
+                        End Try
                         d.LTFSIndexDir.contents._directory.Add(ld)
                         qtmp.Add(New IndexedDirectory(ld, sd))
                     Next

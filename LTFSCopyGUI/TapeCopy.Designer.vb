@@ -33,6 +33,7 @@ Partial Class TapeCopy
         Me.Label4 = New System.Windows.Forms.Label()
         Me.NumericUpDown2 = New System.Windows.Forms.NumericUpDown()
         Me.Label5 = New System.Windows.Forms.Label()
+        Me.Button2 = New System.Windows.Forms.Button()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -109,6 +110,7 @@ Partial Class TapeCopy
         Me.ProgressBar1.Anchor = CType(((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Left) _
             Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
         Me.ProgressBar1.Location = New System.Drawing.Point(14, 95)
+        Me.ProgressBar1.Maximum = 10000
         Me.ProgressBar1.Name = "ProgressBar1"
         Me.ProgressBar1.Size = New System.Drawing.Size(448, 23)
         Me.ProgressBar1.TabIndex = 7
@@ -141,11 +143,22 @@ Partial Class TapeCopy
         Me.Label5.TabIndex = 10
         Me.Label5.Text = "BlkLen"
         '
+        'Button2
+        '
+        Me.Button2.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button2.Location = New System.Drawing.Point(415, 124)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(47, 23)
+        Me.Button2.TabIndex = 11
+        Me.Button2.Text = "Flush"
+        Me.Button2.UseVisualStyleBackColor = True
+        '
         'TapeCopy
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(474, 151)
+        Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Label5)
         Me.Controls.Add(Me.NumericUpDown2)
         Me.Controls.Add(Me.Label4)
@@ -177,4 +190,5 @@ Partial Class TapeCopy
     Friend WithEvents Label4 As Label
     Friend WithEvents NumericUpDown2 As NumericUpDown
     Friend WithEvents Label5 As Label
+    Friend WithEvents Button2 As Button
 End Class
