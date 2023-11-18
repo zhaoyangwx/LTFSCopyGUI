@@ -2771,6 +2771,13 @@ Public Class LTFSWriter
         outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
         PrintMsg(ResText_Exporting.Text)
         schema.SaveFile(outputfile)
+        Dim cmData As New TapeUtils.CMParser(TapeDrive)
+        Try
+            Dim CMReport As String = cmData.GetReport()
+            If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
+        Catch ex As Exception
+
+        End Try
         PrintMsg(ResText_IndexBaked.Text, False, $"{ResText_IndexBak2.Text}{vbCrLf}{outputfile}")
         Return outputfile
     End Function
@@ -3257,6 +3264,7 @@ Public Class LTFSWriter
         CleanCycle = Val(InputBox(ResText_CLNCS.Text, ResText_Setting.Text, CleanCycle))
     End Sub
     Public Sub HashSelectedFiles(Overwrite As Boolean, ValidOnly As Boolean)
+        Dim fc As Long = 0, ec As Long = 0
         If ListView1.SelectedItems IsNot Nothing AndAlso
                 ListView1.SelectedItems.Count > 0 Then
             Dim BasePath As String = FolderBrowserDialog1.SelectedPath
@@ -3294,6 +3302,7 @@ Public Class LTFSWriter
                                                 FileIndex.SHA1ForeColor = Color.DarkGreen
                                             Else
                                                 FileIndex.SHA1ForeColor = Color.Red
+                                                Threading.Interlocked.Increment(ec)
                                                 PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", ForceLog:=True)
                                             End If
                                         End If
@@ -3318,7 +3327,7 @@ Public Class LTFSWriter
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
                                     End If
                                 End If
-
+                                Threading.Interlocked.Increment(fc)
                                 If StopFlag Then Exit For
                             Next
                         Catch ex As Exception
@@ -3329,7 +3338,7 @@ Public Class LTFSWriter
                         StopFlag = False
                         LockGUI(False)
                         RefreshDisplay()
-                        PrintMsg(ResText_HFin.Text)
+                        PrintMsg($"{ResText_HFin.Text} {fc - ec}/{fc} | {ec} {ResText_Error.Text}")
                     End Sub)
             th.Start()
         End If
@@ -3347,6 +3356,7 @@ Public Class LTFSWriter
     Public Sub HashSelectedDir(selectedDir As ltfsindex.directory, Overwrite As Boolean, ValidateOnly As Boolean)
         Dim th As New Threading.Thread(
             Sub()
+                Dim fc As Long = 0, ec As Long = 0
                 PrintMsg(ResText_Hashing.Text)
                 Try
                     StopFlag = False
@@ -3400,6 +3410,7 @@ Public Class LTFSWriter
                                     Else
                                         fr.File.SHA1ForeColor = Color.Red
                                         PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
+                                        Threading.Interlocked.Increment(ec)
                                     End If
                                 End If
                             End If
@@ -3419,13 +3430,13 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
                             End If
                         End If
-
+                        Threading.Interlocked.Increment(fc)
                         If StopFlag Then
                             PrintMsg(ResText_OpCancelled.Text)
                             Exit Try
                         End If
                     Next
-                    PrintMsg(ResText_HFin.Text)
+                    PrintMsg($"{ResText_HFin.Text} {fc - ec}/{fc} | {ec} {ResText_Error.Text}")
                 Catch ex As Exception
                     Invoke(Sub() MessageBox.Show(ex.ToString))
                     PrintMsg(ResText_HErr.Text)
