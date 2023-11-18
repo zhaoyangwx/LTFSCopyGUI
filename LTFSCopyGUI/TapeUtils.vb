@@ -1109,6 +1109,41 @@ Public Class TapeUtils
         Next
         Return sb.ToString()
     End Function
+    Public Shared Function RichByte2Hex(bytes As Byte(), Optional ByVal TextShow As Boolean = False) As String
+        Const HalfWidthChars As String = "~!@#$%^&*()_+-=|\ <>?,./:;""''{}[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        If bytes Is Nothing Then Return ""
+        If bytes.Length = 0 Then Return ""
+        Dim sb As New StringBuilder
+        Dim tb As String = ""
+        Dim ln As New StringBuilder
+        For i As Integer = 0 To bytes.Length - 1
+            If i Mod 16 = 0 And TextShow Then
+                ln.Append("|" & Hex(i).PadLeft(5) & "h: ")
+            End If
+            ln.Append(Convert.ToString((bytes(i) And &HFF) + &H100, 16).Substring(1).ToUpper)
+            ln.Append(" ")
+            Dim c As Char = Chr(bytes(i))
+            If Not HalfWidthChars.Contains(c) Then
+                tb &= "."
+            Else
+                tb &= c
+            End If
+            If i Mod 16 = 15 Then
+                If TextShow Then
+                    ln.Append(tb)
+                End If
+                sb.Append(ln.ToString().PadRight(74) & "|")
+                sb.Append(vbCrLf)
+                ln = New StringBuilder()
+                tb = ""
+            End If
+        Next
+        If TextShow And tb <> "" Then
+            ln.Append(tb)
+        End If
+        If ln.Length > 0 Then sb.Append(ln.ToString().PadRight(74) & "|")
+        Return sb.ToString()
+    End Function
     Public Shared Function ByteArrayToString(bytesArray As Byte()) As String
         Dim strBuilder As New StringBuilder()
         Dim rowSize As Integer = 16
@@ -3501,5 +3536,270 @@ Public Class TapeUtils
             writer.Serialize(t, Me)
             Return sb.ToString()
         End Function
+        Public Function GetReport() As String
+            Dim Output As New StringBuilder
+            Output.Append("+=========================== APPLICATION INFO ============================+" & vbCrLf)
+            Try
+                Dim BC As String = Me.ApplicationSpecificData.Barcode
+                'BC = TapeUtils.ReadBarcode(ConfTapeDrive)
+                'BC = TapeUtils.ReadBarcode(ConfTapeDrive)
+                Output.Append(("| Barcode: ".PadRight(28) & BC).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Barcode: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim AppInfo As String = $"{Me.ApplicationSpecificData.Application_vendor} {Me.ApplicationSpecificData.Application_name} {Me.ApplicationSpecificData.Application_version}" ' TapeUtils.ReadAppInfo(ConfTapeDrive)
+                Output.Append(("| Application: ".PadRight(28) & AppInfo).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Application: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Output.Append("+============================= MEDIUM USAGE ==============================+" & vbCrLf)
+            If Me.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then
+                Try
+                    Dim LoadCount As Int64 = Me.StatusData.ThreadCount ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                    Output.Append(("| Cleans performed: ".PadRight(28) & LoadCount).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Cleans performed: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim CleanRemain As Int64 = Me.a_CleansRemaining ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                    Output.Append(("| Cleans remain: ".PadRight(28) & CleanRemain).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Cleans remain: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim TapeLen As Int64 = Me.CartridgeMfgData.TapeLength ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                    Dim LastLoc As Int64 = Me.StatusData.LastLocation ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                    Output.Append(("| Used length: ".PadRight(28) & $"{(LastLoc / 4).ToString("f2")} m / {((TapeLen / 4) - 11).ToString("f2")} m").PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Used length: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+
+            Else
+                Try
+                    Dim LoadCount As Int64 = Me.StatusData.ThreadCount ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 0, 3).AsNumeric
+                    Output.Append(("| Load count: ".PadRight(28) & LoadCount).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Load count: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim TotalWriteMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
+                    TotalWriteMBytes *= Me.UsageData(0).LifeSetsWritten
+                    TotalWriteMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
+                    Output.Append(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteMBytes)).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Total write: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim TotalReadMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
+                    TotalReadMBytes *= Me.UsageData(0).LifeSetsRead
+                    TotalReadMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
+                    Output.Append(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadMBytes)).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Total read: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim fve As Double = (Me.UsageData(0).LifeSetsRead + Me.UsageData(0).LifeSetsWritten) / (Me.a_SetsPerWrap * Me.a_NWraps)
+                    Output.Append(("| Full volume equivalents: ".PadRight(28) & fve.ToString("f2") & $" FVE ({(fve / Me.CartridgeMfgData.TAPE_LIFE_IN_VOLS * 100).ToString("f2")}%)").PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Full volume equivalents: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Write retries: ".PadRight(28) & Me.UsageData(0).LifeWriteRetries).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Write retries: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Read retries: ".PadRight(28) & Me.UsageData(0).LifeReadRetries).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Read retries: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Unrecovered writes: ".PadRight(28) & Me.UsageData(0).LifeUnRecovWrites).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Unrecovered writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Unrecovered reads: ".PadRight(28) & Me.UsageData(0).LifeUnRecovReads).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Unrecovered reads: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Suspended writes: ".PadRight(28) & Me.UsageData(0).LifeSuspendedWrites).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Suspended writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Suspended append writes: ".PadRight(28) & Me.UsageData(0).LifeSuspAppendWrites).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Suspended append writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Output.Append(("| Fatal suspended writes: ".PadRight(28) & Me.UsageData(0).LifeFatalSuspWrites).PadRight(74) & "|" & vbCrLf)
+                Catch ex As Exception
+                    Output.Append(("| Fatal suspended writes: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                End Try
+            End If
+
+            'Try
+            '    Dim TapeMetresPulled As Int64 = Me.UsageData(0).LifeTapeMetresPulled
+            '    If TapeMetresPulled <= 0 Then Throw New Exception("TMP Not available")
+            '    TextBox8.Append(" Tape pulled: ".PadRight(28) & TapeMetresPulled & " m" & vbCrLf)
+            'Catch ex As Exception
+            '    TextBox8.Append(" Tape pulled: ".PadRight(28) & "Not available" & vbCrLf)
+            'End Try
+            Output.Append("+============================ MEDIUM IDENTITY ============================+" & vbCrLf)
+            Try
+                Dim Medium_Format As String = $"{Me.CartridgeMfgData.Format} (MC 0x{Me.CartridgeMfgData.MediaCode.ToString("X4")} DC 0x{Me.CartridgeMfgData.DENSITY_CODE.ToString("X2")})"
+                Output.Append(("| Format: ".PadRight(28) & Medium_Format).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Format: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim Medium_SN As String = Me.CartridgeMfgData.CartridgeSN ' TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 1).AsString
+                Output.Append(("| Serial number: ".PadRight(28) & Medium_SN).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Serial number: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim Medium_Manufacturer As String = Me.CartridgeMfgData.TapeVendor 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
+                Output.Append(("| Manufacturer: ".PadRight(28) & Medium_Manufacturer).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Manufacturer: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim Medium_Man_Date As String = Me.CartridgeMfgData.MfgDate 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
+                Output.Append(("| Manufacture date: ".PadRight(28) & Medium_Man_Date).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Manufacture date: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim CMData As Byte() = Me.a_CMBuffer
+                Dim Medium_ParticleType As String = Me.CartridgeMfgData.ParticleType.ToString()
+                If Me.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Medium_ParticleType = "Universal Clean Cartridge"
+                Output.Append(("| Particle type: ".PadRight(28) & Medium_ParticleType).PadRight(74) & "|" & vbCrLf)
+                Output.Append("+============================= DATA ON TAPE ==============================+" & vbCrLf)
+                Dim wares As New StringBuilder
+                Dim nLossDS As Long = 0
+                Dim DataSize As New List(Of Long)
+                Try
+                    If Me.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
+                    wares.AppendLine("+============================= WRAP ANALYSIS =============================+")
+                    wares.AppendLine("| Wrap | Start Block |  End Block  | Filemark |      Set      | Capacity  |")
+                    wares.AppendLine("|------+-------------+-------------+----------+---------------+-----------|")
+                    Dim StartBlock As Integer = 0
+                    Dim CurrSize As Long = 0
+                    Dim gw As Boolean = False
+                    For wn As Integer = 0 To Me.a_NWraps - 1
+                        Dim StartBlockStr As String = StartBlock.ToString()
+                        If Me.TapeDirectoryData.CapacityLoss(wn) = -1 Or Me.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
+                        Dim EndBlock As Integer = StartBlock + Me.TapeDirectoryData.WrapEntryInfo(wn).RecCount + Me.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
+                        If Me.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
+                        wares.Append($"| {wn.ToString().PadLeft(3)}  |")
+                        wares.Append($" {StartBlockStr.PadLeft(10)}  |")
+                        If StartBlockStr <> "" Then
+                            wares.Append($"  {EndBlock.ToString.PadLeft(10)} |")
+                        Else
+                            wares.Append($"  {"".PadLeft(10)} |")
+                        End If
+                        wares.Append($"  {Me.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount.ToString().PadLeft(5)}   |")
+                        wares.Append($" {Me.TapeDirectoryData.DatasetsOnWrapData(wn).Data.ToString().PadLeft(5)} / {Me.a_SetsPerWrap.ToString().PadRight(5)} |")
+                        StartBlock += Me.TapeDirectoryData.WrapEntryInfo(wn).RecCount + Me.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
+                        If Me.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
+                            nLossDS += Math.Max(0, Me.a_SetsPerWrap - Me.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
+                            CurrSize += Me.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                            'wares.Append($" { (100 - Me.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
+                            wares.Append($" { (Me.TapeDirectoryData.DatasetsOnWrapData(wn).Data / Me.a_SetsPerWrap * 100).ToString("f2").PadLeft(7)}%  |")
+                        ElseIf Me.TapeDirectoryData.CapacityLoss(wn) = -1 Then
+                            StartBlock = 0
+                            wares.Append($"           |")
+                        ElseIf Me.TapeDirectoryData.CapacityLoss(wn) = -2 Then
+                            CurrSize += Me.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                            wares.Append($"  >>EOD<<  |")
+                        ElseIf Me.TapeDirectoryData.CapacityLoss(wn) = -3 Then
+                            StartBlock = 0
+                            If gw Then
+                                DataSize.Add(CurrSize)
+                                CurrSize = 0
+                                gw = False
+                            Else
+                                gw = True
+                            End If
+                            wares.Append($"  *GUARD*  |")
+                        End If
+                        wares.AppendLine()
+                    Next
+                    DataSize.Add(CurrSize)
+                Catch ex As Exception
+                    wares.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
+                End Try
+                Try
+                    Dim DataWrapList As New List(Of Integer)
+                    Dim DataWrapNum As Integer = 0
+                    For Each l As Double In Me.TapeDirectoryData.CapacityLoss
+                        If l = -3 Then
+                            If DataWrapNum > 0 Then
+                                DataWrapList.Add(DataWrapNum)
+                                DataWrapNum = 0
+                            End If
+                        Else
+                            DataWrapNum += 1
+                        End If
+                    Next
+                    If DataWrapNum > 0 Then DataWrapList.Add(DataWrapNum)
+                    Output.Append(("| Total partitions: ".PadRight(28) & DataWrapList.Count).PadRight(74) & "|" & vbCrLf)
+                    For i As Integer = 0 To DataWrapList.Count - 1
+                        Dim nWrap As Long = DataWrapList(i)
+                        Dim len As Long = nWrap * Me.CartridgeMfgData.MB_PER_WRAP
+
+                        Dim WrittenSize As String = ""
+                        If DataSize.Count = DataWrapList.Count Then
+                            WrittenSize = $"{IOManager.FormatSize(DataSize(i) * Me.CartridgeMfgData.KB_PER_DATASET * 1024, True)} / "
+                        End If
+                        Output.Append（($"| Partition {i} size: ".PadRight(28) & (WrittenSize & ReduceDataUnit(len)).PadRight(24) & $"[{nWrap.ToString().PadLeft(3)} wraps]").PadRight(74) & "|" & vbCrLf)
+                    Next
+                Catch ex As Exception
+                    Output.Append("Partition page not available" & vbCrLf)
+                End Try
+                Output.Append(("| Estimated capacity loss: ".PadRight(28) & IOManager.FormatSize(nLossDS * Me.CartridgeMfgData.KB_PER_DATASET * 1000)).PadRight(74) & "|" & vbCrLf)
+                Output.Append(wares.ToString())
+
+                Output.Append("+============================== CM RAW DATA ==============================+" & vbCrLf)
+                Output.Append(("| Length: " & CMData.Length).PadRight(74) & "|" & vbCrLf)
+                Output.Append(RichByte2Hex(CMData, True))
+                Output.Append("+=========================================================================+")
+                Output.Append(vbCrLf)
+            Catch ex As Exception
+                Output.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
+            End Try
+            Return Output.ToString()
+        End Function
     End Class
+    Public Shared Function ReduceDataUnit(MBytes As Int64) As String
+        Dim Result As Decimal = MBytes
+        Dim ResultUnit As Integer = 0
+        While Result >= 1000
+            Result /= 1024
+            ResultUnit += 3
+        End While
+        Dim ResultString As String = Math.Round(Result, 2)
+        Select Case ResultUnit
+            Case 0
+                Return ResultString & " MiB"
+            Case 3
+                Return ResultString & " GiB"
+            Case 6
+                Return ResultString & " TiB"
+            Case 9
+                Return ResultString & " PiB"
+            Case 12
+                Return ResultString & " EiB"
+            Case 15
+                Return ResultString & " ZiB"
+            Case 18
+                Return ResultString & " YiB"
+            Case Else
+                Return ResultString & " << " & ResultUnit & "MiB"
+        End Select
+    End Function
 End Class
