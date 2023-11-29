@@ -656,7 +656,7 @@ Public Class LTFSWriter
                        If ExtraPartitionCount > 0 Then
                            cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
                            ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)} Loss:{IOManager.FormatSize(loss)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)}"
                        Else
                            ToolStripStatusLabel2.Text = $"{ResText_CapRem.Text} P0:{IOManager.FormatSize(cap0 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{ResText_CapRem.Text} P0:{LTFSConfigurator.ReduceDataUnit(cap0)}"
@@ -1678,6 +1678,8 @@ Public Class LTFSWriter
             Exit Sub
         End If
         If IO.File.Exists(FileName) Then
+            Dim fi As New IO.FileInfo(FileName)
+            fi.Attributes = fi.Attributes And Not IO.FileAttributes.ReadOnly
             IO.File.Delete(FileName)
         End If
         IO.File.WriteAllBytes(FileName, {})
@@ -1776,7 +1778,6 @@ Public Class LTFSWriter
             finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
             finfo.IsReadOnly = FileIndex.readonly
         End If
-
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
     End Sub
@@ -2269,7 +2270,6 @@ Public Class LTFSWriter
                                             End While
                                             If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                             fr.CloseAsync()
-
                                             If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
                                                 Threading.Interlocked.Increment(HashTaskAwaitNumber)
                                                 Task.Run(Sub()
