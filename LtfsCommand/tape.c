@@ -223,7 +223,6 @@ BOOL GetChangerList(PTAPE_DRIVE *changerList, PDWORD numChangersFound)
 
 							((PCDB)(cdb))->CDB6INQUIRY.OperationCode = SCSIOP_INQUIRY;
 							((PCDB)(cdb))->CDB6INQUIRY.AllocationLength = sizeof(dataBuffer);
-							((PCDB)(cdb))->CDB6INQUIRY.LogicalUnitNumber = 0x1;
 							((PCDB)(cdb))->CDB6INQUIRY.PageCode = 0x80;
 							((PCDB)(cdb))->CDB6INQUIRY.Reserved1 = 1;
 							BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 3, NULL);
