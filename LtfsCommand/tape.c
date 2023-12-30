@@ -60,13 +60,12 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
                     if (handle != INVALID_HANDLE_VALUE)
                     {
                         BOOL result = FALSE;
-                        BYTE dataBuffer[1024];
+                        BYTE dataBuffer[128];
                         BYTE cdb[6];
                         STORAGE_DEVICE_NUMBER devNum;
-
+						int a = SPDRP_LOCATION_PATHS;
                         PTAPE_DRIVE driveData = (PTAPE_DRIVE)LocalAlloc(LMEM_FIXED, sizeof(TAPE_DRIVE));
                         driveData->Next = NULL;
-
                         DWORD lpBytesReturned;
                         result = DeviceIoControl(handle, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &devNum, sizeof(STORAGE_DEVICE_NUMBER), &lpBytesReturned, NULL);
 
@@ -78,9 +77,8 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
                             memset(cdb, 0, sizeof(cdb));
 
                             ((PCDB)(cdb))->CDB6INQUIRY.OperationCode = SCSIOP_INQUIRY;
-                            ((PCDB)(cdb))->CDB6INQUIRY.IReserved = 4;
-
-                            result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 10, NULL);
+                            ((PCDB)(cdb))->CDB6INQUIRY.AllocationLength = sizeof(dataBuffer);
+                            result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 3, NULL);
 
                             if (result)
                             {
@@ -96,11 +94,11 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
                             memset(cdb, 0, sizeof(cdb));
 
                             ((PCDB)(cdb))->CDB6INQUIRY.OperationCode = SCSIOP_INQUIRY;
-                            ((PCDB)(cdb))->CDB6INQUIRY.IReserved = 4;
+                            ((PCDB)(cdb))->CDB6INQUIRY.AllocationLength = sizeof(dataBuffer);
                             ((PCDB)(cdb))->CDB6INQUIRY.PageCode = 0x80;
+                            ((PCDB)(cdb))->CDB6INQUIRY.PageCode = 0xB1;
                             ((PCDB)(cdb))->CDB6INQUIRY.Reserved1 = 1;
-
-                            BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 10, NULL);
+                            BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 3, NULL);
 
                             if (result)
                             {
@@ -108,7 +106,7 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
                                 strncpy_s((char *)driveData->SerialNumber, sizeof(driveData->SerialNumber), (char *)inquiryResult->SerialNumber, inquiryResult->PageLength);
                             }
                         }
-
+						/*
                         if (result)
                         {
                             memset(dataBuffer, 0, sizeof(dataBuffer));
@@ -118,12 +116,12 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
                             ((PCDB)(cdb))->MODE_SENSE.PageCode = TC_MP_MEDIUM_PARTITION;
                             ((PCDB)(cdb))->MODE_SENSE.AllocationLength = 255;
 
-                            BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 10, NULL);
+                            BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 600, NULL);
 
                             // Fuck knows. LTFSConfigurator.exe performs this operation (and others), which it appears may be able to tell us whether or not the 
                             // drive is compatible with LTFS. I have yet to figure out how to parse this data to perform this test, so we're not doing it at present.
                         }
-
+*/
                         if (result)
                         {
                             if (listLast)
@@ -159,6 +157,135 @@ BOOL TapeGetDriveList(PTAPE_DRIVE *driveList, PDWORD numDrivesFound)
 
     return devsFound > 0;
 }
+
+BOOL GetChangerList(PTAPE_DRIVE *changerList, PDWORD numChangersFound)
+{
+	HDEVINFO devInfo = SetupDiGetClassDevs(&GUID_DEVINTERFACE_MEDIUMCHANGER, NULL, NULL, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT);
+	SP_DEVICE_INTERFACE_DATA devData;
+	PTAPE_DRIVE listHead = NULL;
+	PTAPE_DRIVE listLast = NULL;
+	DWORD devIndex = 0;
+	DWORD devsFound = 0;
+	BOOL lastRet = FALSE;
+
+	do
+	{
+		devData.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
+		lastRet = SetupDiEnumDeviceInterfaces(devInfo, NULL, &GUID_DEVINTERFACE_MEDIUMCHANGER, devIndex, &devData);
+
+		if (lastRet == TRUE)
+		{
+			DWORD dwRequiredSize = 0;
+			SetupDiGetDeviceInterfaceDetail(devInfo, &devData, NULL, 0, &dwRequiredSize, NULL);
+			if (dwRequiredSize > 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			{
+				PSP_DEVICE_INTERFACE_DETAIL_DATA devDetail = (PSP_DEVICE_INTERFACE_DETAIL_DATA)LocalAlloc(LMEM_FIXED, dwRequiredSize);
+				devDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
+
+				if (SetupDiGetDeviceInterfaceDetail(devInfo, &devData, devDetail, dwRequiredSize, &dwRequiredSize, NULL) == TRUE)
+				{
+					HANDLE handle = CreateFile(devDetail->DevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+					if (handle != INVALID_HANDLE_VALUE)
+					{
+						BOOL result = FALSE;
+						BYTE dataBuffer[128];
+						BYTE cdb[6];
+						STORAGE_DEVICE_NUMBER devNum;
+						int a = SPDRP_LOCATION_PATHS;
+						PTAPE_DRIVE driveData = (PTAPE_DRIVE)LocalAlloc(LMEM_FIXED, sizeof(TAPE_DRIVE));
+						driveData->Next = NULL;
+						DWORD lpBytesReturned;
+						result = DeviceIoControl(handle, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &devNum, sizeof(STORAGE_DEVICE_NUMBER), &lpBytesReturned, NULL);
+
+						driveData->DevIndex = devNum.DeviceNumber;
+
+						if (result)
+						{
+							memset(dataBuffer, 0, sizeof(dataBuffer));
+							memset(cdb, 0, sizeof(cdb));
+
+							((PCDB)(cdb))->CDB6INQUIRY.OperationCode = SCSIOP_INQUIRY;
+							((PCDB)(cdb))->CDB6INQUIRY.AllocationLength = sizeof(dataBuffer);
+							result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 3, NULL);
+
+							if (result)
+							{
+								PINQUIRYDATA inquiryResult = (PINQUIRYDATA)dataBuffer;
+								strncpy_s((char *)driveData->VendorId, sizeof(driveData->VendorId), (char *)inquiryResult->VendorId, MEMBER_SIZE(INQUIRYDATA, VendorId));
+								strncpy_s((char *)driveData->ProductId, sizeof(driveData->ProductId), (char *)inquiryResult->ProductId, MEMBER_SIZE(INQUIRYDATA, ProductId));
+							}
+						}
+
+						if (result)
+						{
+							memset(dataBuffer, 0, sizeof(dataBuffer));
+							memset(cdb, 0, sizeof(cdb));
+
+							((PCDB)(cdb))->CDB6INQUIRY.OperationCode = SCSIOP_INQUIRY;
+							((PCDB)(cdb))->CDB6INQUIRY.AllocationLength = sizeof(dataBuffer);
+							((PCDB)(cdb))->CDB6INQUIRY.LogicalUnitNumber = 0x1;
+							((PCDB)(cdb))->CDB6INQUIRY.PageCode = 0x80;
+							((PCDB)(cdb))->CDB6INQUIRY.Reserved1 = 1;
+							BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 3, NULL);
+
+							if (result)
+							{
+								PVPD_SERIAL_NUMBER_PAGE inquiryResult = (PVPD_SERIAL_NUMBER_PAGE)dataBuffer;
+								strncpy_s((char *)driveData->SerialNumber, sizeof(driveData->SerialNumber), (char *)inquiryResult->SerialNumber, inquiryResult->PageLength);
+							}
+						}
+						/*
+						if (result)
+						{
+						memset(dataBuffer, 0, sizeof(dataBuffer));
+						memset(cdb, 0, sizeof(cdb));
+
+						((PCDB)(cdb))->MODE_SENSE.OperationCode = SCSIOP_MODE_SENSE;
+						((PCDB)(cdb))->MODE_SENSE.PageCode = TC_MP_MEDIUM_PARTITION;
+						((PCDB)(cdb))->MODE_SENSE.AllocationLength = 255;
+
+						BOOL result = ScsiIoControl(handle, devNum.DeviceNumber, cdb, sizeof(cdb), dataBuffer, sizeof(dataBuffer), SCSI_IOCTL_DATA_IN, 600, NULL);
+
+						// Fuck knows. LTFSConfigurator.exe performs this operation (and others), which it appears may be able to tell us whether or not the
+						// drive is compatible with LTFS. I have yet to figure out how to parse this data to perform this test, so we're not doing it at present.
+						}
+						*/
+						if (result)
+						{
+							if (listLast)
+								listLast->Next = driveData;
+
+							if (listHead == NULL)
+								listHead = driveData;
+
+							listLast = driveData;
+							devsFound++;
+						}
+						else
+						{
+							LocalFree(driveData);
+						}
+					}
+
+					CloseHandle(handle);
+				}
+
+				LocalFree(devDetail);
+			}
+		}
+
+		devIndex++;
+
+	} while (lastRet == TRUE);
+
+	SetupDiDestroyDeviceInfoList(devInfo);
+
+	*changerList = listHead;
+	*numChangersFound = devsFound;
+
+	return devsFound > 0;
+}
+
 
 void TapeDestroyDriveList(PTAPE_DRIVE driveList)
 {
