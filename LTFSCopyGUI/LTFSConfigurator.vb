@@ -1291,4 +1291,17 @@ Public Class LTFSConfigurator
             End If
         End If
     End Sub
+
+    Private Sub CheckBox1_MouseUp(sender As Object, e As MouseEventArgs) Handles CheckBox1.MouseUp
+        If e.Button = MouseButtons.Right Then
+            Button2.Visible = Not Button2.Visible
+            Button3.Visible = Not Button3.Visible
+            Button4.Visible = Not Button4.Visible
+            Button5.Visible = Not Button5.Visible
+        End If
+    End Sub
+
+    Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
+        ChangerTool.Show()
+    End Sub
 End Class

@@ -40,6 +40,7 @@ Partial Class LTFSConfigurator
         Me.Button10 = New System.Windows.Forms.Button()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
         Me.Panel1 = New System.Windows.Forms.Panel()
+        Me.Button5 = New System.Windows.Forms.Button()
         Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.Button30 = New System.Windows.Forms.Button()
         Me.Button27 = New System.Windows.Forms.Button()
@@ -202,6 +203,7 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
+        Me.Panel1.Controls.Add(Me.Button5)
         Me.Panel1.Controls.Add(Me.CheckBox3)
         Me.Panel1.Controls.Add(Me.Button30)
         Me.Panel1.Controls.Add(Me.Button27)
@@ -227,6 +229,12 @@ Partial Class LTFSConfigurator
         Me.Panel1.Controls.Add(Me.TextBox1)
         resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Name = "Panel1"
+        '
+        'Button5
+        '
+        resources.ApplyResources(Me.Button5, "Button5")
+        Me.Button5.Name = "Button5"
+        Me.Button5.UseVisualStyleBackColor = True
         '
         'CheckBox3
         '
@@ -695,4 +703,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents CheckBox3 As CheckBox
     Friend WithEvents CheckBox4 As CheckBox
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
+    Friend WithEvents Button5 As Button
 End Class

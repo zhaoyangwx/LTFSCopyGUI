@@ -3,14 +3,258 @@ Imports System.Text
 
 Public Class TapeUtils
 #Region "winapi"
-    <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
-    Public Shared Function SetupDiEnumDeviceInterfaces(
-        DeviceInfoSet As IntPtr,
-        DeviceInfoData As IntPtr,
-        InterfaceClassGuid As IntPtr,
-        MemberIndex As UInt64,
-        DeviceInterfaceData As IntPtr) As Boolean
+    Public Class SetupAPI
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure SP_DEVINFO_DATA
+
+            Public cbSize As Integer
+
+            Public ClassGuid As Guid
+
+            Public DevInst As Integer
+
+            Public Reserved As IntPtr
+        End Structure
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure SP_DEVINFO_DETAIL_DATA
+
+            Public cbSize As Integer
+
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
+            Public DevicePath As String
+
+        End Structure
+
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure SP_DEVICE_INTERFACE_DATA
+
+            Public cbSize As UInteger
+
+            Public InterfaceClassGuid As Guid
+
+            Public Flags As UInteger
+
+            Public Reserved As IntPtr
+        End Structure
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure SP_DRVINFO_DATA
+
+            Public cbSize As UInteger
+
+            Public DriverType As UInteger
+
+            Public Reserved As IntPtr
+
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
+            Public Description As String
+
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
+            Public MfgName As String
+
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
+            Public ProviderName As String
+
+            Public DriverDate As FILETIME
+
+            Public DriverVersion As System.UInt64
+        End Structure
+        Private Function GetVersionFromLong(ByVal version As System.UInt64) As String
+            Dim baseNumber As System.UInt64 = 65535
+            Dim sb As StringBuilder = New StringBuilder
+            Dim temp As System.UInt64
+            Dim offset As Integer = 48
+            Do While (offset >= 0)
+                temp = ((version + offset) _
+                        And baseNumber)
+                sb.Append((temp.ToString + "."))
+                offset = (offset - 16)
+            Loop
+
+            Return sb.ToString
+        End Function
+        ' Flags for CM_Locate_DevNode
+        Public Const CM_LOCATE_DEVNODE_NORMAL As UInteger = 0
+
+        Public Const CM_LOCATE_DEVNODE_PHANTOM As UInteger = 1
+
+        Public Const CM_LOCATE_DEVNODE_CANCELREMOVE As UInteger = 2
+
+        Public Const CM_LOCATE_DEVNODE_NOVALIDATION As UInteger = 4
+
+        Public Const CM_LOCATE_DEVNODE_BITS As UInteger = 7
+
+        ' Flags for CM_Disable_DevNode
+        Public Const CM_DISABLE_POLITE As UInteger = 0
+
+        Public Const CM_DISABLE_ABSOLUTE As UInteger = 1
+
+        Public Const CM_DISABLE_HARDWARE As UInteger = 2
+
+        Public Const CM_DISABLE_UI_NOT_OK As UInteger = 4
+
+        Public Const CM_DISABLE_PERSIST As UInteger = 8
+
+        Public Const CM_DISABLE_BITS As UInteger = 15
+
+        ' Flags for CM_Query_And_Remove_SubTree
+        Public Const CM_REMOVE_UI_OK As UInteger = 0
+
+        Public Const CM_REMOVE_UI_NOT_OK As UInteger = 1
+
+        Public Const CM_REMOVE_NO_RESTART As UInteger = 2
+
+        Public Const CM_REMOVE_BITS As UInteger = 3
+
+        Public Const DIGCF_DEFAULT As UInteger = &H1
+        Public Const DIGCF_PRESENT As UInteger = &H2
+        Public Const DIGCF_ALLCLASSES As UInteger = &H4
+        Public Const DIGCF_PROFILE As UInteger = &H8
+        Public Const DIGCF_DEVICEINTERFACE As UInteger = &H10
+        Public Const INVALID_HANDLE_VALUE As Integer = -1
+        Public Const MAX_DEV_LEN As Integer = 256
+        Public Const SPDRP_DEVICEDESC As UInteger = &H0 ' DeviceDesc (R/W)
+        Public Const SPDRP_HARDWAREID As UInteger = &H1 ' HardwareID (R/W)
+        Public Const SPDRP_COMPATIBLEIDS As UInteger = &H2 ' CompatibleIDs (R/W)
+        Public Const SPDRP_UNUSED0 As UInteger = &H3 ' unused
+        Public Const SPDRP_SERVICE As UInteger = &H4 ' Service (R/W)
+        Public Const SPDRP_UNUSED1 As UInteger = &H5 ' unused
+        Public Const SPDRP_UNUSED2 As UInteger = &H6 ' unused
+        Public Const SPDRP_CLASS As UInteger = &H7 ' Class (R--tied to ClassGUID)
+        Public Const SPDRP_CLASSGUID As UInteger = &H8 ' ClassGUID (R/W)
+        Public Const SPDRP_DRIVER As UInteger = &H9 ' Driver (R/W)
+        Public Const SPDRP_CONFIGFLAGS As UInteger = &HA ' ConfigFlags (R/W)
+        Public Const SPDRP_MFG As UInteger = &HB ' Mfg (R/W)
+        Public Const SPDRP_FRIENDLYNAME As UInteger = &HC ' FriendlyName (R/W)
+        Public Const SPDRP_LOCATION_INFORMATION As UInteger = &HD ' LocationInformation (R/W)
+        Public Const SPDRP_PHYSICAL_DEVICE_OBJECT_NAME As UInteger = &HE ' PhysicalDeviceObjectName (R)
+        Public Const SPDRP_CAPABILITIES As UInteger = &HF ' Capabilities (R)
+        Public Const SPDRP_UI_NUMBER As UInteger = &H10 ' UiNumber (R)
+        Public Const SPDRP_UPPERFILTERS As UInteger = &H11 ' UpperFilters (R/W)
+        Public Const SPDRP_LOWERFILTERS As UInteger = &H12 ' LowerFilters (R/W)
+        Public Const SPDRP_BUSTYPEGUID As UInteger = &H13 ' BusTypeGUID (R)
+        Public Const SPDRP_LEGACYBUSTYPE As UInteger = &H14 ' LegacyBusType (R)
+        Public Const SPDRP_BUSNUMBER As UInteger = &H15 ' BusNumber (R)
+        Public Const SPDRP_ENUMERATOR_NAME As UInteger = &H16 ' Enumerator Name (R)
+        Public Const SPDRP_SECURITY As UInteger = &H17 ' Security (R/W, binary form)
+        Public Const SPDRP_SECURITY_SDS As UInteger = &H18 ' Security (W, SDS form)
+        Public Const SPDRP_DEVTYPE As UInteger = &H19 ' Device Type (R/W)
+        Public Const SPDRP_EXCLUSIVE As UInteger = &H1A ' Device is exclusive-access (R/W)
+        Public Const SPDRP_CHARACTERISTICS As UInteger = &H1B ' Device Characteristics (R/W)
+        Public Const SPDRP_ADDRESS As UInteger = &H1C ' Device Address (R)
+        Public Const SPDRP_UI_NUMBER_DESC_FORMAT As UInteger = &H1D ' UiNumberDescFormat (R/W)
+        Public Const SPDRP_DEVICE_POWER_DATA As UInteger = &H1E ' Device Power Data (R)
+        Public Const SPDRP_REMOVAL_POLICY As UInteger = &H1F ' Removal Policy (R)
+        Public Const SPDRP_REMOVAL_POLICY_HW_DEFAULT As UInteger = &H20 ' Hardware Removal Policy (R)
+        Public Const SPDRP_REMOVAL_POLICY_OVERRIDE As UInteger = &H21 ' Removal Policy Override (RW)
+        Public Const SPDRP_INSTALL_STATE As UInteger = &H22 ' Device Install State (R)
+        Public Const SPDRP_LOCATION_PATHS As UInteger = &H23 ' Device Location Paths (R)
+        Public Const SPDRP_BASE_CONTAINERID As UInteger = &H24 ' Base ContainerID (R)
+        Public Const SPDRP_MAXIMUM_PROPERTY As UInteger = &H25 ' Upper bound on ordinals
+        Public Const DICS_FLAG_GLOBAL As Integer = 1
+
+
+
+
+        Public Class GUID_DEVINTERFACE
+            Public Shared GUID_DEVINTERFACE_DISK As New Guid({&H53, &HF5, &H63, &H7, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_CDROM As New Guid({&H53, &HF5, &H63, &H8, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_PARTITION As New Guid({&H53, &HF5, &H63, &HA, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_TAPE As New Guid({&H53, &HF5, &H63, &HB, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_WRITEONCEDISK As New Guid({&H53, &HF5, &H63, &HC, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_VOLUME As New Guid({&H53, &HF5, &H63, &HD, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_MEDIUMCHANGER As New Guid({&H53, &HF5, &H63, &H10, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_FLOPPY As New Guid({&H53, &HF5, &H63, &H11, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_CDCHANGER As New Guid({&H53, &HF5, &H63, &H12, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_STORAGEPORT As New Guid({&H2A, &HCC, &HFE, &H60, &HC1, &H30, &H11, &HD2, &HB0, &H82, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
+            Public Shared GUID_DEVINTERFACE_VMLUN As New Guid({&H6F, &H41, &H66, &H19, &H9F, &H29, &H42, &HA5, &HB2, &HB, 37, &HE2, &H19, &HCA, &H2, &HB0})
+            Public Shared GUID_DEVINTERFACE_SES As New Guid({&H17, &H90, &HC9, &HEC, &H47, &HD5, &H4D, &HF3, &HB5, &HAF, &H9A, &HDF, &H3C, &HF2, &H3E, &H48})
+            Public Shared GUID_DEVINTERFACE_SERVICE_VOLUME As New Guid({&H6E, &HAD, &H3D, &H82L, &H25, &HEC, &H46, &HBC, &HB7, &HFD, &HC1, &HF0, &HDF, &H8F, &H50, &H37})
+            Public Shared GUID_DEVINTERFACE_HIDDEN_VOLUME As New Guid({&H7F, &H10, &H8A, &H28L, &H98, &H33, &H4B, &H3B, &HB7, &H80, &H2C, &H6B, &H5F, &HA5, &HC0, &H62})
+            Public Shared GUID_DEVINTERFACE_UNIFIED_ACCESS_RPMB As New Guid({&H27, &H44, &H7C, &H21L, &HBC, &HC3, &H4D, &H7, &HA0, &H5B, &HA3, &H39, &H5B, &HB4, &HEE, &HE7})
+            Public Shared GUID_DEVINTERFACE_COMPORT As New Guid({&H86, &HE0, &HD1, &HE0L, &H80, &H89, &H11, &HD0, &H9C, &HE4, &H8, &H0, &H3E, &H30, &H1F, &H73})
+            Public Shared GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR As New Guid({&H4D, &H36, &HE9, &H78L, &HE3, &H25, &H11, &HCE, &HBF, &HC1, &H8, &H0, &H2B, &HE1, &H3, &H18})
+        End Class
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiGetClassDevs(
+            ByRef classGuid As Guid,
+            ByVal Enumerator As String,
+            ByVal hwndParent As IntPtr,
+            ByVal Flags As UInteger) As IntPtr
+        End Function
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiEnumDeviceInfo(
+            ByVal DeviceInfoSet As IntPtr,
+            ByVal MemberIndex As UInteger,
+            ByRef DeviceInfoData As SP_DEVINFO_DATA) As Boolean
+        End Function
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiEnumDeviceInterfaces(
+            ByVal DeviceInfoSet As IntPtr,
+            ByVal DeviceInfoData As SP_DEVINFO_DATA,
+            ByVal InterfaceClassGuid As Guid,
+            ByVal MemberIndex As UInteger,
+            ByRef DeviceInterfaceData As SP_DEVICE_INTERFACE_DATA) As Boolean
+        End Function
+        <DllImport("setupapi.dll", CharSet:=CharSet.Auto, SetLastError:=True)>
+        Public Shared Function SetupDiGetDeviceInterfaceDetail(
+            ByVal hDevInfo As IntPtr,
+            ByRef deviceInterfaceData As SP_DEVICE_INTERFACE_DATA,
+            ByVal mustPassIntPtrZero As IntPtr,
+            ByVal mustPassZero As Int32,
+            ByRef RequiredSize As Int32,
+            ByVal mustPassIntPtrZero2 As IntPtr) As Boolean
+        End Function
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiGetDeviceRegistryProperty(
+            ByVal DeviceInfoSet As IntPtr,
+            ByRef DeviceInfoData As SP_DEVINFO_DATA,
+            ByVal [Property] As UInteger,
+            ByVal PropertyRegDataType As UInteger,
+            ByVal PropertyBuffer As StringBuilder,
+            ByVal PropertyBufferSize As UInteger,
+            ByVal RequiredSize As IntPtr) As Boolean
+        End Function
+
+
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiGetDeviceRegistryProperty(
+            ByVal DeviceInfoSet As IntPtr,
+            ByRef DeviceInfoData As SP_DEVINFO_DATA,
+            ByVal [Property] As UInteger,
+            ByVal PropertyRegDataType As UInteger,
+            ByVal PropertyBuffer() As Byte,
+            ByVal PropertyBufferSize As UInteger,
+            ByVal RequiredSize As IntPtr) As Boolean
+        End Function
+
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiGetDeviceInstanceId(
+            ByVal DeviceInfoSet As IntPtr,
+            ByRef DeviceInfoData As SP_DEVINFO_DATA,
+            ByVal DeviceInstanceId As StringBuilder,
+            ByVal DeviceInstanceIdSize As Integer,
+            ByRef RequiredSize As Integer) As Boolean
+        End Function
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiGetDeviceInterfaceDetailA(
+            ByVal DeviceInfoSet As IntPtr,
+            ByRef DeviceInterfaceData As SP_DEVICE_INTERFACE_DATA,
+            ByVal DeviceInterfaceDetailData As SP_DEVINFO_DETAIL_DATA,
+            ByVal DeviceInterfaceDetailDataSize As Integer,
+            ByRef RequiredSize As Integer,
+            ByRef DeviceInfoData As SP_DEVINFO_DATA) As Boolean
+        End Function
+
+        <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+        Public Shared Function SetupDiDestroyDeviceInfoList(
+            ByVal DeviceInfoSet As IntPtr) As Boolean
+        End Function
+    End Class
+
+    <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
+    Public Shared Function GetLastError() As UInteger
     End Function
+
     <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
     Public Shared Function DeviceIoControl(
         HDevice As IntPtr,
@@ -26,6 +270,7 @@ Public Class TapeUtils
 #End Region
 
     Private Declare Function _GetTapeDriveList Lib "LtfsCommand.dll" () As IntPtr
+    Private Declare Function _GetMediumChangerList Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _GetDriveMappings Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _StartLtfsService Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _StopLtfsService Lib "LtfsCommand.dll" () As IntPtr
@@ -1352,6 +1597,25 @@ Public Class TapeUtils
         Next
         Return LDrive
     End Function
+    Public Shared Function GetMediumChangerList() As List(Of MediumChanger)
+        Dim p As IntPtr = _GetMediumChangerList()
+
+        Dim result As String = Marshal.PtrToStringAnsi(p)
+        Dim s() As String = result.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+
+        Dim LChanger As New List(Of MediumChanger)
+        For Each t As String In s
+            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
+            If q.Length = 4 Then
+                LChanger.Add(New MediumChanger(q(0), q(1), q(2), q(3)))
+            End If
+        Next
+        LChanger.Sort(New Comparison(Of MediumChanger)(
+                        Function(A As MediumChanger, B As MediumChanger) As Integer
+                            Return A.DevIndex.CompareTo(B.DevIndex)
+                        End Function))
+        Return LChanger
+    End Function
     Public Shared Function GetDriveMappings() As String
         Dim p As IntPtr = _GetDriveMappings()
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -1799,6 +2063,7 @@ Public Class TapeUtils
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z
         Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
     End Function
+    <Serializable>
     Public Class TapeDrive
         Public Property DevIndex As String
         Public Property SerialNumber As String
@@ -1820,6 +2085,396 @@ Public Class TapeUtils
             If DriveLetter <> "" Then o &= " (" & DriveLetter & ":)"
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
+        End Function
+    End Class
+    <Serializable>
+    Public Class MediumChanger
+        Public Property DevIndex As String
+        Public Property SerialNumber As String
+        Public Property VendorId As String
+        Public Property ProductId As String
+        Public Property RawElementData As Byte()
+        Public Property Elements As New List(Of Element)
+        ''' <summary>
+        ''' The lowest element address found for the specified Element Type Code that is greater than or equal to the Starting Element Address.
+        ''' </summary>
+        Public Property FirstElementAddressReported As UInt16
+        ''' <summary>
+        ''' The number of elements found for the specified Element Type Code that are greater than or equal to the Starting Element Address. This number is always less than or equal the Number of Elements specified in the CBD.
+        ''' </summary>
+        Public Property NumberofElementsAvailable As UInt16
+        ''' <summary>
+        ''' The number of bytes of element status data available. This count does not include the Element Status Data header bytes. The count is not adjusted to match the allocation length you specified in the Read Element Status command.
+        ''' </summary>
+        Public Property ByteCountofReportAvailable As UInt16
+        Public Sub New()
+
+        End Sub
+        Public Sub New(DevIndex As String, SerialNumber As String, VendorId As String, ProductId As String)
+            Me.DevIndex = DevIndex.TrimEnd(" ")
+            Me.SerialNumber = SerialNumber.TrimEnd(" ")
+            Me.VendorId = VendorId.TrimEnd(" ")
+            Me.ProductId = ProductId.TrimEnd(" ")
+        End Sub
+        Public Overrides Function ToString() As String
+            Dim o As String = "CHANGER" & DevIndex & ":"
+            o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
+            Return o
+        End Function
+        Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing) As Byte()
+            Dim cdb As IntPtr = Marshal.AllocHGlobal(12)
+            Dim dSize As Integer = 8
+            Dim cdbBytes As Byte() = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
+            Marshal.Copy(cdbBytes, 0, cdb, 12)
+            Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(dSize)
+            Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
+            If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
+                Dim data0(dSize - 1) As Byte
+                Marshal.Copy(dataBuffer, data0, 0, dSize)
+                dSize = data0(5)
+                dSize <<= 8
+                dSize = dSize Or data0(6)
+                dSize <<= 8
+                dSize = dSize Or data0(7)
+                Marshal.FreeHGlobal(dataBuffer)
+            Else
+                Marshal.FreeHGlobal(cdb)
+                Marshal.FreeHGlobal(dataBuffer)
+                Marshal.FreeHGlobal(senseBuffer)
+                Return Nothing
+            End If
+            dSize += 8
+            cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
+            Marshal.Copy(cdbBytes, 0, cdb, 12)
+            dataBuffer = Marshal.AllocHGlobal(dSize)
+            If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer) Then
+                Dim data1(dSize - 1) As Byte
+                Marshal.Copy(dataBuffer, data1, 0, dSize)
+                If sense IsNot Nothing AndAlso sense.Length >= 64 Then
+                    Marshal.Copy(senseBuffer, sense, 0, 64)
+                End If
+                Marshal.FreeHGlobal(cdb)
+                Marshal.FreeHGlobal(dataBuffer)
+                Marshal.FreeHGlobal(senseBuffer)
+                Return data1
+            Else
+                Marshal.FreeHGlobal(cdb)
+                Marshal.FreeHGlobal(dataBuffer)
+                Marshal.FreeHGlobal(senseBuffer)
+                Return Nothing
+            End If
+        End Function
+        Public Shared Sub MoveMedium(Changer As String, src As UInt32, dest As UInt32, Optional ByVal sense As Byte() = Nothing)
+            SCSIReadParam(Changer, {&HA5, 0, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, 12,
+                Function(s As Byte()) As Boolean
+                    If sense IsNot Nothing AndAlso sense.Length >= 64 Then
+                        Array.Copy(s, sense, Math.Min(64, s.Length))
+                    End If
+                    Return True
+                End Function)
+        End Sub
+        Public Sub RefreshElementStatus()
+            RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}")
+
+            FirstElementAddressReported = CInt(RawElementData(0)) << 8 Or RawElementData(1)
+            NumberofElementsAvailable = CInt(RawElementData(2)) << 8 Or RawElementData(3)
+            ByteCountofReportAvailable = CInt(RawElementData(5)) << 16 Or CInt(RawElementData(6)) << 8 Or RawElementData(7)
+            Dim offset As Integer = 8
+            Elements = New List(Of Element)
+            While offset < RawElementData.Length - 8
+                Dim PageHeader(7) As Byte
+                Array.Copy(RawElementData, offset, PageHeader, 0, 8)
+                offset += 8
+                Dim dlen As UInt16 = CInt(PageHeader(2)) << 8 Or PageHeader(3)
+                Dim totallen As UInt32 = CInt(PageHeader(5)) << 16 Or CInt(PageHeader(6)) << 8 Or PageHeader(7)
+                Dim dcount As Integer = totallen \ dlen
+                Dim pagedata(dlen - 1) As Byte
+                For i As Integer = 0 To dcount - 1
+                    Array.Copy(RawElementData, offset + dlen * i, pagedata, 0, dlen)
+                    Dim e As Element = Element.FromRaw(pagedata, New Element With {
+                        .ElementTypeCode = PageHeader(0) And &HF,
+                        .PVolTag = PageHeader(1) >> 7 And 1,
+                        .AVolTag = PageHeader(1) >> 6 And 1,
+                        .ElementDescriptorLength = dlen,
+                        .ByteCountofDescriptorDataAvailable = totallen
+                        })
+                    Elements.Add(e)
+                Next
+                offset += totallen
+
+            End While
+
+        End Sub
+        <Serializable>
+        Public Class Element
+            Public Property RawData As Byte()
+            ''' <summary>
+            ''' <para>1h = Medium Transport Element (robot hand)</para>
+            ''' <para>2h = Storage Element (cartridge cells)</para>
+            ''' <para>3h = Import/Export Element (CAP cells)</para>
+            ''' <para>4h = Data Transfer Element (drives Or empty drive slots)</para>
+            ''' </summary>
+            Public Enum ElementTypeCodes
+                MediumTransportElement = 1
+                StorageElement = 2
+                ImportExportElement = 3
+                DataTransferElement = 4
+            End Enum
+            Public Property ElementTypeCode As ElementTypeCodes
+            ''' <summary>
+            ''' <para>0 = The library omits Primary Volume Tag information from the element descriptors.</para>
+            ''' <para>1 = The library includes Primary Volume Tag information in the element descriptors.</para>
+            ''' </summary>
+            Public Property PVolTag As Boolean
+            ''' <summary>
+            ''' 0 = The library does not support Alternative Volume Tags.
+            ''' </summary>
+            Public Property AVolTag As Boolean
+            ''' <summary>
+            ''' The total number of bytes contained in a single element descriptor.
+            ''' </summary>
+            Public Property ElementDescriptorLength As Integer
+            ''' <summary>
+            ''' The number of bytes of element descriptor data available. This count does not include the Element Status Page header bytes. The count is not adjusted to match the allocation length you specified in the Read Element Status command.
+            ''' </summary>
+            Public Property ByteCountofDescriptorDataAvailable As Integer
+            Public Property ElementAddress As UInt16
+            ''' <summary>
+            ''' <para>0 = No operator intervention required to make the CAP accessible</para>
+            ''' <para>1 = Operator intervention required to make the CAP accessible</para>
+            ''' </summary>
+            Public Property OIR As Boolean
+            ''' <summary>
+            ''' 0 = The import/export element is a CAP. The cartridge will not leave the library when prevented by the Prevent/Allow Medium Removal (1Eh) command.
+            ''' </summary>
+            Public Property CMC As Boolean
+            ''' <summary>
+            ''' 1 = The CAP supports importing cartridges.
+            ''' </summary>
+            Public Property InEnab As Boolean
+            ''' <summary>
+            ''' 1 = The CAP supports exporting cartridges.
+            ''' </summary>
+            Public Property ExEnab As Boolean
+            ''' <summary>
+            ''' <para>0 = The robot cannot access the element. For Import/Export elements, this can occur when the CAP is open or a CAP magazine was removed. For Data transfer elements, this can occur when a cartridge is loaded in a drive.</para>
+            ''' <para>1 = The robot can access the element</para>
+            ''' </summary>
+            Public Property Access As Boolean
+            ''' <summary>
+            ''' <para>0 = The element is in a normal state</para>
+            ''' <para>1 = The element Is in an abnormal state. The Additional Sense Code (ASC) And the Additional Sense Code Qualifier (ASCQ) fields contain information regarding the abnormal state. Other fields in the descriptor might be invalid And should be ignored.</para>
+            ''' </summary>
+            Public Property Except As Boolean
+            ''' <summary>
+            ''' <para>0 = The robot placed the cartridge in the CAP for an export operation.</para>
+            ''' <para>1 = An operator placed the cartridge in the CAP for an import operation.</para>
+            ''' </summary>
+            Public Property ImpExp As Boolean
+            ''' <summary>
+            ''' <para>0 = The element does not contain a cartridge</para>
+            ''' <para>1 = The element contains a cartridge</para>
+            ''' </summary>
+            Public Property Full As Boolean
+            ''' <summary>
+            ''' Additional Sense Code
+            ''' <para>This field is valid only if the Except bit is set. In the case of an exception, it contains an ASC as defined for Request Sense data.</para>
+            ''' <para>Condition_____________________ASC Value___________ASCQ Value</para>
+            ''' <para>CAP Open____________________3Ah___________________02h</para>
+            ''' <para>Empty Drive Slot_____________3Bh___________________1Ah</para>
+            ''' <para>Drive Hardware Error_______40h___________________02h</para>
+            ''' </summary>
+            Public Property ASC As Byte
+            ''' <summary>
+            ''' Additional Sense Code Qualifier
+            ''' <para>This field is valid only if the Except bit is set. In the case of an exception, it contains an ASCQ as defined for Request Sense data.</para>
+            ''' <para>Condition_____________________ASC Value___________ASCQ Value</para>
+            ''' <para>CAP Open____________________3Ah___________________02h</para>
+            ''' <para>Empty Drive Slot_____________3Bh___________________1Ah</para>
+            ''' <para>Drive Hardware Error_______40h___________________02h</para>
+            ''' </summary>
+            Public Property ASCQ As Byte
+            ''' <summary>
+            ''' <para>0 = The Source Element Address and Invert fields are not valid.</para>
+            ''' <para>1 = The Source Element Address and Invert fields are valid.</para>
+            ''' </summary>
+            Public Property SValid As Boolean
+            ''' <summary>
+            ''' 0 = The library does not support multi-sided media.
+            ''' </summary>
+            Public Property Invert As Boolean
+            ''' <summary>
+            ''' <para>0 = The element is enabled.</para>
+            ''' <para>1 = The element is disabled (for example an open CAP, a drive hardware error, or empty drive slot).</para>
+            ''' </summary>
+            ''' <returns></returns>
+            Public Property ED As Boolean
+            ''' <summary>
+            ''' <para>0h = Unspecified - the medium changer cannot determine the medium type.</para>
+            ''' <para>1h = Data Medium</para>
+            ''' <para>2h = Cleaning Medium</para>
+            ''' </summary>
+            Public Property MediumType As Byte
+            ''' <summary>
+            ''' This field is valid only if the SValid field is 1. This field provides the address of the last storage element this cartridge occupied. The element address value may or may not be the same as this element.
+            ''' </summary>
+            Public Property SourceStorageElementAddress As UInt16
+            ''' <summary>
+            ''' <para>When PVolTag is 1, the library returns volume tag information. When PVolTag is 0, the library omits volume tag information.</para>
+            ''' <para>The Primary Volume Tag field contains the null-terminated ASCII barcode label on the tape cartridge. If the label on the cartridge tape is not readable or if the element is empty, the Primary Volume Tag field is filled with 36 bytes of zeros. The "Volume Label Format" controls the presentation of the volser in the Primary Volume Tag field. The library supports the following settings:</para>
+            ''' <para>· Full Label</para>
+            ''' <para>· No Type Checking</para>
+            ''' <para>· Prepend Last Two Characters</para>
+            ''' <para>· Trim Last Character</para>
+            ''' <para>· Trim Last Two Characters</para>
+            ''' <para>· Trim First Two Characters</para>
+            ''' <para>· Trim First Character</para>
+            ''' </summary>
+            Public Property PrimaryVolumeTagInformation As String = ""
+            ''' <summary>
+            ''' <para>0h = Reserved (not supported) for the Medium Transport Element, Storage Element, Import/Export Element, or Data Transfer Element (DvcID = 0) descriptors.</para>
+            ''' <para>2h = The identifier contains ASCII graphic codes (code values 20h through 7Eh) for Data Transfer Element (DvcID = 1) descriptor.</para>
+            ''' </summary>
+            Public Property CodeSet As Byte
+            ''' <summary>
+            ''' The format and assignment authority for the identifier.
+            ''' <para>0h = The library returns vendor specific data.</para>
+            ''' </summary>
+            ''' <returns></returns>
+            Public Property IdentifierType As Byte
+            ''' <summary>
+            ''' The combined length of the Identifier and the Identifier Pad.
+            ''' <para>00h = The library returns 0 bytes of identifier data in the descriptors for Medium Transport Elements, Storage Elements, Import/Export Elements, or Data Transfer Elements (DvcID = 0).</para>
+            ''' <para>20h = The library returns 32 bytes of identifier data for the Data Transfer Element (DvcID = 1).</para>
+            ''' </summary>
+            Public Property IdentifierLength As Byte
+            ''' <summary>
+            ''' for Data Transfer Element DvcID = 1 Only
+            ''' <para>The ASCII Serial Number for the tape drive associated with this data transfer element.</para>
+            ''' Identifier Pad (for Data Transfer Element DvcID = 1 Only)
+            ''' <para>Contains ASCII blanks. The number of blanks depends on the length of the Identifier field. The combined length of the Identifier field and the Identifier Pad is 32 bytes.</para>
+            ''' </summary>
+            Public Property Identifier As String = ""
+            ''' <summary>
+            ''' <para>43h ('C') = The element contains a cleaning cartridge.</para>
+            ''' <para>4Ch ('L') = The element contains an LTO cartridge.</para>
+            ''' <para>54h ('T') = The element contains a T10000 cartridge.</para>
+            ''' <para>FFh = The media domain cannot be determined or the element is empty.</para>
+            ''' </summary>
+            Public Property MediaDomain As Byte
+            ''' <summary>
+            ''' FFh = The media type cannot be determined or the element is empty.
+            ''' <para>If the Media Domain is 43h (C):</para>
+            ''' <para>C = The element contains a T10000 Version 2 cleaning cartridge.</para>
+            ''' <para>L = The element contains a T10000 Universal cleaning cartridge.</para>
+            ''' <para>T = The element contains a T10000 Version 1 cleaning cartridge.</para>
+            ''' <para>U = The element contains a Universal LTO cleaning cartridge.</para>
+            ''' <para>If the Media Domain is 4Ch (L):</para>
+            ''' <para>3-8 = The element contains a Generation 3-8 LTO cartridge.</para>
+            ''' <para>T-Y = The element contains a Generation 3-8 LTO WORM cartridge.</para>
+            ''' <para>If the Media Domain is 54h (T):</para>
+            ''' <para>1 = The element contains a T10000 Version 1 cartridge.</para>
+            ''' <para>2 = The element contains a T10000 Version 2 cartridge.</para>
+            ''' <para>S = The element contains a T10000 Version 1 Sport cartridge.</para>
+            ''' <para>T = The element contains a T10000 Version 2 Sport cartridge.</para>
+            ''' </summary>
+            Public Property MediaType As Byte
+            ''' <summary>
+            ''' <para>4Ch (L) = The drive supports LTO cartridges.</para>
+            ''' <para>54h (T) = The drive supports T10000 cartridges.</para>
+            ''' <para>FFh = The element domain cannot be determined.</para>
+            ''' </summary>
+            Public Property TransportDomain As Byte
+            ''' <summary>
+            ''' <para>If the Transport Domain is 4Ch (L):</para>
+            ''' <para>· 3Bh = HP Generation 5 LTO drive</para>
+            ''' <para>· 3Ch = IBM Generation 5 LTO drive</para>
+            ''' <para>· 3Dh = HP Generation 6 LTO drive.</para>
+            ''' <para>· 3Eh = IBM Generation 6 LTO drive.</para>
+            ''' <para>· 2Dh = IBM Generation 7 LTO drive.</para>
+            ''' <para>· 2Eh = IBM Generation 8 LTO drive.</para>
+            ''' <para>If the Transport Domain is 54h (T):</para>
+            ''' <para>· 0Dh = StorageTek T10000A drive.</para>
+            ''' <para>· 0Eh = StorageTek T10000A drive in 3590 emulation mode.</para>
+            ''' <para>· 18h = StorageTek T10000A Encrypting drive.</para>
+            ''' <para>· 19h = StorageTek T10000A Encrypting drive in 3590 emulation mode.</para>
+            ''' <para>· 1Ah = StorageTek T10000B drive.</para>
+            ''' <para>· 1Bh = StorageTek T10000B drive in 3590 emulation mode.</para>
+            ''' <para>· 1Ch = StorageTek T10000B Encrypting drive.</para>
+            ''' <para>· 1Dh = StorageTek T10000B Encrypting drive in 3590 emulation mode.</para>
+            ''' <para>· 22h = StorageTek T10000C drive.</para>
+            ''' <para>· 23h = StorageTek T10000C drive in 3590 emulation mode.</para>
+            ''' <para>· 24h = StorageTek T10000C Encrypting drive.</para>
+            ''' <para>· 25h = StorageTek T10000C Encrypting drive in 3590 emulation mode.</para>
+            ''' <para>· 26h = StorageTek T10000D drive.</para>
+            ''' <para>· 27h = StorageTek T10000D drive in 3590 emulation mode.</para>
+            ''' <para>· 28h = StorageTek T10000D Encrypting drive.</para>
+            ''' <para>· 29h = StorageTek T10000D Encrypting drive in 3590 emulation mode.</para>
+            ''' <para>· 2Ah = StorageTek T10000D Fibre Channel over Ethernet. </para>
+            ''' <para>· 2Bh = StorageTek T10000D Fibre Channel over Ethernet Encrypting drive.</para>
+            ''' </summary>
+            Public Property TransportType As Byte
+            ''' <summary>
+            ''' The 32-byte ASCII serial number for the drive.
+            ''' <para>For drives with a serial number less than 32 bytes, the library left-justifies the value by returning ASCII blanks for the unused less-significant bytes. If the serial number is not available from a drive that should support an ASCII serial number, the library returns all ASCII blanks.</para>
+            ''' </summary>
+            Public Property TransportSerialNumber As String = ""
+            Public Shared Function FromRaw(RawData As Byte(), Optional ByVal Preset As Element = Nothing) As Element
+                If RawData Is Nothing Then Return Nothing
+                Dim result As Element
+                If Preset IsNot Nothing Then result = Preset Else result = New Element
+                result.RawData = RawData
+                With result
+                    Try
+                        Dim DOffset As Byte = 0
+                        .ElementAddress = CInt(RawData(DOffset + 0)) << 8 Or RawData(DOffset + 1)
+                        .OIR = RawData(DOffset + 2) >> 7 And 1
+                        .CMC = RawData(DOffset + 2) >> 6 And 1
+                        .InEnab = RawData(DOffset + 2) >> 5 And 1
+                        .ExEnab = RawData(DOffset + 2) >> 4 And 1
+                        .Access = RawData(DOffset + 2) >> 3 And 1
+                        .Except = RawData(DOffset + 2) >> 2 And 1
+                        .ImpExp = RawData(DOffset + 2) >> 1 And 1
+                        .Full = RawData(DOffset + 2) >> 0 And 1
+                        .ASC = RawData(DOffset + 4)
+                        .ASCQ = RawData(DOffset + 5)
+                        .SValid = RawData(DOffset + 9) >> 7 And 1
+                        .Invert = RawData(DOffset + 9) >> 6 And 1
+                        .ED = RawData(DOffset + 9) >> 3 And 1
+                        .MediumType = RawData(DOffset + 9) And &B111
+                        .SourceStorageElementAddress = CInt(RawData(DOffset + 10)) << 8 Or RawData(DOffset + 11)
+                        If .PVolTag Then
+                            .PrimaryVolumeTagInformation = Encoding.ASCII.GetString(RawData, DOffset + 12, 36).TrimEnd(Chr(0)).TrimEnd(" ")
+                            DOffset += 36
+                        End If
+                        .CodeSet = RawData(DOffset + 12) And &HF
+                        .IdentifierType = RawData(DOffset + 13) And &HF
+                        .IdentifierLength = RawData(DOffset + 15)
+                        If .IdentifierLength > 0 Then
+                            .Identifier = Encoding.ASCII.GetString(RawData, DOffset + 16, .IdentifierLength).TrimEnd(Chr(0)).TrimEnd(" ")
+                            DOffset += 32
+                        End If
+                        .MediaDomain = RawData(DOffset + 16)
+                        .MediaType = RawData(DOffset + 17)
+                        .TransportDomain = RawData(DOffset + 18)
+                        .TransportType = RawData(DOffset + 19)
+                        If RawData.Length - 1 >= DOffset + 51 Then
+                            .TransportSerialNumber = Encoding.ASCII.GetString(RawData, DOffset + 20, 32).TrimEnd(Chr(0)).TrimEnd(" ")
+                        End If
+                    Catch ex As Exception
+
+                    End Try
+                End With
+                Return result
+            End Function
+        End Class
+        Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(MediumChanger))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "1")})
+            writer.Serialize(t, Me, ns)
+            Return sb.ToString()
         End Function
     End Class
     Public Class GX256
