@@ -269,6 +269,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
+    <Compile Include="ChangerTool.Designer.vb">
+      <DependentUpon>ChangerTool.vb</DependentUpon>
+    </Compile>
+    <Compile Include="ChangerTool.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FileBrowser.Designer.vb">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </Compile>
@@ -330,6 +336,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="ChangerTool.resx">
+      <DependentUpon>ChangerTool.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FileBrowser.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>

@@ -166,6 +166,9 @@
   <data name="Button10.Text" xml:space="preserve">
     <value>Mount</value>
   </data>
+  <data name="Button5.Text" xml:space="preserve">
+    <value>Changer</value>
+  </data>
   <data name="CheckBox3.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 16</value>
   </data>
