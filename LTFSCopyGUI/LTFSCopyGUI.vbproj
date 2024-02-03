@@ -396,7 +396,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
     <None Include="My Project\app.manifest">
       <SubType>Designer</SubType>
     </None>
