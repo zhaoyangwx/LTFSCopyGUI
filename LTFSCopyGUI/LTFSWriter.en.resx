@@ -118,16 +118,58 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>SHA1 Checksum</value>
+  </data>
+  <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="重命名ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="统计ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="统计ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Statistics</value>
+  </data>
+  <data name="压缩索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="压缩索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Archive Index</value>
+  </data>
+  <data name="解压索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Unarchive Index</value>
+  </data>
   <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>171, 136</value>
+    <value>171, 158</value>
   </data>
   <data name="ImageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAADu
-        CQAAAk1TRnQBSQFMAgEBAwEAARQBAwEUAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
-        AwABQAMAARADAAEBAQABCAYAAQQYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAM
+        CwAAAk1TRnQBSQFMAgEBBAEAARwBAwEcAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
         AWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHMAgABMwH/AgABZgMAAWYBMwIAAmYCAAFm
@@ -154,21 +196,26 @@
         AcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHMAWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEz
         AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
         AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
-        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD/x0AAfEBcwGSAwAB7Qv3
-        EgAB9wETAQ0B8QESAuwB7QHrAe0BEgH3AewBEgH/AYoIAAH0AfcBUQFZAVMBUgFLAwAB7wX/BvQSAAG7
-        AYsBigG7AbQBCQG7AWcBrgGzAXMBeAFzAbsBtAGKBQAB8AFzAnoEUwFLAVEB8gIAAe8D/wf0AfMSAAH3
-        Aa0BsgGzAawCswGtA7MBkASzAwABUgJ6BVkBUwF5AUwBUgMAAe8C/wf0AvMSAAEHBbICrAKtBrMCAAHD
-        BnoDWQHvAUwBUgMAAe8B/wb0BPMSAAH0AbIBiwFsAbIIswGLAZABswIACHoBWQF6AQcBSwFSAwAB7wb0
-        BfMTAAGzAa0BbAizAZABiwKzAQAB9gKaBnoBmQEHAbwBUQFSAwAB7wX0BvMTAA+zAQACoAKaAXoBmQS8
-        AfEB9AFSAXoDAAEHA/QH8wHyEwAPswEAA6ABmgEaAfEB8AHxAfIC8wH/AVEBegH0AgABBwL0B/MC8hMA
-        D7MB9gHDAfQBAAGaAf8E9AHzAfQB/wFSAXoB9gIAAQcB9AbzAvIC8RMAD7MEAAGaAf8H9AFSAXoB/wIA
-        AQcG8wHyAQcC7wH3EwABkQ6zBAABmgH/BPQB8wH3ARwBeQEbAwABBwXzA/IB8QHwAbwSAAH0AZIGswG0
-        BrMBtAQAAfYB/wT0AfEBBwYAAQcE8wLyAfEB8gHwAe8WAAH0AfcB7wL3AbsBBwHvAgcC7wEHBQAC/wL0
-        Af8B8QcAAQcC8wLyAvEC8AEHKQAB/wEHAfAKAAEHAfMC8gLxAvAB8VUAAUIBTQE+BwABPgMAASgDAAFA
-        AwABEAMAAQEBAAEBBQABgBcAA/8BAAP/AfEBwAEDBAAB/wEBAcABAwQAAfgBAAHAAQMEAAHgAQEBwAED
-        BAABwAEBAcABAwQAAcABAQHAAQMCAAGAAQABgAEBAcABAwIAAYABAAGAAQEBwAEDAgABgAEAAYABAAHA
-        AQMCAAGAAQABEAEAAcABAwIAAYABAAHwAQABwAEDAgABgAEAAfABAQHAAQMEAAHwAQ8BwAEHAgAB4AEA
-        AfgBHwHAAQ8CAAL/AfgB/wHAAR8CAAb/AgAL
+        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD//8A/wD/AP8AIQAB8QFz
+        AZIDAAHtC/cOAAHxAW4BkgEAAfcBEwENAfEBEgLsAe0B6wHtARIB9wHsARIB/wGKCAAB9AH3AVEBWQFT
+        AVIBSwMAAe8F/wb0CgAB9AH3AUUCFwFGAUUBAAG7AYsBigG7AbQBCQG7AWcBrgGzAXMBeAFzAbsBtAGK
+        BQAB8AFzAnoEUwFLAVEB8gIAAe8D/wf0AfMHAAHwAW4BFwHjAhcBRwEXAkUB8gH3Aa0BsgGzAawCswGt
+        A7MBkASzAwABUgJ6BVkBUwF5AUwBUgMAAe8C/wf0AvMFAAFMAuMGFwFvAkYBAAEHBbICrAKtBrMCAAHD
+        BnoDWQHvAUwBUgMAAe8B/wb0BPMEAAG9BeMEFwHvAkYBAAH0AbIBiwFsAbIIswGLAZABswIACHoBWQF6
+        AQcBSwFSAwAB7wb0BfMEAAJ1AeMBFgPjAhcB4wEHAUUBRgIAAbMBrQFsCLMBkAGLArMBAAH2ApoGegGZ
+        AQcBvAFRAVIDAAHvBfQG8wMAAfQClAJ1ARYD4wGTAQcBvAFFAUYCAA+zAQACoAKaAXoBmQS8AfEB9AFS
+        AXoDAAEHA/QH8wHyAwAElAHjAZMB7gO8AfEB9QFGAeMCAA+zAQADoAGaARoB8QHwAfEB8gLzAf8BUQF6
+        AfQCAAEHAvQH8wLyAwADmgGUAQcB8QHwAvIC8wH1AUUB4wH0AQAPswH2AcMB9AEAAZoB/wT0AfMB9AH/
+        AVIBegH2AgABBwH0BvMC8gLxAgAB9AEbAfQBAAGUAfUE9AHzAfQB9QFMAeMB9AEAD7MEAAGaAf8H9AFS
+        AXoB/wIAAQcG8wHyAQcC7wH3BgABlAH1B/QBTAEWAf8BAAGRDrMEAAGaAf8E9AHzAfcBHAF5ARsDAAEH
+        BfMD8gHxAfABvAYAAZQB9QT0AfMB9wEcAXQBvQEAAfQBkgazAbQGswG0BAAB9gH/BPQB8QEHBgABBwTz
+        AvIB8QHyAfAB7wcAAfUB/wT0AfEB7wcAAfQB9wHvAvcBuwEHAe8CBwLvAQcFAAL/AvQB/wHxBwABBwLz
+        AvIC8QLwAQcJAAH/AfUC9AH/AfEaAAH/AQcB8AoAAQcB8wLyAvEC8AHxCgAB/wEHAfBIAAFCAU0BPgcA
+        AT4DAAEoAwABQAMAASADAAEBAQABAQYAAQEWAAP/gQAD/wHxAcABAwH/AfECAAH/AQEBwAEDAf8BAQIA
+        AfgBAAHAAQMB+AMAAeABAQHAAQMB4AEBAgABwAEBAcABAwHAAQECAAHAAQEBwAEDAcABAQGAAQABgAEB
+        AcABAwGAAQEBgAEAAYABAQHAAQMBgAEBAYABAAGAAQABwAEDAYABAAGAAQABEAEAAcABAwEQAQABgAEA
+        AfABAAHAAQMB8AEAAYABAAHwAQEBwAEDAfABAQIAAfABDwHAAQcB8AEPAeABAAH4AR8BwAEPAfgBHwL/
+        AfgB/wHAAR8B+An/Cw==
 </value>
   </data>
   <data name="Column_name.Text" xml:space="preserve">
@@ -222,18 +269,6 @@
   <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
     <value>145, 208</value>
   </data>
-  <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>Restore</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>SHA1 Checksum</value>
-  </data>
   <data name="计算并更新ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>212, 22</value>
   </data>
@@ -251,30 +286,6 @@
   </data>
   <data name="仅验证ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Validate only</value>
-  </data>
-  <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="重命名ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Rename</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Delete</value>
-  </data>
-  <data name="统计ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="统计ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Statistics</value>
-  </data>
-  <data name="压缩索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
-  </data>
-  <data name="压缩索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Archive Index</value>
   </data>
   <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 22</value>
