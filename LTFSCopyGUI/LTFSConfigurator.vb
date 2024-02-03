@@ -666,7 +666,15 @@ Public Class LTFSConfigurator
         TextBox8.Select(0, 0)
         TextBox8.ScrollToCaret()
         If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
-            IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{CMInfo.ApplicationSpecificData.Barcode}.txt", TextBox8.Text)
+            Dim fn As String
+            Try
+                fn = CMInfo.ApplicationSpecificData.Barcode
+                If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
+                If fn Is Nothing Then fn = ""
+                IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBox8.Text)
+            Catch ex As Exception
+
+            End Try
         End If
         Me.Enabled = True
     End Sub

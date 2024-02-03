@@ -384,6 +384,8 @@ Public Class TapeUtils
             Return data.MaximumBlockLength
         End Operator
     End Class
+    Public Shared Property GlobalBlockLimit As Integer = 524288
+
     Public Shared Function ReadBlockLimits(TapeDrive As String) As BlockLimits
         Dim data As Byte() = SCSIReadParam(TapeDrive, {5, 0, 0, 0, 0, 0}, 6)
         Return New BlockLimits With {.MaximumBlockLength = CULng(data(1)) << 16 Or CULng(data(2)) << 8 Or data(3),
@@ -424,6 +426,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
         Dim senseRaw(63) As Byte
+        BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
         If sense Is Nothing Then sense = {}
 
         Dim RawDataU As IntPtr = SCSIReadParamUnmanaged(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
@@ -454,6 +457,7 @@ Public Class TapeUtils
     Public Shared Function ReadToFileMark(TapeDrive As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
         Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         Dim buffer As New List(Of Byte)
+        BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
         While True
             Dim sense(63) As Byte
             Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
@@ -470,6 +474,7 @@ Public Class TapeUtils
     Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Boolean
         Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         Dim buffer As New IO.FileStream(outputFileName, IO.FileMode.Create, IO.FileAccess.ReadWrite, IO.FileShare.Read)
+        BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
         While True
             Dim sense(63) As Byte
             Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
@@ -645,6 +650,7 @@ Public Class TapeUtils
     Public Shared Function SetBlockSize(TapeDrive As String, Optional ByVal BlockSize As UInteger = &H80000) As Byte()
         Dim sense(63) As Byte
         Dim DensityCode As Byte = ReadDensityCode(TapeDrive)
+        BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
         SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &HC, 0},
                         {0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, 0,
                         Function(senseData As Byte()) As Boolean
@@ -1235,6 +1241,7 @@ Public Class TapeUtils
     Public Shared Function Write(TapeDrive As String, sourceFile As String, Optional ByVal BlockLen As Integer = 524288, Optional ByVal senseEnabled As Boolean = False) As Byte()
         Dim sense(63) As Byte
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+        BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim DataBuffer(BlockLen - 1) As Byte
         Dim DataPtr As IntPtr = Marshal.AllocHGlobal(BlockLen)
         Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
@@ -1688,6 +1695,7 @@ Public Class TapeUtils
                                   Optional ByVal Capacity As UInt16 = &HFFFF,
                                   Optional ByVal P0Size As UInt16 = 1,
                                   Optional ByVal P1Size As UInt16 = &HFFFF) As Boolean
+        BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
 
@@ -1989,6 +1997,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True, Optional LockDrive As Boolean = True) As Boolean
         If LockDrive AndAlso Not ReserveUnit(TapeDrive) Then Return False
+        BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
         If LockDrive AndAlso Not PreventMediaRemoval(TapeDrive) Then
             ReleaseUnit(TapeDrive)
             Return False
@@ -2060,6 +2069,7 @@ Public Class TapeUtils
         Return True
     End Function
     Public Shared Function ParseTimeStamp(t As String) As Date
+        If t Is Nothing OrElse t = "" Then Return Nothing
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z
         Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
     End Function
@@ -2121,29 +2131,35 @@ Public Class TapeUtils
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
         End Function
-        Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing) As Byte()
+        Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal dSize As Integer = 8) As Byte()
             Dim cdb As IntPtr = Marshal.AllocHGlobal(12)
-            Dim dSize As Integer = 8
-            Dim cdbBytes As Byte() = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
-            Marshal.Copy(cdbBytes, 0, cdb, 12)
+            Dim cdbBytes As Byte()
             Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(dSize)
             Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-            If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
-                Dim data0(dSize - 1) As Byte
-                Marshal.Copy(dataBuffer, data0, 0, dSize)
-                dSize = data0(5)
-                dSize <<= 8
-                dSize = dSize Or data0(6)
-                dSize <<= 8
-                dSize = dSize Or data0(7)
-                Marshal.FreeHGlobal(dataBuffer)
-            Else
-                Marshal.FreeHGlobal(cdb)
-                Marshal.FreeHGlobal(dataBuffer)
-                Marshal.FreeHGlobal(senseBuffer)
-                Return Nothing
+            If dSize <= 8 Then
+                dSize = 8
+                cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
+                Marshal.Copy(cdbBytes, 0, cdb, 12)
+                If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
+                    Dim data0(dSize - 1) As Byte
+                    Marshal.Copy(dataBuffer, data0, 0, dSize)
+                    dSize = data0(5)
+                    dSize <<= 8
+                    dSize = dSize Or data0(6)
+                    dSize <<= 8
+                    dSize = dSize Or data0(7)
+                    Marshal.FreeHGlobal(dataBuffer)
+                Else
+                    Marshal.FreeHGlobal(cdb)
+                    Marshal.FreeHGlobal(dataBuffer)
+                    Marshal.FreeHGlobal(senseBuffer)
+                    Return Nothing
+                End If
+                dSize += 8
             End If
-            dSize += 8
+
+
+
             cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
             Marshal.Copy(cdbBytes, 0, cdb, 12)
             dataBuffer = Marshal.AllocHGlobal(dSize)
@@ -2174,7 +2190,12 @@ Public Class TapeUtils
                 End Function)
         End Sub
         Public Sub RefreshElementStatus()
-            RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}")
+            If RawElementData IsNot Nothing AndAlso RawElementData.Length > 8 Then
+                RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", dSize:=RawElementData.Length)
+            Else
+                RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}")
+            End If
+
 
             FirstElementAddressReported = CInt(RawElementData(0)) << 8 Or RawElementData(1)
             NumberofElementsAvailable = CInt(RawElementData(2)) << 8 Or RawElementData(3)

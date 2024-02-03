@@ -336,6 +336,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="ChangerTool.en.resx">
+      <DependentUpon>ChangerTool.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ChangerTool.resx">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </EmbeddedResource>
@@ -393,6 +396,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="My Project\app.manifest">
       <SubType>Designer</SubType>
     </None>

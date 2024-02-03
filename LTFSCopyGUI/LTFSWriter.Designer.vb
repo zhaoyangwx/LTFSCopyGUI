@@ -73,6 +73,8 @@ Partial Class LTFSWriter
         Me.重命名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.统计ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.压缩索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.解压索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
         Me.ListView1 = New System.Windows.Forms.ListView()
@@ -425,7 +427,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip3
         '
-        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem})
+        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
         '
@@ -470,6 +472,16 @@ Partial Class LTFSWriter
         Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
         resources.ApplyResources(Me.统计ToolStripMenuItem, "统计ToolStripMenuItem")
         '
+        '压缩索引ToolStripMenuItem
+        '
+        Me.压缩索引ToolStripMenuItem.Name = "压缩索引ToolStripMenuItem"
+        resources.ApplyResources(Me.压缩索引ToolStripMenuItem, "压缩索引ToolStripMenuItem")
+        '
+        '解压索引ToolStripMenuItem
+        '
+        Me.解压索引ToolStripMenuItem.Name = "解压索引ToolStripMenuItem"
+        resources.ApplyResources(Me.解压索引ToolStripMenuItem, "解压索引ToolStripMenuItem")
+        '
         'ImageList1
         '
         Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"), System.Windows.Forms.ImageListStreamer)
@@ -477,6 +489,7 @@ Partial Class LTFSWriter
         Me.ImageList1.Images.SetKeyName(0, "DirRoot.png")
         Me.ImageList1.Images.SetKeyName(1, "Dir.png")
         Me.ImageList1.Images.SetKeyName(2, "File.png")
+        Me.ImageList1.Images.SetKeyName(3, "Archive.png")
         '
         'SplitContainer2
         '
@@ -2705,4 +2718,6 @@ Partial Class LTFSWriter
     Friend WithEvents XAttrToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 启动FTP服务只读ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 右下角显示容量损失ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 压缩索引ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 解压索引ToolStripMenuItem As ToolStripMenuItem
 End Class
