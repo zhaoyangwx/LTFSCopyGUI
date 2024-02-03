@@ -66,38 +66,47 @@ Public Class ChangerTool
     Public FullElement, EmptyElement As List(Of MediumChanger.Element)
     Public Sub RefreshCurrentChanger()
         If CurrentChanger Is Nothing Then Exit Sub
-        CurrentChanger.RefreshElementStatus()
+        Try
+            CurrentChanger.RefreshElementStatus()
+        Catch ex As Exception
+
+        End Try
     End Sub
     Public Sub SwitchChanger()
         If CurrentChanger Is Nothing OrElse CurrentChanger.Elements Is Nothing OrElse CurrentChanger.Elements.Count = 0 Then RefreshCurrentChanger()
-        TextBox1.Text = CurrentChanger.GetSerializedText()
-        FullElement = New List(Of MediumChanger.Element)
-        EmptyElement = New List(Of MediumChanger.Element)
-        For Each e As MediumChanger.Element In CurrentChanger.Elements
-            If e.Full Then FullElement.Add(e) Else EmptyElement.Add(e)
-        Next
-        ComboBox1.Items.Clear()
-        ComboBox2.Items.Clear()
-        For Each e As MediumChanger.Element In FullElement
-            Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
-            Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
-            Dim ttext As String = e.ElementTypeCode.ToString()
-            If itext.Length > 0 Then itext &= " "
-            itext &= ttext
-            itext = itext.TrimEnd(" ")
-            If itext.Length > 0 Then ctext = $"{ctext}({itext})"
-            ComboBox1.Items.Add(ctext)
-        Next
-        For Each e As MediumChanger.Element In EmptyElement
-            Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
-            Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
-            Dim ttext As String = e.ElementTypeCode.ToString()
-            If itext.Length > 0 Then itext &= " "
-            itext &= ttext
-            itext = itext.TrimEnd(" ")
-            If itext.Length > 0 Then ctext = $"{ctext}({itext})"
-            ComboBox2.Items.Add(ctext)
-        Next
+        Try
+            TextBox1.Text = CurrentChanger.GetSerializedText()
+            FullElement = New List(Of MediumChanger.Element)
+            EmptyElement = New List(Of MediumChanger.Element)
+            For Each e As MediumChanger.Element In CurrentChanger.Elements
+                If e.Full Then FullElement.Add(e) Else EmptyElement.Add(e)
+            Next
+            ComboBox1.Items.Clear()
+            ComboBox2.Items.Clear()
+            For Each e As MediumChanger.Element In FullElement
+                Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
+                Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
+                Dim ttext As String = e.ElementTypeCode.ToString()
+                If itext.Length > 0 Then itext &= " "
+                itext &= ttext
+                itext = itext.TrimEnd(" ")
+                If itext.Length > 0 Then ctext = $"{ctext}({itext})"
+                ComboBox1.Items.Add(ctext)
+            Next
+            For Each e As MediumChanger.Element In EmptyElement
+                Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
+                Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
+                Dim ttext As String = e.ElementTypeCode.ToString()
+                If itext.Length > 0 Then itext &= " "
+                itext &= ttext
+                itext = itext.TrimEnd(" ")
+                If itext.Length > 0 Then ctext = $"{ctext}({itext})"
+                ComboBox2.Items.Add(ctext)
+            Next
+        Catch ex As Exception
+
+        End Try
+
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click

@@ -154,6 +154,29 @@ Public Class ltfsindex
             writer.Serialize(t, Me)
             Return sb.ToString()
         End Function
+        Public Function SaveFile(FileName As String) As Boolean
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(directory))
+            Dim ms As New IO.FileStream(FileName, IO.FileMode.Create)
+            Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
+            Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
+            writer.Serialize(t, Me, ns)
+            t.Close()
+            ms.Close()
+            Return True
+        End Function
+        Public Shared Function FromXML(s As String) As directory
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(directory))
+            Dim t As IO.TextReader = New IO.StringReader(s)
+            Return CType(reader.Deserialize(t), directory)
+        End Function
+        Public Shared Function FromFile(FileName As String) As directory
+            Dim result As directory
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(directory))
+            Dim t As IO.StreamReader = New IO.StreamReader(FileName)
+            result = CType(reader.Deserialize(t), directory)
+            t.Close()
+            Return result
+        End Function
     End Class
     <Serializable>
     Public Class contentsDef
