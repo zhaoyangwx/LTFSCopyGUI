@@ -135,9 +135,9 @@ Public Class ChangerTool
                     Try
                         MediumChanger.MoveMedium(drv, src, dest)
                     Catch ex As Exception
-                        MessageBox.Show("Error")
+                        Me.Invoke(Sub() MessageBox.Show($"Error: {ex.ToString}"))
                     Finally
-                        MessageBox.Show("Finished")
+                        Me.Invoke(Sub() MessageBox.Show("Finished"))
                     End Try
                     SetUILock(False)
                     Me.Invoke(Sub()

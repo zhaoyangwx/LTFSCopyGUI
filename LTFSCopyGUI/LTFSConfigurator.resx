@@ -765,605 +765,65 @@
   <data name="Panel2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="&gt;&gt;CheckBox4.Name" xml:space="preserve">
-    <value>CheckBox4</value>
+  <data name="Label17.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;CheckBox4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Label17.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="&gt;&gt;CheckBox4.Parent" xml:space="preserve">
+  <data name="Label17.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="Label17.Location" type="System.Drawing.Point, System.Drawing">
+    <value>779, 32</value>
+  </data>
+  <data name="Label17.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 12</value>
+  </data>
+  <data name="Label17.TabIndex" type="System.Int32, mscorlib">
+    <value>61</value>
+  </data>
+  <data name="Label17.Text" xml:space="preserve">
+    <value>timeout</value>
+  </data>
+  <data name="&gt;&gt;Label17.Name" xml:space="preserve">
+    <value>Label17</value>
+  </data>
+  <data name="&gt;&gt;Label17.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Label17.Parent" xml:space="preserve">
     <value>Panel2</value>
   </data>
-  <data name="&gt;&gt;CheckBox4.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;Label17.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugAllowMediaRemoval.Name" xml:space="preserve">
-    <value>ButtonDebugAllowMediaRemoval</value>
+  <data name="TextBox3.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugAllowMediaRemoval.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="TextBox3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>832, 29</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugAllowMediaRemoval.Parent" xml:space="preserve">
+  <data name="TextBox3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 21</value>
+  </data>
+  <data name="TextBox3.TabIndex" type="System.Int32, mscorlib">
+    <value>60</value>
+  </data>
+  <data name="TextBox3.Text" xml:space="preserve">
+    <value>600</value>
+  </data>
+  <data name="&gt;&gt;TextBox3.Name" xml:space="preserve">
+    <value>TextBox3</value>
+  </data>
+  <data name="&gt;&gt;TextBox3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBox3.Parent" xml:space="preserve">
     <value>Panel2</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugAllowMediaRemoval.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;TextBox3.ZOrder" xml:space="preserve">
     <value>1</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReleaseUnit.Name" xml:space="preserve">
-    <value>ButtonDebugReleaseUnit</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReleaseUnit.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReleaseUnit.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReleaseUnit.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugFormat.Name" xml:space="preserve">
-    <value>ButtonDebugFormat</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugFormat.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugFormat.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugFormat.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpIndex.Name" xml:space="preserve">
-    <value>ButtonDebugDumpIndex</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpIndex.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpIndex.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpIndex.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ComboBox3.Name" xml:space="preserve">
-    <value>ComboBox3</value>
-  </data>
-  <data name="&gt;&gt;ComboBox3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ComboBox3.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ComboBox3.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;CheckBox2.Name" xml:space="preserve">
-    <value>CheckBox2</value>
-  </data>
-  <data name="&gt;&gt;CheckBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;CheckBox2.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;CheckBox2.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;Button24.Name" xml:space="preserve">
-    <value>Button24</value>
-  </data>
-  <data name="&gt;&gt;Button24.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Button24.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Button24.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpTape.Name" xml:space="preserve">
-    <value>ButtonDebugDumpTape</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpTape.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpTape.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpTape.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadPosition.Name" xml:space="preserve">
-    <value>ButtonDebugReadPosition</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadPosition.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadPosition.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadPosition.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugLocate.Name" xml:space="preserve">
-    <value>ButtonDebugLocate</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugLocate.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugLocate.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugLocate.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;Label16.Name" xml:space="preserve">
-    <value>Label16</value>
-  </data>
-  <data name="&gt;&gt;Label16.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label16.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label16.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown1.Name" xml:space="preserve">
-    <value>NumericUpDown1</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown1.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown1.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown2.Name" xml:space="preserve">
-    <value>NumericUpDown2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown2.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown2.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;Label5.Name" xml:space="preserve">
-    <value>Label5</value>
-  </data>
-  <data name="&gt;&gt;Label5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label5.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;Label4.Name" xml:space="preserve">
-    <value>Label4</value>
-  </data>
-  <data name="&gt;&gt;Label4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label4.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label4.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ComboBox2.Name" xml:space="preserve">
-    <value>ComboBox2</value>
-  </data>
-  <data name="&gt;&gt;ComboBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ComboBox2.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ComboBox2.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Name" xml:space="preserve">
-    <value>ButtonDebugDumpBuffer</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown7.Name" xml:space="preserve">
-    <value>NumericUpDown7</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown7.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown7.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadBlock.Name" xml:space="preserve">
-    <value>ButtonDebugReadBlock</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadBlock.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadBlock.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadBlock.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;Label14.Name" xml:space="preserve">
-    <value>Label14</value>
-  </data>
-  <data name="&gt;&gt;Label14.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label14.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label14.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugRewind.Name" xml:space="preserve">
-    <value>ButtonDebugRewind</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugRewind.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugRewind.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugRewind.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpMAM.Name" xml:space="preserve">
-    <value>ButtonDebugDumpMAM</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpMAM.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpMAM.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugDumpMAM.ZOrder" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadInfo.Name" xml:space="preserve">
-    <value>ButtonDebugReadInfo</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadInfo.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadInfo.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadInfo.ZOrder" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadMAM.Name" xml:space="preserve">
-    <value>ButtonDebugReadMAM</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadMAM.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadMAM.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugReadMAM.ZOrder" xml:space="preserve">
-    <value>24</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown9.Name" xml:space="preserve">
-    <value>NumericUpDown9</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown9.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown9.ZOrder" xml:space="preserve">
-    <value>25</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown8.Name" xml:space="preserve">
-    <value>NumericUpDown8</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown8.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown8.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown8.ZOrder" xml:space="preserve">
-    <value>26</value>
-  </data>
-  <data name="&gt;&gt;Label15.Name" xml:space="preserve">
-    <value>Label15</value>
-  </data>
-  <data name="&gt;&gt;Label15.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label15.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label15.ZOrder" xml:space="preserve">
-    <value>27</value>
-  </data>
-  <data name="&gt;&gt;Label13.Name" xml:space="preserve">
-    <value>Label13</value>
-  </data>
-  <data name="&gt;&gt;Label13.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label13.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label13.ZOrder" xml:space="preserve">
-    <value>28</value>
-  </data>
-  <data name="&gt;&gt;TextBox10.Name" xml:space="preserve">
-    <value>TextBox10</value>
-  </data>
-  <data name="&gt;&gt;TextBox10.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox10.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox10.ZOrder" xml:space="preserve">
-    <value>29</value>
-  </data>
-  <data name="&gt;&gt;Label12.Name" xml:space="preserve">
-    <value>Label12</value>
-  </data>
-  <data name="&gt;&gt;Label12.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label12.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label12.ZOrder" xml:space="preserve">
-    <value>30</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugWriteBarcode.Name" xml:space="preserve">
-    <value>ButtonDebugWriteBarcode</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugWriteBarcode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugWriteBarcode.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugWriteBarcode.ZOrder" xml:space="preserve">
-    <value>31</value>
-  </data>
-  <data name="&gt;&gt;TextBox9.Name" xml:space="preserve">
-    <value>TextBox9</value>
-  </data>
-  <data name="&gt;&gt;TextBox9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox9.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox9.ZOrder" xml:space="preserve">
-    <value>32</value>
-  </data>
-  <data name="&gt;&gt;Label11.Name" xml:space="preserve">
-    <value>Label11</value>
-  </data>
-  <data name="&gt;&gt;Label11.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label11.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label11.ZOrder" xml:space="preserve">
-    <value>33</value>
-  </data>
-  <data name="&gt;&gt;Label10.Name" xml:space="preserve">
-    <value>Label10</value>
-  </data>
-  <data name="&gt;&gt;Label10.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label10.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>34</value>
-  </data>
-  <data name="&gt;&gt;Label9.Name" xml:space="preserve">
-    <value>Label9</value>
-  </data>
-  <data name="&gt;&gt;Label9.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label9.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label9.ZOrder" xml:space="preserve">
-    <value>35</value>
-  </data>
-  <data name="&gt;&gt;Label8.Name" xml:space="preserve">
-    <value>Label8</value>
-  </data>
-  <data name="&gt;&gt;Label8.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label8.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label8.ZOrder" xml:space="preserve">
-    <value>36</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown6.Name" xml:space="preserve">
-    <value>NumericUpDown6</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown6.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;NumericUpDown6.ZOrder" xml:space="preserve">
-    <value>37</value>
-  </data>
-  <data name="&gt;&gt;TextBox8.Name" xml:space="preserve">
-    <value>TextBox8</value>
-  </data>
-  <data name="&gt;&gt;TextBox8.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox8.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox8.ZOrder" xml:space="preserve">
-    <value>38</value>
-  </data>
-  <data name="&gt;&gt;TextBox7.Name" xml:space="preserve">
-    <value>TextBox7</value>
-  </data>
-  <data name="&gt;&gt;TextBox7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox7.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox7.ZOrder" xml:space="preserve">
-    <value>39</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugErase.Name" xml:space="preserve">
-    <value>ButtonDebugErase</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugErase.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugErase.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugErase.ZOrder" xml:space="preserve">
-    <value>40</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Name" xml:space="preserve">
-    <value>ButtonDebugSendSCSICommand</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.ZOrder" xml:space="preserve">
-    <value>41</value>
-  </data>
-  <data name="&gt;&gt;TextBox6.Name" xml:space="preserve">
-    <value>TextBox6</value>
-  </data>
-  <data name="&gt;&gt;TextBox6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox6.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox6.ZOrder" xml:space="preserve">
-    <value>42</value>
-  </data>
-  <data name="&gt;&gt;TextBox5.Name" xml:space="preserve">
-    <value>TextBox5</value>
-  </data>
-  <data name="&gt;&gt;TextBox5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBox5.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBox5.ZOrder" xml:space="preserve">
-    <value>43</value>
-  </data>
-  <data name="&gt;&gt;Label7.Name" xml:space="preserve">
-    <value>Label7</value>
-  </data>
-  <data name="&gt;&gt;Label7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label7.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
-    <value>44</value>
-  </data>
-  <data name="&gt;&gt;Label6.Name" xml:space="preserve">
-    <value>Label6</value>
-  </data>
-  <data name="&gt;&gt;Label6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Label6.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Label6.ZOrder" xml:space="preserve">
-    <value>45</value>
-  </data>
-  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>35, 62</value>
-  </data>
-  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>991, 547</value>
-  </data>
-  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
-  </data>
-  <data name="Panel2.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="Panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1077, 662</value>
-  </data>
-  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
-    <value>0</value>
   </data>
   <data name="CheckBox4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1393,7 +853,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;CheckBox4.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <data name="ButtonDebugAllowMediaRemoval.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1420,7 +880,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugAllowMediaRemoval.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <data name="ButtonDebugReleaseUnit.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1447,7 +907,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugReleaseUnit.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>4</value>
   </data>
   <data name="ButtonDebugFormat.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1474,7 +934,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugFormat.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>5</value>
   </data>
   <data name="ButtonDebugDumpIndex.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1501,7 +961,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugDumpIndex.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>6</value>
   </data>
   <data name="ComboBox3.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1534,7 +994,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ComboBox3.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>7</value>
   </data>
   <data name="CheckBox2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1564,7 +1024,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;CheckBox2.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>8</value>
   </data>
   <data name="Button24.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1591,7 +1051,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Button24.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>9</value>
   </data>
   <data name="ButtonDebugDumpTape.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1618,7 +1078,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugDumpTape.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>10</value>
   </data>
   <data name="ButtonDebugReadPosition.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1645,7 +1105,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugReadPosition.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>11</value>
   </data>
   <data name="ButtonDebugLocate.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1672,7 +1132,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugLocate.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>12</value>
   </data>
   <data name="Label16.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1702,7 +1162,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label16.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>13</value>
   </data>
   <data name="NumericUpDown1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1726,7 +1186,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown1.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>14</value>
   </data>
   <data name="NumericUpDown2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1750,7 +1210,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown2.ZOrder" xml:space="preserve">
-    <value>13</value>
+    <value>15</value>
   </data>
   <data name="Label5.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -1780,7 +1240,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label5.ZOrder" xml:space="preserve">
-    <value>14</value>
+    <value>16</value>
   </data>
   <data name="Label4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -1810,7 +1270,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label4.ZOrder" xml:space="preserve">
-    <value>15</value>
+    <value>17</value>
   </data>
   <data name="ComboBox2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
@@ -2080,7 +1540,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ComboBox2.ZOrder" xml:space="preserve">
-    <value>16</value>
+    <value>18</value>
   </data>
   <data name="ButtonDebugDumpBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -2107,7 +1567,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugDumpBuffer.ZOrder" xml:space="preserve">
-    <value>17</value>
+    <value>19</value>
   </data>
   <data name="NumericUpDown7.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -2131,7 +1591,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown7.ZOrder" xml:space="preserve">
-    <value>18</value>
+    <value>20</value>
   </data>
   <data name="ButtonDebugReadBlock.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -2158,7 +1618,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugReadBlock.ZOrder" xml:space="preserve">
-    <value>19</value>
+    <value>21</value>
   </data>
   <data name="Label14.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2188,7 +1648,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label14.ZOrder" xml:space="preserve">
-    <value>20</value>
+    <value>22</value>
   </data>
   <data name="ButtonDebugRewind.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2215,7 +1675,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugRewind.ZOrder" xml:space="preserve">
-    <value>21</value>
+    <value>23</value>
   </data>
   <data name="ButtonDebugDumpMAM.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2242,7 +1702,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugDumpMAM.ZOrder" xml:space="preserve">
-    <value>22</value>
+    <value>24</value>
   </data>
   <data name="ButtonDebugReadInfo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -2269,7 +1729,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugReadInfo.ZOrder" xml:space="preserve">
-    <value>23</value>
+    <value>25</value>
   </data>
   <data name="ButtonDebugReadMAM.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2296,7 +1756,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugReadMAM.ZOrder" xml:space="preserve">
-    <value>24</value>
+    <value>26</value>
   </data>
   <data name="NumericUpDown9.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2320,7 +1780,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown9.ZOrder" xml:space="preserve">
-    <value>25</value>
+    <value>27</value>
   </data>
   <data name="NumericUpDown8.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2344,7 +1804,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown8.ZOrder" xml:space="preserve">
-    <value>26</value>
+    <value>28</value>
   </data>
   <data name="Label15.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2374,7 +1834,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label15.ZOrder" xml:space="preserve">
-    <value>27</value>
+    <value>29</value>
   </data>
   <data name="Label13.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2404,7 +1864,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label13.ZOrder" xml:space="preserve">
-    <value>28</value>
+    <value>30</value>
   </data>
   <data name="TextBox10.Location" type="System.Drawing.Point, System.Drawing">
     <value>128, 56</value>
@@ -2428,7 +1888,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox10.ZOrder" xml:space="preserve">
-    <value>29</value>
+    <value>31</value>
   </data>
   <data name="Label12.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2455,7 +1915,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label12.ZOrder" xml:space="preserve">
-    <value>30</value>
+    <value>32</value>
   </data>
   <data name="ButtonDebugWriteBarcode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Right</value>
@@ -2482,7 +1942,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugWriteBarcode.ZOrder" xml:space="preserve">
-    <value>31</value>
+    <value>33</value>
   </data>
   <data name="TextBox9.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
@@ -2512,7 +1972,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox9.ZOrder" xml:space="preserve">
-    <value>32</value>
+    <value>34</value>
   </data>
   <data name="Label11.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2542,7 +2002,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label11.ZOrder" xml:space="preserve">
-    <value>33</value>
+    <value>35</value>
   </data>
   <data name="Label10.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2572,7 +2032,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label10.ZOrder" xml:space="preserve">
-    <value>34</value>
+    <value>36</value>
   </data>
   <data name="Label9.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2602,7 +2062,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label9.ZOrder" xml:space="preserve">
-    <value>35</value>
+    <value>37</value>
   </data>
   <data name="Label8.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2629,7 +2089,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label8.ZOrder" xml:space="preserve">
-    <value>36</value>
+    <value>38</value>
   </data>
   <data name="NumericUpDown6.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2653,7 +2113,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;NumericUpDown6.ZOrder" xml:space="preserve">
-    <value>37</value>
+    <value>39</value>
   </data>
   <data name="TextBox8.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
@@ -2686,7 +2146,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox8.ZOrder" xml:space="preserve">
-    <value>38</value>
+    <value>40</value>
   </data>
   <data name="TextBox7.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -2713,7 +2173,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox7.ZOrder" xml:space="preserve">
-    <value>39</value>
+    <value>41</value>
   </data>
   <data name="ButtonDebugErase.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
@@ -2740,7 +2200,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugErase.ZOrder" xml:space="preserve">
-    <value>40</value>
+    <value>42</value>
   </data>
   <data name="ButtonDebugSendSCSICommand.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
@@ -2767,7 +2227,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;ButtonDebugSendSCSICommand.ZOrder" xml:space="preserve">
-    <value>41</value>
+    <value>43</value>
   </data>
   <data name="TextBox6.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -2776,7 +2236,7 @@
     <value>228, 29</value>
   </data>
   <data name="TextBox6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>669, 21</value>
+    <value>545, 21</value>
   </data>
   <data name="TextBox6.TabIndex" type="System.Int32, mscorlib">
     <value>14</value>
@@ -2794,7 +2254,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox6.ZOrder" xml:space="preserve">
-    <value>42</value>
+    <value>44</value>
   </data>
   <data name="TextBox5.Location" type="System.Drawing.Point, System.Drawing">
     <value>128, 29</value>
@@ -2818,7 +2278,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;TextBox5.ZOrder" xml:space="preserve">
-    <value>43</value>
+    <value>45</value>
   </data>
   <data name="Label7.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2845,7 +2305,7 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label7.ZOrder" xml:space="preserve">
-    <value>44</value>
+    <value>46</value>
   </data>
   <data name="Label6.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -2872,7 +2332,55 @@
     <value>Panel2</value>
   </data>
   <data name="&gt;&gt;Label6.ZOrder" xml:space="preserve">
-    <value>45</value>
+    <value>47</value>
+  </data>
+  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>35, 62</value>
+  </data>
+  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>991, 547</value>
+  </data>
+  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="Panel2.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="Panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1077, 662</value>
+  </data>
+  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <metadata name="SaveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>

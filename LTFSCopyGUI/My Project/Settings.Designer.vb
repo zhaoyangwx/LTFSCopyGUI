@@ -377,6 +377,30 @@ Namespace My
                 Me("LTFSWriter_ShowLoss") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+        Public Property LTFSWriter_SkipSymlink() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_SkipSymlink"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_SkipSymlink") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("False")>  _
+        Public Property LTFSWriter_ShowFileCount() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ShowFileCount"),Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ShowFileCount") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

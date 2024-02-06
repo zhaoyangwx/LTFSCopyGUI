@@ -347,7 +347,7 @@ Public Class LTFSConfigurator
 
                     Dim senseBuffer(63) As Byte
                     Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
-                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, 60000, senseBufferPtr)
+                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, CInt(TextBox3.Text), senseBufferPtr)
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
