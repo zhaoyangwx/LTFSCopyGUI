@@ -98,6 +98,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.Label17 = New System.Windows.Forms.Label()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -277,6 +279,8 @@ Partial Class LTFSConfigurator
         'Panel2
         '
         resources.ApplyResources(Me.Panel2, "Panel2")
+        Me.Panel2.Controls.Add(Me.Label17)
+        Me.Panel2.Controls.Add(Me.TextBox3)
         Me.Panel2.Controls.Add(Me.CheckBox4)
         Me.Panel2.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
         Me.Panel2.Controls.Add(Me.ButtonDebugReleaseUnit)
@@ -609,6 +613,16 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'TextBox3
+        '
+        resources.ApplyResources(Me.TextBox3, "TextBox3")
+        Me.TextBox3.Name = "TextBox3"
+        '
+        'Label17
+        '
+        resources.ApplyResources(Me.Label17, "Label17")
+        Me.Label17.Name = "Label17"
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -704,4 +718,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents CheckBox4 As CheckBox
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents Button5 As Button
+    Friend WithEvents TextBox3 As TextBox
+    Friend WithEvents Label17 As Label
 End Class

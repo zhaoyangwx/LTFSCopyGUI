@@ -1196,12 +1196,13 @@ Public Class TapeUtils
         Return sense
     End Function
     Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As Integer, Optional ByVal senseEnabled As Boolean = False) As Byte()
-        Dim sense(63) As Byte
+        Dim sense() As Byte = {0, 0, 0}
+        If senseEnabled Then ReDim sense(63)
         Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 60000, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
@@ -1695,6 +1696,7 @@ Public Class TapeUtils
                                   Optional ByVal Capacity As UInt16 = &HFFFF,
                                   Optional ByVal P0Size As UInt16 = 1,
                                   Optional ByVal P1Size As UInt16 = &HFFFF) As Boolean
+        GlobalBlockLimit = TapeUtils.ReadBlockLimits(TapeDrive).MaximumBlockLength
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim mkltfs_op As Func(Of Boolean) =
             Function()

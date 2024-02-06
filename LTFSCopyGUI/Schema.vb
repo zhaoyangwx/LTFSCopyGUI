@@ -144,6 +144,61 @@ Public Class ltfsindex
         Public Property contents As New contentsDef
         Public Property tag As String
 
+        Private _TotalFiles, _TotalDirectories As Long
+        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalFiles
+            Get
+                If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
+                    RefreshCount()
+                End If
+                If _TotalFiles = 0 AndAlso contents._file IsNot Nothing AndAlso contents._file.Count > 0 Then
+                    RefreshCount()
+                End If
+                Return _TotalFiles
+            End Get
+        End Property
+        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalDirectories
+            Get
+                If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
+                    RefreshCount()
+                End If
+                If _TotalFiles = 0 AndAlso contents._file IsNot Nothing AndAlso contents._file.Count > 0 Then
+                    RefreshCount()
+                End If
+                Return _TotalDirectories
+            End Get
+        End Property
+        Public Sub RefreshCount()
+            If contents._directory Is Nothing OrElse contents._directory.Count = 0 Then
+                If contents._file IsNot Nothing Then
+                    _TotalFiles = contents._file.Count
+                Else
+                    _TotalFiles = 0
+                End If
+            Else
+                If contents._file IsNot Nothing Then
+                    _TotalFiles = contents._file.Count
+                End If
+                For Each d As directory In contents._directory
+                    _TotalFiles += d.TotalFiles
+                Next
+            End If
+            If contents._directory IsNot Nothing Then
+                _TotalDirectories = contents._directory.Count
+                For Each d As directory In contents._directory
+                    _TotalDirectories += d.TotalDirectories
+                Next
+            End If
+        End Sub
+        Public Sub DeepRefreshCount()
+            _TotalFiles = 0
+            _TotalDirectories = 0
+            For Each d As directory In contents._directory
+                d.DeepRefreshCount()
+            Next
+            RefreshCount()
+        End Sub
+
+
         <Xml.Serialization.XmlIgnore> Public fullpath As String
         <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
 

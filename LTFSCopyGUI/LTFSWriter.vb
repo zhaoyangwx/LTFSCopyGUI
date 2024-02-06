@@ -141,6 +141,8 @@ Public Class LTFSWriter
     Public Sub Load_Settings()
 
         覆盖已有文件ToolStripMenuItem.Checked = My.Settings.LTFSWriter_OverwriteExist
+        跳过符号链接ToolStripMenuItem.Checked = My.Settings.LTFSWriter_SkipSymlink
+        显示文件数ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowFileCount
         Select Case My.Settings.LTFSWriter_OnWriteFinished
             Case 0
                 WA0ToolStripMenuItem.Checked = True
@@ -184,6 +186,7 @@ Public Class LTFSWriter
     End Sub
     Public Sub Save_Settings()
         My.Settings.LTFSWriter_OverwriteExist = 覆盖已有文件ToolStripMenuItem.Checked
+        My.Settings.LTFSWriter_SkipSymlink = 跳过符号链接ToolStripMenuItem.Checked
         If WA0ToolStripMenuItem.Checked Then
             My.Settings.LTFSWriter_OnWriteFinished = 0
         ElseIf WA1ToolStripMenuItem.Checked Then
@@ -682,6 +685,7 @@ Public Class LTFSWriter
     Public Sub RefreshDisplay()
         Invoke(
             Sub()
+                If My.Settings.LTFSWriter_ShowFileCount Then schema._directory(0).DeepRefreshCount()
                 If schema Is Nothing Then Exit Sub
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
@@ -691,7 +695,11 @@ Public Class LTFSWriter
                             SyncLock dir.contents._directory
                                 For Each d As ltfsindex.directory In dir.contents._directory
                                     Dim t As New TreeNode
-                                    t.Text = d.name
+                                    If My.Settings.LTFSWriter_ShowFileCount Then
+                                        t.Text = $"{d.TotalFiles.ToString.PadRight(6)}| {d.name}"
+                                    Else
+                                        t.Text = d.name
+                                    End If
                                     t.Tag = d
                                     t.ImageIndex = 1
                                     t.SelectedImageIndex = 1
@@ -928,6 +936,7 @@ Public Class LTFSWriter
                         删除ToolStripMenuItem.Enabled = False
                         统计ToolStripMenuItem.Enabled = False
                     End If
+                    ListView1.Items.Clear()
                 End If
             Catch ex As Exception
                 PrintMsg(ResText_NavErr.Text)
@@ -1139,6 +1148,10 @@ Public Class LTFSWriter
     Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
         Try
             If f.Extension.ToLower = ".xattr" Then Exit Sub
+            'symlink
+            If My.Settings.LTFSWriter_SkipSymlink AndAlso ((f.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
+                Exit Sub
+            End If
             Dim FileExist As Boolean = False
             Dim SameFile As Boolean = False
             '检查磁带已有文件
@@ -1187,6 +1200,9 @@ Public Class LTFSWriter
         End Try
     End Sub
     Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
+        If My.Settings.LTFSWriter_SkipSymlink AndAlso ((dnew1.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
+            Exit Sub
+        End If
         Dim dirExist As Boolean = False
         Dim dT As ltfsindex.directory = Nothing
         SyncLock d1.contents._directory
@@ -2233,6 +2249,8 @@ Public Class LTFSWriter
                                             If HashOnWrite Then sh = New IOManager.SHA1BlockwiseCalculator
                                             Dim LastWriteTask As Task = Nothing
                                             Dim ExitWhileFlag As Boolean = False
+                                            'Dim tstart As Date = Now
+                                            'Dim tsub As Double = 0
                                             While Not StopFlag
                                                 Dim buffer(plabel.blocksize - 1) As Byte
                                                 Dim BytesReaded As Integer = fr.Read(buffer, 0, plabel.blocksize)
@@ -2256,7 +2274,10 @@ Public Class LTFSWriter
                                                         While Not succ
                                                             Dim sense As Byte()
                                                             Try
+                                                                'Dim t0 As Date = Now
                                                                 sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                                'tsub += (Now - t0).TotalMilliseconds
+                                                                'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
                                                                 SyncLock p
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
@@ -3221,6 +3242,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub ToolStripButton2_Click(sender As Object, e As EventArgs) Handles ToolStripButton2.Click
+
         写入数据ToolStripMenuItem_Click(sender, e)
     End Sub
 
@@ -4255,6 +4277,19 @@ Public Class LTFSWriter
                 End If
             End If
         End If
+    End Sub
+
+    Private Sub 跳过符号链接ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 跳过符号链接ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_SkipSymlink = 跳过符号链接ToolStripMenuItem.Checked
+    End Sub
+
+    Private Sub 覆盖已有文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 覆盖已有文件ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_OverwriteExist = 覆盖已有文件ToolStripMenuItem.Checked
+    End Sub
+
+    Private Sub 显示文件数ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 显示文件数ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_ShowFileCount = 显示文件数ToolStripMenuItem.Checked
+        RefreshDisplay()
     End Sub
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
