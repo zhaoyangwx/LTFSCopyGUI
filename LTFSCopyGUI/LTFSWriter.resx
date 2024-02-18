@@ -126,10 +126,74 @@
     <value>9, 28</value>
   </data>
   <metadata name="ContextMenuStrip3.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>1035, 22</value>
+    <value>1030, 24</value>
   </metadata>
+  <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>提取</value>
+  </data>
+  <data name="计算并更新ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="计算并更新ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>计算并更新</value>
+  </data>
+  <data name="跳过已有校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="跳过已有校验ToolStripMenuItem.Text" xml:space="preserve">
+    <value>计算并跳过已有校验</value>
+  </data>
+  <data name="仅验证ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="仅验证ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>仅验证</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>校验</value>
+  </data>
+  <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="重命名ToolStripMenuItem.Text" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="统计ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="统计ToolStripMenuItem.Text" xml:space="preserve">
+    <value>统计</value>
+  </data>
+  <data name="压缩索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="压缩索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>压缩索引</value>
+  </data>
+  <data name="解压索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>解压索引</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="解压索引ToolStripMenuItem.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 158</value>
+    <value>181, 180</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip3.Name" xml:space="preserve">
     <value>ContextMenuStrip3</value>
@@ -140,7 +204,6 @@
   <data name="TreeView1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="TreeView1.ImageIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
@@ -152,7 +215,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAVQBCAFUAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAYQBCAGEAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -364,8 +427,206 @@
   <metadata name="ContextMenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>696, 18</value>
   </metadata>
+  <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
+    <value>提取</value>
+  </data>
+  <data name="计算并更新ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="计算并更新ToolStripMenuItem.Text" xml:space="preserve">
+    <value>计算并更新</value>
+  </data>
+  <data name="计算并跳过已有校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="计算并跳过已有校验ToolStripMenuItem.Text" xml:space="preserve">
+    <value>计算并跳过已有校验</value>
+  </data>
+  <data name="仅验证ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="仅验证ToolStripMenuItem.Text" xml:space="preserve">
+    <value>仅验证</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
+    <value>校验</value>
+  </data>
+  <data name="移动到索引区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="移动到索引区ToolStripMenuItem.Text" xml:space="preserve">
+    <value>移动到索引区</value>
+  </data>
+  <data name="定位到起始块ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="定位到起始块ToolStripMenuItem.Text" xml:space="preserve">
+    <value>定位到起始块</value>
+  </data>
+  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 6</value>
+  </data>
+  <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="重命名文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>重命名文件</value>
+  </data>
+  <data name="重命名目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="重命名目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>重命名目录</value>
+  </data>
+  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 6</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxMAAAsTAQCanBgAAAVySURBVFhHxZXdaxxVGMZ76Z/Q
+        S73sZS5zIxIpSBoEo1e98SIWLKFojSI1alGCre0SNaS11m2U0A0aOiFWZq3BWSWjs9DFXXTbXcI2s0pq
+        p6bE03QTJm1aH5/3zMx+TmrEr8CPc+Zs5jy/854zMzsA/K/EDv6XxA62o24qNsCly5cwb8/DnrdRLpex
+        vLwsw7H3bJfYwXZurq6y2fpPxLLfZZG7mEMoGztPHLGD7UQCvu8TaYO+dHS7qX/Wf27FxZXFK9KNnaud
+        2MF21tfX2UQC94MCVRezxiyU2l4lYgdbuHMLVy477G5HwNcVsGwHF8wLckv8nE3EDrZQSUOVTV3muMB2
+        RMA8b6JULGF2ZhbrtftXInawhdIkvFwKvgjUGBIREy6oGwpWxkJqKkUMmNPjyKeHsTj/KtRPZ7Hx2wKn
+        bczfGtbJab+YgpcNBZrDmmXaUMqH5ymeBw9ONg/HtuAuKfhP9GJ14UNO28hoDuvk3ib8sggkOyuwTRRx
+        pofgTPTCmxqAXxhC7eq3kLkloz30afJA/XqD1sUkPHtcC8hkcQHtYy3wyXCmh2Gd7oeboUB2EH5uEHdW
+        FxmBRxnyCy8u4e56Fb/fXZPBt3U4uXfzZ/7zOLxMQk8kpY0mlmANxxQPmm410m9cy33W1DDMk6wABRTD
+        tcCaJ1kP7sCtHFAzCE96zYJ/9ROsXf8SGys51Ba/gG8n4KZH9OHy+Ix7Sx6UR3hdD4ukthAwJ4dgjvVC
+        iUA22IZ7t2siEG7BjSSXl2pCrgNUNQGvMAKvaMIt5vVj5lZKdbTUVmLs+8wxJ4ZgjPYEAvZeMijhjzQE
+        Vr8KAkVEMx7gsfTeCFuyxBvLwyjlKFFmuMBnvd5vhpLyFEQCxsnBuoBPgevfPC8COjsQEKLQMDggCPer
+        3LdyP1AdYCVGkM8YyPNtJy+bUiHfSVipYHuA1NggTBGwgwos2y/HCKhzoUAj3F8aDqj0U4L21SEtA7aq
+        PAiXpSzxjOQzKThzlMpSihUq5dgWHP1dkCokj+2FeawLao7ngKwU3osR2OS3PSr5koSHAhJc2RuEV1gJ
+        oczrIqWEQkiR1eEKSzYrZFMoY1LI0kKJl3phvLkL7lS3ZplPVqeA8OsHOhwMFoJQWX0YXA8PKZAcfxey
+        xO6FnyFsS3aSEpbeqsQBCry2C/nTXcif7MK14gzj4gQ2KkFwREVWL8StvD2cZPp1iX0pNV841oyhJUb2
+        9wQCY11wyHIlw7g4AbKx9HqwckEC6+EUiYKjcAmuh4erl/A023QPP0LjPBsmRvb1wOQWOKMUIKvXfmTU
+        FgJY/56BDIgCpdV9jkVl556rlpUHwRodTonzPfDmBvg1NAIBVsDhQRTWVqqM2kpAcF/gSeeqJVCHc9Lo
+        sIVlV+3hYbDPYEHNBK01k6gLWG+R0W5s3tavfJ3VGU5cdwEXPu4DWAnwDICPXLB6Bma5uuiwNa1cyq7O
+        hwIM1wLTPPXpAQp0awG9DWM9jGhktQQ34/G1alkWxkcP46PjT2Lh88e1kF9gRYQoPFxxfdU6OEBNduuq
+        JA50wzhEAUp8PfoYvw/yjeBHgjmx4e3IG61UKiGZTOKdI8/gs7Hdev+hzwHfbnPckhnKTDGYoTqYz7v0
+        hfxkP4yDD2mJT4/06blkgTJ3bOCfITc7joN3E4dxhm+5H87uBiik5vi9ELQI4TPv89n3uTXJg7u0xKlX
+        9ujKyqJkrtiAv4KUUlaUSqVw4ugBnDu+JzgL+kxQaor9iW5Y/Bwn9+/Ekef6tEB0f8eEf5eoOqfGjuLM
+        G0/h4omHAZFJ9yO5bycOPdtXL7/QMcE/iVTHdV0YhqGrc+zF3ZiceJ8/Nf6n5YZ/m+jkN8COPwDti8CX
+        NO4xjgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>导入文件</value>
+  </data>
+  <data name="添加文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="添加文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>添加文件</value>
+  </data>
+  <data name="添加目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="添加目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>添加目录</value>
+  </data>
+  <data name="新建目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>新建目录</value>
+  </data>
+  <data name="覆盖已有文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="覆盖已有文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>覆盖已有文件（如果不同）</value>
+  </data>
+  <data name="跳过符号链接ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="跳过符号链接ToolStripMenuItem.Text" xml:space="preserve">
+    <value>跳过符号链接</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
+    <value>选项</value>
+  </data>
+  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 6</value>
+  </data>
+  <data name="删除文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="删除文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>删除文件</value>
+  </data>
+  <data name="删除目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="删除目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>删除目录</value>
+  </data>
+  <data name="ToolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>169, 6</value>
+  </data>
+  <data name="生成标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="生成标签ToolStripMenuItem.Text" xml:space="preserve">
+    <value>生成标签</value>
+  </data>
+  <data name="设置标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
+    <value>设置标签</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
+    <value>文件详情</value>
+  </data>
+  <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 22</value>
+  </data>
+  <data name="复制选中信息ToolStripMenuItem.Text" xml:space="preserve">
+    <value>所选文件名</value>
+  </data>
+  <data name="子目录列表ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 22</value>
+  </data>
+  <data name="子目录列表ToolStripMenuItem.Text" xml:space="preserve">
+    <value>子目录列表</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 22</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>文件详情</value>
+  </data>
+  <data name="XAttrToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 22</value>
+  </data>
+  <data name="XAttrToolStripMenuItem.Text" xml:space="preserve">
+    <value>XAttr</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
+    <value>复制信息到剪贴板</value>
+  </data>
   <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 380</value>
+    <value>173, 402</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip1.Name" xml:space="preserve">
     <value>ContextMenuStrip1</value>
@@ -412,6 +673,63 @@
   <metadata name="ContextMenuStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>863, 18</value>
   </metadata>
+  <data name="S60ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="S60ToolStripMenuItem.Text" xml:space="preserve">
+    <value>60秒</value>
+  </data>
+  <data name="Min5ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="Min5ToolStripMenuItem.Text" xml:space="preserve">
+    <value>5分钟</value>
+  </data>
+  <data name="Min10ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="Min10ToolStripMenuItem.Text" xml:space="preserve">
+    <value>10分钟</value>
+  </data>
+  <data name="Min30ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="Min30ToolStripMenuItem.Text" xml:space="preserve">
+    <value>30分钟</value>
+  </data>
+  <data name="H1ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="H1ToolStripMenuItem.Text" xml:space="preserve">
+    <value>1小时</value>
+  </data>
+  <data name="H3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="H3ToolStripMenuItem.Text" xml:space="preserve">
+    <value>3小时</value>
+  </data>
+  <data name="H6ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="H6ToolStripMenuItem.Text" xml:space="preserve">
+    <value>6小时</value>
+  </data>
+  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>111, 6</value>
+  </data>
+  <data name="LinearToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="LinearToolStripMenuItem.Text" xml:space="preserve">
+    <value>线性</value>
+  </data>
+  <data name="LogarithmicToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 22</value>
+  </data>
+  <data name="LogarithmicToolStripMenuItem.Text" xml:space="preserve">
+    <value>对数</value>
+  </data>
   <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
     <value>115, 208</value>
   </data>
@@ -517,357 +835,9 @@
   <data name="&gt;&gt;SplitContainer1.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>提取</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>校验</value>
-  </data>
-  <data name="计算并更新ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="计算并更新ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>计算并更新</value>
-  </data>
-  <data name="跳过已有校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="跳过已有校验ToolStripMenuItem.Text" xml:space="preserve">
-    <value>计算并跳过已有校验</value>
-  </data>
-  <data name="仅验证ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="仅验证ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>仅验证</value>
-  </data>
-  <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="重命名ToolStripMenuItem.Text" xml:space="preserve">
-    <value>重命名</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
-    <value>删除</value>
-  </data>
-  <data name="统计ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="统计ToolStripMenuItem.Text" xml:space="preserve">
-    <value>统计</value>
-  </data>
-  <data name="压缩索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="压缩索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>压缩索引</value>
-  </data>
-  <data name="解压索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>解压索引</value>
-  </data>
-  <data name="解压索引ToolStripMenuItem.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
-    <value>提取</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
-    <value>校验</value>
-  </data>
-  <data name="计算并更新ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="计算并更新ToolStripMenuItem.Text" xml:space="preserve">
-    <value>计算并更新</value>
-  </data>
-  <data name="计算并跳过已有校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="计算并跳过已有校验ToolStripMenuItem.Text" xml:space="preserve">
-    <value>计算并跳过已有校验</value>
-  </data>
-  <data name="仅验证ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="仅验证ToolStripMenuItem.Text" xml:space="preserve">
-    <value>仅验证</value>
-  </data>
-  <data name="定位到起始块ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="定位到起始块ToolStripMenuItem.Text" xml:space="preserve">
-    <value>定位到起始块</value>
-  </data>
-  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 6</value>
-  </data>
-  <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="重命名文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>重命名文件</value>
-  </data>
-  <data name="重命名目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="重命名目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>重命名目录</value>
-  </data>
-  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 6</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxMAAAsTAQCanBgAAAVySURBVFhHxZXdaxxVGMZ76Z/Q
-        S73sZS5zIxIpSBoEo1e98SIWLKFojSI1alGCre0SNaS11m2U0A0aOiFWZq3BWSWjs9DFXXTbXcI2s0pq
-        p6bE03QTJm1aH5/3zMx+TmrEr8CPc+Zs5jy/854zMzsA/K/EDv6XxA62o24qNsCly5cwb8/DnrdRLpex
-        vLwsw7H3bJfYwXZurq6y2fpPxLLfZZG7mEMoGztPHLGD7UQCvu8TaYO+dHS7qX/Wf27FxZXFK9KNnaud
-        2MF21tfX2UQC94MCVRezxiyU2l4lYgdbuHMLVy477G5HwNcVsGwHF8wLckv8nE3EDrZQSUOVTV3muMB2
-        RMA8b6JULGF2ZhbrtftXInawhdIkvFwKvgjUGBIREy6oGwpWxkJqKkUMmNPjyKeHsTj/KtRPZ7Hx2wKn
-        bczfGtbJab+YgpcNBZrDmmXaUMqH5ymeBw9ONg/HtuAuKfhP9GJ14UNO28hoDuvk3ib8sggkOyuwTRRx
-        pofgTPTCmxqAXxhC7eq3kLkloz30afJA/XqD1sUkPHtcC8hkcQHtYy3wyXCmh2Gd7oeboUB2EH5uEHdW
-        FxmBRxnyCy8u4e56Fb/fXZPBt3U4uXfzZ/7zOLxMQk8kpY0mlmANxxQPmm410m9cy33W1DDMk6wABRTD
-        tcCaJ1kP7sCtHFAzCE96zYJ/9ROsXf8SGys51Ba/gG8n4KZH9OHy+Ix7Sx6UR3hdD4ukthAwJ4dgjvVC
-        iUA22IZ7t2siEG7BjSSXl2pCrgNUNQGvMAKvaMIt5vVj5lZKdbTUVmLs+8wxJ4ZgjPYEAvZeMijhjzQE
-        Vr8KAkVEMx7gsfTeCFuyxBvLwyjlKFFmuMBnvd5vhpLyFEQCxsnBuoBPgevfPC8COjsQEKLQMDggCPer
-        3LdyP1AdYCVGkM8YyPNtJy+bUiHfSVipYHuA1NggTBGwgwos2y/HCKhzoUAj3F8aDqj0U4L21SEtA7aq
-        PAiXpSzxjOQzKThzlMpSihUq5dgWHP1dkCokj+2FeawLao7ngKwU3osR2OS3PSr5koSHAhJc2RuEV1gJ
-        oczrIqWEQkiR1eEKSzYrZFMoY1LI0kKJl3phvLkL7lS3ZplPVqeA8OsHOhwMFoJQWX0YXA8PKZAcfxey
-        xO6FnyFsS3aSEpbeqsQBCry2C/nTXcif7MK14gzj4gQ2KkFwREVWL8StvD2cZPp1iX0pNV841oyhJUb2
-        9wQCY11wyHIlw7g4AbKx9HqwckEC6+EUiYKjcAmuh4erl/A023QPP0LjPBsmRvb1wOQWOKMUIKvXfmTU
-        FgJY/56BDIgCpdV9jkVl556rlpUHwRodTonzPfDmBvg1NAIBVsDhQRTWVqqM2kpAcF/gSeeqJVCHc9Lo
-        sIVlV+3hYbDPYEHNBK01k6gLWG+R0W5s3tavfJ3VGU5cdwEXPu4DWAnwDICPXLB6Bma5uuiwNa1cyq7O
-        hwIM1wLTPPXpAQp0awG9DWM9jGhktQQ34/G1alkWxkcP46PjT2Lh88e1kF9gRYQoPFxxfdU6OEBNduuq
-        JA50wzhEAUp8PfoYvw/yjeBHgjmx4e3IG61UKiGZTOKdI8/gs7Hdev+hzwHfbnPckhnKTDGYoTqYz7v0
-        hfxkP4yDD2mJT4/06blkgTJ3bOCfITc7joN3E4dxhm+5H87uBiik5vi9ELQI4TPv89n3uTXJg7u0xKlX
-        9ujKyqJkrtiAv4KUUlaUSqVw4ugBnDu+JzgL+kxQaor9iW5Y/Bwn9+/Ekef6tEB0f8eEf5eoOqfGjuLM
-        G0/h4omHAZFJ9yO5bycOPdtXL7/QMcE/iVTHdV0YhqGrc+zF3ZiceJ8/Nf6n5YZ/m+jkN8COPwDti8CX
-        NO4xjgAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>导入文件</value>
-  </data>
-  <data name="添加文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="添加文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>添加文件</value>
-  </data>
-  <data name="添加目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="添加目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>添加目录</value>
-  </data>
-  <data name="新建目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>新建目录</value>
-  </data>
-  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
-    <value>选项</value>
-  </data>
-  <data name="覆盖已有文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="覆盖已有文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>覆盖已有文件（如果不同）</value>
-  </data>
-  <data name="跳过符号链接ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="跳过符号链接ToolStripMenuItem.Text" xml:space="preserve">
-    <value>跳过符号链接</value>
-  </data>
-  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 6</value>
-  </data>
-  <data name="删除文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="删除文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>删除文件</value>
-  </data>
-  <data name="删除目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="删除目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>删除目录</value>
-  </data>
-  <data name="ToolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>169, 6</value>
-  </data>
-  <data name="生成标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="生成标签ToolStripMenuItem.Text" xml:space="preserve">
-    <value>生成标签</value>
-  </data>
-  <data name="设置标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
-    <value>设置标签</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
-    <value>文件详情</value>
-  </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 22</value>
-  </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
-    <value>复制信息到剪贴板</value>
-  </data>
-  <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 22</value>
-  </data>
-  <data name="复制选中信息ToolStripMenuItem.Text" xml:space="preserve">
-    <value>所选文件名</value>
-  </data>
-  <data name="子目录列表ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 22</value>
-  </data>
-  <data name="子目录列表ToolStripMenuItem.Text" xml:space="preserve">
-    <value>子目录列表</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 22</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>文件详情</value>
-  </data>
-  <data name="XAttrToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 22</value>
-  </data>
-  <data name="XAttrToolStripMenuItem.Text" xml:space="preserve">
-    <value>XAttr</value>
-  </data>
-  <data name="S60ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="S60ToolStripMenuItem.Text" xml:space="preserve">
-    <value>60秒</value>
-  </data>
-  <data name="Min5ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="Min5ToolStripMenuItem.Text" xml:space="preserve">
-    <value>5分钟</value>
-  </data>
-  <data name="Min10ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="Min10ToolStripMenuItem.Text" xml:space="preserve">
-    <value>10分钟</value>
-  </data>
-  <data name="Min30ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="Min30ToolStripMenuItem.Text" xml:space="preserve">
-    <value>30分钟</value>
-  </data>
-  <data name="H1ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="H1ToolStripMenuItem.Text" xml:space="preserve">
-    <value>1小时</value>
-  </data>
-  <data name="H3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="H3ToolStripMenuItem.Text" xml:space="preserve">
-    <value>3小时</value>
-  </data>
-  <data name="H6ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="H6ToolStripMenuItem.Text" xml:space="preserve">
-    <value>6小时</value>
-  </data>
-  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>111, 6</value>
-  </data>
-  <data name="LinearToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="LinearToolStripMenuItem.Text" xml:space="preserve">
-    <value>线性</value>
-  </data>
-  <data name="LogarithmicToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 22</value>
-  </data>
-  <data name="LogarithmicToolStripMenuItem.Text" xml:space="preserve">
-    <value>对数</value>
-  </data>
   <metadata name="MenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>112, 13</value>
   </metadata>
-  <data name="MenuStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="MenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 25</value>
-  </data>
-  <data name="MenuStrip1.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="MenuStrip1.Text" xml:space="preserve">
-    <value>MenuStrip1</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Name" xml:space="preserve">
-    <value>MenuStrip1</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>44, 21</value>
-  </data>
-  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
-    <value>磁带</value>
-  </data>
-  <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>索引操作</value>
-  </data>
   <data name="读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>184, 22</value>
   </data>
@@ -907,11 +877,11 @@
   <data name="备份当前索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>备份当前索引</value>
   </data>
-  <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+  <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 22</value>
   </data>
-  <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
-    <value>数据操作</value>
+  <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>索引操作</value>
   </data>
   <data name="写入数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -951,14 +921,14 @@
   <data name="更新全部索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>更新全部索引（安全弹出）</value>
   </data>
+  <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 22</value>
+  </data>
+  <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
+    <value>数据操作</value>
+  </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
-  </data>
-  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>自动化</value>
+    <value>121, 6</value>
   </data>
   <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1062,12 +1032,6 @@
   <data name="APToolStripMenuItem.Text" xml:space="preserve">
     <value>检测到容量缺失自动停顿</value>
   </data>
-  <data name="容量缺失检测参数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="容量缺失检测参数ToolStripMenuItem.Text" xml:space="preserve">
-    <value>容量缺失检测参数</value>
-  </data>
   <data name="速度下限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>124, 22</value>
   </data>
@@ -1085,6 +1049,12 @@
   </data>
   <data name="持续时间ToolStripMenuItem.Text" xml:space="preserve">
     <value>持续时间</value>
+  </data>
+  <data name="容量缺失检测参数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="容量缺失检测参数ToolStripMenuItem.Text" xml:space="preserve">
+    <value>容量缺失检测参数</value>
   </data>
   <data name="重装带前清洁次数3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
@@ -1119,14 +1089,14 @@
   <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
     <value>显示文件数</value>
   </data>
+  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 22</value>
+  </data>
+  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>自动化</value>
+  </data>
   <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
-  </data>
-  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
-    <value>回退</value>
+    <value>121, 6</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>184, 22</value>
@@ -1140,11 +1110,17 @@
   <data name="回滚ToolStripMenuItem.Text" xml:space="preserve">
     <value>回滚至上一代</value>
   </data>
-  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 22</value>
+  </data>
+  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
+    <value>回退</value>
+  </data>
+  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>44, 21</value>
   </data>
-  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
-    <value>数据</value>
+  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
+    <value>磁带</value>
   </data>
   <data name="格式化ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>192, 22</value>
@@ -1209,35 +1185,41 @@
   <data name="启动FTP服务只读ToolStripMenuItem.Text" xml:space="preserve">
     <value>启动FTP服务（只读）</value>
   </data>
+  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 21</value>
+  </data>
+  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>数据</value>
+  </data>
+  <data name="MenuStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="MenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1349, 25</value>
+  </data>
+  <data name="MenuStrip1.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="MenuStrip1.Text" xml:space="preserve">
+    <value>MenuStrip1</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Name" xml:space="preserve">
+    <value>MenuStrip1</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
   <metadata name="StatusStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>233, 13</value>
   </metadata>
   <data name="StatusStrip1.AutoSize" type="System.Boolean, mscorlib">
     <value>False</value>
-  </data>
-  <data name="StatusStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 652</value>
-  </data>
-  <data name="StatusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 26</value>
-  </data>
-  <data name="StatusStrip1.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="StatusStrip1.Text" xml:space="preserve">
-    <value>StatusStrip1</value>
-  </data>
-  <data name="&gt;&gt;StatusStrip1.Name" xml:space="preserve">
-    <value>StatusStrip1</value>
-  </data>
-  <data name="&gt;&gt;StatusStrip1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;StatusStrip1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;StatusStrip1.ZOrder" xml:space="preserve">
-    <value>6</value>
   </data>
   <data name="ToolStripDropDownButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1346,6 +1328,30 @@
   </data>
   <data name="ToolStripStatusLabel2.Text" xml:space="preserve">
     <value>可用空间未知</value>
+  </data>
+  <data name="StatusStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 652</value>
+  </data>
+  <data name="StatusStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1349, 26</value>
+  </data>
+  <data name="StatusStrip1.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="StatusStrip1.Text" xml:space="preserve">
+    <value>StatusStrip1</value>
+  </data>
+  <data name="&gt;&gt;StatusStrip1.Name" xml:space="preserve">
+    <value>StatusStrip1</value>
+  </data>
+  <data name="&gt;&gt;StatusStrip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.StatusStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;StatusStrip1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;StatusStrip1.ZOrder" xml:space="preserve">
+    <value>6</value>
   </data>
   <metadata name="Timer1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>20, 13</value>
@@ -1515,366 +1521,6 @@
   <metadata name="Timer2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>133, 56</value>
   </metadata>
-  <data name="&gt;&gt;Panel7.Name" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;Panel7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel7.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel7.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;Panel6.Name" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;Panel6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel6.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel6.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;Panel5.Name" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;Panel5.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel5.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel5.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;Panel4.Name" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;Panel4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel4.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel4.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;Panel3.Name" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;Panel3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel3.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel3.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_.Name" xml:space="preserve">
-    <value>ResText_</value>
-  </data>
-  <data name="&gt;&gt;ResText_.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;ResText_.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="GroupBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1340, 0</value>
-  </data>
-  <data name="GroupBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1020, 609</value>
-  </data>
-  <data name="GroupBox1.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="GroupBox1.Text" xml:space="preserve">
-    <value>Localize</value>
-  </data>
-  <data name="GroupBox1.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;GroupBox1.Name" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;GroupBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;GroupBox1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;GroupBox1.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_CHashing.Name" xml:space="preserve">
-    <value>ResText_CHashing</value>
-  </data>
-  <data name="&gt;&gt;ResText_CHashing.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CHashing.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_CHashing.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;ResText_Size.Name" xml:space="preserve">
-    <value>ResText_Size</value>
-  </data>
-  <data name="&gt;&gt;ResText_Size.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Size.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Size.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_Skip.Name" xml:space="preserve">
-    <value>ResText_Skip</value>
-  </data>
-  <data name="&gt;&gt;ResText_Skip.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Skip.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Skip.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_WrittenTotal.Name" xml:space="preserve">
-    <value>ResText_WrittenTotal</value>
-  </data>
-  <data name="&gt;&gt;ResText_WrittenTotal.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WrittenTotal.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WrittenTotal.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Remaining.Name" xml:space="preserve">
-    <value>ResText_Remaining</value>
-  </data>
-  <data name="&gt;&gt;ResText_Remaining.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Remaining.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Remaining.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_Writing.Name" xml:space="preserve">
-    <value>ResText_Writing</value>
-  </data>
-  <data name="&gt;&gt;ResText_Writing.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Writing.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Writing.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErr.Name" xml:space="preserve">
-    <value>ResText_WErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErr.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErr.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_VOF.Name" xml:space="preserve">
-    <value>ResText_VOF</value>
-  </data>
-  <data name="&gt;&gt;ResText_VOF.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_VOF.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_VOF.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFTime.Name" xml:space="preserve">
-    <value>ResText_WFTime</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFTime.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFTime.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFTime.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_AvgS.Name" xml:space="preserve">
-    <value>ResText_AvgS</value>
-  </data>
-  <data name="&gt;&gt;ResText_AvgS.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_AvgS.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_AvgS.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_WCnd.Name" xml:space="preserve">
-    <value>ResText_WCnd</value>
-  </data>
-  <data name="&gt;&gt;ResText_WCnd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WCnd.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WCnd.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestoreErr.Name" xml:space="preserve">
-    <value>ResText_RestoreErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestoreErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestoreErr.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestoreErr.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_Restoring.Name" xml:space="preserve">
-    <value>ResText_Restoring</value>
-  </data>
-  <data name="&gt;&gt;ResText_Restoring.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Restoring.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Restoring.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpCancelled.Name" xml:space="preserve">
-    <value>ResText_OpCancelled</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpCancelled.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpCancelled.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpCancelled.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFin.Name" xml:space="preserve">
-    <value>ResText_RestFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFin.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFin.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepFile.Name" xml:space="preserve">
-    <value>ResText_PrepFile</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepFile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepFile.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepFile.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFile.Name" xml:space="preserve">
-    <value>ResText_RestFile</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFile.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFile.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_RestFile.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepW.Name" xml:space="preserve">
-    <value>ResText_PrepW</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepW.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepW.Parent" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;ResText_PrepW.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="Panel7.Location" type="System.Drawing.Point, System.Drawing">
-    <value>389, 17</value>
-  </data>
-  <data name="Panel7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>185, 337</value>
-  </data>
-  <data name="Panel7.TabIndex" type="System.Int32, mscorlib">
-    <value>169</value>
-  </data>
-  <data name="&gt;&gt;Panel7.Name" xml:space="preserve">
-    <value>Panel7</value>
-  </data>
-  <data name="&gt;&gt;Panel7.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel7.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel7.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
   <data name="ResText_CHashing.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -2415,254 +2061,26 @@
   <data name="&gt;&gt;ResText_PrepW.ZOrder" xml:space="preserve">
     <value>17</value>
   </data>
-  <data name="&gt;&gt;ResText_DelConfrm.Name" xml:space="preserve">
-    <value>ResText_DelConfrm</value>
+  <data name="Panel7.Location" type="System.Drawing.Point, System.Drawing">
+    <value>389, 17</value>
   </data>
-  <data name="&gt;&gt;ResText_DelConfrm.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Panel7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>185, 337</value>
   </data>
-  <data name="&gt;&gt;ResText_DelConfrm.Parent" xml:space="preserve">
-    <value>Panel6</value>
+  <data name="Panel7.TabIndex" type="System.Int32, mscorlib">
+    <value>169</value>
   </data>
-  <data name="&gt;&gt;ResText_DelConfrm.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;Panel7.Name" xml:space="preserve">
+    <value>Panel7</value>
   </data>
-  <data name="&gt;&gt;ResText_DirName.Name" xml:space="preserve">
-    <value>ResText_DirName</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirName.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirName.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirName.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_RenameDir.Name" xml:space="preserve">
-    <value>ResText_RenameDir</value>
-  </data>
-  <data name="&gt;&gt;ResText_RenameDir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RenameDir.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_RenameDir.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNIllegal.Name" xml:space="preserve">
-    <value>ResText_DirNIllegal</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNIllegal.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNIllegal.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNIllegal.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNExist.Name" xml:space="preserve">
-    <value>ResText_DirNExist</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNExist.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNExist.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DirNExist.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_NFName.Name" xml:space="preserve">
-    <value>ResText_NFName</value>
-  </data>
-  <data name="&gt;&gt;ResText_NFName.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NFName.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_NFName.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Rename.Name" xml:space="preserve">
-    <value>ResText_Rename</value>
-  </data>
-  <data name="&gt;&gt;ResText_Rename.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Rename.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_Rename.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNIllegal.Name" xml:space="preserve">
-    <value>ResText_FNIllegal</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNIllegal.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNIllegal.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNIllegal.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNExist.Name" xml:space="preserve">
-    <value>ResText_FNExist</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNExist.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNExist.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_FNExist.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_Files_C.Name" xml:space="preserve">
-    <value>ResText_Files_C</value>
-  </data>
-  <data name="&gt;&gt;ResText_Files_C.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Files_C.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_Files_C.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_Adding.Name" xml:space="preserve">
-    <value>ResText_Adding</value>
-  </data>
-  <data name="&gt;&gt;ResText_Adding.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Adding.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_Adding.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_Items_x.Name" xml:space="preserve">
-    <value>ResText_Items_x</value>
-  </data>
-  <data name="&gt;&gt;ResText_Items_x.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Items_x.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_Items_x.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_AddFin.Name" xml:space="preserve">
-    <value>ResText_AddFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_AddFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_AddFin.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_AddFin.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLFin.Name" xml:space="preserve">
-    <value>ResText_DLFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLFin.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLFin.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_DragNA.Name" xml:space="preserve">
-    <value>ResText_DragNA</value>
-  </data>
-  <data name="&gt;&gt;ResText_DragNA.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DragNA.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DragNA.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLT.Name" xml:space="preserve">
-    <value>ResText_DLT</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLT.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLT.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLT.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ResText_NewDir.Name" xml:space="preserve">
-    <value>ResText_NewDir</value>
-  </data>
-  <data name="&gt;&gt;ResText_NewDir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NewDir.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_NewDir.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLS.Name" xml:space="preserve">
-    <value>ResText_DLS</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLS.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLS.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_DLS.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;ResText_OverwritingDF.Name" xml:space="preserve">
-    <value>ResText_OverwritingDF</value>
-  </data>
-  <data name="&gt;&gt;ResText_OverwritingDF.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_OverwritingDF.Parent" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;ResText_OverwritingDF.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="Panel6.Location" type="System.Drawing.Point, System.Drawing">
-    <value>191, 17</value>
-  </data>
-  <data name="Panel6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>158, 274</value>
-  </data>
-  <data name="Panel6.TabIndex" type="System.Int32, mscorlib">
-    <value>168</value>
-  </data>
-  <data name="&gt;&gt;Panel6.Name" xml:space="preserve">
-    <value>Panel6</value>
-  </data>
-  <data name="&gt;&gt;Panel6.Type" xml:space="preserve">
+  <data name="&gt;&gt;Panel7.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Panel6.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Panel7.Parent" xml:space="preserve">
     <value>GroupBox1</value>
   </data>
-  <data name="&gt;&gt;Panel6.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;Panel7.ZOrder" xml:space="preserve">
+    <value>0</value>
   </data>
   <data name="ResText_DelConfrm.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -3234,470 +2652,26 @@
   <data name="&gt;&gt;ResText_OverwritingDF.ZOrder" xml:space="preserve">
     <value>18</value>
   </data>
-  <data name="&gt;&gt;ResText_FileRateBT.Name" xml:space="preserve">
-    <value>ResText_FileRateBT</value>
+  <data name="Panel6.Location" type="System.Drawing.Point, System.Drawing">
+    <value>191, 17</value>
   </data>
-  <data name="&gt;&gt;ResText_FileRateBT.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Panel6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>158, 274</value>
   </data>
-  <data name="&gt;&gt;ResText_FileRateBT.Parent" xml:space="preserve">
-    <value>Panel5</value>
+  <data name="Panel6.TabIndex" type="System.Int32, mscorlib">
+    <value>168</value>
   </data>
-  <data name="&gt;&gt;ResText_FileRateBT.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;Panel6.Name" xml:space="preserve">
+    <value>Panel6</value>
   </data>
-  <data name="&gt;&gt;ResText_SpeedBT.Name" xml:space="preserve">
-    <value>ResText_SpeedBT</value>
-  </data>
-  <data name="&gt;&gt;ResText_SpeedBT.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SpeedBT.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_SpeedBT.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_C0.Name" xml:space="preserve">
-    <value>ResText_C0</value>
-  </data>
-  <data name="&gt;&gt;ResText_C0.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_C0.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_C0.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_C1.Name" xml:space="preserve">
-    <value>ResText_C1</value>
-  </data>
-  <data name="&gt;&gt;ResText_C1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_C1.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_C1.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_C2.Name" xml:space="preserve">
-    <value>ResText_C2</value>
-  </data>
-  <data name="&gt;&gt;ResText_C2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_C2.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_C2.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_S0.Name" xml:space="preserve">
-    <value>ResText_S0</value>
-  </data>
-  <data name="&gt;&gt;ResText_S0.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_S0.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S0.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S1.Name" xml:space="preserve">
-    <value>ResText_S1</value>
-  </data>
-  <data name="&gt;&gt;ResText_S1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_S1.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S1.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_S2.Name" xml:space="preserve">
-    <value>ResText_S2</value>
-  </data>
-  <data name="&gt;&gt;ResText_S2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_S2.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S2.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_S3.Name" xml:space="preserve">
-    <value>ResText_S3</value>
-  </data>
-  <data name="&gt;&gt;ResText_S3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_S3.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S3.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_Byte.Name" xml:space="preserve">
-    <value>ResText_Byte</value>
-  </data>
-  <data name="&gt;&gt;ResText_Byte.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Byte.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Byte.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_S4.Name" xml:space="preserve">
-    <value>ResText_S4</value>
-  </data>
-  <data name="&gt;&gt;ResText_S4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_S4.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_S4.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_FSizeP.Name" xml:space="preserve">
-    <value>ResText_FSizeP</value>
-  </data>
-  <data name="&gt;&gt;ResText_FSizeP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FSizeP.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_FSizeP.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_ErrP.Name" xml:space="preserve">
-    <value>ResText_ErrP</value>
-  </data>
-  <data name="&gt;&gt;ResText_ErrP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_ErrP.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_ErrP.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_FCountP.Name" xml:space="preserve">
-    <value>ResText_FCountP</value>
-  </data>
-  <data name="&gt;&gt;ResText_FCountP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FCountP.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_FCountP.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_X0.Name" xml:space="preserve">
-    <value>ResText_X0</value>
-  </data>
-  <data name="&gt;&gt;ResText_X0.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_X0.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_X0.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_HFin.Name" xml:space="preserve">
-    <value>ResText_HFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_HFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_HFin.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_HFin.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ResText_NIndex.Name" xml:space="preserve">
-    <value>ResText_NIndex</value>
-  </data>
-  <data name="&gt;&gt;ResText_NIndex.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NIndex.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_NIndex.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ResText_HErr.Name" xml:space="preserve">
-    <value>ResText_HErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_HErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_HErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_HErr.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;ResText_Index.Name" xml:space="preserve">
-    <value>ResText_Index</value>
-  </data>
-  <data name="&gt;&gt;ResText_Index.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Index.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Index.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hashing.Name" xml:space="preserve">
-    <value>ResText_Hashing</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hashing.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hashing.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hashing.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;ResText_Partition.Name" xml:space="preserve">
-    <value>ResText_Partition</value>
-  </data>
-  <data name="&gt;&gt;ResText_Partition.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Partition.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Partition.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="&gt;&gt;ResText_Block.Name" xml:space="preserve">
-    <value>ResText_Block</value>
-  </data>
-  <data name="&gt;&gt;ResText_Block.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Block.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Block.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="&gt;&gt;ResText_Previous.Name" xml:space="preserve">
-    <value>ResText_Previous</value>
-  </data>
-  <data name="&gt;&gt;ResText_Previous.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Previous.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Previous.ZOrder" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="&gt;&gt;ResText_Located.Name" xml:space="preserve">
-    <value>ResText_Located</value>
-  </data>
-  <data name="&gt;&gt;ResText_Located.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Located.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Located.ZOrder" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="&gt;&gt;ResText_Ejd.Name" xml:space="preserve">
-    <value>ResText_Ejd</value>
-  </data>
-  <data name="&gt;&gt;ResText_Ejd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Ejd.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Ejd.ZOrder" xml:space="preserve">
-    <value>24</value>
-  </data>
-  <data name="&gt;&gt;ResText_WritePointer.Name" xml:space="preserve">
-    <value>ResText_WritePointer</value>
-  </data>
-  <data name="&gt;&gt;ResText_WritePointer.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WritePointer.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_WritePointer.ZOrder" xml:space="preserve">
-    <value>25</value>
-  </data>
-  <data name="&gt;&gt;ResText_RPosErr.Name" xml:space="preserve">
-    <value>ResText_RPosErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_RPosErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RPosErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_RPosErr.ZOrder" xml:space="preserve">
-    <value>26</value>
-  </data>
-  <data name="&gt;&gt;ResText_CapRem.Name" xml:space="preserve">
-    <value>ResText_CapRem</value>
-  </data>
-  <data name="&gt;&gt;ResText_CapRem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CapRem.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_CapRem.ZOrder" xml:space="preserve">
-    <value>27</value>
-  </data>
-  <data name="&gt;&gt;ResText_RCErr.Name" xml:space="preserve">
-    <value>ResText_RCErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_RCErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RCErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_RCErr.ZOrder" xml:space="preserve">
-    <value>28</value>
-  </data>
-  <data name="&gt;&gt;ResText_DNW.Name" xml:space="preserve">
-    <value>ResText_DNW</value>
-  </data>
-  <data name="&gt;&gt;ResText_DNW.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DNW.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_DNW.ZOrder" xml:space="preserve">
-    <value>29</value>
-  </data>
-  <data name="&gt;&gt;ResText_RDErr.Name" xml:space="preserve">
-    <value>ResText_RDErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_RDErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RDErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_RDErr.ZOrder" xml:space="preserve">
-    <value>30</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRef.Name" xml:space="preserve">
-    <value>ResText_CRef</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRef.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRef.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRef.ZOrder" xml:space="preserve">
-    <value>31</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRefErr.Name" xml:space="preserve">
-    <value>ResText_CRefErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRefErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRefErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRefErr.ZOrder" xml:space="preserve">
-    <value>32</value>
-  </data>
-  <data name="&gt;&gt;ResText_NavErr.Name" xml:space="preserve">
-    <value>ResText_NavErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_NavErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NavErr.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_NavErr.ZOrder" xml:space="preserve">
-    <value>33</value>
-  </data>
-  <data name="&gt;&gt;ResText_Locating.Name" xml:space="preserve">
-    <value>ResText_Locating</value>
-  </data>
-  <data name="&gt;&gt;ResText_Locating.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Locating.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_Locating.ZOrder" xml:space="preserve">
-    <value>34</value>
-  </data>
-  <data name="&gt;&gt;ResText_WriteWarning.Name" xml:space="preserve">
-    <value>ResText_WriteWarning</value>
-  </data>
-  <data name="&gt;&gt;ResText_WriteWarning.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WriteWarning.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_WriteWarning.ZOrder" xml:space="preserve">
-    <value>35</value>
-  </data>
-  <data name="&gt;&gt;ResText_EWEOM.Name" xml:space="preserve">
-    <value>ResText_EWEOM</value>
-  </data>
-  <data name="&gt;&gt;ResText_EWEOM.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_EWEOM.Parent" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;ResText_EWEOM.ZOrder" xml:space="preserve">
-    <value>36</value>
-  </data>
-  <data name="Panel5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 123</value>
-  </data>
-  <data name="Panel5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>167, 470</value>
-  </data>
-  <data name="Panel5.TabIndex" type="System.Int32, mscorlib">
-    <value>167</value>
-  </data>
-  <data name="&gt;&gt;Panel5.Name" xml:space="preserve">
-    <value>Panel5</value>
-  </data>
-  <data name="&gt;&gt;Panel5.Type" xml:space="preserve">
+  <data name="&gt;&gt;Panel6.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Panel5.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Panel6.Parent" xml:space="preserve">
     <value>GroupBox1</value>
   </data>
-  <data name="&gt;&gt;Panel5.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;Panel6.ZOrder" xml:space="preserve">
+    <value>1</value>
   </data>
   <data name="ResText_FileRateBT.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -4809,218 +3783,26 @@
   <data name="&gt;&gt;ResText_EWEOM.ZOrder" xml:space="preserve">
     <value>36</value>
   </data>
-  <data name="&gt;&gt;ResText_NHWrn.Name" xml:space="preserve">
-    <value>ResText_NHWrn</value>
+  <data name="Panel5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 123</value>
   </data>
-  <data name="&gt;&gt;ResText_NHWrn.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Panel5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>167, 470</value>
   </data>
-  <data name="&gt;&gt;ResText_NHWrn.Parent" xml:space="preserve">
-    <value>Panel4</value>
+  <data name="Panel5.TabIndex" type="System.Int32, mscorlib">
+    <value>167</value>
   </data>
-  <data name="&gt;&gt;ResText_NHWrn.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;Panel5.Name" xml:space="preserve">
+    <value>Panel5</value>
   </data>
-  <data name="&gt;&gt;ResText_X1.Name" xml:space="preserve">
-    <value>ResText_X1</value>
-  </data>
-  <data name="&gt;&gt;ResText_X1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_X1.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_X1.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_X2.Name" xml:space="preserve">
-    <value>ResText_X2</value>
-  </data>
-  <data name="&gt;&gt;ResText_X2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_X2.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_X2.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_X3.Name" xml:space="preserve">
-    <value>ResText_X3</value>
-  </data>
-  <data name="&gt;&gt;ResText_X3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_X3.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_X3.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_PEj.Name" xml:space="preserve">
-    <value>ResText_PEj</value>
-  </data>
-  <data name="&gt;&gt;ResText_PEj.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_PEj.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_PEj.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErrSCSI.Name" xml:space="preserve">
-    <value>ResText_WErrSCSI</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErrSCSI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErrSCSI.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_WErrSCSI.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFUp.Name" xml:space="preserve">
-    <value>ResText_WFUp</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFUp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFUp.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_WFUp.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_ILdedP.Name" xml:space="preserve">
-    <value>ResText_ILdedP</value>
-  </data>
-  <data name="&gt;&gt;ResText_ILdedP.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_ILdedP.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_ILdedP.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_DataLossWarning.Name" xml:space="preserve">
-    <value>ResText_DataLossWarning</value>
-  </data>
-  <data name="&gt;&gt;ResText_DataLossWarning.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DataLossWarning.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_DataLossWarning.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_SHA1Overw.Name" xml:space="preserve">
-    <value>ResText_SHA1Overw</value>
-  </data>
-  <data name="&gt;&gt;ResText_SHA1Overw.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SHA1Overw.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_SHA1Overw.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH1.Name" xml:space="preserve">
-    <value>ResText_SetH1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH1.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH1.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH2.Name" xml:space="preserve">
-    <value>ResText_SetH2</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH2.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH2.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH3.Name" xml:space="preserve">
-    <value>ResText_SetH3</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH3.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetH3.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_CancelConfirm.Name" xml:space="preserve">
-    <value>ResText_CancelConfirm</value>
-  </data>
-  <data name="&gt;&gt;ResText_CancelConfirm.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CancelConfirm.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_CancelConfirm.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_ClearWC.Name" xml:space="preserve">
-    <value>ResText_ClearWC</value>
-  </data>
-  <data name="&gt;&gt;ResText_ClearWC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_ClearWC.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_ClearWC.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB4.Name" xml:space="preserve">
-    <value>ResText_RB4</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB4.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB4.Parent" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB4.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="Panel4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>191, 385</value>
-  </data>
-  <data name="Panel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>397, 208</value>
-  </data>
-  <data name="Panel4.TabIndex" type="System.Int32, mscorlib">
-    <value>166</value>
-  </data>
-  <data name="&gt;&gt;Panel4.Name" xml:space="preserve">
-    <value>Panel4</value>
-  </data>
-  <data name="&gt;&gt;Panel4.Type" xml:space="preserve">
+  <data name="&gt;&gt;Panel5.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Panel4.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Panel5.Parent" xml:space="preserve">
     <value>GroupBox1</value>
   </data>
-  <data name="&gt;&gt;Panel4.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;Panel5.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="ResText_NHWrn.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -5502,578 +4284,26 @@
   <data name="&gt;&gt;ResText_RB4.ZOrder" xml:space="preserve">
     <value>15</value>
   </data>
-  <data name="&gt;&gt;ResText_GI.Name" xml:space="preserve">
-    <value>ResText_GI</value>
+  <data name="Panel4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>191, 385</value>
   </data>
-  <data name="&gt;&gt;ResText_GI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Panel4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>397, 208</value>
   </data>
-  <data name="&gt;&gt;ResText_GI.Parent" xml:space="preserve">
-    <value>Panel3</value>
+  <data name="Panel4.TabIndex" type="System.Int32, mscorlib">
+    <value>166</value>
   </data>
-  <data name="&gt;&gt;ResText_GI.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;Panel4.Name" xml:space="preserve">
+    <value>Panel4</value>
   </data>
-  <data name="&gt;&gt;ResText_WI.Name" xml:space="preserve">
-    <value>ResText_WI</value>
-  </data>
-  <data name="&gt;&gt;ResText_WI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WI.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_WI.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_WIF.Name" xml:space="preserve">
-    <value>ResText_WIF</value>
-  </data>
-  <data name="&gt;&gt;ResText_WIF.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WIF.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_WIF.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_UDI.Name" xml:space="preserve">
-    <value>ResText_UDI</value>
-  </data>
-  <data name="&gt;&gt;ResText_UDI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_UDI.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_UDI.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_UI.Name" xml:space="preserve">
-    <value>ResText_UI</value>
-  </data>
-  <data name="&gt;&gt;ResText_UI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_UI.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_UI.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUd.Name" xml:space="preserve">
-    <value>ResText_IUd</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUd.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUd.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUd.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIUed.Name" xml:space="preserve">
-    <value>ResText_DPIUed</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIUed.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIUed.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIUed.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_RI.Name" xml:space="preserve">
-    <value>ResText_RI</value>
-  </data>
-  <data name="&gt;&gt;ResText_RI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RI.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RI.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_Exporting.Name" xml:space="preserve">
-    <value>ResText_Exporting</value>
-  </data>
-  <data name="&gt;&gt;ResText_Exporting.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Exporting.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Exporting.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_Imported.Name" xml:space="preserve">
-    <value>ResText_Imported</value>
-  </data>
-  <data name="&gt;&gt;ResText_Imported.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Imported.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Imported.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_IAErrp.Name" xml:space="preserve">
-    <value>ResText_IAErrp</value>
-  </data>
-  <data name="&gt;&gt;ResText_IAErrp.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IAErrp.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IAErrp.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_AI.Name" xml:space="preserve">
-    <value>ResText_AI</value>
-  </data>
-  <data name="&gt;&gt;ResText_AI.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_AI.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_AI.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_VCID.Name" xml:space="preserve">
-    <value>ResText_VCID</value>
-  </data>
-  <data name="&gt;&gt;ResText_VCID.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_VCID.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_VCID.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_Importing.Name" xml:space="preserve">
-    <value>ResText_Importing</value>
-  </data>
-  <data name="&gt;&gt;ResText_Importing.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Importing.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Importing.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_AISucc.Name" xml:space="preserve">
-    <value>ResText_AISucc</value>
-  </data>
-  <data name="&gt;&gt;ResText_AISucc.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_AISucc.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_AISucc.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFail.Name" xml:space="preserve">
-    <value>ResText_FmtFail</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFail.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFail.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFail.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBaked.Name" xml:space="preserve">
-    <value>ResText_IndexBaked</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBaked.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBaked.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBaked.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFin.Name" xml:space="preserve">
-    <value>ResText_FmtFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFin.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_FmtFin.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBak2.Name" xml:space="preserve">
-    <value>ResText_IndexBak2</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBak2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBak2.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBak2.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN2.Name" xml:space="preserve">
-    <value>ResText_LTFSVolumeN2</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN2.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN2.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUErr.Name" xml:space="preserve">
-    <value>ResText_IUErr</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUErr.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUErr.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IUErr.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode2.Name" xml:space="preserve">
-    <value>ResText_Barcode2</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode2.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode2.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="&gt;&gt;ResText_CurPos.Name" xml:space="preserve">
-    <value>ResText_CurPos</value>
-  </data>
-  <data name="&gt;&gt;ResText_CurPos.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CurPos.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_CurPos.ZOrder" xml:space="preserve">
-    <value>22</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN.Name" xml:space="preserve">
-    <value>ResText_LTFSVolumeN</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_LTFSVolumeN.ZOrder" xml:space="preserve">
-    <value>23</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexNAllowed.Name" xml:space="preserve">
-    <value>ResText_IndexNAllowed</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexNAllowed.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexNAllowed.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexNAllowed.ZOrder" xml:space="preserve">
-    <value>24</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetVolumeN.Name" xml:space="preserve">
-    <value>ResText_SetVolumeN</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetVolumeN.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetVolumeN.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetVolumeN.ZOrder" xml:space="preserve">
-    <value>25</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWritten.Name" xml:space="preserve">
-    <value>ResText_DPIWritten</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWritten.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWritten.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWritten.ZOrder" xml:space="preserve">
-    <value>26</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetBarcode.Name" xml:space="preserve">
-    <value>ResText_SetBarcode</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetBarcode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetBarcode.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_SetBarcode.ZOrder" xml:space="preserve">
-    <value>27</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBakF.Name" xml:space="preserve">
-    <value>ResText_IndexBakF</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBakF.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBakF.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexBakF.ZOrder" xml:space="preserve">
-    <value>28</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWFailed.Name" xml:space="preserve">
-    <value>ResText_DPIWFailed</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWFailed.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWFailed.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_DPIWFailed.ZOrder" xml:space="preserve">
-    <value>29</value>
-  </data>
-  <data name="&gt;&gt;ResText_IPCanc.Name" xml:space="preserve">
-    <value>ResText_IPCanc</value>
-  </data>
-  <data name="&gt;&gt;ResText_IPCanc.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IPCanc.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IPCanc.ZOrder" xml:space="preserve">
-    <value>30</value>
-  </data>
-  <data name="&gt;&gt;ResText_RollBacked.Name" xml:space="preserve">
-    <value>ResText_RollBacked</value>
-  </data>
-  <data name="&gt;&gt;ResText_RollBacked.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RollBacked.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RollBacked.ZOrder" xml:space="preserve">
-    <value>31</value>
-  </data>
-  <data name="&gt;&gt;ResText_BlkSize.Name" xml:space="preserve">
-    <value>ResText_BlkSize</value>
-  </data>
-  <data name="&gt;&gt;ResText_BlkSize.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_BlkSize.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_BlkSize.ZOrder" xml:space="preserve">
-    <value>32</value>
-  </data>
-  <data name="&gt;&gt;ResText_RFailed.Name" xml:space="preserve">
-    <value>ResText_RFailed</value>
-  </data>
-  <data name="&gt;&gt;ResText_RFailed.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RFailed.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RFailed.ZOrder" xml:space="preserve">
-    <value>33</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode.Name" xml:space="preserve">
-    <value>ResText_Barcode</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Barcode.ZOrder" xml:space="preserve">
-    <value>34</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBFin.Name" xml:space="preserve">
-    <value>ResText_RBFin</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBFin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBFin.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBFin.ZOrder" xml:space="preserve">
-    <value>35</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB1.Name" xml:space="preserve">
-    <value>ResText_RB1</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB1.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB1.ZOrder" xml:space="preserve">
-    <value>36</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBing.Name" xml:space="preserve">
-    <value>ResText_RBing</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBing.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBing.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBing.ZOrder" xml:space="preserve">
-    <value>37</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB2.Name" xml:space="preserve">
-    <value>ResText_RB2</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB2.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB2.ZOrder" xml:space="preserve">
-    <value>38</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB3.Name" xml:space="preserve">
-    <value>ResText_RB3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB3.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB3.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RB3.ZOrder" xml:space="preserve">
-    <value>39</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRFailed.Name" xml:space="preserve">
-    <value>ResText_IRFailed</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRFailed.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRFailed.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRFailed.ZOrder" xml:space="preserve">
-    <value>40</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRSucc.Name" xml:space="preserve">
-    <value>ResText_IRSucc</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRSucc.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRSucc.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_IRSucc.ZOrder" xml:space="preserve">
-    <value>41</value>
-  </data>
-  <data name="&gt;&gt;ResText_NVOL1.Name" xml:space="preserve">
-    <value>ResText_NVOL1</value>
-  </data>
-  <data name="&gt;&gt;ResText_NVOL1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NVOL1.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_NVOL1.ZOrder" xml:space="preserve">
-    <value>42</value>
-  </data>
-  <data name="&gt;&gt;ResText_NLTFS.Name" xml:space="preserve">
-    <value>ResText_NLTFS</value>
-  </data>
-  <data name="&gt;&gt;ResText_NLTFS.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NLTFS.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_NLTFS.ZOrder" xml:space="preserve">
-    <value>43</value>
-  </data>
-  <data name="&gt;&gt;ResText_RLTFSInfo.Name" xml:space="preserve">
-    <value>ResText_RLTFSInfo</value>
-  </data>
-  <data name="&gt;&gt;ResText_RLTFSInfo.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RLTFSInfo.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_RLTFSInfo.ZOrder" xml:space="preserve">
-    <value>44</value>
-  </data>
-  <data name="&gt;&gt;ResText_SvBak.Name" xml:space="preserve">
-    <value>ResText_SvBak</value>
-  </data>
-  <data name="&gt;&gt;ResText_SvBak.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SvBak.Parent" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;ResText_SvBak.ZOrder" xml:space="preserve">
-    <value>45</value>
-  </data>
-  <data name="Panel3.Location" type="System.Drawing.Point, System.Drawing">
-    <value>781, 20</value>
-  </data>
-  <data name="Panel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>172, 573</value>
-  </data>
-  <data name="Panel3.TabIndex" type="System.Int32, mscorlib">
-    <value>165</value>
-  </data>
-  <data name="&gt;&gt;Panel3.Name" xml:space="preserve">
-    <value>Panel3</value>
-  </data>
-  <data name="&gt;&gt;Panel3.Type" xml:space="preserve">
+  <data name="&gt;&gt;Panel4.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Panel3.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Panel4.Parent" xml:space="preserve">
     <value>GroupBox1</value>
   </data>
-  <data name="&gt;&gt;Panel3.ZOrder" xml:space="preserve">
-    <value>4</value>
+  <data name="&gt;&gt;Panel4.ZOrder" xml:space="preserve">
+    <value>3</value>
   </data>
   <data name="ResText_GI.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -7455,98 +5685,26 @@
   <data name="&gt;&gt;ResText_SvBak.ZOrder" xml:space="preserve">
     <value>45</value>
   </data>
-  <data name="&gt;&gt;ResText_Warning.Name" xml:space="preserve">
-    <value>ResText_Warning</value>
+  <data name="Panel3.Location" type="System.Drawing.Point, System.Drawing">
+    <value>781, 20</value>
   </data>
-  <data name="&gt;&gt;ResText_Warning.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="Panel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 573</value>
   </data>
-  <data name="&gt;&gt;ResText_Warning.Parent" xml:space="preserve">
-    <value>Panel2</value>
+  <data name="Panel3.TabIndex" type="System.Int32, mscorlib">
+    <value>165</value>
   </data>
-  <data name="&gt;&gt;ResText_Warning.ZOrder" xml:space="preserve">
-    <value>0</value>
+  <data name="&gt;&gt;Panel3.Name" xml:space="preserve">
+    <value>Panel3</value>
   </data>
-  <data name="&gt;&gt;ResText_Hint.Name" xml:space="preserve">
-    <value>ResText_Hint</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hint.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hint.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ResText_Hint.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_Confirm.Name" xml:space="preserve">
-    <value>ResText_Confirm</value>
-  </data>
-  <data name="&gt;&gt;ResText_Confirm.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Confirm.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ResText_Confirm.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpSucc.Name" xml:space="preserve">
-    <value>ResText_OpSucc</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpSucc.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpSucc.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ResText_OpSucc.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_Error.Name" xml:space="preserve">
-    <value>ResText_Error</value>
-  </data>
-  <data name="&gt;&gt;ResText_Error.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Error.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ResText_Error.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_Setting.Name" xml:space="preserve">
-    <value>ResText_Setting</value>
-  </data>
-  <data name="&gt;&gt;ResText_Setting.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_Setting.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ResText_Setting.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 17</value>
-  </data>
-  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>146, 100</value>
-  </data>
-  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
-    <value>164</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
+  <data name="&gt;&gt;Panel3.Type" xml:space="preserve">
     <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
+  <data name="&gt;&gt;Panel3.Parent" xml:space="preserve">
     <value>GroupBox1</value>
   </data>
-  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
-    <value>5</value>
+  <data name="&gt;&gt;Panel3.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="ResText_Warning.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -7728,6 +5886,27 @@
   <data name="&gt;&gt;ResText_Setting.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 17</value>
+  </data>
+  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>146, 100</value>
+  </data>
+  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
+    <value>164</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
+    <value>GroupBox1</value>
+  </data>
+  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
   <data name="ResText_.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -7757,291 +5936,6 @@
   </data>
   <data name="&gt;&gt;ResText_.ZOrder" xml:space="preserve">
     <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMin.Name" xml:space="preserve">
-    <value>ResText_SSMin</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMin.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMin.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="&gt;&gt;ResText_SFB.Name" xml:space="preserve">
-    <value>ResText_SFB</value>
-  </data>
-  <data name="&gt;&gt;ResText_SFB.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SFB.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SFB.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMax.Name" xml:space="preserve">
-    <value>ResText_SSMax</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMax.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMax.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSMax.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;ResText_SPreR.Name" xml:space="preserve">
-    <value>ResText_SPreR</value>
-  </data>
-  <data name="&gt;&gt;ResText_SPreR.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SPreR.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SPreR.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSTime.Name" xml:space="preserve">
-    <value>ResText_SSTime</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSTime.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSTime.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SSTime.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="&gt;&gt;ResText_SCIntv.Name" xml:space="preserve">
-    <value>ResText_SCIntv</value>
-  </data>
-  <data name="&gt;&gt;ResText_SCIntv.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SCIntv.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SCIntv.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="&gt;&gt;ResText_SIIntv.Name" xml:space="preserve">
-    <value>ResText_SIIntv</value>
-  </data>
-  <data name="&gt;&gt;ResText_SIIntv.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SIIntv.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SIIntv.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="&gt;&gt;ResText_CLNCS.Name" xml:space="preserve">
-    <value>ResText_CLNCS</value>
-  </data>
-  <data name="&gt;&gt;ResText_CLNCS.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CLNCS.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_CLNCS.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="&gt;&gt;ResText_WLimS.Name" xml:space="preserve">
-    <value>ResText_WLimS</value>
-  </data>
-  <data name="&gt;&gt;ResText_WLimS.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_WLimS.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_WLimS.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoIndex.Name" xml:space="preserve">
-    <value>ResText_NoIndex</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoIndex.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoIndex.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoIndex.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexInterval.Name" xml:space="preserve">
-    <value>ResText_IndexInterval</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexInterval.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexInterval.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_IndexInterval.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRDisabled.Name" xml:space="preserve">
-    <value>ResText_CRDisabled</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRDisabled.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRDisabled.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRDisabled.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRIntv.Name" xml:space="preserve">
-    <value>ResText_CRIntv</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRIntv.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRIntv.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_CRIntv.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoSLim.Name" xml:space="preserve">
-    <value>ResText_NoSLim</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoSLim.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoSLim.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_NoSLim.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;ResText_SLim.Name" xml:space="preserve">
-    <value>ResText_SLim</value>
-  </data>
-  <data name="&gt;&gt;ResText_SLim.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SLim.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SLim.ZOrder" xml:space="preserve">
-    <value>14</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBCoff.Name" xml:space="preserve">
-    <value>ResText_RBCoff</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBCoff.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBCoff.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBCoff.ZOrder" xml:space="preserve">
-    <value>15</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBC.Name" xml:space="preserve">
-    <value>ResText_RBC</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBC.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_RBC.ZOrder" xml:space="preserve">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;ResText_PFC.Name" xml:space="preserve">
-    <value>ResText_PFC</value>
-  </data>
-  <data name="&gt;&gt;ResText_PFC.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_PFC.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_PFC.ZOrder" xml:space="preserve">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;ResText_FB.Name" xml:space="preserve">
-    <value>ResText_FB</value>
-  </data>
-  <data name="&gt;&gt;ResText_FB.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_FB.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_FB.ZOrder" xml:space="preserve">
-    <value>18</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMin.Name" xml:space="preserve">
-    <value>ResText_SMin</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMin.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMin.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMin.ZOrder" xml:space="preserve">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMax.Name" xml:space="preserve">
-    <value>ResText_SMax</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMax.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMax.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_SMax.ZOrder" xml:space="preserve">
-    <value>20</value>
-  </data>
-  <data name="&gt;&gt;ResText_STime.Name" xml:space="preserve">
-    <value>ResText_STime</value>
-  </data>
-  <data name="&gt;&gt;ResText_STime.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ResText_STime.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;ResText_STime.ZOrder" xml:space="preserve">
-    <value>21</value>
-  </data>
-  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>580, 20</value>
-  </data>
-  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>195, 284</value>
-  </data>
-  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>163</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
-    <value>GroupBox1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
-    <value>7</value>
   </data>
   <data name="ResText_SSMin.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -8700,9 +6594,63 @@
   <data name="&gt;&gt;ResText_STime.ZOrder" xml:space="preserve">
     <value>21</value>
   </data>
+  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>580, 20</value>
+  </data>
+  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>195, 284</value>
+  </data>
+  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>163</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
+    <value>GroupBox1</value>
+  </data>
+  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="GroupBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1340, 0</value>
+  </data>
+  <data name="GroupBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1020, 609</value>
+  </data>
+  <data name="GroupBox1.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="GroupBox1.Text" xml:space="preserve">
+    <value>Localize</value>
+  </data>
+  <data name="GroupBox1.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;GroupBox1.Name" xml:space="preserve">
+    <value>GroupBox1</value>
+  </data>
+  <data name="&gt;&gt;GroupBox1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;GroupBox1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;GroupBox1.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
   <metadata name="StatusStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>225, 56</value>
   </metadata>
+  <data name="ToolStripStatusLabel3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1334, 17</value>
+  </data>
+  <data name="ToolStripStatusLabel3.Text" xml:space="preserve">
+    <value> </value>
+  </data>
   <data name="StatusStrip2.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 630</value>
   </data>
@@ -8727,17 +6675,11 @@
   <data name="&gt;&gt;StatusStrip2.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="ToolStripStatusLabel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1334, 17</value>
-  </data>
-  <data name="ToolStripStatusLabel3.Text" xml:space="preserve">
-    <value> </value>
-  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>56</value>
+    <value>145</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>6, 12</value>
@@ -10145,6 +8087,12 @@
     <value>仅验证ToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;仅验证ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;移动到索引区ToolStripMenuItem.Name" xml:space="preserve">
+    <value>移动到索引区ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;移动到索引区ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;定位到起始块ToolStripMenuItem.Name" xml:space="preserve">

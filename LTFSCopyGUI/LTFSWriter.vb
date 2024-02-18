@@ -408,8 +408,8 @@ Public Class LTFSWriter
                 If fs IsNot Nothing Then Exit Sub
                 fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
                 'If PreReadEnabled Then
-                fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                Task.Run(Sub() PreReadThread())
+                'fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                'Task.Run(Sub() PreReadThread())
                 ' Else
                 fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                 'End If
@@ -450,35 +450,42 @@ Public Class LTFSWriter
             'End If
         End Function
         Public Sub Close()
-            If fsB IsNot Nothing Then
-                fsB.Close()
-                fsB.Dispose()
-                fsB = Nothing
-            End If
-
-            fs.Close()
-            fs.Dispose()
-            fs = Nothing
-            If fsPreRead IsNot Nothing Then
-                fsPreRead.Close()
-                fsPreRead.Dispose()
-                fsPreRead = Nothing
-            End If
+            SyncLock OperationLock
+                If fsB IsNot Nothing Then
+                    fsB.Close()
+                    fsB.Dispose()
+                    fsB = Nothing
+                End If
+                fs.Close()
+                fs.Dispose()
+                fs = Nothing
+                If fsPreRead IsNot Nothing Then
+                    fsPreRead.Close()
+                    fsPreRead.Dispose()
+                    fsPreRead = Nothing
+                End If
+            End SyncLock
         End Sub
         Public Sub CloseAsync()
             Task.Run(Sub()
-                         fs.Close()
-                         fs.Dispose()
-                         fs = Nothing
-                         'If PreReadEnabled Then
-                         fsPreRead.Close()
-                         fsPreRead.Dispose()
-                         fsPreRead = Nothing
-                         'Else
-                         fsB.Close()
-                         fsB.Dispose()
-                         fsB = Nothing
-                         ' End If
+                         SyncLock OperationLock
+                             fs.Close()
+                             fs.Dispose()
+                             fs = Nothing
+                             'If PreReadEnabled Then
+                             If fsPreRead IsNot Nothing Then
+                                 fsPreRead.Close()
+                                 fsPreRead.Dispose()
+                                 fsPreRead = Nothing
+                             End If
+                             'Else
+                             If fsB IsNot Nothing Then
+                                 fsB.Close()
+                                 fsB.Dispose()
+                                 fsB = Nothing
+                             End If
+                             ' End If
+                         End SyncLock
                      End Sub)
         End Sub
         Public Function ReadAllBytes() As Byte()
@@ -1055,6 +1062,65 @@ Public Class LTFSWriter
         TapeUtils.WriteVCI(TapeDrive, schema.generationnumber, block0, block1, schema.volumeuuid.ToString(), ExtraPartitionCount)
         Modified = False
     End Sub
+    ''' <summary>
+    ''' 
+    ''' </summary>
+    ''' <param name="Data"></param>
+    ''' <param name="RetainPosisiton"></param>
+    ''' <returns>
+    ''' Data start position
+    ''' </returns>
+    Public Function DumpDataToIndexPartition(ByVal Data As IO.Stream, Optional ByVal RetainPosisiton As Boolean = True) As Long
+        Try
+            If ExtraPartitionCount = 0 Then Return -1
+            'record previous position
+            Dim pPrevious As New TapeUtils.PositionData(TapeDrive)
+            'locate
+            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+            Dim pFMIndex As New TapeUtils.PositionData(TapeDrive)
+            Dim pStartBlock As Long = pFMIndex.BlockNumber + 1
+            'Dump old index
+            If Not TapeUtils.ReadFileMark(TapeDrive) Then Return -1
+            Dim tmpf As String = $"{Application.StartupPath}\LIT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+            TapeUtils.ReadToFileMark(TapeDrive, tmpf)
+            'Write data
+            TapeUtils.Locate(TapeDrive, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
+            TapeUtils.Write(TapeDrive, Data, plabel.blocksize)
+            'Recover old index
+            TapeUtils.WriteFileMark(TapeDrive)
+            TapeUtils.Write(TapeDrive, tmpf, plabel.blocksize)
+            IO.File.Delete(tmpf)
+            TapeUtils.WriteFileMark(TapeDrive)
+            'Recover position
+            If RetainPosisiton Then TapeUtils.Locate(TapeDrive, pPrevious.BlockNumber, pPrevious.PartitionNumber)
+            Return pStartBlock
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString())
+        End Try
+        Return -1
+    End Function
+    Public Sub MoveToIndexPartition(ByVal f As ltfsindex.file)
+        Try
+            If ExtraPartitionCount = 0 Then Exit Sub
+            If f Is Nothing Then Exit Sub
+            If f.extentinfo Is Nothing OrElse f.extentinfo.Count = 0 Then Exit Sub
+            If f.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Exit Sub
+            Dim tmpf As String = $"{Application.StartupPath}\LFT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+            RestoreFile(tmpf, f)
+            Dim fs As New IO.FileStream(tmpf, IO.FileMode.Open)
+            Dim len As Long = fs.Length
+            Dim startblock As Integer = DumpDataToIndexPartition(fs)
+            f.extentinfo = {New ltfsindex.file.extent With {.startblock = startblock, .bytecount = len, .byteoffset = 0, .fileoffset = 0, .partition = ltfsindex.PartitionLabel.a}}.ToList()
+            IO.File.Delete(tmpf)
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString)
+        End Try
+
+    End Sub
+    Public Function DumpDataToIndexPartition(ByVal Data As Byte(), Optional ByVal RetainPosisiton As Boolean = True) As Long
+        Dim s As New IO.MemoryStream(Data)
+        Return DumpDataToIndexPartition(s, RetainPosisiton)
+    End Function
     Public Sub UpdataAllIndex()
         If (My.Settings.LTFSWriter_ForceIndex OrElse (TotalBytesUnindexed <> 0)) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
             PrintMsg(ResText_UDI.Text)
@@ -1147,6 +1213,7 @@ Public Class LTFSWriter
     End Function
     Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
         Try
+            If StopFlag Then Exit Sub
             If f.Extension.ToLower = ".xattr" Then Exit Sub
             'symlink
             If My.Settings.LTFSWriter_SkipSymlink AndAlso ((f.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
@@ -1203,6 +1270,7 @@ Public Class LTFSWriter
         If My.Settings.LTFSWriter_SkipSymlink AndAlso ((dnew1.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
             Exit Sub
         End If
+        If StopFlag Then Exit Sub
         Dim dirExist As Boolean = False
         Dim dT As ltfsindex.directory = Nothing
         SyncLock d1.contents._directory
@@ -1604,6 +1672,7 @@ Public Class LTFSWriter
                     If ParallelAdd Then UnwrittenFiles.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
                                                                                               Return ExplorerComparer.Compare(a.SourcePath, b.SourcePath)
                                                                                           End Function))
+                    StopFlag = False
                     RefreshDisplay()
                     PrintMsg(ResText_AddFin.Text)
                     LockGUI(False)
@@ -2000,7 +2069,7 @@ Public Class LTFSWriter
         LockGUI(True)
         th.Start()
     End Sub
-    Public Sub LocateToWritePosition()
+    Public Function LocateToWritePosition() As Boolean
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
             TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, schema.previousgenerationlocation.partition, TapeUtils.LocateDestType.Block)
             schema.location.startblock = schema.previousgenerationlocation.startblock
@@ -2035,10 +2104,11 @@ Public Class LTFSWriter
 
             Else
                 LockGUI(False)
-                Exit Sub
+                Return False
             End If
         End If
-    End Sub
+        Return True
+    End Function
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
@@ -2050,7 +2120,7 @@ Public Class LTFSWriter
                     PrintMsg(ResText_PrepW.Text)
                     TapeUtils.ReserveUnit(TapeDrive)
                     TapeUtils.PreventMediaRemoval(TapeDrive)
-                    LocateToWritePosition()
+                    If Not LocateToWritePosition() Then Exit Sub
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     UFReadCount.Inc()
                     CurrentFilesProcessed = 0
@@ -2679,6 +2749,7 @@ Public Class LTFSWriter
                             UnwrittenFiles.Clear()
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
+                            TotalBytesUnindexed = 0
                             Exit While
                         End SyncLock
                     End While
@@ -2753,6 +2824,7 @@ Public Class LTFSWriter
                             UnwrittenFiles.Clear()
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
+                            TotalBytesUnindexed = 0
                             Exit While
                         End SyncLock
                     End While
@@ -4141,9 +4213,9 @@ Public Class LTFSWriter
                 Dim ms As New IO.FileStream(tmpf, IO.FileMode.Open)
                 TapeUtils.ReserveUnit(TapeDrive)
                 TapeUtils.PreventMediaRemoval(TapeDrive)
-                LocateToWritePosition()
+                If Not LocateToWritePosition() Then Exit Sub
                 Dim pos As New TapeUtils.PositionData(TapeDrive)
-                p.contents._file.Add(New ltfsindex.file With {.name = d.name,
+                Dim fadd As New ltfsindex.file With {.name = d.name,
                                      .accesstime = d.accesstime,
                                      .backuptime = d.backuptime,
                                      .changetime = d.changetime,
@@ -4158,14 +4230,17 @@ Public Class LTFSWriter
                                      .byteoffset = 0,
                                      .fileoffset = 0,
                                      .partition = pos.PartitionNumber}
-                                     }.ToList()})
+                                     }.ToList()}
+                p.contents._file.Add(fadd)
 
                 Dim LastWriteTask As Task = Nothing
                 Dim ExitWhileFlag As Boolean = False
                 Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
+                Dim sh As New IOManager.SHA1BlockwiseCalculator
                 While Not StopFlag
                     Dim buffer(plabel.blocksize - 1) As Byte
                     Dim BytesReaded As Integer = ms.Read(buffer, 0, plabel.blocksize)
+                    sh.Propagate(buffer)
                     If ExitWhileFlag Then Exit While
                     If BytesReaded > 0 Then
                         CheckCount += 1
@@ -4237,6 +4312,8 @@ Public Class LTFSWriter
                         ExitWhileFlag = True
                     End If
                 End While
+                sh.ProcessFinalBlock()
+                fadd.sha1 = sh.SHA1Value
                 If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                 schema.highestfileuid += 1
                 p.contents._directory.Remove(d)
@@ -4254,6 +4331,7 @@ Public Class LTFSWriter
                 TapeUtils.Flush(TapeDrive)
                 TapeUtils.ReleaseUnit(TapeDrive)
                 TapeUtils.AllowMediaRemoval(TapeDrive)
+                TreeView1.SelectedNode = TreeView1.SelectedNode.Parent
                 RefreshDisplay()
                 RefreshCapacity()
             End If
@@ -4292,6 +4370,57 @@ Public Class LTFSWriter
         RefreshDisplay()
     End Sub
 
+    Private Sub 移动到索引区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 移动到索引区ToolStripMenuItem.Click
+        If ListView1.SelectedItems IsNot Nothing AndAlso
+        ListView1.SelectedItems.Count > 0 AndAlso
+        FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
+            Dim BasePath As String = FolderBrowserDialog1.SelectedPath
+            LockGUI()
+            Dim flist As New List(Of ltfsindex.file)
+            For Each SI As ListViewItem In ListView1.SelectedItems
+                If TypeOf SI.Tag Is ltfsindex.file Then
+                    flist.Add(SI.Tag)
+                End If
+            Next
+            Dim th As New Threading.Thread(
+                    Sub()
+                        Try
+                            CurrentFilesProcessed = 0
+                            CurrentBytesProcessed = 0
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = flist.Count
+                            For Each FI As ltfsindex.file In flist
+                                UnwrittenSizeOverrideValue += FI.length
+                            Next
+                            PrintMsg(ResText_Writing.Text)
+                            StopFlag = False
+                            TapeUtils.ReserveUnit(TapeDrive)
+                            TapeUtils.PreventMediaRemoval(TapeDrive)
+                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            For Each FileIndex As ltfsindex.file In flist
+                                Dim FileName As String = My.Computer.FileSystem.CombinePath(BasePath, FileIndex.name)
+                                MoveToIndexPartition(FileIndex)
+                                If StopFlag Then
+                                    PrintMsg(ResText_OpCancelled.Text)
+                                    Exit Sub
+                                End If
+                            Next
+                        Catch ex As Exception
+                            PrintMsg(ResText_RestoreErr.Text)
+                        End Try
+                        TapeUtils.AllowMediaRemoval(TapeDrive)
+                        TapeUtils.ReleaseUnit(TapeDrive)
+                        StopFlag = False
+                        UnwrittenSizeOverrideValue = 0
+                        UnwrittenCountOverwriteValue = 0
+                        LockGUI(False)
+                        PrintMsg(ResText_AddFin.Text)
+                        Invoke(Sub() MessageBox.Show(ResText_AddFin.Text))
+                    End Sub)
+            th.Start()
+        End If
+    End Sub
+
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
         IndexWriteInterval = Val(InputBox(ResText_SIIntv.Text, ResText_Setting.Text, IndexWriteInterval))
     End Sub
@@ -4310,6 +4439,12 @@ Public Class LTFSWriter
         WA3ToolStripMenuItem.Checked = True
     End Sub
 
+    Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        Select Case e.KeyCode
+            Case Keys.KeyCode.F5
+                RefreshDisplay()
+        End Select
+    End Sub
 End Class
 
 Public NotInheritable Class FileDropHandler

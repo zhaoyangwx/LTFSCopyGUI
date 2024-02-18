@@ -322,6 +322,33 @@ dataDir:{dataDir}
                                 CloseConsole()
                                 End
                             End If
+                        Case "-lic"
+                            If i < param.Count - 1 Then
+                                Dim ltext As String = param(i + 1)
+                                If ltext.StartsWith("""") AndAlso ltext.EndsWith("""") Then
+                                    ltext = ltext.Substring(1, ltext.Length - 2)
+                                End If
+                                InitConsole()
+                                Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
+
+                                If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
+                                    rsa.FromXmlString(My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                                Else
+                                    rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
+                                End If
+                                If rsa.PublicOnly Then
+                                    MessageBox.Show(Resources.StrLicenseInvalid)
+                                Else
+                                    My.Settings.License = ltext
+                                    Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(ltext)
+                                    Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
+                                    Dim strBody As String = Convert.ToBase64String(bLicStr)
+                                    Dim strSign As String = Convert.ToBase64String(bSign)
+                                    Console.WriteLine($"{strBody}{vbCrLf}{strSign}")
+                                End If
+                                CloseConsole()
+                                End
+                            End If
                         Case Else
                             Try
                                 InitConsole()
