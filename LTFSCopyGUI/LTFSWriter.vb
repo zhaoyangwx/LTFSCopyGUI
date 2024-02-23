@@ -1681,7 +1681,7 @@ Public Class LTFSWriter
         th.Start()
     End Sub
     Private Sub ListView1_DragEnter(sender As Object, e As DragEventArgs) Handles ListView1.DragEnter
-        If MenuStrip1.Enabled = False Then
+        If Not AllowOperation OrElse Not MenuStrip1.Enabled Then
             PrintMsg(ResText_DragNA.Text)
             Exit Sub
         End If
@@ -1829,68 +1829,72 @@ Public Class LTFSWriter
             Else
                 If FileIndex.TempObj Is Nothing OrElse TypeOf FileIndex.TempObj IsNot ltfsindex.file.refFile Then FileIndex.TempObj = New ltfsindex.file.refFile()
                 CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName = FileName
-                Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.Asynchronous)
-                For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                    Dim succ As Boolean = False
-                    Do
-                        Dim BlockAddress As Long = fe.startblock
-                        Dim ByteOffset As Long = fe.byteoffset
-                        Dim FileOffset As Long = fe.fileoffset
-                        Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
-                        Dim TotalBytes As Long = fe.bytecount
-                        'Dim p As New TapeUtils.PositionData(TapeDrive)
-                        If RestorePosition Is Nothing OrElse RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
-                            TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
-                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
-                        End If
-                        fs.Seek(FileOffset, IO.SeekOrigin.Begin)
-                        Dim ReadedSize As Long = 0
-                        While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
-                            Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                            Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
-                            SyncLock RestorePosition
-                                RestorePosition.BlockNumber += 1
-                            End SyncLock
-                            If Data.Length <> len OrElse len = 0 Then
-                                PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True)
-                                succ = False
+                Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.None)
+                Try
+                    For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
+                        Dim succ As Boolean = False
+                        Do
+                            Dim BlockAddress As Long = fe.startblock
+                            Dim ByteOffset As Long = fe.byteoffset
+                            Dim FileOffset As Long = fe.fileoffset
+                            Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
+                            Dim TotalBytes As Long = fe.bytecount
+                            'Dim p As New TapeUtils.PositionData(TapeDrive)
+                            If RestorePosition Is Nothing OrElse RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
+                                TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
+                                RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            End If
+                            fs.Seek(FileOffset, IO.SeekOrigin.Begin)
+                            Dim ReadedSize As Long = 0
+                            While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
+                                Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
+                                Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
+                                SyncLock RestorePosition
+                                    RestorePosition.BlockNumber += 1
+                                End SyncLock
+                                If Data.Length <> len OrElse len = 0 Then
+                                    PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True, ForceLog:=True)
+                                    succ = False
+                                    Exit Do
+                                End If
+                                ReadedSize += len
+                                fs.Write(Data, ByteOffset, len - ByteOffset)
+                                Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
+                                Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
+                                ByteOffset = 0
+                                While Pause
+                                    Threading.Thread.Sleep(10)
+                                End While
+                            End While
+                            If StopFlag Then
+                                fs.Close()
+                                IO.File.Delete(FileName)
+                                succ = True
                                 Exit Do
                             End If
-                            ReadedSize += len
-                            fs.Write(Data, ByteOffset, len - ByteOffset)
-
-                            Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
-                            Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
-                            ByteOffset = 0
-                            While Pause
-                                Threading.Thread.Sleep(10)
-                            End While
-                        End While
-                        If StopFlag Then
-                            fs.Close()
-                            IO.File.Delete(FileName)
                             succ = True
                             Exit Do
-                        End If
-                        succ = True
-                        Exit Do
-                    Loop
+                        Loop
 
-                    If Not succ Then
-                        PrintMsg($"{FileIndex.name}{ResText_RestoreErr.Text}")
-                        Exit For
-                    End If
-                    'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
-                    '                         Function(BytesReaded As Long)
-                    '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
-                    '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
-                    '                             Return StopFlag
-                    '                         End Function, CreateNew, False) Then
-                    '    PrintMsg($"{FileIndex.name}提取出错")
-                    '    Exit For
-                    'End If
-                    If StopFlag Then Exit Sub
-                Next
+                        If Not succ Then
+                            PrintMsg($"{FileIndex.name}{ResText_RestoreErr.Text}", ForceLog:=True)
+                            Exit For
+                        End If
+                        'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
+                        '                         Function(BytesReaded As Long)
+                        '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
+                        '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
+                        '                             Return StopFlag
+                        '                         End Function, CreateNew, False) Then
+                        '    PrintMsg($"{FileIndex.name}提取出错")
+                        '    Exit For
+                        'End If
+                        If StopFlag Then Exit Sub
+                    Next
+                Catch ex As Exception
+                    PrintMsg($"{FileIndex.name}{ResText_RestoreErr.Text}{ex.ToString}", ForceLog:=True)
+                End Try
+
                 fs.Flush()
                 fs.Close()
                 Dim finfo As New IO.FileInfo(FileName)
@@ -2010,7 +2014,7 @@ Public Class LTFSWriter
                                                                             Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
                                                                         End Function))
                             For i As Integer = 1 To FileList.Count - 1
-                                If FileList(i).File.length = FileList(i - 1).File.length AndAlso FileList(i).File.sha1 = FileList(i - 1).File.sha1 Then
+                                If FileList(i).File.length = FileList(i - 1).File.length AndAlso FileList(i).File.sha1.Length = 40 AndAlso FileList(i).File.sha1 = FileList(i - 1).File.sha1 Then
                                     FileList(i).File.TempObj = FileList(i - 1).File.TempObj
                                 End If
                             Next
