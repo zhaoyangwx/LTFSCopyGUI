@@ -144,7 +144,7 @@ Public Class ltfsindex
         Public Property contents As New contentsDef
         Public Property tag As String
 
-        Private _TotalFiles, _TotalDirectories As Long
+        Private _TotalFiles, _TotalDirectories, _TotalFilesUnwritten As Long
         <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalFiles
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
@@ -154,6 +154,20 @@ Public Class ltfsindex
                     RefreshCount()
                 End If
                 Return _TotalFiles
+            End Get
+        End Property
+        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalFilesUnwritten
+            Get
+                If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
+                    RefreshCount()
+                End If
+                If _TotalFiles = 0 AndAlso contents._file IsNot Nothing AndAlso contents._file.Count > 0 Then
+                    RefreshCount()
+                End If
+                If _TotalFilesUnwritten = 0 AndAlso contents.UnwrittenFiles IsNot Nothing AndAlso contents.UnwrittenFiles.Count > 0 Then
+                    RefreshCount()
+                End If
+                Return _TotalFilesUnwritten
             End Get
         End Property
         <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalDirectories
@@ -174,12 +188,21 @@ Public Class ltfsindex
                 Else
                     _TotalFiles = 0
                 End If
+                If contents.UnwrittenFiles IsNot Nothing Then
+                    _TotalFilesUnwritten = contents.UnwrittenFiles.Count
+                Else
+                    _TotalFilesUnwritten = 0
+                End If
             Else
                 If contents._file IsNot Nothing Then
                     _TotalFiles = contents._file.Count
                 End If
+                If contents.UnwrittenFiles IsNot Nothing Then
+                    _TotalFilesUnwritten = contents.UnwrittenFiles.Count
+                End If
                 For Each d As directory In contents._directory
                     _TotalFiles += d.TotalFiles
+                    _TotalFilesUnwritten += d.TotalFilesUnwritten
                 Next
             End If
             If contents._directory IsNot Nothing Then
