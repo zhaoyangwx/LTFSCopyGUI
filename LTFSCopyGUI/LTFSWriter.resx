@@ -215,7 +215,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAZQBCAGUAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAcwBCAHMAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -428,7 +428,7 @@
     <value>696, 18</value>
   </metadata>
   <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
     <value>提取</value>
@@ -452,43 +452,40 @@
     <value>仅验证</value>
   </data>
   <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
     <value>校验</value>
   </data>
   <data name="移动到索引区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="移动到索引区ToolStripMenuItem.Text" xml:space="preserve">
     <value>移动到索引区</value>
   </data>
-  <data name="移动到索引区ToolStripMenuItem.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
   <data name="定位到起始块ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="定位到起始块ToolStripMenuItem.Text" xml:space="preserve">
     <value>定位到起始块</value>
   </data>
   <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>169, 6</value>
   </data>
   <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="重命名文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>重命名文件</value>
   </data>
   <data name="重命名目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="重命名目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>重命名目录</value>
   </data>
   <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>169, 6</value>
   </data>
   <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -521,25 +518,25 @@
 </value>
   </data>
   <data name="导入文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="导入文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>导入文件</value>
   </data>
   <data name="添加文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="添加文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>添加文件</value>
   </data>
   <data name="添加目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="添加目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>添加目录</value>
   </data>
   <data name="新建目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>新建目录</value>
@@ -557,43 +554,43 @@
     <value>跳过符号链接</value>
   </data>
   <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
     <value>选项</value>
   </data>
   <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>169, 6</value>
   </data>
   <data name="删除文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="删除文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>删除文件</value>
   </data>
   <data name="删除目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="删除目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>删除目录</value>
   </data>
   <data name="ToolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>169, 6</value>
   </data>
   <data name="生成标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="生成标签ToolStripMenuItem.Text" xml:space="preserve">
     <value>生成标签</value>
   </data>
   <data name="设置标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
     <value>设置标签</value>
   </data>
   <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
     <value>文件详情</value>
@@ -623,13 +620,13 @@
     <value>XAttr</value>
   </data>
   <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>172, 22</value>
   </data>
   <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
     <value>复制信息到剪贴板</value>
   </data>
   <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 424</value>
+    <value>173, 402</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip1.Name" xml:space="preserve">
     <value>ContextMenuStrip1</value>
@@ -881,7 +878,7 @@
     <value>备份当前索引</value>
   </data>
   <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>索引操作</value>
@@ -925,13 +922,13 @@
     <value>更新全部索引（安全弹出）</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>数据操作</value>
   </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1093,28 +1090,34 @@
     <value>显示文件数</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>自动化</value>
   </data>
   <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
+    <value>196, 22</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Text" xml:space="preserve">
     <value>清除当前索引后数据</value>
   </data>
   <data name="回滚ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
+    <value>196, 22</value>
   </data>
   <data name="回滚ToolStripMenuItem.Text" xml:space="preserve">
     <value>回滚至上一代</value>
   </data>
+  <data name="查找指定位置前的索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>196, 22</value>
+  </data>
+  <data name="查找指定位置前的索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>查找指定位置前的索引</value>
+  </data>
   <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
     <value>回退</value>
@@ -6682,7 +6685,7 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>145</value>
+    <value>62</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>6, 12</value>
@@ -8552,6 +8555,12 @@
     <value>回滚ToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;回滚ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;查找指定位置前的索引ToolStripMenuItem.Name" xml:space="preserve">
+    <value>查找指定位置前的索引ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;查找指定位置前的索引ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;数据ToolStripMenuItem.Name" xml:space="preserve">

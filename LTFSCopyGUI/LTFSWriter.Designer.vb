@@ -180,6 +180,7 @@ Partial Class LTFSWriter
         Me.回退ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.清除当前索引后数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.回滚ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.查找指定位置前的索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.格式化ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.设置高度ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -1152,7 +1153,7 @@ Partial Class LTFSWriter
         '
         '回退ToolStripMenuItem
         '
-        Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem})
+        Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem, Me.查找指定位置前的索引ToolStripMenuItem})
         Me.回退ToolStripMenuItem.Name = "回退ToolStripMenuItem"
         resources.ApplyResources(Me.回退ToolStripMenuItem, "回退ToolStripMenuItem")
         '
@@ -1165,6 +1166,11 @@ Partial Class LTFSWriter
         '
         Me.回滚ToolStripMenuItem.Name = "回滚ToolStripMenuItem"
         resources.ApplyResources(Me.回滚ToolStripMenuItem, "回滚ToolStripMenuItem")
+        '
+        '查找指定位置前的索引ToolStripMenuItem
+        '
+        Me.查找指定位置前的索引ToolStripMenuItem.Name = "查找指定位置前的索引ToolStripMenuItem"
+        resources.ApplyResources(Me.查找指定位置前的索引ToolStripMenuItem, "查找指定位置前的索引ToolStripMenuItem")
         '
         '数据ToolStripMenuItem
         '
@@ -2745,4 +2751,5 @@ Partial Class LTFSWriter
     Friend WithEvents 跳过符号链接ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 显示文件数ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 移动到索引区ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 查找指定位置前的索引ToolStripMenuItem As ToolStripMenuItem
 End Class
