@@ -261,6 +261,7 @@ Public Class ltfsindex
         Public Property _file As New List(Of file)
         Public Property _directory As New List(Of directory)
         <Xml.Serialization.XmlIgnore> Public UnwrittenFiles As New List(Of file)
+        <Xml.Serialization.XmlIgnore> Public LastUnwrittenFilesCount As Integer
     End Class
     Public Property _file As New List(Of file)
     Public Property _directory As New List(Of directory)

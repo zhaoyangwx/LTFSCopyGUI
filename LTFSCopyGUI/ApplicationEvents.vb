@@ -236,7 +236,8 @@ dataDir:{dataDir}
                         Case "-mkltfs"
                             CheckUAC(e)
                             InitConsole()
-                            If i < param.Count - 7 Then
+                            Console.WriteLine($"{i} {param.Count}")
+                            If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
                                 If TapeDrive.StartsWith("TAPE") Then
                                     TapeDrive = "\\.\" & TapeDrive
@@ -248,13 +249,13 @@ dataDir:{dataDir}
 
                                 End If
                                 Dim Barcode As String = ""
-                                If i + 4 <= param.Length - 1 Then
+                                If i + 2 <= param.Length - 1 Then
                                     Barcode = param(i + 2).Replace("""", "")
                                     If Barcode.Length > 20 Then Barcode = Barcode.Substring(0, 20)
                                 End If
 
                                 Dim VolLabel As String = ""
-                                If i + 4 <= param.Length - 1 Then
+                                If i + 3 <= param.Length - 1 Then
                                     VolLabel = param(i + 3).Replace("""", "")
                                 End If
 
