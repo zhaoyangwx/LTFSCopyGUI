@@ -1243,12 +1243,18 @@ Public Class LTFSWriter
                     Threading.Thread.Sleep(0)
                     SyncLock UFReadCount
                         If UFReadCount > 0 Then Continue While
-                        For i As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
-                            Dim oldf As FileRecord = UnwrittenFiles(i)
-                            If oldf.ParentDirectory Is d AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
-                                UnwrittenFiles.RemoveAt(i)
-                                FileExist = True
+
+                        For i As Integer = d.contents.LastUnwrittenFilesCount - 1 To 0 Step -1
+                            If f.Name.ToLower = d.contents.UnwrittenFiles(i).name.ToLower Then
+                                d.contents.UnwrittenFiles.RemoveAt(i)
+                                For j As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
+                                    Dim oldf As FileRecord = UnwrittenFiles(j)
+                                    If oldf.ParentDirectory Is d AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
+                                        UnwrittenFiles.RemoveAt(j)
+                                        FileExist = True
+                                        Exit For
+                                    End If
+                                Next
                                 Exit For
                             End If
                         Next
@@ -1328,12 +1334,17 @@ Public Class LTFSWriter
                             Threading.Thread.Sleep(0)
                             SyncLock UFReadCount
                                 If UFReadCount > 0 Then Continue While
-                                For i As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
-                                    Dim oldf As FileRecord = UnwrittenFiles(i)
-                                    If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                        oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
-                                        UnwrittenFiles.RemoveAt(i)
-                                        FileExist = True
+                                For i As Integer = dT.contents.LastUnwrittenFilesCount - 1 To 0 Step -1
+                                    If dT.contents.UnwrittenFiles(i).name.ToLower = f.Name.ToLower Then
+                                        dT.contents.UnwrittenFiles.RemoveAt(i)
+                                        For j As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
+                                            Dim oldf As FileRecord = UnwrittenFiles(j)
+                                            If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
+                                                UnwrittenFiles.RemoveAt(j)
+                                                FileExist = True
+                                                Exit For
+                                            End If
+                                        Next
                                         Exit For
                                     End If
                                 Next
@@ -1654,6 +1665,9 @@ Public Class LTFSWriter
                     Dim numi As Integer = 0
                     Dim PList As List(Of String) = Paths.ToList()
                     PList.Sort(ExplorerComparer)
+                    ltfsindex.WSort({d}.ToList, Nothing, Sub(d1 As ltfsindex.directory)
+                                                             d1.contents.LastUnwrittenFilesCount = d1.contents.UnwrittenFiles.Count
+                                                         End Sub)
                     For Each path As String In PList
                         If Not path.StartsWith("\\") Then path = $"\\?\{path}"
                         Dim i As Integer = Threading.Interlocked.Increment(numi)
@@ -2157,6 +2171,7 @@ Public Class LTFSWriter
                         Threading.ThreadPool.SetMinThreads(128, 128)
                         Dim ExitForFlag As Boolean = False
                         'DeDupe
+
                         Dim AllFile As New List(Of ltfsindex.file)
                         If My.Settings.LTFSWriter_DeDupe Then
                             Dim q As New List(Of ltfsindex.directory)
@@ -3839,7 +3854,7 @@ Public Class LTFSWriter
                 Host.PostCleanupWhenModifiedOnly = True
                 Host.FlushAndPurgeOnCleanup = True
                 Host.PassQueryDirectoryPattern = True
-                Host.MaxComponentLength = 8112
+                Host.MaxComponentLength = 8115
 
             Catch ex As Exception
                 MessageBox.Show(ex.ToString)
