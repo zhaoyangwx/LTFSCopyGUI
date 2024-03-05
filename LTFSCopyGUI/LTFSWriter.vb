@@ -4275,7 +4275,7 @@ Public Class LTFSWriter
                          While Not StopFlag
                              Dim buffer(plabel.blocksize - 1) As Byte
                              Dim BytesReaded As Integer = ms.Read(buffer, 0, plabel.blocksize)
-                             sh.Propagate(buffer)
+                             sh.Propagate(buffer, BytesReaded)
                              If ExitWhileFlag Then Exit While
                              If BytesReaded > 0 Then
                                  CheckCount += 1
