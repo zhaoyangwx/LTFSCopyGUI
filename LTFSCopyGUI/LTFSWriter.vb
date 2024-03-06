@@ -3509,10 +3509,14 @@ Public Class LTFSWriter
                                         If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                             FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                             FileIndex.SHA1ForeColor = Color.Blue
+                                        Else
+                                            FileIndex.SHA1ForeColor = Color.Green
                                         End If
                                         If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                             FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                             FileIndex.MD5ForeColor = Color.Blue
+                                        Else
+                                            FileIndex.MD5ForeColor = Color.Green
                                         End If
                                         If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                     End If
@@ -3523,10 +3527,14 @@ Public Class LTFSWriter
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                                 FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                                 FileIndex.SHA1ForeColor = Color.Blue
+                                            Else
+                                                FileIndex.SHA1ForeColor = Color.Green
                                             End If
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                                 FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                                 FileIndex.MD5ForeColor = Color.Blue
+                                            Else
+                                                FileIndex.MD5ForeColor = Color.Green
                                             End If
                                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                             End If
@@ -3635,10 +3643,14 @@ Public Class LTFSWriter
                             If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                 fr.File.SHA1ForeColor = Color.Blue
+                            Else
+                                fr.File.SHA1ForeColor = Color.Green
                             End If
                             If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                 fr.File.MD5ForeColor = Color.Blue
+                            Else
+                                fr.File.MD5ForeColor = Color.Green
                             End If
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                         Else
@@ -3647,10 +3659,14 @@ Public Class LTFSWriter
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                     fr.File.SHA1ForeColor = Color.Blue
+                                Else
+                                    fr.File.SHA1ForeColor = Color.Green
                                 End If
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                     fr.File.MD5ForeColor = Color.Blue
+                                Else
+                                    fr.File.SHA1ForeColor = Color.Green
                                 End If
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             Else
