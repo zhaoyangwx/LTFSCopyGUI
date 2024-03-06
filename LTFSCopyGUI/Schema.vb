@@ -67,6 +67,7 @@ Public Class ltfsindex
         <Xml.Serialization.XmlIgnore> Public WrittenBytes As Long = 0
         <Xml.Serialization.XmlIgnore> Public TempObj As Object
         <Xml.Serialization.XmlIgnore> Public SHA1ForeColor As Color = Color.Black
+        <Xml.Serialization.XmlIgnore> Public MD5ForeColor As Color = Color.Black
         <Xml.Serialization.XmlIgnore> Public ItemForeColor As Color = Color.Black
         <Serializable>
         Public Class xattr
@@ -93,11 +94,15 @@ Public Class ltfsindex
             writer.Serialize(t, extendedattributes)
             Return sb.ToString()
         End Function
-        Public Function GetXAttr(key As String) As String
+        Public Function GetXAttr(key As String, Optional ByVal ReturnBlankIfNotFound As Boolean = False) As String
             For Each x As xattr In extendedattributes
                 If x.key.ToLower = key.ToLower Then Return x.value
             Next
-            Return Nothing
+            If ReturnBlankIfNotFound Then
+                Return ""
+            Else
+                Return Nothing
+            End If
         End Function
 
         Public Sub SetXattr(key As String, value As String)

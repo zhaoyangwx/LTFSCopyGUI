@@ -837,10 +837,11 @@ Public Class LTFSWriter
                             li.Text = f.name
                             li.ImageIndex = 2
                             li.StateImageIndex = 2
-                            Dim s(14) As String
+                            Dim s(15) As String
                             s(0) = f.length
                             s(1) = f.creationtime
-                            s(2) = f.sha1
+                            s(2) = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
+                            s(15) = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
                             s(3) = f.fileuid
                             s(4) = f.openforwrite
                             s(5) = f.readonly
@@ -881,6 +882,10 @@ Public Class LTFSWriter
                                 li.UseItemStyleForSubItems = False
                                 li.SubItems(3).ForeColor = f.SHA1ForeColor
                             End If
+                            If Not f.MD5ForeColor.Equals(Color.Black) Then
+                                li.UseItemStyleForSubItems = False
+                                li.SubItems(16).ForeColor = f.MD5ForeColor
+                            End If
                             ListView1.Items.Add(li)
                         Next
 
@@ -891,10 +896,11 @@ Public Class LTFSWriter
                             SyncLock f
                                 li.Tag = f
                                 li.Text = f.name
-                                Dim s(14) As String
+                                Dim s(15) As String
                                 s(0) = f.length
                                 s(1) = f.creationtime
-                                s(2) = f.sha1
+                                s(2) = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
+                                s(15) = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
                                 s(3) = f.fileuid
                                 s(4) = f.openforwrite
                                 s(5) = f.readonly
@@ -2200,10 +2206,12 @@ Public Class LTFSWriter
                         For i As Integer = 0 To WriteList.Count - 1
                             If i < WriteList.Count - 1 Then
                                 Dim CFNum As Integer = i
-                                AddHandler WriteList(CFNum).PreReadFinished,
-                                Sub()
-                                    WriteList(CFNum + 1).BeginOpen()
-                                End Sub
+                                Dim dl As New LTFSWriter.FileRecord.PreReadFinishedEventHandler(
+                                    Sub()
+                                        WriteList(CFNum + 1).BeginOpen()
+                                        RemoveHandler WriteList(CFNum).PreReadFinished, dl
+                                    End Sub)
+                                AddHandler WriteList(CFNum).PreReadFinished, dl
                             End If
                             If ExitForFlag Then Exit For
                             PNum = My.Settings.LTFSWriter_PreLoadNum
@@ -2320,10 +2328,11 @@ Public Class LTFSWriter
                                             If succ AndAlso HashOnWrite Then
                                                 Task.Run(Sub()
                                                              Threading.Interlocked.Increment(HashTaskAwaitNumber)
-                                                             Dim sh As New IOManager.SHA1BlockwiseCalculator
+                                                             Dim sh As New IOManager.CheckSumBlockwiseCalculator
                                                              sh.Propagate(FileData)
                                                              sh.ProcessFinalBlock()
-                                                             fr.File.sha1 = sh.SHA1Value
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
                                             End If
@@ -2338,8 +2347,8 @@ Public Class LTFSWriter
                                             'Dim fs As New IO.FileStream(fr.SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, 512, True)
                                             fr.Open()
                                             'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
-                                            Dim sh As IOManager.SHA1BlockwiseCalculator = Nothing
-                                            If HashOnWrite Then sh = New IOManager.SHA1BlockwiseCalculator
+                                            Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing
+                                            If HashOnWrite Then sh = New IOManager.CheckSumBlockwiseCalculator
                                             Dim LastWriteTask As Task = Nothing
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
@@ -2440,7 +2449,8 @@ Public Class LTFSWriter
                                                 Threading.Interlocked.Increment(HashTaskAwaitNumber)
                                                 Task.Run(Sub()
                                                              sh.ProcessFinalBlock()
-                                                             fr.File.sha1 = sh.SHA1Value
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
@@ -2915,10 +2925,10 @@ Public Class LTFSWriter
             ExtraPartitionCount = schema.location.partition
             RefreshDisplay()
             Modified = False
-            Dim MAM090C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 8, 12, 0)
+            Dim MAM080C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 8, 12, 0)
             Dim VCI As Byte() = {}
-            If MAM090C IsNot Nothing Then
-                VCI = MAM090C.RawData
+            If MAM080C IsNot Nothing Then
+                VCI = MAM080C.RawData
             End If
             If Not Silent Then MessageBox.Show($"{ResText_ILdedP.Text}{vbCrLf}{vbCrLf}{ResText_VCID.Text}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
         Catch ex As Exception
@@ -3241,8 +3251,8 @@ Public Class LTFSWriter
         WA2ToolStripMenuItem.Checked = True
         WA3ToolStripMenuItem.Checked = False
     End Sub
-    Public Function CalculateSHA1(FileIndex As ltfsindex.file) As String
-        Dim HT As New IOManager.SHA1BlockwiseCalculator
+    Public Function CalculateChecksum(FileIndex As ltfsindex.file) As Dictionary(Of String, String)
+        Dim HT As New IOManager.CheckSumBlockwiseCalculator
         If FileIndex.length > 0 Then
             Dim CreateNew As Boolean = True
             If FileIndex.extentinfo.Count > 1 Then FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
@@ -3276,7 +3286,7 @@ Public Class LTFSWriter
                     HT.Propagate(blk, blklen)
                     Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                     Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
-                    If StopFlag Then Return ""
+                    If StopFlag Then Return Nothing
                     While Pause
                         Threading.Thread.Sleep(10)
                     End While
@@ -3286,7 +3296,10 @@ Public Class LTFSWriter
         HT.ProcessFinalBlock()
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
-        Return HT.SHA1Value
+        Dim result As New Dictionary(Of String, String)
+        result.Add("SHA1", HT.SHA1Value)
+        result.Add("MD5", HT.MD5Value)
+        Return result
     End Function
 
     Private Sub 生成标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 生成标签ToolStripMenuItem.Click
@@ -3471,33 +3484,44 @@ Public Class LTFSWriter
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
                                     Else
-                                        Dim result As String = CalculateSHA1(FileIndex)
-                                        If result <> "" Then
-                                            If FileIndex.sha1 = result Then
+                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
+                                        If result IsNot Nothing Then
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                                 FileIndex.SHA1ForeColor = Color.DarkGreen
                                             Else
                                                 FileIndex.SHA1ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
                                                 PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", ForceLog:=True)
                                             End If
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
+                                                FileIndex.MD5ForeColor = Color.DarkGreen
+                                            Else
+                                                FileIndex.MD5ForeColor = Color.Red
+                                                Threading.Interlocked.Increment(ec)
+                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.sha1} md5calc={result}", ForceLog:=True)
+                                            End If
                                         End If
                                     End If
                                 ElseIf Overwrite Then
-                                    Dim result As String = CalculateSHA1(FileIndex)
-                                    If result <> "" Then
-                                        FileIndex.sha1 = result
+                                    Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
+                                    If result IsNot Nothing Then
+                                        FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                        FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                         FileIndex.SHA1ForeColor = Color.Blue
+                                        FileIndex.MD5ForeColor = Color.Blue
                                         If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                     End If
                                 Else
-                                    If FileIndex.sha1 = "" Then
-                                        Dim result As String = CalculateSHA1(FileIndex)
-                                        If result <> "" Then
-                                            FileIndex.sha1 = result
+                                    If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" Then
+                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
+                                        If result IsNot Nothing Then
+                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                             FileIndex.SHA1ForeColor = Color.Blue
+                                            FileIndex.MD5ForeColor = Color.Blue
                                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                        End If
-                                    Else
+                                            End If
+                                        Else
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
                                     End If
@@ -3578,27 +3602,38 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
                             Else
-                                Dim result As String = CalculateSHA1(fr.File)
-                                If result <> "" Then
-                                    If fr.File.sha1 = result Then
+                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                                If result IsNot Nothing Then
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                         fr.File.SHA1ForeColor = Color.Green
                                     Else
                                         fr.File.SHA1ForeColor = Color.Red
                                         PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
                                         Threading.Interlocked.Increment(ec)
                                     End If
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
+                                        fr.File.MD5ForeColor = Color.Green
+                                    Else
+                                        fr.File.MD5ForeColor = Color.Red
+                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
+                                        Threading.Interlocked.Increment(ec)
+                                    End If
                                 End If
                             End If
                         ElseIf Overwrite Then
-                            Dim result As String = CalculateSHA1(fr.File)
-                            fr.File.sha1 = result
+                            Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                            fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                            fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                             fr.File.SHA1ForeColor = Color.Blue
+                            fr.File.MD5ForeColor = Color.Blue
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                         Else
                             If fr.File.sha1 = "" Then
-                                Dim result As String = CalculateSHA1(fr.File)
-                                fr.File.sha1 = result
+                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                 fr.File.SHA1ForeColor = Color.Blue
+                                fr.File.MD5ForeColor = Color.Blue
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             Else
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
@@ -4271,7 +4306,7 @@ Public Class LTFSWriter
                          Dim LastWriteTask As Task = Nothing
                          Dim ExitWhileFlag As Boolean = False
                          Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(plabel.blocksize)
-                         Dim sh As New IOManager.SHA1BlockwiseCalculator
+                         Dim sh As New IOManager.CheckSumBlockwiseCalculator
                          While Not StopFlag
                              Dim buffer(plabel.blocksize - 1) As Byte
                              Dim BytesReaded As Integer = ms.Read(buffer, 0, plabel.blocksize)
@@ -4348,7 +4383,8 @@ Public Class LTFSWriter
                              End If
                          End While
                          sh.ProcessFinalBlock()
-                         fadd.sha1 = sh.SHA1Value
+                         fadd.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                         fadd.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                          If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                          schema.highestfileuid += 1
                          p.contents._directory.Remove(d)
