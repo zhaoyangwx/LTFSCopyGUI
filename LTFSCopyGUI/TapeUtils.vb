@@ -681,7 +681,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64,
                                     UUID As String, Optional ByVal ExtraPartitionCount As Byte = 1) As Boolean
-        WriteFileMark(TapeDrive, 0)
+        Flush(TapeDrive)
         Dim VCIData As Byte()
         Dim VCI As Byte() = GetMAMAttributeBytes(TapeDrive, 0, 9)
         If VCI Is Nothing OrElse VCI.Length = 0 Then Return False

@@ -215,7 +215,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAcwBCAHMAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAdQBCAHUAQgBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -317,7 +317,7 @@
     <value>178</value>
   </data>
   <data name="Column_length.DisplayIndex" type="System.Int32, mscorlib">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="Column_length.Text" xml:space="preserve">
     <value>大小（字节）</value>
@@ -343,11 +343,14 @@
   <data name="Column_sha1.Width" type="System.Int32, mscorlib">
     <value>261</value>
   </data>
+  <data name="Column_fileuid.DisplayIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
   <data name="Column_fileuid.Text" xml:space="preserve">
     <value>文件序号</value>
   </data>
   <data name="Column_openforwrite.DisplayIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="Column_openforwrite.Text" xml:space="preserve">
     <value>文件已打开</value>
@@ -356,13 +359,13 @@
     <value>80</value>
   </data>
   <data name="Column_readonly.DisplayIndex" type="System.Int32, mscorlib">
-    <value>10</value>
+    <value>11</value>
   </data>
   <data name="Column_readonly.Text" xml:space="preserve">
     <value>只读</value>
   </data>
   <data name="Column_changetime.DisplayIndex" type="System.Int32, mscorlib">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="Column_changetime.Text" xml:space="preserve">
     <value>更新时间</value>
@@ -371,37 +374,37 @@
     <value>73</value>
   </data>
   <data name="Column_modifytime.DisplayIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="Column_modifytime.Text" xml:space="preserve">
     <value>修改时间</value>
   </data>
   <data name="Column_accesstime.DisplayIndex" type="System.Int32, mscorlib">
-    <value>13</value>
+    <value>14</value>
   </data>
   <data name="Column_accesstime.Text" xml:space="preserve">
     <value>访问时间</value>
   </data>
   <data name="Column_backuptime.DisplayIndex" type="System.Int32, mscorlib">
-    <value>14</value>
+    <value>15</value>
   </data>
   <data name="Column_backuptime.Text" xml:space="preserve">
     <value>备份时间</value>
   </data>
   <data name="Column_tag.DisplayIndex" type="System.Int32, mscorlib">
-    <value>15</value>
+    <value>16</value>
   </data>
   <data name="Column_tag.Text" xml:space="preserve">
     <value>备注</value>
   </data>
   <data name="Column_StartBlock.DisplayIndex" type="System.Int32, mscorlib">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="Column_StartBlock.Text" xml:space="preserve">
     <value>起始区块</value>
   </data>
   <data name="Column_Partition.DisplayIndex" type="System.Int32, mscorlib">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="Column_Partition.Text" xml:space="preserve">
     <value>所在分区</value>
@@ -416,13 +419,22 @@
     <value>84</value>
   </data>
   <data name="Column_writtenBytes.DisplayIndex" type="System.Int32, mscorlib">
-    <value>8</value>
+    <value>9</value>
   </data>
   <data name="Column_writtenBytes.Text" xml:space="preserve">
     <value>本次已写入</value>
   </data>
   <data name="Column_writtenBytes.Width" type="System.Int32, mscorlib">
     <value>88</value>
+  </data>
+  <data name="Column_md5.DisplayIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="Column_md5.Text" xml:space="preserve">
+    <value>MD5</value>
+  </data>
+  <data name="Column_md5.Width" type="System.Int32, mscorlib">
+    <value>209</value>
   </data>
   <metadata name="ContextMenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>696, 18</value>
@@ -878,7 +890,7 @@
     <value>备份当前索引</value>
   </data>
   <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>索引操作</value>
@@ -922,13 +934,13 @@
     <value>更新全部索引（安全弹出）</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>数据操作</value>
   </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>121, 6</value>
   </data>
   <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1090,13 +1102,13 @@
     <value>显示文件数</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>自动化</value>
   </data>
   <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>121, 6</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>196, 22</value>
@@ -1117,7 +1129,7 @@
     <value>查找指定位置前的索引</value>
   </data>
   <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
     <value>回退</value>
@@ -8718,6 +8730,12 @@
   </data>
   <data name="&gt;&gt;ToolStripStatusLabel3.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Column_md5.Name" xml:space="preserve">
+    <value>Column_md5</value>
+  </data>
+  <data name="&gt;&gt;Column_md5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ColumnHeader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>LTFSWriter</value>

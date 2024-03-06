@@ -577,12 +577,14 @@ Public Class IOManager
         End Sub
     End Class
 
-    Public Class SHA1BlockwiseCalculator
-        Private sha1 As SHA1
-        Private resultBytes As Byte()
-        Private Lock As New Object
-        Public StopFlag As Boolean = False
-        Private thStarted As Boolean = False
+    Public Class CheckSumBlockwiseCalculator
+        Private Property sha1 As SHA1
+        Private Property md5 As MD5
+        Private Property resultBytesSHA1 As Byte()
+        Private Property resultBytesMD5 As Byte()
+        Private Property Lock As New Object
+        Public Property StopFlag As Boolean = False
+        Private Property thStarted As Boolean = False
         Structure QueueBlock
             Public block As Byte()
             Public Len As Integer
@@ -599,7 +601,14 @@ Public Class IOManager
                             End SyncLock
                             With blk
                                 If .Len = -1 Then .Len = .block.Length
-                                sha1.TransformBlock(.block, 0, .Len, .block, 0)
+                                Dim sha1task As Task = Task.Run(Sub()
+                                                                    sha1.TransformBlock(.block, 0, .Len, .block, 0)
+                                                                End Sub)
+                                Dim md5task As Task = Task.Run(Sub()
+                                                                   md5.TransformBlock(.block, 0, .Len, .block, 0)
+                                                               End Sub)
+                                sha1task.Wait()
+                                md5task.Wait()
                             End With
                             blk.block = Nothing
                         End While
@@ -610,6 +619,7 @@ Public Class IOManager
             End Sub)
         Public Sub New()
             sha1 = SHA1.Create()
+            md5 = MD5.Create()
         End Sub
 
         Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
@@ -618,7 +628,14 @@ Public Class IOManager
             End While
             SyncLock Lock
                 If Len = -1 Then Len = block.Length
-                sha1.TransformBlock(block, 0, Len, block, 0)
+                Dim sha1task As Task = Task.Run(Sub()
+                                                    sha1.TransformBlock(block, 0, Len, block, 0)
+                                                End Sub)
+                Dim md5task As Task = Task.Run(Sub()
+                                                   md5.TransformBlock(block, 0, Len, block, 0)
+                                               End Sub)
+                sha1task.Wait()
+                md5task.Wait()
             End SyncLock
         End Sub
         Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = -1)
@@ -644,14 +661,23 @@ Public Class IOManager
             End While
             SyncLock Lock
                 sha1.TransformFinalBlock({}, 0, 0)
-                resultBytes = sha1.Hash
+                md5.TransformFinalBlock({}, 0, 0)
+                resultBytesSHA1 = sha1.Hash
+                resultBytesMD5 = md5.Hash
             End SyncLock
             StopFlag = True
         End Sub
         Public ReadOnly Property SHA1Value As String
             Get
                 SyncLock Lock
-                    Return BitConverter.ToString(resultBytes).Replace("-", "").ToUpper()
+                    Return BitConverter.ToString(resultBytesSHA1).Replace("-", "").ToUpper()
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property MD5Value As String
+            Get
+                SyncLock Lock
+                    Return BitConverter.ToString(resultBytesMD5).Replace("-", "").ToUpper()
                 End SyncLock
             End Get
         End Property

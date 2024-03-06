@@ -383,6 +383,7 @@ Partial Class LTFSWriter
         Me.ResText_STime = New System.Windows.Forms.Label()
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel3 = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.Column_md5 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -511,7 +512,7 @@ Partial Class LTFSWriter
         'ListView1
         '
         Me.ListView1.AllowColumnReorder = True
-        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_sha1, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
+        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_sha1, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes, Me.Column_md5})
         Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.ListView1, "ListView1")
         Me.ListView1.Name = "ListView1"
@@ -2376,6 +2377,10 @@ Partial Class LTFSWriter
         resources.ApplyResources(Me.ToolStripStatusLabel3, "ToolStripStatusLabel3")
         Me.ToolStripStatusLabel3.Spring = True
         '
+        'Column_md5
+        '
+        resources.ApplyResources(Me.Column_md5, "Column_md5")
+        '
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
@@ -2752,4 +2757,5 @@ Partial Class LTFSWriter
     Friend WithEvents 显示文件数ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 移动到索引区ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 查找指定位置前的索引ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents Column_md5 As ColumnHeader
 End Class

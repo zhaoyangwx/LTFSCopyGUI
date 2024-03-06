@@ -236,7 +236,7 @@ dataDir:{dataDir}
                         Case "-mkltfs"
                             CheckUAC(e)
                             InitConsole()
-                            Console.WriteLine($"{i} {param.Count}")
+                            'Console.WriteLine($"{i} {param.Count}")
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
                                 If TapeDrive.StartsWith("TAPE") Then
