@@ -3505,20 +3505,28 @@ Public Class LTFSWriter
                                 ElseIf Overwrite Then
                                     Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
                                     If result IsNot Nothing Then
-                                        FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                        FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                        FileIndex.SHA1ForeColor = Color.Blue
-                                        FileIndex.MD5ForeColor = Color.Blue
+                                        If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                            FileIndex.SHA1ForeColor = Color.Blue
+                                        End If
+                                        If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                            FileIndex.MD5ForeColor = Color.Blue
+                                        End If
                                         If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                     End If
                                 Else
                                     If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" Then
                                         Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
                                         If result IsNot Nothing Then
-                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                            FileIndex.SHA1ForeColor = Color.Blue
-                                            FileIndex.MD5ForeColor = Color.Blue
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                                FileIndex.SHA1ForeColor = Color.Blue
+                                            End If
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                                FileIndex.MD5ForeColor = Color.Blue
+                                            End If
                                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                             End If
                                         Else
@@ -3622,18 +3630,26 @@ Public Class LTFSWriter
                             End If
                         ElseIf Overwrite Then
                             Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
-                            fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                            fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                            fr.File.SHA1ForeColor = Color.Blue
-                            fr.File.MD5ForeColor = Color.Blue
+                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                fr.File.SHA1ForeColor = Color.Blue
+                            End If
+                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                fr.File.MD5ForeColor = Color.Blue
+                            End If
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                         Else
                             If fr.File.sha1 = "" Then
                                 Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
-                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                fr.File.SHA1ForeColor = Color.Blue
-                                fr.File.MD5ForeColor = Color.Blue
+                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                    fr.File.SHA1ForeColor = Color.Blue
+                                End If
+                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                    fr.File.MD5ForeColor = Color.Blue
+                                End If
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             Else
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
