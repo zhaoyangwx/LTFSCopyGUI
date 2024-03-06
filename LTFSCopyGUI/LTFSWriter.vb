@@ -3479,7 +3479,8 @@ Public Class LTFSWriter
                             RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
-                                    If FileIndex.sha1 = "" OrElse (Not FileIndex.SHA1ForeColor.Equals(Color.Black)) Then
+                                    If (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not FileIndex.SHA1ForeColor.Equals(Color.Black))) AndAlso
+                                       (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not FileIndex.MD5ForeColor.Equals(Color.Black))) Then
                                         'Skip
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -3488,14 +3489,14 @@ Public Class LTFSWriter
                                         If result IsNot Nothing Then
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                                 FileIndex.SHA1ForeColor = Color.DarkGreen
-                                            Else
+                                            ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
                                                 FileIndex.SHA1ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
                                                 PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", ForceLog:=True)
                                             End If
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
                                                 FileIndex.MD5ForeColor = Color.DarkGreen
-                                            Else
+                                            ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
                                                 FileIndex.MD5ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
                                                 PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.sha1} md5calc={result}", ForceLog:=True)
@@ -3605,7 +3606,8 @@ Public Class LTFSWriter
                         c += 1
                         PrintMsg($"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.File.name} {ResText_Size.Text}:{IOManager.FormatSize(fr.File.length)}", False, $"{ResText_Hashing.Text} [{c}/{FileList.Count}] {fr.SourcePath} {ResText_Size.Text}:{fr.File.length}")
                         If ValidateOnly Then
-                            If fr.File.sha1 = "" OrElse (Not fr.File.SHA1ForeColor.Equals(Color.Black)) Then
+                            If (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not fr.File.SHA1ForeColor.Equals(Color.Black))) AndAlso
+                               (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not fr.File.MD5ForeColor.Equals(Color.Black))) Then
                                 'skip
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -3614,14 +3616,14 @@ Public Class LTFSWriter
                                 If result IsNot Nothing Then
                                     If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                         fr.File.SHA1ForeColor = Color.Green
-                                    Else
+                                    ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
                                         fr.File.SHA1ForeColor = Color.Red
                                         PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
                                         Threading.Interlocked.Increment(ec)
                                     End If
                                     If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
                                         fr.File.MD5ForeColor = Color.Green
-                                    Else
+                                    ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
                                         fr.File.MD5ForeColor = Color.Red
                                         PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
                                         Threading.Interlocked.Increment(ec)
@@ -3640,7 +3642,7 @@ Public Class LTFSWriter
                             End If
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                         Else
-                            If fr.File.sha1 = "" Then
+                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" Then
                                 Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
