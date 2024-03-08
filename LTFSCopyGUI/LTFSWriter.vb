@@ -2209,7 +2209,6 @@ Public Class LTFSWriter
                                 Dim dl As New LTFSWriter.FileRecord.PreReadFinishedEventHandler(
                                     Sub()
                                         WriteList(CFNum + 1).BeginOpen()
-                                        RemoveHandler WriteList(CFNum).PreReadFinished, dl
                                     End Sub)
                                 AddHandler WriteList(CFNum).PreReadFinished, dl
                             End If
@@ -2466,7 +2465,8 @@ Public Class LTFSWriter
                                         CurrentHeight = p.BlockNumber
                                     End If
                                 Else
-                                    fr.File.sha1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709"
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, "D41D8CD98F00B204E9800998ECF8427E")
                                     TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
@@ -2565,7 +2565,9 @@ Public Class LTFSWriter
                     TapeUtils.Locate(TapeDrive, schema.location.startblock, schema.location.partition, TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(ResText_RI.Text)
-                    Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
+                    Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
                     Dim CurrentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
                     If CurrentPos.PartitionNumber < ExtraPartitionCount Then
@@ -2577,9 +2579,6 @@ Public Class LTFSWriter
                     TapeUtils.WriteFileMark(TapeDrive)
                     PrintMsg($"FileMark written", LogOnly:=True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
                     PrintMsg(ResText_AI.Text)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(ResText_AISucc.Text)
@@ -2644,11 +2643,10 @@ Public Class LTFSWriter
                     TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, schema.previousgenerationlocation.partition, TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(ResText_RI.Text)
-                    Dim data As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
-                    PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim outputfile As String = "schema\LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
+                    PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(ResText_AI.Text)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(ResText_AISucc.Text)
@@ -2720,9 +2718,6 @@ Public Class LTFSWriter
                     Barcode = TapeUtils.ReadBarcode(TapeDrive)
                     PrintMsg($"Barcode = {Barcode}", LogOnly:=True)
                     PrintMsg(ResText_Locating.Text)
-                    TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
-                    PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    TapeUtils.ReadFileMark(TapeDrive)
                     If ExtraPartitionCount = 0 Then
                         TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -2741,6 +2736,10 @@ Public Class LTFSWriter
                             End If
                             TapeUtils.Locate(TapeDrive, FM - 1, 0, TapeUtils.LocateDestType.FileMark)
                         End If
+                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                        TapeUtils.ReadFileMark(TapeDrive)
+                    Else
+                        TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         TapeUtils.ReadFileMark(TapeDrive)
                     End If
@@ -2840,13 +2839,12 @@ Public Class LTFSWriter
 
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg(ResText_RI.Text)
-                    data = TapeUtils.ReadToFileMark(TapeDrive)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
                         My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
                     End If
                     outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
                     PrintMsg(ResText_AI.Text)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(ResText_AISucc.Text)
@@ -4568,13 +4566,12 @@ Public Class LTFSWriter
 
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg(ResText_RI.Text)
-                    data = TapeUtils.ReadToFileMark(TapeDrive)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
                         My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
                     End If
                     outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
                     PrintMsg(ResText_AI.Text)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(ResText_AISucc.Text)
