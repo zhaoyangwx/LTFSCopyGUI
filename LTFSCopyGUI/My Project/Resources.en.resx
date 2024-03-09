@@ -184,4 +184,496 @@
   <data name="StrSCSISucc" xml:space="preserve">
     <value>SCSI command success</value>
   </data>
+  <data name="ResText_CHashing" xml:space="preserve">
+    <value>Hashing</value>
+  </data>
+  <data name="ResText_Size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="ResText_Skip" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="ResText_WrittenTotal" xml:space="preserve">
+    <value>Total written</value>
+  </data>
+  <data name="ResText_Remaining" xml:space="preserve">
+    <value>Remain</value>
+  </data>
+  <data name="ResText_Writing" xml:space="preserve">
+    <value>Writing</value>
+  </data>
+  <data name="ResText_WErr" xml:space="preserve">
+    <value>Write error</value>
+  </data>
+  <data name="ResText_VOF" xml:space="preserve">
+    <value>Volume overflow</value>
+  </data>
+  <data name="ResText_WFTime" xml:space="preserve">
+    <value>Write finished. Time cost: </value>
+  </data>
+  <data name="ResText_AvgS" xml:space="preserve">
+    <value>Average</value>
+  </data>
+  <data name="ResText_WCnd" xml:space="preserve">
+    <value>Write cancelled</value>
+  </data>
+  <data name="ResText_RestoreErr" xml:space="preserve">
+    <value>Restore error</value>
+  </data>
+  <data name="ResText_Restoring" xml:space="preserve">
+    <value>Restoring</value>
+  </data>
+  <data name="ResText_OpCancelled" xml:space="preserve">
+    <value>Operation cancelled</value>
+  </data>
+  <data name="ResText_RestFin" xml:space="preserve">
+    <value>Restore finished</value>
+  </data>
+  <data name="ResText_PrepFile" xml:space="preserve">
+    <value>Preparing files</value>
+  </data>
+  <data name="ResText_RestFile" xml:space="preserve">
+    <value>Restoring files</value>
+  </data>
+  <data name="ResText_PrepW" xml:space="preserve">
+    <value>Preparing to write</value>
+  </data>
+  <data name="ResText_DelConfrm" xml:space="preserve">
+    <value>Delete </value>
+  </data>
+  <data name="ResText_DirName" xml:space="preserve">
+    <value>Folder name</value>
+  </data>
+  <data name="ResText_RenameDir" xml:space="preserve">
+    <value>Folder rename</value>
+  </data>
+  <data name="ResText_DirNIllegal" xml:space="preserve">
+    <value>Illegal character detected in folder name</value>
+  </data>
+  <data name="ResText_DirNExist" xml:space="preserve">
+    <value>Folder already exist</value>
+  </data>
+  <data name="ResText_NFName" xml:space="preserve">
+    <value>New filename</value>
+  </data>
+  <data name="ResText_Rename" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="ResText_FNIllegal" xml:space="preserve">
+    <value>Illegal character detected in file name</value>
+  </data>
+  <data name="ResText_FNExist" xml:space="preserve">
+    <value>File already exist</value>
+  </data>
+  <data name="ResText_Files_C" xml:space="preserve">
+    <value> files?</value>
+  </data>
+  <data name="ResText_Adding" xml:space="preserve">
+    <value>Adding </value>
+  </data>
+  <data name="ResText_Items_x" xml:space="preserve">
+    <value> items</value>
+  </data>
+  <data name="ResText_AddFin" xml:space="preserve">
+    <value>Adding complete</value>
+  </data>
+  <data name="ResText_DLFin" xml:space="preserve">
+    <value>Label suffix changed to </value>
+  </data>
+  <data name="ResText_DragNA" xml:space="preserve">
+    <value>Drag is currently disabled</value>
+  </data>
+  <data name="ResText_DLT" xml:space="preserve">
+    <value>Label tool</value>
+  </data>
+  <data name="ResText_NewDir" xml:space="preserve">
+    <value>New folder</value>
+  </data>
+  <data name="ResText_DLS" xml:space="preserve">
+    <value>Label suffix setting</value>
+  </data>
+  <data name="ResText_OverwritingDF" xml:space="preserve">
+    <value>Overwrite different: </value>
+  </data>
+  <data name="ResText_FileRateBT" xml:space="preserve">
+    <value>File rate</value>
+  </data>
+  <data name="ResText_SpeedBT" xml:space="preserve">
+    <value>Speed (MiB/s)</value>
+  </data>
+  <data name="ResText_C0" xml:space="preserve">
+    <value>Clean</value>
+  </data>
+  <data name="ResText_C1" xml:space="preserve">
+    <value>Capacity loss detected: </value>
+  </data>
+  <data name="ResText_C2" xml:space="preserve">
+    <value>Last clean: </value>
+  </data>
+  <data name="ResText_S0" xml:space="preserve">
+    <value>Speed:</value>
+  </data>
+  <data name="ResText_S1" xml:space="preserve">
+    <value>Total:</value>
+  </data>
+  <data name="ResText_S2" xml:space="preserve">
+    <value>Remain:</value>
+  </data>
+  <data name="ResText_S3" xml:space="preserve">
+    <value>Unindexed:</value>
+  </data>
+  <data name="ResText_Byte" xml:space="preserve">
+    <value>Bytes</value>
+  </data>
+  <data name="ResText_S4" xml:space="preserve">
+    <value>Progress:</value>
+  </data>
+  <data name="ResText_FSizeP" xml:space="preserve">
+    <value>Size: </value>
+  </data>
+  <data name="ResText_ErrP" xml:space="preserve">
+    <value>Cannot find valid LTFS partition</value>
+  </data>
+  <data name="ResText_FCountP" xml:space="preserve">
+    <value>File count: </value>
+  </data>
+  <data name="ResText_X0" xml:space="preserve">
+    <value>Operation in progress. Please wait.</value>
+  </data>
+  <data name="ResText_HFin" xml:space="preserve">
+    <value>Hash complete</value>
+  </data>
+  <data name="ResText_NIndex" xml:space="preserve">
+    <value>Index not loaded</value>
+  </data>
+  <data name="ResText_HErr" xml:space="preserve">
+    <value>Hash error</value>
+  </data>
+  <data name="ResText_Index" xml:space="preserve">
+    <value>Index</value>
+  </data>
+  <data name="ResText_Hashing" xml:space="preserve">
+    <value>Hashing</value>
+  </data>
+  <data name="ResText_Partition" xml:space="preserve">
+    <value>Partition</value>
+  </data>
+  <data name="ResText_Block" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="ResText_Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="ResText_Located" xml:space="preserve">
+    <value>Located to </value>
+  </data>
+  <data name="ResText_Ejd" xml:space="preserve">
+    <value>Tape ejected</value>
+  </data>
+  <data name="ResText_WritePointer" xml:space="preserve">
+    <value>Write pointer</value>
+  </data>
+  <data name="ResText_RPosErr" xml:space="preserve">
+    <value>Error getting current index position</value>
+  </data>
+  <data name="ResText_CapRem" xml:space="preserve">
+    <value>Remaining</value>
+  </data>
+  <data name="ResText_RCErr" xml:space="preserve">
+    <value>Fail to get remaining capacity</value>
+  </data>
+  <data name="ResText_DNW" xml:space="preserve">
+    <value>Unwritten</value>
+  </data>
+  <data name="ResText_RDErr" xml:space="preserve">
+    <value>Error refreshing display</value>
+  </data>
+  <data name="ResText_CRef" xml:space="preserve">
+    <value>Remaining capacity refreshed</value>
+  </data>
+  <data name="ResText_CRefErr" xml:space="preserve">
+    <value>Fail to refresh remaining capacity</value>
+  </data>
+  <data name="ResText_NavErr" xml:space="preserve">
+    <value>Navigate error. Please retry</value>
+  </data>
+  <data name="ResText_Locating" xml:space="preserve">
+    <value>Locating</value>
+  </data>
+  <data name="ResText_WriteWarning" xml:space="preserve">
+    <value>Write warning</value>
+  </data>
+  <data name="ResText_EWEOM" xml:space="preserve">
+    <value>Early warning end of media</value>
+  </data>
+  <data name="ResText_NHWrn" xml:space="preserve">
+    <value>. All data after this position will be lost. Continue?</value>
+  </data>
+  <data name="ResText_X1" xml:space="preserve">
+    <value>Operation in progress. Force terminate?</value>
+  </data>
+  <data name="ResText_X2" xml:space="preserve">
+    <value>Unindexed data will be lost. Continue?</value>
+  </data>
+  <data name="ResText_X3" xml:space="preserve">
+    <value>Volume will be inconsistent without updating index partition. Continue?</value>
+  </data>
+  <data name="ResText_PEj" xml:space="preserve">
+    <value>Eject now?</value>
+  </data>
+  <data name="ResText_WErrSCSI" xml:space="preserve">
+    <value>Write error: SCSI command failed.</value>
+  </data>
+  <data name="ResText_WFUp" xml:space="preserve">
+    <value>Write finished. Update index at data partition? (Recommended)</value>
+  </data>
+  <data name="ResText_ILdedP" xml:space="preserve">
+    <value>Index loaded. Consistency is not guaranteed. Operation is at your own risk.</value>
+  </data>
+  <data name="ResText_DataLossWarning" xml:space="preserve">
+    <value>All data will be lost and cannot recover. Continue?</value>
+  </data>
+  <data name="ResText_SHA1Overw" xml:space="preserve">
+    <value>Overwrite existing SHA1?</value>
+  </data>
+  <data name="ResText_SetH1" xml:space="preserve">
+    <value>Set write pointer to current position </value>
+  </data>
+  <data name="ResText_SetH2" xml:space="preserve">
+    <value>. Continue?</value>
+  </data>
+  <data name="ResText_SetH3" xml:space="preserve">
+    <value>Click "Cancel" if not sure.</value>
+  </data>
+  <data name="ResText_CancelConfirm" xml:space="preserve">
+    <value>Unfinished files will be lost. Continue?</value>
+  </data>
+  <data name="ResText_ClearWC" xml:space="preserve">
+    <value>Reset counter value?</value>
+  </data>
+  <data name="ResText_RB4" xml:space="preserve">
+    <value>Unindexed date will be lost. Write after rolling back will destroy all data after the checkpoint. Continue?</value>
+  </data>
+  <data name="ResText_GI" xml:space="preserve">
+    <value>Generating index</value>
+  </data>
+  <data name="ResText_WI" xml:space="preserve">
+    <value>Writing index</value>
+  </data>
+  <data name="ResText_WIF" xml:space="preserve">
+    <value>Index written</value>
+  </data>
+  <data name="ResText_UDI" xml:space="preserve">
+    <value>Updating index in data partition</value>
+  </data>
+  <data name="ResText_UI" xml:space="preserve">
+    <value>Update indexes</value>
+  </data>
+  <data name="ResText_IUd" xml:space="preserve">
+    <value>Index updated</value>
+  </data>
+  <data name="ResText_DPIUed" xml:space="preserve">
+    <value>Data partition index updated</value>
+  </data>
+  <data name="ResText_RI" xml:space="preserve">
+    <value>Reading index</value>
+  </data>
+  <data name="ResText_Exporting" xml:space="preserve">
+    <value>Exporting</value>
+  </data>
+  <data name="ResText_Imported" xml:space="preserve">
+    <value>Import finished</value>
+  </data>
+  <data name="ResText_IAErrp" xml:space="preserve">
+    <value>Error parsing file: </value>
+  </data>
+  <data name="ResText_AI" xml:space="preserve">
+    <value>Parsing index</value>
+  </data>
+  <data name="ResText_VCID" xml:space="preserve">
+    <value>VCI data on tape：</value>
+  </data>
+  <data name="ResText_Importing" xml:space="preserve">
+    <value>Importing</value>
+  </data>
+  <data name="ResText_AISucc" xml:space="preserve">
+    <value>Index readed</value>
+  </data>
+  <data name="ResText_FmtFail" xml:space="preserve">
+    <value>Format failed</value>
+  </data>
+  <data name="ResText_IndexBaked" xml:space="preserve">
+    <value>Index backed up</value>
+  </data>
+  <data name="ResText_FmtFin" xml:space="preserve">
+    <value>Format finished</value>
+  </data>
+  <data name="ResText_IndexBak2" xml:space="preserve">
+    <value>Index backed up to </value>
+  </data>
+  <data name="ResText_LTFSVolumeN2" xml:space="preserve">
+    <value>Volume label: </value>
+  </data>
+  <data name="ResText_IUErr" xml:space="preserve">
+    <value>Error updating index</value>
+  </data>
+  <data name="ResText_Barcode2" xml:space="preserve">
+    <value>Barcode: </value>
+  </data>
+  <data name="ResText_CurPos" xml:space="preserve">
+    <value>Current position </value>
+  </data>
+  <data name="ResText_LTFSVolumeN" xml:space="preserve">
+    <value>LTFS volume label</value>
+  </data>
+  <data name="ResText_IndexNAllowed" xml:space="preserve">
+    <value>Index is not allowd to write at this position</value>
+  </data>
+  <data name="ResText_SetVolumeN" xml:space="preserve">
+    <value>Set volume label</value>
+  </data>
+  <data name="ResText_DPIWritten" xml:space="preserve">
+    <value>Data partition index written</value>
+  </data>
+  <data name="ResText_SetBarcode" xml:space="preserve">
+    <value>Set barcode</value>
+  </data>
+  <data name="ResText_IndexBakF" xml:space="preserve">
+    <value>Index backup failed</value>
+  </data>
+  <data name="ResText_DPIWFailed" xml:space="preserve">
+    <value>Fail to write data partition index</value>
+  </data>
+  <data name="ResText_IPCanc" xml:space="preserve">
+    <value>Operation cancelled. Current position is at index partition</value>
+  </data>
+  <data name="ResText_RollBacked" xml:space="preserve">
+    <value>Located to index</value>
+  </data>
+  <data name="ResText_BlkSize" xml:space="preserve">
+    <value>Block size</value>
+  </data>
+  <data name="ResText_RFailed" xml:space="preserve">
+    <value>Read fail</value>
+  </data>
+  <data name="ResText_Barcode" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="ResText_RBFin" xml:space="preserve">
+    <value>Roll back success</value>
+  </data>
+  <data name="ResText_RB1" xml:space="preserve">
+    <value>Current index generation </value>
+  </data>
+  <data name="ResText_RBing" xml:space="preserve">
+    <value>Rolling back</value>
+  </data>
+  <data name="ResText_RB2" xml:space="preserve">
+    <value>:</value>
+  </data>
+  <data name="ResText_RB3" xml:space="preserve">
+    <value>Last generation:</value>
+  </data>
+  <data name="ResText_IRFailed" xml:space="preserve">
+    <value>Index read failed</value>
+  </data>
+  <data name="ResText_IRSucc" xml:space="preserve">
+    <value>Index read success</value>
+  </data>
+  <data name="ResText_NVOL1" xml:space="preserve">
+    <value>Mising VOL1Label</value>
+  </data>
+  <data name="ResText_NLTFS" xml:space="preserve">
+    <value>Non LTFS detected</value>
+  </data>
+  <data name="ResText_RLTFSInfo" xml:space="preserve">
+    <value>Retrieving LTFS info</value>
+  </data>
+  <data name="ResText_SvBak" xml:space="preserve">
+    <value>Saving backup</value>
+  </data>
+  <data name="ResText_Warning" xml:space="preserve">
+    <value>Warning</value>
+  </data>
+  <data name="ResText_Hint" xml:space="preserve">
+    <value>Hint</value>
+  </data>
+  <data name="ResText_Confirm" xml:space="preserve">
+    <value>Confirm</value>
+  </data>
+  <data name="ResText_OpSucc" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="ResText_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="ResText_Setting" xml:space="preserve">
+    <value>Setting</value>
+  </data>
+  <data name="ResText_SSMin" xml:space="preserve">
+    <value>Lower limit (MiB/s)</value>
+  </data>
+  <data name="ResText_SFB" xml:space="preserve">
+    <value>File buffer</value>
+  </data>
+  <data name="ResText_SSMax" xml:space="preserve">
+    <value>Upper limit (MiB/s)</value>
+  </data>
+  <data name="ResText_SPreR" xml:space="preserve">
+    <value>Preread files</value>
+  </data>
+  <data name="ResText_SSTime" xml:space="preserve">
+    <value>Duration (Sec)</value>
+  </data>
+  <data name="ResText_SCIntv" xml:space="preserve">
+    <value>Capacity refresh interval (Sec)</value>
+  </data>
+  <data name="ResText_SIIntv" xml:space="preserve">
+    <value>Index interval (Bytes)</value>
+  </data>
+  <data name="ResText_CLNCS" xml:space="preserve">
+    <value>Clean cycle before rethreading</value>
+  </data>
+  <data name="ResText_WLimS" xml:space="preserve">
+    <value>Write speed limit (MiB/s)</value>
+  </data>
+  <data name="ResText_NoIndex" xml:space="preserve">
+    <value>Index interval: Disabled</value>
+  </data>
+  <data name="ResText_IndexInterval" xml:space="preserve">
+    <value>Index interval: </value>
+  </data>
+  <data name="ResText_CRDisabled" xml:space="preserve">
+    <value>Capacity refresh interval: Disabled</value>
+  </data>
+  <data name="ResText_CRIntv" xml:space="preserve">
+    <value>Capacity refresh interval: </value>
+  </data>
+  <data name="ResText_NoSLim" xml:space="preserve">
+    <value>Speed limit: Unlimited</value>
+  </data>
+  <data name="ResText_SLim" xml:space="preserve">
+    <value>Speed limit: </value>
+  </data>
+  <data name="ResText_RBCoff" xml:space="preserve">
+    <value>Clean cycle before rethreading: Rethreading disabled</value>
+  </data>
+  <data name="ResText_RBC" xml:space="preserve">
+    <value>Clean cycle before rethreading: </value>
+  </data>
+  <data name="ResText_PFC" xml:space="preserve">
+    <value>Preread files: </value>
+  </data>
+  <data name="ResText_FB" xml:space="preserve">
+    <value>File buffer: </value>
+  </data>
+  <data name="ResText_SMin" xml:space="preserve">
+    <value>Lower limit: </value>
+  </data>
+  <data name="ResText_SMax" xml:space="preserve">
+    <value>Upper limit: </value>
+  </data>
+  <data name="ResText_STime" xml:space="preserve">
+    <value>Duration: </value>
+  </data>
 </root>

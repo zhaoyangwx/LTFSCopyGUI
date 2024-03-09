@@ -377,14 +377,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSWriter.en.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSWriter.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSWriter.zh-Hant.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="My Project\Resources.en.resx" />
+    <EmbeddedResource Include="My Project\Resources.en.resx">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
