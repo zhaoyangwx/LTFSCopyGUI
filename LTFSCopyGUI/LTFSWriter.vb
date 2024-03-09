@@ -123,7 +123,7 @@ Public Class LTFSWriter
         End Set
     End Property
     Public Property Session_Start_Time As Date = Now
-    Public logFile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+    Public logFile As String = IO.Path.Combine(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
     Public Property SilentMode As Boolean = False
     Public Property SilentAutoEject As Boolean = False
     Public BufferedBytes As Long = 0
@@ -220,10 +220,10 @@ Public Class LTFSWriter
                           If TooltipText <> "" Then
                               ExtraMsg = $"({TooltipText})"
                           End If
-                          If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log")) Then
-                              My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log"))
+                          If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
+                              IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
                           End If
-                          My.Computer.FileSystem.WriteAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}", True)
+                          IO.File.AppendAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
                       End If
                       If LogOnly Then Exit Sub
                       If TooltipText = "" Then TooltipText = s
@@ -1101,7 +1101,7 @@ Public Class LTFSWriter
             PrintMsg(My.Resources.ResText_WI)
             'TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
             TapeUtils.Write(TapeDrive, tmpf, plabel.blocksize)
-            My.Computer.FileSystem.DeleteFile(tmpf)
+            IO.File.Delete(tmpf)
             'While sdata.Length > 0
             '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
             '    sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
@@ -1134,7 +1134,7 @@ Public Class LTFSWriter
             'Dump old index
             If Not TapeUtils.ReadFileMark(TapeDrive) Then Return -1
             Dim tmpf As String = $"{Application.StartupPath}\LIT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            TapeUtils.ReadToFileMark(TapeDrive, tmpf)
+            TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
             'Write data
             TapeUtils.Locate(TapeDrive, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
             TapeUtils.Write(TapeDrive, Data, plabel.blocksize)
@@ -1693,7 +1693,7 @@ Public Class LTFSWriter
             Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
             AddFileOrDir(d, OpenFileDialog1.FileNames, overwrite)
             'For Each fpath As String In OpenFileDialog1.FileNames
-            '    Dim f As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fpath)
+            '    Dim f As IO.FileInfo = New IO.FileInfo(fpath)
             '    Try
             '        AddFile(f, d, 覆盖已有文件ToolStripMenuItem.Checked)
             '        PrintMsg("文件添加成功")
@@ -1721,12 +1721,12 @@ Public Class LTFSWriter
                         Dim i As Integer = Threading.Interlocked.Increment(numi)
                         If StopFlag Then Exit For
                         Try
-                            If My.Computer.FileSystem.FileExists(path) Then
-                                Dim f As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(path)
+                            If IO.File.Exists(path) Then
+                                Dim f As IO.FileInfo = New IO.FileInfo(path)
                                 PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
                                 AddFile(f, d, overwrite)
-                            ElseIf My.Computer.FileSystem.DirectoryExists(path) Then
-                                Dim f As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(path)
+                            ElseIf IO.Directory.Exists(path) Then
+                                Dim f As IO.DirectoryInfo = New IO.DirectoryInfo(path)
                                 PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
                                 AddDirectry(f, d, overwrite)
                             End If
@@ -1760,7 +1760,7 @@ Public Class LTFSWriter
     End Sub
     Private Sub 导入文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 导入文件ToolStripMenuItem.Click
         If ListView1.Tag IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            Dim dnew As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath)
+            Dim dnew As IO.DirectoryInfo = New IO.DirectoryInfo(FolderBrowserDialog1.SelectedPath)
             Dim Paths As New List(Of String)
             For Each f As IO.FileInfo In dnew.GetFiles("*", IO.SearchOption.TopDirectoryOnly)
                 Paths.Add(f.FullName)
@@ -1793,7 +1793,7 @@ Public Class LTFSWriter
                 Next
                 AddFileOrDir(ListView1.Tag, dirs.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
                 'For Each dirSelected As String In COFD.FileNames
-                '    Dim dnew As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(dirSelected)
+                '    Dim dnew As IO.DirectoryInfo = New IO.DirectoryInfo(dirSelected)
                 '    Try
                 '        AddDirectry(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
                 '        PrintMsg("目录添加成功")
@@ -2014,7 +2014,7 @@ Public Class LTFSWriter
                             TapeUtils.PreventMediaRemoval(TapeDrive)
                             RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
-                                Dim FileName As String = My.Computer.FileSystem.CombinePath(BasePath, FileIndex.name)
+                                Dim FileName As String = IO.Path.Combine(BasePath, FileIndex.name)
                                 RestoreFile(FileName, FileIndex)
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
@@ -2049,15 +2049,15 @@ Public Class LTFSWriter
                                 Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
                                     For Each f As ltfsindex.file In tapeDir.contents._file
                                         f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
-                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name)})
-                                        'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
+                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
+                                        'RestoreFile(IO.Path.Combine(outputDir.FullName, f.name), f)
                                     Next
                                     For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                        Dim thisDir As String = My.Computer.FileSystem.CombinePath(outputDir.FullName, d.name)
+                                        Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
                                         Dim dirOutput As IO.DirectoryInfo
-                                        Dim RestoreTimeStamp As Boolean = Not My.Computer.FileSystem.DirectoryExists(thisDir)
+                                        Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
                                         If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
-                                        dirOutput = My.Computer.FileSystem.GetDirectoryInfo(thisDir)
+                                        dirOutput = New IO.DirectoryInfo(thisDir)
                                         IterDir(d, dirOutput)
                                         If RestoreTimeStamp Then
                                             dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
@@ -2067,10 +2067,10 @@ Public Class LTFSWriter
                                     Next
                                 End Sub
                             PrintMsg(My.Resources.ResText_PrepFile)
-                            Dim ODir As String = My.Computer.FileSystem.CombinePath(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                            Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
                             If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
-                            If Not My.Computer.FileSystem.DirectoryExists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                            IterDir(selectedDir, My.Computer.FileSystem.GetDirectoryInfo(ODir))
+                            If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
+                            IterDir(selectedDir, New IO.DirectoryInfo(ODir))
                             FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
                                                                             If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
                                                                             If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
@@ -2148,12 +2148,11 @@ Public Class LTFSWriter
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             PrintMsg(My.Resources.ResText_RI)
             Dim tmpf As String = $"{Application.StartupPath}\LWS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            TapeUtils.ReadToFileMark(TapeDrive, tmpf)
-            'Dim schraw As Byte() = TapeUtils.ReadToFileMark(TapeDrive)
+            TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
             PrintMsg(My.Resources.ResText_AI)
             'Dim sch2 As ltfsindex = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(schraw))
             Dim sch2 As ltfsindex = ltfsindex.FromSchFile(tmpf)
-            My.Computer.FileSystem.DeleteFile(tmpf)
+            IO.File.Delete(tmpf)
             PrintMsg(My.Resources.ResText_AISucc)
             schema.previousgenerationlocation = sch2.previousgenerationlocation
             p = GetPos
@@ -2261,7 +2260,7 @@ Public Class LTFSWriter
                             End If
                             Dim fr As FileRecord = WriteList(i)
                             Try
-                                Dim finfo As IO.FileInfo = My.Computer.FileSystem.GetFileInfo(fr.SourcePath)
+                                Dim finfo As IO.FileInfo = New IO.FileInfo(fr.SourcePath)
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
                                 If finfo.Length > 0 Then
@@ -2627,8 +2626,8 @@ Public Class LTFSWriter
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
+                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
                     Dim CurrentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
                     If CurrentPos.PartitionNumber < ExtraPartitionCount Then
@@ -2705,7 +2704,7 @@ Public Class LTFSWriter
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
+                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
                     TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
@@ -2807,11 +2806,9 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_RI)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-                    'data = TapeUtils.ReadToFileMark(TapeDrive)
-                    TapeUtils.ReadToFileMark(TapeDrive, tmpf)
+                    TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
-                    'schema = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(data))
                     schema = ltfsindex.FromSchFile(tmpf)
                     If ExtraPartitionCount = 0 Then
                         Dim p As TapeUtils.PositionData = GetPos
@@ -2830,11 +2827,11 @@ Public Class LTFSWriter
                         End If
                     End If
                     Dim outputfile As String = $"schema\LTFSIndex_Load_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
+                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
                     End If
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    My.Computer.FileSystem.MoveFile(tmpf, outputfile)
+                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    IO.File.Move(tmpf, outputfile)
                     While True
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
@@ -2899,11 +2896,11 @@ Public Class LTFSWriter
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
+                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
                     End If
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
+                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(My.Resources.ResText_AISucc)
@@ -2959,9 +2956,7 @@ Public Class LTFSWriter
     Public Sub LoadIndexFile(FileName As String, Optional ByVal Silent As Boolean = False)
         Try
             PrintMsg(My.Resources.ResText_RI)
-            'Dim schtext As String = My.Computer.FileSystem.ReadAllText(FileName)
             PrintMsg(My.Resources.ResText_AI)
-            ' Dim sch2 As ltfsindex = ltfsindex.FromSchemaText(schtext)
             Dim sch2 As ltfsindex = ltfsindex.FromSchFile(FileName)
             PrintMsg(My.Resources.ResText_AISucc)
             If sch2 IsNot Nothing Then
@@ -3005,10 +3000,10 @@ Public Class LTFSWriter
             }_P{schema.location.partition _
             }_B{schema.location.startblock _
             }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-        If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
-            My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
+        If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+            IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
         End If
-        outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
+        outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
         PrintMsg(My.Resources.ResText_Exporting)
         schema.SaveFile(outputfile)
         Dim cmData As New TapeUtils.CMParser(TapeDrive)
@@ -3146,14 +3141,6 @@ Public Class LTFSWriter
             Try
                 Dim schhash As ltfsindex
                 PrintMsg(My.Resources.ResText_RI)
-                'Dim s As String = My.Computer.FileSystem.ReadAllText(OpenFileDialog1.FileName)
-                'If s.Contains("XMLSchema") Then
-                '    PrintMsg("正在解析索引")
-                '    schhash = ltfsindex.FromXML(s)
-                'Else
-                '    PrintMsg("正在解析索引")
-                '    schhash = ltfsindex.FromSchemaText(s)
-                'End If
                 schhash = ltfsindex.FromSchFile(OpenFileDialog1.FileName)
                 Dim dr As DialogResult = MessageBox.Show(My.Resources.ResText_SHA1Overw, My.Resources.ResText_Hint, MessageBoxButtons.YesNoCancel)
                 PrintMsg(My.Resources.ResText_Importing)
@@ -3378,8 +3365,8 @@ Public Class LTFSWriter
                         End If
                     Next
                     If Not fExist Then
-                        Dim emptyfile As String = My.Computer.FileSystem.CombinePath(Application.StartupPath, "empty.file")
-                        My.Computer.FileSystem.WriteAllBytes(emptyfile, {}, False)
+                        Dim emptyfile As String = IO.Path.Combine(Application.StartupPath, "empty.file")
+                        IO.File.WriteAllBytes(emptyfile, {})
                         Dim fnew As New FileRecord(emptyfile, d)
                         fnew.File.name = $"{dir.name}{fl}"
                         While True
@@ -3459,8 +3446,8 @@ Public Class LTFSWriter
             Dim p As String = ""
             If OpenFileDialog1.FileName <> "" Then p = New IO.FileInfo(OpenFileDialog1.FileName).DirectoryName
             hw.schPath = Barcode & ".schema"
-            If My.Computer.FileSystem.DirectoryExists(p) Then
-                hw.schPath = My.Computer.FileSystem.CombinePath(p, hw.schPath)
+            If IO.Directory.Exists(p) Then
+                hw.schPath = IO.Path.Combine(p, hw.schPath)
             End If
             hw.CheckBox2.Visible = False
             hw.CheckBox3.Visible = False
@@ -3638,7 +3625,7 @@ Public Class LTFSWriter
                         Sub(tapeDir As ltfsindex.directory, outputDir As String)
                             For Each f As ltfsindex.file In tapeDir.contents._file
                                 FileList.Add(New FileRecord With {.File = f, .SourcePath = outputDir & "\" & f.name})
-                                'RestoreFile(My.Computer.FileSystem.CombinePath(outputDir.FullName, f.name), f)
+                                'RestoreFile(IO.Path.Combine(outputDir.FullName, f.name), f)
                             Next
                             For Each d As ltfsindex.directory In tapeDir.contents._directory
                                 Dim dirOutput As String = outputDir & "\" & d.name
@@ -3647,7 +3634,7 @@ Public Class LTFSWriter
                         End Sub
                     PrintMsg(My.Resources.ResText_PrepFile)
                     Dim ODir As String = selectedDir.name
-                    'If Not My.Computer.FileSystem.DirectoryExists(ODir) Then My.Computer.FileSystem.CreateDirectory(ODir)
+                    'If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                     IterDir(selectedDir, ODir)
                     FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
                                                                     If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
@@ -4626,10 +4613,10 @@ Public Class LTFSWriter
                     TapeUtils.ReadFileMark(TapeDrive)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
-                        My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
+                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
                     End If
-                    outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
+                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
                     TapeUtils.ReadToFileMark(TapeDrive, outputfile)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
