@@ -775,7 +775,7 @@ Public Class LTFSConfigurator
         TextBox8.Text = "Buffer len=" & DumpData.Length & vbCrLf
         SaveFileDialog2.FileName = ComboBox2.SelectedItem & ".bin"
         If SaveFileDialog2.ShowDialog = DialogResult.OK Then
-            My.Computer.FileSystem.WriteAllBytes(SaveFileDialog2.FileName, DumpData, False)
+            IO.File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
         End If
         TextBox8.Text &= Byte2Hex(DumpData, True)
         Me.Enabled = True
@@ -831,7 +831,7 @@ Public Class LTFSConfigurator
     Public Operation_Cancel_Flag As Boolean = False
     Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            If My.Computer.FileSystem.GetDirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
+            If New IO.DirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
                 MessageBox.Show("File exist: *.bin; Cancelled.")
                 Exit Sub
             End If
@@ -912,11 +912,11 @@ Public Class LTFSConfigurator
             TapeUtils.ReadBlock(ConfTapeDrive)
             Dim data As Byte() = TapeUtils.ReadToFileMark(ConfTapeDrive)
             Dim outputfile As String = "schema\LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-            If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema")) Then
-                My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "schema"))
+            If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+                IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
             End If
-            outputfile = My.Computer.FileSystem.CombinePath(Application.StartupPath, outputfile)
-            My.Computer.FileSystem.WriteAllBytes(outputfile, data, False)
+            outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+            IO.File.WriteAllBytes(outputfile, data)
             Form1.Invoke(Sub()
                              Form1.TextBox1.Text = outputfile
                              Form1.LoadSchemaFile()

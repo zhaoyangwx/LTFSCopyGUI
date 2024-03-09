@@ -443,7 +443,7 @@ Public Class TapeUtils
         Next
         If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
         Dim DataLen As Integer = BlockSizeLimit - DiffBytes
-        If Not Truncate Then
+        If Not Truncate AndAlso DiffBytes < 0 Then
             Marshal.FreeHGlobal(RawDataU)
             Dim p As New PositionData(TapeDrive)
             Locate(TapeDrive, p.BlockNumber - 1, p.PartitionNumber)

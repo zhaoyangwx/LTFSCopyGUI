@@ -38,10 +38,10 @@ Public Class HashTaskWindow
                           'TextBox1.Select(TextBox1.Text.Length, 0)
                           'TextBox1.ScrollToCaret()
                           If LogEnabled Then
-                              If Not My.Computer.FileSystem.DirectoryExists(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log")) Then
-                                  My.Computer.FileSystem.CreateDirectory(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log"))
+                              If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
+                                  IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
                               End If
-                              My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Application.StartupPath, "log\log_" & StartTime & ".txt"), Message & vbCrLf, True)
+                              IO.File.AppendAllText(IO.Path.Combine(Application.StartupPath, $"log\log_{StartTime}.txt"), Message & vbCrLf)
                           End If
                       End Sub)
         Catch ex As Exception
@@ -53,8 +53,8 @@ Public Class HashTaskWindow
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         CheckBox1.Checked = My.Settings.ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory, .ReportSkip = Not DisableSkipInfo}
-        If My.Computer.FileSystem.FileExists(Application.StartupPath & "\recovery.log") Then
-            HashTask.LogFile = My.Computer.FileSystem.ReadAllText(Application.StartupPath & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        If IO.File.Exists(Application.StartupPath & "\recovery.log") Then
+            HashTask.LogFile = IO.File.ReadAllText(Application.StartupPath & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         End If
         AddHandler HashTask.TaskStarted, Sub(s As String)
                                              PrintMsg(s)
@@ -292,7 +292,7 @@ Public Class HashTaskWindow
                 Sub()
                     Try
                         Dim schhash As ltfsindex
-                        Dim s As String = My.Computer.FileSystem.ReadAllText(OpenFileDialog1.FileName)
+                        Dim s As String = IO.File.ReadAllText(OpenFileDialog1.FileName)
                         If s.Contains("XMLSchema") Then
                             schhash = ltfsindex.FromXML(s)
                         Else
@@ -419,7 +419,6 @@ Public Class HashTaskWindow
         If schema IsNot Nothing Then
             SaveFileDialog1.FileName = schPath
             If SaveFileDialog1.ShowDialog = DialogResult.OK Then
-                'My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, schema.GetSerializedText, False, New System.Text.UTF8Encoding(False))
                 schema.SaveFile(SaveFileDialog1.FileName)
                 PrintMsg("Saved to " & SaveFileDialog1.FileName)
             End If

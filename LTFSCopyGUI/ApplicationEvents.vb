@@ -41,9 +41,9 @@ Namespace My
             End If
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
+            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
                 Try
-                    Dim lang As String = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "lang.ini"))
+                    Dim lang As String = IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"))
                     Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
                     Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
                 Catch ex As Exception
@@ -51,15 +51,15 @@ Namespace My
                 End Try
             End If
             My.Settings.License = Resources.StrDefaultLicense
-            If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "license.key")) Then
+            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
 
-                If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
-                    rsa.FromXmlString(My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
+                    rsa.FromXmlString(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
                 Else
                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                 End If
-                Dim lic_string = My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"))
+                Dim lic_string = IO.File.ReadAllText(IO.Path.Combine(Windows.Forms.Application.StartupPath, "license.key"))
 
                 Try
                     Dim LicStr As String() = lic_string.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
@@ -82,7 +82,7 @@ Namespace My
                         Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                         Dim strBody As String = Convert.ToBase64String(bLicStr)
                         Dim strSign As String = Convert.ToBase64String(bSign)
-                        My.Computer.FileSystem.WriteAllText(My.Computer.FileSystem.CombinePath(Windows.Forms.Application.StartupPath, "license.key"), $"{strBody}{vbCrLf}{strSign}", False)
+                        IO.File.WriteAllText(IO.Path.Combine(Windows.Forms.Application.StartupPath, "license.key"), $"{strBody}{vbCrLf}{strSign}")
                     End If
                 End Try
             End If
@@ -119,7 +119,7 @@ Namespace My
                             If i < param.Count - 1 Then
                                 Dim indexFile As String = param(i + 1).TrimStart("""").TrimEnd("""")
 
-                                If My.Computer.FileSystem.FileExists(indexFile) Then
+                                If IO.File.Exists(indexFile) Then
                                     Dim LWF As New LTFSWriter With {.Barcode = Resources.StrIndexView, .TapeDrive = "", .OfflineMode = True}
                                     Dim OnLWFLoad As New EventHandler(Sub()
                                                                           LWF.Invoke(Sub()
@@ -332,8 +332,8 @@ dataDir:{dataDir}
                                 InitConsole()
                                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
 
-                                If My.Computer.FileSystem.FileExists(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
-                                    rsa.FromXmlString(My.Computer.FileSystem.ReadAllText(My.Computer.FileSystem.CombinePath(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                                If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
+                                    rsa.FromXmlString(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
                                 Else
                                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                                 End If
