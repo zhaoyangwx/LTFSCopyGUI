@@ -2326,7 +2326,7 @@ Public Class LTFSWriter
                                                 Catch ex As Exception
                                                     Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
-                                                            Exit For
+                                                            Throw ex
                                                         Case DialogResult.Retry
 
                                                         Case DialogResult.Ignore
@@ -2404,7 +2404,7 @@ Public Class LTFSWriter
                                                 Case DialogResult.Ignore
                                                     Continue For
                                                 Case DialogResult.Abort
-                                                    Exit For
+                                                    Throw New Exception(My.Resources.ResText_FileOpenError)
                                             End Select
                                             'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
                                             Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing

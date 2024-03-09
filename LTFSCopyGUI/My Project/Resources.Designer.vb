@@ -466,6 +466,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 文件打开出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FileOpenError() As String
+            Get
+                Return ResourceManager.GetString("ResText_FileOpenError", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 每秒文件 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_FileRateBT() As String

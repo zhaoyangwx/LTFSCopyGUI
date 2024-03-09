@@ -680,4 +680,7 @@
   <data name="ResText_STime" xml:space="preserve">
     <value>持续时间：</value>
   </data>
+  <data name="ResText_FileOpenError" xml:space="preserve">
+    <value>文件打开出错</value>
+  </data>
 </root>
