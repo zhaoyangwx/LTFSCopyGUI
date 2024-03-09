@@ -185,4 +185,499 @@
   <data name="StrSCSISucc" xml:space="preserve">
     <value>SCSI命令执行成功</value>
   </data>
+  <data name="ResText_CHashing" xml:space="preserve">
+    <value>正在计算校验</value>
+  </data>
+  <data name="ResText_Size" xml:space="preserve">
+    <value>大小</value>
+  </data>
+  <data name="ResText_Skip" xml:space="preserve">
+    <value>跳过</value>
+  </data>
+  <data name="ResText_WrittenTotal" xml:space="preserve">
+    <value>此前累计写入</value>
+  </data>
+  <data name="ResText_Remaining" xml:space="preserve">
+    <value>剩余</value>
+  </data>
+  <data name="ResText_Writing" xml:space="preserve">
+    <value>正在写入</value>
+  </data>
+  <data name="ResText_WErr" xml:space="preserve">
+    <value>写入出错</value>
+  </data>
+  <data name="ResText_VOF" xml:space="preserve">
+    <value>磁带已满</value>
+  </data>
+  <data name="ResText_WFTime" xml:space="preserve">
+    <value>写入完成，耗时</value>
+  </data>
+  <data name="ResText_AvgS" xml:space="preserve">
+    <value>平均速度</value>
+  </data>
+  <data name="ResText_WCnd" xml:space="preserve">
+    <value>写入取消</value>
+  </data>
+  <data name="ResText_RestoreErr" xml:space="preserve">
+    <value>提取出错</value>
+  </data>
+  <data name="ResText_Restoring" xml:space="preserve">
+    <value>正在提取</value>
+  </data>
+  <data name="ResText_OpCancelled" xml:space="preserve">
+    <value>操作取消</value>
+  </data>
+  <data name="ResText_RestFin" xml:space="preserve">
+    <value>提取完成</value>
+  </data>
+  <data name="ResText_PrepFile" xml:space="preserve">
+    <value>正在准备文件</value>
+  </data>
+  <data name="ResText_RestFile" xml:space="preserve">
+    <value>正在提取文件</value>
+  </data>
+  <data name="ResText_PrepW" xml:space="preserve">
+    <value>准备写入</value>
+  </data>
+  <data name="ResText_DelConfrm" xml:space="preserve">
+    <value>是否删除 </value>
+  </data>
+  <data name="ResText_DirName" xml:space="preserve">
+    <value>目录名</value>
+  </data>
+  <data name="ResText_RenameDir" xml:space="preserve">
+    <value>重命名目录</value>
+  </data>
+  <data name="ResText_DirNIllegal" xml:space="preserve">
+    <value>目录名存在非法字符</value>
+  </data>
+  <data name="ResText_DirNExist" xml:space="preserve">
+    <value>存在重名目录</value>
+  </data>
+  <data name="ResText_NFName" xml:space="preserve">
+    <value>新文件名</value>
+  </data>
+  <data name="ResText_Rename" xml:space="preserve">
+    <value>重命名</value>
+  </data>
+  <data name="ResText_FNIllegal" xml:space="preserve">
+    <value>文件名存在非法字符</value>
+  </data>
+  <data name="ResText_FNExist" xml:space="preserve">
+    <value>存在重名文件</value>
+  </data>
+  <data name="ResText_Files_C" xml:space="preserve">
+    <value>个文件？</value>
+  </data>
+  <data name="ResText_Adding" xml:space="preserve">
+    <value>正在添加</value>
+  </data>
+  <data name="ResText_Items_x" xml:space="preserve">
+    <value>个项目</value>
+  </data>
+  <data name="ResText_AddFin" xml:space="preserve">
+    <value>添加完成</value>
+  </data>
+  <data name="ResText_DLFin" xml:space="preserve">
+    <value>标签后缀已修改为</value>
+  </data>
+  <data name="ResText_DragNA" xml:space="preserve">
+    <value>当前无法进行拖放操作</value>
+  </data>
+  <data name="ResText_DLT" xml:space="preserve">
+    <value>标签工具</value>
+  </data>
+  <data name="ResText_NewDir" xml:space="preserve">
+    <value>新建目录</value>
+  </data>
+  <data name="ResText_DLS" xml:space="preserve">
+    <value>设置目录标签后缀</value>
+  </data>
+  <data name="ResText_OverwritingDF" xml:space="preserve">
+    <value>覆盖不同文件：</value>
+  </data>
+  <data name="ResText_FileRateBT" xml:space="preserve">
+    <value>每秒文件</value>
+  </data>
+  <data name="ResText_SpeedBT" xml:space="preserve">
+    <value>速度 (MiB/s)</value>
+  </data>
+  <data name="ResText_C0" xml:space="preserve">
+    <value>清洁磁头</value>
+  </data>
+  <data name="ResText_C1" xml:space="preserve">
+    <value>检测到容量缺失次数：</value>
+  </data>
+  <data name="ResText_C2" xml:space="preserve">
+    <value>上次清洁：</value>
+  </data>
+  <data name="ResText_S0" xml:space="preserve">
+    <value>速度:</value>
+  </data>
+  <data name="ResText_S1" xml:space="preserve">
+    <value>累计:</value>
+  </data>
+  <data name="ResText_S2" xml:space="preserve">
+    <value>待处理:</value>
+  </data>
+  <data name="ResText_S3" xml:space="preserve">
+    <value>待索引:</value>
+  </data>
+  <data name="ResText_Byte" xml:space="preserve">
+    <value>字节</value>
+  </data>
+  <data name="ResText_S4" xml:space="preserve">
+    <value>进度:</value>
+  </data>
+  <data name="ResText_FSizeP" xml:space="preserve">
+    <value>大小：</value>
+  </data>
+  <data name="ResText_ErrP" xml:space="preserve">
+    <value>获取分区信息出错</value>
+  </data>
+  <data name="ResText_FCountP" xml:space="preserve">
+    <value>文件数：</value>
+  </data>
+  <data name="ResText_X0" xml:space="preserve">
+    <value>请等待操作完成</value>
+  </data>
+  <data name="ResText_HFin" xml:space="preserve">
+    <value>校验完成</value>
+  </data>
+  <data name="ResText_NIndex" xml:space="preserve">
+    <value>未加载索引</value>
+  </data>
+  <data name="ResText_HErr" xml:space="preserve">
+    <value>校验出错</value>
+  </data>
+  <data name="ResText_Index" xml:space="preserve">
+    <value>索引</value>
+  </data>
+  <data name="ResText_Hashing" xml:space="preserve">
+    <value>正在校验</value>
+  </data>
+  <data name="ResText_Partition" xml:space="preserve">
+    <value>分区</value>
+  </data>
+  <data name="ResText_Block" xml:space="preserve">
+    <value>块</value>
+  </data>
+  <data name="ResText_Previous" xml:space="preserve">
+    <value>此前</value>
+  </data>
+  <data name="ResText_Located" xml:space="preserve">
+    <value>已定位到</value>
+  </data>
+  <data name="ResText_Ejd" xml:space="preserve">
+    <value>磁带已弹出</value>
+  </data>
+  <data name="ResText_WritePointer" xml:space="preserve">
+    <value>数据高度</value>
+  </data>
+  <data name="ResText_RPosErr" xml:space="preserve">
+    <value>获取位置出错</value>
+  </data>
+  <data name="ResText_CapRem" xml:space="preserve">
+    <value>可用空间</value>
+  </data>
+  <data name="ResText_RCErr" xml:space="preserve">
+    <value>获取容量失败</value>
+  </data>
+  <data name="ResText_DNW" xml:space="preserve">
+    <value>未写入数据</value>
+  </data>
+  <data name="ResText_RDErr" xml:space="preserve">
+    <value>刷新显示失败</value>
+  </data>
+  <data name="ResText_CRef" xml:space="preserve">
+    <value>可用容量已刷新</value>
+  </data>
+  <data name="ResText_CRefErr" xml:space="preserve">
+    <value>可用容量刷新失败</value>
+  </data>
+  <data name="ResText_NavErr" xml:space="preserve">
+    <value>导航出错，请重试</value>
+  </data>
+  <data name="ResText_Locating" xml:space="preserve">
+    <value>正在定位</value>
+  </data>
+  <data name="ResText_WriteWarning" xml:space="preserve">
+    <value>数据写入警告</value>
+  </data>
+  <data name="ResText_EWEOM" xml:space="preserve">
+    <value>磁带即将写满</value>
+  </data>
+  <data name="ResText_NHWrn" xml:space="preserve">
+    <value>，会丢失该位置后的数据，继续？</value>
+  </data>
+  <data name="ResText_X1" xml:space="preserve">
+    <value>操作进行中，是否强制退出？</value>
+  </data>
+  <data name="ResText_X2" xml:space="preserve">
+    <value>未索引的数据将会丢失，是否继续</value>
+  </data>
+  <data name="ResText_X3" xml:space="preserve">
+    <value>未安全弹出将导致索引不一致，是否继续</value>
+  </data>
+  <data name="ResText_PEj" xml:space="preserve">
+    <value>现在可以安全弹出了。是否弹出？</value>
+  </data>
+  <data name="ResText_WErrSCSI" xml:space="preserve">
+    <value>写入出错：SCSI指令执行失败</value>
+  </data>
+  <data name="ResText_WFUp" xml:space="preserve">
+    <value>写入完成，是否更新数据区索引？（推荐）</value>
+  </data>
+  <data name="ResText_ILdedP" xml:space="preserve">
+    <value>已加载索引，请自行确保索引一致性</value>
+  </data>
+  <data name="ResText_DataLossWarning" xml:space="preserve">
+    <value>全部数据将丢失且无法恢复，是否继续？</value>
+  </data>
+  <data name="ResText_SHA1Overw" xml:space="preserve">
+    <value>是否覆盖现有SHA1？</value>
+  </data>
+  <data name="ResText_SetH1" xml:space="preserve">
+    <value>将当前位置</value>
+  </data>
+  <data name="ResText_SetH2" xml:space="preserve">
+    <value>设置为数据高度，是否继续？</value>
+  </data>
+  <data name="ResText_SetH3" xml:space="preserve">
+    <value>如果不明白该操作含义，请点取消</value>
+  </data>
+  <data name="ResText_CancelConfirm" xml:space="preserve">
+    <value>此时取消会丢失未写完的文件，是否继续</value>
+  </data>
+  <data name="ResText_ClearWC" xml:space="preserve">
+    <value>确定要清零写入计数？</value>
+  </data>
+  <data name="ResText_RB4" xml:space="preserve">
+    <value>未索引的数据将丢失，且回滚后一旦继续写入将丢失后面数据，是否继续</value>
+  </data>
+  <data name="ResText_GI" xml:space="preserve">
+    <value>正在生成索引</value>
+  </data>
+  <data name="ResText_WI" xml:space="preserve">
+    <value>正在写入索引</value>
+  </data>
+  <data name="ResText_WIF" xml:space="preserve">
+    <value>索引写入完成</value>
+  </data>
+  <data name="ResText_UDI" xml:space="preserve">
+    <value>正在更新数据区索引</value>
+  </data>
+  <data name="ResText_UI" xml:space="preserve">
+    <value>正在更新索引</value>
+  </data>
+  <data name="ResText_IUd" xml:space="preserve">
+    <value>索引已更新</value>
+  </data>
+  <data name="ResText_DPIUed" xml:space="preserve">
+    <value>数据区索引已更新</value>
+  </data>
+  <data name="ResText_RI" xml:space="preserve">
+    <value>正在读取索引</value>
+  </data>
+  <data name="ResText_Exporting" xml:space="preserve">
+    <value>正在导出</value>
+  </data>
+  <data name="ResText_Imported" xml:space="preserve">
+    <value>导入完成</value>
+  </data>
+  <data name="ResText_IAErrp" xml:space="preserve">
+    <value>文件解析出错：</value>
+  </data>
+  <data name="ResText_AI" xml:space="preserve">
+    <value>正在解析索引</value>
+  </data>
+  <data name="ResText_VCID" xml:space="preserve">
+    <value>当前磁带VCI数据：</value>
+  </data>
+  <data name="ResText_Importing" xml:space="preserve">
+    <value>正在导入</value>
+  </data>
+  <data name="ResText_AISucc" xml:space="preserve">
+    <value>索引解析成功</value>
+  </data>
+  <data name="ResText_FmtFail" xml:space="preserve">
+    <value>格式化失败</value>
+  </data>
+  <data name="ResText_IndexBaked" xml:space="preserve">
+    <value>索引已备份</value>
+  </data>
+  <data name="ResText_FmtFin" xml:space="preserve">
+    <value>格式化完成</value>
+  </data>
+  <data name="ResText_IndexBak2" xml:space="preserve">
+    <value>索引已备份至</value>
+  </data>
+  <data name="ResText_LTFSVolumeN2" xml:space="preserve">
+    <value>LTFS卷标：</value>
+  </data>
+  <data name="ResText_IUErr" xml:space="preserve">
+    <value>索引更新出错</value>
+  </data>
+  <data name="ResText_Barcode2" xml:space="preserve">
+    <value>磁带标签：</value>
+  </data>
+  <data name="ResText_CurPos" xml:space="preserve">
+    <value>当前位置</value>
+  </data>
+  <data name="ResText_LTFSVolumeN" xml:space="preserve">
+    <value>LTFS卷标</value>
+  </data>
+  <data name="ResText_IndexNAllowed" xml:space="preserve">
+    <value>不允许写入新的索引</value>
+  </data>
+  <data name="ResText_SetVolumeN" xml:space="preserve">
+    <value>设置卷标</value>
+  </data>
+  <data name="ResText_DPIWritten" xml:space="preserve">
+    <value>已写入数据区索引</value>
+  </data>
+  <data name="ResText_SetBarcode" xml:space="preserve">
+    <value>设置标签</value>
+  </data>
+  <data name="ResText_IndexBakF" xml:space="preserve">
+    <value>索引备份失败</value>
+  </data>
+  <data name="ResText_DPIWFailed" xml:space="preserve">
+    <value>写入数据区索引失败</value>
+  </data>
+  <data name="ResText_IPCanc" xml:space="preserve">
+    <value>当前为索引区，操作取消</value>
+  </data>
+  <data name="ResText_RollBacked" xml:space="preserve">
+    <value>已回到索引位置</value>
+  </data>
+  <data name="ResText_BlkSize" xml:space="preserve">
+    <value>块大小</value>
+  </data>
+  <data name="ResText_RFailed" xml:space="preserve">
+    <value>读取失败</value>
+  </data>
+  <data name="ResText_Barcode" xml:space="preserve">
+    <value>磁带标签</value>
+  </data>
+  <data name="ResText_RBFin" xml:space="preserve">
+    <value>回滚完成</value>
+  </data>
+  <data name="ResText_RB1" xml:space="preserve">
+    <value>当前第</value>
+  </data>
+  <data name="ResText_RBing" xml:space="preserve">
+    <value>正在回滚</value>
+  </data>
+  <data name="ResText_RB2" xml:space="preserve">
+    <value>代索引位置:</value>
+  </data>
+  <data name="ResText_RB3" xml:space="preserve">
+    <value>上一代索引位置:</value>
+  </data>
+  <data name="ResText_IRFailed" xml:space="preserve">
+    <value>索引读取失败</value>
+  </data>
+  <data name="ResText_IRSucc" xml:space="preserve">
+    <value>索引读取成功</value>
+  </data>
+  <data name="ResText_NVOL1" xml:space="preserve">
+    <value>未找到VOL1</value>
+  </data>
+  <data name="ResText_NLTFS" xml:space="preserve">
+    <value>非LTFS格式</value>
+  </data>
+  <data name="ResText_RLTFSInfo" xml:space="preserve">
+    <value>正在读取LTFS信息</value>
+  </data>
+  <data name="ResText_SvBak" xml:space="preserve">
+    <value>保存备份文件</value>
+  </data>
+  <data name="ResText_Warning" xml:space="preserve">
+    <value>警告</value>
+  </data>
+  <data name="ResText_Hint" xml:space="preserve">
+    <value>提示</value>
+  </data>
+  <data name="ResText_Confirm" xml:space="preserve">
+    <value>确认</value>
+  </data>
+  <data name="ResText_OpSucc" xml:space="preserve">
+    <value>操作成功</value>
+  </data>
+  <data name="ResText_Error" xml:space="preserve">
+    <value>错误</value>
+  </data>
+  <data name="ResText_Setting" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="ResText_" xml:space="preserve">
+    <value>资源</value>
+  </data>
+  <data name="ResText_SSMin" xml:space="preserve">
+    <value>设置检测速度下限 (MiB/s)</value>
+  </data>
+  <data name="ResText_SFB" xml:space="preserve">
+    <value>设置文件缓存</value>
+  </data>
+  <data name="ResText_SSMax" xml:space="preserve">
+    <value>设置检测速度上限 (MiB/s)</value>
+  </data>
+  <data name="ResText_SPreR" xml:space="preserve">
+    <value>设置预读文件数</value>
+  </data>
+  <data name="ResText_SSTime" xml:space="preserve">
+    <value>设置检测速度持续时间（秒）</value>
+  </data>
+  <data name="ResText_SCIntv" xml:space="preserve">
+    <value>设置容量刷新间隔（秒）</value>
+  </data>
+  <data name="ResText_SIIntv" xml:space="preserve">
+    <value>设置索引间隔（字节）</value>
+  </data>
+  <data name="ResText_CLNCS" xml:space="preserve">
+    <value>设置重装带前清洁次数</value>
+  </data>
+  <data name="ResText_WLimS" xml:space="preserve">
+    <value>设置写入限速 (MiB/s)</value>
+  </data>
+  <data name="ResText_NoIndex" xml:space="preserve">
+    <value>索引间隔：禁用自动索引</value>
+  </data>
+  <data name="ResText_IndexInterval" xml:space="preserve">
+    <value>索引间隔：</value>
+  </data>
+  <data name="ResText_CRDisabled" xml:space="preserve">
+    <value>容量刷新间隔：禁用</value>
+  </data>
+  <data name="ResText_CRIntv" xml:space="preserve">
+    <value>容量刷新间隔：</value>
+  </data>
+  <data name="ResText_NoSLim" xml:space="preserve">
+    <value>限速：无限制</value>
+  </data>
+  <data name="ResText_SLim" xml:space="preserve">
+    <value>限速：</value>
+  </data>
+  <data name="ResText_RBCoff" xml:space="preserve">
+    <value>重装带前清洁次数：禁用重装带</value>
+  </data>
+  <data name="ResText_RBC" xml:space="preserve">
+    <value>重装带前清洁次数：</value>
+  </data>
+  <data name="ResText_PFC" xml:space="preserve">
+    <value>预读文件数：</value>
+  </data>
+  <data name="ResText_FB" xml:space="preserve">
+    <value>文件缓存：</value>
+  </data>
+  <data name="ResText_SMin" xml:space="preserve">
+    <value>速度下限：</value>
+  </data>
+  <data name="ResText_SMax" xml:space="preserve">
+    <value>速度上限：</value>
+  </data>
+  <data name="ResText_STime" xml:space="preserve">
+    <value>持续时间：</value>
+  </data>
 </root>

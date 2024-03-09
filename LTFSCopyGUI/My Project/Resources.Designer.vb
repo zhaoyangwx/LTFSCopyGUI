@@ -61,6 +61,1491 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 资源 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_() As String
+            Get
+                Return ResourceManager.GetString("ResText_", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 添加完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_AddFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_AddFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在添加 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Adding() As String
+            Get
+                Return ResourceManager.GetString("ResText_Adding", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在解析索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_AI() As String
+            Get
+                Return ResourceManager.GetString("ResText_AI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引解析成功 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_AISucc() As String
+            Get
+                Return ResourceManager.GetString("ResText_AISucc", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 平均速度 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_AvgS() As String
+            Get
+                Return ResourceManager.GetString("ResText_AvgS", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 磁带标签 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Barcode() As String
+            Get
+                Return ResourceManager.GetString("ResText_Barcode", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 磁带标签： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Barcode2() As String
+            Get
+                Return ResourceManager.GetString("ResText_Barcode2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 块大小 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_BlkSize() As String
+            Get
+                Return ResourceManager.GetString("ResText_BlkSize", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 块 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Block() As String
+            Get
+                Return ResourceManager.GetString("ResText_Block", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 字节 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Byte() As String
+            Get
+                Return ResourceManager.GetString("ResText_Byte", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 清洁磁头 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_C0() As String
+            Get
+                Return ResourceManager.GetString("ResText_C0", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 检测到容量缺失次数： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_C1() As String
+            Get
+                Return ResourceManager.GetString("ResText_C1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 上次清洁： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_C2() As String
+            Get
+                Return ResourceManager.GetString("ResText_C2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 此时取消会丢失未写完的文件，是否继续 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CancelConfirm() As String
+            Get
+                Return ResourceManager.GetString("ResText_CancelConfirm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 可用空间 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CapRem() As String
+            Get
+                Return ResourceManager.GetString("ResText_CapRem", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在计算校验 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CHashing() As String
+            Get
+                Return ResourceManager.GetString("ResText_CHashing", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 确定要清零写入计数？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ClearWC() As String
+            Get
+                Return ResourceManager.GetString("ResText_ClearWC", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置重装带前清洁次数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CLNCS() As String
+            Get
+                Return ResourceManager.GetString("ResText_CLNCS", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 确认 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Confirm() As String
+            Get
+                Return ResourceManager.GetString("ResText_Confirm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量刷新间隔：禁用 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CRDisabled() As String
+            Get
+                Return ResourceManager.GetString("ResText_CRDisabled", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 可用容量已刷新 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CRef() As String
+            Get
+                Return ResourceManager.GetString("ResText_CRef", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 可用容量刷新失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CRefErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_CRefErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量刷新间隔： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CRIntv() As String
+            Get
+                Return ResourceManager.GetString("ResText_CRIntv", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 当前位置 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CurPos() As String
+            Get
+                Return ResourceManager.GetString("ResText_CurPos", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 全部数据将丢失且无法恢复，是否继续？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DataLossWarning() As String
+            Get
+                Return ResourceManager.GetString("ResText_DataLossWarning", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 是否删除  的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DelConfrm() As String
+            Get
+                Return ResourceManager.GetString("ResText_DelConfrm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 目录名 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DirName() As String
+            Get
+                Return ResourceManager.GetString("ResText_DirName", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 存在重名目录 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DirNExist() As String
+            Get
+                Return ResourceManager.GetString("ResText_DirNExist", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 目录名存在非法字符 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DirNIllegal() As String
+            Get
+                Return ResourceManager.GetString("ResText_DirNIllegal", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 标签后缀已修改为 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DLFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_DLFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置目录标签后缀 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DLS() As String
+            Get
+                Return ResourceManager.GetString("ResText_DLS", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 标签工具 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DLT() As String
+            Get
+                Return ResourceManager.GetString("ResText_DLT", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未写入数据 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DNW() As String
+            Get
+                Return ResourceManager.GetString("ResText_DNW", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 数据区索引已更新 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DPIUed() As String
+            Get
+                Return ResourceManager.GetString("ResText_DPIUed", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入数据区索引失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DPIWFailed() As String
+            Get
+                Return ResourceManager.GetString("ResText_DPIWFailed", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 已写入数据区索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DPIWritten() As String
+            Get
+                Return ResourceManager.GetString("ResText_DPIWritten", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 当前无法进行拖放操作 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DragNA() As String
+            Get
+                Return ResourceManager.GetString("ResText_DragNA", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 磁带已弹出 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Ejd() As String
+            Get
+                Return ResourceManager.GetString("ResText_Ejd", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 错误 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Error() As String
+            Get
+                Return ResourceManager.GetString("ResText_Error", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 获取分区信息出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ErrP() As String
+            Get
+                Return ResourceManager.GetString("ResText_ErrP", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 磁带即将写满 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_EWEOM() As String
+            Get
+                Return ResourceManager.GetString("ResText_EWEOM", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在导出 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Exporting() As String
+            Get
+                Return ResourceManager.GetString("ResText_Exporting", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 文件缓存： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FB() As String
+            Get
+                Return ResourceManager.GetString("ResText_FB", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 文件数： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FCountP() As String
+            Get
+                Return ResourceManager.GetString("ResText_FCountP", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 每秒文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FileRateBT() As String
+            Get
+                Return ResourceManager.GetString("ResText_FileRateBT", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 个文件？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Files_C() As String
+            Get
+                Return ResourceManager.GetString("ResText_Files_C", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 格式化失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FmtFail() As String
+            Get
+                Return ResourceManager.GetString("ResText_FmtFail", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 格式化完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FmtFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_FmtFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 存在重名文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FNExist() As String
+            Get
+                Return ResourceManager.GetString("ResText_FNExist", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 文件名存在非法字符 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FNIllegal() As String
+            Get
+                Return ResourceManager.GetString("ResText_FNIllegal", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 大小： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_FSizeP() As String
+            Get
+                Return ResourceManager.GetString("ResText_FSizeP", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在生成索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_GI() As String
+            Get
+                Return ResourceManager.GetString("ResText_GI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在校验 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Hashing() As String
+            Get
+                Return ResourceManager.GetString("ResText_Hashing", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_HErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_HErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_HFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_HFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 提示 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Hint() As String
+            Get
+                Return ResourceManager.GetString("ResText_Hint", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 文件解析出错： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IAErrp() As String
+            Get
+                Return ResourceManager.GetString("ResText_IAErrp", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 已加载索引，请自行确保索引一致性 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ILdedP() As String
+            Get
+                Return ResourceManager.GetString("ResText_ILdedP", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 导入完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Imported() As String
+            Get
+                Return ResourceManager.GetString("ResText_Imported", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在导入 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Importing() As String
+            Get
+                Return ResourceManager.GetString("ResText_Importing", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Index() As String
+            Get
+                Return ResourceManager.GetString("ResText_Index", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引已备份至 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IndexBak2() As String
+            Get
+                Return ResourceManager.GetString("ResText_IndexBak2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引已备份 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IndexBaked() As String
+            Get
+                Return ResourceManager.GetString("ResText_IndexBaked", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引备份失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IndexBakF() As String
+            Get
+                Return ResourceManager.GetString("ResText_IndexBakF", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引间隔： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IndexInterval() As String
+            Get
+                Return ResourceManager.GetString("ResText_IndexInterval", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 不允许写入新的索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IndexNAllowed() As String
+            Get
+                Return ResourceManager.GetString("ResText_IndexNAllowed", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 当前为索引区，操作取消 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IPCanc() As String
+            Get
+                Return ResourceManager.GetString("ResText_IPCanc", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引读取失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IRFailed() As String
+            Get
+                Return ResourceManager.GetString("ResText_IRFailed", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引读取成功 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IRSucc() As String
+            Get
+                Return ResourceManager.GetString("ResText_IRSucc", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 个项目 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Items_x() As String
+            Get
+                Return ResourceManager.GetString("ResText_Items_x", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引已更新 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IUd() As String
+            Get
+                Return ResourceManager.GetString("ResText_IUd", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引更新出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_IUErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_IUErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 已定位到 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Located() As String
+            Get
+                Return ResourceManager.GetString("ResText_Located", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在定位 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Locating() As String
+            Get
+                Return ResourceManager.GetString("ResText_Locating", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 LTFS卷标 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_LTFSVolumeN() As String
+            Get
+                Return ResourceManager.GetString("ResText_LTFSVolumeN", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 LTFS卷标： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_LTFSVolumeN2() As String
+            Get
+                Return ResourceManager.GetString("ResText_LTFSVolumeN2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 导航出错，请重试 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NavErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_NavErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 新建目录 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NewDir() As String
+            Get
+                Return ResourceManager.GetString("ResText_NewDir", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 新文件名 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NFName() As String
+            Get
+                Return ResourceManager.GetString("ResText_NFName", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 ，会丢失该位置后的数据，继续？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NHWrn() As String
+            Get
+                Return ResourceManager.GetString("ResText_NHWrn", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未加载索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NIndex() As String
+            Get
+                Return ResourceManager.GetString("ResText_NIndex", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 非LTFS格式 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NLTFS() As String
+            Get
+                Return ResourceManager.GetString("ResText_NLTFS", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引间隔：禁用自动索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NoIndex() As String
+            Get
+                Return ResourceManager.GetString("ResText_NoIndex", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 限速：无限制 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NoSLim() As String
+            Get
+                Return ResourceManager.GetString("ResText_NoSLim", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未找到VOL1 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NVOL1() As String
+            Get
+                Return ResourceManager.GetString("ResText_NVOL1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 操作取消 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_OpCancelled() As String
+            Get
+                Return ResourceManager.GetString("ResText_OpCancelled", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 操作成功 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_OpSucc() As String
+            Get
+                Return ResourceManager.GetString("ResText_OpSucc", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 覆盖不同文件： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_OverwritingDF() As String
+            Get
+                Return ResourceManager.GetString("ResText_OverwritingDF", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 分区 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Partition() As String
+            Get
+                Return ResourceManager.GetString("ResText_Partition", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 现在可以安全弹出了。是否弹出？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_PEj() As String
+            Get
+                Return ResourceManager.GetString("ResText_PEj", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 预读文件数： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_PFC() As String
+            Get
+                Return ResourceManager.GetString("ResText_PFC", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在准备文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_PrepFile() As String
+            Get
+                Return ResourceManager.GetString("ResText_PrepFile", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 准备写入 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_PrepW() As String
+            Get
+                Return ResourceManager.GetString("ResText_PrepW", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 此前 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Previous() As String
+            Get
+                Return ResourceManager.GetString("ResText_Previous", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 当前第 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RB1() As String
+            Get
+                Return ResourceManager.GetString("ResText_RB1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 代索引位置: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RB2() As String
+            Get
+                Return ResourceManager.GetString("ResText_RB2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 上一代索引位置: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RB3() As String
+            Get
+                Return ResourceManager.GetString("ResText_RB3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未索引的数据将丢失，且回滚后一旦继续写入将丢失后面数据，是否继续 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RB4() As String
+            Get
+                Return ResourceManager.GetString("ResText_RB4", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重装带前清洁次数： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RBC() As String
+            Get
+                Return ResourceManager.GetString("ResText_RBC", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重装带前清洁次数：禁用重装带 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RBCoff() As String
+            Get
+                Return ResourceManager.GetString("ResText_RBCoff", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 回滚完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RBFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_RBFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在回滚 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RBing() As String
+            Get
+                Return ResourceManager.GetString("ResText_RBing", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 获取容量失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RCErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_RCErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 刷新显示失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RDErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_RDErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 剩余 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Remaining() As String
+            Get
+                Return ResourceManager.GetString("ResText_Remaining", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重命名 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Rename() As String
+            Get
+                Return ResourceManager.GetString("ResText_Rename", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重命名目录 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RenameDir() As String
+            Get
+                Return ResourceManager.GetString("ResText_RenameDir", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在提取文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RestFile() As String
+            Get
+                Return ResourceManager.GetString("ResText_RestFile", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 提取完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RestFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_RestFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 提取出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RestoreErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_RestoreErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在提取 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Restoring() As String
+            Get
+                Return ResourceManager.GetString("ResText_Restoring", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 读取失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RFailed() As String
+            Get
+                Return ResourceManager.GetString("ResText_RFailed", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在读取索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RI() As String
+            Get
+                Return ResourceManager.GetString("ResText_RI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在读取LTFS信息 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RLTFSInfo() As String
+            Get
+                Return ResourceManager.GetString("ResText_RLTFSInfo", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 已回到索引位置 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RollBacked() As String
+            Get
+                Return ResourceManager.GetString("ResText_RollBacked", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 获取位置出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RPosErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_RPosErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S0() As String
+            Get
+                Return ResourceManager.GetString("ResText_S0", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 累计: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S1() As String
+            Get
+                Return ResourceManager.GetString("ResText_S1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 待处理: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S2() As String
+            Get
+                Return ResourceManager.GetString("ResText_S2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 待索引: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S3() As String
+            Get
+                Return ResourceManager.GetString("ResText_S3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 进度: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S4() As String
+            Get
+                Return ResourceManager.GetString("ResText_S4", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置容量刷新间隔（秒） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SCIntv() As String
+            Get
+                Return ResourceManager.GetString("ResText_SCIntv", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置标签 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SetBarcode() As String
+            Get
+                Return ResourceManager.GetString("ResText_SetBarcode", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 将当前位置 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SetH1() As String
+            Get
+                Return ResourceManager.GetString("ResText_SetH1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置为数据高度，是否继续？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SetH2() As String
+            Get
+                Return ResourceManager.GetString("ResText_SetH2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 如果不明白该操作含义，请点取消 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SetH3() As String
+            Get
+                Return ResourceManager.GetString("ResText_SetH3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Setting() As String
+            Get
+                Return ResourceManager.GetString("ResText_Setting", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置卷标 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SetVolumeN() As String
+            Get
+                Return ResourceManager.GetString("ResText_SetVolumeN", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置文件缓存 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SFB() As String
+            Get
+                Return ResourceManager.GetString("ResText_SFB", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 是否覆盖现有SHA1？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SHA1Overw() As String
+            Get
+                Return ResourceManager.GetString("ResText_SHA1Overw", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置索引间隔（字节） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SIIntv() As String
+            Get
+                Return ResourceManager.GetString("ResText_SIIntv", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 大小 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Size() As String
+            Get
+                Return ResourceManager.GetString("ResText_Size", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 跳过 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Skip() As String
+            Get
+                Return ResourceManager.GetString("ResText_Skip", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 限速： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SLim() As String
+            Get
+                Return ResourceManager.GetString("ResText_SLim", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度上限： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SMax() As String
+            Get
+                Return ResourceManager.GetString("ResText_SMax", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度下限： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SMin() As String
+            Get
+                Return ResourceManager.GetString("ResText_SMin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度 (MiB/s) 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SpeedBT() As String
+            Get
+                Return ResourceManager.GetString("ResText_SpeedBT", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置预读文件数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SPreR() As String
+            Get
+                Return ResourceManager.GetString("ResText_SPreR", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置检测速度上限 (MiB/s) 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SSMax() As String
+            Get
+                Return ResourceManager.GetString("ResText_SSMax", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置检测速度下限 (MiB/s) 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SSMin() As String
+            Get
+                Return ResourceManager.GetString("ResText_SSMin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置检测速度持续时间（秒） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SSTime() As String
+            Get
+                Return ResourceManager.GetString("ResText_SSTime", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 持续时间： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_STime() As String
+            Get
+                Return ResourceManager.GetString("ResText_STime", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 保存备份文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SvBak() As String
+            Get
+                Return ResourceManager.GetString("ResText_SvBak", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在更新数据区索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_UDI() As String
+            Get
+                Return ResourceManager.GetString("ResText_UDI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在更新索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_UI() As String
+            Get
+                Return ResourceManager.GetString("ResText_UI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 当前磁带VCI数据： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_VCID() As String
+            Get
+                Return ResourceManager.GetString("ResText_VCID", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 磁带已满 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_VOF() As String
+            Get
+                Return ResourceManager.GetString("ResText_VOF", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 警告 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Warning() As String
+            Get
+                Return ResourceManager.GetString("ResText_Warning", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入取消 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WCnd() As String
+            Get
+                Return ResourceManager.GetString("ResText_WCnd", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入出错 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WErr() As String
+            Get
+                Return ResourceManager.GetString("ResText_WErr", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入出错：SCSI指令执行失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WErrSCSI() As String
+            Get
+                Return ResourceManager.GetString("ResText_WErrSCSI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入完成，耗时 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WFTime() As String
+            Get
+                Return ResourceManager.GetString("ResText_WFTime", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入完成，是否更新数据区索引？（推荐） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WFUp() As String
+            Get
+                Return ResourceManager.GetString("ResText_WFUp", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在写入索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WI() As String
+            Get
+                Return ResourceManager.GetString("ResText_WI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引写入完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WIF() As String
+            Get
+                Return ResourceManager.GetString("ResText_WIF", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 设置写入限速 (MiB/s) 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WLimS() As String
+            Get
+                Return ResourceManager.GetString("ResText_WLimS", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 数据高度 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WritePointer() As String
+            Get
+                Return ResourceManager.GetString("ResText_WritePointer", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 数据写入警告 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WriteWarning() As String
+            Get
+                Return ResourceManager.GetString("ResText_WriteWarning", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在写入 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Writing() As String
+            Get
+                Return ResourceManager.GetString("ResText_Writing", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 此前累计写入 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_WrittenTotal() As String
+            Get
+                Return ResourceManager.GetString("ResText_WrittenTotal", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 请等待操作完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_X0() As String
+            Get
+                Return ResourceManager.GetString("ResText_X0", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 操作进行中，是否强制退出？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_X1() As String
+            Get
+                Return ResourceManager.GetString("ResText_X1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未索引的数据将会丢失，是否继续 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_X2() As String
+            Get
+                Return ResourceManager.GetString("ResText_X2", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未安全弹出将导致索引不一致，是否继续 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_X3() As String
+            Get
+                Return ResourceManager.GetString("ResText_X3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 设置Barcode失败 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property StrBCSFail() As String
