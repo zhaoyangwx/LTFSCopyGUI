@@ -443,6 +443,12 @@ Public Class TapeUtils
         Next
         If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
         Dim DataLen As Integer = BlockSizeLimit - DiffBytes
+        If Not Truncate Then
+            Marshal.FreeHGlobal(RawDataU)
+            Dim p As New PositionData(TapeDrive)
+            Locate(TapeDrive, p.BlockNumber - 1, p.PartitionNumber)
+            Return ReadBlock(TapeDrive, sense, DataLen, Truncate)
+        End If
         Dim RawData(DataLen - 1) As Byte
         Marshal.Copy(RawDataU, RawData, 0, Math.Min(BlockSizeLimit, DataLen))
         Marshal.FreeHGlobal(RawDataU)
@@ -1472,7 +1478,7 @@ Public Class TapeUtils
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(MAMAttributeList))
             Dim tmpf As String = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.fffffff.tmp")
-            While My.Computer.FileSystem.FileExists(tmpf)
+            While IO.File.Exists(tmpf)
                 tmpf = Application.StartupPath & "\" & Now.ToString("MAM_yyyyMMdd_HHmmss.fffffff.tmp")
             End While
             Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
@@ -1485,7 +1491,7 @@ Public Class TapeUtils
                 sout.AppendLine(soutp.ReadLine)
             End While
             soutp.Close()
-            My.Computer.FileSystem.DeleteFile(tmpf)
+            IO.File.Delete(tmpf)
             Return sout.ToString()
         End Function
         Public Sub SaveSerializedText(ByVal FileName As String)
@@ -2093,13 +2099,13 @@ Public Class TapeUtils
             End If
             If StopFlag Then
                 fs.Close()
-                My.Computer.FileSystem.DeleteFile(OutputFile)
+                IO.File.Delete(OutputFile)
                 Return True
             End If
         Catch ex As Exception
             MessageBox.Show(ex.ToString)
             fs.Close()
-            My.Computer.FileSystem.DeleteFile(OutputFile)
+            IO.File.Delete(OutputFile)
             If LockDrive Then
                 AllowMediaRemoval(TapeDrive)
                 ReleaseUnit(TapeDrive)
