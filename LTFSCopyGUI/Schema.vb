@@ -334,7 +334,7 @@ Public Class ltfsindex
             If sline.Length > 0 Then sout.AppendLine(sline)
         End While
         soutp.Close()
-        My.Computer.FileSystem.DeleteFile(tmpf)
+        IO.File.Delete(tmpf)
         Return sout.ToString()
     End Function
     Public Function SaveFile(FileName As String) As Boolean
@@ -369,7 +369,7 @@ Public Class ltfsindex
         End While
         soutp.Close()
         sout.Close()
-        My.Computer.FileSystem.DeleteFile(tmpf)
+        IO.File.Delete(tmpf)
         Return True
     End Function
     Public Shared Function FromXML(s As String) As ltfsindex
@@ -421,7 +421,7 @@ Public Class ltfsindex
         Dim tmpf As String = $"{Application.StartupPath}\LWI_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
         Me.SaveFile(tmpf)
         Dim result As ltfsindex = ltfsindex.FromSchFile(tmpf)
-        My.Computer.FileSystem.DeleteFile(tmpf)
+        IO.File.Delete(tmpf)
         Return result
     End Function
     Public Shared Sub WSort(d As List(Of directory), OnFileFound As Action(Of file), OnDirectoryFound As Action(Of directory))
@@ -495,7 +495,7 @@ End Class
             If sline.Length > 0 Then sout.AppendLine(sline)
         End While
         soutp.Close()
-        My.Computer.FileSystem.DeleteFile(tmpf)
+        IO.File.Delete(tmpf)
         Return sout.ToString()
     End Function
     Public Shared Function FromXML(s As String) As ltfslabel

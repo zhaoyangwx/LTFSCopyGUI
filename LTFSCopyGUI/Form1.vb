@@ -19,7 +19,7 @@ Public Class Form1
                 Try
                     Invoke(Sub() Label4.Text = SchemaLoadText.Items(0))
                     Dim s As String = ""
-                    If ReloadFile Or schema Is Nothing Then s = My.Computer.FileSystem.ReadAllText(TextBox1.Text)
+                    If ReloadFile Or schema Is Nothing Then s = IO.File.ReadAllText(TextBox1.Text)
                     Invoke(Sub() Label4.Text = SchemaLoadText.Items(1))
                     Invoke(Sub() Label4.Text = SchemaLoadText.Items(2))
 
@@ -156,9 +156,9 @@ Public Class Form1
     End Function
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
-        If My.Computer.FileSystem.FileExists(TextBox1.Text) Then
+        If IO.File.Exists(TextBox1.Text) Then
             OpenFileDialog1.FileName = TextBox1.Text
-            OpenFileDialog1.InitialDirectory = My.Computer.FileSystem.GetFileInfo(TextBox1.Text).DirectoryName
+            OpenFileDialog1.InitialDirectory = New IO.FileInfo(TextBox1.Text).DirectoryName
         End If
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
             TextBox1.Text = OpenFileDialog1.FileName
@@ -206,7 +206,7 @@ Public Class Form1
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         If SaveFileDialog1.ShowDialog = DialogResult.OK Then
-            My.Computer.FileSystem.WriteAllText(SaveFileDialog1.FileName, TextBox2.Text, False, New Text.UTF8Encoding(False))
+            IO.File.WriteAllText(SaveFileDialog1.FileName, TextBox2.Text, New Text.UTF8Encoding(False))
         End If
     End Sub
     Public LoadComplete As Boolean = False
@@ -278,7 +278,7 @@ Public Class Form1
         Try
             schema = New ltfsindex
             Dim fid As Integer = 0
-            Dim RootDir As IO.DirectoryInfo = My.Computer.FileSystem.GetDirectoryInfo(TextBox3.Text)
+            Dim RootDir As IO.DirectoryInfo = New IO.DirectoryInfo(TextBox3.Text)
             'Dim BasePath As String = RootDir.Parent.FullName
             Dim q As New List(Of IndexedDirectory)
             q.Add(New IndexedDirectory(New ltfsindex.directory With {.name = RootDir.Name}, RootDir))
@@ -339,14 +339,14 @@ Public Class Form1
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
-        If My.Computer.FileSystem.DirectoryExists(TextBox3.Text) Then FolderBrowserDialog1.SelectedPath = TextBox3.Text
+        If IO.Directory.Exists(TextBox3.Text) Then FolderBrowserDialog1.SelectedPath = TextBox3.Text
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             TextBox3.Text = FolderBrowserDialog1.SelectedPath
         End If
     End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
-        If My.Computer.FileSystem.DirectoryExists(TextBox4.Text) Then FolderBrowserDialog1.SelectedPath = TextBox4.Text
+        If IO.Directory.Exists(TextBox4.Text) Then FolderBrowserDialog1.SelectedPath = TextBox4.Text
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             TextBox4.Text = FolderBrowserDialog1.SelectedPath
         End If
@@ -354,17 +354,15 @@ Public Class Form1
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click
         Try
-            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(TextBox1.Text).GetFiles("*.schema")
+            Dim f() As IO.FileInfo = New IO.DirectoryInfo(TextBox1.Text).GetFiles("*.schema")
             For Each fl As IO.FileInfo In f
-                Dim s As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                Dim s As String = IO.File.ReadAllText(fl.FullName)
                 If s.Contains("XMLSchema") Then
                     schema = ltfsindex.FromXML(s)
                 Else
                     schema = ltfsindex.FromSchemaText(s)
                 End If
                 schema.SaveFile(fl.FullName)
-                'Dim tnew As String = schema.GetSerializedText
-                'My.Computer.FileSystem.WriteAllText(fl.FullName, tnew, False, New System.Text.UTF8Encoding(False))
                 TextBox2.AppendText(fl.FullName & vbCrLf)
             Next
         Catch ex As Exception
@@ -392,8 +390,8 @@ Public Class Form1
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
             Dim result As New System.Text.StringBuilder
 
-            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
-            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            If Not IO.Directory.Exists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
             Dim progmax As Integer = f.Length
             Dim progval As Integer = 0
             Dim th As New Threading.Thread(
@@ -401,7 +399,7 @@ Public Class Form1
                     Parallel.ForEach(Of IO.FileInfo)(f,
                         Sub(fl As IO.FileInfo)
                             Try
-                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                Dim sch As String = IO.File.ReadAllText(fl.FullName)
                                 If sch.Contains(patt) Then
                                     SyncLock result
                                         result.AppendLine(fl.Name)
@@ -440,8 +438,8 @@ Public Class Form1
         Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
         Dim result As New System.Text.StringBuilder
 
-        If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
-        Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+        If Not IO.Directory.Exists(dir) Then Exit Sub
+        Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
         Dim progmax As Integer = f.Length
         Dim progval As Integer = 0
 
@@ -507,8 +505,8 @@ Public Class Form1
             result._directory = New List(Of ltfsindex.directory)
             result._directory.Add(New ltfsindex.directory With {.name = $"Search_{patt}"})
             Dim infoText As New System.Text.StringBuilder
-            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
-            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            If Not IO.Directory.Exists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
             Dim progmax As Integer = f.Length
             Dim progval As Integer = 0
             Dim th As New Threading.Thread(
@@ -516,7 +514,7 @@ Public Class Form1
                     Parallel.ForEach(Of IO.FileInfo)(f,
                         Sub(fl As IO.FileInfo)
                             Try
-                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                Dim sch As String = IO.File.ReadAllText(fl.FullName)
                                 If sch.Contains(patt) Then
                                     SyncLock infoText
                                         infoText.AppendLine(fl.Name)
@@ -608,8 +606,8 @@ Public Class Form1
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
             Dim infoText As New System.Text.StringBuilder
-            If Not My.Computer.FileSystem.DirectoryExists(dir) Then Exit Sub
-            Dim f() As IO.FileInfo = My.Computer.FileSystem.GetDirectoryInfo(dir).GetFiles("*.schema")
+            If Not IO.Directory.Exists(dir) Then Exit Sub
+            Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
             Dim progmax As Integer = f.Length
             Dim progval As Integer = 0
             Dim th As New Threading.Thread(
@@ -617,7 +615,7 @@ Public Class Form1
                     Parallel.ForEach(Of IO.FileInfo)(f,
                         Sub(fl As IO.FileInfo)
                             Try
-                                Dim sch As String = My.Computer.FileSystem.ReadAllText(fl.FullName)
+                                Dim sch As String = IO.File.ReadAllText(fl.FullName)
                                 If sch.Contains(patt) Then
                                     Dim UNum As Integer = 0
                                     Dim result As New Text.StringBuilder

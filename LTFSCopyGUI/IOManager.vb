@@ -236,29 +236,29 @@ Public Class IOManager
                         For Each f As ltfsindex.file In flist
                             Dim SkipCurrent As Boolean = False
                             Try
-                                If TargetDirectory <> "" Then f_outpath = "\\?\" & My.Computer.FileSystem.CombinePath(TargetDirectory, f.fullpath)
-                                f.fullpath = "\\?\" & My.Computer.FileSystem.CombinePath(BaseDirectory, f.fullpath)
+                                If TargetDirectory <> "" Then f_outpath = "\\?\" & IO.Path.Combine(TargetDirectory, f.fullpath)
+                                f.fullpath = "\\?\" & IO.Path.Combine(BaseDirectory, f.fullpath)
                                 If f.sha1 Is Nothing Then f.sha1 = ""
-                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not My.Computer.FileSystem.FileExists(f_outpath)) Then
+                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not IO.File.Exists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
                                         Dim action_writefile As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
                                                                                                                               End Sub
 
                                         If TargetDirectory <> "" Then
-                                            If Not My.Computer.FileSystem.DirectoryExists(TargetDirectory) Then
+                                            If Not IO.Directory.Exists(TargetDirectory) Then
                                                 Try
-                                                    My.Computer.FileSystem.CreateDirectory(TargetDirectory)
+                                                    IO.Directory.CreateDirectory(TargetDirectory)
                                                 Catch ex As Exception
                                                     RaiseEvent ErrorOccured(ex.ToString)
                                                 End Try
                                             End If
                                             Try
-                                                Dim outdir As String = My.Computer.FileSystem.GetFileInfo(f_outpath).DirectoryName
-                                                If Not My.Computer.FileSystem.DirectoryExists(outdir) Then
-                                                    My.Computer.FileSystem.CreateDirectory(outdir)
+                                                Dim outdir As String = New IO.FileInfo(f_outpath).DirectoryName
+                                                If Not IO.Directory.Exists(outdir) Then
+                                                    IO.Directory.CreateDirectory(outdir)
                                                 End If
-                                                If My.Computer.FileSystem.FileExists(f_outpath) Then
+                                                If IO.File.Exists(f_outpath) Then
                                                     fout = Nothing
                                                     Exit Try
                                                 End If
@@ -287,9 +287,11 @@ Public Class IOManager
                                                 'fob.Close()
                                                 fout.Flush()
                                                 fout.Close()
-                                                My.Computer.FileSystem.GetFileInfo(f_outpath).CreationTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).CreationTimeUtc
-                                                My.Computer.FileSystem.GetFileInfo(f_outpath).Attributes = My.Computer.FileSystem.GetFileInfo(f.fullpath).Attributes
-                                                My.Computer.FileSystem.GetFileInfo(f_outpath).LastWriteTimeUtc = My.Computer.FileSystem.GetFileInfo(f.fullpath).LastWriteTimeUtc
+                                                Dim foinfo As New IO.FileInfo(f_outpath)
+                                                Dim fiinfo As New IO.FileInfo(f.fullpath)
+                                                foinfo.CreationTimeUtc = fiinfo.CreationTimeUtc
+                                                foinfo.Attributes = fiinfo.Attributes
+                                                foinfo.LastWriteTimeUtc = fiinfo.LastWriteTimeUtc
                                                 fout.Dispose()
                                                 fout = Nothing
                                             Catch ex As Exception
@@ -378,8 +380,8 @@ Public Class IOManager
                 Try
                     If fout IsNot Nothing Then
                         fout.Close()
-                        If My.Computer.FileSystem.FileExists(f_outpath) Then
-                            My.Computer.FileSystem.DeleteFile(f_outpath)
+                        If IO.File.Exists(f_outpath) Then
+                            IO.File.Delete(f_outpath)
                         End If
                     End If
                 Catch ex As Exception
