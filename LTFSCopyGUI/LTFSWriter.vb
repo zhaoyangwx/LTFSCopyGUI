@@ -1946,15 +1946,6 @@ Public Class LTFSWriter
                             PrintMsg($"{FileIndex.name}{My.Resources.ResText_RestoreErr}", ForceLog:=True)
                             Exit For
                         End If
-                        'If Not TapeUtils.RawDump(TapeDrive, FileName, fe.startblock, fe.byteoffset, fe.fileoffset, Math.Min(ExtraPartitionCount, fe.partition), fe.bytecount, StopFlag, plabel.blocksize,
-                        '                         Function(BytesReaded As Long)
-                        '                             Threading.Interlocked.Add(TotalBytesProcessed, BytesReaded)
-                        '                             Threading.Interlocked.Add(CurrentBytesProcessed, BytesReaded)
-                        '                             Return StopFlag
-                        '                         End Function, CreateNew, False) Then
-                        '    PrintMsg($"{FileIndex.name}提取出错")
-                        '    Exit For
-                        'End If
                         If StopFlag Then Exit Sub
                     Next
                 Catch ex As Exception
@@ -2007,6 +1998,7 @@ Public Class LTFSWriter
                             UnwrittenCountOverwriteValue = flist.Count
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
+                                FI.TempObj = Nothing
                             Next
                             PrintMsg(My.Resources.ResText_Restoring)
                             StopFlag = False
@@ -2022,7 +2014,7 @@ Public Class LTFSWriter
                                 End If
                             Next
                         Catch ex As Exception
-                            PrintMsg(My.Resources.ResText_RestoreErr)
+                            PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                         End Try
                         TapeUtils.AllowMediaRemoval(TapeDrive)
                         TapeUtils.ReleaseUnit(TapeDrive)
@@ -2090,6 +2082,7 @@ Public Class LTFSWriter
                             UnwrittenCountOverwriteValue = FileList.Count
                             For Each FI As FileRecord In FileList
                                 UnwrittenSizeOverrideValue += FI.File.length
+                                FI.File.TempObj = Nothing
                             Next
                             PrintMsg(My.Resources.ResText_RestFile)
                             Dim c As Integer = 0
@@ -2108,7 +2101,7 @@ Public Class LTFSWriter
                             PrintMsg(My.Resources.ResText_RestFin)
                         Catch ex As Exception
                             Invoke(Sub() MessageBox.Show(ex.ToString))
-                            PrintMsg(My.Resources.ResText_RestoreErr)
+                            PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                         End Try
                         TapeUtils.AllowMediaRemoval(TapeDrive)
                         TapeUtils.ReleaseUnit(TapeDrive)
