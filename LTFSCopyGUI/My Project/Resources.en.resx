@@ -676,4 +676,7 @@
   <data name="ResText_STime" xml:space="preserve">
     <value>Duration: </value>
   </data>
+  <data name="ResText_FileOpenError" xml:space="preserve">
+    <value>File open error</value>
+  </data>
 </root>
