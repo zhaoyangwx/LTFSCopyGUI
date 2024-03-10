@@ -407,7 +407,7 @@ Public Class LTFSWriter
             SyncLock OperationLock
                 While True
                     Try
-                        If fs IsNot Nothing Then Return 5
+                        If fs IsNot Nothing Then Return 1
                         fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
                         fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
                         Task.Run(Sub() PreReadThread())
@@ -431,16 +431,15 @@ Public Class LTFSWriter
             While True
                 Try
                     If File.length <= BlockSize Then
-                        If Buffer IsNot Nothing Then Return 5
+                        If Buffer IsNot Nothing Then Return 1
                         Buffer = IO.File.ReadAllBytes(SourcePath)
                         Return 1
                     End If
                     SyncLock OperationLock
-                        If fs IsNot Nothing Then Return 5
+                        If fs IsNot Nothing Then Return 1
                     End SyncLock
                     If BufferSize = 0 Then BufferSize = My.Settings.LTFSWriter_PreLoadBytes
                     If BufferSize = 0 Then BufferSize = 524288
-
                     Exit While
                 Catch ex As Exception
                     Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
@@ -465,18 +464,18 @@ Public Class LTFSWriter
                                      'Else
                                      fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                                      'End If
+                                     Exit While
                                  End SyncLock
-                                 Exit While
                              Catch ex As Exception
-                                 Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                     Case DialogResult.Abort
-                                         Exit While
-                                     Case DialogResult.Retry
+                                     Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                         Case DialogResult.Abort
+                                             Exit While
+                                         Case DialogResult.Retry
 
-                                     Case DialogResult.Ignore
-                                         Exit While
-                                 End Select
-                             End Try
+                                         Case DialogResult.Ignore
+                                             Exit While
+                                     End Select
+                                 End Try
                          End While
                      End Sub)
             Return 1
@@ -1897,6 +1896,10 @@ Public Class LTFSWriter
                 CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName = FileName
                 Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.None)
                 Try
+                    FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
+                                                                                           If a.startblock <> b.startblock Then Return a.startblock.CompareTo(b.startblock)
+                                                                                           Return a.fileoffset.CompareTo(b.fileoffset)
+                                                                                       End Function))
                     For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
                         Dim succ As Boolean = False
                         Do
@@ -1913,20 +1916,20 @@ Public Class LTFSWriter
                             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
                             Dim ReadedSize As Long = 0
                             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
-                                Dim len As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                                Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, len, True)
+                                Dim CurrentBlockLen As Integer = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
+                                Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, CurrentBlockLen, True)
                                 SyncLock RestorePosition
                                     RestorePosition.BlockNumber += 1
                                 End SyncLock
-                                If Data.Length <> len OrElse len = 0 Then
-                                    PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {len}", LogOnly:=True, ForceLog:=True)
+                                If Data.Length <> CurrentBlockLen OrElse CurrentBlockLen = 0 Then
+                                    PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {CurrentBlockLen}", LogOnly:=True, ForceLog:=True)
                                     succ = False
                                     Exit Do
                                 End If
-                                ReadedSize += len
-                                fs.Write(Data, ByteOffset, len - ByteOffset)
-                                Threading.Interlocked.Add(TotalBytesProcessed, len - ByteOffset)
-                                Threading.Interlocked.Add(CurrentBytesProcessed, len - ByteOffset)
+                                ReadedSize += CurrentBlockLen - ByteOffset
+                                fs.Write(Data, ByteOffset, CurrentBlockLen - ByteOffset)
+                                Threading.Interlocked.Add(TotalBytesProcessed, CurrentBlockLen - ByteOffset)
+                                Threading.Interlocked.Add(CurrentBytesProcessed, CurrentBlockLen - ByteOffset)
                                 ByteOffset = 0
                                 While Pause
                                     Threading.Thread.Sleep(10)
@@ -2322,6 +2325,7 @@ Public Class LTFSWriter
                                                         Case DialogResult.Retry
 
                                                         Case DialogResult.Ignore
+                                                            PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
                                                             Continue For
                                                     End Select
                                                 End Try
@@ -2394,6 +2398,7 @@ Public Class LTFSWriter
                                         Else
                                             Select Case fr.Open()
                                                 Case DialogResult.Ignore
+                                                    PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
                                                     Continue For
                                                 Case DialogResult.Abort
                                                     Throw New Exception(My.Resources.ResText_FileOpenError)

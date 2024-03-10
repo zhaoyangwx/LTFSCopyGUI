@@ -1742,6 +1742,10 @@ Public Class TapeUtils
                                   Optional ByVal P0Size As UInt16 = 1,
                                   Optional ByVal P1Size As UInt16 = &HFFFF) As Boolean
         GlobalBlockLimit = TapeUtils.ReadBlockLimits(TapeDrive).MaximumBlockLength
+        If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
+            Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
+            If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
+        End If
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
