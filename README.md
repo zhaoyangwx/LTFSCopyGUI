@@ -64,7 +64,7 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 ---
 
 
-**欢迎加入LTO磁带技术交流QQ群 433387693**
+**欢迎加入LTO磁带技术交流QQ群 433387693 获取开发中的最新版本，以及相关资料**
 
 软著登字第11348107号
 
