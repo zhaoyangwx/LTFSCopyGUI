@@ -603,12 +603,12 @@ Public Class IOManager
                             End SyncLock
                             With blk
                                 If .Len = -1 Then .Len = .block.Length
-                                Dim sha1task As Task = Task.Run(Sub()
-                                                                    sha1.TransformBlock(.block, 0, .Len, .block, 0)
-                                                                End Sub)
                                 Dim md5task As Task = Task.Run(Sub()
                                                                    md5.TransformBlock(.block, 0, .Len, .block, 0)
                                                                End Sub)
+                                Dim sha1task As Task = Task.Run(Sub()
+                                                                    sha1.TransformBlock(.block, 0, .Len, .block, 0)
+                                                                End Sub)
                                 sha1task.Wait()
                                 md5task.Wait()
                             End With

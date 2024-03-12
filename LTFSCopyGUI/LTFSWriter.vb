@@ -3099,13 +3099,28 @@ Public Class LTFSWriter
                     Try
                         For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
                             If flookup.name = f.name And flookup.length = f.length Then
+                                Dim sha1value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)
+                                Dim md5value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5)
                                 If Not Overwrite Then
-                                    If f.sha1 IsNot Nothing AndAlso f.sha1 <> "" AndAlso f.sha1.Length = 40 Then Exit For
+                                    If Not (sha1value0 IsNot Nothing AndAlso sha1value0 <> "" AndAlso sha1value0.Length = 40) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA1, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1))
+                                    End If
+                                    If Not (md5value0 IsNot Nothing AndAlso md5value0 <> "" AndAlso md5value0.Length = 32) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.MD5, flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5))
+                                    End If
+                                Else
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1).Length = 40 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA1, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5).Length = 32 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.MD5, flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5))
+                                    End If
                                 End If
-                                If flookup.sha1 IsNot Nothing AndAlso flookup.sha1 <> "" And flookup.sha1.Length = 40 Then
-                                    PrintMsg($"{f.name}", False, $"{f.name}    {f.sha1} -> { flookup.sha1}")
-                                    f.sha1 = flookup.sha1
-                                End If
+
                                 Exit For
                             End If
                         Next
