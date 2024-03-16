@@ -658,6 +658,26 @@ Public Class LTFSWriter
         End Try
         Return info
     End Function
+    Public Function GetProgressImage(ByVal value As Integer, ByVal maximum As Integer, ByVal color As Color) As Bitmap
+        If maximum = 0 Then Return Nothing
+        Dim result As New Bitmap(100, 1)
+        Dim bd As Imaging.BitmapData = result.LockBits(New Rectangle(0, 0, 100, 1), Imaging.ImageLockMode.ReadWrite, Imaging.PixelFormat.Format24bppRgb)
+        Dim b(bd.Stride - 1) As Byte
+        value = Math.Max(0, value)
+        value = Math.Min(value, maximum)
+        For i As Integer = 0 To b.Length - 1
+            b(i) = 255
+        Next
+        For i As Integer = 0 To value / maximum * 100
+            b(i * 3 + 0) = color.B
+            b(i * 3 + 1) = color.G
+            b(i * 3 + 2) = color.R
+        Next
+        Marshal.Copy(b, 0, bd.Scan0, b.Length)
+        result.UnlockBits(bd)
+        Return result
+    End Function
+    Public MaxCapacity As Long = 0
     Public Sub RefreshCapacity()
         Invoke(Sub()
                    Try
@@ -683,7 +703,6 @@ Public Class LTFSWriter
                                If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
                                    nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
                                    CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                                   'wares.Append($" { (100 - CMInfo.TapeDirectoryData.CapacityLoss(wn)).ToString("f2").PadLeft(7)}%  |")
                                ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
                                    StartBlock = 0
                                ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
@@ -705,12 +724,24 @@ Public Class LTFSWriter
 
 
                        If ExtraPartitionCount > 0 Then
+                           If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 1).AsNumeric
                            cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
                            ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)}"
+                           If cap1 >= 4096 Then
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(121, 196, 232))
+                           Else
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
+                           End If
                        Else
+                           If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
                            ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)}"
+                           If cap0 >= 4096 Then
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(121, 196, 232))
+                           Else
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(255, 127, 127))
+                           End If
                        End If
                        If My.Settings.LTFSWriter_ShowLoss Then
                            ToolStripStatusLabel2.Text &= $" Loss:{IOManager.FormatSize(loss)}"
@@ -1857,8 +1888,8 @@ Public Class LTFSWriter
                 FileExist = False
             ElseIf finfo.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.creationtime Then
                 FileExist = False
-            ElseIf finfo.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.accesstime Then
-                FileExist = False
+                'ElseIf finfo.LastAccessTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.accesstime Then
+                '    FileExist = False
             ElseIf finfo.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z") <> FileIndex.modifytime Then
                 FileExist = False
             End If
@@ -1886,9 +1917,9 @@ Public Class LTFSWriter
                 IO.File.Copy(reffile, FileName, True)
                 Dim finfo As New IO.FileInfo(FileName)
                 finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-                finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
                 finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
                 finfo.IsReadOnly = FileIndex.readonly
+                finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
                 Threading.Interlocked.Add(TotalBytesProcessed, FileIndex.length)
                 Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
             Else
@@ -1960,9 +1991,9 @@ Public Class LTFSWriter
                 Dim finfo As New IO.FileInfo(FileName)
                 Try
                     finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-                    finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
                     finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
                     finfo.IsReadOnly = FileIndex.readonly
+                    finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
 
                 Catch ex As Exception
 
@@ -1972,9 +2003,9 @@ Public Class LTFSWriter
         Else
             Dim finfo As New IO.FileInfo(FileName)
             finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-            finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
             finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
             finfo.IsReadOnly = FileIndex.readonly
+            finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
         End If
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
@@ -2843,6 +2874,7 @@ Public Class LTFSWriter
                     End While
                     Modified = False
                     Me.Invoke(Sub()
+                                  MaxCapacity = 0
                                   Text = GetLocInfo()
                                   ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
                                   ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
@@ -2915,6 +2947,7 @@ Public Class LTFSWriter
                     End While
                     Modified = False
                     Me.Invoke(Sub()
+                                  MaxCapacity = 0
                                   ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
                                   RefreshDisplay()
                                   RefreshCapacity()
@@ -4648,6 +4681,7 @@ Public Class LTFSWriter
                     Modified = False
                     Me.Invoke(Sub()
                                   ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
+                                  MaxCapacity = 0
                                   RefreshDisplay()
                                   RefreshCapacity()
                               End Sub)
