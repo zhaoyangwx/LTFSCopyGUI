@@ -1090,8 +1090,8 @@ Partial Class LTFSWriter
         '
         'ToolStripStatusLabel2
         '
-        Me.ToolStripStatusLabel2.Name = "ToolStripStatusLabel2"
         resources.ApplyResources(Me.ToolStripStatusLabel2, "ToolStripStatusLabel2")
+        Me.ToolStripStatusLabel2.Name = "ToolStripStatusLabel2"
         '
         'Timer1
         '
