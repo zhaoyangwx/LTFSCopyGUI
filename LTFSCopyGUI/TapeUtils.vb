@@ -614,6 +614,15 @@ Public Class TapeUtils
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return dataBuffer
     End Function
+    Public Shared Function LogSense(TapeDrive As String, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
+        Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, 0, 4, 0}, 4)
+        If Header.Length < 4 Then Return {0, 0, 0, 0}
+        Dim PageLen As Integer = Header(2)
+        PageLen <<= 8
+        PageLen = PageLen Or Header(3)
+
+        Return SCSIReadParam(TapeDrive, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, PageLen + 4, senseReport)
+    End Function
     Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
         Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, 4, 0}, 4)
         If Header.Length = 0 Then Return {0, 0, 0, 0}
@@ -4500,6 +4509,230 @@ Public Class TapeUtils
                 Output.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
             End Try
             Return Output.ToString()
+        End Function
+    End Class
+    <Serializable> Public Class PageData
+        <Serializable> Public Class DataItem
+            Public Property Name As String
+            Public Property StartByte As Integer
+            Public Property BitOffset As Byte
+            Public Property TotalBits As Integer
+            Public Property DynamicParamCodeStartByte As Integer
+            Public Property DynamicParamCodeBitOffset As Byte
+            Public Property DynamicParamCodeTotalBits As Byte
+            Public Property DynamicParamLenStartByte As Integer
+            Public Property DynamicParamLenBitOffset As Byte
+            Public Property DynamicParamLenTotalBits As Byte
+            Public Property DynamicParamDataStartByte As Integer
+            <Serializable> Public Class DynamicParamPage
+                Public ReadOnly Property Name As String
+                    Get
+                        Dim value As String = ""
+                        Parent.EnumTranslator.TryGetValue(ParamCode, value)
+                        Return value
+                    End Get
+                End Property
+                Public Property ParamCode As Integer
+                Public Property Parent As DataItem
+                Public Property Type As DataType
+                Public Property EnumTranslator As SerializableDictionary(Of Long, String)
+                Public Property RawData As Byte()
+                Public ReadOnly Property GetString As String
+                    Get
+                        If Parent Is Nothing Then Return ""
+                        Dim rawdata As Byte() = Me.RawData()
+                        Select Case Type
+                            Case DataType.Int64
+                                Dim result As Long
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    result = result << 8
+                                    result = result Or rawdata(i)
+                                Next
+                                Return result.ToString
+                            Case DataType.UInt64
+                                Dim result As ULong
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    result = result << 8
+                                    result = result Or rawdata(i)
+                                Next
+                                Return result.ToString
+                            Case DataType.Boolean
+                                If rawdata.Last = 0 Then Return "False" Else Return True
+                            Case DataType.Text
+                                Return Text.Encoding.ASCII.GetString(rawdata)
+                            Case DataType.Enum
+                                Dim key As Long
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    key = key << 8
+                                    key = key Or rawdata(i)
+                                Next
+                                If EnumTranslator IsNot Nothing Then
+                                    Dim result As String = ""
+                                    If EnumTranslator.TryGetValue(key, result) Then
+                                        Return result
+                                    Else
+                                        Return key.ToString()
+                                    End If
+                                End If
+                                Return key.ToString()
+                            Case Else
+                                Return Byte2Hex(rawdata, True)
+                        End Select
+                    End Get
+                End Property
+
+                Public Shared Function [Next](ByVal PageData As DataItem, ByVal StartByte As Integer) As DynamicParamPage
+                    Dim rawLen(Math.Ceiling(PageData.DynamicParamLenTotalBits / 8) - 1) As Byte
+                    For i As Integer = 0 To PageData.DynamicParamLenTotalBits - 1
+                        Dim resultByteNum As Integer = rawLen.Length - 1 - i \ 8
+                        Dim resultBitNum As Byte = i Mod 8 '76543210
+                        Dim sourceByteNum As Integer = StartByte + PageData.DynamicParamLenStartByte + (PageData.DynamicParamLenBitOffset + PageData.DynamicParamLenTotalBits - i - 1) \ 8
+                        Dim sourceBitNum As Integer = 7 - (PageData.DynamicParamLenBitOffset + PageData.DynamicParamLenTotalBits - i - 1) Mod 8
+                        rawLen(resultByteNum) = rawLen(resultByteNum) Or ((PageData.RawData(sourceByteNum) And 1 << sourceBitNum) >> sourceBitNum) << resultBitNum
+                    Next
+                    Dim LenValue As Integer
+                    For i As Integer = 0 To rawLen.Length - 1
+                        LenValue <<= 8
+                        LenValue = LenValue Or rawLen(i)
+                    Next
+
+                    Dim rawPCode(Math.Ceiling(PageData.DynamicParamCodeTotalBits / 8) - 1) As Byte
+                    For i As Integer = 0 To PageData.DynamicParamCodeTotalBits - 1
+                        Dim resultByteNum As Integer = rawPCode.Length - 1 - i \ 8
+                        Dim resultBitNum As Byte = i Mod 8 '76543210
+                        Dim sourceByteNum As Integer = StartByte + PageData.DynamicParamCodeStartByte + (PageData.DynamicParamCodeBitOffset + PageData.DynamicParamCodeTotalBits - i - 1) \ 8
+                        Dim sourceBitNum As Integer = 7 - (PageData.DynamicParamCodeBitOffset + PageData.DynamicParamCodeTotalBits - i - 1) Mod 8
+                        rawPCode(resultByteNum) = rawPCode(resultByteNum) Or ((PageData.RawData(sourceByteNum) And 1 << sourceBitNum) >> sourceBitNum) << resultBitNum
+                    Next
+                    Dim PCode As Integer
+                    For i As Integer = 0 To rawPCode.Length - 1
+                        PCode <<= 8
+                        PCode = PCode Or rawPCode(i)
+                    Next
+                    Dim resultData(LenValue - 1) As Byte
+                    Array.Copy(PageData.RawData, StartByte + PageData.DynamicParamDataStartByte, resultData, 0, LenValue)
+                    Dim dataType As DataType
+                    PageData.DynamicParamType.TryGetValue(PCode, dataType)
+                    Return New DynamicParamPage With {.Parent = PageData, .ParamCode = PCode, .RawData = resultData, .Type = dataType}
+                End Function
+
+            End Class
+            Public Enum DataType
+                Int64
+                UInt64
+                [Boolean]
+                Text
+                [Enum]
+                Binary
+                DynamicPage
+            End Enum
+            Public Property Type As DataType
+            Public Property EnumTranslator As SerializableDictionary(Of Long, String)
+            Public Property DynamicParamType As SerializableDictionary(Of Long, DataType)
+            Public ReadOnly Property RawData As Byte()
+                Get
+                    If Parent Is Nothing Then Return Nothing
+                    If Type = DataType.DynamicPage Then
+                        Return Parent.RawData.Skip(StartByte).ToArray()
+                    End If
+                    Dim result(Math.Ceiling(TotalBits / 8) - 1) As Byte
+                    For i As Integer = 0 To TotalBits - 1
+                        Dim resultByteNum As Integer = result.Length - 1 - i \ 8
+                        Dim resultBitNum As Byte = i Mod 8 '76543210
+                        Dim sourceByteNum As Integer = StartByte + (BitOffset + TotalBits - i - 1) \ 8
+                        Dim sourceBitNum As Integer = 7 - (BitOffset + TotalBits - i - 1) Mod 8
+                        result(resultByteNum) = result(resultByteNum) Or ((Parent.RawData(sourceByteNum) And 1 << sourceBitNum) >> sourceBitNum) << resultBitNum
+                    Next
+                    Return result
+                End Get
+            End Property
+            Public ReadOnly Property GetString As String
+                Get
+                    If Parent Is Nothing Then Return ""
+                    Dim rawdata As Byte() = Me.RawData()
+                    Select Case Type
+                        Case DataType.Int64
+                            Dim result As Long
+                            For i As Integer = 0 To rawdata.Length - 1
+                                result = result << 8
+                                result = result Or rawdata(i)
+                            Next
+                            Return result.ToString
+                        Case DataType.UInt64
+                            Dim result As ULong
+                            For i As Integer = 0 To rawdata.Length - 1
+                                result = result << 8
+                                result = result Or rawdata(i)
+                            Next
+                            Return result.ToString
+                        Case DataType.Boolean
+                            If rawdata.Last = 0 Then Return "False" Else Return True
+                        Case DataType.Text
+                            Return Text.Encoding.ASCII.GetString(rawdata)
+                        Case DataType.Enum
+                            Dim key As Long
+                            For i As Integer = 0 To rawdata.Length - 1
+                                key = key << 8
+                                key = key Or rawdata(i)
+                            Next
+                            If EnumTranslator IsNot Nothing Then
+                                Dim result As String = ""
+                                If EnumTranslator.TryGetValue(key, result) Then
+                                    Return result
+                                Else
+                                    Return key.ToString()
+                                End If
+                            End If
+                            Return key.ToString()
+                        Case DataType.DynamicPage
+                            Dim i As Integer = 0
+                            Dim sb As New StringBuilder
+                            sb.AppendLine($"↓")
+                            While i < rawdata.Length - 1
+                                Dim nextPage As DynamicParamPage = DynamicParamPage.Next(Me, i)
+                                sb.AppendLine($" + {nextPage.Name}")
+                                sb.AppendLine($"       {nextPage.GetString()}")
+                                i += nextPage.RawData.Length + DynamicParamDataStartByte
+                            End While
+                            Return sb.ToString()
+                        Case Else
+                            Return BitConverter.ToString(rawdata)
+                    End Select
+                End Get
+            End Property
+            <Xml.Serialization.XmlIgnore> Public Property Parent As PageData
+
+        End Class
+        Public Property Name As String
+        Public Property PageCode As Integer
+        Public Property Items As New List(Of DataItem)
+        Public Property RawData As Byte()
+        Public Function GetSummary() As String
+            Dim sb As New StringBuilder
+            sb.AppendLine($"{Name}")
+            For Each it As DataItem In Items
+                sb.AppendLine($"{it.Name} = {it.GetString()}")
+            Next
+            Return sb.ToString()
+        End Function
+        Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(PageData))
+            Dim sb As New System.Text.StringBuilder()
+            Dim t As IO.TextWriter = New IO.StringWriter(sb)
+            writer.Serialize(t, Me)
+            t.Close()
+            Return sb.ToString
+        End Function
+        Public Shared Function FromXML(s As String) As PageData
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(PageData))
+            Dim t As IO.TextReader = New IO.StringReader(s)
+            Dim result As PageData = CType(reader.Deserialize(t), PageData)
+            If result.Items IsNot Nothing Then
+                For Each it As DataItem In result.Items
+                    it.Parent = result
+                Next
+            End If
+            Return result
         End Function
     End Class
     Public Shared Function ReduceDataUnit(MBytes As Int64) As String

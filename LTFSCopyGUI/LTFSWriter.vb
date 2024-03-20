@@ -2465,7 +2465,7 @@ Public Class LTFSWriter
                                                             Dim sense As Byte()
                                                             Try
                                                                 'Dim t0 As Date = Now
-                                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, True)
                                                                 'tsub += (Now - t0).TotalMilliseconds
                                                                 'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
                                                                 SyncLock p
@@ -4452,7 +4452,7 @@ Public Class LTFSWriter
                                  While Not succ
                                      Dim sense As Byte()
                                      Try
-                                         sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, BytesReaded < plabel.blocksize)
+                                         sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, True)
                                          SyncLock pos
                                              pos.BlockNumber += 1
                                          End SyncLock

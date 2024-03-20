@@ -324,6 +324,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Schema.vb" />
+    <Compile Include="SerializableDictionary.vb" />
     <Compile Include="TapeCopy.Designer.vb">
       <DependentUpon>TapeCopy.vb</DependentUpon>
     </Compile>
