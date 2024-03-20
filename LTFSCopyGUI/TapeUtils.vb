@@ -4695,8 +4695,10 @@ Public Class TapeUtils
                                 i += nextPage.RawData.Length + DynamicParamDataStartByte
                             End While
                             Return sb.ToString()
+                        Case DataType.Binary
+                            Return $"0x{BitConverter.ToString(rawdata).Replace("-", "").ToUpper}"
                         Case Else
-                            Return BitConverter.ToString(rawdata)
+                            Return Byte2Hex(rawdata, True)
                     End Select
                 End Get
             End Property
