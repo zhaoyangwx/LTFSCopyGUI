@@ -1312,4 +1312,125 @@ Public Class LTFSConfigurator
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles Button5.Click
         ChangerTool.Show()
     End Sub
+
+    Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
+        Dim logdata As Byte() = TapeUtils.LogSense(ConfTapeDrive, &H14, PageControl:=1)
+        Dim pdata As New TapeUtils.PageData With {.Name = "Device Statistics log page", .PageCode = 1 << 6 Or &H14, .RawData = logdata}
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "DS",
+                        .StartByte = 0,
+                        .BitOffset = 0,
+                        .TotalBits = 1,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "SPF",
+                        .StartByte = 0,
+                        .BitOffset = 1,
+                        .TotalBits = 1,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Code",
+                        .StartByte = 0,
+                        .BitOffset = 2,
+                        .TotalBits = 6,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Subcode Page",
+                        .StartByte = 1,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Length",
+                        .StartByte = 2,
+                        .BitOffset = 0,
+                        .TotalBits = 16,
+                        .Type = TapeUtils.PageData.DataItem.DataType.UInt64})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Device Statistics log parameter",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(&H0, "Lifetime volume loads")
+            .Add(&H1, "Lifetime cleaning operations")
+            .Add(&H2, "Lifetime power-on hours")
+            .Add(&H3, "Lifetime media motion (head) hours")
+            .Add(&H4, "Lifetime meters of tape processed")
+            .Add(&H5, "Lifetime medium motion (head) hours when an incompatible volume was last loaded")
+            .Add(&H6, "Lifetime power-on hours when the last temperature condition occurred (TapeAlert code 24h)")
+            .Add(&H7, "Lifetime power-on hours when the last power consumption condition occurred (TapeAlert code 1Ch)")
+            .Add(&H8, "Medium motion (head) hours since the last successful cleaning operation")
+            .Add(&H9, "Medium motion (head) hours since the second to last successful cleaning operation")
+            .Add(&HA, "Medium motion (head) hours since the third to last successful cleaning operation")
+            .Add(&HB, "Lifetime power-on hours when the last operator-initiated forced reset or emergency eject occurred")
+            .Add(&HC, "Lifetime power cycles")
+            .Add(&HD, "Volume loads since last parameter reset")
+            .Add(&HE, "Hard write errors")
+            .Add(&HF, "Hard read errors")
+            .Add(&H10, "Duty cycle sample time (time in milliseconds since last hard reset)")
+            .Add(&H11, "Read duty cycle (percentage of duty cycle spent processing read-type commands)")
+            .Add(&H12, "Write duty cycle (percentage of duty cycle spent processing write-type commands)")
+            .Add(&H13, "Activity duty cycle (percentage of duty cycle spent processing commands that move the medium)")
+            .Add(&H14, "Volume not present duty cycle (percentage of duty cycle when there is no volume present)")
+            .Add(&H15, "Ready duty cycle (percentage of the duty cycle sample time when the drive is in the ready state)")
+            .Add(&H16, "MB transferred from the application client in the duty cycle sample time")
+            .Add(&H17, "MB transferred to the application client in the duty cycle sample time")
+            .Add(&H40, "Drive manufacturer’s serial number")
+            .Add(&H41, "Drive serial number")
+            .Add(&H80, "Medium removal prevented")
+            .Add(&H81, "Max recommended mechanism temperature exceeded")
+            .Add(&H1000, "Medium motion (head) hours for each medium type")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(&H0, TapeUtils.PageData.DataItem.DataType.UInt64)
+            .Add(&H1, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H2, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H3, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H4, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H5, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H6, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H7, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H8, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H9, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HA, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HB, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HC, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HD, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HE, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&HF, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H10, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H11, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H12, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H13, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H14, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H15, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H16, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H17, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H40, TapeUtils.PageData.DataItem.DataType.Text）
+            .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text）
+            .Add(&H80, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H81, TapeUtils.PageData.DataItem.DataType.UInt64）
+            .Add(&H1000, TapeUtils.PageData.DataItem.DataType.Binary)
+        End With
+        TextBox8.Text = pdata.GetSummary()
+        If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
+        IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x54.xml"), pdata.GetSerializedText())
+    End Sub
 End Class
