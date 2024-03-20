@@ -4536,7 +4536,7 @@ Public Class TapeUtils
                 Public Property Parent As DataItem
                 Public Property Type As DataType
                 Public Property EnumTranslator As SerializableDictionary(Of Long, String)
-                Public Property RawData As Byte()
+                <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
                 Public ReadOnly Property GetString As String
                     Get
                         If Parent Is Nothing Then Return ""
@@ -4706,7 +4706,7 @@ Public Class TapeUtils
         Public Property Name As String
         Public Property PageCode As Integer
         Public Property Items As New List(Of DataItem)
-        Public Property RawData As Byte()
+        <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
         Public Function GetSummary() As String
             Dim sb As New StringBuilder
             sb.AppendLine($"{Name}")
