@@ -4542,6 +4542,13 @@ Public Class TapeUtils
                         If Parent Is Nothing Then Return ""
                         Dim rawdata As Byte() = Me.RawData()
                         Select Case Type
+                            Case DataType.Int32
+                                Dim result As Integer
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    result = result << 8
+                                    result = result Or rawdata(i)
+                                Next
+                                Return result.ToString
                             Case DataType.Int64
                                 Dim result As Long
                                 For i As Integer = 0 To rawdata.Length - 1
@@ -4576,7 +4583,7 @@ Public Class TapeUtils
                                 End If
                                 Return key.ToString()
                             Case Else
-                                Return Byte2Hex(rawdata, True)
+                                If rawdata.Length > 0 Then Return Byte2Hex(rawdata, True) Else Return ""
                         End Select
                     End Get
                 End Property
@@ -4595,7 +4602,6 @@ Public Class TapeUtils
                         LenValue <<= 8
                         LenValue = LenValue Or rawLen(i)
                     Next
-
                     Dim rawPCode(Math.Ceiling(PageData.DynamicParamCodeTotalBits / 8) - 1) As Byte
                     For i As Integer = 0 To PageData.DynamicParamCodeTotalBits - 1
                         Dim resultByteNum As Integer = rawPCode.Length - 1 - i \ 8
@@ -4609,8 +4615,11 @@ Public Class TapeUtils
                         PCode <<= 8
                         PCode = PCode Or rawPCode(i)
                     Next
-                    Dim resultData(LenValue - 1) As Byte
-                    Array.Copy(PageData.RawData, StartByte + PageData.DynamicParamDataStartByte, resultData, 0, LenValue)
+                    Dim resultData As Byte() = {}
+                    If LenValue > 0 Then
+                        ReDim resultData(LenValue - 1)
+                        Array.Copy(PageData.RawData, StartByte + PageData.DynamicParamDataStartByte, resultData, 0, LenValue)
+                    End If
                     Dim dataType As DataType
                     PageData.DynamicParamType.TryGetValue(PCode, dataType)
                     Return New DynamicParamPage With {.Parent = PageData, .ParamCode = PCode, .RawData = resultData, .Type = dataType}
@@ -4618,6 +4627,7 @@ Public Class TapeUtils
 
             End Class
             Public Enum DataType
+                Int32
                 Int64
                 UInt64
                 [Boolean]
@@ -4651,6 +4661,12 @@ Public Class TapeUtils
                     If Parent Is Nothing Then Return ""
                     Dim rawdata As Byte() = Me.RawData()
                     Select Case Type
+                        Case DataType.Int32
+                            Dim result As Integer
+                            For i As Integer = 0 To rawdata.Length - 1
+                                result = result << 8
+                                result = result Or rawdata(i)
+                            Next
                         Case DataType.Int64
                             Dim result As Long
                             For i As Integer = 0 To rawdata.Length - 1
@@ -4687,13 +4703,19 @@ Public Class TapeUtils
                         Case DataType.DynamicPage
                             Dim i As Integer = 0
                             Dim sb As New StringBuilder
-                            sb.AppendLine($"↓")
+                            sb.Append($"↓")
                             While i < rawdata.Length - 1
                                 Dim nextPage As DynamicParamPage = DynamicParamPage.Next(Me, i)
-                                sb.AppendLine($" + {nextPage.Name}")
-                                sb.AppendLine($"       {nextPage.GetString()}")
+                                sb.Append($"{vbCrLf} * {nextPage.Name}")
+                                Dim nPStr As String = nextPage.GetString()
+                                If nPStr.Length > 0 Then
+                                    For Each t As String In nPStr.Split({vbCrLf}, StringSplitOptions.RemoveEmptyEntries)
+                                        sb.Append($"{vbCrLf}       {t}")
+                                    Next
+                                End If
                                 i += nextPage.RawData.Length + DynamicParamDataStartByte
                             End While
+
                             Return sb.ToString()
                         Case DataType.Binary
                             Return $"0x{BitConverter.ToString(rawdata).Replace("-", "").ToUpper}"
@@ -4711,10 +4733,11 @@ Public Class TapeUtils
         <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
         Public Function GetSummary() As String
             Dim sb As New StringBuilder
-            sb.AppendLine($"{Name}")
+            sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
             For Each it As DataItem In Items
                 sb.AppendLine($"{it.Name} = {it.GetString()}")
             Next
+            sb.AppendLine("".PadRight(64, "="))
             Return sb.ToString()
         End Function
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
