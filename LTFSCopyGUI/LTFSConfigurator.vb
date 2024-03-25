@@ -843,6 +843,14 @@ Public Class LTFSConfigurator
             For Each c As Control In Panel2.Controls
                 c.Enabled = False
             Next
+            For Each c As Control In TabControl1.Controls
+                c.Enabled = False
+            Next
+            For Each c As Control In TabPage1.Controls
+                c.Enabled = False
+            Next
+            TabControl1.Enabled = True
+            TabPage1.Enabled = True
             Button24.Enabled = True
             TextBox8.Text = ""
             Dim log As Boolean = CheckBox2.Checked
@@ -852,14 +860,10 @@ Public Class LTFSConfigurator
                     Dim FileNum As Integer = 0
 
                     'Position
-                    Dim param As Byte() = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+                    Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
 
-                    Dim Partition As Byte = param(1)
-                    Dim Block As UInteger = 0
-                    For i As Integer = 4 To 7
-                        Block <<= 8
-                        Block = Block Or param(i)
-                    Next
+                    Dim Partition As Byte = pos.PartitionNumber
+                    Dim Block As UInteger = pos.BlockNumber
                     Dim BlkNum As Integer = Block
                     While True
                         Dim sense(63) As Byte
@@ -893,6 +897,12 @@ Public Class LTFSConfigurator
                                    c.Enabled = True
                                Next
                                For Each c As Control In Panel2.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In TabControl1.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In TabPage1.Controls
                                    c.Enabled = True
                                Next
                            End Sub)
@@ -1445,13 +1455,13 @@ Public Class LTFSConfigurator
             .Add(&H6, "Total uncorrected errors (The number of data sets that could not be written)")
         End With
         With pdata.Items.Last.DynamicParamType
-            .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int64)
+            .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int32)
         End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
@@ -1500,13 +1510,13 @@ Public Class LTFSConfigurator
             .Add(&H6, "Total uncorrected errors (The number of data sets that could not be read after retries)")
         End With
         With pdata.Items.Last.DynamicParamType
-            .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int64)
-            .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int64)
+            .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int32)
         End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
@@ -1580,6 +1590,333 @@ Public Class LTFSConfigurator
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x0C.xml"), pdata.GetSerializedText())
+#End Region
+#Region "0x0D"
+        logdata = TapeUtils.LogSense(ConfTapeDrive, &HD, PageControl:=1)
+        pdata = New TapeUtils.PageData With {.Name = "Temperature log page", .PageCode = &HD, .RawData = logdata}
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Code",
+                        .StartByte = 0,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Length",
+                        .StartByte = 2,
+                        .BitOffset = 0,
+                        .TotalBits = 16,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Int64})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Temperature log parameter",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(&H0, "Temperature")
+            .Add(&H1, "Reference Temperature")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int16)
+            .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int16)
+        End With
+        TextBox8.AppendText(pdata.GetSummary())
+        If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
+        IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x0D.xml"), pdata.GetSerializedText())
+#End Region
+#Region "0x11"
+        logdata = TapeUtils.LogSense(ConfTapeDrive, &H11, PageControl:=1)
+        pdata = New TapeUtils.PageData With {.Name = "Data Transfer Device (DTD) Status log page", .PageCode = &H11, .RawData = logdata}
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Code",
+                        .StartByte = 0,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Page Length",
+                        .StartByte = 2,
+                        .BitOffset = 0,
+                        .TotalBits = 16,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Int64})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "DTD Status log parameter",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .PageDataTemplate = New SerializableDictionary(Of Long, TapeUtils.PageData),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(&H0, "Very High Frequency data")
+            .Add(&H1, "Very High Frequency polling delay")
+            .Add(&H2, "DT device ADC data encryption control status")
+            .Add(&H3, "Key management error data")
+            .Add(&H101, "DTD primary status - SAS/FC Port A")
+            .Add(&H102, "DTD primary status - SAS/FC Port B")
+            .Add(&H103, "DTD primary status - Fibre Channel NPIV port A")
+            .Add(&H104, "DTD primary status - Fibre Channel NPIV port B")
+            .Add(&H8000, "VU Very High Frequency data")
+            .Add(&H8003, "VU key management error")
+            .Add(&H8010, "VU extended VHF data")
+            .Add(&H8020, "VU multi-initiator conflict warning")
+            .Add(&HA101, "VU failover status")
+            .Add(&HA102, "VU failover status")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(&H0, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H1, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H2, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H3, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H101, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H102, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H103, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H104, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H8000, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H8003, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H8010, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&H8020, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&HA101, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(&HA102, TapeUtils.PageData.DataItem.DataType.PageData)
+        End With
+        With pdata.Items.Last.PageDataTemplate
+            Dim subPage As TapeUtils.PageData
+            subPage = New TapeUtils.PageData With {.PageCode = 0, .Name = "Very High Frequency data"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Prevent/Allow Medium Removal bit", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Host Initiated Unload bit", .StartByte = 0, .BitOffset = 1, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "MAM Accessible", .StartByte = 0, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Data Compression Enabled", .StartByte = 0, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Write Protect", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Clean Requested", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Cleaning Required", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "DTD Initialized", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "In Transition", .StartByte = 1, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Robotic Access Allowed", .StartByte = 1, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Present", .StartByte = 1, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Seated", .StartByte = 1, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Threaded", .StartByte = 1, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Data Accessible", .StartByte = 1, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "DT Device Activity", .StartByte = 2, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "No tape motion")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "Cleaning operation in progress")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "Tape being loaded")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "Tape being unloaded")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "Other tape activity")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "Reading")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "Writing")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "Locating")
+            subPage.Items.Last.EnumTranslator.Add(&H8, "Rewinding")
+            subPage.Items.Last.EnumTranslator.Add(&H9, "Erasing")
+            subPage.Items.Last.EnumTranslator.Add(&HC, "Other DT device activity")
+            subPage.Items.Last.EnumTranslator.Add(&HD, "Microcode update in progress")
+            subPage.Items.Last.EnumTranslator.Add(&HE, "Reading encrypted data from tape")
+            subPage.Items.Last.EnumTranslator.Add(&HF, "Writing encrypted data to tape")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "VU Extended VHF Data log parameter changed", .StartByte = 3, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Tape Diagnostic Data Entry Created", .StartByte = 3, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Encryption Parameters Present", .StartByte = 3, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Encryption Service Request", .StartByte = 3, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Recovery Requested", .StartByte = 3, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Interface Changed", .StartByte = 3, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "TapeAlert flag has changed", .StartByte = 3, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            .Add(&H0, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = 1, .Name = "Very High Frequency polling delay"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "VHF Polling Delay in ms", .StartByte = 0, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+            .Add(&H1, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = 2, .Name = "DT device ADC data encryption control status"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Aborted", .StartByte = 1, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Key Management Error", .StartByte = 1, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Decryption Parameters Request", .StartByte = 1, .BitOffset = 1, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Encryption Parameters Request", .StartByte = 1, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Parameters Request Sequence Identifier", .StartByte = 2, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H2, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = 3, .Name = "Key management error data"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Error Type", .StartByte = 0, .BitOffset = 0, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "No error")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "Encryption parameters request error")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "Decryption parameters request error")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Key Timeout", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Parameters Request Sequence Identifier", .StartByte = 2, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H3, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = &H101, .Name = "DTD primary status - SAS/FC Port A"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Topology", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Speed", .StartByte = 0, .BitOffset = 1, .TotalBits = 3, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "1 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "2 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "4 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "8 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "16 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "32 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "64 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "128 Gbps")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Login Complete", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC AL_PA conflict", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Signal", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Port Initialization Complete", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current N_Port ID", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current FC_AL Loop ID", .StartByte = 7, .BitOffset = 1, .TotalBits = 7, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Port Name", .StartByte = 8, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Node Name", .StartByte = 12, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Negotiated Physical Link Rate", .StartByte = 0, .BitOffset = 0, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Current Hashed Address", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Address", .StartByte = 4, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H101, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = &H102, .Name = "DTD primary status - SAS/FC Port B"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Topology", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Speed", .StartByte = 0, .BitOffset = 1, .TotalBits = 3, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "1 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "2 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "4 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "8 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "16 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "32 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "64 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "128 Gbps")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Login Complete", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC AL_PA conflict", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Signal", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Port Initialization Complete", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current N_Port ID", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current FC_AL Loop ID", .StartByte = 7, .BitOffset = 1, .TotalBits = 7, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Port Name", .StartByte = 8, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Node Name", .StartByte = 12, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Negotiated Physical Link Rate", .StartByte = 0, .BitOffset = 0, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Current Hashed Address", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Address", .StartByte = 4, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H102, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = &H103, .Name = "DTD primary status - Fibre Channel NPIV port A"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Topology", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Speed", .StartByte = 0, .BitOffset = 1, .TotalBits = 3, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "1 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "2 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "4 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "8 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "16 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "32 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "64 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "128 Gbps")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Login Complete", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC AL_PA conflict", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Signal", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Port Initialization Complete", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current N_Port ID", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current FC_AL Loop ID", .StartByte = 7, .BitOffset = 1, .TotalBits = 7, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Port Name", .StartByte = 8, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Node Name", .StartByte = 12, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Negotiated Physical Link Rate", .StartByte = 0, .BitOffset = 0, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Current Hashed Address", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Address", .StartByte = 4, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H103, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = &H104, .Name = "DTD primary status - Fibre Channel NPIV port B"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Topology", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Speed", .StartByte = 0, .BitOffset = 1, .TotalBits = 3, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "1 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "2 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "4 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "8 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "16 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "32 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "64 Gbps")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "128 Gbps")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Login Complete", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC AL_PA conflict", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Signal", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Port Initialization Complete", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current N_Port ID", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current FC_AL Loop ID", .StartByte = 7, .BitOffset = 1, .TotalBits = 7, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Port Name", .StartByte = 8, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "FC Current Node Name", .StartByte = 12, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Negotiated Physical Link Rate", .StartByte = 0, .BitOffset = 0, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Current Hashed Address", .StartByte = 1, .BitOffset = 0, .TotalBits = 24, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "SAS Address", .StartByte = 4, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            .Add(&H104, subPage)
+            subPage = New TapeUtils.PageData With {.PageCode = &H8000, .Name = "VU Very High Frequency data"}
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Prevent/Allow Medium Removal bit", .StartByte = 0, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Host Initiated Unload bit", .StartByte = 0, .BitOffset = 1, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "MAM Accessible", .StartByte = 0, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Data Compression Enabled", .StartByte = 0, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Write Protect", .StartByte = 0, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Clean Requested", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Cleaning Required", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "DTD Initialized", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "In Transition", .StartByte = 1, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Robotic Access Allowed", .StartByte = 1, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Present", .StartByte = 1, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Seated", .StartByte = 1, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Threaded", .StartByte = 1, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Data Accessible", .StartByte = 1, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "DT Device Activity", .StartByte = 2, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subPage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            subPage.Items.Last.EnumTranslator.Add(&H0, "No tape motion")
+            subPage.Items.Last.EnumTranslator.Add(&H1, "Cleaning operation in progress")
+            subPage.Items.Last.EnumTranslator.Add(&H2, "Tape being loaded")
+            subPage.Items.Last.EnumTranslator.Add(&H3, "Tape being unloaded")
+            subPage.Items.Last.EnumTranslator.Add(&H4, "Other tape activity")
+            subPage.Items.Last.EnumTranslator.Add(&H5, "Reading")
+            subPage.Items.Last.EnumTranslator.Add(&H6, "Writing")
+            subPage.Items.Last.EnumTranslator.Add(&H7, "Locating")
+            subPage.Items.Last.EnumTranslator.Add(&H8, "Rewinding")
+            subPage.Items.Last.EnumTranslator.Add(&H9, "Erasing")
+            subPage.Items.Last.EnumTranslator.Add(&HC, "Other DT device activity")
+            subPage.Items.Last.EnumTranslator.Add(&HD, "Microcode update in progress")
+            subPage.Items.Last.EnumTranslator.Add(&HE, "Reading encrypted data from tape")
+            subPage.Items.Last.EnumTranslator.Add(&HF, "Writing encrypted data to tape")
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "VU Extended VHF Data log parameter changed", .StartByte = 3, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Tape Diagnostic Data Entry Created", .StartByte = 3, .BitOffset = 2, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Encryption Parameters Present", .StartByte = 3, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Encryption Service Request", .StartByte = 3, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Recovery Requested", .StartByte = 3, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Interface Changed", .StartByte = 3, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "TapeAlert flag has changed", .StartByte = 3, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Host Login", .StartByte = 4, .BitOffset = 0, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Hardware Error", .StartByte = 4, .BitOffset = 3, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Media Error", .StartByte = 4, .BitOffset = 4, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Upgrade Cartridge", .StartByte = 4, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Loading", .StartByte = 4, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Unloading", .StartByte = 4, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Snapshot", .StartByte = 5, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Load Complete", .StartByte = 5, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Unload Complete", .StartByte = 5, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            .Add(&H8000, subPage)
+
+        End With
+        TextBox8.AppendText(pdata.GetSummary())
+        If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
+        IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x11.xml"), pdata.GetSerializedText())
+#End Region
+#Region "0x12"
+
+#End Region
+#Region "0x13"
+
 #End Region
 #Region "0x14"
         logdata = TapeUtils.LogSense(ConfTapeDrive, &H14, PageControl:=1)
@@ -1695,13 +2032,77 @@ Public Class LTFSConfigurator
             .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text）
             .Add(&H80, TapeUtils.PageData.DataItem.DataType.Int64）
             .Add(&H81, TapeUtils.PageData.DataItem.DataType.Int64）
-            .Add(&H1000, TapeUtils.PageData.DataItem.DataType.Binary)
+            .Add(&H1000, TapeUtils.PageData.DataItem.DataType.RawData)
         End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x14.xml"), pdata.GetSerializedText())
 
 #End Region
+#Region "0x15"
 
+#End Region
+#Region "0x16"
+
+#End Region
+#Region "0x17"
+
+#End Region
+#Region "0x18"
+
+#End Region
+#Region "0x1B"
+
+#End Region
+#Region "0x2E"
+
+#End Region
+#Region "0x30"
+
+#End Region
+#Region "0x31"
+
+#End Region
+#Region "0x32"
+
+#End Region
+#Region "0x33"
+
+#End Region
+#Region "0x34"
+
+#End Region
+#Region "0x35"
+
+#End Region
+#Region "0x3E"
+
+#End Region
+    End Sub
+    Public PageItem As New List(Of TapeUtils.PageData)
+    Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
+        If TabControl1.SelectedTab Is TabPage4 Then
+            If IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then
+                ComboBox4.Items.Clear()
+                For Each f As IO.FileInfo In New IO.DirectoryInfo(IO.Path.Combine(Application.StartupPath, "logpages")).GetFiles
+                    Try
+                        Dim pdata As TapeUtils.PageData = TapeUtils.PageData.FromXML(IO.File.ReadAllText(f.FullName))
+                        PageItem.Add(pdata)
+                        ComboBox4.Items.Add($"0x{Hex(pdata.PageCode).PadLeft(2, "0")} - {pdata.Name}")
+                        ComboBox5.SelectedIndex = 1
+                    Catch ex As Exception
+
+                    End Try
+                Next
+            End If
+        End If
+    End Sub
+
+    Private Sub Button12_Click(sender As Object, e As EventArgs) Handles Button12.Click
+        If ComboBox4.SelectedIndex >= 0 Then
+            Dim logdata As Byte() = TapeUtils.LogSense(ConfTapeDrive, PageItem(ComboBox4.SelectedIndex).PageCode, PageControl:=ComboBox5.SelectedIndex)
+            PageItem(ComboBox4.SelectedIndex).RawData = logdata
+            TextBox8.Text = PageItem(ComboBox4.SelectedIndex).GetSummary()
+        End If
     End Sub
 End Class
