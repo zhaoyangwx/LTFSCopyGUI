@@ -3350,7 +3350,7 @@ Public Class LTFSWriter
                                                                                                                       End Function))
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
 
-                If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> fe.partition Then
+                If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
                     TapeUtils.Locate(TapeDrive, fe.startblock, fe.partition)
                     RestorePosition = New TapeUtils.PositionData(TapeDrive)
                 End If
@@ -3582,14 +3582,14 @@ Public Class LTFSWriter
                                             ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
                                                 FileIndex.SHA1ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result}", ForceLog:=True)
+                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result.Item("SHA1")}", ForceLog:=True)
                                             End If
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
                                                 FileIndex.MD5ForeColor = Color.DarkGreen
                                             ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
                                                 FileIndex.MD5ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.sha1} md5calc={result}", ForceLog:=True)
+                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.sha1} md5calc={result.Item("MD5")}", ForceLog:=True)
                                             End If
                                         End If
                                     End If
@@ -4013,7 +4013,7 @@ Public Class LTFSWriter
                 Host.PostCleanupWhenModifiedOnly = True
                 Host.FlushAndPurgeOnCleanup = True
                 Host.PassQueryDirectoryPattern = True
-                Host.MaxComponentLength = 8115
+                Host.MaxComponentLength = 8104
 
             Catch ex As Exception
                 MessageBox.Show(ex.ToString)
@@ -4215,12 +4215,12 @@ Public Class LTFSWriter
                     lst.Add("..", FileDesc.Parent)
                 End If
                 For Each d As ltfsindex.directory In FileDesc.LTFSDirectory.contents._directory
-                    If d.name Like Pattern Then
+                    If d.name.ToLower() Like Pattern.ToLower() Then
                         lst.Add(d.name, d)
                     End If
                 Next
                 For Each f As ltfsindex.file In FileDesc.LTFSDirectory.contents._file
-                    If f.name Like Pattern Then
+                    If f.name.ToLower() Like Pattern.ToLower() Then
                         lst.Add(f.name, f)
                     End If
                 Next

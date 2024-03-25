@@ -48,49 +48,58 @@ Partial Class LTFSConfigurator
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
-        Me.Label17 = New System.Windows.Forms.Label()
-        Me.TextBox3 = New System.Windows.Forms.TextBox()
+        Me.TabControl1 = New System.Windows.Forms.TabControl()
+        Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.ButtonDebugRewind = New System.Windows.Forms.Button()
+        Me.Label4 = New System.Windows.Forms.Label()
+        Me.Label16 = New System.Windows.Forms.Label()
+        Me.NumericUpDown2 = New System.Windows.Forms.NumericUpDown()
         Me.CheckBox4 = New System.Windows.Forms.CheckBox()
-        Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
-        Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
+        Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
         Me.ButtonDebugFormat = New System.Windows.Forms.Button()
-        Me.ButtonDebugDumpIndex = New System.Windows.Forms.Button()
+        Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
+        Me.ButtonDebugLocate = New System.Windows.Forms.Button()
+        Me.Label10 = New System.Windows.Forms.Label()
+        Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
         Me.ComboBox3 = New System.Windows.Forms.ComboBox()
+        Me.NumericUpDown6 = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonDebugReadBlock = New System.Windows.Forms.Button()
+        Me.ButtonDebugReadPosition = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpIndex = New System.Windows.Forms.Button()
+        Me.ButtonDebugErase = New System.Windows.Forms.Button()
+        Me.NumericUpDown7 = New System.Windows.Forms.NumericUpDown()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
+        Me.Label5 = New System.Windows.Forms.Label()
         Me.Button24 = New System.Windows.Forms.Button()
         Me.ButtonDebugDumpTape = New System.Windows.Forms.Button()
-        Me.ButtonDebugReadPosition = New System.Windows.Forms.Button()
-        Me.ButtonDebugLocate = New System.Windows.Forms.Button()
-        Me.Label16 = New System.Windows.Forms.Label()
-        Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
-        Me.NumericUpDown2 = New System.Windows.Forms.NumericUpDown()
-        Me.Label5 = New System.Windows.Forms.Label()
-        Me.Label4 = New System.Windows.Forms.Label()
-        Me.ComboBox2 = New System.Windows.Forms.ComboBox()
+        Me.TabPage2 = New System.Windows.Forms.TabPage()
         Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
-        Me.NumericUpDown7 = New System.Windows.Forms.NumericUpDown()
-        Me.ButtonDebugReadBlock = New System.Windows.Forms.Button()
+        Me.ComboBox2 = New System.Windows.Forms.ComboBox()
         Me.Label14 = New System.Windows.Forms.Label()
-        Me.ButtonDebugRewind = New System.Windows.Forms.Button()
-        Me.ButtonDebugDumpMAM = New System.Windows.Forms.Button()
-        Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
-        Me.ButtonDebugReadMAM = New System.Windows.Forms.Button()
-        Me.NumericUpDown9 = New System.Windows.Forms.NumericUpDown()
-        Me.NumericUpDown8 = New System.Windows.Forms.NumericUpDown()
-        Me.Label15 = New System.Windows.Forms.Label()
+        Me.Label11 = New System.Windows.Forms.Label()
+        Me.TextBox9 = New System.Windows.Forms.TextBox()
+        Me.ButtonDebugWriteBarcode = New System.Windows.Forms.Button()
+        Me.TabPage3 = New System.Windows.Forms.TabPage()
         Me.Label13 = New System.Windows.Forms.Label()
+        Me.Label15 = New System.Windows.Forms.Label()
+        Me.NumericUpDown8 = New System.Windows.Forms.NumericUpDown()
+        Me.NumericUpDown9 = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonDebugReadMAM = New System.Windows.Forms.Button()
+        Me.ButtonDebugDumpMAM = New System.Windows.Forms.Button()
+        Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.Button12 = New System.Windows.Forms.Button()
+        Me.Label18 = New System.Windows.Forms.Label()
+        Me.ComboBox4 = New System.Windows.Forms.ComboBox()
+        Me.Button11 = New System.Windows.Forms.Button()
+        Me.Label17 = New System.Windows.Forms.Label()
+        Me.TextBox3 = New System.Windows.Forms.TextBox()
         Me.TextBox10 = New System.Windows.Forms.TextBox()
         Me.Label12 = New System.Windows.Forms.Label()
-        Me.ButtonDebugWriteBarcode = New System.Windows.Forms.Button()
-        Me.TextBox9 = New System.Windows.Forms.TextBox()
-        Me.Label11 = New System.Windows.Forms.Label()
-        Me.Label10 = New System.Windows.Forms.Label()
         Me.Label9 = New System.Windows.Forms.Label()
         Me.Label8 = New System.Windows.Forms.Label()
-        Me.NumericUpDown6 = New System.Windows.Forms.NumericUpDown()
         Me.TextBox8 = New System.Windows.Forms.TextBox()
         Me.TextBox7 = New System.Windows.Forms.TextBox()
-        Me.ButtonDebugErase = New System.Windows.Forms.Button()
         Me.ButtonDebugSendSCSICommand = New System.Windows.Forms.Button()
         Me.TextBox6 = New System.Windows.Forms.TextBox()
         Me.TextBox5 = New System.Windows.Forms.TextBox()
@@ -100,27 +109,20 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.Button11 = New System.Windows.Forms.Button()
-        Me.TabControl1 = New System.Windows.Forms.TabControl()
-        Me.TabPage1 = New System.Windows.Forms.TabPage()
-        Me.TabPage2 = New System.Windows.Forms.TabPage()
-        Me.TabPage3 = New System.Windows.Forms.TabPage()
-        Me.TabPage4 = New System.Windows.Forms.TabPage()
-        Me.ComboBox4 = New System.Windows.Forms.ComboBox()
-        Me.Label18 = New System.Windows.Forms.Label()
-        Me.Button12 = New System.Windows.Forms.Button()
+        Me.Label19 = New System.Windows.Forms.Label()
+        Me.ComboBox5 = New System.Windows.Forms.ComboBox()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
-        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDown9, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDown8, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
+        CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage2.SuspendLayout()
         Me.TabPage3.SuspendLayout()
+        CType(Me.NumericUpDown8, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDown9, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage4.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -309,15 +311,66 @@ Partial Class LTFSConfigurator
         Me.Panel2.Controls.Add(Me.Label6)
         Me.Panel2.Name = "Panel2"
         '
-        'Label17
+        'TabControl1
         '
-        resources.ApplyResources(Me.Label17, "Label17")
-        Me.Label17.Name = "Label17"
+        resources.ApplyResources(Me.TabControl1, "TabControl1")
+        Me.TabControl1.Controls.Add(Me.TabPage1)
+        Me.TabControl1.Controls.Add(Me.TabPage2)
+        Me.TabControl1.Controls.Add(Me.TabPage3)
+        Me.TabControl1.Controls.Add(Me.TabPage4)
+        Me.TabControl1.Name = "TabControl1"
+        Me.TabControl1.SelectedIndex = 0
         '
-        'TextBox3
+        'TabPage1
         '
-        resources.ApplyResources(Me.TextBox3, "TextBox3")
-        Me.TextBox3.Name = "TextBox3"
+        Me.TabPage1.Controls.Add(Me.ButtonDebugRewind)
+        Me.TabPage1.Controls.Add(Me.Label4)
+        Me.TabPage1.Controls.Add(Me.Label16)
+        Me.TabPage1.Controls.Add(Me.NumericUpDown2)
+        Me.TabPage1.Controls.Add(Me.CheckBox4)
+        Me.TabPage1.Controls.Add(Me.NumericUpDown1)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugFormat)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugReadInfo)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugLocate)
+        Me.TabPage1.Controls.Add(Me.Label10)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugReleaseUnit)
+        Me.TabPage1.Controls.Add(Me.ComboBox3)
+        Me.TabPage1.Controls.Add(Me.NumericUpDown6)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugReadBlock)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugReadPosition)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugDumpIndex)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugErase)
+        Me.TabPage1.Controls.Add(Me.NumericUpDown7)
+        Me.TabPage1.Controls.Add(Me.CheckBox2)
+        Me.TabPage1.Controls.Add(Me.Label5)
+        Me.TabPage1.Controls.Add(Me.Button24)
+        Me.TabPage1.Controls.Add(Me.ButtonDebugDumpTape)
+        resources.ApplyResources(Me.TabPage1, "TabPage1")
+        Me.TabPage1.Name = "TabPage1"
+        Me.TabPage1.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugRewind
+        '
+        resources.ApplyResources(Me.ButtonDebugRewind, "ButtonDebugRewind")
+        Me.ButtonDebugRewind.Name = "ButtonDebugRewind"
+        Me.ButtonDebugRewind.UseVisualStyleBackColor = True
+        '
+        'Label4
+        '
+        resources.ApplyResources(Me.Label4, "Label4")
+        Me.Label4.Name = "Label4"
+        '
+        'Label16
+        '
+        resources.ApplyResources(Me.Label16, "Label16")
+        Me.Label16.Name = "Label16"
+        '
+        'NumericUpDown2
+        '
+        resources.ApplyResources(Me.NumericUpDown2, "NumericUpDown2")
+        Me.NumericUpDown2.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
+        Me.NumericUpDown2.Name = "NumericUpDown2"
         '
         'CheckBox4
         '
@@ -325,17 +378,11 @@ Partial Class LTFSConfigurator
         Me.CheckBox4.Name = "CheckBox4"
         Me.CheckBox4.UseVisualStyleBackColor = True
         '
-        'ButtonDebugAllowMediaRemoval
+        'NumericUpDown1
         '
-        resources.ApplyResources(Me.ButtonDebugAllowMediaRemoval, "ButtonDebugAllowMediaRemoval")
-        Me.ButtonDebugAllowMediaRemoval.Name = "ButtonDebugAllowMediaRemoval"
-        Me.ButtonDebugAllowMediaRemoval.UseVisualStyleBackColor = True
-        '
-        'ButtonDebugReleaseUnit
-        '
-        resources.ApplyResources(Me.ButtonDebugReleaseUnit, "ButtonDebugReleaseUnit")
-        Me.ButtonDebugReleaseUnit.Name = "ButtonDebugReleaseUnit"
-        Me.ButtonDebugReleaseUnit.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.NumericUpDown1, "NumericUpDown1")
+        Me.NumericUpDown1.Maximum = New Decimal(New Integer() {7, 0, 0, 0})
+        Me.NumericUpDown1.Name = "NumericUpDown1"
         '
         'ButtonDebugFormat
         '
@@ -343,11 +390,34 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugFormat.Name = "ButtonDebugFormat"
         Me.ButtonDebugFormat.UseVisualStyleBackColor = True
         '
-        'ButtonDebugDumpIndex
+        'ButtonDebugAllowMediaRemoval
         '
-        resources.ApplyResources(Me.ButtonDebugDumpIndex, "ButtonDebugDumpIndex")
-        Me.ButtonDebugDumpIndex.Name = "ButtonDebugDumpIndex"
-        Me.ButtonDebugDumpIndex.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.ButtonDebugAllowMediaRemoval, "ButtonDebugAllowMediaRemoval")
+        Me.ButtonDebugAllowMediaRemoval.Name = "ButtonDebugAllowMediaRemoval"
+        Me.ButtonDebugAllowMediaRemoval.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugReadInfo
+        '
+        resources.ApplyResources(Me.ButtonDebugReadInfo, "ButtonDebugReadInfo")
+        Me.ButtonDebugReadInfo.Name = "ButtonDebugReadInfo"
+        Me.ButtonDebugReadInfo.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugLocate
+        '
+        resources.ApplyResources(Me.ButtonDebugLocate, "ButtonDebugLocate")
+        Me.ButtonDebugLocate.Name = "ButtonDebugLocate"
+        Me.ButtonDebugLocate.UseVisualStyleBackColor = True
+        '
+        'Label10
+        '
+        resources.ApplyResources(Me.Label10, "Label10")
+        Me.Label10.Name = "Label10"
+        '
+        'ButtonDebugReleaseUnit
+        '
+        resources.ApplyResources(Me.ButtonDebugReleaseUnit, "ButtonDebugReleaseUnit")
+        Me.ButtonDebugReleaseUnit.Name = "ButtonDebugReleaseUnit"
+        Me.ButtonDebugReleaseUnit.UseVisualStyleBackColor = True
         '
         'ComboBox3
         '
@@ -357,11 +427,56 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.ComboBox3, "ComboBox3")
         Me.ComboBox3.Name = "ComboBox3"
         '
+        'NumericUpDown6
+        '
+        resources.ApplyResources(Me.NumericUpDown6, "NumericUpDown6")
+        Me.NumericUpDown6.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
+        Me.NumericUpDown6.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NumericUpDown6.Name = "NumericUpDown6"
+        Me.NumericUpDown6.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'ButtonDebugReadBlock
+        '
+        resources.ApplyResources(Me.ButtonDebugReadBlock, "ButtonDebugReadBlock")
+        Me.ButtonDebugReadBlock.Name = "ButtonDebugReadBlock"
+        Me.ButtonDebugReadBlock.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugReadPosition
+        '
+        resources.ApplyResources(Me.ButtonDebugReadPosition, "ButtonDebugReadPosition")
+        Me.ButtonDebugReadPosition.Name = "ButtonDebugReadPosition"
+        Me.ButtonDebugReadPosition.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugDumpIndex
+        '
+        resources.ApplyResources(Me.ButtonDebugDumpIndex, "ButtonDebugDumpIndex")
+        Me.ButtonDebugDumpIndex.Name = "ButtonDebugDumpIndex"
+        Me.ButtonDebugDumpIndex.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugErase
+        '
+        resources.ApplyResources(Me.ButtonDebugErase, "ButtonDebugErase")
+        Me.ButtonDebugErase.Name = "ButtonDebugErase"
+        Me.ButtonDebugErase.UseVisualStyleBackColor = True
+        '
+        'NumericUpDown7
+        '
+        resources.ApplyResources(Me.NumericUpDown7, "NumericUpDown7")
+        Me.NumericUpDown7.Maximum = New Decimal(New Integer() {524288, 0, 0, 0})
+        Me.NumericUpDown7.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NumericUpDown7.Name = "NumericUpDown7"
+        Me.NumericUpDown7.Value = New Decimal(New Integer() {524288, 0, 0, 0})
+        '
         'CheckBox2
         '
         resources.ApplyResources(Me.CheckBox2, "CheckBox2")
         Me.CheckBox2.Name = "CheckBox2"
         Me.CheckBox2.UseVisualStyleBackColor = True
+        '
+        'Label5
+        '
+        resources.ApplyResources(Me.Label5, "Label5")
+        Me.Label5.Name = "Label5"
         '
         'Button24
         '
@@ -377,44 +492,23 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
-        'ButtonDebugReadPosition
+        'TabPage2
         '
-        resources.ApplyResources(Me.ButtonDebugReadPosition, "ButtonDebugReadPosition")
-        Me.ButtonDebugReadPosition.Name = "ButtonDebugReadPosition"
-        Me.ButtonDebugReadPosition.UseVisualStyleBackColor = True
+        Me.TabPage2.Controls.Add(Me.ButtonDebugDumpBuffer)
+        Me.TabPage2.Controls.Add(Me.ComboBox2)
+        Me.TabPage2.Controls.Add(Me.Label14)
+        Me.TabPage2.Controls.Add(Me.Label11)
+        Me.TabPage2.Controls.Add(Me.TextBox9)
+        Me.TabPage2.Controls.Add(Me.ButtonDebugWriteBarcode)
+        resources.ApplyResources(Me.TabPage2, "TabPage2")
+        Me.TabPage2.Name = "TabPage2"
+        Me.TabPage2.UseVisualStyleBackColor = True
         '
-        'ButtonDebugLocate
+        'ButtonDebugDumpBuffer
         '
-        resources.ApplyResources(Me.ButtonDebugLocate, "ButtonDebugLocate")
-        Me.ButtonDebugLocate.Name = "ButtonDebugLocate"
-        Me.ButtonDebugLocate.UseVisualStyleBackColor = True
-        '
-        'Label16
-        '
-        resources.ApplyResources(Me.Label16, "Label16")
-        Me.Label16.Name = "Label16"
-        '
-        'NumericUpDown1
-        '
-        resources.ApplyResources(Me.NumericUpDown1, "NumericUpDown1")
-        Me.NumericUpDown1.Maximum = New Decimal(New Integer() {7, 0, 0, 0})
-        Me.NumericUpDown1.Name = "NumericUpDown1"
-        '
-        'NumericUpDown2
-        '
-        resources.ApplyResources(Me.NumericUpDown2, "NumericUpDown2")
-        Me.NumericUpDown2.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
-        Me.NumericUpDown2.Name = "NumericUpDown2"
-        '
-        'Label5
-        '
-        resources.ApplyResources(Me.Label5, "Label5")
-        Me.Label5.Name = "Label5"
-        '
-        'Label4
-        '
-        resources.ApplyResources(Me.Label4, "Label4")
-        Me.Label4.Name = "Label4"
+        resources.ApplyResources(Me.ButtonDebugDumpBuffer, "ButtonDebugDumpBuffer")
+        Me.ButtonDebugDumpBuffer.Name = "ButtonDebugDumpBuffer"
+        Me.ButtonDebugDumpBuffer.UseVisualStyleBackColor = True
         '
         'ComboBox2
         '
@@ -424,61 +518,48 @@ Partial Class LTFSConfigurator
         Me.ComboBox2.Items.AddRange(New Object() {resources.GetString("ComboBox2.Items"), resources.GetString("ComboBox2.Items1"), resources.GetString("ComboBox2.Items2"), resources.GetString("ComboBox2.Items3"), resources.GetString("ComboBox2.Items4"), resources.GetString("ComboBox2.Items5"), resources.GetString("ComboBox2.Items6"), resources.GetString("ComboBox2.Items7"), resources.GetString("ComboBox2.Items8"), resources.GetString("ComboBox2.Items9"), resources.GetString("ComboBox2.Items10"), resources.GetString("ComboBox2.Items11"), resources.GetString("ComboBox2.Items12"), resources.GetString("ComboBox2.Items13"), resources.GetString("ComboBox2.Items14"), resources.GetString("ComboBox2.Items15"), resources.GetString("ComboBox2.Items16"), resources.GetString("ComboBox2.Items17"), resources.GetString("ComboBox2.Items18"), resources.GetString("ComboBox2.Items19"), resources.GetString("ComboBox2.Items20"), resources.GetString("ComboBox2.Items21"), resources.GetString("ComboBox2.Items22"), resources.GetString("ComboBox2.Items23"), resources.GetString("ComboBox2.Items24"), resources.GetString("ComboBox2.Items25"), resources.GetString("ComboBox2.Items26"), resources.GetString("ComboBox2.Items27"), resources.GetString("ComboBox2.Items28"), resources.GetString("ComboBox2.Items29"), resources.GetString("ComboBox2.Items30"), resources.GetString("ComboBox2.Items31"), resources.GetString("ComboBox2.Items32"), resources.GetString("ComboBox2.Items33"), resources.GetString("ComboBox2.Items34"), resources.GetString("ComboBox2.Items35"), resources.GetString("ComboBox2.Items36"), resources.GetString("ComboBox2.Items37"), resources.GetString("ComboBox2.Items38"), resources.GetString("ComboBox2.Items39"), resources.GetString("ComboBox2.Items40"), resources.GetString("ComboBox2.Items41"), resources.GetString("ComboBox2.Items42"), resources.GetString("ComboBox2.Items43"), resources.GetString("ComboBox2.Items44"), resources.GetString("ComboBox2.Items45"), resources.GetString("ComboBox2.Items46"), resources.GetString("ComboBox2.Items47"), resources.GetString("ComboBox2.Items48"), resources.GetString("ComboBox2.Items49"), resources.GetString("ComboBox2.Items50"), resources.GetString("ComboBox2.Items51"), resources.GetString("ComboBox2.Items52"), resources.GetString("ComboBox2.Items53"), resources.GetString("ComboBox2.Items54"), resources.GetString("ComboBox2.Items55"), resources.GetString("ComboBox2.Items56"), resources.GetString("ComboBox2.Items57"), resources.GetString("ComboBox2.Items58"), resources.GetString("ComboBox2.Items59"), resources.GetString("ComboBox2.Items60"), resources.GetString("ComboBox2.Items61"), resources.GetString("ComboBox2.Items62"), resources.GetString("ComboBox2.Items63"), resources.GetString("ComboBox2.Items64"), resources.GetString("ComboBox2.Items65"), resources.GetString("ComboBox2.Items66"), resources.GetString("ComboBox2.Items67"), resources.GetString("ComboBox2.Items68"), resources.GetString("ComboBox2.Items69"), resources.GetString("ComboBox2.Items70"), resources.GetString("ComboBox2.Items71"), resources.GetString("ComboBox2.Items72"), resources.GetString("ComboBox2.Items73"), resources.GetString("ComboBox2.Items74"), resources.GetString("ComboBox2.Items75"), resources.GetString("ComboBox2.Items76"), resources.GetString("ComboBox2.Items77"), resources.GetString("ComboBox2.Items78"), resources.GetString("ComboBox2.Items79"), resources.GetString("ComboBox2.Items80"), resources.GetString("ComboBox2.Items81")})
         Me.ComboBox2.Name = "ComboBox2"
         '
-        'ButtonDebugDumpBuffer
-        '
-        resources.ApplyResources(Me.ButtonDebugDumpBuffer, "ButtonDebugDumpBuffer")
-        Me.ButtonDebugDumpBuffer.Name = "ButtonDebugDumpBuffer"
-        Me.ButtonDebugDumpBuffer.UseVisualStyleBackColor = True
-        '
-        'NumericUpDown7
-        '
-        resources.ApplyResources(Me.NumericUpDown7, "NumericUpDown7")
-        Me.NumericUpDown7.Maximum = New Decimal(New Integer() {524288, 0, 0, 0})
-        Me.NumericUpDown7.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.NumericUpDown7.Name = "NumericUpDown7"
-        Me.NumericUpDown7.Value = New Decimal(New Integer() {524288, 0, 0, 0})
-        '
-        'ButtonDebugReadBlock
-        '
-        resources.ApplyResources(Me.ButtonDebugReadBlock, "ButtonDebugReadBlock")
-        Me.ButtonDebugReadBlock.Name = "ButtonDebugReadBlock"
-        Me.ButtonDebugReadBlock.UseVisualStyleBackColor = True
-        '
         'Label14
         '
         resources.ApplyResources(Me.Label14, "Label14")
         Me.Label14.Name = "Label14"
         '
-        'ButtonDebugRewind
+        'Label11
         '
-        resources.ApplyResources(Me.ButtonDebugRewind, "ButtonDebugRewind")
-        Me.ButtonDebugRewind.Name = "ButtonDebugRewind"
-        Me.ButtonDebugRewind.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.Label11, "Label11")
+        Me.Label11.Name = "Label11"
         '
-        'ButtonDebugDumpMAM
+        'TextBox9
         '
-        resources.ApplyResources(Me.ButtonDebugDumpMAM, "ButtonDebugDumpMAM")
-        Me.ButtonDebugDumpMAM.Name = "ButtonDebugDumpMAM"
-        Me.ButtonDebugDumpMAM.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.TextBox9, "TextBox9")
+        Me.TextBox9.Name = "TextBox9"
         '
-        'ButtonDebugReadInfo
+        'ButtonDebugWriteBarcode
         '
-        resources.ApplyResources(Me.ButtonDebugReadInfo, "ButtonDebugReadInfo")
-        Me.ButtonDebugReadInfo.Name = "ButtonDebugReadInfo"
-        Me.ButtonDebugReadInfo.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.ButtonDebugWriteBarcode, "ButtonDebugWriteBarcode")
+        Me.ButtonDebugWriteBarcode.Name = "ButtonDebugWriteBarcode"
+        Me.ButtonDebugWriteBarcode.UseVisualStyleBackColor = True
         '
-        'ButtonDebugReadMAM
+        'TabPage3
         '
-        resources.ApplyResources(Me.ButtonDebugReadMAM, "ButtonDebugReadMAM")
-        Me.ButtonDebugReadMAM.Name = "ButtonDebugReadMAM"
-        Me.ButtonDebugReadMAM.UseVisualStyleBackColor = True
+        Me.TabPage3.Controls.Add(Me.Label13)
+        Me.TabPage3.Controls.Add(Me.Label15)
+        Me.TabPage3.Controls.Add(Me.NumericUpDown8)
+        Me.TabPage3.Controls.Add(Me.NumericUpDown9)
+        Me.TabPage3.Controls.Add(Me.ButtonDebugReadMAM)
+        Me.TabPage3.Controls.Add(Me.ButtonDebugDumpMAM)
+        resources.ApplyResources(Me.TabPage3, "TabPage3")
+        Me.TabPage3.Name = "TabPage3"
+        Me.TabPage3.UseVisualStyleBackColor = True
         '
-        'NumericUpDown9
+        'Label13
         '
-        resources.ApplyResources(Me.NumericUpDown9, "NumericUpDown9")
-        Me.NumericUpDown9.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
-        Me.NumericUpDown9.Name = "NumericUpDown9"
-        Me.NumericUpDown9.Value = New Decimal(New Integer() {6, 0, 0, 0})
+        resources.ApplyResources(Me.Label13, "Label13")
+        Me.Label13.Name = "Label13"
+        '
+        'Label15
+        '
+        resources.ApplyResources(Me.Label15, "Label15")
+        Me.Label15.Name = "Label15"
         '
         'NumericUpDown8
         '
@@ -487,15 +568,70 @@ Partial Class LTFSConfigurator
         Me.NumericUpDown8.Name = "NumericUpDown8"
         Me.NumericUpDown8.Value = New Decimal(New Integer() {8, 0, 0, 0})
         '
-        'Label15
+        'NumericUpDown9
         '
-        resources.ApplyResources(Me.Label15, "Label15")
-        Me.Label15.Name = "Label15"
+        resources.ApplyResources(Me.NumericUpDown9, "NumericUpDown9")
+        Me.NumericUpDown9.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
+        Me.NumericUpDown9.Name = "NumericUpDown9"
+        Me.NumericUpDown9.Value = New Decimal(New Integer() {6, 0, 0, 0})
         '
-        'Label13
+        'ButtonDebugReadMAM
         '
-        resources.ApplyResources(Me.Label13, "Label13")
-        Me.Label13.Name = "Label13"
+        resources.ApplyResources(Me.ButtonDebugReadMAM, "ButtonDebugReadMAM")
+        Me.ButtonDebugReadMAM.Name = "ButtonDebugReadMAM"
+        Me.ButtonDebugReadMAM.UseVisualStyleBackColor = True
+        '
+        'ButtonDebugDumpMAM
+        '
+        resources.ApplyResources(Me.ButtonDebugDumpMAM, "ButtonDebugDumpMAM")
+        Me.ButtonDebugDumpMAM.Name = "ButtonDebugDumpMAM"
+        Me.ButtonDebugDumpMAM.UseVisualStyleBackColor = True
+        '
+        'TabPage4
+        '
+        Me.TabPage4.Controls.Add(Me.ComboBox5)
+        Me.TabPage4.Controls.Add(Me.Label19)
+        Me.TabPage4.Controls.Add(Me.Button12)
+        Me.TabPage4.Controls.Add(Me.Label18)
+        Me.TabPage4.Controls.Add(Me.ComboBox4)
+        Me.TabPage4.Controls.Add(Me.Button11)
+        resources.ApplyResources(Me.TabPage4, "TabPage4")
+        Me.TabPage4.Name = "TabPage4"
+        Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'Button12
+        '
+        resources.ApplyResources(Me.Button12, "Button12")
+        Me.Button12.Name = "Button12"
+        Me.Button12.UseVisualStyleBackColor = True
+        '
+        'Label18
+        '
+        resources.ApplyResources(Me.Label18, "Label18")
+        Me.Label18.Name = "Label18"
+        '
+        'ComboBox4
+        '
+        resources.ApplyResources(Me.ComboBox4, "ComboBox4")
+        Me.ComboBox4.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox4.FormattingEnabled = True
+        Me.ComboBox4.Name = "ComboBox4"
+        '
+        'Button11
+        '
+        resources.ApplyResources(Me.Button11, "Button11")
+        Me.Button11.Name = "Button11"
+        Me.Button11.UseVisualStyleBackColor = True
+        '
+        'Label17
+        '
+        resources.ApplyResources(Me.Label17, "Label17")
+        Me.Label17.Name = "Label17"
+        '
+        'TextBox3
+        '
+        resources.ApplyResources(Me.TextBox3, "TextBox3")
+        Me.TextBox3.Name = "TextBox3"
         '
         'TextBox10
         '
@@ -506,27 +642,6 @@ Partial Class LTFSConfigurator
         '
         resources.ApplyResources(Me.Label12, "Label12")
         Me.Label12.Name = "Label12"
-        '
-        'ButtonDebugWriteBarcode
-        '
-        resources.ApplyResources(Me.ButtonDebugWriteBarcode, "ButtonDebugWriteBarcode")
-        Me.ButtonDebugWriteBarcode.Name = "ButtonDebugWriteBarcode"
-        Me.ButtonDebugWriteBarcode.UseVisualStyleBackColor = True
-        '
-        'TextBox9
-        '
-        resources.ApplyResources(Me.TextBox9, "TextBox9")
-        Me.TextBox9.Name = "TextBox9"
-        '
-        'Label11
-        '
-        resources.ApplyResources(Me.Label11, "Label11")
-        Me.Label11.Name = "Label11"
-        '
-        'Label10
-        '
-        resources.ApplyResources(Me.Label10, "Label10")
-        Me.Label10.Name = "Label10"
         '
         'Label9
         '
@@ -539,14 +654,6 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.Label8, "Label8")
         Me.Label8.Name = "Label8"
         '
-        'NumericUpDown6
-        '
-        resources.ApplyResources(Me.NumericUpDown6, "NumericUpDown6")
-        Me.NumericUpDown6.Maximum = New Decimal(New Integer() {10, 0, 0, 0})
-        Me.NumericUpDown6.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.NumericUpDown6.Name = "NumericUpDown6"
-        Me.NumericUpDown6.Value = New Decimal(New Integer() {1, 0, 0, 0})
-        '
         'TextBox8
         '
         resources.ApplyResources(Me.TextBox8, "TextBox8")
@@ -556,12 +663,6 @@ Partial Class LTFSConfigurator
         '
         resources.ApplyResources(Me.TextBox7, "TextBox7")
         Me.TextBox7.Name = "TextBox7"
-        '
-        'ButtonDebugErase
-        '
-        resources.ApplyResources(Me.ButtonDebugErase, "ButtonDebugErase")
-        Me.ButtonDebugErase.Name = "ButtonDebugErase"
-        Me.ButtonDebugErase.UseVisualStyleBackColor = True
         '
         'ButtonDebugSendSCSICommand
         '
@@ -603,102 +704,18 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'Button11
+        'Label19
         '
-        resources.ApplyResources(Me.Button11, "Button11")
-        Me.Button11.Name = "Button11"
-        Me.Button11.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.Label19, "Label19")
+        Me.Label19.Name = "Label19"
         '
-        'TabControl1
+        'ComboBox5
         '
-        resources.ApplyResources(Me.TabControl1, "TabControl1")
-        Me.TabControl1.Controls.Add(Me.TabPage1)
-        Me.TabControl1.Controls.Add(Me.TabPage2)
-        Me.TabControl1.Controls.Add(Me.TabPage3)
-        Me.TabControl1.Controls.Add(Me.TabPage4)
-        Me.TabControl1.Name = "TabControl1"
-        Me.TabControl1.SelectedIndex = 0
-        '
-        'TabPage1
-        '
-        Me.TabPage1.Controls.Add(Me.ButtonDebugRewind)
-        Me.TabPage1.Controls.Add(Me.Label4)
-        Me.TabPage1.Controls.Add(Me.Label16)
-        Me.TabPage1.Controls.Add(Me.NumericUpDown2)
-        Me.TabPage1.Controls.Add(Me.CheckBox4)
-        Me.TabPage1.Controls.Add(Me.NumericUpDown1)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugFormat)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugReadInfo)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugLocate)
-        Me.TabPage1.Controls.Add(Me.Label10)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugReleaseUnit)
-        Me.TabPage1.Controls.Add(Me.ComboBox3)
-        Me.TabPage1.Controls.Add(Me.NumericUpDown6)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugReadBlock)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugReadPosition)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugDumpIndex)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugErase)
-        Me.TabPage1.Controls.Add(Me.NumericUpDown7)
-        Me.TabPage1.Controls.Add(Me.CheckBox2)
-        Me.TabPage1.Controls.Add(Me.Label5)
-        Me.TabPage1.Controls.Add(Me.Button24)
-        Me.TabPage1.Controls.Add(Me.ButtonDebugDumpTape)
-        resources.ApplyResources(Me.TabPage1, "TabPage1")
-        Me.TabPage1.Name = "TabPage1"
-        Me.TabPage1.UseVisualStyleBackColor = True
-        '
-        'TabPage2
-        '
-        Me.TabPage2.Controls.Add(Me.ButtonDebugDumpBuffer)
-        Me.TabPage2.Controls.Add(Me.ComboBox2)
-        Me.TabPage2.Controls.Add(Me.Label14)
-        Me.TabPage2.Controls.Add(Me.Label11)
-        Me.TabPage2.Controls.Add(Me.TextBox9)
-        Me.TabPage2.Controls.Add(Me.ButtonDebugWriteBarcode)
-        resources.ApplyResources(Me.TabPage2, "TabPage2")
-        Me.TabPage2.Name = "TabPage2"
-        Me.TabPage2.UseVisualStyleBackColor = True
-        '
-        'TabPage3
-        '
-        Me.TabPage3.Controls.Add(Me.Label13)
-        Me.TabPage3.Controls.Add(Me.Label15)
-        Me.TabPage3.Controls.Add(Me.NumericUpDown8)
-        Me.TabPage3.Controls.Add(Me.NumericUpDown9)
-        Me.TabPage3.Controls.Add(Me.ButtonDebugReadMAM)
-        Me.TabPage3.Controls.Add(Me.ButtonDebugDumpMAM)
-        resources.ApplyResources(Me.TabPage3, "TabPage3")
-        Me.TabPage3.Name = "TabPage3"
-        Me.TabPage3.UseVisualStyleBackColor = True
-        '
-        'TabPage4
-        '
-        Me.TabPage4.Controls.Add(Me.Button12)
-        Me.TabPage4.Controls.Add(Me.Label18)
-        Me.TabPage4.Controls.Add(Me.ComboBox4)
-        Me.TabPage4.Controls.Add(Me.Button11)
-        resources.ApplyResources(Me.TabPage4, "TabPage4")
-        Me.TabPage4.Name = "TabPage4"
-        Me.TabPage4.UseVisualStyleBackColor = True
-        '
-        'ComboBox4
-        '
-        resources.ApplyResources(Me.ComboBox4, "ComboBox4")
-        Me.ComboBox4.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.ComboBox4.FormattingEnabled = True
-        Me.ComboBox4.Name = "ComboBox4"
-        '
-        'Label18
-        '
-        resources.ApplyResources(Me.Label18, "Label18")
-        Me.Label18.Name = "Label18"
-        '
-        'Button12
-        '
-        resources.ApplyResources(Me.Button12, "Button12")
-        Me.Button12.Name = "Button12"
-        Me.Button12.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.ComboBox5, "ComboBox5")
+        Me.ComboBox5.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox5.FormattingEnabled = True
+        Me.ComboBox5.Items.AddRange(New Object() {resources.GetString("ComboBox5.Items"), resources.GetString("ComboBox5.Items1"), resources.GetString("ComboBox5.Items2"), resources.GetString("ComboBox5.Items3")})
+        Me.ComboBox5.Name = "ComboBox5"
         '
         'LTFSConfigurator
         '
@@ -710,19 +727,19 @@ Partial Class LTFSConfigurator
         Me.Panel1.PerformLayout()
         Me.Panel2.ResumeLayout(False)
         Me.Panel2.PerformLayout()
-        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDown9, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDown8, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabControl1.ResumeLayout(False)
         Me.TabPage1.ResumeLayout(False)
         Me.TabPage1.PerformLayout()
+        CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPage2.ResumeLayout(False)
         Me.TabPage2.PerformLayout()
         Me.TabPage3.ResumeLayout(False)
         Me.TabPage3.PerformLayout()
+        CType(Me.NumericUpDown8, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDown9, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPage4.ResumeLayout(False)
         Me.TabPage4.PerformLayout()
         Me.ResumeLayout(False)
@@ -815,4 +832,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents Button12 As Button
     Friend WithEvents Label18 As Label
     Friend WithEvents ComboBox4 As ComboBox
+    Friend WithEvents ComboBox5 As ComboBox
+    Friend WithEvents Label19 As Label
 End Class

@@ -1767,7 +1767,8 @@ Public Class TapeUtils
                     OnError("Load Fail" & vbCrLf)
                     Return False
                 End If
-                Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
+                Dim ModeData As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
+                Dim MaxExtraPartitionAllowed As Byte = ModeData(2)
                 ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
                 If Not AllowPartition Then ExtraPartitionCount = 0
                 If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
@@ -1792,7 +1793,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, &H3C, 3, 9, 0, (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)
@@ -4541,7 +4542,22 @@ Public Class TapeUtils
                     Get
                         If Parent Is Nothing Then Return ""
                         Dim rawdata As Byte() = Me.RawData()
+                        If rawdata Is Nothing OrElse rawdata.Length = 0 Then Return ""
                         Select Case Type
+                            Case DataType.Byte
+                                Dim result As Byte
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    result = result << 8
+                                    result = result Or rawdata(i)
+                                Next
+                                Return result.ToString
+                            Case DataType.Int16
+                                Dim result As Int16
+                                For i As Integer = 0 To rawdata.Length - 1
+                                    result = result << 8
+                                    result = result Or rawdata(i)
+                                Next
+                                Return result.ToString
                             Case DataType.Int32
                                 Dim result As Integer
                                 For i As Integer = 0 To rawdata.Length - 1
@@ -4582,6 +4598,16 @@ Public Class TapeUtils
                                     End If
                                 End If
                                 Return key.ToString()
+                            Case DataType.Binary
+                                Return $"0x{BitConverter.ToString(rawdata).Replace("-", "").ToUpper}"
+                            Case DataType.PageData
+                                Dim pagedata As PageData
+                                If Parent.PageDataTemplate.TryGetValue(ParamCode, pagedata) Then
+                                    pagedata.RawData = rawdata
+                                    Return pagedata.GetSummary(False)
+                                Else
+                                    Return ""
+                                End If
                             Case Else
                                 If rawdata.Length > 0 Then Return Byte2Hex(rawdata, True) Else Return ""
                         End Select
@@ -4624,9 +4650,10 @@ Public Class TapeUtils
                     PageData.DynamicParamType.TryGetValue(PCode, dataType)
                     Return New DynamicParamPage With {.Parent = PageData, .ParamCode = PCode, .RawData = resultData, .Type = dataType}
                 End Function
-
             End Class
             Public Enum DataType
+                [Byte]
+                Int16
                 Int32
                 Int64
                 UInt64
@@ -4635,10 +4662,13 @@ Public Class TapeUtils
                 [Enum]
                 Binary
                 DynamicPage
+                PageData
+                RawData
             End Enum
             Public Property Type As DataType
             Public Property EnumTranslator As SerializableDictionary(Of Long, String)
             Public Property DynamicParamType As SerializableDictionary(Of Long, DataType)
+            Public Property PageDataTemplate As SerializableDictionary(Of Long, PageData)
             Public ReadOnly Property RawData As Byte()
                 Get
                     If Parent Is Nothing Then Return Nothing
@@ -4650,6 +4680,7 @@ Public Class TapeUtils
                         Dim resultByteNum As Integer = result.Length - 1 - i \ 8
                         Dim resultBitNum As Byte = i Mod 8 '76543210
                         Dim sourceByteNum As Integer = StartByte + (BitOffset + TotalBits - i - 1) \ 8
+                        If sourceByteNum >= Parent.RawData.Length Then Return result
                         Dim sourceBitNum As Integer = 7 - (BitOffset + TotalBits - i - 1) Mod 8
                         result(resultByteNum) = result(resultByteNum) Or ((Parent.RawData(sourceByteNum) And 1 << sourceBitNum) >> sourceBitNum) << resultBitNum
                     Next
@@ -4660,7 +4691,21 @@ Public Class TapeUtils
                 Get
                     If Parent Is Nothing Then Return ""
                     Dim rawdata As Byte() = Me.RawData()
+                    If rawdata Is Nothing OrElse rawdata.Length = 0 Then Return ""
                     Select Case Type
+                        Case DataType.Byte
+                            Dim result As Byte
+                            For i As Integer = 0 To rawdata.Length - 1
+                                result = result << 8
+                                result = result Or rawdata(i)
+                            Next
+                            Return result.ToString
+                        Case DataType.Int16
+                            Dim result As Int16
+                            For i As Integer = 0 To rawdata.Length - 1
+                                result = result << 8
+                                result = result Or rawdata(i)
+                            Next
                         Case DataType.Int32
                             Dim result As Integer
                             For i As Integer = 0 To rawdata.Length - 1
@@ -4731,13 +4776,13 @@ Public Class TapeUtils
         Public Property PageCode As Integer
         Public Property Items As New List(Of DataItem)
         <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
-        Public Function GetSummary() As String
+        Public Function GetSummary(Optional ByVal ShowTitle As Boolean = True) As String
             Dim sb As New StringBuilder
-            sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
+            If ShowTitle Then sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
             For Each it As DataItem In Items
                 sb.AppendLine($"{it.Name} = {it.GetString()}")
             Next
-            sb.AppendLine("".PadRight(64, "="))
+            If ShowTitle Then sb.AppendLine("".PadRight(64, "="))
             Return sb.ToString()
         End Function
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
@@ -4755,6 +4800,13 @@ Public Class TapeUtils
             If result.Items IsNot Nothing Then
                 For Each it As DataItem In result.Items
                     it.Parent = result
+                    If it.PageDataTemplate IsNot Nothing Then
+                        For Each t2 As PageData In it.PageDataTemplate.Values
+                            For Each i2 As DataItem In t2.Items
+                                i2.Parent = t2
+                            Next
+                        Next
+                    End If
                 Next
             End If
             Return result
