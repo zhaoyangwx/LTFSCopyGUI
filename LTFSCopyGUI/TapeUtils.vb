@@ -722,6 +722,7 @@ Public Class TapeUtils
         VCIData = VCIData.Concat({0, 1}).ToArray()
         Return SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount)
     End Function
+
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
         Dim Msg As String = ""
         Select Case Add_Code
@@ -4530,6 +4531,7 @@ Public Class TapeUtils
                     Get
                         Dim value As String = ""
                         Parent.EnumTranslator.TryGetValue(ParamCode, value)
+                        If value = "" Then value = $"0x{Hex(ParamCode).Replace("-", "")}"
                         Return value
                     End Get
                 End Property
@@ -4675,6 +4677,7 @@ Public Class TapeUtils
                     If Type = DataType.DynamicPage Then
                         Return Parent.RawData.Skip(StartByte).ToArray()
                     End If
+                    If (StartByte + (BitOffset + TotalBits - 1) \ 8) >= Parent.RawData.Length Then Return Nothing
                     Dim result(Math.Ceiling(TotalBits / 8) - 1) As Byte
                     For i As Integer = 0 To TotalBits - 1
                         Dim resultByteNum As Integer = result.Length - 1 - i \ 8
@@ -4706,12 +4709,14 @@ Public Class TapeUtils
                                 result = result << 8
                                 result = result Or rawdata(i)
                             Next
+                            Return result.ToString
                         Case DataType.Int32
                             Dim result As Integer
                             For i As Integer = 0 To rawdata.Length - 1
                                 result = result << 8
                                 result = result Or rawdata(i)
                             Next
+                            Return result.ToString
                         Case DataType.Int64
                             Dim result As Long
                             For i As Integer = 0 To rawdata.Length - 1
@@ -4780,7 +4785,8 @@ Public Class TapeUtils
             Dim sb As New StringBuilder
             If ShowTitle Then sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
             For Each it As DataItem In Items
-                sb.AppendLine($"{it.Name} = {it.GetString()}")
+                Dim result As String = it.GetString()
+                If result IsNot Nothing AndAlso result.Length > 0 Then sb.AppendLine($"{it.Name} = {result}")
             Next
             If ShowTitle Then sb.AppendLine("".PadRight(64, "="))
             Return sb.ToString()

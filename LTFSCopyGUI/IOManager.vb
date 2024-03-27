@@ -648,7 +648,7 @@ Public Class IOManager
                 End If
             End SyncLock
             If Len = -1 Then Len = block.Length
-            While q.Count > 32
+            While q.Count > 1024
                 Threading.Thread.Sleep(0)
             End While
             SyncLock Lock
