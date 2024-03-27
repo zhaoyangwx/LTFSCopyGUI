@@ -30,7 +30,9 @@ Public Class LTFSWriter
     Public Property TotalBytesUnindexed As Long
         Set(value As Long)
             _TotalBytesUnindexed = value
-            If value <> 0 AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then 更新数据区索引ToolStripMenuItem.Enabled = True
+            If Not 更新数据区索引ToolStripMenuItem.Enabled AndAlso
+                value <> 0 AndAlso schema IsNot Nothing AndAlso
+                schema.location.partition = ltfsindex.PartitionLabel.b Then Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
         End Set
         Get
             Return _TotalBytesUnindexed
@@ -317,7 +319,12 @@ Public Class LTFSWriter
                 ToolStripProgressBar1.ToolTipText = $"{My.Resources.ResText_S4}{IOManager.FormatSize(CurrentBytesProcessed)}/{IOManager.FormatSize(USize)}"
             End If
             Text = GetLocInfo()
-            GC.Collect()
+            Static GCCollectCounter As Integer
+            GCCollectCounter += 1
+            If GCCollectCounter >= 60 Then
+                GC.Collect()
+                GCCollectCounter = 0
+            End If
         Catch ex As Exception
             PrintMsg(ex.ToString)
         End Try
@@ -2241,8 +2248,8 @@ Public Class LTFSWriter
                             Next
                         End If
                         Dim HashTaskAwaitNumber As Integer = 0
-                        Threading.ThreadPool.SetMaxThreads(256, 256)
-                        Threading.ThreadPool.SetMinThreads(128, 128)
+                        Threading.ThreadPool.SetMaxThreads(1024, 1024)
+                        Threading.ThreadPool.SetMinThreads(256, 256)
                         Dim ExitForFlag As Boolean = False
                         'DeDupe
 
@@ -4013,7 +4020,7 @@ Public Class LTFSWriter
                 Host.PostCleanupWhenModifiedOnly = True
                 Host.FlushAndPurgeOnCleanup = True
                 Host.PassQueryDirectoryPattern = True
-                Host.MaxComponentLength = 8104
+                Host.MaxComponentLength = 4096
 
             Catch ex As Exception
                 MessageBox.Show(ex.ToString)

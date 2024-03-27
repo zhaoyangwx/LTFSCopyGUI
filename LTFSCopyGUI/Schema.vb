@@ -316,11 +316,13 @@ Public Class ltfsindex
         Searializing = False
         Dim soutp As New IO.StreamReader(tmpf)
         Dim sout As New System.Text.StringBuilder
+        Dim sline As String = soutp.ReadLine()
+        If sline.StartsWith("<?xml") Then
+            sline = sline.Replace("utf-8", "UTF-8")
+        End If
+        If ReduceSize Then sline = sline.Replace("xmlns:v", "version")
         While Not soutp.EndOfStream
-            Dim sline As String = soutp.ReadLine()
-            If sline.StartsWith("<?xml") Then
-                sline = sline.Replace("utf-8", "UTF-8")
-            End If
+            sline = soutp.ReadLine()
             If ReduceSize Then
                 sline = sline.Replace("xmlns:v", "version")
                 sline = sline.Replace("<_file />", "")
@@ -352,11 +354,13 @@ Public Class ltfsindex
         Dim soutp As New IO.StreamReader(tmpf)
 
         Dim sout As New IO.StreamWriter(FileName, False, New Text.UTF8Encoding(False))
+        Dim sline As String = soutp.ReadLine()
+        If sline.StartsWith("<?xml") Then
+            sline = sline.Replace("utf-8", "UTF-8")
+        End If
+        sline = sline.Replace("xmlns:v", "version")
         While Not soutp.EndOfStream
-            Dim sline As String = soutp.ReadLine()
-            If sline.StartsWith("<?xml") Then
-                sline = sline.Replace("utf-8", "UTF-8")
-            End If
+            sline = soutp.ReadLine()
             sline = sline.Replace("xmlns:v", "version")
             sline = sline.Replace("<_file />", "")
             sline = sline.Replace("<_directory />", "")
@@ -477,11 +481,15 @@ End Class
         Dim soutp As New IO.StreamReader(tmpf)
 
         Dim sout As New System.Text.StringBuilder
+        Dim sline As String = soutp.ReadLine
+        If sline.StartsWith("<?xml") Then
+            sline = sline.Replace("utf-8", "UTF-8")
+        End If
+        If ReduceSize Then
+            sline = sline.Replace("xmlns:v", "version")
+        End If
         While Not soutp.EndOfStream
-            Dim sline As String = soutp.ReadLine
-            If sline.StartsWith("<?xml") Then
-                sline = sline.Replace("utf-8", "UTF-8")
-            End If
+                sline = soutp.ReadLine
             If ReduceSize Then
                 sline = sline.Replace("xmlns:v", "version")
                 sline = sline.Replace("<_file />", "")
