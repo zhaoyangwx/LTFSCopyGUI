@@ -685,11 +685,87 @@ Public Class LTFSWriter
         Return result
     End Function
     Public MaxCapacity As Long = 0
+    Public pdata As TapeUtils.PageData
     Public Sub RefreshCapacity()
         Invoke(Sub()
                    Try
-                       Dim cap0 As Long = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
-                       Dim cap1 As Long
+                       Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
+                       If pdata Is Nothing Then
+                           pdata = New TapeUtils.PageData With {.Name = "Tape Capacity log page", .PageCode = &H31, .RawData = logdata}
+                           pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                                           .Parent = pdata,
+                                           .Name = "Data Compression Parameter",
+                                           .StartByte = 4,
+                                           .BitOffset = 0,
+                                           .TotalBits = 0,
+                                           .DynamicParamCodeBitOffset = 0,
+                                           .DynamicParamCodeStartByte = 0,
+                                           .DynamicParamCodeTotalBits = 16,
+                                           .DynamicParamLenBitOffset = 0,
+                                           .DynamicParamLenStartByte = 3,
+                                           .DynamicParamLenTotalBits = 8,
+                                           .DynamicParamDataStartByte = 4,
+                                           .EnumTranslator = New SerializableDictionary(Of Long, String),
+                                           .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                                           .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+                           With pdata.Items.Last.EnumTranslator
+                               .Add(1, "Partition 0 Remaining Capacity")
+                               .Add(2, "Partition 1 Remaining Capacity")
+                               .Add(3, "Partition 0 Maximum Capacity")
+                               .Add(4, "Partition 1 Maximum Capacity")
+                               .Add(5, "Partition 2 Remaining Capacity")
+                               .Add(6, "Partition 3 Remaining Capacity")
+                               .Add(7, "Partition 2 Maximum Capacity")
+                               .Add(8, "Partition 3 Maximum Capacity")
+                           End With
+                           With pdata.Items.Last.DynamicParamType
+                               .Add(1, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(2, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(3, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(4, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(5, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(6, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(7, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(8, TapeUtils.PageData.DataItem.DataType.Int32)
+                           End With
+                       End If
+                       pdata.RawData = logdata
+                       Dim cap0, cap1, max0, max1 As Long
+                       For Each it As TapeUtils.PageData.DataItem In pdata.Items
+                           Dim i As Integer = 0
+                           While i < it.RawData.Length - 1
+                               Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, i)
+                               Select Case nextPage.ParamCode
+                                   Case 1
+                                       cap0 = 0
+                                       For j As Integer = 0 To nextPage.RawData.Length - 1
+                                           cap0 = cap0 << 8
+                                           cap0 = cap0 Or nextPage.RawData(j)
+                                       Next
+                                   Case 2
+                                       cap1 = 0
+                                       For j As Integer = 0 To nextPage.RawData.Length - 1
+                                           cap1 = cap1 << 8
+                                           cap1 = cap1 Or nextPage.RawData(j)
+                                       Next
+                                   Case 3
+                                       max0 = 0
+                                       For j As Integer = 0 To nextPage.RawData.Length - 1
+                                           max0 = max0 << 8
+                                           max0 = max0 Or nextPage.RawData(j)
+                                       Next
+                                   Case 4
+                                       max1 = 0
+                                       For j As Integer = 0 To nextPage.RawData.Length - 1
+                                           max1 = max1 << 8
+                                           max1 = max1 Or nextPage.RawData(j)
+                                       Next
+                               End Select
+
+                               i += nextPage.RawData.Length + it.DynamicParamDataStartByte
+                           End While
+                       Next
+                       'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
                        Dim loss As Long
 
                        If My.Settings.LTFSWriter_ShowLoss Then
@@ -731,8 +807,9 @@ Public Class LTFSWriter
 
 
                        If ExtraPartitionCount > 0 Then
+                           MaxCapacity = max1
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 1).AsNumeric
-                           cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+                           'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
                            ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)}"
                            If cap1 >= 4096 Then
@@ -741,6 +818,7 @@ Public Class LTFSWriter
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
                            End If
                        Else
+                           MaxCapacity = max0
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
                            ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)}"
                            ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)}"
@@ -4548,13 +4626,18 @@ Public Class LTFSWriter
             If f.GetXAttr("ltfscopygui.archive").ToLower = "true" Then
                 LockGUI(True)
                 Task.Run(Sub()
-                             Dim tmpf As String = $"{Application.StartupPath}\LDS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-                             RestorePosition = New TapeUtils.PositionData(TapeDrive)
-                             RestoreFile(tmpf, f)
-                             Dim dindex As ltfsindex.directory = ltfsindex.directory.FromFile(tmpf)
-                             d.contents._file.Remove(f)
-                             d.contents._directory.Add(dindex)
-                             IO.File.Delete(tmpf)
+                             Try
+                                 Dim tmpf As String = $"{Application.StartupPath}\LDS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+                                 RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                                 RestoreFile(tmpf, f)
+                                 Dim dindex As ltfsindex.directory = ltfsindex.directory.FromFile(tmpf)
+                                 d.contents._file.Remove(f)
+                                 d.contents._directory.Add(dindex)
+                                 IO.File.Delete(tmpf)
+                             Catch ex As Exception
+                                 PrintMsg($"解压索引出错：{ex.ToString}", ForceLog:=True)
+                             End Try
+
                              RefreshDisplay()
                              LockGUI(False)
                          End Sub)
