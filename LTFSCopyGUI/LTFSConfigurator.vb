@@ -347,7 +347,7 @@ Public Class LTFSConfigurator
 
                     Dim senseBuffer(63) As Byte
                     Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
-                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, CInt(TextBox3.Text), senseBufferPtr)
+                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, CInt(TextBox3.Text), senseBufferPtr)
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
@@ -727,7 +727,7 @@ Public Class LTFSConfigurator
         Marshal.Copy(cdbData, 0, cdb, 6)
         Dim data As IntPtr = Marshal.AllocHGlobal(1)
         Dim sense As IntPtr = Marshal.AllocHGlobal(127)
-        TapeUtils._TapeSCSIIOCtlFull(ConfTapeDrive, cdb, 6, data, 0, 2, 60000, sense)
+        TapeUtils._TapeSCSIIOCtlFullC(ConfTapeDrive, cdb, 6, data, 0, 2, 60000, sense)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(data)
         Marshal.FreeHGlobal(sense)
@@ -2936,7 +2936,7 @@ Public Class LTFSConfigurator
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
         pdata.Items.Add(New TapeUtils.PageData.DataItem With {
                         .Parent = pdata,
-                        .Name = "Data Compression Parameter",
+                        .Name = "Tape Usage Log Parameter",
                         .StartByte = 4,
                         .BitOffset = 0,
                         .TotalBits = 0,
@@ -2995,7 +2995,7 @@ Public Class LTFSConfigurator
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
         pdata.Items.Add(New TapeUtils.PageData.DataItem With {
                         .Parent = pdata,
-                        .Name = "Data Compression Parameter",
+                        .Name = "Tape Capacity Log Parameter",
                         .StartByte = 4,
                         .BitOffset = 0,
                         .TotalBits = 0,
@@ -3111,7 +3111,60 @@ Public Class LTFSConfigurator
                         .BitOffset = 0,
                         .TotalBits = 16,
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+        For i As Integer = 0 To 15
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Parameter Code {i}",
+                        .StartByte = 4 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 16,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Time Stamp",
+                        .StartByte = 8 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 32,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Int32})
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Media Signature",
+                        .StartByte = 12 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 32,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Int32})
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Sense Key",
+                        .StartByte = 16 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .EnumTranslator = SenseCodeTranslator,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Additional Sense Code",
+                        .StartByte = 17 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .EnumTranslator = AdditionalSenseCodeTranslator,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Additional Sense Qualifier",
+                        .StartByte = 18 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Byte})
 
+            pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = $"Additional Error Information",
+                        .StartByte = 19 + i * 16,
+                        .BitOffset = 0,
+                        .TotalBits = 8,
+                        .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+        Next
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x33.xml"), pdata.GetSerializedText())
@@ -3133,7 +3186,36 @@ Public Class LTFSConfigurator
                         .BitOffset = 0,
                         .TotalBits = 16,
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "Performance Data Log Parameter",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(0, "Repositions per 100 MB")
+            .Add(1, "Data rate into buffer")
+            .Add(2, "Maximum data rate")
+            .Add(3, "Current data rate")
+            .Add(4, "Native data rate")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(0, TapeUtils.PageData.DataItem.DataType.Int16)
+            .Add(1, TapeUtils.PageData.DataItem.DataType.Int16)
+            .Add(2, TapeUtils.PageData.DataItem.DataType.Int16)
+            .Add(3, TapeUtils.PageData.DataItem.DataType.Int16)
+            .Add(4, TapeUtils.PageData.DataItem.DataType.Int16)
+        End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x34.xml"), pdata.GetSerializedText())
@@ -3155,7 +3237,49 @@ Public Class LTFSConfigurator
                         .BitOffset = 0,
                         .TotalBits = 16,
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "DT Device Error Log Parameters",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .PageDataTemplate = New SerializableDictionary(Of Long, TapeUtils.PageData),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(0, "Hardware Error data")
+            .Add(1, "Media Error data")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(0, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(1, TapeUtils.PageData.DataItem.DataType.RawData)
+        End With
+        With pdata.Items.Last.PageDataTemplate
+            Dim subpage As TapeUtils.PageData
+            subpage = New TapeUtils.PageData With {.PageCode = 0, .Name = "Hardware Error data log parameter"}
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Sense Key", .StartByte = 0, .BitOffset = 4, .TotalBits = 4, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = SenseCodeTranslator
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Additional Sense Code", .StartByte = 1, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = AdditionalSenseCodeTranslator
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Additional Sense Code Qualifier", .StartByte = 2, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Hardware Error", .StartByte = 3, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Host Identification", .StartByte = 5, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Power-on Count", .StartByte = 13, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Power-on Time of Error (seconds)", .StartByte = 15, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Int32})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Library Time of Error Hour", .StartByte = 19, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Library Time of Error Minutes", .StartByte = 20, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Library Time of Error Seconds", .StartByte = 21, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
 
+            .Add(0, subpage)
+        End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x35.xml"), pdata.GetSerializedText())
@@ -3177,7 +3301,84 @@ Public Class LTFSConfigurator
                         .BitOffset = 0,
                         .TotalBits = 16,
                         .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+        pdata.Items.Add(New TapeUtils.PageData.DataItem With {
+                        .Parent = pdata,
+                        .Name = "DT Device Status Log Parameters",
+                        .StartByte = 4,
+                        .BitOffset = 0,
+                        .TotalBits = 0,
+                        .DynamicParamCodeBitOffset = 0,
+                        .DynamicParamCodeStartByte = 0,
+                        .DynamicParamCodeTotalBits = 16,
+                        .DynamicParamLenBitOffset = 0,
+                        .DynamicParamLenStartByte = 3,
+                        .DynamicParamLenTotalBits = 8,
+                        .DynamicParamDataStartByte = 4,
+                        .EnumTranslator = New SerializableDictionary(Of Long, String),
+                        .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                        .PageDataTemplate = New SerializableDictionary(Of Long, TapeUtils.PageData),
+                        .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+        With pdata.Items.Last.EnumTranslator
+            .Add(0, "Device Type")
+            .Add(1, "Device Status Bits")
+            .Add(2, "Total Number of Loads")
+            .Add(3, "Cleaning Cartridge Status")
+            .Add(4, "Product Number")
+        End With
+        With pdata.Items.Last.DynamicParamType
+            .Add(0, TapeUtils.PageData.DataItem.DataType.RawData)
+            .Add(1, TapeUtils.PageData.DataItem.DataType.PageData)
+            .Add(2, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(3, TapeUtils.PageData.DataItem.DataType.Int32)
+            .Add(4, TapeUtils.PageData.DataItem.DataType.PageData)
+        End With
+        With pdata.Items.Last.PageDataTemplate
 
+            Dim subpage As TapeUtils.PageData
+            subpage = New TapeUtils.PageData With {.PageCode = 1, .Name = "Device Status Bits"}
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Cleaning Required flag", .StartByte = 0, .BitOffset = 5, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Cleaning Requested flag", .StartByte = 0, .BitOffset = 6, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Exhausted Cleaning Tape flag", .StartByte = 0, .BitOffset = 7, .TotalBits = 1, .Type = TapeUtils.PageData.DataItem.DataType.Boolean})
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Temperature", .StartByte = 1, .BitOffset = 4, .TotalBits = 2, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            With subpage.Items.Last.EnumTranslator
+                .Add(0, "Field not supported")
+                .Add(1, "Temperature OK")
+                .Add(2, "Temperature degraded")
+                .Add(3, "Temperature failed")
+            End With
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Device Status", .StartByte = 1, .BitOffset = 6, .TotalBits = 2, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            With subpage.Items.Last.EnumTranslator
+                .Add(0, "Field not supported")
+                .Add(1, "Device status OK")
+                .Add(2, "Device status degraded")
+                .Add(3, "Device status failed")
+            End With
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Device Status", .StartByte = 2, .BitOffset = 6, .TotalBits = 2, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            With subpage.Items.Last.EnumTranslator
+                .Add(0, "Field not supported")
+                .Add(1, "Medium status OK")
+                .Add(2, "Medium status degraded")
+                .Add(3, "Medium status failed")
+            End With
+            .Add(1, subpage)
+            subpage = New TapeUtils.PageData With {.PageCode = 4, .Name = "Product Number"}
+            subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Product Number", .StartByte = 0, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+            subpage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
+            With subpage.Items.Last.EnumTranslator
+                .Add(&H109022C, "LTO-6 full-height FC standalone")
+                .Add(&H109022D, "LTO-6 full-height FC automation")
+                .Add(&H109022E, "LTO-6 full-height SAS standalone")
+                .Add(&H109022F, "LTO-6 full-height SAS automation")
+                .Add(&H1090230, "LTO-6 half-height FC standalone")
+                .Add(&H1090231, "LTO-6 half-height FC automation")
+                .Add(&H1090232, "LTO-6 half-height SAS standalone")
+                .Add(&H1090233, "LTO-6 half-height SAS automation")
+            End With
+            .Add(4, subpage)
+        End With
         TextBox8.AppendText(pdata.GetSummary())
         If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
         IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x3E.xml"), pdata.GetSerializedText())

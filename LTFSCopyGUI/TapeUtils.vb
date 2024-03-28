@@ -312,6 +312,19 @@ Public Class TapeUtils
                                            senseBuffer As UIntPtr) As Boolean
 
     End Function
+    Public Shared SCSIOperationLock As New Object
+    Public Shared Function _TapeSCSIIOCtlFullC(TapeDrive As String,
+                                           cdb As IntPtr,
+                                           cdbLength As Byte,
+                                           dataBuffer As IntPtr,
+                                           bufferLength As UInt32,
+                                           dataIn As Byte,
+                                           timeoutValue As UInt32,
+                                           senseBuffer As IntPtr) As Boolean
+        SyncLock SCSIOperationLock
+            Return _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+        End SyncLock
+    End Function
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
     Public Shared Function _TapeSCSIIOCtlFull(TapeDrive As String,
                                            cdb As IntPtr,
@@ -401,7 +414,7 @@ Public Class TapeUtils
         Dim data0 As IntPtr = Marshal.AllocHGlobal(lenData.Length)
         Marshal.Copy(lenData, 0, data0, lenData.Length)
         Dim sense As IntPtr = Marshal.AllocHGlobal(64)
-        TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, &HFFFF, sense)
+        TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, &HFFFF, sense)
         Marshal.Copy(data0, lenData, 0, lenData.Length)
         Marshal.FreeHGlobal(cdb0)
         Marshal.FreeHGlobal(data0)
@@ -418,7 +431,7 @@ Public Class TapeUtils
         Dim dumpData(BufferLen - 1) As Byte
         Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
         Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-        TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, &HFFFF, sense)
+        TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, &HFFFF, sense)
         Marshal.Copy(data1, dumpData, 0, dumpData.Length)
         Marshal.FreeHGlobal(cdb1)
         Marshal.FreeHGlobal(data1)
@@ -580,7 +593,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        _TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
         Marshal.Copy(dataBuffer, paramData, 0, paramLen)
         Marshal.Copy(senseBuffer, senseData, 0, 64)
         Marshal.FreeHGlobal(cdb)
@@ -597,7 +610,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        While Not _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        While Not _TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
             Marshal.Copy(senseBuffer, senseData, 0, 64)
             Select Case MessageBox.Show($"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
                 Case DialogResult.Abort
@@ -1219,7 +1232,7 @@ Public Class TapeUtils
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
@@ -1240,7 +1253,7 @@ Public Class TapeUtils
             cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(Data, i, dataBuffer, TransferLen)
-            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
+            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
             If Not succ Then
                 Marshal.Copy(senseBufferPtr, sense, 0, 64)
                 Marshal.FreeHGlobal(cdb)
@@ -1271,7 +1284,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1309,7 +1322,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1362,7 +1375,7 @@ Public Class TapeUtils
         Dim Result As Byte() = {}
         Dim succ As Boolean = False
         Try
-            succ = _TapeSCSIIOCtlFull(TapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
+            succ = _TapeSCSIIOCtlFullC(TapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
         Catch ex As Exception
             Throw New Exception("SCSIIOError")
         End Try
@@ -1385,7 +1398,7 @@ Public Class TapeUtils
                 succ = False
                 Dim senseBuffer2 As IntPtr = Marshal.AllocHGlobal(64)
                 Try
-                    succ = _TapeSCSIIOCtlFull(TapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
+                    succ = _TapeSCSIIOCtlFullC(TapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
                 Catch ex As Exception
                     Throw New Exception("SCSIIOError")
                 End Try
@@ -1620,7 +1633,7 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFull(TapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
@@ -2204,7 +2217,7 @@ Public Class TapeUtils
                 dSize = 8
                 cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
                 Marshal.Copy(cdbBytes, 0, cdb, 12)
-                If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
+                If _TapeSCSIIOCtlFullC(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
                     Dim data0(dSize - 1) As Byte
                     Marshal.Copy(dataBuffer, data0, 0, dSize)
                     dSize = data0(5)
@@ -2227,7 +2240,7 @@ Public Class TapeUtils
             cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
             Marshal.Copy(cdbBytes, 0, cdb, 12)
             dataBuffer = Marshal.AllocHGlobal(dSize)
-            If _TapeSCSIIOCtlFull(Changer, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer) Then
+            If _TapeSCSIIOCtlFullC(Changer, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer) Then
                 Dim data1(dSize - 1) As Byte
                 Marshal.Copy(dataBuffer, data1, 0, dSize)
                 If sense IsNot Nothing AndAlso sense.Length >= 64 Then
@@ -4596,7 +4609,7 @@ Public Class TapeUtils
                                 If EnumTranslator IsNot Nothing Then
                                     Dim result As String = ""
                                     If EnumTranslator.TryGetValue(key, result) Then
-                                        Return result
+                                        Return $"0x{Hex(key)} {result}"
                                     Else
                                         Return key.ToString()
                                     End If
@@ -4747,7 +4760,7 @@ Public Class TapeUtils
                             If EnumTranslator IsNot Nothing Then
                                 Dim result As String = ""
                                 If EnumTranslator.TryGetValue(key, result) Then
-                                    Return result
+                                    Return $"0x{Hex(key)} {result}"
                                 Else
                                     Return key.ToString()
                                 End If
