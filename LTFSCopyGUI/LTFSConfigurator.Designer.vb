@@ -88,6 +88,8 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugReadMAM = New System.Windows.Forms.Button()
         Me.ButtonDebugDumpMAM = New System.Windows.Forms.Button()
         Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.ComboBox5 = New System.Windows.Forms.ComboBox()
+        Me.Label19 = New System.Windows.Forms.Label()
         Me.Button12 = New System.Windows.Forms.Button()
         Me.Label18 = New System.Windows.Forms.Label()
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
@@ -109,8 +111,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.Label19 = New System.Windows.Forms.Label()
-        Me.ComboBox5 = New System.Windows.Forms.ComboBox()
+        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         Me.TabControl1.SuspendLayout()
@@ -589,6 +590,7 @@ Partial Class LTFSConfigurator
         '
         'TabPage4
         '
+        Me.TabPage4.Controls.Add(Me.CheckBox5)
         Me.TabPage4.Controls.Add(Me.ComboBox5)
         Me.TabPage4.Controls.Add(Me.Label19)
         Me.TabPage4.Controls.Add(Me.Button12)
@@ -598,6 +600,19 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.TabPage4, "TabPage4")
         Me.TabPage4.Name = "TabPage4"
         Me.TabPage4.UseVisualStyleBackColor = True
+        '
+        'ComboBox5
+        '
+        resources.ApplyResources(Me.ComboBox5, "ComboBox5")
+        Me.ComboBox5.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox5.FormattingEnabled = True
+        Me.ComboBox5.Items.AddRange(New Object() {resources.GetString("ComboBox5.Items"), resources.GetString("ComboBox5.Items1"), resources.GetString("ComboBox5.Items2"), resources.GetString("ComboBox5.Items3")})
+        Me.ComboBox5.Name = "ComboBox5"
+        '
+        'Label19
+        '
+        resources.ApplyResources(Me.Label19, "Label19")
+        Me.Label19.Name = "Label19"
         '
         'Button12
         '
@@ -704,18 +719,13 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'Label19
+        'CheckBox5
         '
-        resources.ApplyResources(Me.Label19, "Label19")
-        Me.Label19.Name = "Label19"
-        '
-        'ComboBox5
-        '
-        resources.ApplyResources(Me.ComboBox5, "ComboBox5")
-        Me.ComboBox5.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.ComboBox5.FormattingEnabled = True
-        Me.ComboBox5.Items.AddRange(New Object() {resources.GetString("ComboBox5.Items"), resources.GetString("ComboBox5.Items1"), resources.GetString("ComboBox5.Items2"), resources.GetString("ComboBox5.Items3")})
-        Me.ComboBox5.Name = "ComboBox5"
+        resources.ApplyResources(Me.CheckBox5, "CheckBox5")
+        Me.CheckBox5.Checked = True
+        Me.CheckBox5.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox5.Name = "CheckBox5"
+        Me.CheckBox5.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '
@@ -834,4 +844,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents ComboBox4 As ComboBox
     Friend WithEvents ComboBox5 As ComboBox
     Friend WithEvents Label19 As Label
+    Friend WithEvents CheckBox5 As CheckBox
 End Class

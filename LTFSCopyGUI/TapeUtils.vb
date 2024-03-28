@@ -1452,7 +1452,7 @@ Public Class TapeUtils
         If ln.Length > 0 Then sb.Append(ln.ToString().PadRight(74) & "|")
         Return sb.ToString()
     End Function
-    Public Shared Function ByteArrayToString(bytesArray As Byte()) As String
+    Public Shared Function ByteArrayToString(bytesArray As Byte(), Optional ByVal TextOnly As Boolean = False) As String
         Dim strBuilder As New StringBuilder()
         Dim rowSize As Integer = 16
         Dim numRows As Integer = Math.Ceiling(bytesArray.Length / rowSize)
@@ -1462,21 +1462,23 @@ Public Class TapeUtils
             Dim rowEnd As Integer = Math.Min((row + 1) * rowSize, bytesArray.Length)
             Dim rowBytes As Byte() = bytesArray.Skip(rowStart).Take(rowEnd - rowStart).ToArray()
 
-            ' Append the hex values for this row
-            strBuilder.Append($"{rowStart:X8}h: ")
-            For Each b As Byte In rowBytes
-                strBuilder.Append($"{b:X2} ")
-            Next
-            strBuilder.Append(" "c, (rowSize - rowBytes.Length) * 3)
-
+            If Not TextOnly Then
+                ' Append the hex values for this row
+                strBuilder.Append($"{rowStart:X8}h: ")
+                For Each b As Byte In rowBytes
+                    strBuilder.Append($"{b:X2} ")
+                Next
+                strBuilder.Append(" "c, (rowSize - rowBytes.Length) * 3)
+                strBuilder.Append("  ")
+            End If
             ' Append the ASCII characters for this row
-            strBuilder.Append("  ")
             For Each b As Byte In rowBytes
                 strBuilder.Append(If(b >= 32 AndAlso b <= 126, ChrW(b), "."c))
             Next
-
-            ' Append a newline character for the next row
-            strBuilder.AppendLine()
+            If Not TextOnly Then
+                ' Append a newline character for the next row
+                strBuilder.AppendLine()
+            End If
         Next
 
         Return strBuilder.ToString()
@@ -4584,7 +4586,7 @@ Public Class TapeUtils
                             Case DataType.Boolean
                                 If rawdata.Last = 0 Then Return "False" Else Return True
                             Case DataType.Text
-                                Return Text.Encoding.ASCII.GetString(rawdata)
+                                Return ByteArrayToString(rawdata, True)
                             Case DataType.Enum
                                 Dim key As Long
                                 For i As Integer = 0 To rawdata.Length - 1
@@ -4644,6 +4646,7 @@ Public Class TapeUtils
                         PCode = PCode Or rawPCode(i)
                     Next
                     Dim resultData As Byte() = {}
+                    LenValue = Math.Min(LenValue, PageData.RawData.Length - StartByte - PageData.DynamicParamDataStartByte)
                     If LenValue > 0 Then
                         ReDim resultData(LenValue - 1)
                         Array.Copy(PageData.RawData, StartByte + PageData.DynamicParamDataStartByte, resultData, 0, LenValue)
@@ -4734,7 +4737,7 @@ Public Class TapeUtils
                         Case DataType.Boolean
                             If rawdata.Last = 0 Then Return "False" Else Return True
                         Case DataType.Text
-                            Return Text.Encoding.ASCII.GetString(rawdata)
+                            Return ByteArrayToString(rawdata, True)
                         Case DataType.Enum
                             Dim key As Long
                             For i As Integer = 0 To rawdata.Length - 1
@@ -4804,16 +4807,28 @@ Public Class TapeUtils
             Dim t As IO.TextReader = New IO.StringReader(s)
             Dim result As PageData = CType(reader.Deserialize(t), PageData)
             If result.Items IsNot Nothing Then
-                For Each it As DataItem In result.Items
+                Dim RemainingDataItem As New List(Of DataItem)
+                RemainingDataItem = result.Items
+                For Each it As DataItem In RemainingDataItem
                     it.Parent = result
-                    If it.PageDataTemplate IsNot Nothing Then
-                        For Each t2 As PageData In it.PageDataTemplate.Values
-                            For Each i2 As DataItem In t2.Items
-                                i2.Parent = t2
-                            Next
-                        Next
-                    End If
                 Next
+                While RemainingDataItem.Count > 0
+                    Dim newDI As New List(Of DataItem)
+                    For Each it As DataItem In RemainingDataItem
+                        If it.PageDataTemplate IsNot Nothing Then
+                            For Each t2 As PageData In it.PageDataTemplate.Values
+                                For Each i2 As DataItem In t2.Items
+                                    i2.Parent = t2
+                                    If i2.PageDataTemplate IsNot Nothing Then
+                                        newDI.Add(i2)
+                                    End If
+                                Next
+                            Next
+                        End If
+                    Next
+                    RemainingDataItem = newDI
+                End While
+
             End If
             Return result
         End Function
