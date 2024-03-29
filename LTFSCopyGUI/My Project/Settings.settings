@@ -54,7 +54,7 @@
       <Value Profile="(Default)">38654705664</Value>
     </Setting>
     <Setting Name="LTFSWriter_CapacityRefreshInterval" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">30</Value>
+      <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="LTFSWriter_PreLoadNum" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
