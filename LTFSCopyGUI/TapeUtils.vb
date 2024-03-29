@@ -1809,7 +1809,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, ModeData(1), MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)

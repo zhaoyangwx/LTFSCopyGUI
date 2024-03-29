@@ -10,6 +10,17 @@ Public Class LTFSWriter
     Public Property plabel As New ltfslabel With {.blocksize = 524288}
     Public Property Modified As Boolean = False
     Public Property OfflineMode As Boolean = False
+    Public Property IndexPartition As Byte = 0
+    Public Property DataPartition As Byte = 1
+    Public Function GetPartitionNumber(partition As ltfslabel.PartitionLabel) As Byte
+        If plabel Is Nothing Then Return partition
+        If partition = plabel.partitions.index Then
+            Return IndexPartition
+        Else
+            Return DataPartition
+        End If
+    End Function
+
     Public Property IndexWriteInterval As Long
         Get
             Return My.Settings.LTFSWriter_IndexWriteInterval
@@ -1271,7 +1282,7 @@ Public Class LTFSWriter
     End Function
     Public Sub WriteCurrentIndex(Optional ByVal GotoEOD As Boolean = True, Optional ByVal ClearCurrentStat As Boolean = True)
         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-        If GotoEOD Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.EOD)
+        If GotoEOD Then TapeUtils.Locate(TapeDrive, 0, DataPartition, TapeUtils.LocateDestType.EOD)
         Dim CurrentPos As TapeUtils.PositionData = GetPos
         PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
         If ExtraPartitionCount > 0 AndAlso schema IsNot Nothing AndAlso schema.location.partition <> CurrentPos.PartitionNumber Then
@@ -1324,7 +1335,7 @@ Public Class LTFSWriter
         If ExtraPartitionCount > 0 Then
             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
             PrintMsg(My.Resources.ResText_Locating)
-            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+            TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             TapeUtils.WriteFileMark(TapeDrive)
@@ -1374,7 +1385,7 @@ Public Class LTFSWriter
             'record previous position
             Dim pPrevious As New TapeUtils.PositionData(TapeDrive)
             'locate
-            TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+            TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim pFMIndex As New TapeUtils.PositionData(TapeDrive)
             Dim pStartBlock As Long = pFMIndex.BlockNumber
             'Dump old index
@@ -2153,11 +2164,11 @@ Public Class LTFSWriter
                             Dim BlockAddress As Long = fe.startblock
                             Dim ByteOffset As Long = fe.byteoffset
                             Dim FileOffset As Long = fe.fileoffset
-                            Dim Partition As Long = Math.Min(ExtraPartitionCount, fe.partition)
+                            Dim Partition As Long = fe.partition
                             Dim TotalBytes As Long = fe.bytecount
                             'Dim p As New TapeUtils.PositionData(TapeDrive)
                             If RestorePosition Is Nothing OrElse RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
-                                TapeUtils.Locate(TapeDrive, BlockAddress, Partition, TapeUtils.LocateDestType.Block)
+                                TapeUtils.Locate(TapeDrive, BlockAddress, GetPartitionNumber(Partition), TapeUtils.LocateDestType.Block)
                                 RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             End If
                             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
@@ -2406,7 +2417,7 @@ Public Class LTFSWriter
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             If p.BlockNumber <> CurrentHeight Then
-                TapeUtils.Locate(TapeDrive, CurrentHeight, 1, TapeUtils.LocateDestType.Block)
+                TapeUtils.Locate(TapeDrive, CurrentHeight, DataPartition, TapeUtils.LocateDestType.Block)
                 p = GetPos
                 PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             End If
@@ -2998,7 +3009,7 @@ Public Class LTFSWriter
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
                         If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
                     End If
-                    TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(TapeDrive, 0, IndexPartition, TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive))
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -3012,7 +3023,7 @@ Public Class LTFSWriter
                         LockGUI(False)
                         Exit Try
                     End If
-                    TapeUtils.Locate(TapeDrive, 1, 0, TapeUtils.LocateDestType.FileMark)
+                    TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
                     PrintMsg(My.Resources.ResText_RLTFSInfo)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     TapeUtils.ReadFileMark(TapeDrive)
@@ -3020,10 +3031,27 @@ Public Class LTFSWriter
                     Dim pltext As String = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
                     plabel = ltfslabel.FromXML(pltext)
                     TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                    If plabel.location.partition = plabel.partitions.data Then
+                        DataPartition = GetPos().PartitionNumber
+                        IndexPartition = (DataPartition + 1) Mod 2
+                        PrintMsg($"Data partition detected. Switching to index partition", LogOnly:=True)
+                        TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                        PrintMsg(My.Resources.ResText_RLTFSInfo)
+                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                        TapeUtils.ReadFileMark(TapeDrive)
+                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                        pltext = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
+                        plabel = ltfslabel.FromXML(pltext)
+                    Else
+                        IndexPartition = GetPos().PartitionNumber
+                        DataPartition = (IndexPartition + 1) Mod 2
+                    End If
+
                     Barcode = TapeUtils.ReadBarcode(TapeDrive)
                     PrintMsg($"Barcode = {Barcode}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
                     If ExtraPartitionCount = 0 Then
+                        IndexPartition = 0
                         TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         PrintMsg(My.Resources.ResText_RI)
@@ -3044,7 +3072,7 @@ Public Class LTFSWriter
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         TapeUtils.ReadFileMark(TapeDrive)
                     Else
-                        TapeUtils.Locate(TapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         TapeUtils.ReadFileMark(TapeDrive)
                     End If
@@ -3122,7 +3150,7 @@ Public Class LTFSWriter
                     Dim currentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
                     If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
-                    TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.EOD)
+                    TapeUtils.Locate(TapeDrive, 0, DataPartition, TapeUtils.LocateDestType.EOD)
                     PrintMsg(My.Resources.ResText_RI)
                     currentPos = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
@@ -3136,7 +3164,7 @@ Public Class LTFSWriter
                             LockGUI(False)
                             Exit Try
                         End If
-                        TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(TapeDrive, FM - 1, DataPartition, TapeUtils.LocateDestType.FileMark)
                     End If
 
                     TapeUtils.ReadFileMark(TapeDrive)
@@ -3442,7 +3470,7 @@ Public Class LTFSWriter
                 Dim th As New Threading.Thread(
                         Sub()
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                            TapeUtils.Locate(TapeDrive, ext.startblock, ext.partition, TapeUtils.LocateDestType.Block)
+                            TapeUtils.Locate(TapeDrive, ext.startblock, GetPartitionNumber(ext.partition), TapeUtils.LocateDestType.Block)
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                             LockGUI(False)
                             Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_Located}{ext.startblock}"))
@@ -3567,7 +3595,7 @@ Public Class LTFSWriter
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
 
                 If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
-                    TapeUtils.Locate(TapeDrive, fe.startblock, fe.partition)
+                    TapeUtils.Locate(TapeDrive, fe.startblock, GetPartitionNumber(fe.partition))
                     RestorePosition = New TapeUtils.PositionData(TapeDrive)
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
@@ -4386,7 +4414,7 @@ Public Class LTFSWriter
                             If Offset >= .fileoffset + .bytecount Then Continue For
                             Dim CurrentFileOffset As Long = .fileoffset
 
-                            TapeUtils.Locate(TapeDrive, .startblock, .partition)
+                            TapeUtils.Locate(TapeDrive, .startblock, LW.GetPartitionNumber(.partition))
 
                             Dim blkBuffer As Byte() = TapeUtils.ReadBlock(TapeDrive)
                             CurrentFileOffset += blkBuffer.Length - .byteoffset
@@ -4859,7 +4887,7 @@ Public Class LTFSWriter
                         TapeUtils.Locate(TapeDrive, blocknum, 0)
                     Else
                         If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
-                        TapeUtils.Locate(TapeDrive, blocknum, 1)
+                        TapeUtils.Locate(TapeDrive, blocknum, DataPartition)
                     End If
                     PrintMsg(My.Resources.ResText_RI)
                     currentPos = GetPos
@@ -4874,7 +4902,7 @@ Public Class LTFSWriter
                             LockGUI(False)
                             Exit Try
                         End If
-                        TapeUtils.Locate(TapeDrive, FM - 1, 1, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(TapeDrive, FM - 1, DataPartition, TapeUtils.LocateDestType.FileMark)
                     End If
 
                     TapeUtils.ReadFileMark(TapeDrive)
