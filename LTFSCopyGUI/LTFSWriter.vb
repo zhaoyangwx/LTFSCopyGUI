@@ -827,9 +827,11 @@ Public Class LTFSWriter
     Public CapacityLogPage As TapeUtils.PageData
 
     Public Sub RefreshCapacity()
+        Dim logdata As Byte()
+        logdata = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
         Invoke(Sub()
                    Try
-                       Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
+
                        If CapacityLogPage Is Nothing Then
                            CapacityLogPage = New TapeUtils.PageData With {.Name = "Tape Capacity log page", .PageCode = &H31, .RawData = logdata}
                            CapacityLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
@@ -946,14 +948,17 @@ Public Class LTFSWriter
                            loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
 
                        End If
+                       Dim lshbits As Byte = 20
 
+                       'DAT Unit in KB
+                       If max0 > 20 * 1024 * 1024 Then lshbits = 10
 
                        If ExtraPartitionCount > 0 Then
                            MaxCapacity = max1
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 1).AsNumeric
                            'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
-                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)} P1:{IOManager.FormatSize(cap1 << 20)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)} P1:{LTFSConfigurator.ReduceDataUnit(cap1)}"
+                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}"
                            If cap1 >= 4096 Then
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(121, 196, 232))
                            Else
@@ -962,8 +967,8 @@ Public Class LTFSWriter
                        Else
                            MaxCapacity = max0
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
-                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << 20)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0)}"
+                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
                            If cap0 >= 4096 Then
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(121, 196, 232))
                            Else
@@ -1079,9 +1084,11 @@ Public Class LTFSWriter
     End Sub
     Private Sub ToolStripStatusLabel2_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel2.Click
         Try
-            If AllowOperation Then
-                RefreshCapacity()
-                PrintMsg(My.Resources.ResText_CRef)
+            If True OrElse AllowOperation Then
+                Task.Run(Sub()
+                             RefreshCapacity()
+                             PrintMsg(My.Resources.ResText_CRef)
+                         End Sub)
             Else
                 LastRefresh = Now - New TimeSpan(0, 0, CapacityRefreshInterval)
             End If
