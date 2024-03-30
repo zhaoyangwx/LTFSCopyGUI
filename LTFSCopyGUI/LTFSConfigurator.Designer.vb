@@ -605,6 +605,7 @@ Partial Class LTFSConfigurator
         '
         resources.ApplyResources(Me.ComboBox5, "ComboBox5")
         Me.ComboBox5.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox5.DropDownWidth = 200
         Me.ComboBox5.FormattingEnabled = True
         Me.ComboBox5.Items.AddRange(New Object() {resources.GetString("ComboBox5.Items"), resources.GetString("ComboBox5.Items1"), resources.GetString("ComboBox5.Items2"), resources.GetString("ComboBox5.Items3")})
         Me.ComboBox5.Name = "ComboBox5"

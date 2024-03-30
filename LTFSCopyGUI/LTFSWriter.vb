@@ -3009,7 +3009,7 @@ Public Class LTFSWriter
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
                         If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
                     End If
-                    TapeUtils.Locate(TapeDrive, 0, IndexPartition, TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(TapeDrive, 0, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive))
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -3023,7 +3023,7 @@ Public Class LTFSWriter
                         LockGUI(False)
                         Exit Try
                     End If
-                    TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                    TapeUtils.Locate(TapeDrive, 1, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.FileMark)
                     PrintMsg(My.Resources.ResText_RLTFSInfo)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     TapeUtils.ReadFileMark(TapeDrive)
@@ -3034,14 +3034,17 @@ Public Class LTFSWriter
                     If plabel.location.partition = plabel.partitions.data Then
                         DataPartition = GetPos().PartitionNumber
                         IndexPartition = (DataPartition + 1) Mod 2
-                        PrintMsg($"Data partition detected. Switching to index partition", LogOnly:=True)
-                        TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
-                        PrintMsg(My.Resources.ResText_RLTFSInfo)
-                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        TapeUtils.ReadFileMark(TapeDrive)
-                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        pltext = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
-                        plabel = ltfslabel.FromXML(pltext)
+                        If ExtraPartitionCount > 0 Then
+                            IndexPartition = 255
+                            PrintMsg($"Data partition detected. Switching to index partition", LogOnly:=True)
+                            TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                            PrintMsg(My.Resources.ResText_RLTFSInfo)
+                            PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                            TapeUtils.ReadFileMark(TapeDrive)
+                            PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                            pltext = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
+                            plabel = ltfslabel.FromXML(pltext)
+                        End If
                     Else
                         IndexPartition = GetPos().PartitionNumber
                         DataPartition = (IndexPartition + 1) Mod 2
