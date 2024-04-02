@@ -414,29 +414,32 @@ Public Class TapeUtils
         Dim data0 As IntPtr = Marshal.AllocHGlobal(lenData.Length)
         Marshal.Copy(lenData, 0, data0, lenData.Length)
         Dim sense As IntPtr = Marshal.AllocHGlobal(64)
-        TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, &HFFFF, sense)
-        Marshal.Copy(data0, lenData, 0, lenData.Length)
-        Marshal.FreeHGlobal(cdb0)
-        Marshal.FreeHGlobal(data0)
-        Dim BufferLen As Integer
-        For i As Integer = 1 To lenData.Length - 1
-            BufferLen <<= 8
-            BufferLen = BufferLen Or lenData(i)
-        Next
+        SyncLock SCSIOperationLock
+            Flush(TapeDrive)
+            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, &HFFFF, sense)
+            Marshal.Copy(data0, lenData, 0, lenData.Length)
+            Marshal.FreeHGlobal(cdb0)
+            Marshal.FreeHGlobal(data0)
+            Dim BufferLen As Integer
+            For i As Integer = 1 To lenData.Length - 1
+                BufferLen <<= 8
+                BufferLen = BufferLen Or lenData(i)
+            Next
 
-        'Dump EEPROM
-        Dim cdbD1 As Byte() = {&H3C, 2, BufferID, 0, 0, 0, lenData(1), lenData(2), lenData(3), 0}
-        Dim cdb1 As IntPtr = Marshal.AllocHGlobal(cdbD1.Length)
-        Marshal.Copy(cdbD1, 0, cdb1, cdbD1.Length)
-        Dim dumpData(BufferLen - 1) As Byte
-        Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
-        Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-        TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, &HFFFF, sense)
-        Marshal.Copy(data1, dumpData, 0, dumpData.Length)
-        Marshal.FreeHGlobal(cdb1)
-        Marshal.FreeHGlobal(data1)
-        Marshal.FreeHGlobal(sense)
-        Return dumpData
+            'Dump EEPROM
+            Dim cdbD1 As Byte() = {&H3C, 2, BufferID, 0, 0, 0, lenData(1), lenData(2), lenData(3), 0}
+            Dim cdb1 As IntPtr = Marshal.AllocHGlobal(cdbD1.Length)
+            Marshal.Copy(cdbD1, 0, cdb1, cdbD1.Length)
+            Dim dumpData(BufferLen - 1) As Byte
+            Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
+            Marshal.Copy(dumpData, 0, data1, dumpData.Length)
+            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, &HFFFF, sense)
+            Marshal.Copy(data1, dumpData, 0, dumpData.Length)
+            Marshal.FreeHGlobal(cdb1)
+            Marshal.FreeHGlobal(data1)
+            Marshal.FreeHGlobal(sense)
+            Return dumpData
+        End SyncLock
     End Function
     Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
         Dim senseRaw(63) As Byte
@@ -1809,7 +1812,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, ModeData(1), MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)

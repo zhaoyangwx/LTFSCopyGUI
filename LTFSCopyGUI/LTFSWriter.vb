@@ -913,7 +913,6 @@ Public Class LTFSWriter
                        Dim loss As Long
 
                        If My.Settings.LTFSWriter_ShowLoss Then
-                           TapeUtils.Flush(TapeDrive)
                            Dim CMInfo As New TapeUtils.CMParser(TapeDrive)
                            Dim nLossDS As Long = 0
                            Dim DataSize As New List(Of Long)
@@ -1000,56 +999,85 @@ Public Class LTFSWriter
                 If schema Is Nothing Then Exit Sub
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
+                    Dim old_select_path As String = ""
                     Dim new_select As TreeNode = Nothing
-                    Dim IterDirectory As Action(Of ltfsindex.directory, TreeNode) =
-                        Sub(dir As ltfsindex.directory, node As TreeNode)
-                            SyncLock dir.contents._directory
-                                For Each d As ltfsindex.directory In dir.contents._directory
-                                    Dim t As New TreeNode
-                                    If My.Settings.LTFSWriter_ShowFileCount Then
-                                        If d.TotalFilesUnwritten = 0 Then
-                                            t.Text = $"{d.TotalFiles.ToString.PadRight(6)}| {d.name}"
-                                        Else
-                                            t.Text = $"{$"{d.TotalFiles.ToString}+{d.TotalFilesUnwritten.ToString}".PadRight(6)}| {d.name}"
-                                        End If
-                                    Else
-                                        t.Text = d.name
-                                    End If
-                                    t.Tag = d
-                                    t.ImageIndex = 1
-                                    t.SelectedImageIndex = 1
-                                    t.StateImageIndex = 1
-                                    node.Nodes.Add(t)
-                                    IterDirectory(d, t)
-                                    If old_select Is d Then
-                                        new_select = t
-                                    End If
-                                Next
-                                'Compressed Dir
-                                For Each f As ltfsindex.file In dir.contents._file
-                                    Dim s As String = f.GetXAttr("ltfscopygui.archive")
-                                    If s IsNot Nothing AndAlso s.ToLower = "true" Then
-                                        Dim t As New TreeNode
-                                        t.Text = $"*{f.name}"
-                                        t.Tag = f
-                                        t.ImageIndex = 3
-                                        t.SelectedImageIndex = 3
-                                        t.StateImageIndex = 3
-                                        node.Nodes.Add(t)
-                                    End If
-                                Next
-                            End SyncLock
-
+                    Dim IterDirectory As Action(Of ltfsindex.directory, TreeNode, Integer) =
+                        Sub(dir As ltfsindex.directory, node As TreeNode, ByVal MaxDepth As Integer)
+                            Dim NodeExpand As Action =
+                                   Sub()
+                                       'PrintMsg(dir.name, LogOnly:=True, ForceLog:=True)
+                                       SyncLock dir.contents._directory
+                                           For Each d As ltfsindex.directory In dir.contents._directory
+                                               Dim t As New TreeNode
+                                               If My.Settings.LTFSWriter_ShowFileCount Then
+                                                   If d.TotalFilesUnwritten = 0 Then
+                                                       t.Text = $"{d.TotalFiles.ToString.PadRight(6)}| {d.name}"
+                                                   Else
+                                                       t.Text = $"{$"{d.TotalFiles.ToString}+{d.TotalFilesUnwritten.ToString}".PadRight(6)}| {d.name}"
+                                                   End If
+                                               Else
+                                                   t.Text = d.name
+                                               End If
+                                               t.Tag = d
+                                               t.ImageIndex = 1
+                                               t.SelectedImageIndex = 1
+                                               t.StateImageIndex = 1
+                                               node.Nodes.Add(t)
+                                               IterDirectory(d, t, MaxDepth - 1)
+                                               If old_select Is d Then
+                                                   new_select = t
+                                               End If
+                                           Next
+                                           'Compressed Dir
+                                           For Each f As ltfsindex.file In dir.contents._file
+                                               Dim s As String = f.GetXAttr("ltfscopygui.archive")
+                                               If s IsNot Nothing AndAlso s.ToLower = "true" Then
+                                                   Dim t As New TreeNode
+                                                   t.Text = $"*{f.name}"
+                                                   t.Tag = f
+                                                   t.ImageIndex = 3
+                                                   t.SelectedImageIndex = 3
+                                                   t.StateImageIndex = 3
+                                                   node.Nodes.Add(t)
+                                               End If
+                                           Next
+                                       End SyncLock
+                                   End Sub
+                            Dim tvNodeExpand As New TreeViewEventHandler(
+                                Sub(sender As Object, e As TreeViewEventArgs)
+                                    If e.Node IsNot node.Parent Then Exit Sub
+                                    If node.Nodes IsNot Nothing AndAlso node.Nodes.Count > 0 Then Exit Sub
+                                    NodeExpand()
+                                    RemoveHandler TreeView1.AfterExpand, tvNodeExpand
+                                End Sub)
+                            Dim tvNodeSelect As New TreeViewEventHandler(
+                                Sub(sender As Object, e As TreeViewEventArgs)
+                                    If e.Node IsNot node Then Exit Sub
+                                    If node.Nodes IsNot Nothing AndAlso node.Nodes.Count > 0 Then Exit Sub
+                                    NodeExpand()
+                                    RemoveHandler TreeView1.AfterSelect, tvNodeSelect
+                                End Sub)
+                            Dim isParentOfOldSelect As Boolean = False
+                            If MaxDepth = 0 AndAlso Not old_select_path.StartsWith(node.FullPath) Then
+                                AddHandler TreeView1.AfterExpand, tvNodeExpand
+                                AddHandler TreeView1.AfterSelect, tvNodeSelect
+                                MaxDepth = 2
+                                Exit Sub
+                            Else
+                                NodeExpand()
+                            End If
                         End Sub
                     If TreeView1.SelectedNode IsNot Nothing Then
                         If TreeView1.SelectedNode.Tag IsNot Nothing Then
                             If TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.directory Then
                                 old_select = TreeView1.SelectedNode.Tag
+                                old_select_path = TreeView1.SelectedNode.FullPath
                             End If
                         End If
                     End If
                     If old_select Is Nothing And ListView1.Tag IsNot Nothing Then
                         old_select = ListView1.Tag
+                        old_select_path = TreeView1.TopNode.FullPath
                     End If
                     TreeView1.Nodes.Clear()
                     SyncLock schema._directory
@@ -1059,7 +1087,7 @@ Public Class LTFSWriter
                             t.Tag = d
                             t.ImageIndex = 0
                             TreeView1.Nodes.Add(t)
-                            IterDirectory(d, t)
+                            IterDirectory(d, t, 2)
                         Next
                     End SyncLock
                     TreeView1.TopNode.Expand()
