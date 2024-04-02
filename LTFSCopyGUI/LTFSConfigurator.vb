@@ -463,7 +463,7 @@ Public Class LTFSConfigurator
 
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Partition mode page.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, ModeData(1), ModeData(2), 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, ModeData(2), 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
@@ -975,7 +975,7 @@ Public Class LTFSConfigurator
                         Invoke(Sub() TextBox8.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Partition mode page.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, ModeData(1), MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
+                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
                             Invoke(Sub() TextBox8.AppendText("     OK" & vbCrLf))
                         Else
                             Invoke(Sub() TextBox8.AppendText("     Fail" & vbCrLf))
