@@ -1787,6 +1787,7 @@ Public Class TapeUtils
                     Return False
                 End If
                 Dim ModeData As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
+                ReDim Preserve ModeData(11)
                 Dim MaxExtraPartitionAllowed As Byte = ModeData(2)
                 ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
                 If Not AllowPartition Then ExtraPartitionCount = 0
