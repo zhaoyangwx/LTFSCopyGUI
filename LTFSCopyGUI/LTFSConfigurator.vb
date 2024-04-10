@@ -460,7 +460,7 @@ Public Class LTFSConfigurator
                         Dim ModeData As Byte()
                         ModeData = TapeUtils.ModeSense(TapeDrive, &H11)
                         Invoke(Sub() TextBox8.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
-
+                        ReDim Preserve ModeData(11)
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Partition mode page.."))
                         If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, ModeData(2), 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
@@ -972,6 +972,7 @@ Public Class LTFSConfigurator
                         Invoke(Sub() TextBox8.AppendText("MODE SENSE"))
                         Dim ModeData As Byte()
                         ModeData = TapeUtils.ModeSense(TapeDrive, &H11)
+                        ReDim Preserve ModeData(11)
                         Invoke(Sub() TextBox8.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
                         'Mode Select:1st Partition to Minimum 
                         Invoke(Sub() TextBox8.AppendText("MODE SELECT - Partition mode page.."))
@@ -3424,5 +3425,79 @@ Public Class LTFSConfigurator
                 TextBox8.AppendText(Byte2Hex(PageItem(ComboBox4.SelectedIndex).RawData, True))
             End If
         End If
+    End Sub
+    Public TestEnabled As Boolean
+    Private Sub ButtonTest_Click(sender As Object, e As EventArgs) Handles ButtonTest.Click
+        If TestEnabled Then
+            ButtonTest.Enabled = False
+            TestEnabled = False
+            Exit Sub
+        End If
+        If MessageBox.Show("Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            TestEnabled = True
+            Dim progval As Long = 0
+            Dim running As Boolean = True
+            Dim randomNum As Boolean = RadioButtonTest1.Checked
+            Dim blkLen As Long = NumericUpDownTestBlkSize.Value
+            Dim blkNum As Long = NumericUpDownTestBlkNum.Value
+            Dim sec As Integer = -1
+            Dim th As New Threading.Thread(
+            Sub()
+                Dim r As New Random()
+                Dim b(blkLen - 1) As Byte
+                Dim blist As New List(Of Byte())
+                For i As Integer = 0 To 999
+                    If randomNum Then
+                        r.NextBytes(b)
+                    End If
+                    blist.Add(b.Clone())
+                Next
+                Invoke(Sub() TextBox8.AppendText($"Start{vbCrLf}"))
+                sec = 0
+                If blkLen = 0 Then
+                    For i As Long = 0 To blkNum
+                        If Not TestEnabled Then Exit For
+                        TapeUtils.WriteFileMark(ConfTapeDrive)
+                        progval = i * blkLen
+                    Next
+                Else
+                    For i As Long = 0 To blkNum
+                        If Not TestEnabled Then Exit For
+                        TapeUtils.Write(ConfTapeDrive, blist(i Mod 1000), blkLen)
+                        progval = i * blkLen
+                    Next
+                End If
+                TapeUtils.Flush(ConfTapeDrive)
+                running = False
+                TestEnabled = False
+                Invoke(Sub()
+                           ButtonTest.Enabled = True
+                           ButtonTest.Text = "Start"
+                       End Sub)
+            End Sub)
+            Dim thprog As New Threading.Thread(
+            Sub()
+                Dim lastval As Long = 0
+                While running
+                    Threading.Thread.Sleep(1000)
+                    Dim prognow As Long = progval
+                    Invoke(Sub()
+                               TextBox8.AppendText($"{sec}: {prognow} (+{IOManager.FormatSize(prognow - lastval)}){vbCrLf}")
+                           End Sub)
+                    If sec >= 0 Then sec += 1
+                    lastval = prognow
+                End While
+                Invoke(Sub()
+                           TextBox8.AppendText($"{sec}: {progval} (+{IOManager.FormatSize(progval - lastval)}){vbCrLf}")
+                           TextBox8.AppendText($"End")
+                       End Sub)
+            End Sub)
+            TextBox8.Clear()
+            TextBox8.AppendText($"Preparing... {vbCrLf}")
+            thprog.Start()
+            ButtonTest.Text = "Stop"
+            th.Start()
+        End If
+
     End Sub
 End Class

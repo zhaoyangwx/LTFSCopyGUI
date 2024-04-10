@@ -638,14 +638,20 @@ Public Class LTFSWriter
         End Function
         Public Sub Close()
             SyncLock OperationLock
-                If fsB IsNot Nothing Then
-                    fsB.Close()
-                    fsB.Dispose()
-                    fsB = Nothing
-                End If
-                fs.Close()
-                fs.Dispose()
-                fs = Nothing
+                Try
+                    If fsB IsNot Nothing Then
+                        fsB.Close()
+                        fsB.Dispose()
+                        fsB = Nothing
+                    End If
+                Catch ex As Exception
+                End Try
+                Try
+                    fs.Close()
+                    fs.Dispose()
+                    fs = Nothing
+                Catch ex As Exception
+                End Try
                 If fsPreRead IsNot Nothing Then
                     fsPreRead.Close()
                     fsPreRead.Dispose()
@@ -656,22 +662,25 @@ Public Class LTFSWriter
         Public Sub CloseAsync()
             Task.Run(Sub()
                          SyncLock OperationLock
-                             fs.Close()
-                             fs.Dispose()
-                             fs = Nothing
-                             'If PreReadEnabled Then
+                             Try
+                                 If fsB IsNot Nothing Then
+                                     fsB.Close()
+                                     fsB.Dispose()
+                                     fsB = Nothing
+                                 End If
+                             Catch ex As Exception
+                             End Try
+                             Try
+                                 fs.Close()
+                                 fs.Dispose()
+                                 fs = Nothing
+                             Catch ex As Exception
+                             End Try
                              If fsPreRead IsNot Nothing Then
                                  fsPreRead.Close()
                                  fsPreRead.Dispose()
                                  fsPreRead = Nothing
                              End If
-                             'Else
-                             If fsB IsNot Nothing Then
-                                 fsB.Close()
-                                 fsB.Dispose()
-                                 fsB = Nothing
-                             End If
-                             ' End If
                          End SyncLock
                      End Sub)
         End Sub
@@ -786,7 +795,7 @@ Public Class LTFSWriter
         Save_Settings()
     End Sub
     Public Function GetLocInfo() As String
-        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}] "
         Try
