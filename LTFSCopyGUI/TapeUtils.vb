@@ -405,7 +405,7 @@ Public Class TapeUtils
         Return New BlockLimits With {.MaximumBlockLength = CULng(data(1)) << 16 Or CULng(data(2)) << 8 Or data(3),
             .MinimumBlockLength = CUShort(data(4)) << 8 Or data(5)}
     End Function
-    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte) As Byte()
+    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte, Optional Mode As Byte = 2) As Byte()
         'Get EEPROM buffer Length
         Dim cdbD0 As Byte() = {&H3C, 3, BufferID, 0, 0, 0, 0, 0, 4, 0}
         Dim lenData As Byte() = {0, 0, 0, 0}
@@ -416,7 +416,7 @@ Public Class TapeUtils
         Dim sense As IntPtr = Marshal.AllocHGlobal(64)
         SyncLock SCSIOperationLock
             Flush(TapeDrive)
-            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, &HFFFF, sense)
+            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
             Marshal.Copy(data0, lenData, 0, lenData.Length)
             Marshal.FreeHGlobal(cdb0)
             Marshal.FreeHGlobal(data0)
@@ -427,13 +427,13 @@ Public Class TapeUtils
             Next
 
             'Dump EEPROM
-            Dim cdbD1 As Byte() = {&H3C, 2, BufferID, 0, 0, 0, lenData(1), lenData(2), lenData(3), 0}
+            Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, 0, 0, 0, lenData(1), lenData(2), lenData(3), 0}
             Dim cdb1 As IntPtr = Marshal.AllocHGlobal(cdbD1.Length)
             Marshal.Copy(cdbD1, 0, cdb1, cdbD1.Length)
             Dim dumpData(BufferLen - 1) As Byte
             Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
             Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, &HFFFF, sense)
+            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
             Marshal.Copy(data1, dumpData, 0, dumpData.Length)
             Marshal.FreeHGlobal(cdb1)
             Marshal.FreeHGlobal(data1)
