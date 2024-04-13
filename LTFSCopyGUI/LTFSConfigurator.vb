@@ -3500,4 +3500,8 @@ Public Class LTFSConfigurator
         End If
 
     End Sub
+
+    Private Sub Button15_Click(sender As Object, e As EventArgs) Handles Button15.Click
+        Dim PCAEEPROM As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, &H13)
+    End Sub
 End Class
