@@ -88,12 +88,21 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugReadMAM = New System.Windows.Forms.Button()
         Me.ButtonDebugDumpMAM = New System.Windows.Forms.Button()
         Me.TabPage4 = New System.Windows.Forms.TabPage()
+        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
         Me.ComboBox5 = New System.Windows.Forms.ComboBox()
         Me.Label19 = New System.Windows.Forms.Label()
         Me.Button12 = New System.Windows.Forms.Button()
         Me.Label18 = New System.Windows.Forms.Label()
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.Button11 = New System.Windows.Forms.Button()
+        Me.TabPage5 = New System.Windows.Forms.TabPage()
+        Me.ButtonTest = New System.Windows.Forms.Button()
+        Me.RadioButtonTest2 = New System.Windows.Forms.RadioButton()
+        Me.RadioButtonTest1 = New System.Windows.Forms.RadioButton()
+        Me.NumericUpDownTestBlkNum = New System.Windows.Forms.NumericUpDown()
+        Me.Label21 = New System.Windows.Forms.Label()
+        Me.NumericUpDownTestBlkSize = New System.Windows.Forms.NumericUpDown()
+        Me.Label20 = New System.Windows.Forms.Label()
         Me.Label17 = New System.Windows.Forms.Label()
         Me.TextBox3 = New System.Windows.Forms.TextBox()
         Me.TextBox10 = New System.Windows.Forms.TextBox()
@@ -111,15 +120,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.CheckBox5 = New System.Windows.Forms.CheckBox()
-        Me.TabPage5 = New System.Windows.Forms.TabPage()
-        Me.Label20 = New System.Windows.Forms.Label()
-        Me.NumericUpDownTestBlkSize = New System.Windows.Forms.NumericUpDown()
-        Me.NumericUpDownTestBlkNum = New System.Windows.Forms.NumericUpDown()
-        Me.Label21 = New System.Windows.Forms.Label()
-        Me.RadioButtonTest1 = New System.Windows.Forms.RadioButton()
-        Me.RadioButtonTest2 = New System.Windows.Forms.RadioButton()
-        Me.ButtonTest = New System.Windows.Forms.Button()
+        Me.Button15 = New System.Windows.Forms.Button()
         Me.Panel1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         Me.TabControl1.SuspendLayout()
@@ -134,8 +135,8 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDown9, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage4.SuspendLayout()
         Me.TabPage5.SuspendLayout()
-        CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'Button1
@@ -613,6 +614,14 @@ Partial Class LTFSConfigurator
         Me.TabPage4.Name = "TabPage4"
         Me.TabPage4.UseVisualStyleBackColor = True
         '
+        'CheckBox5
+        '
+        resources.ApplyResources(Me.CheckBox5, "CheckBox5")
+        Me.CheckBox5.Checked = True
+        Me.CheckBox5.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.CheckBox5.Name = "CheckBox5"
+        Me.CheckBox5.UseVisualStyleBackColor = True
+        '
         'ComboBox5
         '
         resources.ApplyResources(Me.ComboBox5, "ComboBox5")
@@ -650,6 +659,65 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.Button11, "Button11")
         Me.Button11.Name = "Button11"
         Me.Button11.UseVisualStyleBackColor = True
+        '
+        'TabPage5
+        '
+        Me.TabPage5.Controls.Add(Me.Button15)
+        Me.TabPage5.Controls.Add(Me.ButtonTest)
+        Me.TabPage5.Controls.Add(Me.RadioButtonTest2)
+        Me.TabPage5.Controls.Add(Me.RadioButtonTest1)
+        Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkNum)
+        Me.TabPage5.Controls.Add(Me.Label21)
+        Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkSize)
+        Me.TabPage5.Controls.Add(Me.Label20)
+        resources.ApplyResources(Me.TabPage5, "TabPage5")
+        Me.TabPage5.Name = "TabPage5"
+        Me.TabPage5.UseVisualStyleBackColor = True
+        '
+        'ButtonTest
+        '
+        resources.ApplyResources(Me.ButtonTest, "ButtonTest")
+        Me.ButtonTest.Name = "ButtonTest"
+        Me.ButtonTest.UseVisualStyleBackColor = True
+        '
+        'RadioButtonTest2
+        '
+        resources.ApplyResources(Me.RadioButtonTest2, "RadioButtonTest2")
+        Me.RadioButtonTest2.Name = "RadioButtonTest2"
+        Me.RadioButtonTest2.UseVisualStyleBackColor = True
+        '
+        'RadioButtonTest1
+        '
+        resources.ApplyResources(Me.RadioButtonTest1, "RadioButtonTest1")
+        Me.RadioButtonTest1.Checked = True
+        Me.RadioButtonTest1.Name = "RadioButtonTest1"
+        Me.RadioButtonTest1.TabStop = True
+        Me.RadioButtonTest1.UseVisualStyleBackColor = True
+        '
+        'NumericUpDownTestBlkNum
+        '
+        resources.ApplyResources(Me.NumericUpDownTestBlkNum, "NumericUpDownTestBlkNum")
+        Me.NumericUpDownTestBlkNum.Maximum = New Decimal(New Integer() {2147483647, 0, 0, 0})
+        Me.NumericUpDownTestBlkNum.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NumericUpDownTestBlkNum.Name = "NumericUpDownTestBlkNum"
+        Me.NumericUpDownTestBlkNum.Value = New Decimal(New Integer() {1024, 0, 0, 0})
+        '
+        'Label21
+        '
+        resources.ApplyResources(Me.Label21, "Label21")
+        Me.Label21.Name = "Label21"
+        '
+        'NumericUpDownTestBlkSize
+        '
+        resources.ApplyResources(Me.NumericUpDownTestBlkSize, "NumericUpDownTestBlkSize")
+        Me.NumericUpDownTestBlkSize.Maximum = New Decimal(New Integer() {2097152, 0, 0, 0})
+        Me.NumericUpDownTestBlkSize.Name = "NumericUpDownTestBlkSize"
+        Me.NumericUpDownTestBlkSize.Value = New Decimal(New Integer() {524288, 0, 0, 0})
+        '
+        'Label20
+        '
+        resources.ApplyResources(Me.Label20, "Label20")
+        Me.Label20.Name = "Label20"
         '
         'Label17
         '
@@ -732,71 +800,11 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'CheckBox5
+        'Button15
         '
-        resources.ApplyResources(Me.CheckBox5, "CheckBox5")
-        Me.CheckBox5.Checked = True
-        Me.CheckBox5.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.CheckBox5.Name = "CheckBox5"
-        Me.CheckBox5.UseVisualStyleBackColor = True
-        '
-        'TabPage5
-        '
-        Me.TabPage5.Controls.Add(Me.ButtonTest)
-        Me.TabPage5.Controls.Add(Me.RadioButtonTest2)
-        Me.TabPage5.Controls.Add(Me.RadioButtonTest1)
-        Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkNum)
-        Me.TabPage5.Controls.Add(Me.Label21)
-        Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkSize)
-        Me.TabPage5.Controls.Add(Me.Label20)
-        resources.ApplyResources(Me.TabPage5, "TabPage5")
-        Me.TabPage5.Name = "TabPage5"
-        Me.TabPage5.UseVisualStyleBackColor = True
-        '
-        'Label20
-        '
-        resources.ApplyResources(Me.Label20, "Label20")
-        Me.Label20.Name = "Label20"
-        '
-        'NumericUpDownTestBlkSize
-        '
-        resources.ApplyResources(Me.NumericUpDownTestBlkSize, "NumericUpDownTestBlkSize")
-        Me.NumericUpDownTestBlkSize.Maximum = New Decimal(New Integer() {2097152, 0, 0, 0})
-        Me.NumericUpDownTestBlkSize.Name = "NumericUpDownTestBlkSize"
-        Me.NumericUpDownTestBlkSize.Value = New Decimal(New Integer() {524288, 0, 0, 0})
-        '
-        'NumericUpDownTestBlkNum
-        '
-        resources.ApplyResources(Me.NumericUpDownTestBlkNum, "NumericUpDownTestBlkNum")
-        Me.NumericUpDownTestBlkNum.Maximum = New Decimal(New Integer() {2147483647, 0, 0, 0})
-        Me.NumericUpDownTestBlkNum.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
-        Me.NumericUpDownTestBlkNum.Name = "NumericUpDownTestBlkNum"
-        Me.NumericUpDownTestBlkNum.Value = New Decimal(New Integer() {1024, 0, 0, 0})
-        '
-        'Label21
-        '
-        resources.ApplyResources(Me.Label21, "Label21")
-        Me.Label21.Name = "Label21"
-        '
-        'RadioButtonTest1
-        '
-        resources.ApplyResources(Me.RadioButtonTest1, "RadioButtonTest1")
-        Me.RadioButtonTest1.Checked = True
-        Me.RadioButtonTest1.Name = "RadioButtonTest1"
-        Me.RadioButtonTest1.TabStop = True
-        Me.RadioButtonTest1.UseVisualStyleBackColor = True
-        '
-        'RadioButtonTest2
-        '
-        resources.ApplyResources(Me.RadioButtonTest2, "RadioButtonTest2")
-        Me.RadioButtonTest2.Name = "RadioButtonTest2"
-        Me.RadioButtonTest2.UseVisualStyleBackColor = True
-        '
-        'ButtonTest
-        '
-        resources.ApplyResources(Me.ButtonTest, "ButtonTest")
-        Me.ButtonTest.Name = "ButtonTest"
-        Me.ButtonTest.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.Button15, "Button15")
+        Me.Button15.Name = "Button15"
+        Me.Button15.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '
@@ -825,8 +833,8 @@ Partial Class LTFSConfigurator
         Me.TabPage4.PerformLayout()
         Me.TabPage5.ResumeLayout(False)
         Me.TabPage5.PerformLayout()
-        CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -928,4 +936,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents RadioButtonTest2 As RadioButton
     Friend WithEvents RadioButtonTest1 As RadioButton
     Friend WithEvents ButtonTest As Button
+    Friend WithEvents Button15 As Button
 End Class
