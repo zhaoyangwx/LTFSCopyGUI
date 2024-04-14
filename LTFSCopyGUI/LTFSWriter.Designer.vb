@@ -213,6 +213,7 @@ Partial Class LTFSWriter
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel3 = New System.Windows.Forms.ToolStripStatusLabel()
+        Me.TextBoxSelectedPath = New System.Windows.Forms.TextBox()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -1171,10 +1172,16 @@ Partial Class LTFSWriter
         resources.ApplyResources(Me.ToolStripStatusLabel3, "ToolStripStatusLabel3")
         Me.ToolStripStatusLabel3.Spring = True
         '
+        'TextBoxSelectedPath
+        '
+        resources.ApplyResources(Me.TextBoxSelectedPath, "TextBoxSelectedPath")
+        Me.TextBoxSelectedPath.Name = "TextBoxSelectedPath"
+        '
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.TextBoxSelectedPath)
         Me.Controls.Add(Me.StatusStrip2)
         Me.Controls.Add(Me.ToolStrip1)
         Me.Controls.Add(Me.StatusStrip1)
@@ -1358,4 +1365,5 @@ Partial Class LTFSWriter
     Friend WithEvents 移动到索引区ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 查找指定位置前的索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents Column_md5 As ColumnHeader
+    Friend WithEvents TextBoxSelectedPath As TextBox
 End Class
