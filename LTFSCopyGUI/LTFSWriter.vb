@@ -1153,8 +1153,23 @@ Public Class LTFSWriter
                    End SyncLock
                End Sub)
     End Sub
+    Public Function GetPath(ByVal n As TreeNode) As String
+        Dim l As New List(Of ltfsindex.directory)
+        Dim n0 As TreeNode = n
+        While n0 IsNot Nothing AndAlso TypeOf n0.Tag Is ltfsindex.directory
+            l.Add(n0.Tag)
+            n0 = n0.Parent
+        End While
+        Dim sb As New StringBuilder
+        For i As Integer = l.Count - 1 To 0 Step -1
+            sb.Append("\")
+            sb.Append(l(i).name)
+        Next
+        Return sb.ToString()
+    End Function
     Public Sub TriggerTreeView1Event()
         If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
+            ListView1.BeginUpdate()
             Try
                 If TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.directory Then
                     If TreeView1.SelectedNode.Parent IsNot Nothing Then
@@ -1170,6 +1185,7 @@ Public Class LTFSWriter
                     校验ToolStripMenuItem1.Enabled = True
                     重命名ToolStripMenuItem.Enabled = True
                     统计ToolStripMenuItem.Enabled = True
+                    TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
                     Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
                     ListView1.Items.Clear()
                     ListView1.Tag = d
@@ -1301,6 +1317,7 @@ Public Class LTFSWriter
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_NavErr)
             End Try
+            ListView1.EndUpdate()
         End If
     End Sub
     Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles TreeView1.AfterSelect
