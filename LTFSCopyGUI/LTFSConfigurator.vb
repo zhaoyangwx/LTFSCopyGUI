@@ -549,7 +549,7 @@ Public Class LTFSConfigurator
         If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
-    Private Sub ButtonDebugWriteBarcode_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBarcode.Click
+    Private Sub ButtonDebugWriteBarcode_Click(sender As Object, e As EventArgs)
         If Not LoadComplete Then Exit Sub
         Panel1.Enabled = False
         Dim barcode As String = TextBox9.Text
@@ -576,7 +576,7 @@ Public Class LTFSConfigurator
         If Panel1.Enabled Then RefreshUI(CheckBox3.Checked)
     End Sub
 
-    Private Sub Label11_Click(sender As Object, e As EventArgs) Handles Label11.Click
+    Private Sub Label11_Click(sender As Object, e As EventArgs)
     End Sub
 
     Private Sub ButtonDebugReadMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadMAM.Click
@@ -3562,7 +3562,7 @@ Public Class LTFSConfigurator
                 End If
                 result.Append("        | ")
                 If C1cwerr > 0 Then
-                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadRight(12).PadLeft(17))
+                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadLeft(11).PadLeft(17))
                 Else
                     result.AppendLine("".PadRight(12).PadLeft(17))
                 End If
@@ -3617,5 +3617,15 @@ Public Class LTFSConfigurator
         End Try
 
         TextBox8.Text = result.ToString()
+    End Sub
+
+    Private Sub 在当前进程运行ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 在当前进程运行ToolStripMenuItem.Click
+        Dim LWF As New LTFSWriter With {.TapeDrive = ConfTapeDrive}
+        LWF.Show()
+    End Sub
+
+    Private Sub 不读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 不读取索引ToolStripMenuItem.Click
+        Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = True}
+        LWF.Show()
     End Sub
 End Class

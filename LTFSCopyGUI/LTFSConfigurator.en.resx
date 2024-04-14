@@ -178,8 +178,23 @@
   <data name="Button30.Text" xml:space="preserve">
     <value>FileSorter</value>
   </data>
+  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 48</value>
+  </data>
   <data name="Button27.Text" xml:space="preserve">
     <value>LTFSWriter</value>
+  </data>
+  <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 22</value>
+  </data>
+  <data name="在当前进程运行ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Run in current process</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 22</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Disable index autoload</value>
   </data>
   <data name="Button14.Text" xml:space="preserve">
     <value>Unthread</value>

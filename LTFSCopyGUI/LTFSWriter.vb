@@ -823,7 +823,7 @@ Public Class LTFSWriter
         For i As Integer = 0 To b.Length - 1
             b(i) = 255
         Next
-        For i As Integer = 0 To value / maximum * 100
+        For i As Integer = 0 To value / maximum * 99
             b(i * 3 + 0) = color.B
             b(i * 3 + 1) = color.G
             b(i * 3 + 2) = color.R
