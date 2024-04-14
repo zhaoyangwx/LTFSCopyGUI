@@ -239,7 +239,6 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
-        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Controls.Add(Me.Button5)
         Me.Panel1.Controls.Add(Me.CheckBox3)
         Me.Panel1.Controls.Add(Me.Button30)
@@ -264,6 +263,7 @@ Partial Class LTFSConfigurator
         Me.Panel1.Controls.Add(Me.Label1)
         Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Controls.Add(Me.TextBox1)
+        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Name = "Panel1"
         '
         'Button5
@@ -295,19 +295,19 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStrip1
         '
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.在当前进程运行ToolStripMenuItem, Me.不读取索引ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
         '在当前进程运行ToolStripMenuItem
         '
-        resources.ApplyResources(Me.在当前进程运行ToolStripMenuItem, "在当前进程运行ToolStripMenuItem")
         Me.在当前进程运行ToolStripMenuItem.Name = "在当前进程运行ToolStripMenuItem"
+        resources.ApplyResources(Me.在当前进程运行ToolStripMenuItem, "在当前进程运行ToolStripMenuItem")
         '
         '不读取索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.不读取索引ToolStripMenuItem, "不读取索引ToolStripMenuItem")
         Me.不读取索引ToolStripMenuItem.Name = "不读取索引ToolStripMenuItem"
+        resources.ApplyResources(Me.不读取索引ToolStripMenuItem, "不读取索引ToolStripMenuItem")
         '
         'Button14
         '
@@ -359,7 +359,6 @@ Partial Class LTFSConfigurator
         '
         'TabPage1
         '
-        resources.ApplyResources(Me.TabPage1, "TabPage1")
         Me.TabPage1.Controls.Add(Me.ButtonDebugRewind)
         Me.TabPage1.Controls.Add(Me.Label4)
         Me.TabPage1.Controls.Add(Me.Label16)
@@ -383,6 +382,7 @@ Partial Class LTFSConfigurator
         Me.TabPage1.Controls.Add(Me.Label5)
         Me.TabPage1.Controls.Add(Me.Button24)
         Me.TabPage1.Controls.Add(Me.ButtonDebugDumpTape)
+        resources.ApplyResources(Me.TabPage1, "TabPage1")
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.UseVisualStyleBackColor = True
         '
@@ -457,10 +457,10 @@ Partial Class LTFSConfigurator
         '
         'ComboBox3
         '
-        resources.ApplyResources(Me.ComboBox3, "ComboBox3")
         Me.ComboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBox3.FormattingEnabled = True
         Me.ComboBox3.Items.AddRange(New Object() {resources.GetString("ComboBox3.Items"), resources.GetString("ComboBox3.Items1"), resources.GetString("ComboBox3.Items2")})
+        resources.ApplyResources(Me.ComboBox3, "ComboBox3")
         Me.ComboBox3.Name = "ComboBox3"
         '
         'NumericUpDown6
@@ -516,24 +516,24 @@ Partial Class LTFSConfigurator
         '
         'Button24
         '
-        resources.ApplyResources(Me.Button24, "Button24")
         Me.Button24.ForeColor = System.Drawing.Color.Red
+        resources.ApplyResources(Me.Button24, "Button24")
         Me.Button24.Name = "Button24"
         Me.Button24.UseVisualStyleBackColor = True
         '
         'ButtonDebugDumpTape
         '
-        resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.AllowDrop = True
+        resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
         'TabPage2
         '
-        resources.ApplyResources(Me.TabPage2, "TabPage2")
         Me.TabPage2.Controls.Add(Me.ButtonDebugDumpBuffer)
         Me.TabPage2.Controls.Add(Me.ComboBox2)
         Me.TabPage2.Controls.Add(Me.Label14)
+        resources.ApplyResources(Me.TabPage2, "TabPage2")
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
@@ -558,7 +558,6 @@ Partial Class LTFSConfigurator
         '
         'TabPage3
         '
-        resources.ApplyResources(Me.TabPage3, "TabPage3")
         Me.TabPage3.Controls.Add(Me.Label11)
         Me.TabPage3.Controls.Add(Me.TextBox9)
         Me.TabPage3.Controls.Add(Me.ButtonDebugWriteBarcode)
@@ -568,6 +567,7 @@ Partial Class LTFSConfigurator
         Me.TabPage3.Controls.Add(Me.NumericUpDown9)
         Me.TabPage3.Controls.Add(Me.ButtonDebugReadMAM)
         Me.TabPage3.Controls.Add(Me.ButtonDebugDumpMAM)
+        resources.ApplyResources(Me.TabPage3, "TabPage3")
         Me.TabPage3.Name = "TabPage3"
         Me.TabPage3.UseVisualStyleBackColor = True
         '
@@ -625,7 +625,6 @@ Partial Class LTFSConfigurator
         '
         'TabPage4
         '
-        resources.ApplyResources(Me.TabPage4, "TabPage4")
         Me.TabPage4.Controls.Add(Me.CheckBox5)
         Me.TabPage4.Controls.Add(Me.ComboBox5)
         Me.TabPage4.Controls.Add(Me.Label19)
@@ -633,6 +632,7 @@ Partial Class LTFSConfigurator
         Me.TabPage4.Controls.Add(Me.Label18)
         Me.TabPage4.Controls.Add(Me.ComboBox4)
         Me.TabPage4.Controls.Add(Me.Button11)
+        resources.ApplyResources(Me.TabPage4, "TabPage4")
         Me.TabPage4.Name = "TabPage4"
         Me.TabPage4.UseVisualStyleBackColor = True
         '
@@ -684,7 +684,6 @@ Partial Class LTFSConfigurator
         '
         'TabPage5
         '
-        resources.ApplyResources(Me.TabPage5, "TabPage5")
         Me.TabPage5.Controls.Add(Me.Button15)
         Me.TabPage5.Controls.Add(Me.ButtonTest)
         Me.TabPage5.Controls.Add(Me.RadioButtonTest2)
@@ -693,6 +692,7 @@ Partial Class LTFSConfigurator
         Me.TabPage5.Controls.Add(Me.Label21)
         Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkSize)
         Me.TabPage5.Controls.Add(Me.Label20)
+        resources.ApplyResources(Me.TabPage5, "TabPage5")
         Me.TabPage5.Name = "TabPage5"
         Me.TabPage5.UseVisualStyleBackColor = True
         '
@@ -824,14 +824,9 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
-        'FolderBrowserDialog1
-        '
-        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
-        '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
         '
         'LTFSConfigurator
         '
