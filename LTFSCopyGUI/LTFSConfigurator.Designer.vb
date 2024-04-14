@@ -22,6 +22,7 @@ Partial Class LTFSConfigurator
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(LTFSConfigurator))
         Me.Button1 = New System.Windows.Forms.Button()
         Me.ListBox1 = New System.Windows.Forms.ListBox()
@@ -44,6 +45,9 @@ Partial Class LTFSConfigurator
         Me.CheckBox3 = New System.Windows.Forms.CheckBox()
         Me.Button30 = New System.Windows.Forms.Button()
         Me.Button27 = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.在当前进程运行ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.不读取索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Button14 = New System.Windows.Forms.Button()
         Me.Button13 = New System.Windows.Forms.Button()
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
@@ -77,10 +81,10 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
         Me.ComboBox2 = New System.Windows.Forms.ComboBox()
         Me.Label14 = New System.Windows.Forms.Label()
+        Me.TabPage3 = New System.Windows.Forms.TabPage()
         Me.Label11 = New System.Windows.Forms.Label()
         Me.TextBox9 = New System.Windows.Forms.TextBox()
         Me.ButtonDebugWriteBarcode = New System.Windows.Forms.Button()
-        Me.TabPage3 = New System.Windows.Forms.TabPage()
         Me.Label13 = New System.Windows.Forms.Label()
         Me.Label15 = New System.Windows.Forms.Label()
         Me.NumericUpDown8 = New System.Windows.Forms.NumericUpDown()
@@ -96,6 +100,7 @@ Partial Class LTFSConfigurator
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.Button11 = New System.Windows.Forms.Button()
         Me.TabPage5 = New System.Windows.Forms.TabPage()
+        Me.Button15 = New System.Windows.Forms.Button()
         Me.ButtonTest = New System.Windows.Forms.Button()
         Me.RadioButtonTest2 = New System.Windows.Forms.RadioButton()
         Me.RadioButtonTest1 = New System.Windows.Forms.RadioButton()
@@ -120,8 +125,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.Button15 = New System.Windows.Forms.Button()
         Me.Panel1.SuspendLayout()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.Panel2.SuspendLayout()
         Me.TabControl1.SuspendLayout()
         Me.TabPage1.SuspendLayout()
@@ -234,6 +239,7 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
+        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Controls.Add(Me.Button5)
         Me.Panel1.Controls.Add(Me.CheckBox3)
         Me.Panel1.Controls.Add(Me.Button30)
@@ -258,7 +264,6 @@ Partial Class LTFSConfigurator
         Me.Panel1.Controls.Add(Me.Label1)
         Me.Panel1.Controls.Add(Me.Label2)
         Me.Panel1.Controls.Add(Me.TextBox1)
-        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Name = "Panel1"
         '
         'Button5
@@ -284,8 +289,25 @@ Partial Class LTFSConfigurator
         'Button27
         '
         resources.ApplyResources(Me.Button27, "Button27")
+        Me.Button27.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Button27.Name = "Button27"
         Me.Button27.UseVisualStyleBackColor = True
+        '
+        'ContextMenuStrip1
+        '
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.在当前进程运行ToolStripMenuItem, Me.不读取索引ToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        '
+        '在当前进程运行ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.在当前进程运行ToolStripMenuItem, "在当前进程运行ToolStripMenuItem")
+        Me.在当前进程运行ToolStripMenuItem.Name = "在当前进程运行ToolStripMenuItem"
+        '
+        '不读取索引ToolStripMenuItem
+        '
+        resources.ApplyResources(Me.不读取索引ToolStripMenuItem, "不读取索引ToolStripMenuItem")
+        Me.不读取索引ToolStripMenuItem.Name = "不读取索引ToolStripMenuItem"
         '
         'Button14
         '
@@ -337,6 +359,7 @@ Partial Class LTFSConfigurator
         '
         'TabPage1
         '
+        resources.ApplyResources(Me.TabPage1, "TabPage1")
         Me.TabPage1.Controls.Add(Me.ButtonDebugRewind)
         Me.TabPage1.Controls.Add(Me.Label4)
         Me.TabPage1.Controls.Add(Me.Label16)
@@ -360,7 +383,6 @@ Partial Class LTFSConfigurator
         Me.TabPage1.Controls.Add(Me.Label5)
         Me.TabPage1.Controls.Add(Me.Button24)
         Me.TabPage1.Controls.Add(Me.ButtonDebugDumpTape)
-        resources.ApplyResources(Me.TabPage1, "TabPage1")
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.UseVisualStyleBackColor = True
         '
@@ -435,10 +457,10 @@ Partial Class LTFSConfigurator
         '
         'ComboBox3
         '
+        resources.ApplyResources(Me.ComboBox3, "ComboBox3")
         Me.ComboBox3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBox3.FormattingEnabled = True
         Me.ComboBox3.Items.AddRange(New Object() {resources.GetString("ComboBox3.Items"), resources.GetString("ComboBox3.Items1"), resources.GetString("ComboBox3.Items2")})
-        resources.ApplyResources(Me.ComboBox3, "ComboBox3")
         Me.ComboBox3.Name = "ComboBox3"
         '
         'NumericUpDown6
@@ -494,27 +516,24 @@ Partial Class LTFSConfigurator
         '
         'Button24
         '
-        Me.Button24.ForeColor = System.Drawing.Color.Red
         resources.ApplyResources(Me.Button24, "Button24")
+        Me.Button24.ForeColor = System.Drawing.Color.Red
         Me.Button24.Name = "Button24"
         Me.Button24.UseVisualStyleBackColor = True
         '
         'ButtonDebugDumpTape
         '
-        Me.ButtonDebugDumpTape.AllowDrop = True
         resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
+        Me.ButtonDebugDumpTape.AllowDrop = True
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
         'TabPage2
         '
+        resources.ApplyResources(Me.TabPage2, "TabPage2")
         Me.TabPage2.Controls.Add(Me.ButtonDebugDumpBuffer)
         Me.TabPage2.Controls.Add(Me.ComboBox2)
         Me.TabPage2.Controls.Add(Me.Label14)
-        Me.TabPage2.Controls.Add(Me.Label11)
-        Me.TabPage2.Controls.Add(Me.TextBox9)
-        Me.TabPage2.Controls.Add(Me.ButtonDebugWriteBarcode)
-        resources.ApplyResources(Me.TabPage2, "TabPage2")
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
@@ -537,6 +556,21 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.Label14, "Label14")
         Me.Label14.Name = "Label14"
         '
+        'TabPage3
+        '
+        resources.ApplyResources(Me.TabPage3, "TabPage3")
+        Me.TabPage3.Controls.Add(Me.Label11)
+        Me.TabPage3.Controls.Add(Me.TextBox9)
+        Me.TabPage3.Controls.Add(Me.ButtonDebugWriteBarcode)
+        Me.TabPage3.Controls.Add(Me.Label13)
+        Me.TabPage3.Controls.Add(Me.Label15)
+        Me.TabPage3.Controls.Add(Me.NumericUpDown8)
+        Me.TabPage3.Controls.Add(Me.NumericUpDown9)
+        Me.TabPage3.Controls.Add(Me.ButtonDebugReadMAM)
+        Me.TabPage3.Controls.Add(Me.ButtonDebugDumpMAM)
+        Me.TabPage3.Name = "TabPage3"
+        Me.TabPage3.UseVisualStyleBackColor = True
+        '
         'Label11
         '
         resources.ApplyResources(Me.Label11, "Label11")
@@ -552,18 +586,6 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.ButtonDebugWriteBarcode, "ButtonDebugWriteBarcode")
         Me.ButtonDebugWriteBarcode.Name = "ButtonDebugWriteBarcode"
         Me.ButtonDebugWriteBarcode.UseVisualStyleBackColor = True
-        '
-        'TabPage3
-        '
-        Me.TabPage3.Controls.Add(Me.Label13)
-        Me.TabPage3.Controls.Add(Me.Label15)
-        Me.TabPage3.Controls.Add(Me.NumericUpDown8)
-        Me.TabPage3.Controls.Add(Me.NumericUpDown9)
-        Me.TabPage3.Controls.Add(Me.ButtonDebugReadMAM)
-        Me.TabPage3.Controls.Add(Me.ButtonDebugDumpMAM)
-        resources.ApplyResources(Me.TabPage3, "TabPage3")
-        Me.TabPage3.Name = "TabPage3"
-        Me.TabPage3.UseVisualStyleBackColor = True
         '
         'Label13
         '
@@ -603,6 +625,7 @@ Partial Class LTFSConfigurator
         '
         'TabPage4
         '
+        resources.ApplyResources(Me.TabPage4, "TabPage4")
         Me.TabPage4.Controls.Add(Me.CheckBox5)
         Me.TabPage4.Controls.Add(Me.ComboBox5)
         Me.TabPage4.Controls.Add(Me.Label19)
@@ -610,7 +633,6 @@ Partial Class LTFSConfigurator
         Me.TabPage4.Controls.Add(Me.Label18)
         Me.TabPage4.Controls.Add(Me.ComboBox4)
         Me.TabPage4.Controls.Add(Me.Button11)
-        resources.ApplyResources(Me.TabPage4, "TabPage4")
         Me.TabPage4.Name = "TabPage4"
         Me.TabPage4.UseVisualStyleBackColor = True
         '
@@ -662,6 +684,7 @@ Partial Class LTFSConfigurator
         '
         'TabPage5
         '
+        resources.ApplyResources(Me.TabPage5, "TabPage5")
         Me.TabPage5.Controls.Add(Me.Button15)
         Me.TabPage5.Controls.Add(Me.ButtonTest)
         Me.TabPage5.Controls.Add(Me.RadioButtonTest2)
@@ -670,9 +693,14 @@ Partial Class LTFSConfigurator
         Me.TabPage5.Controls.Add(Me.Label21)
         Me.TabPage5.Controls.Add(Me.NumericUpDownTestBlkSize)
         Me.TabPage5.Controls.Add(Me.Label20)
-        resources.ApplyResources(Me.TabPage5, "TabPage5")
         Me.TabPage5.Name = "TabPage5"
         Me.TabPage5.UseVisualStyleBackColor = True
+        '
+        'Button15
+        '
+        resources.ApplyResources(Me.Button15, "Button15")
+        Me.Button15.Name = "Button15"
+        Me.Button15.UseVisualStyleBackColor = True
         '
         'ButtonTest
         '
@@ -796,15 +824,14 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
+        'FolderBrowserDialog1
+        '
+        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
+        '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        '
-        'Button15
-        '
-        resources.ApplyResources(Me.Button15, "Button15")
-        Me.Button15.Name = "Button15"
-        Me.Button15.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
         '
         'LTFSConfigurator
         '
@@ -814,6 +841,7 @@ Partial Class LTFSConfigurator
         Me.Name = "LTFSConfigurator"
         Me.Panel1.ResumeLayout(False)
         Me.Panel1.PerformLayout()
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.Panel2.ResumeLayout(False)
         Me.Panel2.PerformLayout()
         Me.TabControl1.ResumeLayout(False)
@@ -872,9 +900,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents Label10 As Label
     Friend WithEvents Label9 As Label
     Friend WithEvents Label8 As Label
-    Friend WithEvents ButtonDebugWriteBarcode As Button
-    Friend WithEvents TextBox9 As TextBox
-    Friend WithEvents Label11 As Label
     Friend WithEvents TextBox10 As TextBox
     Friend WithEvents Label12 As Label
     Friend WithEvents ButtonDebugReadMAM As Button
@@ -937,4 +962,10 @@ Partial Class LTFSConfigurator
     Friend WithEvents RadioButtonTest1 As RadioButton
     Friend WithEvents ButtonTest As Button
     Friend WithEvents Button15 As Button
+    Friend WithEvents Label11 As Label
+    Friend WithEvents TextBox9 As TextBox
+    Friend WithEvents ButtonDebugWriteBarcode As Button
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents 在当前进程运行ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 不读取索引ToolStripMenuItem As ToolStripMenuItem
 End Class
