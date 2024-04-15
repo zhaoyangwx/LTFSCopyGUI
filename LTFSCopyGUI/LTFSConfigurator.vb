@@ -3528,7 +3528,10 @@ Public Class LTFSConfigurator
             result.AppendLine($"  CWI-4 Sets Written   : {WERLData(1)}")
             result.AppendLine($"  CWI-4 Set Retries    : {WERLData(2)}")
             result.AppendLine($"  Unwritable Datasets  : {WERLData(3)}")
-            result.AppendLine($"  Channel | No. CCPs | C1 code err | C1 codewrd uncorr | Header err | WrPass err | C1 codewrd err rate | Bit err rate(log10) | Blk per Uncorr C1 ")
+            result.AppendLine($"  =========+==========+==========+===============+==========+============+=============+=============+==================")
+            result.AppendLine($"   Channel | No. CCPs | C1 code  |  C1 codeword  |  Header  | Write Pass | C1 codeword |  Bit Error  |    Block per     ")
+            result.AppendLine($"           |          |  error   | uncorrectable |  error   |   error    | error rate  | rate(log10) | Uncorrectable C1 ")
+            result.AppendLine($"  ---------+----------+----------+---------------+----------+------------+-------------+-------------+------------------")
             For i As Integer = 4 To WERLData.Length - 5 Step 5
                 Dim chan As Integer = (i - 4) \ 5
                 Dim C1err As Integer = Integer.Parse(WERLData(i + 0), Globalization.NumberStyles.HexNumber)
@@ -3536,44 +3539,48 @@ Public Class LTFSConfigurator
                 Dim Headerrr As Integer = Integer.Parse(WERLData(i + 2), Globalization.NumberStyles.HexNumber)
                 Dim WrPasserr As Integer = Integer.Parse(WERLData(i + 3), Globalization.NumberStyles.HexNumber)
                 Dim NoCCPs As Integer = Integer.Parse(WERLData(i + 4), Globalization.NumberStyles.HexNumber)
-                result.Append("     ")
-                result.Append(chan.ToString.PadRight(5))
-                result.Append("| ")
+                result.Append("   ")
+                result.Append(chan.ToString.PadLeft(5))
+                result.Append("   | ")
                 result.Append(WERLData(i + 4).PadLeft(8, "0"))
-                result.Append(" |  ")
+                result.Append(" | ")
                 result.Append(WERLData(i + 0).PadLeft(8, "0"))
-                result.Append("   |     ")
+                result.Append(" |   ")
                 result.Append(WERLData(i + 1).PadLeft(8, "0"))
-                result.Append("      |  ")
+                result.Append("    | ")
                 result.Append(WERLData(i + 2).PadLeft(8, "0"))
-                result.Append("  |  ")
+                result.Append(" |  ")
                 result.Append(WERLData(i + 3).PadLeft(8, "0"))
-                result.Append("  |     ")
+                result.Append("  |  ")
                 If NoCCPs > 0 Then
                     result.Append((C1err / NoCCPs / 2).ToString("E3"))
                 Else
                     result.Append("          ")
                 End If
-                result.Append("      |        ")
+                result.Append(" |    ")
                 If NoCCPs > 0 Then
                     result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2"))
                 Else
                     result.Append("     ")
                 End If
-                result.Append("        | ")
+                result.Append("    |")
                 If C1cwerr > 0 Then
-                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadLeft(11).PadRight(17))
+                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadLeft(11).PadRight(18))
                 Else
-                    result.AppendLine("".PadRight(12).PadLeft(17))
+                    result.AppendLine("".PadLeft(11).PadRight(18))
                 End If
             Next
-
+            result.AppendLine($"  =========+==========+==========+===============+==========+============+=============+=============+==================")
+            result.AppendLine()
             result.AppendLine($"Read Error Rate Log")
             result.AppendLine($"  Datasets Read        : {RERLData(0)}")
             result.AppendLine($"  Subdataset C2 Errors : {RERLData(2)}")
             result.AppendLine($"  Dataset C2 Errors    : {RERLData(3)}")
             result.AppendLine($"  X-Chan Interpolations: {RERLData(4)}")
-            result.AppendLine($"  Channel | No. CCPs | C1 code err | C1 codewrd uncorr | Header err | WrPass err | C1 codewrd err rate | Bit err rate(log10) | Blk per Uncorr C1 ")
+            result.AppendLine($"  =========+==========+==========+===============+==========+============+=============+=============+==================")
+            result.AppendLine($"   Channel | No. CCPs | C1 code  |  C1 codeword  |  Header  | Write Pass | C1 codeword |  Bit Error  |    Block per     ")
+            result.AppendLine($"           |          |  error   | uncorrectable |  error   |   error    | error rate  | rate(log10) | Uncorrectable C1 ")
+            result.AppendLine($"  ---------+----------+----------+---------------+----------+------------+-------------+-------------+------------------")
             For i As Integer = 5 To RERLData.Length - 5 Step 5
                 Dim chan As Integer = (i - 4) \ 5
                 Dim C1err As Integer = Integer.Parse(RERLData(i + 0), Globalization.NumberStyles.HexNumber)
@@ -3581,37 +3588,38 @@ Public Class LTFSConfigurator
                 Dim Headerrr As Integer = Integer.Parse(RERLData(i + 2), Globalization.NumberStyles.HexNumber)
                 Dim WrPasserr As Integer = Integer.Parse(RERLData(i + 3), Globalization.NumberStyles.HexNumber)
                 Dim NoCCPs As Integer = Integer.Parse(RERLData(i + 4), Globalization.NumberStyles.HexNumber)
-                result.Append("     ")
-                result.Append(chan.ToString.PadRight(5))
-                result.Append("| ")
+                result.Append("   ")
+                result.Append(chan.ToString.PadLeft(5))
+                result.Append("   | ")
                 result.Append(RERLData(i + 4).PadLeft(8, "0"))
-                result.Append(" |  ")
+                result.Append(" | ")
                 result.Append(RERLData(i + 0).PadLeft(8, "0"))
-                result.Append("   |     ")
+                result.Append(" |   ")
                 result.Append(RERLData(i + 1).PadLeft(8, "0"))
-                result.Append("      |  ")
+                result.Append("    | ")
                 result.Append(RERLData(i + 2).PadLeft(8, "0"))
-                result.Append("  |  ")
+                result.Append(" |  ")
                 result.Append(RERLData(i + 3).PadLeft(8, "0"))
-                result.Append("  |     ")
+                result.Append("  |  ")
                 If NoCCPs > 0 Then
                     result.Append((C1err / NoCCPs / 2).ToString("E3"))
                 Else
                     result.Append("          ")
                 End If
-                result.Append("      |        ")
+                result.Append(" |    ")
                 If NoCCPs > 0 Then
                     result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2"))
                 Else
                     result.Append("     ")
                 End If
-                result.Append("        | ")
+                result.Append("    |")
                 If C1cwerr > 0 Then
-                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadLeft(11).PadRight(17))
+                    result.AppendLine(Math.Round(NoCCPs * 2 / C1cwerr, 1).ToString("f1").PadLeft(11).PadRight(18))
                 Else
-                    result.AppendLine("".PadRight(12).PadLeft(17))
+                    result.AppendLine("".PadLeft(11).PadRight(18))
                 End If
             Next
+            result.AppendLine($"  =========+==========+==========+===============+==========+============+=============+=============+==================")
         Catch ex As Exception
             result.Append(ex.ToString())
         End Try
