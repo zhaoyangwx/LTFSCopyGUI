@@ -1067,7 +1067,7 @@ Public Class LTFSWriter
                                     RemoveHandler TreeView1.AfterSelect, tvNodeSelect
                                 End Sub)
                             Dim isParentOfOldSelect As Boolean = False
-                            If MaxDepth = 0 AndAlso Not old_select_path.StartsWith(node.FullPath) Then
+                            If MaxDepth = 0 AndAlso Not old_select_path.StartsWith(GetPath(node)) Then
                                 AddHandler TreeView1.AfterExpand, tvNodeExpand
                                 AddHandler TreeView1.AfterSelect, tvNodeSelect
                                 MaxDepth = 2
@@ -1080,13 +1080,13 @@ Public Class LTFSWriter
                         If TreeView1.SelectedNode.Tag IsNot Nothing Then
                             If TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.directory Then
                                 old_select = TreeView1.SelectedNode.Tag
-                                old_select_path = TreeView1.SelectedNode.FullPath
+                                old_select_path = GetPath(TreeView1.SelectedNode)
                             End If
                         End If
                     End If
                     If old_select Is Nothing And ListView1.Tag IsNot Nothing Then
                         old_select = ListView1.Tag
-                        old_select_path = TreeView1.TopNode.FullPath
+                        old_select_path = GetPath(TreeView1.TopNode)
                     End If
                     TreeView1.Nodes.Clear()
                     SyncLock schema._directory
@@ -4933,8 +4933,13 @@ Public Class LTFSWriter
         End If
     End Sub
 
+
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
         IndexWriteInterval = Val(InputBox(My.Resources.ResText_SIIntv, My.Resources.ResText_Setting, IndexWriteInterval))
+    End Sub
+
+    Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
+        LTFSConfigurator.Show()
     End Sub
 
     Private Sub 查找指定位置前的索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找指定位置前的索引ToolStripMenuItem.Click
@@ -5028,6 +5033,12 @@ Public Class LTFSWriter
             Case Keys.KeyCode.F5
                 RefreshDisplay()
         End Select
+    End Sub
+
+    Private Sub ToolStripStatusLabel1_MouseUp(sender As Object, e As MouseEventArgs) Handles ToolStripStatusLabel1.MouseUp
+        If e.Button = MouseButtons.Right Then
+            ContextMenuStrip4.Show(ToolStripStatusLabel1.GetCurrentParent, e.Location + ToolStripStatusLabel1.Bounds.Location)
+        End If
     End Sub
 End Class
 

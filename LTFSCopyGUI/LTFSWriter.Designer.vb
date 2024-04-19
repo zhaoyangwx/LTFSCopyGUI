@@ -214,6 +214,8 @@ Partial Class LTFSWriter
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel3 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.TextBoxSelectedPath = New System.Windows.Forms.TextBox()
+        Me.ContextMenuStrip4 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -230,6 +232,7 @@ Partial Class LTFSWriter
         Me.StatusStrip1.SuspendLayout()
         Me.ToolStrip1.SuspendLayout()
         Me.StatusStrip2.SuspendLayout()
+        Me.ContextMenuStrip4.SuspendLayout()
         Me.SuspendLayout()
         '
         'SplitContainer1
@@ -1177,6 +1180,17 @@ Partial Class LTFSWriter
         resources.ApplyResources(Me.TextBoxSelectedPath, "TextBoxSelectedPath")
         Me.TextBoxSelectedPath.Name = "TextBoxSelectedPath"
         '
+        'ContextMenuStrip4
+        '
+        Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem})
+        Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
+        resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
+        '
+        'DebugToolStripMenuItem
+        '
+        Me.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem"
+        resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
+        '
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
@@ -1211,6 +1225,7 @@ Partial Class LTFSWriter
         Me.ToolStrip1.PerformLayout()
         Me.StatusStrip2.ResumeLayout(False)
         Me.StatusStrip2.PerformLayout()
+        Me.ContextMenuStrip4.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -1366,4 +1381,6 @@ Partial Class LTFSWriter
     Friend WithEvents 查找指定位置前的索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents Column_md5 As ColumnHeader
     Friend WithEvents TextBoxSelectedPath As TextBox
+    Friend WithEvents ContextMenuStrip4 As ContextMenuStrip
+    Friend WithEvents DebugToolStripMenuItem As ToolStripMenuItem
 End Class
