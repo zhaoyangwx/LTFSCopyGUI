@@ -360,6 +360,7 @@ Public Class ltfsindex
             sline = sline.Replace("utf-8", "UTF-8")
         End If
         sline = sline.Replace("xmlns:v", "version")
+        If sline.Length > 0 Then sout.WriteLine(sline)
         While Not soutp.EndOfStream
             sline = soutp.ReadLine()
             sline = sline.Replace("xmlns:v", "version")
@@ -486,12 +487,12 @@ End Class
         If sline.StartsWith("<?xml") Then
             sline = sline.Replace("utf-8", "UTF-8")
         End If
-        If sline.Length > 0 Then sout.AppendLine(sline)
         If ReduceSize Then
             sline = sline.Replace("xmlns:v", "version")
         End If
+        If sline.Length > 0 Then sout.AppendLine(sline)
         While Not soutp.EndOfStream
-                sline = soutp.ReadLine
+            sline = soutp.ReadLine
             If ReduceSize Then
                 sline = sline.Replace("xmlns:v", "version")
                 sline = sline.Replace("<_file />", "")
