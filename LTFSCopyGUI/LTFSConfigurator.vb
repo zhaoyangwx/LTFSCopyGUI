@@ -1189,7 +1189,7 @@ Public Class LTFSConfigurator
                         End If
 
                         'Write ltfsindex
-                        pindex.previousgenerationlocation = New ltfsindex.PartitionDef()
+                        pindex.previousgenerationlocation = New ltfsindex.LocationDef()
                         pindex.previousgenerationlocation.partition = pindex.location.partition
                         pindex.previousgenerationlocation.startblock = pindex.location.startblock
                         pindex.location.partition = ltfsindex.PartitionLabel.a

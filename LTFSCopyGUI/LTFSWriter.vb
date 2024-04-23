@@ -1358,7 +1358,7 @@ Public Class LTFSWriter
         schema.generationnumber += 1
         schema.updatetime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
         schema.location.partition = ltfsindex.PartitionLabel.b
-        schema.previousgenerationlocation = New ltfsindex.PartitionDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
+        schema.previousgenerationlocation = New ltfsindex.LocationDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
         CurrentPos = GetPos
         PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
         schema.location.startblock = CurrentPos.BlockNumber
@@ -1402,7 +1402,7 @@ Public Class LTFSWriter
             TapeUtils.WriteFileMark(TapeDrive)
             PrintMsg($"Filemark Written", LogOnly:=True)
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
-                schema.previousgenerationlocation = New ltfsindex.PartitionDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
+                schema.previousgenerationlocation = New ltfsindex.LocationDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
             End If
             p = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
@@ -3072,15 +3072,18 @@ Public Class LTFSWriter
                     End If
                     TapeUtils.Locate(TapeDrive, 0, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive))
+                    Dim senseData As Byte()
+                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive, senseData))
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim VOL1LabelLegal As Boolean = False
                     VOL1LabelLegal = (header.Length = 80)
                     If VOL1LabelLegal Then VOL1LabelLegal = header.StartsWith("VOL1")
                     If VOL1LabelLegal Then VOL1LabelLegal = (header.Substring(24, 4) = "LTFS")
                     If Not VOL1LabelLegal Then
+                        Dim Add_Key As UInt16
+                        If senseData.Length >= 14 Then Add_Key = CInt(senseData(12)) << 8 Or senseData(13)
                         PrintMsg(My.Resources.ResText_NVOL1)
-                        Invoke(Sub() MessageBox.Show(My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
+                        Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_NLTFS}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}", My.Resources.ResText_Error))
                         LockGUI(False)
                         Exit Try
                     End If
@@ -4943,7 +4946,12 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 查找指定位置前的索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找指定位置前的索引ToolStripMenuItem.Click
-        Dim blocknum As Long = CLng(InputBox("Block number", "Index search", "0"))
+        Dim blocknum As Long
+        Try
+            blocknum = CLng(InputBox("Block number", "Index search", "0"))
+        Catch ex As Exception
+
+        End Try
         If blocknum <= 0 Then Exit Sub
         Dim th As New Threading.Thread(
             Sub()

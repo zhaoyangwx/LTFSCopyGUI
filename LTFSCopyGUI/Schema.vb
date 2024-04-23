@@ -10,14 +10,14 @@ Public Class ltfsindex
         b
     End Enum
     <Serializable>
-    Public Class PartitionDef
+    Public Class LocationDef
 
         Public Property partition As PartitionLabel = PartitionLabel.a
         Public Property startblock As Long
     End Class
 
-    Public Property location As New PartitionDef
-    Public Property previousgenerationlocation As New PartitionDef
+    Public Property location As New LocationDef
+    Public Property previousgenerationlocation As New LocationDef
     Public Property allowpolicyupdate As Boolean
     <Serializable>
     Public Class policy
