@@ -203,6 +203,7 @@ Public Class LTFSWriter
         速度上限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMax}{My.Settings.LTFSWriter_AutoCleanUpperLim} MiB/s"
         持续时间ToolStripMenuItem.Text = $"{My.Resources.ResText_STime}{My.Settings.LTFSWriter_AutoCleanTimeThreashould}s"
         去重SHA1ToolStripMenuItem.Checked = My.Settings.LTFSWriter_DeDupe
+        右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
         Chart1.Titles(1).Text = My.Resources.ResText_SpeedBT
         Chart1.Titles(2).Text = My.Resources.ResText_FileRateBT
         TapeUtils.AllowPartition = Not DisablePartition
