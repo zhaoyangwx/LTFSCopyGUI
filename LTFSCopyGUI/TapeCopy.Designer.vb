@@ -22,6 +22,7 @@ Partial Class TapeCopy
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(TapeCopy))
         Me.Label1 = New System.Windows.Forms.Label()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
@@ -170,6 +171,7 @@ Partial Class TapeCopy
         Me.Controls.Add(Me.Label2)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.Label1)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "TapeCopy"
         Me.Text = "TapeCopy"
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()

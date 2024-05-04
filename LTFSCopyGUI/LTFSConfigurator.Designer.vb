@@ -125,6 +125,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.BrowseBinaryFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.Panel2.SuspendLayout()
@@ -142,6 +144,7 @@ Partial Class LTFSConfigurator
         Me.TabPage5.SuspendLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStrip2.SuspendLayout()
         Me.SuspendLayout()
         '
         'Button1
@@ -435,6 +438,7 @@ Partial Class LTFSConfigurator
         'ButtonDebugReadInfo
         '
         resources.ApplyResources(Me.ButtonDebugReadInfo, "ButtonDebugReadInfo")
+        Me.ButtonDebugReadInfo.ContextMenuStrip = Me.ContextMenuStrip2
         Me.ButtonDebugReadInfo.Name = "ButtonDebugReadInfo"
         Me.ButtonDebugReadInfo.UseVisualStyleBackColor = True
         '
@@ -828,6 +832,17 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'ContextMenuStrip2
+        '
+        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem})
+        Me.ContextMenuStrip2.Name = "ContextMenuStrip2"
+        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
+        '
+        'BrowseBinaryFileToolStripMenuItem
+        '
+        Me.BrowseBinaryFileToolStripMenuItem.Name = "BrowseBinaryFileToolStripMenuItem"
+        resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -858,6 +873,7 @@ Partial Class LTFSConfigurator
         Me.TabPage5.PerformLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStrip2.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -963,4 +979,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
     Friend WithEvents 在当前进程运行ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 不读取索引ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ContextMenuStrip2 As ContextMenuStrip
+    Friend WithEvents BrowseBinaryFileToolStripMenuItem As ToolStripMenuItem
 End Class

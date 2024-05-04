@@ -1738,14 +1738,35 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
+    Public Shared Function SetEncryption(TapeDrive As String, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        Dim result As Boolean = False
+        Dim param As New List(Of Byte)
+        If EncryptionKey IsNot Nothing AndAlso EncryptionKey.Length = 32 Then
+            param.AddRange({&H0, &H10, &H0, &H30, &H40, &H34, &H2, &H3, &H1, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H20})
+            param.AddRange(EncryptionKey.ToList())
+            SendSCSICommand(TapeDrive, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
+                            param.ToArray(), 0, Nothing, 10)
+        Else
+            Dim emptyValue(32) As Byte
+            param.AddRange({&H0, &H10, &H0, &H30, &H40, 0, 0, 0, &H1, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H20})
+            param.AddRange(emptyValue.ToList())
+            SendSCSICommand(TapeDrive, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
+                            param.ToArray(), 0, Nothing, 10)
+        End If
+        Return result
+    End Function
     Public Enum LoadOption
         LoadThreaded = 1
         LoadUnthreaded = 9
         Unthread = &HA
         Eject = 0
     End Enum
-    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption) As Boolean
-        Return SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, LoadOption, 0})
+    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        Dim result As Boolean = SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, LoadOption, 0})
+        If result AndAlso LoadOption = LoadOption.LoadThreaded Then
+            SetEncryption(TapeDrive, EncryptionKey)
+        End If
+        Return result
     End Function
     Public Shared Function MountTapeDrive(driveLetter As Char) As String
         Dim p As IntPtr = _MountTapeDrive(driveLetter)
@@ -1768,7 +1789,8 @@ Public Class TapeUtils
                                   Optional ByVal OnError As Action(Of String) = Nothing,
                                   Optional ByVal Capacity As UInt16 = &HFFFF,
                                   Optional ByVal P0Size As UInt16 = 1,
-                                  Optional ByVal P1Size As UInt16 = &HFFFF) As Boolean
+                                  Optional ByVal P1Size As UInt16 = &HFFFF,
+                                  Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
         GlobalBlockLimit = TapeUtils.ReadBlockLimits(TapeDrive).MaximumBlockLength
         If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
             Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
@@ -1903,7 +1925,8 @@ Public Class TapeUtils
                     OnError($"Locate P{ExtraPartitionCount}B0 Fail" & vbCrLf)
                     Return False
                 End If
-
+                'Set Encryption key
+                SetEncryption(TapeDrive, EncryptionKey)
                 'Write VOL1Label
                 ProgressReport("Write VOL1Label..")
                 If TapeUtils.Write(TapeDrive, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then

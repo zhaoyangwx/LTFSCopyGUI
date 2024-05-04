@@ -6,6 +6,14 @@
         FlushFlag = True
     End Sub
 
+    Private Sub TapeCopy_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
+            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-copy"})
+            Me.Close()
+            Exit Sub
+        End If
+    End Sub
+
     Public Sub PrintMsg(s As String)
         Invoke(Sub() Label4.Text = $"Status: {s}")
     End Sub

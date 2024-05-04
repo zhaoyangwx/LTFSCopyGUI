@@ -138,6 +138,10 @@ Namespace My
                             CheckUAC(e)
                             Me.MainForm = LTFSConfigurator
                             Exit For
+                        Case "-l"
+                            CheckUAC(e)
+                            Me.MainForm = ChangerTool
+                            Exit For
                         Case "-rb"
                             CheckUAC(e)
                             InitConsole()
