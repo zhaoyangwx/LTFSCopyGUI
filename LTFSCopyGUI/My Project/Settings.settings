@@ -69,10 +69,10 @@
       <Value Profile="(Default)"> 非商业许可</Value>
     </Setting>
     <Setting Name="LTFSWriter_AutoCleanDownLim" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">70</Value>
+      <Value Profile="(Default)">60</Value>
     </Setting>
     <Setting Name="LTFSWriter_AutoCleanUpperLim" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">82</Value>
+      <Value Profile="(Default)">87</Value>
     </Setting>
     <Setting Name="LTFSWriter_AutoCleanTimeThreashould" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>

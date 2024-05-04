@@ -127,7 +127,7 @@
     <value>Barcode write fail</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>-s                                            Disable index reading
+    <value>  -s                                            Disable index reading
   -t &lt;drive&gt;                                    LTFSWriter
   ├  -t 0
   ├  -t TAPE0
@@ -137,6 +137,8 @@
   └   -f C:\tmp\ltfs\000000.schema
                                            
   -c                                            LTFSConfigurator
+                                           
+  -l                                            Changer Tool
                                            
   -rb &lt;drive&gt;                                   Barcode read
   ├  -rb 0
@@ -584,7 +586,7 @@
     <value>Mising VOL1Label</value>
   </data>
   <data name="ResText_NLTFS" xml:space="preserve">
-    <value>Non LTFS detected</value>
+    <value>LTFS not detected</value>
   </data>
   <data name="ResText_RLTFSInfo" xml:space="preserve">
     <value>Retrieving LTFS info</value>
@@ -678,5 +680,8 @@
   </data>
   <data name="ResText_FileOpenError" xml:space="preserve">
     <value>File open error</value>
+  </data>
+  <data name="ResText_UACConfirm" xml:space="preserve">
+    <value>Will restart as privilege user. Continue?</value>
   </data>
 </root>

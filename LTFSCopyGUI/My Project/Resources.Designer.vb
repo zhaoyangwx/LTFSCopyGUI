@@ -808,7 +808,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  查找类似 非LTFS格式 的本地化字符串。
+        '''  查找类似 未找到LTFS 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_NLTFS() As String
             Get
@@ -1366,6 +1366,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 需管理员权限重新启动。是否继续？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_UACConfirm() As String
+            Get
+                Return ResourceManager.GetString("ResText_UACConfirm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 正在更新数据区索引 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_UDI() As String
@@ -1564,7 +1573,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  查找类似 -s                                            不要自动读取索引
+        '''  查找类似   -s                                            不要自动读取索引
         '''  -t &lt;drive&gt;                                    直接读写
         '''  ├  -t 0
         '''  ├  -t TAPE0
@@ -1575,8 +1584,7 @@ Namespace My.Resources
         '''                                           
         '''  -c                                            LTFSConfigurator
         '''                                           
-        '''  -rb &lt;drive&gt;                                   读Barcode
-        '''  ├ [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        '''  -l                                            Changer Too [字符串的其余部分被截断]&quot;; 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property StrCMDHelpText() As String
             Get

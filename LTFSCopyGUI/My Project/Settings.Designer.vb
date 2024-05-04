@@ -320,7 +320,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("70")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("60")>  _
         Public Property LTFSWriter_AutoCleanDownLim() As Double
             Get
                 Return CType(Me("LTFSWriter_AutoCleanDownLim"),Double)
@@ -332,7 +332,7 @@ Namespace My
         
         <Global.System.Configuration.UserScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("82")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("87")>  _
         Public Property LTFSWriter_AutoCleanUpperLim() As Double
             Get
                 Return CType(Me("LTFSWriter_AutoCleanUpperLim"),Double)

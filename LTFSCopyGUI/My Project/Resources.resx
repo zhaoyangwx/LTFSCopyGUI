@@ -121,7 +121,7 @@
     <value>设置Barcode失败</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>-s                                            不要自动读取索引
+    <value>  -s                                            不要自动读取索引
   -t &lt;drive&gt;                                    直接读写
   ├  -t 0
   ├  -t TAPE0
@@ -131,6 +131,8 @@
   └   -f C:\tmp\ltfs\000000.schema
                                            
   -c                                            LTFSConfigurator
+                                           
+  -l                                            Changer Tool
                                            
   -rb &lt;drive&gt;                                   读Barcode
   ├  -rb 0
@@ -585,7 +587,7 @@
     <value>未找到VOL1</value>
   </data>
   <data name="ResText_NLTFS" xml:space="preserve">
-    <value>非LTFS格式</value>
+    <value>未找到LTFS</value>
   </data>
   <data name="ResText_RLTFSInfo" xml:space="preserve">
     <value>正在读取LTFS信息</value>
@@ -682,5 +684,8 @@
   </data>
   <data name="ResText_FileOpenError" xml:space="preserve">
     <value>文件打开出错</value>
+  </data>
+  <data name="ResText_UACConfirm" xml:space="preserve">
+    <value>需管理员权限重新启动。是否继续？</value>
   </data>
 </root>

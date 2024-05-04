@@ -187,6 +187,9 @@ Partial Class LTFSWriter
         Me.数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.格式化ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.设置高度ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.加密ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.设置密钥ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.设置密码ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.合并SHA1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验源文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.挂载盘符只读ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -1011,7 +1014,7 @@ Partial Class LTFSWriter
         '
         '数据ToolStripMenuItem
         '
-        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem})
+        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.加密ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem})
         Me.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem"
         resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         '
@@ -1024,6 +1027,22 @@ Partial Class LTFSWriter
         '
         Me.设置高度ToolStripMenuItem.Name = "设置高度ToolStripMenuItem"
         resources.ApplyResources(Me.设置高度ToolStripMenuItem, "设置高度ToolStripMenuItem")
+        '
+        '加密ToolStripMenuItem
+        '
+        Me.加密ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.设置密钥ToolStripMenuItem, Me.设置密码ToolStripMenuItem})
+        Me.加密ToolStripMenuItem.Name = "加密ToolStripMenuItem"
+        resources.ApplyResources(Me.加密ToolStripMenuItem, "加密ToolStripMenuItem")
+        '
+        '设置密钥ToolStripMenuItem
+        '
+        Me.设置密钥ToolStripMenuItem.Name = "设置密钥ToolStripMenuItem"
+        resources.ApplyResources(Me.设置密钥ToolStripMenuItem, "设置密钥ToolStripMenuItem")
+        '
+        '设置密码ToolStripMenuItem
+        '
+        Me.设置密码ToolStripMenuItem.Name = "设置密码ToolStripMenuItem"
+        resources.ApplyResources(Me.设置密码ToolStripMenuItem, "设置密码ToolStripMenuItem")
         '
         '合并SHA1ToolStripMenuItem
         '
@@ -1383,4 +1402,7 @@ Partial Class LTFSWriter
     Friend WithEvents TextBoxSelectedPath As TextBox
     Friend WithEvents ContextMenuStrip4 As ContextMenuStrip
     Friend WithEvents DebugToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 加密ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 设置密钥ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 设置密码ToolStripMenuItem As ToolStripMenuItem
 End Class

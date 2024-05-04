@@ -188,7 +188,7 @@
     <value>Processing</value>
   </data>
   <data name="Button4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>173, 417</value>
+    <value>168, 395</value>
   </data>
   <data name="Button4.Size" type="System.Drawing.Size, System.Drawing">
     <value>95, 23</value>
@@ -204,9 +204,6 @@
   </data>
   <data name="Button9.Text" xml:space="preserve">
     <value>Regenerate</value>
-  </data>
-  <data name="Button10.Location" type="System.Drawing.Point, System.Drawing">
-    <value>497, 417</value>
   </data>
   <data name="Button10.Size" type="System.Drawing.Size, System.Drawing">
     <value>112, 23</value>
@@ -235,11 +232,65 @@
   <data name="SchemaLoadText.Items6" xml:space="preserve">
     <value>7/7 Finished...</value>
   </data>
-  <data name="FormTitle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>89, 12</value>
+  <data name="TabPage1.Text" xml:space="preserve">
+    <value>Main Panel</value>
   </data>
-  <data name="FormTitle.Text" xml:space="preserve">
-    <value>LTFSFileSorter</value>
+  <data name="Label6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 12</value>
+  </data>
+  <data name="Label6.Text" xml:space="preserve">
+    <value>Version: </value>
+  </data>
+  <data name="GroupBox3.Text" xml:space="preserve">
+    <value>Other Tools</value>
+  </data>
+  <data name="Button14.Location" type="System.Drawing.Point, System.Drawing">
+    <value>230, 20</value>
+  </data>
+  <data name="Button14.Size" type="System.Drawing.Size, System.Drawing">
+    <value>88, 23</value>
+  </data>
+  <data name="Button14.Text" xml:space="preserve">
+    <value>Changer Tool</value>
+  </data>
+  <data name="Button13.Location" type="System.Drawing.Point, System.Drawing">
+    <value>324, 20</value>
+  </data>
+  <data name="Button13.Text" xml:space="preserve">
+    <value>Tape Copy</value>
+  </data>
+  <data name="Button12.Location" type="System.Drawing.Point, System.Drawing">
+    <value>124, 20</value>
+  </data>
+  <data name="Button12.Size" type="System.Drawing.Size, System.Drawing">
+    <value>100, 23</value>
+  </data>
+  <data name="Button12.Text" xml:space="preserve">
+    <value>Index Analyzer</value>
+  </data>
+  <data name="GroupBox2.Text" xml:space="preserve">
+    <value>LTFSWriter</value>
+  </data>
+  <data name="Label5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>71, 12</value>
+  </data>
+  <data name="Label5.Text" xml:space="preserve">
+    <value>Device List</value>
+  </data>
+  <data name="Button11.Text" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Button27.Text" xml:space="preserve">
+    <value>LTFSWriter</value>
+  </data>
+  <data name="ComboBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>83, 20</value>
+  </data>
+  <data name="ComboBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>351, 20</value>
+  </data>
+  <data name="TabPage2.Text" xml:space="preserve">
+    <value>Index Analyzer</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1447,8 +1498,5 @@
         69g6to6tY+vYOraOrWPr2Dq2jq1j69g6to6tY+vYOraOrWPr2Dq2jq1j69g6to6tY+vYOraOrWPr2Dq2
         jq1j6/j/0/H/AnU44wBriU+yAAAAAElFTkSuQmCC
 </value>
-  </data>
-  <data name="$this.Text" xml:space="preserve">
-    <value>LTFSFileSorter</value>
   </data>
 </root>

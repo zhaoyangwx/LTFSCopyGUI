@@ -172,6 +172,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
         If Not LoadComplete Then Exit Sub
+        If MessageBox.Show($"{Button6.Text} {TextBox1.Text} <=> {ComboBox1.Text}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBox1.Text <> "" Then
@@ -438,6 +439,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugErase_Click(sender As Object, e As EventArgs) Handles ButtonDebugErase.Click
         If Not LoadComplete Then Exit Sub
+        If MessageBox.Show("Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Panel1.Enabled = False
         Dim dL As Char = ComboBox1.Text
         Dim th As New Threading.Thread(
@@ -944,6 +946,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugFormat_Click(sender As Object, e As EventArgs) Handles ButtonDebugFormat.Click
         If Not LoadComplete Then Exit Sub
+        If MessageBox.Show("Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Panel1.Enabled = False
         Dim dL As Char = ComboBox1.Text
         Dim barcode As String = TextBox9.Text
@@ -3559,7 +3562,7 @@ Public Class LTFSConfigurator
                 End If
                 result.Append(" |    ")
                 If NoCCPs > 0 Then
-                    result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2"))
+                    result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2").PadRight(4))
                 Else
                     result.Append("     ")
                 End If
@@ -3608,7 +3611,7 @@ Public Class LTFSConfigurator
                 End If
                 result.Append(" |    ")
                 If NoCCPs > 0 Then
-                    result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2"))
+                    result.Append(Math.Round(Math.Log10(C1err / NoCCPs / 2 / 1920), 2).ToString("f2").PadRight(4))
                 Else
                     result.Append("     ")
                 End If
@@ -3637,4 +3640,29 @@ Public Class LTFSConfigurator
         LWF.Show()
     End Sub
 
+    Private Sub BrowseBinaryFileToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles BrowseBinaryFileToolStripMenuItem.Click
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            Me.Enabled = False
+            Dim CMInfo As TapeUtils.CMParser = Nothing
+            Try
+                CMInfo = New TapeUtils.CMParser() With {.a_CMBuffer = IO.File.ReadAllBytes(OpenFileDialog1.FileName)}
+                CMInfo.RunParse()
+            Catch ex As Exception
+                TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf)
+            End Try
+            TextBox8.Text = ""
+            Try
+                TextBox8.AppendText(CMInfo.GetReport())
+                If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
+                    TextBox8.AppendText(CMInfo.GetSerializedText())
+                    TextBox8.AppendText(vbCrLf)
+                End If
+            Catch ex As Exception
+                TextBox8.AppendText("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
+            End Try
+            TextBox8.Select(0, 0)
+            TextBox8.ScrollToCaret()
+            Me.Enabled = True
+        End If
+    End Sub
 End Class

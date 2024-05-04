@@ -37,6 +37,11 @@ Public Class ChangerTool
         End Get
     End Property
     Private Sub ChangerTool_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
+            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-l"})
+            Me.Close()
+            Exit Sub
+        End If
         Text = $"ChangerTool - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         RefreshMCList()
         SetUILock(True)

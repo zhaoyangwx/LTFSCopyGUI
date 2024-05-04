@@ -1,9 +1,9 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class Form1
     Inherits System.Windows.Forms.Form
 
     'Form 重写 Dispose，以清理组件列表。
-    <System.Diagnostics.DebuggerNonUserCode()> _
+    <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
         Try
             If disposing AndAlso components IsNot Nothing Then
@@ -20,7 +20,7 @@ Partial Class Form1
     '注意: 以下过程是 Windows 窗体设计器所必需的
     '可以使用 Windows 窗体设计器修改它。  
     '不要使用代码编辑器修改它。
-    <System.Diagnostics.DebuggerStepThrough()> _
+    <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
@@ -56,8 +56,26 @@ Partial Class Form1
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
         Me.SchemaLoadText = New System.Windows.Forms.ListBox()
         Me.FormTitle = New System.Windows.Forms.Label()
+        Me.TabControl1 = New System.Windows.Forms.TabControl()
+        Me.TabPage1 = New System.Windows.Forms.TabPage()
+        Me.Label6 = New System.Windows.Forms.Label()
+        Me.GroupBox3 = New System.Windows.Forms.GroupBox()
+        Me.Button14 = New System.Windows.Forms.Button()
+        Me.Button13 = New System.Windows.Forms.Button()
+        Me.Button12 = New System.Windows.Forms.Button()
+        Me.GroupBox2 = New System.Windows.Forms.GroupBox()
+        Me.Label5 = New System.Windows.Forms.Label()
+        Me.Button11 = New System.Windows.Forms.Button()
+        Me.Button27 = New System.Windows.Forms.Button()
+        Me.ComboBox1 = New System.Windows.Forms.ComboBox()
+        Me.TabPage2 = New System.Windows.Forms.TabPage()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
+        Me.TabControl1.SuspendLayout()
+        Me.TabPage1.SuspendLayout()
+        Me.GroupBox3.SuspendLayout()
+        Me.GroupBox2.SuspendLayout()
+        Me.TabPage2.SuspendLayout()
         Me.SuspendLayout()
         '
         'TextBox1
@@ -85,34 +103,34 @@ Partial Class Form1
         '
         'ContextMenuStrip1
         '
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.查找ToolStripMenuItem, Me.错误检查ToolStripMenuItem, Me.未校验检查ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.查看ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
         '查找ToolStripMenuItem
         '
-        resources.ApplyResources(Me.查找ToolStripMenuItem, "查找ToolStripMenuItem")
         Me.查找ToolStripMenuItem.Name = "查找ToolStripMenuItem"
+        resources.ApplyResources(Me.查找ToolStripMenuItem, "查找ToolStripMenuItem")
         '
         '错误检查ToolStripMenuItem
         '
-        resources.ApplyResources(Me.错误检查ToolStripMenuItem, "错误检查ToolStripMenuItem")
         Me.错误检查ToolStripMenuItem.Name = "错误检查ToolStripMenuItem"
+        resources.ApplyResources(Me.错误检查ToolStripMenuItem, "错误检查ToolStripMenuItem")
         '
         '未校验检查ToolStripMenuItem
         '
-        resources.ApplyResources(Me.未校验检查ToolStripMenuItem, "未校验检查ToolStripMenuItem")
         Me.未校验检查ToolStripMenuItem.Name = "未校验检查ToolStripMenuItem"
+        resources.ApplyResources(Me.未校验检查ToolStripMenuItem, "未校验检查ToolStripMenuItem")
         '
         '合并文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
         Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
+        resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
         '
         '查看ToolStripMenuItem
         '
-        resources.ApplyResources(Me.查看ToolStripMenuItem, "查看ToolStripMenuItem")
         Me.查看ToolStripMenuItem.Name = "查看ToolStripMenuItem"
+        resources.ApplyResources(Me.查看ToolStripMenuItem, "查看ToolStripMenuItem")
         '
         'TextBox2
         '
@@ -191,10 +209,6 @@ Partial Class Form1
         Me.Button7.Name = "Button7"
         Me.Button7.UseVisualStyleBackColor = True
         '
-        'FolderBrowserDialog1
-        '
-        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
-        '
         'Button8
         '
         resources.ApplyResources(Me.Button8, "Button8")
@@ -223,16 +237,16 @@ Partial Class Form1
         '
         'GroupBox1
         '
-        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
         Me.GroupBox1.Controls.Add(Me.SchemaLoadText)
         Me.GroupBox1.Controls.Add(Me.FormTitle)
+        resources.ApplyResources(Me.GroupBox1, "GroupBox1")
         Me.GroupBox1.Name = "GroupBox1"
         Me.GroupBox1.TabStop = False
         '
         'SchemaLoadText
         '
-        resources.ApplyResources(Me.SchemaLoadText, "SchemaLoadText")
         Me.SchemaLoadText.FormattingEnabled = True
+        resources.ApplyResources(Me.SchemaLoadText, "SchemaLoadText")
         Me.SchemaLoadText.Items.AddRange(New Object() {resources.GetString("SchemaLoadText.Items"), resources.GetString("SchemaLoadText.Items1"), resources.GetString("SchemaLoadText.Items2"), resources.GetString("SchemaLoadText.Items3"), resources.GetString("SchemaLoadText.Items4"), resources.GetString("SchemaLoadText.Items5"), resources.GetString("SchemaLoadText.Items6")})
         Me.SchemaLoadText.Name = "SchemaLoadText"
         '
@@ -241,35 +255,141 @@ Partial Class Form1
         resources.ApplyResources(Me.FormTitle, "FormTitle")
         Me.FormTitle.Name = "FormTitle"
         '
+        'TabControl1
+        '
+        resources.ApplyResources(Me.TabControl1, "TabControl1")
+        Me.TabControl1.Controls.Add(Me.TabPage1)
+        Me.TabControl1.Controls.Add(Me.TabPage2)
+        Me.TabControl1.Name = "TabControl1"
+        Me.TabControl1.SelectedIndex = 0
+        Me.TabControl1.TabStop = False
+        '
+        'TabPage1
+        '
+        Me.TabPage1.Controls.Add(Me.Label6)
+        Me.TabPage1.Controls.Add(Me.GroupBox3)
+        Me.TabPage1.Controls.Add(Me.GroupBox2)
+        resources.ApplyResources(Me.TabPage1, "TabPage1")
+        Me.TabPage1.Name = "TabPage1"
+        Me.TabPage1.UseVisualStyleBackColor = True
+        '
+        'Label6
+        '
+        resources.ApplyResources(Me.Label6, "Label6")
+        Me.Label6.ForeColor = System.Drawing.Color.Blue
+        Me.Label6.Name = "Label6"
+        '
+        'GroupBox3
+        '
+        resources.ApplyResources(Me.GroupBox3, "GroupBox3")
+        Me.GroupBox3.Controls.Add(Me.Button14)
+        Me.GroupBox3.Controls.Add(Me.Button13)
+        Me.GroupBox3.Controls.Add(Me.Button12)
+        Me.GroupBox3.Controls.Add(Me.Button10)
+        Me.GroupBox3.Name = "GroupBox3"
+        Me.GroupBox3.TabStop = False
+        '
+        'Button14
+        '
+        Me.Button14.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.Button14, "Button14")
+        Me.Button14.Name = "Button14"
+        Me.Button14.UseVisualStyleBackColor = True
+        '
+        'Button13
+        '
+        Me.Button13.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.Button13, "Button13")
+        Me.Button13.Name = "Button13"
+        Me.Button13.UseVisualStyleBackColor = True
+        '
+        'Button12
+        '
+        Me.Button12.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.Button12, "Button12")
+        Me.Button12.Name = "Button12"
+        Me.Button12.UseVisualStyleBackColor = True
+        '
+        'GroupBox2
+        '
+        resources.ApplyResources(Me.GroupBox2, "GroupBox2")
+        Me.GroupBox2.Controls.Add(Me.Label5)
+        Me.GroupBox2.Controls.Add(Me.Button11)
+        Me.GroupBox2.Controls.Add(Me.Button27)
+        Me.GroupBox2.Controls.Add(Me.ComboBox1)
+        Me.GroupBox2.Name = "GroupBox2"
+        Me.GroupBox2.TabStop = False
+        '
+        'Label5
+        '
+        resources.ApplyResources(Me.Label5, "Label5")
+        Me.Label5.Name = "Label5"
+        '
+        'Button11
+        '
+        resources.ApplyResources(Me.Button11, "Button11")
+        Me.Button11.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Button11.Name = "Button11"
+        Me.Button11.UseVisualStyleBackColor = True
+        '
+        'Button27
+        '
+        resources.ApplyResources(Me.Button27, "Button27")
+        Me.Button27.ContextMenuStrip = Me.ContextMenuStrip1
+        Me.Button27.Name = "Button27"
+        Me.Button27.UseVisualStyleBackColor = True
+        '
+        'ComboBox1
+        '
+        resources.ApplyResources(Me.ComboBox1, "ComboBox1")
+        Me.ComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.ComboBox1.FormattingEnabled = True
+        Me.ComboBox1.Items.AddRange(New Object() {resources.GetString("ComboBox1.Items"), resources.GetString("ComboBox1.Items1"), resources.GetString("ComboBox1.Items2")})
+        Me.ComboBox1.Name = "ComboBox1"
+        '
+        'TabPage2
+        '
+        Me.TabPage2.Controls.Add(Me.Label1)
+        Me.TabPage2.Controls.Add(Me.TextBox1)
+        Me.TabPage2.Controls.Add(Me.Label2)
+        Me.TabPage2.Controls.Add(Me.CheckBox2)
+        Me.TabPage2.Controls.Add(Me.Button5)
+        Me.TabPage2.Controls.Add(Me.TextBox3)
+        Me.TabPage2.Controls.Add(Me.Button4)
+        Me.TabPage2.Controls.Add(Me.Label3)
+        Me.TabPage2.Controls.Add(Me.Button9)
+        Me.TabPage2.Controls.Add(Me.Button3)
+        Me.TabPage2.Controls.Add(Me.TextBox4)
+        Me.TabPage2.Controls.Add(Me.Button8)
+        Me.TabPage2.Controls.Add(Me.Button2)
+        Me.TabPage2.Controls.Add(Me.Button7)
+        Me.TabPage2.Controls.Add(Me.Button1)
+        Me.TabPage2.Controls.Add(Me.TextBox2)
+        Me.TabPage2.Controls.Add(Me.Button6)
+        Me.TabPage2.Controls.Add(Me.CheckBox1)
+        resources.ApplyResources(Me.TabPage2, "TabPage2")
+        Me.TabPage2.Name = "TabPage2"
+        Me.TabPage2.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.TabControl1)
         Me.Controls.Add(Me.GroupBox1)
-        Me.Controls.Add(Me.CheckBox2)
-        Me.Controls.Add(Me.Button10)
-        Me.Controls.Add(Me.Button9)
-        Me.Controls.Add(Me.Button8)
-        Me.Controls.Add(Me.Button7)
-        Me.Controls.Add(Me.Button6)
-        Me.Controls.Add(Me.Button5)
-        Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.Label4)
-        Me.Controls.Add(Me.Button3)
-        Me.Controls.Add(Me.CheckBox1)
-        Me.Controls.Add(Me.TextBox4)
-        Me.Controls.Add(Me.Label3)
-        Me.Controls.Add(Me.TextBox3)
-        Me.Controls.Add(Me.Label2)
-        Me.Controls.Add(Me.TextBox2)
-        Me.Controls.Add(Me.Button2)
-        Me.Controls.Add(Me.Button1)
-        Me.Controls.Add(Me.Label1)
-        Me.Controls.Add(Me.TextBox1)
         Me.Name = "Form1"
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.GroupBox1.ResumeLayout(False)
         Me.GroupBox1.PerformLayout()
+        Me.TabControl1.ResumeLayout(False)
+        Me.TabPage1.ResumeLayout(False)
+        Me.TabPage1.PerformLayout()
+        Me.GroupBox3.ResumeLayout(False)
+        Me.GroupBox2.ResumeLayout(False)
+        Me.GroupBox2.PerformLayout()
+        Me.TabPage2.ResumeLayout(False)
+        Me.TabPage2.PerformLayout()
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -307,4 +427,17 @@ Partial Class Form1
     Friend WithEvents FormTitle As Label
     Friend WithEvents SchemaLoadText As ListBox
     Friend WithEvents 查看ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents TabControl1 As TabControl
+    Friend WithEvents TabPage1 As TabPage
+    Friend WithEvents TabPage2 As TabPage
+    Friend WithEvents Button27 As Button
+    Friend WithEvents ComboBox1 As ComboBox
+    Friend WithEvents Button11 As Button
+    Friend WithEvents Label5 As Label
+    Friend WithEvents GroupBox3 As GroupBox
+    Friend WithEvents Button12 As Button
+    Friend WithEvents GroupBox2 As GroupBox
+    Friend WithEvents Button13 As Button
+    Friend WithEvents Button14 As Button
+    Friend WithEvents Label6 As Label
 End Class

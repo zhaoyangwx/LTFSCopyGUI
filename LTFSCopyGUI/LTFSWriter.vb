@@ -12,6 +12,18 @@ Public Class LTFSWriter
     Public Property OfflineMode As Boolean = False
     Public Property IndexPartition As Byte = 0
     Public Property DataPartition As Byte = 1
+    Private _EncryptionKey As Byte()
+    Public Property EncryptionKey As Byte()
+        Get
+            Return _EncryptionKey
+        End Get
+        Set(value As Byte())
+            _EncryptionKey = value
+            If value IsNot Nothing AndAlso value.Length = 32 Then
+                IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "encryption.key"), BitConverter.ToString(value).Replace("-", "").ToUpper)
+            End If
+        End Set
+    End Property
     Public Function GetPartitionNumber(partition As ltfslabel.PartitionLabel) As Byte
         If plabel Is Nothing Then Return partition
         If partition = plabel.partitions.index Then
@@ -576,26 +588,32 @@ Public Class LTFSWriter
         Public Function BeginOpen(Optional BufferSize As Integer = 0, Optional ByVal BlockSize As Integer = 524288) As Integer
             While True
                 Try
-                    If File.length <= BlockSize Then
-                        If Buffer IsNot Nothing Then Return 1
-                        Buffer = IO.File.ReadAllBytes(SourcePath)
-                        Return 1
-                    End If
                     SyncLock OperationLock
                         If fs IsNot Nothing Then Return 1
+                        If File.length > 0 AndAlso File.length <= BlockSize Then
+                            Task.Run(Sub()
+                                         SyncLock OperationLock
+                                             If Buffer IsNot Nothing Then Buffer = IO.File.ReadAllBytes(SourcePath)
+                                         End SyncLock
+                                     End Sub)
+                            Return 1
+                        ElseIf File.length = 0 Then
+                            Buffer = {}
+                            Return 1
+                        End If
                     End SyncLock
                     If BufferSize = 0 Then BufferSize = My.Settings.LTFSWriter_PreLoadBytes
                     If BufferSize = 0 Then BufferSize = 524288
                     Exit While
                 Catch ex As Exception
-                    Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                        Case DialogResult.Abort
-                            Return 3
-                        Case DialogResult.Retry
-
-                        Case DialogResult.Ignore
-                            Return 5
-                    End Select
+                    'Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    '    Case DialogResult.Abort
+                    '        Return 3
+                    '    Case DialogResult.Retry
+                    '
+                    '    Case DialogResult.Ignore
+                    '        Return 5
+                    'End Select
                 End Try
             End While
             Task.Run(Sub()
@@ -613,15 +631,15 @@ Public Class LTFSWriter
                                      Exit While
                                  End SyncLock
                              Catch ex As Exception
-                                     Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                         Case DialogResult.Abort
-                                             Exit While
-                                         Case DialogResult.Retry
-
-                                         Case DialogResult.Ignore
-                                             Exit While
-                                     End Select
-                                 End Try
+                                 'Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                 '    Case DialogResult.Abort
+                                 '        Exit While
+                                 '    Case DialogResult.Retry
+                                 '
+                                 '    Case DialogResult.Ignore
+                                 '        Exit While
+                                 'End Select
+                             End Try
                          End While
                      End Sub)
             Return 1
@@ -2640,6 +2658,7 @@ Public Class LTFSWriter
                                                 Catch ex As Exception
                                                     Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
+                                                            StopFlag = True
                                                             Throw ex
                                                         Case DialogResult.Retry
 
@@ -2649,6 +2668,7 @@ Public Class LTFSWriter
                                                     End Select
                                                 End Try
                                             End While
+                                            If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
                                             While Not succ
                                                 Dim sense As Byte()
                                                 Try
@@ -2659,6 +2679,7 @@ Public Class LTFSWriter
                                                 Catch ex As Exception
                                                     Select Case MessageBox.Show(My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
+                                                            StopFlag = True
                                                             Throw ex
                                                         Case DialogResult.Retry
                                                             succ = False
@@ -2731,7 +2752,25 @@ Public Class LTFSWriter
                                             'Dim tsub As Double = 0
                                             While Not StopFlag
                                                 Dim buffer(plabel.blocksize - 1) As Byte
-                                                Dim BytesReaded As Integer = fr.Read(buffer, 0, plabel.blocksize)
+                                                Dim BytesReaded As Integer
+                                                While True
+                                                    Try
+                                                        BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
+                                                        Exit While
+                                                    Catch ex As Exception
+                                                        Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                            Case DialogResult.Abort
+                                                                StopFlag = True
+                                                                Throw ex
+                                                            Case DialogResult.Retry
+
+                                                            Case DialogResult.Ignore
+                                                                PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                                                Continue For
+                                                        End Select
+                                                    End Try
+                                                End While
+
                                                 If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                                 If ExitWhileFlag Then Exit While
                                                 LastWriteTask = Task.Run(
@@ -2819,6 +2858,7 @@ Public Class LTFSWriter
                                                     End If
                                                 End Sub)
                                             End While
+                                            If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
                                             If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                             fr.CloseAsync()
                                             If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
@@ -3069,6 +3109,24 @@ Public Class LTFSWriter
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
                         If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
+                    End If
+                    If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "encryption.key")) Then
+                        Dim key As String = (IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "encryption.key")))
+                        Dim newkey As Byte() = LTFSConfigurator.HexStringToByteArray(key)
+                        If newkey.Length <> 32 Then
+                            EncryptionKey = Nothing
+                        Else
+                            Dim sum As Integer = 0
+                            For i As Integer = 0 To newkey.Length - 1
+                                sum += newkey(i)
+                            Next
+                            If sum = 0 Then
+                                EncryptionKey = Nothing
+                            Else
+                                EncryptionKey = newkey
+                            End If
+                        End If
+                        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
                     End If
                     TapeUtils.Locate(TapeDrive, 0, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -3429,7 +3487,7 @@ Public Class LTFSWriter
                     PrintMsg(Message)
                     LockGUI(False)
                     Me.Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                End Sub)
+                End Sub, EncryptionKey:=EncryptionKey)
         End If
     End Sub
     Public Function ImportSHA1(schhash As ltfsindex, Overwrite As Boolean) As String
@@ -3598,7 +3656,7 @@ Public Class LTFSWriter
             If Not Loc.EOP Then
                 TapeUtils.AllowMediaRemoval(TapeDrive)
                 TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Unthread)
-                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadThreaded)
+                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadThreaded, EncryptionKey)
                 TapeUtils.Locate(TapeDrive, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
                 If LockVolume Then TapeUtils.PreventMediaRemoval(TapeDrive)
             End If
@@ -3880,8 +3938,8 @@ Public Class LTFSWriter
                             RestorePosition = New TapeUtils.PositionData(TapeDrive)
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
-                                    If (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not FileIndex.SHA1ForeColor.Equals(Color.Black))) AndAlso
-                                       (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not FileIndex.MD5ForeColor.Equals(Color.Black))) Then
+                                    If (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (FileIndex.SHA1ForeColor.Equals(Color.Black) OrElse FileIndex.SHA1ForeColor.Equals(Color.Red)))) AndAlso
+                                       (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (FileIndex.MD5ForeColor.Equals(Color.Black) OrElse FileIndex.MD5ForeColor.Equals(Color.Red)))) Then
                                         'Skip
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -4015,8 +4073,8 @@ Public Class LTFSWriter
                         c += 1
                         PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
                         If ValidateOnly Then
-                            If (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not fr.File.SHA1ForeColor.Equals(Color.Black))) AndAlso
-                               (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not fr.File.MD5ForeColor.Equals(Color.Black))) Then
+                            If (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
+                               (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (fr.File.MD5ForeColor.Equals(Color.Black) OrElse fr.File.MD5ForeColor.Equals(Color.Red)))) Then
                                 'skip
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -4943,6 +5001,46 @@ Public Class LTFSWriter
 
     Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
         LTFSConfigurator.Show()
+    End Sub
+
+    Private Sub 设置密钥ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置密钥ToolStripMenuItem.Click
+        Dim key As String = ""
+        If EncryptionKey IsNot Nothing AndAlso EncryptionKey.Length = 32 Then
+            key = BitConverter.ToString(EncryptionKey).Replace("-", "").ToUpper
+        End If
+        key = InputBox(设置密钥ToolStripMenuItem.Text, "LTFSWriter", key)
+        Dim newkey As Byte() = LTFSConfigurator.HexStringToByteArray(key)
+        If newkey.Length <> 32 Then
+            EncryptionKey = Nothing
+        Else
+            Dim sum As Integer = 0
+            For i As Integer = 0 To newkey.Length - 1
+                sum += newkey(i)
+            Next
+            If sum = 0 Then
+                EncryptionKey = Nothing
+            Else
+                EncryptionKey = newkey
+            End If
+        End If
+        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
+    End Sub
+
+    Private Sub 设置密码ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置密码ToolStripMenuItem.Click
+        Dim key As String = ""
+        key = InputBox(设置密码ToolStripMenuItem.Text, "LTFSWriter", key)
+        If key.Length = 0 Then
+            EncryptionKey = Nothing
+        Else
+            Dim newkey As Byte()
+            Dim sha256 As System.Security.Cryptography.SHA256
+            sha256 = System.Security.Cryptography.SHA256.Create()
+            Dim strData As Byte() = Encoding.UTF8.GetBytes(key)
+            sha256.TransformFinalBlock(strData, 0, strData.Length)
+            newkey = sha256.Hash()
+            EncryptionKey = newkey
+        End If
+        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
     End Sub
 
     Private Sub 查找指定位置前的索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找指定位置前的索引ToolStripMenuItem.Click

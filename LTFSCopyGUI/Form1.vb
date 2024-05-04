@@ -214,9 +214,11 @@ Public Class Form1
         TextBox1.Text = My.Settings.LastFile
         TextBox3.Text = My.Settings.Src
         TextBox4.Text = My.Settings.Dest
+        Label6.Text &= $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
         CheckBox1.Checked = My.Settings.GenCMD
         Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
         LoadComplete = True
+        RefreshDeviceList()
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
@@ -682,5 +684,68 @@ Public Class Form1
             )
         AddHandler LWF.Load, OnLWFLoad
         LWF.Show()
+    End Sub
+    Dim DevList As List(Of TapeUtils.TapeDrive)
+    Public Sub RefreshDeviceList()
+        LoadComplete = False
+        Dim lastIndex As Integer = ComboBox1.SelectedIndex
+        ComboBox1.Items.Clear()
+        DevList = TapeUtils.GetTapeDriveList()
+        For Each D As TapeUtils.TapeDrive In DevList
+            ComboBox1.Items.Add(D.ToString())
+        Next
+        ComboBox1.SelectedIndex = Math.Min(ComboBox1.Items.Count - 1, Math.Max(0, lastIndex))
+        If ComboBox1.SelectedIndex >= 0 Then
+            If DevList(ComboBox1.SelectedIndex).DriveLetter.Length > 0 Then
+                Button27.Enabled = False
+            Else
+                Button27.Enabled = True
+            End If
+        End If
+        LoadComplete = True
+    End Sub
+    Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
+        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
+            If MessageBox.Show(My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas"})
+            Me.Close()
+            Exit Sub
+        End If
+        RefreshDeviceList()
+    End Sub
+
+    Private Sub Button12_Click(sender As Object, e As EventArgs) Handles Button12.Click
+        TabControl1.SelectedIndex = 1
+    End Sub
+
+    Private Sub Button13_Click(sender As Object, e As EventArgs) Handles Button13.Click
+        TapeCopy.Show()
+    End Sub
+
+    Private Sub Button14_Click(sender As Object, e As EventArgs) Handles Button14.Click
+        ChangerTool.Show()
+    End Sub
+
+    Private Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
+        If DevList IsNot Nothing AndAlso DevList.Count > 0 AndAlso ComboBox1.SelectedIndex >= 0 Then
+            RefreshDeviceList()
+            If Button27.Enabled = False Then Exit Sub
+            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {DevList(ComboBox1.SelectedIndex).DevIndex}"})
+        End If
+    End Sub
+
+    Private Sub Label6_Click(sender As Object, e As EventArgs) Handles Label6.Click
+        Process.Start("https://github.com/zhaoyangwx/LTFSCopyGUI/releases")
+    End Sub
+
+    Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
+        If Not LoadComplete Then Exit Sub
+        If ComboBox1.SelectedIndex >= 0 Then
+            If DevList(ComboBox1.SelectedIndex).DriveLetter.Length > 0 Then
+                Button27.Enabled = False
+            Else
+                Button27.Enabled = True
+            End If
+        End If
     End Sub
 End Class
