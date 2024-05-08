@@ -51,7 +51,7 @@ Public Class FileBrowser
                 newitem.Checked = FList._file(i).Selected
             Next
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
 
     End Sub

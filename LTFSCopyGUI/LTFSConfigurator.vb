@@ -149,19 +149,19 @@ Public Class LTFSConfigurator
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         Dim s As String = TapeUtils.StartLtfsService()
         If s = "" Then s = "OK"
-        MessageBox.Show(s)
+        MessageBox.Show(New Form With {.TopMost = True}, s)
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         Dim s As String = TapeUtils.StopLtfsService()
         If s = "" Then s = "OK"
-        MessageBox.Show(s)
+        MessageBox.Show(New Form With {.TopMost = True}, s)
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
         Dim s As String = TapeUtils.RemapTapeDrives()
         If s = "" Then s = "OK"
-        MessageBox.Show(s)
+        MessageBox.Show(New Form With {.TopMost = True}, s)
     End Sub
 
     Private Sub ListBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ListBox1.SelectedIndexChanged
@@ -172,7 +172,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
         If Not LoadComplete Then Exit Sub
-        If MessageBox.Show($"{Button6.Text} {TextBox1.Text} <=> {ComboBox1.Text}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+        If MessageBox.Show(New Form With {.TopMost = True}, $"{Button6.Text} {TextBox1.Text} <=> {ComboBox1.Text}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBox1.Text <> "" Then
@@ -368,7 +368,7 @@ Public Class LTFSConfigurator
                         Me.Invoke(Sub() TextBox8.Text &= vbCrLf & "FAIL")
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(ex.ToString)
+                    MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
                 End Try
                 Me.Invoke(Sub() Panel2.Enabled = True)
             End Sub)
@@ -439,7 +439,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugErase_Click(sender As Object, e As EventArgs) Handles ButtonDebugErase.Click
         If Not LoadComplete Then Exit Sub
-        If MessageBox.Show("Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+        If MessageBox.Show(New Form With {.TopMost = True}, "Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Panel1.Enabled = False
         Dim dL As Char = ComboBox1.Text
         Dim th As New Threading.Thread(
@@ -591,7 +591,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub Label13_Click(sender As Object, e As EventArgs) Handles Label13.Click
-        MessageBox.Show("/* Page code of Application Name */
+        MessageBox.Show(New Form With {.TopMost = True}, "/* Page code of Application Name */
 #define TC_MAM_PAGE_APP_NAME       (0x0801) 
 #define TC_MAM_PAGE_APP_NAME_SIZE  (0x20)
 
@@ -716,11 +716,11 @@ Public Class LTFSConfigurator
 
                             End If
                         Catch ex As Exception
-                            MessageBox.Show(i & vbCrLf & ex.ToString)
+                            MessageBox.Show(New Form With {.TopMost = True}, i & vbCrLf & ex.ToString)
                         End Try
                         If i = &HFFFF Then Exit For
                     Next
-                    MessageBox.Show("Dump Complete")
+                    MessageBox.Show(New Form With {.TopMost = True}, "Dump Complete")
                     MAMData.SaveSerializedText(SaveFileDialog1.FileName)
                     Me.Invoke(Sub() ButtonDebugDumpMAM.Enabled = True)
                 End Sub)
@@ -840,7 +840,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             If New IO.DirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
-                MessageBox.Show("File exist: *.bin; Cancelled.")
+                MessageBox.Show(New Form With {.TopMost = True}, "File exist: *.bin; Cancelled.")
                 Exit Sub
             End If
 
@@ -946,7 +946,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugFormat_Click(sender As Object, e As EventArgs) Handles ButtonDebugFormat.Click
         If Not LoadComplete Then Exit Sub
-        If MessageBox.Show("Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+        If MessageBox.Show(New Form With {.TopMost = True}, "Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Panel1.Enabled = False
         Dim dL As Char = ComboBox1.Text
         Dim barcode As String = TextBox9.Text
@@ -1292,7 +1292,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugDumpTape_MouseUp(sender As Object, e As MouseEventArgs) Handles ButtonDebugDumpTape.MouseUp
         If Not e.Button = MouseButtons.Right Then Exit Sub
-        If MessageBox.Show("Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, "Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             If OpenFileDialog1.ShowDialog = DialogResult.OK Then
                 Dim fname As String = OpenFileDialog1.FileName
                 Dim th As New Threading.Thread(
@@ -3436,7 +3436,7 @@ Public Class LTFSConfigurator
             TestEnabled = False
             Exit Sub
         End If
-        If MessageBox.Show("Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, "Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             TestEnabled = True
             Dim progval As Long = 0
             Dim running As Boolean = True

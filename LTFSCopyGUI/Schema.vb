@@ -418,7 +418,7 @@ Public Class ltfsindex
             t.Close()
             result.Standarize()
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
         IO.File.Delete(tmpf)
         Return result

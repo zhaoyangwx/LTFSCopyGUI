@@ -582,6 +582,7 @@ Partial Class LTFSWriter
         '
         'Chart1
         '
+        resources.ApplyResources(Me.Chart1, "Chart1")
         Me.Chart1.AntiAliasing = System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles.Graphics
         Me.Chart1.BorderlineColor = System.Drawing.Color.Silver
         Me.Chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
@@ -617,7 +618,6 @@ Partial Class LTFSWriter
         ChartArea1.Name = "ChartArea1"
         Me.Chart1.ChartAreas.Add(ChartArea1)
         Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
-        resources.ApplyResources(Me.Chart1, "Chart1")
         Me.Chart1.Name = "Chart1"
         Series1.BorderWidth = 2
         Series1.ChartArea = "ChartArea1"

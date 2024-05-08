@@ -264,11 +264,11 @@ Public Class LTFSWriter
                   End Sub)
     End Sub
     Public DataCompressionLogPage As TapeUtils.PageData
+    Public d_last As Long = 0
+    Public t_last As Long = 0
+    Public rwh_last As Long = 0
+    Public rwt_last As Long = 0
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        Static d_last As Long = 0
-        Static t_last As Long = 0
-        Static rwh_last As Long = 0
-        Static rwt_last As Long = 0
         Try
             Dim i As Integer
             If False Then
@@ -530,7 +530,7 @@ Public Class LTFSWriter
                         .extendedattributes.AddRange(xlist)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(ex.ToString())
+                    MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                 End Try
             End With
             ParentDirectory.contents.UnwrittenFiles.Add(File)
@@ -573,7 +573,7 @@ Public Class LTFSWriter
                         fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                         Exit While
                     Catch ex As Exception
-                        Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                             Case DialogResult.Abort
                                 Return 3
                             Case DialogResult.Retry
@@ -607,7 +607,7 @@ Public Class LTFSWriter
                     If BufferSize = 0 Then BufferSize = 524288
                     Exit While
                 Catch ex As Exception
-                    'Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    'Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                     '    Case DialogResult.Abort
                     '        Return 3
                     '    Case DialogResult.Retry
@@ -632,7 +632,7 @@ Public Class LTFSWriter
                                      Exit While
                                  End SyncLock
                              Catch ex As Exception
-                                 'Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                 'Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                  '    Case DialogResult.Abort
                                  '        Exit While
                                  '    Case DialogResult.Retry
@@ -763,6 +763,10 @@ Public Class LTFSWriter
     End Property
     Dim LastRefresh As Date = Now
     Private Sub LTFSWriter_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim scrH As Integer = Screen.GetWorkingArea(Me).Height
+        If scrH - Top - Height <= 0 Then
+            Height += scrH - Top - Height
+        End If
         FileDroper = New FileDropHandler(ListView1)
         Load_Settings()
         If OfflineMode Then Exit Sub
@@ -778,9 +782,9 @@ Public Class LTFSWriter
         e.Cancel = False
         If Not AllowOperation Then
             If ForceCloseCount < 3 Then
-                MessageBox.Show(My.Resources.ResText_X0)
+                MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X0)
             Else
-                If MessageBox.Show(My.Resources.ResText_X1, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X1, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                     Save_Settings()
                     e.Cancel = False
                     End
@@ -792,7 +796,7 @@ Public Class LTFSWriter
             Exit Sub
         End If
         If TotalBytesUnindexed > 0 Then
-            If MessageBox.Show(My.Resources.ResText_X2, My.Resources.ResText_Warning, MessageBoxButtons.YesNo) = DialogResult.No Then
+            If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X2, My.Resources.ResText_Warning, MessageBoxButtons.YesNo) = DialogResult.No Then
                 e.Cancel = True
                 Exit Sub
             Else
@@ -803,7 +807,7 @@ Public Class LTFSWriter
             End If
         End If
         If ExtraPartitionCount > 0 AndAlso Modified Then
-            If MessageBox.Show(My.Resources.ResText_X3, My.Resources.ResText_Warning, MessageBoxButtons.YesNo) = DialogResult.No Then
+            If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X3, My.Resources.ResText_Warning, MessageBoxButtons.YesNo) = DialogResult.No Then
                 e.Cancel = True
             Else
                 Save_Settings()
@@ -1484,7 +1488,7 @@ Public Class LTFSWriter
             If RetainPosisiton Then TapeUtils.Locate(TapeDrive, pPrevious.BlockNumber, pPrevious.PartitionNumber)
             Return pStartBlock
         Catch ex As Exception
-            MessageBox.Show(ex.ToString())
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
         End Try
         Return -1
     End Function
@@ -1502,7 +1506,7 @@ Public Class LTFSWriter
             f.extentinfo = {New ltfsindex.file.extent With {.startblock = startblock, .bytecount = len, .byteoffset = 0, .fileoffset = 0, .partition = ltfsindex.PartitionLabel.a}}.ToList()
             IO.File.Delete(tmpf)
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
 
     End Sub
@@ -1530,7 +1534,7 @@ Public Class LTFSWriter
         Else
             Dim DoEject As Boolean = False
             Invoke(Sub()
-                       DoEject = WA3ToolStripMenuItem.Checked OrElse MessageBox.Show(My.Resources.ResText_PEj, My.Resources.ResText_Hint, MessageBoxButtons.OKCancel) = DialogResult.OK
+                       DoEject = WA3ToolStripMenuItem.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_PEj, My.Resources.ResText_Hint, MessageBoxButtons.OKCancel) = DialogResult.OK
                    End Sub)
             If DoEject Then
                 TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
@@ -1658,7 +1662,7 @@ Public Class LTFSWriter
                 End SyncLock
             End While
         Catch ex As Exception
-            Invoke(Sub() MessageBox.Show(ex.ToString()))
+            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
         End Try
     End Sub
     Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
@@ -1747,7 +1751,7 @@ Public Class LTFSWriter
                         End SyncLock
                     End While
                 Catch ex As Exception
-                    Invoke(Sub() MessageBox.Show(ex.ToString()))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
                 End Try
             Next
         Else
@@ -1798,7 +1802,7 @@ Public Class LTFSWriter
                             End SyncLock
                         End While
                     Catch ex As Exception
-                        Invoke(Sub() MessageBox.Show(ex.ToString()))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
                     End Try
                 End Sub)
         End If
@@ -1886,7 +1890,7 @@ Public Class LTFSWriter
     Public Sub DeleteDir()
         If TreeView1.SelectedNode IsNot Nothing Then
             Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
-            If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso MessageBox.Show($"{My.Resources.ResText_DelConfrm}{d.name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{d.name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                 Dim pd As ltfsindex.directory = TreeView1.SelectedNode.Parent.Tag
                 pd.contents._directory.Remove(d)
                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
@@ -1939,7 +1943,7 @@ Public Class LTFSWriter
             If s <> "" Then
                 If s = d.name Then Exit Sub
                 If (s.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
-                    MessageBox.Show(My.Resources.ResText_DirNIllegal)
+                    MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
                     Exit Sub
                 End If
                 If TreeView1.SelectedNode.Parent IsNot Nothing Then
@@ -1947,7 +1951,7 @@ Public Class LTFSWriter
                     SyncLock pd.contents._directory
                         For Each d2 As ltfsindex.directory In pd.contents._directory
                             If d2 IsNot d And d2.name = s Then
-                                MessageBox.Show(My.Resources.ResText_DirNExist)
+                                MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNExist)
                                 Exit Sub
                             End If
                         Next
@@ -1972,13 +1976,13 @@ Public Class LTFSWriter
             If newname = f.name Then Exit Sub
             If newname = "" Then Exit Sub
             If (newname.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
-                MessageBox.Show(My.Resources.ResText_FNIllegal)
+                MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FNIllegal)
                 Exit Sub
             End If
             SyncLock d.contents._file
                 For Each allf As ltfsindex.file In d.contents._file
                     If allf IsNot f And allf.name.ToLower = newname.ToLower Then
-                        MessageBox.Show(My.Resources.ResText_FNExist)
+                        MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FNExist)
                         Exit Sub
                     End If
                 Next
@@ -1992,7 +1996,7 @@ Public Class LTFSWriter
         If ListView1.Tag IsNot Nothing AndAlso
         ListView1.SelectedItems IsNot Nothing AndAlso
         ListView1.SelectedItems.Count > 0 AndAlso
-        MessageBox.Show($"{My.Resources.ResText_DelConfrm}{ListView1.SelectedItems.Count}{My.Resources.ResText_Files_C}", My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{ListView1.SelectedItems.Count}{My.Resources.ResText_Files_C}", My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             SyncLock ListView1.SelectedItems
                 For Each ItemSelected As ListViewItem In ListView1.SelectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
@@ -2036,7 +2040,7 @@ Public Class LTFSWriter
             '        PrintMsg("文件添加成功")
             '    Catch ex As Exception
             '        PrintMsg("文件添加失败")
-            '        MessageBox.Show(ex.ToString())
+            '        MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
             '    End Try
             'Next
             'RefreshDisplay()
@@ -2068,7 +2072,7 @@ Public Class LTFSWriter
                                 AddDirectry(f, d, overwrite)
                             End If
                         Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(ex.ToString()))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
                         End Try
                     Next
 
@@ -2112,7 +2116,7 @@ Public Class LTFSWriter
             '    PrintMsg("导入成功")
             'Catch ex As Exception
             '    PrintMsg("导入失败")
-            '    MessageBox.Show(ex.ToString())
+            '    MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
             'End Try
             'RefreshDisplay()
         End If
@@ -2136,7 +2140,7 @@ Public Class LTFSWriter
                 '        PrintMsg("目录添加成功")
                 '    Catch ex As Exception
                 '        PrintMsg("目录添加失败")
-                '        MessageBox.Show(ex.ToString())
+                '        MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                 '    End Try
                 'Next
                 'RefreshDisplay()
@@ -2148,14 +2152,14 @@ Public Class LTFSWriter
             Dim s As String = InputBox(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, "")
             If s <> "" Then
                 If (s.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
-                    MessageBox.Show(My.Resources.ResText_DirNIllegal)
+                    MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
                     Exit Sub
                 End If
                 Dim d As ltfsindex.directory = ListView1.Tag
                 SyncLock d.contents._directory
                     For Each dold As ltfsindex.directory In d.contents._directory
                         If dold IsNot d And dold.name = s Then
-                            MessageBox.Show(My.Resources.ResText_DirNExist)
+                            MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNExist)
                             Exit Sub
                         End If
                     Next
@@ -2364,7 +2368,7 @@ Public Class LTFSWriter
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
                         PrintMsg(My.Resources.ResText_RestFin)
-                        Invoke(Sub() MessageBox.Show(My.Resources.ResText_RestFin))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_RestFin))
                     End Sub)
             th.Start()
         End If
@@ -2441,7 +2445,7 @@ Public Class LTFSWriter
                             Next
                             PrintMsg(My.Resources.ResText_RestFin)
                         Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(ex.ToString))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString))
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                         End Try
                         TapeUtils.AllowMediaRemoval(TapeDrive)
@@ -2503,7 +2507,7 @@ Public Class LTFSWriter
             End If
         Else
             Dim p As TapeUtils.PositionData = GetPos
-            If MessageBox.Show($"{My.Resources.ResText_CurPos}P{p.PartitionNumber} B{p.BlockNumber}{My.Resources.ResText_NHWrn}", My.Resources.ResText_WriteWarning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            If MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_CurPos}P{p.PartitionNumber} B{p.BlockNumber}{My.Resources.ResText_NHWrn}", My.Resources.ResText_WriteWarning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
 
             Else
                 LockGUI(False)
@@ -2657,7 +2661,7 @@ Public Class LTFSWriter
                                                     FileData = fr.ReadAllBytes()
                                                     Exit While
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             Throw ex
@@ -2678,7 +2682,7 @@ Public Class LTFSWriter
                                                         p.BlockNumber += 1
                                                     End SyncLock
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             Throw ex
@@ -2694,7 +2698,7 @@ Public Class LTFSWriter
                                                 If ((sense(2) >> 6) And &H1) = 1 Then
                                                     If (sense(2) And &HF) = 13 Then
                                                         PrintMsg(My.Resources.ResText_VOF)
-                                                        Invoke(Sub() MessageBox.Show(My.Resources.ResText_VOF))
+                                                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                         StopFlag = True
                                                         Exit For
                                                     Else
@@ -2704,7 +2708,7 @@ Public Class LTFSWriter
                                                     End If
                                                 ElseIf sense(2) And &HF <> 0 Then
                                                     PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                                                    Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             Throw New Exception(TapeUtils.ParseSenseData(sense))
                                                         Case DialogResult.Retry
@@ -2759,7 +2763,7 @@ Public Class LTFSWriter
                                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
                                                         Exit While
                                                     Catch ex As Exception
-                                                        Select Case MessageBox.Show($"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                             Case DialogResult.Abort
                                                                 StopFlag = True
                                                                 Throw ex
@@ -2800,7 +2804,7 @@ Public Class LTFSWriter
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
                                                             Catch ex As Exception
-                                                                Select Case MessageBox.Show(My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
                                                                         Throw ex
                                                                     Case DialogResult.Retry
@@ -2815,7 +2819,7 @@ Public Class LTFSWriter
                                                             If (((sense(2) >> 6) And &H1) = 1) Then
                                                                 If ((sense(2) And &HF) = 13) Then
                                                                     PrintMsg(My.Resources.ResText_VOF)
-                                                                    Invoke(Sub() MessageBox.Show(My.Resources.ResText_VOF))
+                                                                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                                     StopFlag = True
                                                                     fr.Close()
                                                                     ExitForFlag = True
@@ -2826,7 +2830,7 @@ Public Class LTFSWriter
                                                                     Exit While
                                                                 End If
                                                             ElseIf sense(2) And &HF <> 0 Then
-                                                                Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
                                                                         Throw New Exception(TapeUtils.ParseSenseData(sense))
                                                                     Case DialogResult.Retry
@@ -2900,14 +2904,14 @@ Public Class LTFSWriter
                                                RefreshCapacity()
                                                Dim p2 As New TapeUtils.PositionData(TapeDrive)
                                                If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
-                                                   If MessageBox.Show($"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
+                                                   If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
                                                        StopFlag = True
                                                    End If
                                                End If
                                            End If
                                        End Sub)
                             Catch ex As Exception
-                                MessageBox.Show($"{My.Resources.ResText_WErr}{ex.ToString}")
+                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{ex.ToString}")
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                             End Try
                             While Pause
@@ -2949,7 +2953,7 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show($"{My.Resources.ResText_WErr}{ex.ToString}")
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{ex.ToString}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                 End Try
                 TapeUtils.Flush(TapeDrive)
@@ -2959,7 +2963,7 @@ Public Class LTFSWriter
                            LockGUI(False)
                            RefreshDisplay()
                            RefreshCapacity()
-                           If Not StopFlag AndAlso WA0ToolStripMenuItem.Checked AndAlso MessageBox.Show(My.Resources.ResText_WFUp, My.Resources.ResText_OpSucc, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                           If Not StopFlag AndAlso WA0ToolStripMenuItem.Checked AndAlso MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WFUp, My.Resources.ResText_OpSucc, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                                更新数据区索引ToolStripMenuItem_Click(sender, e)
                            End If
                            PrintMsg(OnWriteFinishMessage)
@@ -2972,7 +2976,7 @@ Public Class LTFSWriter
     End Sub
     Private Sub 清除当前索引后数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 清除当前索引后数据ToolStripMenuItem.Click
 
-        If MessageBox.Show(My.Resources.ResText_X2, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X2, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
             Exit Sub
         End If
         Dim th As New Threading.Thread(
@@ -2989,7 +2993,7 @@ Public Class LTFSWriter
                     Dim CurrentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
                     If CurrentPos.PartitionNumber < ExtraPartitionCount Then
-                        Invoke(Sub() MessageBox.Show(My.Resources.ResText_IPCanc))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_IPCanc))
                         Exit Try
                     End If
                     TapeUtils.Locate(TapeDrive, CurrentPos.BlockNumber - 1, CurrentPos.PartitionNumber, TapeUtils.LocateDestType.Block)
@@ -3045,7 +3049,7 @@ Public Class LTFSWriter
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
     End Sub
     Private Sub 回滚ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 回滚ToolStripMenuItem.Click
-        If MessageBox.Show($"{My.Resources.ResText_RB1}{schema.generationnumber}{My.Resources.ResText_RB2} {My.Resources.ResText_Partition}{schema.location.partition} {My.Resources.ResText_Block}{schema.location.startblock}{vbCrLf _
+        If MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RB1}{schema.generationnumber}{My.Resources.ResText_RB2} {My.Resources.ResText_Partition}{schema.location.partition} {My.Resources.ResText_Block}{schema.location.startblock}{vbCrLf _
                            }{My.Resources.ResText_RB3} {My.Resources.ResText_Partition}{schema.previousgenerationlocation.partition} {My.Resources.ResText_Block}{schema.previousgenerationlocation.startblock}{vbCrLf _
                            }{My.Resources.ResText_RB4}", My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
             Exit Sub
@@ -3142,7 +3146,7 @@ Public Class LTFSWriter
                         Dim Add_Key As UInt16
                         If senseData.Length >= 14 Then Add_Key = CInt(senseData(12)) << 8 Or senseData(13)
                         PrintMsg(My.Resources.ResText_NVOL1)
-                        Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_NLTFS}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}", My.Resources.ResText_Error))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_NLTFS}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}", My.Resources.ResText_Error))
                         LockGUI(False)
                         Exit Try
                     End If
@@ -3189,7 +3193,7 @@ Public Class LTFSWriter
                             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                             If FM <= 1 Then
                                 PrintMsg(My.Resources.ResText_IRFailed)
-                                Invoke(Sub() MessageBox.Show(My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
+                                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
                                 LockGUI(False)
                                 Exit Try
                             End If
@@ -3286,7 +3290,7 @@ Public Class LTFSWriter
                         Dim FM As Long = currentPos.FileNumber
                         If FM <= 1 Then
                             PrintMsg(My.Resources.ResText_IRFailed)
-                            Invoke(Sub() MessageBox.Show(My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
                             LockGUI(False)
                             Exit Try
                         End If
@@ -3343,12 +3347,12 @@ Public Class LTFSWriter
                 End If
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_DPIWFailed, False, $"{My.Resources.ResText_DPIWFailed}: {ex.ToString}")
-                Invoke(Sub() MessageBox.Show(ex.ToString()))
+                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
             End Try
             Invoke(Sub()
                        LockGUI(False)
                        RefreshDisplay()
-                       If Not SilentMode Then MessageBox.Show(My.Resources.ResText_DPIUed)
+                       If Not SilentMode Then MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DPIUed)
                    End Sub)
         End Sub)
         LockGUI()
@@ -3383,9 +3387,9 @@ Public Class LTFSWriter
             If MAM080C IsNot Nothing Then
                 VCI = MAM080C.RawData
             End If
-            If Not Silent Then MessageBox.Show($"{My.Resources.ResText_ILdedP}{vbCrLf}{vbCrLf}{My.Resources.ResText_VCID}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
+            If Not Silent Then MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_ILdedP}{vbCrLf}{vbCrLf}{My.Resources.ResText_VCID}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
         Catch ex As Exception
-            MessageBox.Show($"{My.Resources.ResText_IAErrp}{ex.Message}")
+            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IAErrp}{ex.Message}")
         End Try
     End Sub
     Private Sub 加载外部索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加载外部索引ToolStripMenuItem.Click
@@ -3422,7 +3426,7 @@ Public Class LTFSWriter
             Sub()
                 Try
                     Dim outputfile As String = AutoDump()
-                    Me.Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}"))
+                    Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}"))
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IndexBakF)
                 End Try
@@ -3432,7 +3436,7 @@ Public Class LTFSWriter
         th.Start()
     End Sub
     Private Sub 格式化ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 格式化ToolStripMenuItem.Click
-        If MessageBox.Show(My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             While True
                 Threading.Thread.Sleep(0)
                 SyncLock UFReadCount
@@ -3455,7 +3459,7 @@ Public Class LTFSWriter
                 If VolumeLabel = "" Then VolumeLabel = Barcode
                 VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, VolumeLabel)
 
-                Select Case MessageBox.Show($"{My.Resources.ResText_Barcode2}{Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
+                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
                     Case DialogResult.Yes
                         Confirm = True
                         Exit While
@@ -3479,7 +3483,7 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_FmtFin)
                     LockGUI(False)
                     Me.Invoke(Sub()
-                                  MessageBox.Show(My.Resources.ResText_FmtFin)
+                                  MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FmtFin)
                                   读取索引ToolStripMenuItem_Click(sender, e)
                               End Sub)
                 End Sub,
@@ -3487,7 +3491,7 @@ Public Class LTFSWriter
                     'OnError
                     PrintMsg(Message)
                     LockGUI(False)
-                    Me.Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
+                    Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
                 End Sub, EncryptionKey:=EncryptionKey)
         End If
     End Sub
@@ -3532,7 +3536,7 @@ Public Class LTFSWriter
                         If f.sha1.Length = 40 Then
                             Threading.Interlocked.Increment(fhash)
                         ElseIf fprocessed - fhash <= 5 Then
-                            MessageBox.Show($"{f.fileuid}:{d.LTFSIndexDir.name}\{f.name} {f.sha1}")
+                            MessageBox.Show(New Form With {.TopMost = True}, $"{f.fileuid}:{d.LTFSIndexDir.name}\{f.name} {f.sha1}")
                         End If
                     Catch ex As Exception
                         PrintMsg(ex.ToString)
@@ -3558,7 +3562,7 @@ Public Class LTFSWriter
                 Dim schhash As ltfsindex
                 PrintMsg(My.Resources.ResText_RI)
                 schhash = ltfsindex.FromSchFile(OpenFileDialog1.FileName)
-                Dim dr As DialogResult = MessageBox.Show(My.Resources.ResText_SHA1Overw, My.Resources.ResText_Hint, MessageBoxButtons.YesNoCancel)
+                Dim dr As DialogResult = MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_SHA1Overw, My.Resources.ResText_Hint, MessageBoxButtons.YesNoCancel)
                 PrintMsg(My.Resources.ResText_Importing)
                 Dim result As String = ""
                 If dr = DialogResult.Yes Then
@@ -3580,7 +3584,7 @@ Public Class LTFSWriter
         Dim p As TapeUtils.PositionData = GetPos
         PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
         Dim Pos As Long = p.BlockNumber
-        If MessageBox.Show($"{My.Resources.ResText_SetH1}{Pos}{My.Resources.ResText_SetH2}{vbCrLf}{My.Resources.ResText_SetH3}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_SetH1}{Pos}{My.Resources.ResText_SetH2}{vbCrLf}{My.Resources.ResText_SetH3}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             CurrentHeight = Pos
         End If
     End Sub
@@ -3599,7 +3603,7 @@ Public Class LTFSWriter
                             TapeUtils.Locate(TapeDrive, ext.startblock, GetPartitionNumber(ext.partition), TapeUtils.LocateDestType.Block)
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                             LockGUI(False)
-                            Invoke(Sub() MessageBox.Show($"{My.Resources.ResText_Located}{ext.startblock}"))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Located}{ext.startblock}"))
                             PrintMsg($"{My.Resources.ResText_Located}{ext.startblock}")
                         End Sub)
                 LockGUI()
@@ -3676,7 +3680,7 @@ Public Class LTFSWriter
     End Sub
     Private Sub ToolStripDropDownButton1_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton1.Click
         Pause = True
-        If MessageBox.Show(My.Resources.ResText_CancelConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_CancelConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             StopFlag = True
         End If
         Pause = False
@@ -3688,9 +3692,11 @@ Public Class LTFSWriter
         Clean = True
     End Sub
     Private Sub ToolStripStatusLabel4_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel4.Click
-        If MessageBox.Show(My.Resources.ResText_ClearWC, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_ClearWC, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             TotalBytesProcessed = 0
             TotalFilesProcessed = 0
+            t_last = 0
+            d_last = 0
         End If
     End Sub
     Private Sub WA0ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA0ToolStripMenuItem.Click
@@ -4142,7 +4148,7 @@ Public Class LTFSWriter
                     Next
                     PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
                 Catch ex As Exception
-                    Invoke(Sub() MessageBox.Show(ex.ToString))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString))
                     PrintMsg(My.Resources.ResText_HErr)
                 End Try
                 UnwrittenSizeOverrideValue = 0
@@ -4209,7 +4215,7 @@ Public Class LTFSWriter
                 Next
                 q = q2
             End While
-            MessageBox.Show($"{d.name}{vbCrLf}{My.Resources.ResText_FCountP}{fnum}{vbCrLf}{My.Resources.ResText_FSizeP}{fbytes} {My.Resources.ResText_Byte} ({IOManager.FormatSize(fbytes)})")
+            MessageBox.Show(New Form With {.TopMost = True}, $"{d.name}{vbCrLf}{My.Resources.ResText_FCountP}{fnum}{vbCrLf}{My.Resources.ResText_FSizeP}{fbytes} {My.Resources.ResText_Byte} ({IOManager.FormatSize(fbytes)})")
         End If
     End Sub
 
@@ -4242,7 +4248,7 @@ Public Class LTFSWriter
                 Next
             End SyncLock
         End If
-        MessageBox.Show(result.ToString)
+        MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
     End Sub
 
     Private Sub 禁用分区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 禁用分区ToolStripMenuItem.Click
@@ -4386,7 +4392,7 @@ Public Class LTFSWriter
                 Host.MaxComponentLength = 4096
 
             Catch ex As Exception
-                MessageBox.Show(ex.ToString)
+                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -4408,7 +4414,7 @@ Public Class LTFSWriter
                 VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
                 'VolumeInfo.SetVolumeLabel(VolumeLabel)
             Catch ex As Exception
-                MessageBox.Show(ex.ToString)
+                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -4672,7 +4678,7 @@ Public Class LTFSWriter
             Host.FileSystemName = "LTFS"
             Dim Code As Integer = Host.Mount("L:", Nothing, True, 0)
             _Host = Host
-            'MessageBox.Show($"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
+            'MessageBox.Show(New Form With {.TopMost = True}, $"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
         End Sub
         Protected Overrides Sub OnStop()
             _Host.Unmount()
@@ -4693,11 +4699,11 @@ Public Class LTFSWriter
                 svc.Run()
             End Sub)
 
-        MessageBox.Show($"Mounted as \\ltfs\{svc.MountPath}{vbCrLf}Press OK to unmount")
+        MessageBox.Show(New Form With {.TopMost = True}, $"Mounted as \\ltfs\{svc.MountPath}{vbCrLf}Press OK to unmount")
 
         '卸载
         svc.Stop()
-        MessageBox.Show($"Unmounted. Code={svc.ExitCode}")
+        MessageBox.Show(New Form With {.TopMost = True}, $"Unmounted. Code={svc.ExitCode}")
     End Sub
 
     Private Sub 子目录列表ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 子目录列表ToolStripMenuItem.Click
@@ -4755,9 +4761,9 @@ Public Class LTFSWriter
         svc.BlockSize = plabel.blocksize
         svc.ExtraPartitionCount = ExtraPartitionCount
         svc.StartService()
-        MessageBox.Show($"Service running on port {svc.port}.")
+        MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
         svc.StopService()
-        MessageBox.Show("Service stopped.")
+        MessageBox.Show(New Form With {.TopMost = True}, "Service stopped.")
     End Sub
 
     Private Sub 右下角显示容量损失ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 右下角显示容量损失ToolStripMenuItem.Click
@@ -4827,7 +4833,7 @@ Public Class LTFSWriter
                                              pos.BlockNumber += 1
                                          End SyncLock
                                      Catch ex As Exception
-                                         Select Case MessageBox.Show(My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                              Case DialogResult.Abort
                                                  Throw ex
                                              Case DialogResult.Retry
@@ -4842,7 +4848,7 @@ Public Class LTFSWriter
                                      If (((sense(2) >> 6) And &H1) = 1) Then
                                          If ((sense(2) And &HF) = 13) Then
                                              PrintMsg(My.Resources.ResText_VOF)
-                                             Invoke(Sub() MessageBox.Show(My.Resources.ResText_VOF))
+                                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                              StopFlag = True
                                              ms.Close()
                                              Exit Sub
@@ -4852,7 +4858,7 @@ Public Class LTFSWriter
                                              Exit While
                                          End If
                                      ElseIf sense(2) And &HF <> 0 Then
-                                         Select Case MessageBox.Show($"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                              Case DialogResult.Abort
                                                  Throw New Exception(TapeUtils.ParseSenseData(sense))
                                              Case DialogResult.Retry
@@ -4988,7 +4994,7 @@ Public Class LTFSWriter
                         PrintMsg(My.Resources.ResText_AddFin)
                         Invoke(Sub()
                                    RefreshDisplay()
-                                   MessageBox.Show(My.Resources.ResText_AddFin)
+                                   MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_AddFin)
                                End Sub)
                     End Sub)
             th.Start()
@@ -5074,7 +5080,7 @@ Public Class LTFSWriter
                         Dim FM As Long = currentPos.FileNumber
                         If FM <= 1 Then
                             PrintMsg(My.Resources.ResText_IRFailed)
-                            Invoke(Sub() MessageBox.Show(My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
                             LockGUI(False)
                             Exit Try
                         End If

@@ -50,7 +50,7 @@
                                     succ = True
                                 End If
                                 If sense2 IsNot Nothing AndAlso sense2.Length > 2 AndAlso (sense2(2) And &HF) <> 0 Then
-                                    Select Case MessageBox.Show($"sense err {TapeUtils.Byte2Hex(sense2, True)}", "Warning", MessageBoxButtons.AbortRetryIgnore)
+                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"sense err {TapeUtils.Byte2Hex(sense2, True)}", "Warning", MessageBoxButtons.AbortRetryIgnore)
                                         Case DialogResult.Abort
                                             Exit For
                                         Case DialogResult.Retry
@@ -77,7 +77,7 @@
                                 Exit For
                             End If
                         Catch ex As Exception
-                            MessageBox.Show(ex.ToString())
+                            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                         End Try
                     Next
                     TapeUtils.Flush(TapeB)
