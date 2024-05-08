@@ -75,7 +75,7 @@ Namespace My
                     End If
                 Catch ex As Exception
                     If rsa.PublicOnly Then
-                        MessageBox.Show(Resources.StrLicenseInvalid)
+                        MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                     Else
                         My.Settings.License = lic_string
                         Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(lic_string)
@@ -342,7 +342,7 @@ dataDir:{dataDir}
                                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                                 End If
                                 If rsa.PublicOnly Then
-                                    MessageBox.Show(Resources.StrLicenseInvalid)
+                                    MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                                 Else
                                     My.Settings.License = ltext
                                     Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(ltext)
@@ -364,7 +364,7 @@ dataDir:{dataDir}
                                 End
 
                             Catch ex As Exception
-                                MessageBox.Show(ex.ToString)
+                                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
                             End Try
                             'End
                     End Select

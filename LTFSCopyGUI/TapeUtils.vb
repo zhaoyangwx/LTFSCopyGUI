@@ -615,7 +615,7 @@ Public Class TapeUtils
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
         While Not _TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
             Marshal.Copy(senseBuffer, senseData, 0, 64)
-            Select Case MessageBox.Show($"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
                 Case DialogResult.Abort
                     Throw New Exception("SCSI Error")
                 Case DialogResult.Retry
@@ -1291,7 +1291,7 @@ Public Class TapeUtils
                 If succ Then
                     Exit Do
                 Else
-                    Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
                         Case DialogResult.Abort
                             Exit While
                         Case DialogResult.Retry
@@ -1329,7 +1329,7 @@ Public Class TapeUtils
                 If succ Then
                     Exit Do
                 Else
-                    Select Case MessageBox.Show($"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
                         Case DialogResult.Abort
                             Exit While
                         Case DialogResult.Retry
@@ -1652,7 +1652,7 @@ Public Class TapeUtils
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
     Public Shared Function GetTapeDriveList() As List(Of TapeDrive)
         Dim p As IntPtr = _GetTapeDriveList()
-        'MessageBox.Show(Marshal.PtrToStringAnsi(p))
+        'MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
         Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         Dim LDrive As New List(Of TapeDrive)
         For Each t As String In s
@@ -2160,7 +2160,7 @@ Public Class TapeUtils
                 Return True
             End If
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
             fs.Close()
             IO.File.Delete(OutputFile)
             If LockDrive Then

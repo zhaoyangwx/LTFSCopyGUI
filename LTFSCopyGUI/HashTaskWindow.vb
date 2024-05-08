@@ -432,7 +432,7 @@ Public Class HashTaskWindow
     Private Sub HashTaskWindow_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         If HashTask.Status <> IOManager.HashTask.TaskStatus.Idle Then
             e.Cancel = True
-            MessageBox.Show("Task is still running.")
+            MessageBox.Show(New Form With {.TopMost = True}, "Task is still running.")
             Exit Sub
         Else
             My.Settings.ReHash = CheckBox1.Checked

@@ -336,7 +336,7 @@ Public Class Form1
             End While
             LoadSchemaFile(False)
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
     End Sub
 
@@ -368,7 +368,7 @@ Public Class Form1
                 TextBox2.AppendText(fl.FullName & vbCrLf)
             Next
         Catch ex As Exception
-            MessageBox.Show(ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
 
     End Sub
@@ -706,7 +706,7 @@ Public Class Form1
     End Sub
     Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
-            If MessageBox.Show(My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+            If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas"})
             Me.Close()
             Exit Sub
