@@ -2612,8 +2612,9 @@ Public Class LTFSWriter
                                             If fref.length = finfo.Length AndAlso fref.sha1 <> "" Then
                                                 PrintMsg($"{My.Resources.ResText_CHashing}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
                                                 If sha1value = "" Then sha1value = IOManager.SHA1(fr.SourcePath)
-                                                If fref.sha1.Equals(sha1value) Then
-                                                    fr.File.sha1 = sha1value
+                                                If fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True).Equals(sha1value) Then
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
                                                     dupe = True
                                                     dupeFile = fref
                                                 End If
