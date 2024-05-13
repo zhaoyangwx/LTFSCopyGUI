@@ -223,6 +223,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 剪贴板 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ClipBoard() As String
+            Get
+                Return ResourceManager.GetString("ResText_ClipBoard", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 设置重装带前清洁次数 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_CLNCS() As String
@@ -741,6 +750,24 @@ Namespace My.Resources
         Friend ReadOnly Property ResText_Locating() As String
             Get
                 Return ResourceManager.GetString("ResText_Locating", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 减少锁定 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_LockDec() As String
+            Get
+                Return ResourceManager.GetString("ResText_LockDec", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 增加锁定 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_LockInc() As String
+            Get
+                Return ResourceManager.GetString("ResText_LockInc", resourceCulture)
             End Get
         End Property
         

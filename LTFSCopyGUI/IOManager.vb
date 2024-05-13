@@ -756,8 +756,8 @@ Public Class IOManager
                     If value >= FileInfo.length Then value = FileInfo.length - 1
                     Dim ext As ltfsindex.file.extent = GetExtent(value)
                     Dim p As New TapeUtils.PositionData(TapeDrive)
-                    Dim targetBlock As Long = ext.startblock + (value - ext.fileoffset) \ BlockSize
-                    Dim targetPartition As Integer = Math.Min(ExtraPartitionCount, ext.partition)
+                    Dim targetBlock As ULong = ext.startblock + (value - ext.fileoffset) \ BlockSize
+                    Dim targetPartition As Byte = Math.Min(ExtraPartitionCount, ext.partition)
                     If p.BlockNumber <> targetBlock OrElse p.PartitionNumber <> targetPartition Then
                         RaiseEvent LogPrint($"LOCATE {TapeDrive} B{targetBlock}P{targetPartition} (File position {value})")
                         TapeUtils.Locate(TapeDrive, targetBlock, targetPartition)
@@ -811,7 +811,7 @@ Public Class IOManager
                     Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
                     Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
                     Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
-                    Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
+                    Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive:=TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
                     Dim bytesReaded As Integer = data.Length - fByteOffset
                     Dim destIndex As Integer = offset + rBytes
                     Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))

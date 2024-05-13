@@ -119,14 +119,14 @@
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>171, 158</value>
+    <value>171, 202</value>
   </data>
   <data name="ImageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAUQBAwFEAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAVQBAwFUAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -222,7 +222,7 @@
     <value>Written bytes</value>
   </data>
   <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>244, 402</value>
+    <value>244, 446</value>
   </data>
   <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
     <value>145, 208</value>
@@ -256,6 +256,18 @@
   </data>
   <data name="仅验证ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Validate only</value>
+  </data>
+  <data name="剪切目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 22</value>
+  </data>
+  <data name="剪切目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Cut directory</value>
+  </data>
+  <data name="粘贴选中ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>170, 22</value>
+  </data>
+  <data name="粘贴选中ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Paste selected</value>
   </data>
   <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>170, 22</value>
@@ -331,6 +343,15 @@
   </data>
   <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
     <value>240, 6</value>
+  </data>
+  <data name="剪切文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 22</value>
+  </data>
+  <data name="剪切文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Cut file</value>
+  </data>
+  <data name="粘贴选中ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>243, 22</value>
   </data>
   <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>243, 22</value>
@@ -521,6 +542,9 @@
   <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
     <value>Tape</value>
   </data>
+  <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Index</value>
   </data>
@@ -563,6 +587,9 @@
   <data name="备份当前索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Export backup</value>
   </data>
+  <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>Data</value>
   </data>
@@ -600,6 +627,12 @@
   </data>
   <data name="更新全部索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Update all indexes (Eject tape)</value>
+  </data>
+  <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 6</value>
+  </data>
+  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Automation</value>
@@ -757,6 +790,12 @@
   <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
     <value>Display file count</value>
   </data>
+  <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 6</value>
+  </data>
+  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
   <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
     <value>Roll back</value>
   </data>
@@ -802,8 +841,14 @@
   <data name="加密ToolStripMenuItem.Text" xml:space="preserve">
     <value>Encryption</value>
   </data>
+  <data name="设置密钥ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 22</value>
+  </data>
   <data name="设置密钥ToolStripMenuItem.Text" xml:space="preserve">
     <value>Set Key</value>
+  </data>
+  <data name="设置密码ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>154, 22</value>
   </data>
   <data name="设置密码ToolStripMenuItem.Text" xml:space="preserve">
     <value>Set Password</value>
@@ -855,6 +900,18 @@
   </data>
   <data name="启动FTP服务只读ToolStripMenuItem.Text" xml:space="preserve">
     <value>Start FTP Service (ReadOnly)</value>
+  </data>
+  <data name="驱动器锁定状态ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>284, 22</value>
+  </data>
+  <data name="驱动器锁定状态ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Drive lock</value>
+  </data>
+  <data name="加锁ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Increase lock</value>
+  </data>
+  <data name="解锁ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Decrease lock</value>
   </data>
   <data name="ToolStripDropDownButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

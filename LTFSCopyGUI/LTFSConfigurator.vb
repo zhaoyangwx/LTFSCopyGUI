@@ -582,7 +582,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonDebugReadMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadMAM.Click
-        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, NumericUpDown8.Value, NumericUpDown9.Value, NumericUpDown1.Value)
+        Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, CByte(NumericUpDown8.Value), CByte(NumericUpDown9.Value), CByte(NumericUpDown1.Value))
         If ResultB.Length = 0 Then Exit Sub
         Dim Result As String = System.Text.Encoding.UTF8.GetString(ResultB)
         If Result <> "" Then TextBox8.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
@@ -744,7 +744,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugReadBlock_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBlock.Click
         Me.Enabled = False
-        Dim ReadLen As Integer = NumericUpDown7.Value
+        Dim ReadLen As UInteger = NumericUpDown7.Value
 
         'Dim cdbData As Byte() = {8, 0, ReadLen >> 16 And &HFF, ReadLen >> 8 And &HFF, ReadLen And &HFF, 0}
         'Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
@@ -806,8 +806,8 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
         TextBox8.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(ConfTapeDrive,
-                                                                            NumericUpDown2.Value,
-                                                                            NumericUpDown1.Value,
+                                                                            CULng(NumericUpDown2.Value),
+                                                                            CByte(NumericUpDown1.Value),
                                                                             System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBox3.SelectedItem)))
         Me.Enabled = True
 
@@ -864,7 +864,7 @@ Public Class LTFSConfigurator
             Dim log As Boolean = CheckBox2.Checked
             Dim thprog As New Threading.Thread(
                 Sub()
-                    Dim ReadLen As Integer = NumericUpDown7.Value
+                    Dim ReadLen As UInteger = NumericUpDown7.Value
                     Dim FileNum As Integer = 0
 
                     'Position
@@ -3441,7 +3441,7 @@ Public Class LTFSConfigurator
             Dim progval As Long = 0
             Dim running As Boolean = True
             Dim randomNum As Boolean = RadioButtonTest1.Checked
-            Dim blkLen As Long = NumericUpDownTestBlkSize.Value
+            Dim blkLen As Integer = NumericUpDownTestBlkSize.Value
             Dim blkNum As Long = NumericUpDownTestBlkNum.Value
             Dim sec As Integer = -1
             Dim th As New Threading.Thread(
@@ -3457,20 +3457,28 @@ Public Class LTFSConfigurator
                 Next
                 Invoke(Sub() TextBox8.AppendText($"Start{vbCrLf}"))
                 sec = 0
-                If blkLen = 0 Then
-                    For i As Long = 0 To blkNum
-                        If Not TestEnabled Then Exit For
-                        TapeUtils.WriteFileMark(ConfTapeDrive)
-                        progval = i * blkLen
-                    Next
-                Else
-                    For i As Long = 0 To blkNum
-                        If Not TestEnabled Then Exit For
-                        TapeUtils.Write(ConfTapeDrive, blist(i Mod 1000), blkLen)
-                        progval = i * blkLen
-                    Next
-                End If
-                TapeUtils.Flush(ConfTapeDrive)
+                Dim handle As IntPtr
+                Dim bH(7) As Byte
+                SyncLock TapeUtils.SCSIOperationLock
+                    If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show("False")
+                    If blkLen = 0 Then
+                        For i As Long = 0 To blkNum
+                            If Not TestEnabled Then Exit For
+                            TapeUtils.WriteFileMark(handle)
+                            progval = i * blkLen
+                        Next
+                    Else
+                        For i As Long = 0 To blkNum
+                            If Not TestEnabled Then Exit For
+                            TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                            progval = i * blkLen
+                        Next
+                    End If
+                    TapeUtils.Flush(handle)
+                    TapeUtils.CloseTapeDrive(handle)
+                End SyncLock
+
+
                 running = False
                 TestEnabled = False
                 Invoke(Sub()
@@ -3515,7 +3523,7 @@ Public Class LTFSConfigurator
         WERLPageLen = WERLPageLen Or WERLHeader(3)
         If WERLPageLen = 0 Then Exit Sub
         WERLPageLen += 4
-        Dim WERLPage As Byte() = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, WERLPageLen)
+        Dim WERLPage As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
         Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
 
         Dim RERLPageLen As Integer = RERLHeader(2)
@@ -3523,7 +3531,7 @@ Public Class LTFSConfigurator
         RERLPageLen = RERLPageLen Or RERLHeader(3)
         If RERLPageLen = 0 Then Exit Sub
         RERLPageLen += 4
-        Dim RERLPage As Byte() = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, RERLPageLen)
+        Dim RERLPage As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, paramLen:=RERLPageLen)
         Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
         Try
             result.AppendLine($"Write Error Rate Log")

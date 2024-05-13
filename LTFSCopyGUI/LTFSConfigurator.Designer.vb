@@ -63,6 +63,8 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugFormat = New System.Windows.Forms.Button()
         Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
         Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.BrowseBinaryFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ButtonDebugLocate = New System.Windows.Forms.Button()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
@@ -125,8 +127,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.BrowseBinaryFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.Panel2.SuspendLayout()
@@ -134,6 +134,7 @@ Partial Class LTFSConfigurator
         Me.TabPage1.SuspendLayout()
         CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStrip2.SuspendLayout()
         CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPage2.SuspendLayout()
@@ -144,7 +145,6 @@ Partial Class LTFSConfigurator
         Me.TabPage5.SuspendLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.ContextMenuStrip2.SuspendLayout()
         Me.SuspendLayout()
         '
         'Button1
@@ -441,6 +441,17 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugReadInfo.ContextMenuStrip = Me.ContextMenuStrip2
         Me.ButtonDebugReadInfo.Name = "ButtonDebugReadInfo"
         Me.ButtonDebugReadInfo.UseVisualStyleBackColor = True
+        '
+        'ContextMenuStrip2
+        '
+        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem})
+        Me.ContextMenuStrip2.Name = "ContextMenuStrip2"
+        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
+        '
+        'BrowseBinaryFileToolStripMenuItem
+        '
+        Me.BrowseBinaryFileToolStripMenuItem.Name = "BrowseBinaryFileToolStripMenuItem"
+        resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
         '
         'ButtonDebugLocate
         '
@@ -832,17 +843,6 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ContextMenuStrip2
-        '
-        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem})
-        Me.ContextMenuStrip2.Name = "ContextMenuStrip2"
-        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
-        '
-        'BrowseBinaryFileToolStripMenuItem
-        '
-        Me.BrowseBinaryFileToolStripMenuItem.Name = "BrowseBinaryFileToolStripMenuItem"
-        resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -859,6 +859,7 @@ Partial Class LTFSConfigurator
         Me.TabPage1.PerformLayout()
         CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStrip2.ResumeLayout(False)
         CType(Me.NumericUpDown6, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDown7, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPage2.ResumeLayout(False)
@@ -873,7 +874,6 @@ Partial Class LTFSConfigurator
         Me.TabPage5.PerformLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.ContextMenuStrip2.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub

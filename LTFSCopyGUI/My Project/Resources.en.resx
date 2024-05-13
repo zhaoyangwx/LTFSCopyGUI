@@ -684,4 +684,13 @@
   <data name="ResText_UACConfirm" xml:space="preserve">
     <value>Will restart as privilege user. Continue?</value>
   </data>
+  <data name="ResText_ClipBoard" xml:space="preserve">
+    <value>ClipBoard</value>
+  </data>
+  <data name="ResText_LockDec" xml:space="preserve">
+    <value>Decrease lock</value>
+  </data>
+  <data name="ResText_LockInc" xml:space="preserve">
+    <value>Increase lock</value>
+  </data>
 </root>

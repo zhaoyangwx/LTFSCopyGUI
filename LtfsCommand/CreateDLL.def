@@ -19,3 +19,6 @@ _CreateFile
 _TapeSCSIIOCtl
 _TapeDeviceIOCtl
 _TapeSCSIIOCtlFull
+_OpenTapeDrive
+_CloseTapeDrive
+_TapeSCSIIOCtlUnmanaged
