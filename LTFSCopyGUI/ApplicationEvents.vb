@@ -200,7 +200,7 @@ Namespace My
                                 End If
                                 Dim cdb As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 2))
                                 Dim data As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 3))
-                                Dim dataDir As Integer = Val(param(i + 4))
+                                Dim dataDir As Byte = Val(param(i + 4))
                                 Dim TimeOut As Integer = 60000
                                 If i + 5 <= param.Length - 1 Then
                                     TimeOut = Val(param(i + 5))

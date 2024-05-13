@@ -3,7 +3,7 @@ Public Class ltfsindex
     'Public Property version As String
     Public Property creator As String = My.Application.Info.ProductName & " " & My.Application.Info.Version.ToString(3) & " - Windows - TapeUtils"
     Public Property volumeuuid As Guid
-    Public Property generationnumber As Integer
+    Public Property generationnumber As ULong
     Public Property updatetime As String
     Public Enum PartitionLabel
         a
@@ -13,7 +13,7 @@ Public Class ltfsindex
     Public Class LocationDef
 
         Public Property partition As PartitionLabel = PartitionLabel.a
-        Public Property startblock As Long
+        Public Property startblock As ULong
     End Class
 
     Public Property location As New LocationDef
@@ -134,7 +134,23 @@ Public Class ltfsindex
             sb.Remove(0, 41)
             Return sb.ToString().Replace("<file xmlns:v=""1""", "<file")
         End Function
-
+        Public Function GetCopy(fileuid1 As Long) As ltfsindex.file
+            Dim result As New file With {.accesstime = accesstime, .backuptime = backuptime,
+                .changetime = changetime, .creationtime = creationtime,
+                .fileuid = fileuid1,
+                .fullpath = fullpath, .length = length,
+                .modifytime = modifytime, .name = name, .openforwrite = openforwrite, .readonly = [readonly],
+                .tag = tag}
+            result.extendedattributes = New List(Of xattr)
+            For Each x As xattr In extendedattributes
+                result.extendedattributes.Add(New xattr With {.key = x.key, .value = x.value})
+            Next
+            result.extentinfo = New List(Of extent)
+            For Each xt As extent In extentinfo
+                result.extentinfo.Add(New extent With {.bytecount = xt.bytecount, .byteoffset = xt.byteoffset, .fileoffset = xt.fileoffset, .partition = xt.partition, .startblock = xt.startblock})
+            Next
+            Return result
+        End Function
     End Class
     <Serializable>
     Public Class directory

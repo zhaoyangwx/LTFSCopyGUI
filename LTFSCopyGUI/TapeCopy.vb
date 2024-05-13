@@ -23,7 +23,7 @@
             TapeA = TextBox1.Text
             TapeB = TextBox2.Text
             Dim BlockCount As Integer = NumericUpDown1.Value
-            Dim BlockLen As Integer = NumericUpDown2.Value
+            Dim BlockLen As UInteger = NumericUpDown2.Value
             progval = 0
             Dim running As Boolean  = true
             Dim th As New Threading.Thread(

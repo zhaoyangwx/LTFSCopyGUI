@@ -1,6 +1,7 @@
 ﻿Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports LTFSCopyGUI
 
 Public Class TapeUtils
 #Region "winapi"
@@ -336,13 +337,64 @@ Public Class TapeUtils
                                            senseBuffer As IntPtr) As Boolean
 
     End Function
+
+    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
+    Public Shared Function _TapeSCSIIOCtlUnmanaged(handle As IntPtr,
+                                           cdb As IntPtr,
+                                           cdbLength As Byte,
+                                           dataBuffer As IntPtr,
+                                           bufferLength As UInt32,
+                                           dataIn As Byte,
+                                           timeoutValue As UInt32,
+                                           senseBuffer As IntPtr) As Boolean
+
+    End Function
+    Public Shared DriveOpenCount As New Dictionary(Of String, Integer)
+    Public Shared DriveHandle As New Dictionary(Of String, IntPtr)
+    Public Shared Function OpenTapeDrive(TapeDrive As String, ByRef handle As IntPtr) As Boolean
+        If Not DriveHandle.ContainsKey(TapeDrive) Then
+            DriveOpenCount.Add(TapeDrive, 0)
+            DriveHandle.Add(TapeDrive, Nothing)
+        End If
+        If DriveOpenCount(TapeDrive) = 0 Then
+            handle = CreateFile(TapeDrive, GENERIC_READ Or GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero)
+            DriveHandle(TapeDrive) = handle
+        Else
+            handle = DriveHandle(TapeDrive)
+        End If
+        DriveOpenCount(TapeDrive) += 1
+        Return handle <> IntPtr.Zero
+    End Function
+    Public Shared Function CloseTapeDrive(handle As IntPtr) As Boolean
+        If DriveHandle.ContainsValue(handle) Then
+            For Each key As String In DriveHandle.Keys
+                If DriveHandle(key).Equals(handle) Then
+                    If DriveOpenCount(key) > 1 Then
+                        DriveOpenCount(key) -= 1
+                        Return True
+                    ElseIf DriveOpenCount(key) = 1 Then
+                        DriveOpenCount(key) -= 1
+                        Exit For
+                    Else
+                        Return True
+                    End If
+                End If
+            Next
+        End If
+        Dim result As Boolean = CloseHandle(handle)
+        'Marshal.FreeHGlobal(handle)
+        Return result
+    End Function
+
+
+
     Structure LPSECURITY_ATTRIBUTES
         Dim nLength As UInt32
         Dim lpSecurityDescriptor As UIntPtr
         Dim bInheritHandle As Boolean
     End Structure
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _CreateFile(lpFileName As String,
+    <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi, SetLastError:=True)>
+    Public Shared Function CreateFile(lpFileName As String,
                                         dwDesiredAccess As UInt32,
                                         dwShareMode As UInt32,
                                         lpSecurityAttributes As IntPtr,
@@ -352,17 +404,15 @@ Public Class TapeUtils
     ) As IntPtr
 
     End Function
-    Public Shared Function CreateFile(lpFileName As String,
-                                        dwDesiredAccess As UInt32,
-                                        dwShareMode As UInt32,
-                                        lpSecurityAttributes As LPSECURITY_ATTRIBUTES,
-                                        dwCreationDisposition As UInt32,
-                                        dwFlagsAndAttributes As UInt32,
-                                        hTemplateFile As IntPtr)
-        Dim lpSecurityAttributesPtr As IntPtr
-        Marshal.StructureToPtr(lpSecurityAttributes, lpSecurityAttributesPtr, True)
-        Return _CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributesPtr, dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile)
+    <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi, SetLastError:=True)>
+    Public Shared Function CloseHandle(hObject As IntPtr) As Boolean
+
     End Function
+    Public Const GENERIC_READ As UInteger = &H80000000UI
+    Public Const GENERIC_WRITE As UInteger = &H40000000UI
+    Public Const OPEN_EXISTING As UInteger = 3UI
+    Public Const FILE_ATTRIBUTE_NORMAL As UInteger = &H80UI
+
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
     Public Shared Function _TapeSCSIIOCtl(TapeDrive As String, SCSIOPCode As Byte) As IntPtr
 
@@ -399,13 +449,80 @@ Public Class TapeUtils
         End Operator
     End Class
     Public Shared Property GlobalBlockLimit As Integer = 524288
+#Region "SCSIOP_READ"
+    Public Shared Function ReadBlock(handle As IntPtr, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
+        Dim senseRaw(63) As Byte
+        BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
+        If sense Is Nothing Then sense = {}
 
+        Dim RawDataU As IntPtr = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+                                              paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                         senseRaw = senseData
+                                                                                         Return True
+                                                                                     End Function)
+        sense = senseRaw
+        Dim DiffBytes As Int32
+        For i As Integer = 3 To 6
+            DiffBytes <<= 8
+            DiffBytes = DiffBytes Or sense(i)
+        Next
+        If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
+        Dim DataLen As Integer = BlockSizeLimit - DiffBytes
+        If Not Truncate AndAlso DiffBytes < 0 Then
+            Marshal.FreeHGlobal(RawDataU)
+            Dim p As New PositionData(handle:=handle)
+            Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
+            Return ReadBlock(handle:=handle, sense:=sense, BlockSizeLimit:=DataLen, Truncate:=Truncate)
+        End If
+        Dim RawData(DataLen - 1) As Byte
+        Marshal.Copy(RawDataU, RawData, 0, Math.Min(BlockSizeLimit, DataLen))
+        Marshal.FreeHGlobal(RawDataU)
+        Return RawData
+    End Function
+    Public Shared Function ReadBlock(TapeDrive As String) As Byte()
+        Return ReadBlock(TapeDrive, Nothing, &H80000, False)
+    End Function
+    Public Shared Function ReadBlock(TapeDrive As String, BlockSizeLimit As UInteger) As Byte()
+        Return ReadBlock(TapeDrive, Nothing, BlockSizeLimit, False)
+    End Function
+    Public Shared Function ReadBlock(TapeDrive As String, ByRef sense As Byte(), BlockSizeLimit As UInteger) As Byte()
+        Return ReadBlock(TapeDrive, sense, BlockSizeLimit, False)
+    End Function
+    Public Shared Function ReadBlock(TapeDrive As String, ByRef sense As Byte()) As Byte()
+        Return ReadBlock(TapeDrive, sense, &H80000, False)
+    End Function
+    Public Shared Function ReadBlock(TapeDrive As String, ByRef sense As Byte(), ByVal BlockSizeLimit As UInteger, ByVal Truncate As Boolean) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ReadBlock(handle, sense, BlockSizeLimit, Truncate)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+
+#End Region
+#Region "SCSIOP_READ_BLOCK_LIMITS"
     Public Shared Function ReadBlockLimits(TapeDrive As String) As BlockLimits
-        Dim data As Byte() = SCSIReadParam(TapeDrive, {5, 0, 0, 0, 0, 0}, 6)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As BlockLimits = ReadBlockLimits(handle)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReadBlockLimits(handle As IntPtr) As BlockLimits
+        Dim data As Byte() = SCSIReadParam(handle, {5, 0, 0, 0, 0, 0}, 6)
         Return New BlockLimits With {.MaximumBlockLength = CULng(data(1)) << 16 Or CULng(data(2)) << 8 Or data(3),
             .MinimumBlockLength = CUShort(data(4)) << 8 Or data(5)}
     End Function
-    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte, Optional Mode As Byte = 2) As Byte()
+#End Region
+#Region "SCSIOP_READ_BUFFER"
+    Public Shared Function ReadBuffer(handle As IntPtr, BufferID As Byte) As Byte()
+        Return ReadBuffer(handle, BufferID, 2)
+    End Function
+    Public Shared Function ReadBuffer(handle As IntPtr, BufferID As Byte, Mode As Byte) As Byte()
         'Get EEPROM buffer Length
         Dim cdbD0 As Byte() = {&H3C, 3, BufferID, 0, 0, 0, 0, 0, 4, 0}
         Dim lenData As Byte() = {0, 0, 0, 0}
@@ -415,8 +532,8 @@ Public Class TapeUtils
         Marshal.Copy(lenData, 0, data0, lenData.Length)
         Dim sense As IntPtr = Marshal.AllocHGlobal(64)
         SyncLock SCSIOperationLock
-            Flush(TapeDrive)
-            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
+            Flush(handle)
+            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
             Marshal.Copy(data0, lenData, 0, lenData.Length)
             Marshal.FreeHGlobal(cdb0)
             Marshal.FreeHGlobal(data0)
@@ -433,7 +550,7 @@ Public Class TapeUtils
             Dim dumpData(BufferLen - 1) As Byte
             Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
             Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-            TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
+            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
             Marshal.Copy(data1, dumpData, 0, dumpData.Length)
             Marshal.FreeHGlobal(cdb1)
             Marshal.FreeHGlobal(data1)
@@ -441,49 +558,46 @@ Public Class TapeUtils
             Return dumpData
         End SyncLock
     End Function
-    Public Shared Function ReadBlock(TapeDrive As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
-        Dim senseRaw(63) As Byte
-        BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
-        If sense Is Nothing Then sense = {}
-
-        Dim RawDataU As IntPtr = SCSIReadParamUnmanaged(TapeDrive, {8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
-                                              BlockSizeLimit, Function(senseData As Byte()) As Boolean
-                                                                  senseRaw = senseData
-                                                                  Return True
-                                                              End Function)
-        sense = senseRaw
-        Dim DiffBytes As Int32
-        For i As Integer = 3 To 6
-            DiffBytes <<= 8
-            DiffBytes = DiffBytes Or sense(i)
-        Next
-        If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
-        Dim DataLen As Integer = BlockSizeLimit - DiffBytes
-        If Not Truncate AndAlso DiffBytes < 0 Then
-            Marshal.FreeHGlobal(RawDataU)
-            Dim p As New PositionData(TapeDrive)
-            Locate(TapeDrive, p.BlockNumber - 1, p.PartitionNumber)
-            Return ReadBlock(TapeDrive, sense, DataLen, Truncate)
-        End If
-        Dim RawData(DataLen - 1) As Byte
-        Marshal.Copy(RawDataU, RawData, 0, Math.Min(BlockSizeLimit, DataLen))
-        Marshal.FreeHGlobal(RawDataU)
-        Return RawData
+    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte) As Byte()
+        Return ReadBuffer(TapeDrive, BufferID, 2)
     End Function
-    Public Shared Function ReadFileMark(TapeDrive As String, Optional ByRef sense As Byte() = Nothing) As Boolean
-        Dim data As Byte() = ReadBlock(TapeDrive, sense)
+    Public Shared Function ReadBuffer(TapeDrive As String, BufferID As Byte, Mode As Byte) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ReadBuffer(handle, BufferID, Mode)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+#End Region
+
+    Public Shared Function ReadFileMark(handle As IntPtr, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim data As Byte() = ReadBlock(handle:=handle, sense:=sense)
         If data.Length = 0 Then Return True
-        Dim p As New PositionData(TapeDrive)
-        Locate(TapeDrive, p.BlockNumber - 1, p.PartitionNumber)
+        Dim p As New PositionData(handle)
+        Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
         Return False
     End Function
-    Public Shared Function ReadToFileMark(TapeDrive As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Byte()
-        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+    Public Shared Function ReadFileMark(TapeDrive As String, Optional ByRef sense As Byte() = Nothing) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = ReadFileMark(handle, sense)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReadToFileMark(handle As IntPtr) As Byte()
+        Return ReadToFileMark(handle:=handle, BlockSizeLimit:=&H80000)
+    End Function
+    Public Shared Function ReadToFileMark(handle As IntPtr, ByVal BlockSizeLimit As UInteger) As Byte()
+        Dim param As Byte() = SCSIReadParam(handle, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         Dim buffer As New List(Of Byte)
         BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
         While True
             Dim sense(63) As Byte
-            Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
+            Dim readData As Byte() = ReadBlock(handle, sense, BlockSizeLimit)
             Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
             If readData.Length > 0 Then
                 buffer.AddRange(readData)
@@ -494,13 +608,19 @@ Public Class TapeUtils
         End While
         Return buffer.ToArray()
     End Function
-    Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String, Optional ByVal BlockSizeLimit As UInteger = &H80000) As Boolean
-        Dim param As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
+    Public Shared Function ReadToFileMark(handle As IntPtr, outputFileName As String) As Boolean
+        Return ReadToFileMark(handle:=handle, outputFileName:=outputFileName, BlockSizeLimit:=&H80000)
+    End Function
+    Public Shared Function ReadToFileMark(handle As IntPtr, outputFileName As String, ByVal BlockSizeLimit As Integer) As Boolean
+        Return ReadToFileMark(handle, outputFileName, CUInt(BlockSizeLimit))
+    End Function
+    Public Shared Function ReadToFileMark(handle As IntPtr, outputFileName As String, ByVal BlockSizeLimit As UInteger) As Boolean
+        Dim param As Byte() = SCSIReadParam(handle, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 20)
         Dim buffer As New IO.FileStream(outputFileName, IO.FileMode.Create, IO.FileAccess.ReadWrite, IO.FileShare.Read)
         BlockSizeLimit = Math.Min(BlockSizeLimit, GlobalBlockLimit)
         While True
             Dim sense(63) As Byte
-            Dim readData As Byte() = TapeUtils.ReadBlock(TapeDrive, sense, BlockSizeLimit)
+            Dim readData As Byte() = ReadBlock(handle, sense, BlockSizeLimit)
             Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
             If readData.Length > 0 Then
                 buffer.Write(readData, 0, readData.Length)
@@ -512,13 +632,40 @@ Public Class TapeUtils
         buffer.Close()
         Return True
     End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String) As Byte()
+        Return ReadToFileMark(TapeDrive:=TapeDrive, BlockSizeLimit:=&H80000)
+    End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String, ByVal BlockSizeLimit As UInteger) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ReadToFileMark(handle, BlockSizeLimit)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String) As Boolean
+        Return ReadToFileMark(TapeDrive:=TapeDrive, outputFileName:=outputFileName, BlockSizeLimit:=&H80000)
+    End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String, ByVal BlockSizeLimit As Integer) As Boolean
+        Return ReadToFileMark(TapeDrive, outputFileName, CUInt(BlockSizeLimit))
+    End Function
+    Public Shared Function ReadToFileMark(TapeDrive As String, outputFileName As String, ByVal BlockSizeLimit As UInteger) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = ReadToFileMark(handle, outputFileName, BlockSizeLimit)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
     Public Shared Function ReadEOWPosition(TapeDrive As String) As Byte()
         Dim lenData As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, 0, 2, 0, 0}, 2)
         Dim len As UInt16 = lenData(0)
         len <<= 8
         len = len Or lenData(1)
         len += 2
-        Dim rawParam As Byte() = SCSIReadParam(TapeDrive, {&HA3, &H1F, &H45, 2, 0, 0, 0, 0, len >> 8, len And &HFF, 0, 0}, len)
+        Dim rawParam As Byte() = SCSIReadParam(TapeDrive:=TapeDrive, cdbData:={&HA3, &H1F, &H45, 2, 0, 0, 0, 0, len >> 8, len And &HFF, 0, 0}, paramLen:=len)
         Return rawParam.Skip(4).ToArray()
     End Function
     Public Enum LocateDestType
@@ -526,7 +673,10 @@ Public Class TapeUtils
         FileMark = 1
         EOD = 3
     End Enum
-    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, Optional ByVal DestType As LocateDestType = 0) As UInt16
+    Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte) As UInt16
+        Return Locate(handle:=handle, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=0)
+    End Function
+    Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
         Dim sense(63) As Byte
         'Dim d As Byte() = SCSIReadParam(TapeDrive, {&H2B, 2, 0,
         '                                BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
@@ -536,59 +686,95 @@ Public Class TapeUtils
         '                                                      End Function)
         If AllowPartition OrElse DestType <> 0 Then
             Dim CP As Byte = 0
-            If ReadPosition(TapeDrive).PartitionNumber <> Partition Then CP = 1
-            SCSIReadParam(TapeDrive, {&H92, DestType << 3 Or CP << 1, 0, Partition,
+            If ReadPosition(handle).PartitionNumber <> Partition Then CP = 1
+            SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3 Or CP << 1, 0, Partition,
                                             BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
                                             BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                            0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
-                                                                 sense = senseData
-                                                                 Return True
-                                                             End Function)
+                                            0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                        sense = senseData
+                                                                                        Return True
+                                                                                    End Function)
         Else
-            SCSIReadParam(TapeDrive, {&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                            0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
-                                                              sense = senseData
-                                                              Return True
-                                                          End Function)
+            SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                            0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                       sense = senseData
+                                                                                       Return True
+                                                                                   End Function)
         End If
 
         Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
         If Add_Code <> 0 Then
             If DestType = LocateDestType.EOD Then
-                If Not ReadPosition(TapeDrive).EOD Then
-                    SendSCSICommand(TapeDrive, {&H11, 3, 0, 0, 0, 0}, Nothing, 1, Function(senseData As Byte()) As Boolean
-                                                                                      sense = senseData
-                                                                                      Return True
-                                                                                  End Function)
+                If Not ReadPosition(handle).EOD Then
+                    SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                                sense = senseData
+                                                                                                                Return True
+                                                                                                            End Function)
                 End If
             ElseIf DestType = LocateDestType.FileMark Then
-                Locate(TapeDrive, 0, 0)
-                Space6(TapeDrive, BlockAddress, LocateDestType.FileMark)
+                Locate(handle, 0, 0)
+                Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
             Else
-                SCSIReadParam(TapeDrive, {&H92, DestType << 3, 0, 0,
+                SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3, 0, 0,
                                         BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
                                         BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                        0, 0, 0, 0}, 64, Function(senseData As Byte()) As Boolean
-                                                             sense = senseData
-                                                             Return True
-                                                         End Function)
+                                        0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                    sense = senseData
+                                                                                    Return True
+                                                                                End Function)
 
             End If
             Add_Code = CInt(sense(12)) << 8 Or sense(13)
         End If
         Return Add_Code
     End Function
-    Public Shared Function Space6(TapeDrive As String, Count As Integer, Optional ByVal Code As LocateDestType = 0) As UInt16
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte) As UInt16
+        Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=0)
+    End Function
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As Int64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
+        Return Locate(TapeDrive, CULng(BlockAddress), Partition, DestType)
+    End Function
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As ULong, Partition As ltfsindex.PartitionLabel, DestType As LocateDestType)
+        Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=DestType)
+    End Function
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As UInt16 = Locate(handle, BlockAddress, Partition, DestType)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function Space6(handle As IntPtr, Count As Integer) As UInt16
+        Return Space6(handle:=handle, Count:=Count, Code:=0)
+    End Function
+    Public Shared Function Space6(handle As IntPtr, Count As Integer, Code As LocateDestType) As UInt16
         Dim sense(63) As Byte
-        SCSIReadParam(TapeDrive, {&H11, Code, Count >> 16 And &HFF, Count >> 8 And &HFF, Count And &HFF,
-                                            0}, 64, Function(senseData As Byte()) As Boolean
-                                                        sense = senseData
-                                                        Return True
-                                                    End Function)
+        SCSIReadParam(handle:=handle, cdbData:={&H11, Code, Count >> 16 And &HFF, Count >> 8 And &HFF, Count And &HFF,
+                                            0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                               sense = senseData
+                                                                               Return True
+                                                                           End Function)
         Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
         Return Add_Code
     End Function
-    Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+    Public Shared Function Space6(TapeDrive As String, Count As Integer) As UInt16
+        Return Space6(TapeDrive:=TapeDrive, Count:=Count, Code:=0)
+    End Function
+    Public Shared Function Space6(TapeDrive As String, Count As Integer, ByVal Code As LocateDestType) As UInt16
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As UInt16 = Space6(handle, Count, Code)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer) As Byte()
+        Return SCSIReadParam(handle, cdbData, paramLen, Nothing)
+    End Function
+    Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As Byte()
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim paramData(paramLen - 1) As Byte
@@ -596,7 +782,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        _TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
         Marshal.Copy(dataBuffer, paramData, 0, paramLen)
         Marshal.Copy(senseBuffer, senseData, 0, 64)
         Marshal.FreeHGlobal(cdb)
@@ -605,7 +791,22 @@ Public Class TapeUtils
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return paramData
     End Function
-    Public Shared Function SCSIReadParamUnmanaged(TapeDrive As String, cdbData As Byte(), paramLen As Integer, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As IntPtr
+    Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer) As Byte()
+        Return SCSIReadParam(TapeDrive, cdbData, paramLen, Nothing)
+    End Function
+    Public Shared Function SCSIReadParam(TapeDrive As String, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = SCSIReadParam(handle, cdbData, paramLen, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SCSIReadParamUnmanaged(handle As IntPtr, cdbData As Byte(), paramLen As Integer) As IntPtr
+        Return SCSIReadParamUnmanaged(handle, cdbData, paramLen, Nothing)
+    End Function
+    Public Shared Function SCSIReadParamUnmanaged(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As IntPtr
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim paramData(paramLen - 1) As Byte
@@ -613,7 +814,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        While Not _TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        While Not _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
             Marshal.Copy(senseBuffer, senseData, 0, 64)
             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
                 Case DialogResult.Abort
@@ -630,6 +831,18 @@ Public Class TapeUtils
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return dataBuffer
     End Function
+    Public Shared Function SCSIReadParamUnmanaged(TapeDrive As String, cdbData As Byte(), paramLen As Integer) As IntPtr
+        Return SCSIReadParamUnmanaged(TapeDrive, cdbData, paramLen, Nothing)
+    End Function
+    Public Shared Function SCSIReadParamUnmanaged(TapeDrive As String, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As IntPtr
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As IntPtr = SCSIReadParamUnmanaged(handle, cdbData, paramLen, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
     Public Shared Function LogSense(TapeDrive As String, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
         Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, 0, 4, 0}, 4)
         If Header.Length < 4 Then Return {0, 0, 0, 0}
@@ -637,39 +850,66 @@ Public Class TapeUtils
         PageLen <<= 8
         PageLen = PageLen Or Header(3)
 
-        Return SCSIReadParam(TapeDrive, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, PageLen + 4, senseReport)
+        Return SCSIReadParam(TapeDrive:=TapeDrive, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
     End Function
-    Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
-        Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, 4, 0}, 4)
+    Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        Dim Header As Byte() = SCSIReadParam(handle, {&H1A, 0, PageID, 0, 4, 0}, 4)
         If Header.Length = 0 Then Return {0, 0, 0, 0}
         Dim PageLen As Byte = Header(0)
         If PageLen = 0 Then Return {0, 0, 0, 0}
         Dim DescripterLen As Byte = Header(3)
-        Return SCSIReadParam(TapeDrive, {&H1A, 0, PageID, 0, PageLen + 1, 0}, PageLen + 1, senseReport).Skip(4 + DescripterLen).ToArray()
+        Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).Skip(4 + DescripterLen).ToArray()
     End Function
-    Public Shared Function ModeSelect(TapeDrive As String, PageData As Byte(), Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+    Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ModeSense(handle, PageID, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ModeSelect(handle As IntPtr, PageData As Byte(), Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
         Dim data As Byte() = {0, 0, &H10, 0}.Concat(PageData)
         Dim sense(63) As Byte
         If data.Length < 256 Then
-            SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, data.Length, 0}, data, 0,
-                            Function(senseData As Byte()) As Boolean
-                                sense = senseData
-                                Return True
-                            End Function)
+            SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, data.Length, 0}, Data:=data, DataIn:=0,
+                            senseReport:=Function(senseData As Byte()) As Boolean
+                                             sense = senseData
+                                             Return True
+                                         End Function)
         Else
             data = {0, 0, 0, &H10, 0, 0, 0, 0}.Concat(PageData)
-            SendSCSICommand(TapeDrive, {&H55, &H10, 0, 0, 0, 0, 0, data.Length >> 8 And &HFF, data.Length And &HFF, 0}, data, 0,
-                            Function(senseData As Byte()) As Boolean
-                                sense = senseData
-                                Return True
-                            End Function)
+            SendSCSICommand(handle:=handle, cdbData:={&H55, &H10, 0, 0, 0, 0, 0, data.Length >> 8 And &HFF, data.Length And &HFF, 0}, Data:=data, DataIn:=0,
+                           senseReport:=Function(senseData As Byte()) As Boolean
+                                            sense = senseData
+                                            Return True
+                                        End Function)
         End If
         Return sense
     End Function
-    Public Shared Function ReadDensityCode(TapeDrive As String) As Byte
-        Return SCSIReadParam(TapeDrive, {&H1A, 0, 0, 0, &HC, 0}, 12)(4)
+    Public Shared Function ModeSelect(TapeDrive As String, PageData As Byte(), Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ModeSelect(handle, PageData, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
     End Function
-    Public Shared Function SetBarcode(TapeDrive As String, barcode As String) As Boolean
+    Public Shared Function ReadDensityCode(handle As IntPtr) As Byte
+        Return SCSIReadParam(handle, {&H1A, 0, 0, 0, &HC, 0}, 12)(4)
+    End Function
+    Public Shared Function ReadDensityCode(TapeDrive As String) As Byte
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte = ReadDensityCode(handle)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SetBarcode(handle As IntPtr, barcode As String) As Boolean
         Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &H29, 0, 0}
         Dim data As Byte() = {0, 0, 0, &H29, &H8, &H6, &H1, 0, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20,
             &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20}
@@ -677,19 +917,49 @@ Public Class TapeUtils
         For i As Integer = 0 To barcode.Length - 1
             data(9 + i) = CByte(Asc(barcode(i)) And &HFF)
         Next
-        Return SendSCSICommand(TapeDrive, cdb, data, 0)
+        Return SendSCSICommand(handle, cdb, data, 0)
     End Function
-    Public Shared Function SetBlockSize(TapeDrive As String, Optional ByVal BlockSize As UInteger = &H80000) As Byte()
+    Public Shared Function SetBarcode(TapeDrive As String, barcode As String) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = SetBarcode(handle, barcode)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SetBlockSize(handle As IntPtr) As Byte()
+        Return SetBlockSize(handle, &H80000)
+    End Function
+    Public Shared Function SetBlockSize(handle As IntPtr, BlockSize As Int64) As Byte()
+        Return SetBlockSize(handle, CULng(BlockSize))
+    End Function
+    Public Shared Function SetBlockSize(handle As IntPtr, ByVal BlockSize As UInt64) As Byte()
         Dim sense(63) As Byte
-        Dim DensityCode As Byte = ReadDensityCode(TapeDrive)
+        Dim DensityCode As Byte = ReadDensityCode(handle:=handle)
         BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
-        SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &HC, 0},
-                        {0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, 0,
-                        Function(senseData As Byte()) As Boolean
-                            sense = senseData
-                            Return True
-                        End Function)
+        SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &HC, 0},
+                         Data:={0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, BlockSize >> 16 And &HFF, BlockSize >> 8 And &HFF, BlockSize And &HFF}, DataIn:=0,
+                        senseReport:=Function(senseData As Byte()) As Boolean
+                                         sense = senseData
+                                         Return True
+                                     End Function)
         Return sense
+    End Function
+    Public Shared Function SetBlockSize(TapeDrive As String) As Byte()
+        Return SetBlockSize(TapeDrive, &H80000)
+    End Function
+    Public Shared Function SetBlockSize(TapeDrive As String, BlockSize As Integer) As Byte()
+        Return SetBlockSize(TapeDrive, CUInt(BlockSize))
+    End Function
+    Public Shared Function SetBlockSize(TapeDrive As String, ByVal BlockSize As UInteger) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = SetBlockSize(handle, BlockSize)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
     End Function
     Public Enum AttributeFormat
         Binary = &H0
@@ -697,7 +967,7 @@ Public Class TapeUtils
         Text = &H2
         Reserved = &H3
     End Enum
-    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0) As Boolean
+    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0) As Boolean
         Dim Param_LEN As UInt64 = Data.Length + 9
         Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
                              Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF, 0, 0}
@@ -705,16 +975,46 @@ Public Class TapeUtils
                                PageID >> 8 And &HFF, PageID And &HFF, Format,
                                Data.Length >> 8 And &HFF, Data.Length And &HFF}
         param = param.Concat(Data).ToArray()
-        Return SendSCSICommand(TapeDrive, cdb, param, 0)
+        Return SendSCSICommand(handle, cdb, param, 0)
+    End Function
+    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = SetMAMAttribute(handle, PageID, Data, Format, PartitionNumber)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0) As Boolean
+        Return SetMAMAttribute(handle, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber)
     End Function
     Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0) As Boolean
         Return SetMAMAttribute(TapeDrive, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber)
     End Function
     Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64,
-                                    UUID As String, Optional ByVal ExtraPartitionCount As Byte = 1) As Boolean
-        Flush(TapeDrive)
+                                    UUID As String) As Boolean
+        Return WriteVCI(TapeDrive, Generation, block0, block1, UUID, 1)
+    End Function
+    Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64,
+                                    UUID As String, ByVal ExtraPartitionCount As Byte) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = WriteVCI(handle:=handle, Generation:=Generation, block0:=block0, block1:=block1, UUID:=UUID, ExtraPartitionCount:=ExtraPartitionCount)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function WriteVCI(handle As IntPtr, Generation As UInt64, block0 As UInt64, block1 As UInt64,
+                                    UUID As String) As Boolean
+        Return WriteVCI(handle, Generation, block0, block1, UUID, 1)
+    End Function
+    Public Shared Function WriteVCI(handle As IntPtr, Generation As UInt64, block0 As UInt64, block1 As UInt64,
+                                    UUID As String, ByVal ExtraPartitionCount As Byte) As Boolean
+        Flush(handle)
         Dim VCIData As Byte()
-        Dim VCI As Byte() = GetMAMAttributeBytes(TapeDrive, 0, 9)
+        Dim VCI As Byte() = GetMAMAttributeBytes(handle, 0, 9)
         If VCI Is Nothing OrElse VCI.Length = 0 Then Return False
         If ExtraPartitionCount > 0 Then
             VCIData = {8, 0, 0, 0, 0, VCI(VCI.Length - 4), VCI(VCI.Length - 3), VCI(VCI.Length - 2), VCI(VCI.Length - 1),
@@ -725,7 +1025,7 @@ Public Class TapeUtils
             0, &H2B, &H4C, &H54, &H46, &H53, 0}
             VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray
             VCIData = VCIData.Concat({0, 1}).ToArray
-            Dim Succ As Boolean = SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, 0)
+            Dim Succ As Boolean = SetMAMAttribute(handle, &H80C, VCIData, AttributeFormat.Binary, 0)
             If Not Succ Then Return False
         End If
         VCIData = {8, 0, 0, 0, 0, VCI(VCI.Length - 4), VCI(VCI.Length - 3), VCI(VCI.Length - 2), VCI(VCI.Length - 1),
@@ -736,7 +1036,7 @@ Public Class TapeUtils
             0, &H2B, &H4C, &H54, &H46, &H53, 0}
         VCIData = VCIData.Concat(Encoding.ASCII.GetBytes(UUID.PadRight(36).Substring(0, 36))).ToArray()
         VCIData = VCIData.Concat({0, 1}).ToArray()
-        Return SetMAMAttribute(TapeDrive, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount)
+        Return SetMAMAttribute(handle, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount)
     End Function
 
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
@@ -761,19 +1061,19 @@ Public Class TapeUtils
             Case &H1A
                 Msg &= "Rewind operation in progress"
             Case &H400
-                Msg &= "LUN not ready, cause not reportable"
+                Msg &= "LUN Not ready, cause Not reportable"
             Case &H401
-                Msg &= "LUN in process of becoming ready"
+                Msg &= "LUN In process Of becoming ready"
             Case &H402
-                Msg &= "LUN not ready, Initializing command required"
+                Msg &= "LUN Not ready, Initializing command required"
             Case &H404
-                Msg &= "LUN not ready, format in progress"
+                Msg &= "LUN Not ready, format In progress"
             Case &H407
-                Msg &= "Command in progress"
+                Msg &= "Command In progress"
             Case &H409
-                Msg &= "LUN not ready, self-test in progress"
+                Msg &= "LUN Not ready, self-test In progress"
             Case &H40C
-                Msg &= "LUN not accessible, port in unavailable state"
+                Msg &= "LUN Not accessible, port In unavailable state"
             Case &H412
                 Msg &= "Logical unit offline"
             Case &H800
@@ -783,51 +1083,51 @@ Public Class TapeUtils
             Case &HB01
                 Msg &= "Thermal limit exceeded"
             Case &HC00
-                Msg &= "Write error"
+                Msg &= "Write Error"
             Case &HE01
-                Msg &= "Information unit too short"
+                Msg &= "Information unit too Short"
             Case &HE02
-                Msg &= "Information unit too long"
+                Msg &= "Information unit too Long"
             Case &HE03
                 Msg &= "SK Illegal Request"
             Case &H1001
                 Msg &= "Logical block guard check failed"
             Case &H1100
-                Msg &= "Unrecovered read error"
+                Msg &= "Unrecovered read Error"
             Case &H1112
-                Msg &= "Media Auxiliary Memory read error"
+                Msg &= "Media Auxiliary Memory read Error"
             Case &H1400
-                Msg &= "Recorded entity not found"
+                Msg &= "Recorded entity Not found"
             Case &H1403
-                Msg &= "End of Data not found"
+                Msg &= "End Of Data Not found"
             Case &H1A00
-                Msg &= "Parameter list length error"
+                Msg &= "Parameter list length Error"
             Case &H2000
                 Msg &= "Invalid command operation code"
             Case &H2400
-                Msg &= "Invalid field in Command Descriptor Block"
+                Msg &= "Invalid field In Command Descriptor Block"
             Case &H2500
-                Msg &= "LUN not supported"
+                Msg &= "LUN Not supported"
             Case &H2600
-                Msg &= "Invalid field in parameter list"
+                Msg &= "Invalid field In parameter list"
             Case &H2601
-                Msg &= "Parameter not supported"
+                Msg &= "Parameter Not supported"
             Case &H2602
                 Msg &= "Parameter value invalid"
             Case &H2604
-                Msg &= "Invalid release of persistent reservation"
+                Msg &= "Invalid release Of persistent reservation"
             Case &H2610
                 Msg &= "Data decryption key fail limit reached"
             Case &H2680
                 Msg &= "Invalid CA certificate"
             Case &H2700
-                Msg &= "Write-protected"
+                Msg &= "Write-Protected"
             Case &H2708
-                Msg &= "Too many logical objects on partition to support operation"
+                Msg &= "Too many logical objects On partition To support operation"
             Case &H2800
-                Msg &= "Not ready to ready transition, medium may have changed"
+                Msg &= "Not ready To ready transition, medium may have changed"
             Case &H2901
-                Msg &= "Power-on reset"
+                Msg &= "Power-On reset"
             Case &H2902
                 Msg &= "SCSI bus reset"
             Case &H2903
@@ -859,7 +1159,7 @@ Public Class TapeUtils
             Case &H2A11
                 Msg &= "Data encryption parameters changed by another initiator"
             Case &H2A12
-                Msg &= "Data encryption parameters changed by a vendor-specific event"
+                Msg &= "Data encryption parameters changed by a vendor-specific Event"
             Case &H2A13
                 Msg &= "Data Encryption Key Instance Counter has changed"
             Case &H2A14
@@ -873,7 +1173,7 @@ Public Class TapeUtils
             Case &H2C07
                 Msg &= "Previous busy status"
             Case &H2C08
-                Msg &= "Previous task set full status"
+                Msg &= "Previous task Set full status"
             Case &H2C09
                 Msg &= "Previous reservation conflict status"
             Case &H2C0B
@@ -1116,17 +1416,53 @@ Public Class TapeUtils
         Msg &= ParseAdditionalSenseCode(Add_Code) & vbCrLf
         Return Msg
     End Function
+    Public Shared Function PreventMediaRemoval(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(handle, {&H1E, 0, 0, 0, 1, 0}, Nothing, 1, senseReport)
+    End Function
     Public Shared Function PreventMediaRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
-        Return SendSCSICommand(TapeDrive, {&H1E, 0, 0, 0, 1, 0}, Nothing, 1, senseReport)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = PreventMediaRemoval(handle, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function AllowMediaRemoval(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(handle, {&H1E, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
     End Function
     Public Shared Function AllowMediaRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
-        Return SendSCSICommand(TapeDrive, {&H1E, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = AllowMediaRemoval(handle, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
     End Function
     Public Shared Function ReserveUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
-        Return SendSCSICommand(TapeDrive, {&H16, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = ReserveUnit(handle, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReserveUnit(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(handle, {&H16, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
     End Function
     Public Shared Function ReleaseUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
-        Return SendSCSICommand(TapeDrive, {&H17, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = ReleaseUnit(handle, senseReport)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReleaseUnit(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Return SendSCSICommand(handle, {&H17, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
     End Function
 
     Public Shared Function ReadMAMAttributeString(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
@@ -1136,7 +1472,7 @@ Public Class TapeUtils
         Public Property BOP As Boolean
         Public Property EOP As Boolean
         Public Property MPU As Boolean
-        Public Property PartitionNumber As UInt32
+        Public Property PartitionNumber As Byte
         Public Property BlockNumber As UInt64
         Public Property FileNumber As UInt64
         Public Property SetNumber As UInt64
@@ -1160,6 +1496,17 @@ Public Class TapeUtils
             FileNumber = data.FileNumber
             SetNumber = data.SetNumber
         End Sub
+        Public Sub New(handle As IntPtr)
+            Dim data As PositionData = ReadPosition(handle)
+            BOP = data.BOP
+            EOP = data.EOP
+            MPU = data.MPU
+            AddSenseKey = data.AddSenseKey
+            PartitionNumber = data.PartitionNumber
+            BlockNumber = data.BlockNumber
+            FileNumber = data.FileNumber
+            SetNumber = data.SetNumber
+        End Sub
         Public Overrides Function ToString() As String
             Dim Xtrs As String = ""
             If BOP Then Xtrs &= " BOP"
@@ -1174,7 +1521,10 @@ Public Class TapeUtils
         LTO = 0
         M2488 = 1
     End Enum
-    Public Shared Function ReadPosition(TapeDrive As String, Optional ByVal DriverType As DriverType = DriverType.LTO) As PositionData
+    Public Shared Function ReadPosition(handle As IntPtr) As PositionData
+        Return ReadPosition(handle, DriverType.LTO)
+    End Function
+    Public Shared Function ReadPosition(handle As IntPtr, ByVal DriverType As DriverType) As PositionData
         If DriverTypeSetting <> DriverType.LTO Then DriverType = DriverTypeSetting
         Dim param As Byte()
         Dim result As New PositionData
@@ -1182,10 +1532,10 @@ Public Class TapeUtils
         Select Case DriverType
             Case DriverType.LTO
                 If AllowPartition Then
-                    param = SCSIReadParam(TapeDrive, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32, Function(sdata As Byte())
-                                                                                                sense = sdata
-                                                                                                Return True
-                                                                                            End Function)
+                    param = SCSIReadParam(handle, {&H34, 6, 0, 0, 0, 0, 0, 0, 0, 0}, 32, Function(sdata As Byte())
+                                                                                             sense = sdata
+                                                                                             Return True
+                                                                                         End Function)
                     result.BOP = param(0) >> 7 And &H1
                     result.EOP = param(0) >> 6 And &H1
                     result.MPU = param(0) >> 3 And &H1
@@ -1202,7 +1552,7 @@ Public Class TapeUtils
                         result.SetNumber = result.SetNumber Or param(24 + i)
                     Next
                 Else
-                    param = SCSIReadParam(TapeDrive, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+                    param = SCSIReadParam(handle, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
                     result.BOP = param(0) >> 7 And &H1
                     result.EOP = param(0) >> 6 And &H1
                     For i As Integer = 0 To 3
@@ -1217,10 +1567,31 @@ Public Class TapeUtils
         End Select
         Return result
     End Function
+    Public Shared Function ReadPosition(TapeDrive As String) As PositionData
+        Return ReadPosition(TapeDrive, DriverType.LTO)
+    End Function
+    Public Shared Function ReadPosition(TapeDrive As String, ByVal DriverType As DriverType) As PositionData
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As PositionData = ReadPosition(handle, DriverType)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte()) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = Write(handle, Data)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function Write(handle As IntPtr, Data As Byte()) As Byte()
         Dim sense(63) As Byte
         Dim succ As Boolean =
-            SendSCSICommand(TapeDrive, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+            SendSCSICommandUnmanaged(handle, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -1228,23 +1599,54 @@ Public Class TapeUtils
         If Not succ Then Throw New Exception("SCSI Failure")
         Return sense
     End Function
-    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As Integer, Optional ByVal senseEnabled As Boolean = False) As Byte()
+    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As Integer) As Byte()
+        Return Write(TapeDrive:=TapeDrive, Data:=Data, Length:=Length)
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As UInteger) As Byte()
+        Return Write(TapeDrive, Data, Length, False)
+    End Function
+    Public Shared Function Write(handle As IntPtr, Data As IntPtr, Length As UInteger, ByVal senseEnabled As Boolean) As Byte()
         Dim sense() As Byte = {0, 0, 0}
         If senseEnabled Then ReDim sense(63)
         Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
         If Not succ Then Throw New Exception("SCSI Failure")
         Return sense
     End Function
+    Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As UInteger, ByVal senseEnabled As Boolean) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = Write(handle, Data, Length, senseEnabled)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As UInteger) As Byte()
+        Return Write(TapeDrive:=TapeDrive, Data:=Data, BlockSize:=CInt(BlockSize))
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As Long) As Byte()
+        Return Write(TapeDrive:=TapeDrive, Data:=Data, BlockSize:=CInt(BlockSize))
+    End Function
     Public Shared Function Write(TapeDrive As String, Data As Byte(), BlockSize As Integer) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = Write(handle, Data, BlockSize)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+
+    Public Shared Function Write(handle As IntPtr, Data As Byte(), BlockSize As Integer) As Byte()
         If Data.Length <= BlockSize Then
-            Return Write(TapeDrive, Data)
+            Return Write(handle, Data)
         End If
         Dim sense(63) As Byte
         Dim cdbData As Byte() = {}
@@ -1256,7 +1658,7 @@ Public Class TapeUtils
             cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(Data, i, dataBuffer, TransferLen)
-            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
+            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
             If Not succ Then
                 Marshal.Copy(senseBufferPtr, sense, 0, 64)
                 Marshal.FreeHGlobal(cdb)
@@ -1272,7 +1674,22 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(senseBufferPtr)
         Return sense
     End Function
-    Public Shared Function Write(TapeDrive As String, Data As Stream, Optional ByVal BlockSize As Integer = 524288, Optional ByVal senseEnabled As Boolean = False) As Byte()
+    Public Shared Function Write(TapeDrive As String, Data As Stream) As Byte()
+        Return Write(TapeDrive, Data, 524288, False)
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Stream, ByVal BlockSize As UInteger) As Byte()
+        Return Write(TapeDrive, Data, CInt(BlockSize), False)
+    End Function
+    Public Shared Function Write(TapeDrive As String, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = Write(handle, Data, BlockSize, senseEnabled)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+        Return result
+End SyncLock
+    End Function
+    Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean) As Byte()
         Dim sense(63) As Byte
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
@@ -1287,7 +1704,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1310,7 +1727,25 @@ Public Class TapeUtils
         If Not succ Then Throw New Exception("SCSI Failure")
         Return {0, 0, 0}
     End Function
-    Public Shared Function Write(TapeDrive As String, sourceFile As String, Optional ByVal BlockLen As Integer = 524288, Optional ByVal senseEnabled As Boolean = False) As Byte()
+    Public Shared Function Write(TapeDrive As String, sourceFile As String) As Byte()
+        Return Write(TapeDrive, sourceFile, 524288, False)
+    End Function
+    Public Shared Function Write(TapeDrive As String, sourceFile As String, ByVal BlockLen As Integer) As Byte()
+        Return Write(TapeDrive, sourceFile, BlockLen, False)
+    End Function
+    Public Shared Function Write(TapeDrive As String, sourceFile As String, ByVal BlockLen As UInteger) As Byte()
+        Return Write(TapeDrive, sourceFile, CInt(BlockLen), False)
+    End Function
+    Public Shared Function Write(TapeDrive As String, sourceFile As String, ByVal BlockLen As Integer, ByVal senseEnabled As Boolean) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = Write(handle, sourceFile, BlockLen, senseEnabled)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function Write(handle As IntPtr, sourceFile As String, ByVal BlockLen As Integer, ByVal senseEnabled As Boolean) As Byte()
         Dim sense(63) As Byte
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
@@ -1325,7 +1760,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1351,16 +1786,37 @@ Public Class TapeUtils
     Public Shared Function Flush(TapeDrive As String) As Byte()
         Return WriteFileMark(TapeDrive, 0)
     End Function
-    Public Shared Function WriteFileMark(TapeDrive As String, Optional ByVal Number As UInteger = 1) As Byte()
+    Public Shared Function Flush(handle As IntPtr) As Byte()
+        Return WriteFileMark(handle, 0)
+    End Function
+    Public Shared Function WriteFileMark(TapeDrive As String) As Byte()
+        Return WriteFileMark(TapeDrive, 1)
+    End Function
+    Public Shared Function WriteFileMark(TapeDrive As String, ByVal Number As UInteger) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = WriteFileMark(handle, Number)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function WriteFileMark(handle As IntPtr) As Byte()
+        Return WriteFileMark(handle, 1)
+    End Function
+    Public Shared Function WriteFileMark(handle As IntPtr, ByVal Number As UInteger) As Byte()
         Dim sense(63) As Byte
-        SendSCSICommand(TapeDrive, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
+        SendSCSICommandUnmanaged(handle, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
                         End Function)
         Return sense
     End Function
-    Public Shared Function GetMAMAttributeBytes(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte, Optional ByVal PartitionNumber As Byte = 0) As Byte()
+    Public Shared Function GetMAMAttributeBytes(handle As IntPtr, PageCode_H As Byte, PageCode_L As Byte) As Byte()
+        Return GetMAMAttributeBytes(handle, PageCode_H, PageCode_L, 0)
+    End Function
+    Public Shared Function GetMAMAttributeBytes(handle As IntPtr, PageCode_H As Byte, PageCode_L As Byte, ByVal PartitionNumber As Byte) As Byte()
         Dim DATA_LEN As Integer = 0
         Dim cdb As IntPtr = Marshal.AllocHGlobal(16)
         Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
@@ -1378,7 +1834,7 @@ Public Class TapeUtils
         Dim Result As Byte() = {}
         Dim succ As Boolean = False
         Try
-            succ = _TapeSCSIIOCtlFullC(TapeDrive, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
+            succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
         Catch ex As Exception
             Throw New Exception("SCSIIOError")
         End Try
@@ -1401,7 +1857,7 @@ Public Class TapeUtils
                 succ = False
                 Dim senseBuffer2 As IntPtr = Marshal.AllocHGlobal(64)
                 Try
-                    succ = _TapeSCSIIOCtlFullC(TapeDrive, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
+                    succ = _TapeSCSIIOCtlUnmanaged(handle, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
                 Catch ex As Exception
                     Throw New Exception("SCSIIOError")
                 End Try
@@ -1418,6 +1874,19 @@ Public Class TapeUtils
         Marshal.FreeHGlobal(dataBuffer)
         Marshal.FreeHGlobal(senseBuffer)
         Return Result
+    End Function
+    Public Shared Function GetMAMAttributeBytes(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As Byte()
+        Return GetMAMAttributeBytes(TapeDrive, PageCode_H, PageCode_L, 0)
+    End Function
+    Public Shared Function GetMAMAttributeBytes(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte, ByVal PartitionNumber As Byte) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = GetMAMAttributeBytes(handle, PageCode_H, PageCode_L, PartitionNumber)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+
     End Function
     Public Shared Function Byte2Hex(bytes As Byte(), Optional ByVal ReadablePrint As Boolean = False) As String
         If ReadablePrint Then Return ByteArrayToString(bytes)
@@ -1619,7 +2088,7 @@ Public Class TapeUtils
             Return sb.ToString
         End Function
     End Class
-    Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
+    Public Shared Function SendSCSICommand(handle As IntPtr, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
 
@@ -1636,7 +2105,44 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(TapeDrive, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
+        If senseReport IsNot Nothing Then
+            Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
+            senseReport(senseBuffer)
+        End If
+        Marshal.FreeHGlobal(cdb)
+        Marshal.FreeHGlobal(dataBufferPtr)
+        Marshal.FreeHGlobal(senseBufferPtr)
+        Return succ
+    End Function
+    Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = SendSCSICommand(handle, cdbData, Data, DataIn, senseReport, TimeOut)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function SendSCSICommandUnmanaged(handle As IntPtr, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
+        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+
+        Dim dataBufferPtr As IntPtr
+        Dim dataLen As Integer = 0
+        If Data IsNot Nothing Then
+            dataLen = Data.Length
+            dataBufferPtr = Marshal.AllocHGlobal(Data.Length)
+            Marshal.Copy(Data, 0, dataBufferPtr, Data.Length)
+        Else
+            dataBufferPtr = Marshal.AllocHGlobal(128)
+        End If
+
+        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+
+        Dim senseBuffer(63) As Byte
+        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
@@ -1738,22 +2244,31 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
-    Public Shared Function SetEncryption(TapeDrive As String, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+    Public Shared Function SetEncryption(handle As IntPtr, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
         Dim result As Boolean = False
         Dim param As New List(Of Byte)
         If EncryptionKey IsNot Nothing AndAlso EncryptionKey.Length = 32 Then
             param.AddRange({&H0, &H10, &H0, &H30, &H40, &H34, &H2, &H3, &H1, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H20})
             param.AddRange(EncryptionKey.ToList())
-            SendSCSICommand(TapeDrive, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
+            SendSCSICommand(handle, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
                             param.ToArray(), 0, Nothing, 10)
         Else
             Dim emptyValue(32) As Byte
             param.AddRange({&H0, &H10, &H0, &H30, &H40, 0, 0, 0, &H1, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H20})
             param.AddRange(emptyValue.ToList())
-            SendSCSICommand(TapeDrive, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
+            SendSCSICommand(handle, {&HB5, &H20, &H0, &H10, &H0, &H0, &H0, &H0, &H0, &H34, &H0, &H0},
                             param.ToArray(), 0, Nothing, 10)
         End If
         Return result
+    End Function
+    Public Shared Function SetEncryption(TapeDrive As String, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = SetEncryption(handle, EncryptionKey)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
     End Function
     Public Enum LoadOption
         LoadThreaded = 1
@@ -1761,12 +2276,21 @@ Public Class TapeUtils
         Unthread = &HA
         Eject = 0
     End Enum
-    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
-        Dim result As Boolean = SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, LoadOption, 0})
+    Public Shared Function LoadEject(handle As IntPtr, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        Dim result As Boolean = SendSCSICommand(handle:=handle, cdbData:={&H1B, 0, 0, 0, LoadOption, 0})
         If result AndAlso LoadOption = LoadOption.LoadThreaded Then
-            SetEncryption(TapeDrive, EncryptionKey)
+            SetEncryption(handle:=handle, EncryptionKey:=EncryptionKey)
         End If
         Return result
+    End Function
+    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = LoadEject(handle, LoadOption, EncryptionKey)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
     End Function
     Public Shared Function MountTapeDrive(driveLetter As Char) As String
         Dim p As IntPtr = _MountTapeDrive(driveLetter)
@@ -1791,7 +2315,43 @@ Public Class TapeUtils
                                   Optional ByVal P0Size As UInt16 = 1,
                                   Optional ByVal P1Size As UInt16 = &HFFFF,
                                   Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
-        GlobalBlockLimit = TapeUtils.ReadBlockLimits(TapeDrive).MaximumBlockLength
+        Dim handle As IntPtr
+        Dim result As Boolean
+        If ImmediateMode Then
+            SyncLock SCSIOperationLock
+                If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+                result = mkltfs(handle, Barcode, VolumeName, ExtraPartitionCount, BlockLen, True, ProgressReport, OnFinish, OnError, Capacity, P0Size, P1Size, EncryptionKey)
+                If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+                Return result
+            End SyncLock
+        Else
+            Dim th As New Threading.Thread(
+                Sub()
+                    SyncLock SCSIOperationLock
+                        If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+                        mkltfs(handle, Barcode, VolumeName, ExtraPartitionCount, BlockLen, True, ProgressReport, OnFinish, OnError, Capacity, P0Size, P1Size, EncryptionKey)
+                        If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+                    End SyncLock
+                End Sub)
+            th.Start()
+            Return True
+        End If
+
+    End Function
+    Public Shared Function mkltfs(handle As IntPtr,
+                                  Optional ByVal Barcode As String = "",
+                                  Optional ByVal VolumeName As String = "",
+                                  Optional ByVal ExtraPartitionCount As Byte = 1,
+                                  Optional ByVal BlockLen As Long = 524288,
+                                  Optional ByVal ImmediateMode As Boolean = True,
+                                  Optional ByVal ProgressReport As Action(Of String) = Nothing,
+                                  Optional ByVal OnFinish As Action(Of String) = Nothing,
+                                  Optional ByVal OnError As Action(Of String) = Nothing,
+                                  Optional ByVal Capacity As UInt16 = &HFFFF,
+                                  Optional ByVal P0Size As UInt16 = 1,
+                                  Optional ByVal P1Size As UInt16 = &HFFFF,
+                                  Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+        GlobalBlockLimit = TapeUtils.ReadBlockLimits(handle).MaximumBlockLength
         If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
             Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
             If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
@@ -1802,13 +2362,13 @@ Public Class TapeUtils
 
                 'Load and Thread
                 ProgressReport("Loading..")
-                If TapeUtils.SendSCSICommand(TapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                If TapeUtils.SendSCSICommand(handle, {&H1B, 0, 0, 0, 1, 0}) Then
                     ProgressReport("Load OK" & vbCrLf)
                 Else
                     OnError("Load Fail" & vbCrLf)
                     Return False
                 End If
-                Dim ModeData As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
+                Dim ModeData As Byte() = TapeUtils.ModeSense(handle, &H11)
                 ReDim Preserve ModeData(11)
                 Dim MaxExtraPartitionAllowed As Byte = ModeData(2)
                 ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
@@ -1817,16 +2377,16 @@ Public Class TapeUtils
 
                 'Set Capacity
                 ProgressReport("Set Capacity..")
-                If TapeUtils.SendSCSICommand(TapeDrive, {&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}) Then
+                If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}) Then
                     ProgressReport("Load OK" & vbCrLf)
                 Else
-                    OnError("Load Fail" & vbCrLf)
+                    OnError("Set Capacity Fail" & vbCrLf)
                     Return False
                 End If
 
                 'Erase
                 ProgressReport("Initializing tape..")
-                If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 0, 0, 0, 0}) Then
+                If TapeUtils.SendSCSICommand(handle, {4, 0, 0, 0, 0, 0}) Then
                     ProgressReport("Initialization OK" & vbCrLf)
                 Else
                     OnError("Initialization Fail" & vbCrLf)
@@ -1835,7 +2395,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, 0) Then
+                    If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0) Then
                         ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                     Else
                         OnError("MODE SELECT 11h Fail" & vbCrLf)
@@ -1843,7 +2403,7 @@ Public Class TapeUtils
                     End If
                     'Format
                     ProgressReport("Partitioning..")
-                    If TapeUtils.SendSCSICommand(TapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
+                    If TapeUtils.SendSCSICommand(handle, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
                         ProgressReport("     OK" & vbCrLf)
                     Else
                         OnError("     Fail" & vbCrLf)
@@ -1852,7 +2412,7 @@ Public Class TapeUtils
                 End If
                 'Set Vendor
                 ProgressReport($"WRITE ATTRIBUTE: Vendor=OPEN..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H800, "OPEN".PadRight(8)) Then
+                If TapeUtils.SetMAMAttribute(handle, &H800, "OPEN".PadRight(8)) Then
                     ProgressReport("WRITE ATTRIBUTE: 0800 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0800 Fail" & vbCrLf)
@@ -1860,7 +2420,7 @@ Public Class TapeUtils
                 End If
                 'Set AppName
                 ProgressReport($"WRITE ATTRIBUTE: Application Name = LTFSCopyGUI..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H801, "LTFSCopyGUI".PadRight(32)) Then
+                If TapeUtils.SetMAMAttribute(handle, &H801, "LTFSCopyGUI".PadRight(32)) Then
                     ProgressReport("WRITE ATTRIBUTE: 0801 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0801 Fail" & vbCrLf)
@@ -1868,7 +2428,7 @@ Public Class TapeUtils
                 End If
                 'Set Version
                 ProgressReport($"WRITE ATTRIBUTE: Application Version={My.Application.Info.Version.ToString(3)}..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H802, My.Application.Info.Version.ToString(3).PadRight(8)) Then
+                If TapeUtils.SetMAMAttribute(handle, &H802, My.Application.Info.Version.ToString(3).PadRight(8)) Then
                     ProgressReport("WRITE ATTRIBUTE: 0802 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0802 Fail" & vbCrLf)
@@ -1876,7 +2436,7 @@ Public Class TapeUtils
                 End If
                 'Set TextLabel
                 ProgressReport($"WRITE ATTRIBUTE: TextLabel= ..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text) Then
+                If TapeUtils.SetMAMAttribute(handle, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text) Then
                     ProgressReport("WRITE ATTRIBUTE: 0803 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0803 Fail" & vbCrLf)
@@ -1884,7 +2444,7 @@ Public Class TapeUtils
                 End If
                 'Set TLI
                 ProgressReport($"WRITE ATTRIBUTE: Localization Identifier = 0..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H805, {0}, TapeUtils.AttributeFormat.Binary) Then
+                If TapeUtils.SetMAMAttribute(handle, &H805, {0}, TapeUtils.AttributeFormat.Binary) Then
                     ProgressReport("WRITE ATTRIBUTE:0805 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE:0805 Fail" & vbCrLf)
@@ -1893,7 +2453,7 @@ Public Class TapeUtils
                 'Set Barcode
                 Barcode = Barcode.PadRight(32).Substring(0, 32)
                 ProgressReport($"WRITE ATTRIBUTE: Barcode={Barcode}..")
-                If TapeUtils.SetBarcode(TapeDrive, Barcode) Then
+                If TapeUtils.SetBarcode(handle, Barcode) Then
                     ProgressReport("WRITE ATTRIBUTE: 0806 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0806 Fail" & vbCrLf)
@@ -1903,7 +2463,7 @@ Public Class TapeUtils
                 Dim LTFSVersion As String = "2.4.0"
                 If ExtraPartitionCount = 0 Then LTFSVersion = "2.4.1"
                 ProgressReport($"WRITE ATTRIBUTE: Format Version={LTFSVersion}..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H80B, LTFSVersion.PadRight(16)) Then
+                If TapeUtils.SetMAMAttribute(handle, &H80B, LTFSVersion.PadRight(16)) Then
                     ProgressReport("WRITE ATTRIBUTE: 080B OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 080B Fail" & vbCrLf)
@@ -1911,7 +2471,7 @@ Public Class TapeUtils
                 End If
                 'Mode Select:Block Length
                 ProgressReport($"MODE SELECT - Block Size {BlockLen}..")
-                If TapeUtils.SetBlockSize(TapeDrive, BlockLen).Length > 0 Then
+                If TapeUtils.SetBlockSize(handle:=handle, BlockSize:=BlockLen).Length > 0 Then
                     ProgressReport($"MODE SELECT - Block Size {BlockLen} OK" & vbCrLf)
                 Else
                     OnError($"MODE SELECT - Block Size {BlockLen} Fail" & vbCrLf)
@@ -1919,17 +2479,17 @@ Public Class TapeUtils
                 End If
                 'Locate
                 ProgressReport("Locate to data partition..")
-                If TapeUtils.Locate(TapeDrive, 0, ExtraPartitionCount) = 0 Then
+                If TapeUtils.Locate(handle, 0, ExtraPartitionCount) = 0 Then
                     ProgressReport($"Locate P{ExtraPartitionCount}B0 OK" & vbCrLf)
                 Else
                     OnError($"Locate P{ExtraPartitionCount}B0 Fail" & vbCrLf)
                     Return False
                 End If
                 'Set Encryption key
-                SetEncryption(TapeDrive, EncryptionKey)
+                SetEncryption(handle, EncryptionKey)
                 'Write VOL1Label
                 ProgressReport("Write VOL1Label..")
-                If TapeUtils.Write(TapeDrive, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
+                If TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
                     ProgressReport("Write VOL1Label OK" & vbCrLf)
                 Else
                     OnError("Write VOL1Label Fail" & vbCrLf)
@@ -1938,7 +2498,7 @@ Public Class TapeUtils
 
                 'Write FileMark
                 ProgressReport("Write FileMark..")
-                If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                If TapeUtils.WriteFileMark(handle).Length > 0 Then
                     ProgressReport("Write FileMark OK" & vbCrLf)
                 Else
                     OnError("Write FileMark Fail" & vbCrLf)
@@ -1954,7 +2514,7 @@ Public Class TapeUtils
 
                 'Write ltfslabel
                 ProgressReport("Write ltfslabel..")
-                If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                If TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
                     ProgressReport("Write ltfslabel OK" & vbCrLf)
                 Else
                     OnError("Write ltfslabel Fail" & vbCrLf)
@@ -1963,7 +2523,7 @@ Public Class TapeUtils
 
                 'Write FileMark
                 ProgressReport("Write FileMark..")
-                If TapeUtils.WriteFileMark(TapeDrive, 2).Length > 0 Then
+                If TapeUtils.WriteFileMark(handle, 2).Length > 0 Then
                     ProgressReport("Write 2FileMark OK" & vbCrLf)
                 Else
                     OnError("Write 2FileMark Fail" & vbCrLf)
@@ -1976,7 +2536,7 @@ Public Class TapeUtils
                 pindex.creator = plabel.creator
                 pindex.updatetime = plabel.formattime
                 pindex.location.partition = ltfslabel.PartitionLabel.b
-                pindex.location.startblock = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
                 pindex.previousgenerationlocation = Nothing
                 pindex.highestfileuid = 1
                 Dim block1 As ULong = pindex.location.startblock
@@ -1987,7 +2547,7 @@ Public Class TapeUtils
 
                 'Write ltfsindex
                 ProgressReport("Write ltfsindex..")
-                If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                If TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
                     ProgressReport("Write ltfsindex OK" & vbCrLf)
                 Else
                     OnError("Write ltfsindex Fail" & vbCrLf)
@@ -1996,7 +2556,7 @@ Public Class TapeUtils
 
                 'Write FileMark
                 ProgressReport("Write FileMark..")
-                If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                If TapeUtils.WriteFileMark(handle).Length > 0 Then
                     ProgressReport("Write FileMark OK" & vbCrLf)
                 Else
                     OnError("Write FileMark Fail" & vbCrLf)
@@ -2006,7 +2566,7 @@ Public Class TapeUtils
                 If ExtraPartitionCount > 0 Then
                     'Locate
                     ProgressReport("Locate to index partition..")
-                    If TapeUtils.Locate(TapeDrive, 0, 0) = 0 Then
+                    If TapeUtils.Locate(handle, 0, 0) = 0 Then
                         ProgressReport("Locate P0B0 OK" & vbCrLf)
                     Else
                         OnError("Locate P0B0 Fail" & vbCrLf)
@@ -2014,7 +2574,7 @@ Public Class TapeUtils
                     End If
                     'Write VOL1Label
                     ProgressReport("Write VOL1Label..")
-                    If TapeUtils.Write(TapeDrive, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
+                    If TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
                         ProgressReport("Write VOL1Label OK" & vbCrLf)
                     Else
                         OnError("Write VOL1Label Fail" & vbCrLf)
@@ -2022,7 +2582,7 @@ Public Class TapeUtils
                     End If
                     'Write FileMark
                     ProgressReport("Write FileMark..")
-                    If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                    If TapeUtils.WriteFileMark(handle).Length > 0 Then
                         ProgressReport("Write FileMark OK" & vbCrLf)
                     Else
                         OnError("Write FileMark Fail" & vbCrLf)
@@ -2031,7 +2591,7 @@ Public Class TapeUtils
                     'Write ltfslabel
                     plabel.location.partition = ltfslabel.PartitionLabel.a
                     ProgressReport("Write ltfslabel..")
-                    If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
+                    If TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText())).Length > 0 Then
                         ProgressReport("Write ltfslabel OK" & vbCrLf)
                     Else
                         OnError("Write ltfslabel Fail" & vbCrLf)
@@ -2039,7 +2599,7 @@ Public Class TapeUtils
                     End If
                     'Write FileMark
                     ProgressReport("Write FileMark..")
-                    If TapeUtils.WriteFileMark(TapeDrive, 2).Length > 0 Then
+                    If TapeUtils.WriteFileMark(handle, 2).Length > 0 Then
                         ProgressReport("Write FileMark OK" & vbCrLf)
                     Else
                         OnError("Write FileMark Fail" & vbCrLf)
@@ -2050,10 +2610,10 @@ Public Class TapeUtils
                     pindex.previousgenerationlocation.partition = pindex.location.partition
                     pindex.previousgenerationlocation.startblock = pindex.location.startblock
                     pindex.location.partition = ltfsindex.PartitionLabel.a
-                    pindex.location.startblock = TapeUtils.ReadPosition(TapeDrive).BlockNumber
+                    pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
                     block0 = pindex.location.startblock
                     ProgressReport("Write ltfsindex..")
-                    If TapeUtils.Write(TapeDrive, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
+                    If TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText())).Length > 0 Then
                         ProgressReport("Write ltfsindex OK" & vbCrLf)
                     Else
                         OnError("Write ltfsindex Fail" & vbCrLf)
@@ -2061,7 +2621,7 @@ Public Class TapeUtils
                     End If
                     'Write FileMark
                     ProgressReport("Write FileMark..")
-                    If TapeUtils.WriteFileMark(TapeDrive).Length > 0 Then
+                    If TapeUtils.WriteFileMark(handle).Length > 0 Then
                         ProgressReport("Write FileMark OK" & vbCrLf)
                     Else
                         OnError("Write FileMark Fail" & vbCrLf)
@@ -2071,7 +2631,7 @@ Public Class TapeUtils
                 'Set DateTime
                 Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")
                 ProgressReport($"WRITE ATTRIBUTE: Written time={CurrentTime}..")
-                If TapeUtils.SetMAMAttribute(TapeDrive, &H804, CurrentTime.PadRight(12)) Then
+                If TapeUtils.SetMAMAttribute(handle, &H804, CurrentTime.PadRight(12)) Then
                     ProgressReport("WRITE ATTRIBUTE: 0804 OK" & vbCrLf)
                 Else
                     OnError("WRITE ATTRIBUTE: 0804 Fail" & vbCrLf)
@@ -2079,12 +2639,11 @@ Public Class TapeUtils
                 End If
                 'Set VCI
                 ProgressReport($"WRITE ATTRIBUTE: VCI..")
-                If TapeUtils.WriteVCI(TapeDrive, pindex.generationnumber, block0, block1, pindex.volumeuuid.ToString(), ExtraPartitionCount) Then
+                If TapeUtils.WriteVCI(handle:=handle, Generation:=pindex.generationnumber, block0:=block0, block1:=block1, UUID:=pindex.volumeuuid.ToString(), ExtraPartitionCount:=ExtraPartitionCount) Then
                     ProgressReport("WRITE VCI OK" & vbCrLf)
                 Else
                     ProgressReport("WRITE VCI Fail" & vbCrLf)
                 End If
-
                 OnFinish("Format finished.")
                 Return True
             End Function
@@ -2093,23 +2652,34 @@ Public Class TapeUtils
         Else
             Dim th As New Threading.Thread(
                 Sub()
-                    mkltfs_op()
+                    SyncLock SCSIOperationLock
+                        mkltfs_op()
+                    End SyncLock
                 End Sub)
             th.Start()
             Return True
         End If
     End Function
     Public Shared Function RawDump(TapeDrive As String, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True, Optional LockDrive As Boolean = True) As Boolean
-        If LockDrive AndAlso Not ReserveUnit(TapeDrive) Then Return False
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = RawDump(handle, OutputFile, BlockAddress, ByteOffset, FileOffset, Partition, TotalBytes, StopFlag, BlockSize, ProgressReport, CreateNew, LockDrive)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function RawDump(handle As IntPtr, OutputFile As String, BlockAddress As Long, ByteOffset As Long, FileOffset As Long, Partition As Long, TotalBytes As Long, ByRef StopFlag As Boolean, Optional ByVal BlockSize As Long = 524288, Optional ByVal ProgressReport As Func(Of Long, Boolean) = Nothing, Optional ByVal CreateNew As Boolean = True, Optional LockDrive As Boolean = True) As Boolean
+        If LockDrive AndAlso Not ReserveUnit(handle) Then Return False
         BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
-        If LockDrive AndAlso Not PreventMediaRemoval(TapeDrive) Then
-            ReleaseUnit(TapeDrive)
+        If LockDrive AndAlso Not PreventMediaRemoval(handle) Then
+            ReleaseUnit(handle)
             Return False
         End If
-        If Locate(TapeDrive, BlockAddress, Partition, LocateDestType.Block) <> 0 Then
+        If Locate(handle:=handle, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=LocateDestType.Block) <> 0 Then
             If LockDrive Then
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
+                AllowMediaRemoval(handle)
+                ReleaseUnit(handle)
             End If
             Return False
         End If
@@ -2117,8 +2687,8 @@ Public Class TapeUtils
             If CreateNew Then IO.File.WriteAllBytes(OutputFile, {})
         Catch ex As Exception
             If LockDrive Then
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
+                AllowMediaRemoval(handle)
+                ReleaseUnit(handle)
             End If
             Return False
         End Try
@@ -2127,8 +2697,8 @@ Public Class TapeUtils
             fs = New IO.FileStream(OutputFile, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.SequentialScan)
         Catch ex As Exception
             If LockDrive Then
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
+                AllowMediaRemoval(handle)
+                ReleaseUnit(handle)
             End If
             Return False
         End Try
@@ -2137,11 +2707,11 @@ Public Class TapeUtils
             Dim ReadedSize As Long = 0
             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                 Dim len As Integer = Math.Min(BlockSize, TotalBytes + ByteOffset - ReadedSize)
-                Dim Data As Byte() = ReadBlock(TapeDrive, Nothing, len)
+                Dim Data As Byte() = ReadBlock(handle:=handle, BlockSizeLimit:=len)
                 If Data.Length <> len OrElse len = 0 Then
                     If LockDrive Then
-                        AllowMediaRemoval(TapeDrive)
-                        ReleaseUnit(TapeDrive)
+                        AllowMediaRemoval(handle)
+                        ReleaseUnit(handle)
                     End If
                     Return False
                 End If
@@ -2151,8 +2721,8 @@ Public Class TapeUtils
                 ByteOffset = 0
             End While
             If LockDrive Then
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
+                AllowMediaRemoval(handle)
+                ReleaseUnit(handle)
             End If
             If StopFlag Then
                 fs.Close()
@@ -2164,8 +2734,8 @@ Public Class TapeUtils
             fs.Close()
             IO.File.Delete(OutputFile)
             If LockDrive Then
-                AllowMediaRemoval(TapeDrive)
-                ReleaseUnit(TapeDrive)
+                AllowMediaRemoval(handle)
+                ReleaseUnit(handle)
             End If
             Return False
         End Try
@@ -2285,13 +2855,13 @@ Public Class TapeUtils
             End If
         End Function
         Public Shared Sub MoveMedium(Changer As String, src As UInt32, dest As UInt32, Optional ByVal sense As Byte() = Nothing)
-            SCSIReadParam(Changer, {&HA5, 0, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, 12,
-                Function(s As Byte()) As Boolean
-                    If sense IsNot Nothing AndAlso sense.Length >= 64 Then
-                        Array.Copy(s, sense, Math.Min(64, s.Length))
-                    End If
-                    Return True
-                End Function)
+            SCSIReadParam(TapeDrive:=Changer, cdbData:={&HA5, 0, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, paramLen:=12,
+                senseReport:=Function(s As Byte()) As Boolean
+                                 If sense IsNot Nothing AndAlso sense.Length >= 64 Then
+                                     Array.Copy(s, sense, Math.Min(64, s.Length))
+                                 End If
+                                 Return True
+                             End Function)
         End Sub
         Public Sub RefreshElementStatus()
             If RawElementData IsNot Nothing AndAlso RawElementData.Length > 8 Then
@@ -3935,7 +4505,7 @@ Public Class TapeUtils
                                 ElseIf a_SetID = GUARD_WRAP_IDENTIFIER Then
                                     .CapacityLoss.Add(-3)
                                     Continue For
-                                ElseIf a_setID = 0 Then
+                                ElseIf a_SetID = 0 Then
                                     .CapacityLoss.Add(0)
                                     Continue For
                                 Else
@@ -4555,6 +5125,9 @@ Public Class TapeUtils
             Return Output.ToString()
         End Function
     End Class
+
+
+
     <Serializable> Public Class PageData
         <Serializable> Public Class DataItem
             Public Property Name As String

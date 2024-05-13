@@ -18,6 +18,7 @@
 
 #include "pch.h"
 #include "tape.h"
+#include <stdio.h>
 
 #define TC_MP_PC_CURRENT                 0x00
 #define TC_MP_PC_CHANGEABLE              0x40
@@ -468,11 +469,13 @@ BOOL _TapeSCSIIOCtlFull(LPCSTR tapeDrive, PVOID cdb, UCHAR cdbLength, PVOID data
 	BOOL result = FALSE;
 
 	_snprintf_s(drivePath, _countof(drivePath), _TRUNCATE, "\\\\.\\%s", tapeDrive);
-
 	hFile = CreateFile(drivePath, GENERIC_READ | GENERIC_WRITE, 0 & (FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE), NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		return FALSE;
-
+	//FILE *fp = fopen("debug.log", "w");
+	//fprintf(fp, "%s\n%d", drivePath, hFile);
+	//fclose(fp);
+	
 	DWORD bytesReturned;
 	BYTE scsiBuffer[sizeof(SCSI_PASS_THROUGH_DIRECT) + SENSE_INFO_LEN];
 
@@ -544,6 +547,56 @@ BOOL TapeLoad(LPCSTR tapeDrive)
     CloseHandle(handle);
 
     return result;
+}
+
+BOOL _OpenTapeDrive(HANDLE handle, LPCSTR tapeDrive)
+{
+	CHAR drivePath[64];
+	_snprintf_s(drivePath, _countof(drivePath), _TRUNCATE, "\\\\.\\%s", tapeDrive);
+	handle = CreateFile(drivePath, GENERIC_READ | GENERIC_WRITE, 0 & (FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE), NULL, OPEN_EXISTING, 0, NULL);
+	FILE *fp = fopen("debug.log", "w");
+	fprintf(fp, "%s\n%d" ,drivePath, handle);
+	fclose(fp);
+	if (handle == INVALID_HANDLE_VALUE)
+		return FALSE;
+	return TRUE;
+}
+
+BOOL _CloseTapeDrive(HANDLE handle)
+{
+	CloseHandle(handle);
+	return TRUE;
+}
+
+BOOL _TapeSCSIIOCtlUnmanaged(HANDLE handle, PVOID cdb, UCHAR cdbLength, PVOID dataBuffer, ULONG bufferLength, BYTE dataIn, ULONG timeoutValue, PVOID senseBuffer)
+{
+	BOOL result = FALSE;
+	if (handle == INVALID_HANDLE_VALUE)
+		return FALSE;
+
+	DWORD bytesReturned;
+	BYTE scsiBuffer[sizeof(SCSI_PASS_THROUGH_DIRECT) + SENSE_INFO_LEN];
+
+	PSCSI_PASS_THROUGH_DIRECT scsiDirect = (PSCSI_PASS_THROUGH_DIRECT)scsiBuffer;
+	memset(scsiDirect, 0, sizeof(scsiBuffer));
+
+	scsiDirect->Length = sizeof(SCSI_PASS_THROUGH_DIRECT);
+	scsiDirect->CdbLength = cdbLength;
+	scsiDirect->DataBuffer = dataBuffer;
+	scsiDirect->SenseInfoLength = SENSE_INFO_LEN;
+	scsiDirect->SenseInfoOffset = sizeof(SCSI_PASS_THROUGH_DIRECT);
+	scsiDirect->DataTransferLength = bufferLength;
+	scsiDirect->TimeOutValue = timeoutValue;
+	scsiDirect->DataIn = dataIn;
+
+	memcpy(scsiDirect->Cdb, cdb, cdbLength);
+
+	result = DeviceIoControl(handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, scsiDirect, sizeof(scsiBuffer), scsiDirect, sizeof(scsiBuffer), &bytesReturned, NULL);
+
+	if (senseBuffer)
+		memcpy(senseBuffer, scsiBuffer + sizeof(SCSI_PASS_THROUGH_DIRECT), SENSE_INFO_LEN);
+
+	return result;
 }
 
 

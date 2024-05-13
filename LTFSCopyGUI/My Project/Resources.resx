@@ -688,4 +688,13 @@
   <data name="ResText_UACConfirm" xml:space="preserve">
     <value>需管理员权限重新启动。是否继续？</value>
   </data>
+  <data name="ResText_ClipBoard" xml:space="preserve">
+    <value>剪贴板</value>
+  </data>
+  <data name="ResText_LockDec" xml:space="preserve">
+    <value>减少锁定</value>
+  </data>
+  <data name="ResText_LockInc" xml:space="preserve">
+    <value>增加锁定</value>
+  </data>
 </root>
