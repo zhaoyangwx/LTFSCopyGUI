@@ -3691,7 +3691,7 @@ Public Class LTFSWriter
             Dim Loc As TapeUtils.PositionData = GetPos
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
-            TapeUtils.Locate(TapeDrive, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
+            TapeUtils.Flush(TapeDrive)
             RefreshCapacity()
         End If
     End Sub
@@ -3704,11 +3704,7 @@ Public Class LTFSWriter
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             If Not Loc.EOP Then
-                TapeUtils.AllowMediaRemoval(TapeDrive)
-                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Unthread)
-                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadThreaded, EncryptionKey)
-                TapeUtils.Locate(TapeDrive, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
-                If LockVolume Then TapeUtils.PreventMediaRemoval(TapeDrive)
+                TapeUtils.DoReload(TapeDrive, LockVolume, EncryptionKey)
             End If
             RefreshCapacity()
         End If
@@ -3734,7 +3730,12 @@ Public Class LTFSWriter
         Flush = True
     End Sub
     Private Sub ToolStripDropDownButton3_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton3.Click
-        Clean = True
+        ToolStripDropDownButton3.Enabled = False
+        Task.Run(Sub()
+                     TapeUtils.DoReload(TapeDrive, Not AllowOperation, EncryptionKey)
+                     Invoke(Sub() ToolStripDropDownButton3.Enabled = True)
+                 End Sub)
+
     End Sub
     Private Sub ToolStripStatusLabel4_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel4.Click
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_ClearWC, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
@@ -3871,6 +3872,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton3.Click
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UIE, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim th As New Threading.Thread(
                 Sub()
                     Try

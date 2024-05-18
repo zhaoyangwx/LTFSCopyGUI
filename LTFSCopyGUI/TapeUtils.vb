@@ -1440,6 +1440,24 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
+    Public Shared Function DoReload(TapeDrive As String, Lock As Boolean, EncryptionKey As Byte()) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = DoReload(handle, Lock, EncryptionKey)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function DoReload(handle As IntPtr, Lock As Boolean, EncryptionKey As Byte()) As Boolean
+        Dim Loc As New PositionData(handle)
+        AllowMediaRemoval(handle)
+        LoadEject(handle, TapeUtils.LoadOption.Unthread)
+        LoadEject(handle, TapeUtils.LoadOption.LoadThreaded, EncryptionKey)
+        Locate(handle, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
+        If Lock Then PreventMediaRemoval(handle)
+        Return True
+    End Function
     Public Shared Function ReserveUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
@@ -2810,11 +2828,18 @@ End SyncLock
             Dim cdbBytes As Byte()
             Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(dSize)
             Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
+            Dim succ As Boolean
             If dSize <= 8 Then
                 dSize = 8
                 cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
                 Marshal.Copy(cdbBytes, 0, cdb, 12)
-                If _TapeSCSIIOCtlFullC(Changer, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer) Then
+                SyncLock TapeUtils.SCSIOperationLock
+                    Dim handle As IntPtr
+                    TapeUtils.OpenTapeDrive(Changer, handle)
+                    succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer)
+                    TapeUtils.CloseTapeDrive(handle)
+                End SyncLock
+                If succ Then
                     Dim data0(dSize - 1) As Byte
                     Marshal.Copy(dataBuffer, data0, 0, dSize)
                     dSize = data0(5)
@@ -2829,6 +2854,7 @@ End SyncLock
                     Marshal.FreeHGlobal(senseBuffer)
                     Return Nothing
                 End If
+
                 dSize += 8
             End If
 
@@ -2837,7 +2863,13 @@ End SyncLock
             cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
             Marshal.Copy(cdbBytes, 0, cdb, 12)
             dataBuffer = Marshal.AllocHGlobal(dSize)
-            If _TapeSCSIIOCtlFullC(Changer, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer) Then
+            SyncLock TapeUtils.SCSIOperationLock
+                Dim handle As IntPtr
+                TapeUtils.OpenTapeDrive(Changer, handle)
+                succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer)
+                TapeUtils.CloseTapeDrive(handle)
+            End SyncLock
+            If succ Then
                 Dim data1(dSize - 1) As Byte
                 Marshal.Copy(dataBuffer, data1, 0, dSize)
                 If sense IsNot Nothing AndAlso sense.Length >= 64 Then

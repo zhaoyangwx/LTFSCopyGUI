@@ -348,7 +348,13 @@ Public Class LTFSConfigurator
 
                     Dim senseBuffer(63) As Byte
                     Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
-                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(ConfTapeDrive, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, CInt(TextBox3.Text), senseBufferPtr)
+                    Dim succ As Boolean
+                    SyncLock TapeUtils.SCSIOperationLock
+                        Dim handle As IntPtr
+                        TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                        succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBox10.Text, CInt(TextBox3.Text), senseBufferPtr)
+                        TapeUtils.CloseTapeDrive(handle)
+                    End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
@@ -735,7 +741,12 @@ Public Class LTFSConfigurator
         Marshal.Copy(cdbData, 0, cdb, 6)
         Dim data As IntPtr = Marshal.AllocHGlobal(1)
         Dim sense As IntPtr = Marshal.AllocHGlobal(127)
-        TapeUtils._TapeSCSIIOCtlFullC(ConfTapeDrive, cdb, 6, data, 0, 2, 60000, sense)
+        Dim handle As IntPtr
+        SyncLock TapeUtils.SCSIOperationLock
+            TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+            TapeUtils.CloseTapeDrive(ConfTapeDrive)
+        End SyncLock
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(data)
         Marshal.FreeHGlobal(sense)

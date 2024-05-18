@@ -1420,6 +1420,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 是否更新全部索引并弹出？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_UIE() As String
+            Get
+                Return ResourceManager.GetString("ResText_UIE", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 当前磁带VCI数据： 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_VCID() As String
