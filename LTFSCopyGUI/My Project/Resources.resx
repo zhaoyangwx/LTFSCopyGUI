@@ -697,4 +697,7 @@
   <data name="ResText_LockInc" xml:space="preserve">
     <value>增加锁定</value>
   </data>
+  <data name="ResText_UIE" xml:space="preserve">
+    <value>是否更新全部索引并弹出？</value>
+  </data>
 </root>

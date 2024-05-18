@@ -693,4 +693,7 @@
   <data name="ResText_LockInc" xml:space="preserve">
     <value>Increase lock</value>
   </data>
+  <data name="ResText_UIE" xml:space="preserve">
+    <value>Update all indexes and eject?</value>
+  </data>
 </root>
