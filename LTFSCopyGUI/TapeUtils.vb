@@ -1452,10 +1452,10 @@ Public Class TapeUtils
     Public Shared Function DoReload(handle As IntPtr, Lock As Boolean, EncryptionKey As Byte()) As Boolean
         Dim Loc As New PositionData(handle)
         AllowMediaRemoval(handle)
-        LoadEject(handle, TapeUtils.LoadOption.Unthread)
-        LoadEject(handle, TapeUtils.LoadOption.LoadThreaded, EncryptionKey)
-        Locate(handle, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
+        LoadEject(handle, LoadOption.Unthread)
+        LoadEject(handle, LoadOption.LoadThreaded, EncryptionKey)
         If Lock Then PreventMediaRemoval(handle)
+        Locate(handle, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
         Return True
     End Function
     Public Shared Function ReserveUnit(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
@@ -2288,14 +2288,53 @@ End SyncLock
             Return result
         End SyncLock
     End Function
-    Public Enum LoadOption
+    Public Enum LoadOption As Byte
         LoadThreaded = 1
         LoadUnthreaded = 9
         Unthread = &HA
         Eject = 0
     End Enum
     Public Shared Function LoadEject(handle As IntPtr, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
-        Dim result As Boolean = SendSCSICommand(handle:=handle, cdbData:={&H1B, 0, 0, 0, LoadOption, 0})
+        Dim result As Boolean = False
+        Dim retrycount As Integer = 1
+        While True
+            Dim sensereceived As Boolean = False
+            Dim sensedata As Byte()
+            SendSCSICommand(handle:=handle, cdbData:={&H1B, 0, 0, 0, LoadOption, 0}, DataIn:=1,
+                                                           senseReport:=Function(sense As Byte()) As Boolean
+                                                                            sensedata = sense
+                                                                            If sense.Length > 0 Then
+                                                                                If sense(0) <> 0 Then
+                                                                                    result = False
+                                                                                Else
+                                                                                    result = True
+                                                                                End If
+                                                                            Else
+                                                                                result = True
+                                                                            End If
+                                                                            sensereceived = True
+
+                                                                            Return True
+                                                                        End Function)
+            While Not sensereceived
+                Threading.Thread.Sleep(100)
+            End While
+            If result Then Exit While
+            If retrycount > 0 Then
+                retrycount -= 1
+                Continue While
+            End If
+            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI }{vbCrLf}{ParseSenseData(sensedata)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                Case DialogResult.Abort
+                    Return False
+                Case DialogResult.Retry
+
+                Case DialogResult.Ignore
+                    Exit While
+            End Select
+        End While
+
+
         If result AndAlso LoadOption = LoadOption.LoadThreaded Then
             SetEncryption(handle:=handle, EncryptionKey:=EncryptionKey)
         End If
