@@ -21,6 +21,10 @@ Public Class LTFSWriter
             _EncryptionKey = value
             If value IsNot Nothing AndAlso value.Length = 32 Then
                 IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "encryption.key"), BitConverter.ToString(value).Replace("-", "").ToUpper)
+            Else
+                If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "encryption.key")) Then
+                    IO.File.Delete(IO.Path.Combine(Application.StartupPath, "encryption.key"))
+                End If
             End If
         End Set
     End Property
@@ -1709,7 +1713,7 @@ Public Class LTFSWriter
             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
         End Try
     End Sub
-    Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
+    Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False, Optional ByVal exceptExtention As String() = Nothing)
         If My.Settings.LTFSWriter_SkipSymlink AndAlso ((dnew1.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
             Exit Sub
         End If
@@ -1746,6 +1750,13 @@ Public Class LTFSWriter
                                                       End Function))
             For Each f As IO.FileInfo In flist
                 Try
+                    If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
+                        For Each ext As String In exceptExtention
+                            If f.FullName.ToLower().EndsWith(ext.ToLower()) Then
+                                Exit Try
+                            End If
+                        Next
+                    End If
                     Dim FileExist As Boolean = False
                     Dim SameFile As Boolean = False
                     If f.Extension.ToLower = ".xattr" Then Continue For
@@ -1802,6 +1813,13 @@ Public Class LTFSWriter
             Parallel.ForEach(dnew1.GetFiles(),
                 Sub(f As IO.FileInfo)
                     Try
+                        If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
+                            For Each ext As String In exceptExtention
+                                If f.FullName.ToLower().EndsWith(ext.ToLower()) Then
+                                    Exit Try
+                                End If
+                            Next
+                        End If
                         Dim FileExist As Boolean = False
                         Dim SameFile As Boolean = False
                         If f.Extension.ToLower = ".xattr" Then Exit Sub
@@ -1855,7 +1873,7 @@ Public Class LTFSWriter
                                                         Return ExplorerComparer.Compare(a.Name, b.Name)
                                                     End Function))
         For Each dn As IO.DirectoryInfo In dnew1.GetDirectories()
-            AddDirectry(dn, dT, OverWrite)
+            AddDirectry(dn, dT, OverWrite, exceptExtention)
         Next
     End Sub
     Public Sub ConcatDirectory(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
@@ -2090,7 +2108,7 @@ Public Class LTFSWriter
             'RefreshDisplay()
         End If
     End Sub
-    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False)
+    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False, Optional ByVal exceptExtention As String() = Nothing)
         Dim th As New Threading.Thread(
                 Sub()
                     StopFlag = False
@@ -2108,12 +2126,25 @@ Public Class LTFSWriter
                         Try
                             If IO.File.Exists(path) Then
                                 Dim f As IO.FileInfo = New IO.FileInfo(path)
-                                PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
-                                AddFile(f, d, overwrite)
+                                Dim skip As Boolean = False
+                                If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
+                                    For Each ext As String In exceptExtention
+                                        If path.ToLower().EndsWith(ext.ToLower()) Then
+                                            skip = True
+                                            Exit For
+                                        End If
+                                    Next
+                                End If
+                                If Not skip Then
+                                    PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
+                                    AddFile(f, d, overwrite)
+                                Else
+                                    PrintMsg($"{My.Resources.ResText_Skip} [{i}/{Paths.Length}] {f.Name}")
+                                End If
                             ElseIf IO.Directory.Exists(path) Then
                                 Dim f As IO.DirectoryInfo = New IO.DirectoryInfo(path)
                                 PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
-                                AddDirectry(f, d, overwrite)
+                                AddDirectry(f, d, overwrite, exceptExtention)
                             End If
                         Catch ex As Exception
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
@@ -5066,8 +5097,111 @@ Public Class LTFSWriter
         Dim newkey As Byte() = LTFSConfigurator.HexStringToByteArray(key)
         If newkey.Length <> 32 Then
             EncryptionKey = Nothing
+            If key = "test" Then
+                Dim frm As New Form With {.Width = 640, .Height = 200}
+                Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
+                Dim txtLocation As New TextBox With {.Top = 7, .Left = 65, .Width = 640 - 7 * 3 - 65,
+                    .Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top,
+                    .Text = "F:\DLTEMP\test", .Parent = frm}
+                Dim lbl2 As New Label With {.Parent = frm, .Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 7, .Width = 51, .Text = "Filter"}
+                Dim txtFilter As New TextBox With {.Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 65, .Width = 640 - 7 * 3 - 65,
+                   .Anchor = AnchorStyles.Left Or AnchorStyles.Right, .Parent = frm,
+                   .Text = ".!qb|.downloading|.downloading.cfg|.tmp"}
+                Dim chkAutoDelete As New CheckBox With {.Parent = frm, .Top = txtFilter.Top + txtFilter.Height + 7,
+                    .Left = 7, .Text = "AutoDelete", .Checked = True}
+                Dim ButtonStart As New Button With {.Parent = frm, .Width = 73, .Height = 23,
+                    .Top = frm.Height - 73 - 23, .Left = frm.Width / 2 - 73 / 2, .Anchor = AnchorStyles.Bottom,
+                    .Text = "Start"}
+                Dim isStarted As Boolean = False
+                Dim frmLock As New Object
+                AddHandler frm.FormClosing, Sub()
+                                                isStarted = False
+                                            End Sub
+
+                AddHandler ButtonStart.Click,
+                Sub(sender0 As Object, e0 As EventArgs)
+                    Task.Run(Sub()
+                                 isStarted = Not isStarted
+                                 SyncLock frmLock
+                                     Threading.Thread.Sleep(10)
+                                 End SyncLock
+                                 frm.Invoke(Sub()
+                                                If isStarted Then
+                                                    ButtonStart.Text = "Stop"
+                                                    Task.Run(
+                                                    Sub()
+                                                        SyncLock frmLock
+                                                            While isStarted
+                                                                Threading.Thread.Sleep(100)
+                                                                If Not AllowOperation Then Continue While
+                                                                frm.Invoke(Sub() frm.Text = $"Idle")
+                                                                Dim dirListen As New IO.DirectoryInfo(txtLocation.Text)
+                                                                If dirListen.GetDirectories().Count > 0 Then
+                                                                    For i As Integer = 10 To 1 Step -1
+                                                                        Dim startsec As Integer = i
+                                                                        frm.Invoke(Sub() frm.Text = $"Will start in {startsec}s")
+                                                                        Threading.Thread.Sleep(1000)
+                                                                    Next
+                                                                End If
+                                                                Dim pathlist As New List(Of String)
+                                                                For Each f As IO.FileInfo In dirListen.GetFiles()
+                                                                    pathlist.Add(f.FullName)
+                                                                Next
+                                                                For Each d As IO.DirectoryInfo In dirListen.GetDirectories()
+                                                                    pathlist.Add(d.FullName)
+                                                                Next
+                                                                Dim filter As String() = txtFilter.Text.Split({"|"}, StringSplitOptions.RemoveEmptyEntries)
+                                                                If pathlist.Count > 0 Then
+                                                                    If Not isStarted Then Exit Sub
+                                                                    frm.Invoke(Sub() ButtonStart.Enabled = False)
+                                                                    frm.Invoke(Sub() frm.Text = $"Writing")
+                                                                    Invoke(Sub()
+                                                                               AddFileOrDir(schema._directory(0), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
+                                                                           End Sub)
+                                                                    While AllowOperation
+                                                                        Threading.Thread.Sleep(100)
+                                                                    End While
+                                                                    While Not AllowOperation
+                                                                        Threading.Thread.Sleep(100)
+                                                                    End While
+                                                                    Dim DelList As New List(Of String)
+                                                                    For Each f As FileRecord In UnwrittenFiles
+                                                                        DelList.Add(f.SourcePath)
+                                                                    Next
+                                                                    Invoke(Sub()
+                                                                               写入数据ToolStripMenuItem_Click(sender0, e0)
+                                                                           End Sub)
+                                                                    While AllowOperation
+                                                                        Threading.Thread.Sleep(100)
+                                                                    End While
+                                                                    While Not AllowOperation
+                                                                        Threading.Thread.Sleep(100)
+                                                                    End While
+                                                                    If chkAutoDelete.Checked OrElse MessageBox.Show($"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                                                                        For Each s As String In DelList
+                                                                            If IO.File.Exists(s) Then IO.File.Delete(s)
+                                                                        Next
+                                                                    End If
+
+                                                                    Threading.Thread.Sleep(5000)
+                                                                    frm.BeginInvoke(Sub() ButtonStart.Enabled = True)
+                                                                End If
+                                                            End While
+                                                        End SyncLock
+                                                    End Sub)
+                                                Else
+                                                    ButtonStart.Text = "Start"
+                                                End If
+                                            End Sub)
+
+                             End Sub)
+
+                End Sub
+                frm.Show()
+            End If
+
         Else
-            Dim sum As Integer = 0
+                Dim sum As Integer = 0
             For i As Integer = 0 To newkey.Length - 1
                 sum += newkey(i)
             Next
