@@ -309,7 +309,6 @@ dataDir:{dataDir}
                         Case "-copy"
                             CheckUAC(e)
                             Me.MainForm = New TapeCopy()
-
                         Case "-gt"
                             If i < param.Count - 2 Then
                                 Dim Num1 As Byte = Byte.Parse(param(i + 1))

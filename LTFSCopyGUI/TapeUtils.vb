@@ -735,7 +735,7 @@ Public Class TapeUtils
         Return Locate(TapeDrive, CULng(BlockAddress), Partition, DestType)
     End Function
     Public Shared Function Locate(TapeDrive As String, BlockAddress As ULong, Partition As ltfsindex.PartitionLabel, DestType As LocateDestType)
-        Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=DestType)
+        Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=CByte(Partition), DestType:=DestType)
     End Function
     Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
         SyncLock SCSIOperationLock
