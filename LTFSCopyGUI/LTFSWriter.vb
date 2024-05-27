@@ -3532,14 +3532,7 @@ Public Class LTFSWriter
             'nop
             TapeUtils.ReadPosition(TapeDrive)
             Dim modedata As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
-            Dim MaxExtraPartitionAllowed As Byte
-            If modedata(1) = 0 Then
-                MaxExtraPartitionAllowed = modedata(2)
-            ElseIf modedata.Length > 10 Then
-                MaxExtraPartitionAllowed = modedata(2 + 8)
-            Else
-                MaxExtraPartitionAllowed = 0
-            End If
+            Dim MaxExtraPartitionAllowed As Byte = modedata(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Barcode = TapeUtils.ReadBarcode(TapeDrive)
             Dim VolumeLabel As String = ""
