@@ -745,7 +745,7 @@ Public Class LTFSConfigurator
         SyncLock TapeUtils.SCSIOperationLock
             TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
             TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
-            TapeUtils.CloseTapeDrive(ConfTapeDrive)
+            TapeUtils.CloseTapeDrive(handle)
         End SyncLock
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(data)

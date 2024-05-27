@@ -904,9 +904,9 @@ Public Class LTFSWriter
     Public MaxCapacity As Long = 0
     Public CapacityLogPage As TapeUtils.PageData
 
-    Public Sub RefreshCapacity()
-        Dim logdata As Byte()
-        logdata = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
+    Public Function RefreshCapacity() As Long()
+        Dim result(3) As Long
+        Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
         Invoke(Sub()
                    Try
                        If CapacityLogPage Is Nothing Then
@@ -1039,6 +1039,8 @@ Public Class LTFSWriter
                            Else
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
                            End If
+                           result(2) = max1 - cap1
+                           result(3) = max1
                        Else
                            MaxCapacity = max0
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
@@ -1050,6 +1052,8 @@ Public Class LTFSWriter
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(255, 127, 127))
                            End If
                        End If
+                       result(0) = max0 - cap0
+                       result(1) = max0
                        If My.Settings.LTFSWriter_ShowLoss Then
                            ToolStripStatusLabel2.Text &= $" Loss:{IOManager.FormatSize(loss)}"
                            ToolStripStatusLabel2.ToolTipText &= $" Loss:{IOManager.FormatSize(loss)}"
@@ -1059,8 +1063,8 @@ Public Class LTFSWriter
                        PrintMsg(My.Resources.ResText_RCErr, TooltipText:=ex.ToString)
                    End Try
                End Sub)
-
-    End Sub
+        Return result
+    End Function
     Public Function GetCapacityMegaBytes() As Long
         If ExtraPartitionCount > 0 Then
             Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
@@ -2108,7 +2112,8 @@ Public Class LTFSWriter
             'RefreshDisplay()
         End If
     End Sub
-    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False, Optional ByVal exceptExtention As String() = Nothing)
+    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False,
+                            Optional ByVal exceptExtention As String() = Nothing)
         Dim th As New Threading.Thread(
                 Sub()
                     StopFlag = False
@@ -3285,6 +3290,7 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_RI)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+
                     TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
@@ -3525,7 +3531,15 @@ Public Class LTFSWriter
             End While
             'nop
             TapeUtils.ReadPosition(TapeDrive)
-            Dim MaxExtraPartitionAllowed As Byte = TapeUtils.ModeSense(TapeDrive, &H11)(2)
+            Dim modedata As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
+            Dim MaxExtraPartitionAllowed As Byte
+            If modedata(1) = 0 Then
+                MaxExtraPartitionAllowed = modedata(2)
+            ElseIf modedata.Length > 10 Then
+                MaxExtraPartitionAllowed = modedata(2 + 8)
+            Else
+                MaxExtraPartitionAllowed = 0
+            End If
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Barcode = TapeUtils.ReadBarcode(TapeDrive)
             Dim VolumeLabel As String = ""
@@ -5155,6 +5169,9 @@ Public Class LTFSWriter
                                                                     If Not isStarted Then Exit Sub
                                                                     frm.Invoke(Sub() ButtonStart.Enabled = False)
                                                                     frm.Invoke(Sub() frm.Text = $"Writing")
+                                                                    Dim cap As Long() = RefreshCapacity()
+                                                                    Dim cap1 As Long
+                                                                    If cap(3) > 0 Then cap1 = cap(2) Else cap1 = cap(0)
                                                                     Invoke(Sub()
                                                                                AddFileOrDir(schema._directory(0), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
                                                                            End Sub)
