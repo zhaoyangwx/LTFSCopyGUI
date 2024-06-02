@@ -1061,19 +1061,19 @@ Public Class TapeUtils
             Case &H1A
                 Msg &= "Rewind operation in progress"
             Case &H400
-                Msg &= "LUN Not ready, cause Not reportable"
+                Msg &= "LUN not ready, cause not reportable"
             Case &H401
-                Msg &= "LUN In process Of becoming ready"
+                Msg &= "LUN in process of becoming ready"
             Case &H402
-                Msg &= "LUN Not ready, Initializing command required"
+                Msg &= "LUN not ready, Initializing command required"
             Case &H404
-                Msg &= "LUN Not ready, format In progress"
+                Msg &= "LUN not ready, format in progress"
             Case &H407
-                Msg &= "Command In progress"
+                Msg &= "Command in progress"
             Case &H409
-                Msg &= "LUN Not ready, self-test In progress"
+                Msg &= "LUN not ready, self-test in progress"
             Case &H40C
-                Msg &= "LUN Not accessible, port In unavailable state"
+                Msg &= "LUN not accessible, port in unavailable state"
             Case &H412
                 Msg &= "Logical unit offline"
             Case &H800
@@ -1083,51 +1083,51 @@ Public Class TapeUtils
             Case &HB01
                 Msg &= "Thermal limit exceeded"
             Case &HC00
-                Msg &= "Write Error"
+                Msg &= "Write error"
             Case &HE01
-                Msg &= "Information unit too Short"
+                Msg &= "Information unit too short"
             Case &HE02
-                Msg &= "Information unit too Long"
+                Msg &= "Information unit too long"
             Case &HE03
                 Msg &= "SK Illegal Request"
             Case &H1001
                 Msg &= "Logical block guard check failed"
             Case &H1100
-                Msg &= "Unrecovered read Error"
+                Msg &= "Unrecovered read error"
             Case &H1112
-                Msg &= "Media Auxiliary Memory read Error"
+                Msg &= "Media Auxiliary Memory read error"
             Case &H1400
-                Msg &= "Recorded entity Not found"
+                Msg &= "Recorded entity not found"
             Case &H1403
-                Msg &= "End Of Data Not found"
+                Msg &= "End of Data not found"
             Case &H1A00
-                Msg &= "Parameter list length Error"
+                Msg &= "Parameter list length error"
             Case &H2000
                 Msg &= "Invalid command operation code"
             Case &H2400
-                Msg &= "Invalid field In Command Descriptor Block"
+                Msg &= "Invalid field in Command Descriptor Block"
             Case &H2500
-                Msg &= "LUN Not supported"
+                Msg &= "LUN not supported"
             Case &H2600
-                Msg &= "Invalid field In parameter list"
+                Msg &= "Invalid field in parameter list"
             Case &H2601
-                Msg &= "Parameter Not supported"
+                Msg &= "Parameter not supported"
             Case &H2602
                 Msg &= "Parameter value invalid"
             Case &H2604
-                Msg &= "Invalid release Of persistent reservation"
+                Msg &= "Invalid release of persistent reservation"
             Case &H2610
                 Msg &= "Data decryption key fail limit reached"
             Case &H2680
                 Msg &= "Invalid CA certificate"
             Case &H2700
-                Msg &= "Write-Protected"
+                Msg &= "Write-protected"
             Case &H2708
-                Msg &= "Too many logical objects On partition To support operation"
+                Msg &= "Too many logical objects on partition to support operation"
             Case &H2800
-                Msg &= "Not ready To ready transition, medium may have changed"
+                Msg &= "Not ready to ready transition, medium may have changed"
             Case &H2901
-                Msg &= "Power-On reset"
+                Msg &= "Power-on reset"
             Case &H2902
                 Msg &= "SCSI bus reset"
             Case &H2903
@@ -1159,7 +1159,7 @@ Public Class TapeUtils
             Case &H2A11
                 Msg &= "Data encryption parameters changed by another initiator"
             Case &H2A12
-                Msg &= "Data encryption parameters changed by a vendor-specific Event"
+                Msg &= "Data encryption parameters changed by a vendor-specific event"
             Case &H2A13
                 Msg &= "Data Encryption Key Instance Counter has changed"
             Case &H2A14
@@ -1173,7 +1173,7 @@ Public Class TapeUtils
             Case &H2C07
                 Msg &= "Previous busy status"
             Case &H2C08
-                Msg &= "Previous task Set full status"
+                Msg &= "Previous task set full status"
             Case &H2C09
                 Msg &= "Previous reservation conflict status"
             Case &H2C0B
