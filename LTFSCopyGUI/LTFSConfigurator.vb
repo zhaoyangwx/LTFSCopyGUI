@@ -660,22 +660,24 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
         Dim CMInfo As TapeUtils.CMParser = Nothing
+        TextBox8.Text = ""
         Try
             CMInfo = New TapeUtils.CMParser(TapeDrive)
-
         Catch ex As Exception
-            TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf)
+            TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf)
         End Try
-        TextBox8.Text = ""
-
         Try
             TextBox8.AppendText(CMInfo.GetReport())
+        Catch ex As Exception
+            TextBox8.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+        End Try
+        Try
             If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
                 TextBox8.AppendText(CMInfo.GetSerializedText())
                 TextBox8.AppendText(vbCrLf)
             End If
         Catch ex As Exception
-            TextBox8.AppendText("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
+            TextBox8.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
         End Try
         TextBox8.Select(0, 0)
         TextBox8.ScrollToCaret()

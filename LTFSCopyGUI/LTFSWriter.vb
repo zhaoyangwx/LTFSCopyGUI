@@ -3855,7 +3855,7 @@ Public Class LTFSWriter
     Private Sub 生成标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 生成标签ToolStripMenuItem.Click
         If My.Settings.LTFSWriter_FileLabel = "" Then
             设置标签ToolStripMenuItem_Click(sender, e)
-            Exit Sub
+            If My.Settings.LTFSWriter_FileLabel = "" Then Exit Sub
         End If
         If ListView1.Tag IsNot Nothing Then
             Dim d As ltfsindex.directory = ListView1.Tag
@@ -3874,7 +3874,14 @@ Public Class LTFSWriter
                         Dim emptyfile As String = IO.Path.Combine(Application.StartupPath, "empty.file")
                         IO.File.WriteAllBytes(emptyfile, {})
                         Dim fnew As New FileRecord(emptyfile, d)
-                        fnew.File.name = $"{dir.name}{fl}"
+                        With fnew.File
+                            .name = $"{dir.name}{fl}"
+                            .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                            .creationtime = .backuptime
+                            .modifytime = .backuptime
+                            .accesstime = .backuptime
+                            .changetime = .modifytime
+                        End With
                         While True
                             Threading.Thread.Sleep(0)
                             SyncLock UFReadCount
