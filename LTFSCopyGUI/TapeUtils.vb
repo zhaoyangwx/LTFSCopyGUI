@@ -2451,12 +2451,18 @@ End SyncLock
 
                 'Erase
                 ProgressReport("Initializing tape..")
-                If TapeUtils.SendSCSICommand(handle, {4, 0, 0, 0, 0, 0}, senseReport:=senseReportFunc) Then
-                    ProgressReport("Initialization OK" & vbCrLf)
+                Dim cmdata As New CMParser(handle)
+                If cmdata.CartridgeMfgData.IsLTO9Plus Then
+                    ProgressReport("LTO9 detected, skip initialization" & vbCrLf)
                 Else
-                    OnError("Initialization Fail" & vbCrLf)
-                    Return False
+                    If TapeUtils.SendSCSICommand(handle, {4, 0, 0, 0, 0, 0}, senseReport:=senseReportFunc) Then
+                        ProgressReport("Initialization OK" & vbCrLf)
+                    Else
+                        OnError("Initialization Fail" & vbCrLf)
+                        Return False
+                    End If
                 End If
+
                 If ExtraPartitionCount > 0 Then
                     'Mode Select:1st Partition to Minimum 
                     ProgressReport("MODE SELECT - Partition mode page..")
@@ -3449,6 +3455,18 @@ End SyncLock
                 Get
                     Dim fmt As String = Format
                     Return fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                End Get
+            End Property
+            Public ReadOnly Property IsLTO8Plus As Boolean
+                Get
+                    Dim fmt As String = Format
+                    Return fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                End Get
+            End Property
+            Public ReadOnly Property IsLTO9Plus As Boolean
+                Get
+                    Dim fmt As String = Format
+                    Return fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property CartridgeTypeAbbr As String
@@ -4741,7 +4759,7 @@ End SyncLock
                                     ' "MAM002" has 1.5 bytes.  Using 1.5 bytes For both cases, As the attribute length Is always small compared To what
                                     ' can be represented by 1.5 bytes (QXCR1001109840).
                                     a_AttributeLength = g_GetWord(a_Buffer, a_Index + 2) And &HFFF
-
+                                    If a_AttributeID = &HFFF OrElse a_AttributeLength = 0 Then Exit While
                                     ' barcode
                                     If a_AttributeID = &H806 Then
                                         a_Barcode = getstr(a_Buffer, a_Index + 4, a_AttributeLength).TrimEnd()
@@ -4977,6 +4995,16 @@ End SyncLock
         Public Sub New(TapeDrive As String, Optional ByVal BufferID As Byte = &H10)
             a_CMBuffer = ReadBuffer(TapeDrive, BufferID)
             If a_CMBuffer.Length = 0 Then a_CMBuffer = ReadBuffer(TapeDrive, &H5)
+            If a_CMBuffer.Length <> 0 Then
+                Try
+                    RunParse()
+                Catch
+                End Try
+            End If
+        End Sub
+        Public Sub New(handle As IntPtr, Optional ByVal BufferID As Byte = &H10)
+            a_CMBuffer = ReadBuffer(handle, BufferID)
+            If a_CMBuffer.Length = 0 Then a_CMBuffer = ReadBuffer(handle, &H5)
             RunParse()
         End Sub
         Public Shared Function FromTapeDrive(TapeDrive As String) As CMParser
@@ -5223,7 +5251,7 @@ End SyncLock
                 Output.Append("+=========================================================================+")
                 Output.Append(vbCrLf)
             Catch ex As Exception
-                Output.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf)
+                Output.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf & ex.ToString & vbCrLf)
             End Try
             Return Output.ToString()
         End Function

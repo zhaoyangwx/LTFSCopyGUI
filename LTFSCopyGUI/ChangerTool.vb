@@ -130,7 +130,7 @@ Public Class ChangerTool
         If EmptyElement Is Nothing Then Exit Sub
         If ComboBox1.SelectedIndex > FullElement.Count - 1 Then Exit Sub
         If ComboBox2.SelectedIndex > EmptyElement.Count - 1 Then Exit Sub
-        If MessageBox.Show(New Form With {.TopMost = True}, $"{ComboBox1.SelectedItem} -> {ComboBox2.SelectedItem}", "", MessageBoxButtons.OKCancel) Then
+        If MessageBox.Show(New Form With {.TopMost = True}, $"{ComboBox1.SelectedItem} -> {ComboBox2.SelectedItem}", "", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
             Dim src As UInt32 = FullElement(ComboBox1.SelectedIndex).ElementAddress
             Dim dest As UInt32 = EmptyElement(ComboBox2.SelectedIndex).ElementAddress
