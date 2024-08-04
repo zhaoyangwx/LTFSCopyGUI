@@ -137,12 +137,13 @@ Public Class ChangerTool
             SetUILock(True)
             Dim th As New Threading.Thread(
                 Sub()
+                    Dim sense(63) As Byte
                     Try
-                        MediumChanger.MoveMedium(drv, src, dest)
+                        MediumChanger.MoveMedium(drv, src, dest, sense)
                     Catch ex As Exception
                         Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}"))
                     Finally
-                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, "Finished"))
+                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}"))
                     End Try
                     SetUILock(False)
                     Me.Invoke(Sub()

@@ -573,7 +573,7 @@ Public Class LTFSWriter
                         .extendedattributes.AddRange(xlist)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
                 End Try
             End With
             ParentDirectory.contents.UnwrittenFiles.Add(File)
@@ -616,7 +616,7 @@ Public Class LTFSWriter
                         fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                         Exit While
                     Catch ex As Exception
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                             Case DialogResult.Abort
                                 Return 3
                             Case DialogResult.Retry
@@ -902,15 +902,17 @@ Public Class LTFSWriter
         Return result
     End Function
     Public MaxCapacity As Long = 0
-    Public CapacityLogPage As TapeUtils.PageData
+    Public CapacityLogPage, VolumeStatisticsLogPage As TapeUtils.PageData
 
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
-        Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
+        Dim logdataCap As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
+        Dim logdataVStat As Byte() = TapeUtils.LogSense(TapeDrive, &H17, PageControl:=1)
+
         Invoke(Sub()
                    Try
                        If CapacityLogPage Is Nothing Then
-                           CapacityLogPage = New TapeUtils.PageData With {.Name = "Tape Capacity log page", .PageCode = &H31, .RawData = logdata}
+                           CapacityLogPage = New TapeUtils.PageData With {.Name = "Tape Capacity log page", .PageCode = &H31, .RawData = logdataCap}
                            CapacityLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
                                            .Parent = CapacityLogPage,
                                            .Name = "Data Compression Parameter",
@@ -948,7 +950,181 @@ Public Class LTFSWriter
                                .Add(8, TapeUtils.PageData.DataItem.DataType.Int32)
                            End With
                        End If
-                       CapacityLogPage.RawData = logdata
+                       If VolumeStatisticsLogPage Is Nothing Then
+                           VolumeStatisticsLogPage = New TapeUtils.PageData With {.Name = "Volume Statistics Log page", .PageCode = &H17, .RawData = logdataVStat}
+                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
+                                           .Parent = VolumeStatisticsLogPage,
+                                           .Name = "Page Code",
+                                           .StartByte = 0,
+                                           .BitOffset = 0,
+                                           .TotalBits = 8,
+                                           .Type = TapeUtils.PageData.DataItem.DataType.Binary})
+                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
+                                           .Parent = VolumeStatisticsLogPage,
+                                           .Name = "Page Length",
+                                           .StartByte = 2,
+                                           .BitOffset = 0,
+                                           .TotalBits = 16,
+                                           .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
+                                           .Parent = VolumeStatisticsLogPage,
+                                           .Name = "Volume Statistics log parameters",
+                                           .StartByte = 4,
+                                           .BitOffset = 0,
+                                           .TotalBits = 0,
+                                           .DynamicParamCodeBitOffset = 0,
+                                           .DynamicParamCodeStartByte = 0,
+                                           .DynamicParamCodeTotalBits = 16,
+                                           .DynamicParamLenBitOffset = 0,
+                                           .DynamicParamLenStartByte = 3,
+                                           .DynamicParamLenTotalBits = 8,
+                                           .DynamicParamDataStartByte = 4,
+                                           .EnumTranslator = New SerializableDictionary(Of Long, String),
+                                           .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
+                                           .PageDataTemplate = New SerializableDictionary(Of Long, TapeUtils.PageData),
+                                           .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
+                           With VolumeStatisticsLogPage.Items.Last.EnumTranslator
+                               .Add(&H0, "Page valid")
+                               .Add(&H1, "Thread count")
+                               .Add(&H2, "Total data sets written")
+                               .Add(&H3, "Total write retries")
+                               .Add(&H4, "Total unrecovered write errors")
+                               .Add(&H5, "Total suspended writes")
+                               .Add(&H6, "Total fatal suspended writes")
+                               .Add(&H7, "Total datasets read")
+                               .Add(&H8, "Total read retries")
+                               .Add(&H9, "Total unrecovered read errors")
+                               .Add(&HC, "Last mount unrecovered write errors")
+                               .Add(&HD, "Last mount unrecovered read errors")
+                               .Add(&HE, "Last mount megabytes written")
+                               .Add(&HF, "Last mount megabytes read")
+                               .Add(&H10, "Lifetime megabytes written")
+                               .Add(&H11, "Lifetime megabytes read")
+                               .Add(&H12, "Last load write compression ratio")
+                               .Add(&H13, "Last load read compression ratio")
+                               .Add(&H14, "Medium mount time")
+                               .Add(&H15, "Medium ready time")
+                               .Add(&H16, "Total native capacity")
+                               .Add(&H17, "Total used native capacity")
+                               .Add(&H40, "Volume serial number")
+                               .Add(&H41, "Tape lot identifier")
+                               .Add(&H42, "Volume barcode")
+                               .Add(&H43, "Volume manufacturer")
+                               .Add(&H44, "Volume license code")
+                               .Add(&H45, "Volume personality")
+                               .Add(&H46, "Volume manufacture date")
+                               .Add(&H80, "Write protect")
+                               .Add(&H81, "Volume is WORM")
+                               .Add(&H82, "Maximum recommended tape path temperature exceeded")
+                               .Add(&H101, "Beginning of medium passes")
+                               .Add(&H102, "Middle of medium passes")
+                               .Add(&H200, "First encrypted logical object identifiers")
+                               .Add(&H201, "First unencrypted logical object on the EOP side of the first encrypted logical object identifiers")
+                               .Add(&H202, "Approximate native capacity of partitions")
+                               .Add(&H203, "Approximate used native capacity of partitions")
+                               .Add(&H300, "Mount history")
+                               .Add(&HF000, "Version number (vendor-unique)")
+                           End With
+                           With VolumeStatisticsLogPage.Items.Last.DynamicParamType
+                               .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64)
+                               .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H7, TapeUtils.PageData.DataItem.DataType.Int64)
+                               .Add(&H8, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H9, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&HC, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&HD, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&HE, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&HF, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H10, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H11, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H12, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H13, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H14, TapeUtils.PageData.DataItem.DataType.Int64)
+                               .Add(&H15, TapeUtils.PageData.DataItem.DataType.Int64)
+                               .Add(&H16, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H17, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H40, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H42, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H43, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H44, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H45, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H46, TapeUtils.PageData.DataItem.DataType.Text)
+                               .Add(&H80, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H81, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H82, TapeUtils.PageData.DataItem.DataType.Int16)
+                               .Add(&H101, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H102, TapeUtils.PageData.DataItem.DataType.Int32)
+                               .Add(&H200, TapeUtils.PageData.DataItem.DataType.PageData)
+                               .Add(&H201, TapeUtils.PageData.DataItem.DataType.PageData)
+                               .Add(&H202, TapeUtils.PageData.DataItem.DataType.PageData)
+                               .Add(&H203, TapeUtils.PageData.DataItem.DataType.PageData)
+                               .Add(&H300, TapeUtils.PageData.DataItem.DataType.PageData)
+                               .Add(&HF000, TapeUtils.PageData.DataItem.DataType.Int16)
+                           End With
+                           With VolumeStatisticsLogPage.Items.Last.PageDataTemplate
+                               Dim subPage As TapeUtils.PageData
+                               subPage = New TapeUtils.PageData With {.PageCode = &H200, .Name = "First encrypted logical object identifiers"}
+                               For i As Integer = 0 To 7
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 12 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 12 * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Int64})
+                               Next
+                               .Add(&H200, subPage)
+                               subPage = New TapeUtils.PageData With {.PageCode = &H201, .Name = "First unencrypted logical object on the EOP side of the first encrypted logical object identifiers"}
+                               For i As Integer = 0 To 7
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 12 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 12 * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Int64})
+                               Next
+                               .Add(&H201, subPage)
+                               subPage = New TapeUtils.PageData With {.PageCode = &H202, .Name = "Approximate native capacity of partitions"}
+                               For i As Integer = 0 To 7
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 8 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 8 * i, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Int32})
+                               Next
+                               .Add(&H202, subPage)
+                               subPage = New TapeUtils.PageData With {.PageCode = &H203, .Name = "Approximate used native capacity of partitions"}
+                               For i As Integer = 0 To 7
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 8 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 8 * i, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Int32})
+                               Next
+                               .Add(&H203, subPage)
+                               subPage = New TapeUtils.PageData With {.PageCode = &H300, .Name = "Mount history"}
+                               For i As Integer = 0 To 3
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Index", .StartByte = 2 + &H2C * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Vendor ID", .StartByte = 4 + &H2C * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Text})
+                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Unit Serial Number", .StartByte = 12 + &H2C * i, .BitOffset = 0, .TotalBits = 256, .Type = TapeUtils.PageData.DataItem.DataType.Text})
+                               Next
+                               .Add(&H300, subPage)
+                           End With
+                       End If
+                       CapacityLogPage.RawData = logdataCap
+                       VolumeStatisticsLogPage.RawData = logdataVStat
+                       Dim Gen As Integer, WORM As Boolean, WP As Boolean
+                       For Each it As TapeUtils.PageData.DataItem In VolumeStatisticsLogPage.Items
+                           If it.EnumTranslator Is Nothing Then Continue For
+                           Dim i As Integer = 0
+                           While i < it.RawData.Length - 1
+                               Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, i)
+                               Select Case nextPage.ParamCode
+                                   Case &H45 'Personality
+                                       Gen = Integer.Parse(nextPage.GetString().Last)
+                                   Case &H80 'Write Protect
+                                       WP = nextPage.RawData.Last
+                                   Case &H81 'WORM
+                                       WORM = nextPage.RawData.Last
+                               End Select
+                               i += nextPage.RawData.Length + it.DynamicParamDataStartByte
+                           End While
+                       Next
+                       Dim MediaDescription As String = $"L{Gen}"
+                       If WORM Then MediaDescription &= " WORM"
+                       If WP Then MediaDescription &= " RO" Else MediaDescription &= " RW"
+
                        Dim cap0, cap1, max0, max1 As Long
                        For Each it As TapeUtils.PageData.DataItem In CapacityLogPage.Items
                            Dim i As Integer = 0
@@ -1032,8 +1208,8 @@ Public Class LTFSWriter
                            MaxCapacity = max1
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 1).AsNumeric
                            'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
-                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}"
+                           ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}"
                            If cap1 >= 4096 Then
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(121, 196, 232))
                            Else
@@ -1044,8 +1220,8 @@ Public Class LTFSWriter
                        Else
                            MaxCapacity = max0
                            If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
-                           ToolStripStatusLabel2.Text = $"{My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
-                           ToolStripStatusLabel2.ToolTipText = $"{My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
+                           ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
+                           ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
                            If cap0 >= 4096 Then
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(121, 196, 232))
                            Else
@@ -1540,7 +1716,7 @@ Public Class LTFSWriter
             If RetainPosisiton Then TapeUtils.Locate(TapeDrive, pPrevious.BlockNumber, pPrevious.PartitionNumber)
             Return pStartBlock
         Catch ex As Exception
-            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
+            MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
         End Try
         Return -1
     End Function
@@ -1558,7 +1734,7 @@ Public Class LTFSWriter
             f.extentinfo = {New ltfsindex.file.extent With {.startblock = startblock, .bytecount = len, .byteoffset = 0, .fileoffset = 0, .partition = ltfsindex.PartitionLabel.a}}.ToList()
             IO.File.Delete(tmpf)
         Catch ex As Exception
-            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+            MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
         End Try
 
     End Sub
@@ -1610,7 +1786,7 @@ Public Class LTFSWriter
                     TapeUtils.Flush(TapeDrive)
                 End If
             Catch ex As Exception
-                PrintMsg(ex.ToString())
+                PrintMsg($"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
             End Try
             SilentMode = SilentBefore
             Exit Sub
@@ -1714,7 +1890,7 @@ Public Class LTFSWriter
                 End SyncLock
             End While
         Catch ex As Exception
-            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
+            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
         End Try
     End Sub
     Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False, Optional ByVal exceptExtention As String() = Nothing)
@@ -1810,7 +1986,7 @@ Public Class LTFSWriter
                         End SyncLock
                     End While
                 Catch ex As Exception
-                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
                 End Try
             Next
         Else
@@ -1868,7 +2044,7 @@ Public Class LTFSWriter
                             End SyncLock
                         End While
                     Catch ex As Exception
-                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
                     End Try
                 End Sub)
         End If
@@ -2152,7 +2328,7 @@ Public Class LTFSWriter
                                 AddDirectry(f, d, overwrite, exceptExtention)
                             End If
                         Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
                         End Try
                     Next
 
@@ -2525,7 +2701,7 @@ Public Class LTFSWriter
                             Next
                             PrintMsg(My.Resources.ResText_RestFin)
                         Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                         End Try
                         TapeUtils.AllowMediaRemoval(TapeDrive)
@@ -2742,9 +2918,10 @@ Public Class LTFSWriter
                                                     FileData = fr.ReadAllBytes()
                                                     Exit While
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
+                                                            fr.Close()
                                                             Throw ex
                                                         Case DialogResult.Retry
 
@@ -2763,9 +2940,10 @@ Public Class LTFSWriter
                                                         p.BlockNumber += 1
                                                     End SyncLock
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
+                                                            fr.Close()
                                                             Throw ex
                                                         Case DialogResult.Retry
                                                             succ = False
@@ -2789,15 +2967,22 @@ Public Class LTFSWriter
                                                     End If
                                                 ElseIf sense(2) And &HF <> 0 Then
                                                     PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                                        Case DialogResult.Abort
-                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                        Case DialogResult.Retry
-                                                            succ = False
-                                                        Case DialogResult.Ignore
-                                                            succ = True
-                                                            Exit While
-                                                    End Select
+                                                    Try
+                                                        Throw New Exception("SCSI sense error")
+                                                    Catch ex As Exception
+                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                            Case DialogResult.Abort
+                                                                fr.Close()
+                                                                StopFlag = True
+                                                                Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                            Case DialogResult.Retry
+                                                                succ = False
+                                                            Case DialogResult.Ignore
+                                                                succ = True
+                                                                Exit While
+                                                        End Select
+                                                    End Try
+
                                                     p = New TapeUtils.PositionData(TapeDrive)
                                                 Else
                                                     succ = True
@@ -2827,6 +3012,7 @@ Public Class LTFSWriter
                                                     PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
                                                     Continue For
                                                 Case DialogResult.Abort
+                                                    StopFlag = True
                                                     Throw New Exception(My.Resources.ResText_FileOpenError)
                                             End Select
                                             'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
@@ -2844,9 +3030,10 @@ Public Class LTFSWriter
                                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
                                                         Exit While
                                                     Catch ex As Exception
-                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                             Case DialogResult.Abort
                                                                 StopFlag = True
+                                                                fr.Close()
                                                                 Throw ex
                                                             Case DialogResult.Retry
 
@@ -2885,8 +3072,10 @@ Public Class LTFSWriter
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
                                                             Catch ex As Exception
-                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
+                                                                        fr.Close()
+                                                                        StopFlag = True
                                                                         Throw ex
                                                                     Case DialogResult.Retry
                                                                         succ = False
@@ -2911,15 +3100,22 @@ Public Class LTFSWriter
                                                                     Exit While
                                                                 End If
                                                             ElseIf sense(2) And &HF <> 0 Then
-                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                                                    Case DialogResult.Abort
-                                                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                                    Case DialogResult.Retry
-                                                                        succ = False
-                                                                    Case DialogResult.Ignore
-                                                                        succ = True
-                                                                        Exit While
-                                                                End Select
+                                                                Try
+                                                                    Throw New Exception("SCSI sense error")
+                                                                Catch ex As Exception
+                                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                        Case DialogResult.Abort
+                                                                            fr.Close()
+                                                                            StopFlag = True
+                                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                                        Case DialogResult.Retry
+                                                                            succ = False
+                                                                        Case DialogResult.Ignore
+                                                                            succ = True
+                                                                            Exit While
+                                                                    End Select
+                                                                End Try
+
                                                                 p = New TapeUtils.PositionData(TapeDrive)
                                                             Else
                                                                 succ = True
@@ -2992,8 +3188,8 @@ Public Class LTFSWriter
                                            End If
                                        End Sub)
                             Catch ex As Exception
-                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{ex.ToString}")
-                                PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
+                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                                PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                             End Try
                             While Pause
                                 Threading.Thread.Sleep(10)
@@ -3008,8 +3204,13 @@ Public Class LTFSWriter
                         While HashTaskAwaitNumber > 0
                             Threading.Thread.Sleep(1)
                         End While
+                        For Each fr As FileRecord In WriteList
+                            Try
+                                If fr IsNot Nothing Then fr.Close()
+                            Catch ex As Exception
+                            End Try
+                        Next
                     End If
-
                     UFReadCount.Dec()
                     Me.Invoke(Sub() Timer1_Tick(sender, e))
                     Dim TotalBytesWritten As Long = UnwrittenSizeOverrideValue
@@ -3034,7 +3235,7 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{ex.ToString}")
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                 End Try
                 TapeUtils.Flush(TapeDrive)
@@ -3343,7 +3544,7 @@ Public Class LTFSWriter
                     Invoke(Sub() RaiseEvent LTFSLoaded())
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IRFailed)
-                    PrintMsg(ex.ToString, LogOnly:=True)
+                    PrintMsg($"{ex.ToString}{vbCrLf}{ex.StackTrace}", LogOnly:=True)
                     LockGUI(False)
                 End Try
             End Sub)
@@ -3429,7 +3630,7 @@ Public Class LTFSWriter
                 End If
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_DPIWFailed, False, $"{My.Resources.ResText_DPIWFailed}: {ex.ToString}")
-                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString()))
+                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
             End Try
             Invoke(Sub()
                        LockGUI(False)
@@ -4240,7 +4441,7 @@ Public Class LTFSWriter
                     Next
                     PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
                 Catch ex As Exception
-                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
                     PrintMsg(My.Resources.ResText_HErr)
                 End Try
                 UnwrittenSizeOverrideValue = 0
@@ -4484,7 +4685,7 @@ Public Class LTFSWriter
                 Host.MaxComponentLength = 4096
 
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -4506,7 +4707,7 @@ Public Class LTFSWriter
                 VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
                 'VolumeInfo.SetVolumeLabel(VolumeLabel)
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -4925,7 +5126,7 @@ Public Class LTFSWriter
                                              pos.BlockNumber += 1
                                          End SyncLock
                                      Catch ex As Exception
-                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WErrSCSI, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{ My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                              Case DialogResult.Abort
                                                  Throw ex
                                              Case DialogResult.Retry
@@ -4950,15 +5151,20 @@ Public Class LTFSWriter
                                              Exit While
                                          End If
                                      ElseIf sense(2) And &HF <> 0 Then
-                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                             Case DialogResult.Abort
-                                                 Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                             Case DialogResult.Retry
-                                                 succ = False
-                                             Case DialogResult.Ignore
-                                                 succ = True
-                                                 Exit While
-                                         End Select
+                                         Try
+                                             Throw New Exception("SCSI sense error")
+                                         Catch ex As Exception
+                                             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                 Case DialogResult.Abort
+                                                     Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                 Case DialogResult.Retry
+                                                     succ = False
+                                                 Case DialogResult.Ignore
+                                                     succ = True
+                                                     Exit While
+                                             End Select
+                                         End Try
+
                                          pos = New TapeUtils.PositionData(TapeDrive)
                                      Else
                                          succ = True
