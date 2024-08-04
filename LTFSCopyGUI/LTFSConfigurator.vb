@@ -3457,6 +3457,7 @@ Public Class LTFSConfigurator
             Dim blkLen As Integer = NumericUpDownTestBlkSize.Value
             Dim blkNum As Long = NumericUpDownTestBlkNum.Value
             Dim sec As Integer = -1
+            Dim SenseMsg As String = ""
             Dim th As New Threading.Thread(
             Sub()
                 Dim r As New Random()
@@ -3483,7 +3484,28 @@ Public Class LTFSConfigurator
                     Else
                         For i As Long = 0 To blkNum
                             If Not TestEnabled Then Exit For
-                            TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                            Dim sense As Byte() = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                            If ((sense(2) >> 6) And &H1) = 1 Then
+                                If (sense(2) And &HF) = 13 Then
+                                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
+                                    Exit For
+                                Else
+                                    SenseMsg = My.Resources.ResText_EWEOM
+                                End If
+                            ElseIf sense(2) And &HF <> 0 Then
+                                SenseMsg = TapeUtils.ParseSenseData(sense)
+                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                    Case DialogResult.Abort
+                                        Exit For
+                                    Case DialogResult.Retry
+                                        i -= 1
+                                        Continue For
+                                    Case DialogResult.Ignore
+                                        Continue For
+                                End Select
+                            Else
+                                SenseMsg = ""
+                            End If
                             progval = i * blkLen
                         Next
                     End If
@@ -3506,13 +3528,13 @@ Public Class LTFSConfigurator
                     Threading.Thread.Sleep(1000)
                     Dim prognow As Long = progval
                     Invoke(Sub()
-                               TextBox8.AppendText($"{sec}: {prognow} (+{IOManager.FormatSize(prognow - lastval)}){vbCrLf}")
+                               TextBox8.AppendText($"{sec}: {prognow} (+{IOManager.FormatSize(prognow - lastval)}) {SenseMsg}{vbCrLf}")
                            End Sub)
                     If sec >= 0 Then sec += 1
                     lastval = prognow
                 End While
                 Invoke(Sub()
-                           TextBox8.AppendText($"{sec}: {progval} (+{IOManager.FormatSize(progval - lastval)}){vbCrLf}")
+                           TextBox8.AppendText($"{sec}: {progval} (+{IOManager.FormatSize(progval - lastval)}) {SenseMsg}{vbCrLf}")
                            TextBox8.AppendText($"End")
                        End Sub)
             End Sub)

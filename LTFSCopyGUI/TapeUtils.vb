@@ -1040,358 +1040,358 @@ Public Class TapeUtils
     End Function
 
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
-        Dim Msg As String = ""
+        Dim Msg As New StringBuilder
         Select Case Add_Code
             Case &H0
-                Msg &= "No addition sense"
+                Msg.Append("No addition sense")
             Case &H1
-                Msg &= "Filemark detected"
+                Msg.Append("Filemark detected")
             Case &H2
-                Msg &= "End of Tape detected"
+                Msg.Append("End of Tape detected")
             Case &H4
-                Msg &= "Beginning of Tape detected"
+                Msg.Append("Beginning of Tape detected")
             Case &H5
-                Msg &= "End of Data detected"
+                Msg.Append("End of Data detected")
             Case &H16
-                Msg &= "Operation in progress"
+                Msg.Append("Operation in progress")
             Case &H18
-                Msg &= "Erase operation in progress"
+                Msg.Append("Erase operation in progress")
             Case &H19
-                Msg &= "Locate operation in progress"
+                Msg.Append("Locate operation in progress")
             Case &H1A
-                Msg &= "Rewind operation in progress"
+                Msg.Append("Rewind operation in progress")
             Case &H400
-                Msg &= "LUN not ready, cause not reportable"
+                Msg.Append("LUN not ready, cause not reportable")
             Case &H401
-                Msg &= "LUN in process of becoming ready"
+                Msg.Append("LUN in process of becoming ready")
             Case &H402
-                Msg &= "LUN not ready, Initializing command required"
+                Msg.Append("LUN not ready, Initializing command required")
             Case &H404
-                Msg &= "LUN not ready, format in progress"
+                Msg.Append("LUN not ready, format in progress")
             Case &H407
-                Msg &= "Command in progress"
+                Msg.Append("Command in progress")
             Case &H409
-                Msg &= "LUN not ready, self-test in progress"
+                Msg.Append("LUN not ready, self-test in progress")
             Case &H40C
-                Msg &= "LUN not accessible, port in unavailable state"
+                Msg.Append("LUN not accessible, port in unavailable state")
             Case &H412
-                Msg &= "Logical unit offline"
+                Msg.Append("Logical unit offline")
             Case &H800
-                Msg &= "Logical unit communication failure"
+                Msg.Append("Logical unit communication failure")
             Case &HB00
-                Msg &= "Warning"
+                Msg.Append("Warning")
             Case &HB01
-                Msg &= "Thermal limit exceeded"
+                Msg.Append("Thermal limit exceeded")
             Case &HC00
-                Msg &= "Write error"
+                Msg.Append("Write error")
             Case &HE01
-                Msg &= "Information unit too short"
+                Msg.Append("Information unit too short")
             Case &HE02
-                Msg &= "Information unit too long"
+                Msg.Append("Information unit too long")
             Case &HE03
-                Msg &= "SK Illegal Request"
+                Msg.Append("SK Illegal Request")
             Case &H1001
-                Msg &= "Logical block guard check failed"
+                Msg.Append("Logical block guard check failed")
             Case &H1100
-                Msg &= "Unrecovered read error"
+                Msg.Append("Unrecovered read error")
             Case &H1112
-                Msg &= "Media Auxiliary Memory read error"
+                Msg.Append("Media Auxiliary Memory read error")
             Case &H1400
-                Msg &= "Recorded entity not found"
+                Msg.Append("Recorded entity not found")
             Case &H1403
-                Msg &= "End of Data not found"
+                Msg.Append("End of Data not found")
             Case &H1A00
-                Msg &= "Parameter list length error"
+                Msg.Append("Parameter list length error")
             Case &H2000
-                Msg &= "Invalid command operation code"
+                Msg.Append("Invalid command operation code")
             Case &H2400
-                Msg &= "Invalid field in Command Descriptor Block"
+                Msg.Append("Invalid field in Command Descriptor Block")
             Case &H2500
-                Msg &= "LUN not supported"
+                Msg.Append("LUN not supported")
             Case &H2600
-                Msg &= "Invalid field in parameter list"
+                Msg.Append("Invalid field in parameter list")
             Case &H2601
-                Msg &= "Parameter not supported"
+                Msg.Append("Parameter not supported")
             Case &H2602
-                Msg &= "Parameter value invalid"
+                Msg.Append("Parameter value invalid")
             Case &H2604
-                Msg &= "Invalid release of persistent reservation"
+                Msg.Append("Invalid release of persistent reservation")
             Case &H2610
-                Msg &= "Data decryption key fail limit reached"
+                Msg.Append("Data decryption key fail limit reached")
             Case &H2680
-                Msg &= "Invalid CA certificate"
+                Msg.Append("Invalid CA certificate")
             Case &H2700
-                Msg &= "Write-protected"
+                Msg.Append("Write-protected")
             Case &H2708
-                Msg &= "Too many logical objects on partition to support operation"
+                Msg.Append("Too many logical objects on partition to support operation")
             Case &H2800
-                Msg &= "Not ready to ready transition, medium may have changed"
+                Msg.Append("Not ready to ready transition, medium may have changed")
             Case &H2901
-                Msg &= "Power-on reset"
+                Msg.Append("Power-on reset")
             Case &H2902
-                Msg &= "SCSI bus reset"
+                Msg.Append("SCSI bus reset")
             Case &H2903
-                Msg &= "Bus device reset"
+                Msg.Append("Bus device reset")
             Case &H2904
-                Msg &= "Internal firmware reboot"
+                Msg.Append("Internal firmware reboot")
             Case &H2907
-                Msg &= "I_T nexus loss occurred"
+                Msg.Append("I_T nexus loss occurred")
             Case &H2A01
-                Msg &= "Mode parameters changed"
+                Msg.Append("Mode parameters changed")
             Case &H2A02
-                Msg &= "Log parameters changed"
+                Msg.Append("Log parameters changed")
             Case &H2A03
-                Msg &= "Reservations pre-empted"
+                Msg.Append("Reservations pre-empted")
             Case &H2A04
-                Msg &= "Reservations released"
+                Msg.Append("Reservations released")
             Case &H2A05
-                Msg &= "Registrations pre-empted"
+                Msg.Append("Registrations pre-empted")
             Case &H2A06
-                Msg &= "Asymmetric access state changed"
+                Msg.Append("Asymmetric access state changed")
             Case &H2A07
-                Msg &= "Asymmetric access state transition failed"
+                Msg.Append("Asymmetric access state transition failed")
             Case &H2A08
-                Msg &= "Priority changed"
+                Msg.Append("Priority changed")
             Case &H2A0D
-                Msg &= "Data encryption capabilities changed"
+                Msg.Append("Data encryption capabilities changed")
             Case &H2A10
-                Msg &= "Timestamp changed"
+                Msg.Append("Timestamp changed")
             Case &H2A11
-                Msg &= "Data encryption parameters changed by another initiator"
+                Msg.Append("Data encryption parameters changed by another initiator")
             Case &H2A12
-                Msg &= "Data encryption parameters changed by a vendor-specific event"
+                Msg.Append("Data encryption parameters changed by a vendor-specific event")
             Case &H2A13
-                Msg &= "Data Encryption Key Instance Counter has changed"
+                Msg.Append("Data Encryption Key Instance Counter has changed")
             Case &H2A14
-                Msg &= "SA creation capabilities data has changed"
+                Msg.Append("SA creation capabilities data has changed")
             Case &H2A15
-                Msg &= "Medium removal prevention pre-empted"
+                Msg.Append("Medium removal prevention pre-empted")
             Case &H2A80
-                Msg &= "Security configuration changed"
+                Msg.Append("Security configuration changed")
             Case &H2C00
-                Msg &= "Command sequence invalid"
+                Msg.Append("Command sequence invalid")
             Case &H2C07
-                Msg &= "Previous busy status"
+                Msg.Append("Previous busy status")
             Case &H2C08
-                Msg &= "Previous task set full status"
+                Msg.Append("Previous task set full status")
             Case &H2C09
-                Msg &= "Previous reservation conflict status"
+                Msg.Append("Previous reservation conflict status")
             Case &H2C0B
-                Msg &= "Not reserved"
+                Msg.Append("Not reserved")
             Case &H2F00
-                Msg &= "Commands cleared by another initiator"
+                Msg.Append("Commands cleared by another initiator")
             Case &H3000
-                Msg &= "Incompatible medium installed"
+                Msg.Append("Incompatible medium installed")
             Case &H3001
-                Msg &= "Cannot read media, unknown format"
+                Msg.Append("Cannot read media, unknown format")
             Case &H3002
-                Msg &= "Cannot read media: incompatible format"
+                Msg.Append("Cannot read media: incompatible format")
             Case &H3003
-                Msg &= "Cleaning cartridge installed"
+                Msg.Append("Cleaning cartridge installed")
             Case &H3004
-                Msg &= "Cannot write medium"
+                Msg.Append("Cannot write medium")
             Case &H3005
-                Msg &= "Cannot write medium, incompatible format"
+                Msg.Append("Cannot write medium, incompatible format")
             Case &H3006
-                Msg &= "Cannot format, incompatible medium"
+                Msg.Append("Cannot format, incompatible medium")
             Case &H3007
-                Msg &= "Cleaning failure"
+                Msg.Append("Cleaning failure")
             Case &H300C
-                Msg &= "WORM medium—overwrite attempted"
+                Msg.Append("WORM medium—overwrite attempted")
             Case &H300D
-                Msg &= "WORM medium—integrity check failed"
+                Msg.Append("WORM medium—integrity check failed")
             Case &H3100
-                Msg &= "Medium format corrupted"
+                Msg.Append("Medium format corrupted")
             Case &H3700
-                Msg &= "Rounded parameter"
+                Msg.Append("Rounded parameter")
             Case &H3A00
-                Msg &= "Medium not present"
+                Msg.Append("Medium not present")
             Case &H3A04
-                Msg &= "Medium not present, Media Auxiliary Memory accessible"
+                Msg.Append("Medium not present, Media Auxiliary Memory accessible")
             Case &H3B00
-                Msg &= "Sequential positioning error"
+                Msg.Append("Sequential positioning error")
             Case &H3B0C
-                Msg &= "Position past BOM"
+                Msg.Append("Position past BOM")
             Case &H3B1C
-                Msg &= "Too many logical objects on partition to support operation."
+                Msg.Append("Too many logical objects on partition to support operation.")
             Case &H3E00
-                Msg &= "Logical unit has not self-configured yet"
+                Msg.Append("Logical unit has not self-configured yet")
             Case &H3F01
-                Msg &= "Microcode has been changed"
+                Msg.Append("Microcode has been changed")
             Case &H3F03
-                Msg &= "Inquiry data has changed"
+                Msg.Append("Inquiry data has changed")
             Case &H3F05
-                Msg &= "Device identifier changed"
+                Msg.Append("Device identifier changed")
             Case &H3F0E
-                Msg &= "Reported LUNs data has changed"
+                Msg.Append("Reported LUNs data has changed")
             Case &H3F0F
-                Msg &= "Echo buffer overwritten"
+                Msg.Append("Echo buffer overwritten")
             Case &H4300
-                Msg &= "Message error"
+                Msg.Append("Message error")
             Case &H4400
-                Msg &= "Internal target failure"
+                Msg.Append("Internal target failure")
             Case &H4500
-                Msg &= "Selection/reselection failure"
+                Msg.Append("Selection/reselection failure")
             Case &H4700
-                Msg &= "SCSI parity error"
+                Msg.Append("SCSI parity error")
             Case &H4800
-                Msg &= "Initiator Detected Error message received"
+                Msg.Append("Initiator Detected Error message received")
             Case &H4900
-                Msg &= "Invalid message"
+                Msg.Append("Invalid message")
             Case &H4B00
-                Msg &= "Data phase error"
+                Msg.Append("Data phase error")
             Case &H4B02
-                Msg &= "Too much write data"
+                Msg.Append("Too much write data")
             Case &H4B03
-                Msg &= "ACK/NAK timeout"
+                Msg.Append("ACK/NAK timeout")
             Case &H4B04
-                Msg &= "NAK received"
+                Msg.Append("NAK received")
             Case &H4B05
-                Msg &= "Data offset error"
+                Msg.Append("Data offset error")
             Case &H4B06
-                Msg &= "Initiator response timeout"
+                Msg.Append("Initiator response timeout")
             Case &H4D00
-                Msg &= "Tagged overlapped command"
+                Msg.Append("Tagged overlapped command")
             Case &H4E00
-                Msg &= "Overlapped commands"
+                Msg.Append("Overlapped commands")
             Case &H5000
-                Msg &= "Write append error"
+                Msg.Append("Write Append( error")
             Case &H5200
-                Msg &= "Cartridge fault"
+                Msg.Append("Cartridge fault")
             Case &H5300
-                Msg &= "Media load or eject failed"
+                Msg.Append("Media load or eject failed")
             Case &H5301
-                Msg &= "Unload tape failure"
+                Msg.Append("Unload tape failure")
             Case &H5302
-                Msg &= "Medium removal prevented"
+                Msg.Append("Medium removal prevented")
             Case &H5303
-                Msg &= "Insufficient resources"
+                Msg.Append("Insufficient resources")
             Case &H5304
-                Msg &= "Medium thread or unthread failure"
+                Msg.Append("Medium thread or unthread failure")
             Case &H5504
-                Msg &= "Insufficient registration resources"
+                Msg.Append("Insufficient registration resources")
             Case &H5506
-                Msg &= "Media Auxiliary Memory full"
+                Msg.Append("Media Auxiliary Memory full")
             Case &H5B01
-                Msg &= "Threshold condition met"
+                Msg.Append("Threshold condition met")
             Case &H5D00
-                Msg &= "Failure prediction threshold exceeded"
+                Msg.Append("Failure prediction threshold exceeded")
             Case &H5DFF
-                Msg &= "Failure prediction threshold exceeded (false)"
+                Msg.Append("Failure prediction threshold exceeded (false)")
             Case &H5E01
-                Msg &= "Idle condition activated by timer"
+                Msg.Append("Idle condition activated by timer")
             Case &H7400
-                Msg &= "Security error"
+                Msg.Append("Security error")
             Case &H7401
-                Msg &= "Unable to decrypt data"
+                Msg.Append("Unable to decrypt data")
             Case &H7402
-                Msg &= "Unencrypted data encountered while decrypting"
+                Msg.Append("Unencrypted data encountered while decrypting")
             Case &H7403
-                Msg &= "Incorrect data encryption key"
+                Msg.Append("Incorrect data encryption key")
             Case &H7404
-                Msg &= "Cryptographic integrity validation failed"
+                Msg.Append("Cryptographic integrity validation failed")
             Case &H7405
-                Msg &= "Key-associated data descriptors changed."
+                Msg.Append("Key-associated data descriptors changed.")
             Case &H7408
-                Msg &= "Digital signature validation failure"
+                Msg.Append("Digital signature validation failure")
             Case &H7409
-                Msg &= "Encryption mode mismatch on read"
+                Msg.Append("Encryption mode mismatch on read")
             Case &H740A
-                Msg &= "Encrypted block not RAW read-enabled"
+                Msg.Append("Encrypted block not RAW read-enabled")
             Case &H740B
-                Msg &= "Incorrect encryption parameters"
+                Msg.Append("Incorrect encryption parameters")
             Case &H7421
-                Msg &= "Data encryption configuration prevented"
+                Msg.Append("Data encryption configuration prevented")
             Case &H7440
-                Msg &= "Authentication failed"
+                Msg.Append("Authentication failed")
             Case &H7461
-                Msg &= "External data encryption Key Manager access error"
+                Msg.Append("External data encryption Key Manager access error")
             Case &H7462
-                Msg &= "External data encryption Key Manager error"
+                Msg.Append("External data encryption Key Manager error")
             Case &H7463
-                Msg &= "External data encryption management—key not found"
+                Msg.Append("External data encryption management—key not found")
             Case &H7464
-                Msg &= "External data encryption management—request not authorized"
+                Msg.Append("External data encryption management—request not authorized")
             Case &H746E
-                Msg &= "External data encryption control time-out"
+                Msg.Append("External data encryption control time-out")
             Case &H746F
-                Msg &= "External data encryption control unknown error"
+                Msg.Append("External data encryption control unknown error")
             Case &H7471
-                Msg &= "Logical Unit access not authorized"
+                Msg.Append("Logical Unit access not authorized")
             Case &H7480
-                Msg &= "KAD changed"
+                Msg.Append("KAD changed")
             Case &H7482
-                Msg &= "Crypto KAD in CM failure"
+                Msg.Append("Crypto KAD in CM failure")
             Case &H8282
-                Msg &= "Drive requires cleaning"
+                Msg.Append("Drive requires cleaning")
             Case &H8283
-                Msg &= "Bad microcode detected"
+                Msg.Append("Bad microcode detected")
         End Select
         If Add_Code >> 8 = &H40 Then
-            Msg &= "Diagnostic failure on component " & Hex(Add_Code And &HFF) & "h"
+            Msg.Append("Diagnostic failure on component " & Hex(Add_Code And &HFF) & "h")
         End If
-        Return Msg
+        Return Msg.ToString()
     End Function
     Public Shared Function ParseSenseData(sense As Byte()) As String
-        Dim Msg As String = ""
+        Dim Msg As New StringBuilder
         Dim Fixed As Boolean = False
         Dim Add_Code As Integer
         Dim Valid As Boolean = ((sense(0) >> 7) = 1)
         If (sense(0) And &H7F) = &H70 Then
-            Msg &= "Error code represents current error" & vbCrLf
+            Msg.AppendLine("Error code represents current error")
             Fixed = True
         ElseIf (sense(0) And &H7F) = &H71 Then
-            Msg &= "Error code represents deferred error" & vbCrLf
+            Msg.AppendLine("Error code represents deferred error")
             Fixed = True
         End If
         If Fixed Then
             If sense(2) >> 7 = 1 Then
-                Msg &= "Filemark encountered" & vbCrLf
+                Msg.AppendLine("Filemark encountered")
             End If
             If ((sense(2) >> 6) And &H1) = 1 Then
-                Msg &= "EOM encountered" & vbCrLf
+                Msg.AppendLine("EOM encountered")
             End If
             If ((sense(2) >> 5) And &H1) = 1 Then
-                Msg &= "Blocklen mismatch" & vbCrLf
+                Msg.AppendLine("Blocklen mismatch")
             End If
             Dim sensekey As Byte = sense(2) And &HF
-            Msg &= "Sense key: "
+            Msg.Append("Sense key: ")
             Select Case sensekey
                 Case 0
-                    Msg &= "NO SENSE" & vbCrLf
+                    Msg.AppendLine("NO SENSE")
                 Case 1
-                    Msg &= "RECOVERED ERROR" & vbCrLf
+                    Msg.AppendLine("RECOVERED ERROR")
                 Case 2
-                    Msg &= "NOT READY" & vbCrLf
+                    Msg.AppendLine("NOT READY")
                 Case 3
-                    Msg &= "MEDIUM ERROR" & vbCrLf
+                    Msg.AppendLine("MEDIUM ERROR")
                 Case 4
-                    Msg &= "HARDWARE ERROR" & vbCrLf
+                    Msg.AppendLine("HARDWARE ERROR")
                 Case 5
-                    Msg &= "ILLEGAL REQUEST" & vbCrLf
+                    Msg.AppendLine("ILLEGAL REQUEST")
                 Case 6
-                    Msg &= "UNIT ATTENTION" & vbCrLf
+                    Msg.AppendLine("UNIT ATTENTION")
                 Case 7
-                    Msg &= "DATA PROTECT" & vbCrLf
+                    Msg.AppendLine("DATA PROTECT")
                 Case 8
-                    Msg &= "BLANK CHECK" & vbCrLf
+                    Msg.AppendLine("BLANK CHECK")
                 Case 9
-                    Msg &= "VENDOR SPECIFIC" & vbCrLf
+                    Msg.AppendLine("VENDOR SPECIFIC")
                 Case 10
-                    Msg &= "COPY ABORTED" & vbCrLf
+                    Msg.AppendLine("COPY ABORTED")
                 Case 11
-                    Msg &= "ABORTED COMMAND" & vbCrLf
+                    Msg.AppendLine("ABORTED COMMAND")
                 Case 12
-                    Msg &= "EQUAL" & vbCrLf
+                    Msg.AppendLine("EQUAL")
                 Case 13
-                    Msg &= "VOLUME OVERFLOW" & vbCrLf
+                    Msg.AppendLine("VOLUME OVERFLOW")
                 Case 14
-                    Msg &= "MISCOMPARE" & vbCrLf
+                    Msg.AppendLine("MISCOMPARE")
                 Case 15
-                    Msg &= "RESERVED" & vbCrLf
+                    Msg.AppendLine("RESERVED")
             End Select
             If Valid Then
-                Msg &= "Info bytes: " & Byte2Hex({sense(3), sense(4), sense(5), sense(6)}) & vbCrLf
+                Msg.AppendLine("Info bytes: " & Byte2Hex({sense(3), sense(4), sense(5), sense(6)}))
             End If
             Dim Add_Len As Byte = sense(7)
             Add_Code = CInt(sense(12)) << 8 Or sense(13)
@@ -1401,20 +1401,20 @@ Public Class TapeUtils
 
             If SKSV Then
                 If sensekey = 5 Then
-                    Msg &= "Error byte = " & (CInt(sense(16)) << 8 Or sense(17)) & " bit = " & (sense(15) And 7) & vbCrLf
+                    Msg.AppendLine("Error byte = " & (CInt(sense(16)) << 8 Or sense(17)) & " bit = " & (sense(15) And 7))
                 ElseIf sensekey = 0 Or sensekey = 2 Then
-                    Msg &= "Progress = " & (CInt(sense(16)) << 8 Or sense(17)) & vbCrLf
+                    Msg.AppendLine("Progress = " & (CInt(sense(16)) << 8 Or sense(17)))
                 End If
             Else
-                Msg &= "Drive Error Code = " & Byte2Hex({sense(16), sense(17)}) & vbCrLf
+                Msg.AppendLine("Drive Error Code = " & Byte2Hex({sense(16), sense(17)}))
             End If
             If ((sense(21) >> 3) And 1) = 1 Then
-                Msg &= "Clean is required" & vbCrLf
+                Msg.AppendLine("Clean is required")
             End If
         End If
-        Msg &= "Additional code: "
-        Msg &= ParseAdditionalSenseCode(Add_Code) & vbCrLf
-        Return Msg
+        Msg.Append("Additional code: ")
+        Msg.AppendLine(ParseAdditionalSenseCode(Add_Code))
+        Return Msg.ToString()
     End Function
     Public Shared Function PreventMediaRemoval(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Return SendSCSICommand(handle, {&H1E, 0, 0, 0, 1, 0}, Nothing, 1, senseReport)
@@ -2934,8 +2934,6 @@ End SyncLock
 
                 dSize += 8
             End If
-
-
 
             cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
             Marshal.Copy(cdbBytes, 0, cdb, 12)
