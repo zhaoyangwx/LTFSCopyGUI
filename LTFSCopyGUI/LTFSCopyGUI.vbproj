@@ -432,6 +432,7 @@
   <ItemGroup>
     <Content Include="configure.ico" />
     <Content Include="LTFSCopyGUIIcon.ico" />
+    <None Include="res\dragdrop.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">

@@ -280,6 +280,15 @@ Public Class LTFSWriter
         ToolStripStatusLabel3.ToolTipText = TextT3
         ToolStripStatusLabel5.Text = Text5
         ToolStripStatusLabel5.ToolTipText = TextT5
+        If schema IsNot Nothing AndAlso
+            schema._directory IsNot Nothing AndAlso
+            schema._directory.Count > 0 AndAlso
+            schema._directory(0) IsNot Nothing AndAlso (
+            ListView1.Items Is Nothing OrElse
+            ListView1.Items.Count = 0) Then
+            Dim img As Image = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
+            ListView1.CreateGraphics().DrawImage(img, 0, 0)
+        End If
     End Sub
     Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False, Optional ByVal ForceLog As Boolean = False)
         Me.Invoke(Sub()
@@ -1564,6 +1573,11 @@ Public Class LTFSWriter
                         统计ToolStripMenuItem.Enabled = False
                     End If
                     ListView1.Items.Clear()
+                End If
+                If ListView1.Items Is Nothing OrElse ListView1.Items.Count = 0 AndAlso schema IsNot Nothing Then
+                    'ListView1.BackgroundImage = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
+                Else
+                    'ListView1.BackgroundImage = Nothing
                 End If
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_NavErr)
@@ -5642,6 +5656,7 @@ Public Class LTFSWriter
         Catch
         End Try
     End Sub
+
 End Class
 
 Public NotInheritable Class FileDropHandler
