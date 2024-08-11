@@ -96,6 +96,26 @@ Public Class IOManager
         End If
     End Function
 
+    Public Shared Function FitImage(input As Bitmap, outputsize As Size) As Bitmap
+        Dim result As New Bitmap(outputsize.Width, outputsize.Height, Imaging.PixelFormat.Format24bppRgb)
+        If input Is Nothing Then Return result
+        Dim g As Graphics = Graphics.FromImage(result)
+        Dim outputw As Integer = input.Width
+        Dim outputh As Integer = input.Height
+        If outputw > outputsize.Width Then
+            outputw = outputsize.Width
+            outputh = input.Height / input.Width * outputsize.Width
+        End If
+        If outputh > outputsize.Height Then
+            outputh = outputsize.Height
+            outputw = input.Width / input.Height * outputsize.Height
+        End If
+        g.FillRectangle(Brushes.White, New Rectangle(0, 0, result.Width, result.Height))
+        g.DrawImage(input, outputsize.Width \ 2 - outputw \ 2, outputsize.Height \ 2 - outputh \ 2, outputw, outputh)
+        g.Dispose()
+        Return result
+    End Function
+
     Public Class HashTask
         Public Event TaskStarted(Message As String)
         Public Event TaskCancelled(Message As String)
