@@ -401,6 +401,30 @@ Namespace My
                 Me("LTFSWriter_ShowFileCount") = value
             End Set
         End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")>  _
+        Public Property LTFSWriter_PowerPolicyOnWriteBegin() As Global.System.Guid
+            Get
+                Return CType(Me("LTFSWriter_PowerPolicyOnWriteBegin"),Global.System.Guid)
+            End Get
+            Set
+                Me("LTFSWriter_PowerPolicyOnWriteBegin") = value
+            End Set
+        End Property
+        
+        <Global.System.Configuration.UserScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("381b4222-f694-41f0-9685-ff5bb260df2e")>  _
+        Public Property LTFSWriter_PowerPolicyOnWriteEnd() As Global.System.Guid
+            Get
+                Return CType(Me("LTFSWriter_PowerPolicyOnWriteEnd"),Global.System.Guid)
+            End Get
+            Set
+                Me("LTFSWriter_PowerPolicyOnWriteEnd") = value
+            End Set
+        End Property
     End Class
 End Namespace
 

@@ -227,7 +227,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAARwBCwEcAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAWgBCwFoAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -577,6 +577,15 @@
   <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>新建目录</value>
   </data>
+  <data name="新建压缩文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 22</value>
+  </data>
+  <data name="新建压缩文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>新建压缩文件</value>
+  </data>
+  <data name="新建压缩文件ToolStripMenuItem.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
   <data name="覆盖已有文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
   </data>
@@ -662,7 +671,7 @@
     <value>复制信息到剪贴板</value>
   </data>
   <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 446</value>
+    <value>173, 468</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip1.Name" xml:space="preserve">
     <value>ContextMenuStrip1</value>
@@ -914,7 +923,7 @@
     <value>备份当前索引</value>
   </data>
   <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>索引操作</value>
@@ -958,13 +967,13 @@
     <value>更新全部索引（安全弹出）</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>数据操作</value>
   </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -998,6 +1007,42 @@
   </data>
   <data name="WA3ToolStripMenuItem.Text" xml:space="preserve">
     <value>更新全部索引并弹出</value>
+  </data>
+  <data name="无更改ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="无更改ToolStripMenuItem.Text" xml:space="preserve">
+    <value>无更改</value>
+  </data>
+  <data name="平衡ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="平衡ToolStripMenuItem.Text" xml:space="preserve">
+    <value>平衡</value>
+  </data>
+  <data name="节能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="节能ToolStripMenuItem.Text" xml:space="preserve">
+    <value>节能</value>
+  </data>
+  <data name="高性能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="高性能ToolStripMenuItem.Text" xml:space="preserve">
+    <value>高性能</value>
+  </data>
+  <data name="其他ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="其他ToolStripMenuItem.Text" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
+    <value>电源选项</value>
   </data>
   <data name="ToolStripTextBox1.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1098,6 +1143,42 @@
   <data name="重装带前清洁次数3ToolStripMenuItem.Text" xml:space="preserve">
     <value>重装带前清洁次数：3</value>
   </data>
+  <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="无更改ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>无更改</value>
+  </data>
+  <data name="平衡ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="平衡ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>平衡</value>
+  </data>
+  <data name="节能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="节能ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>节能</value>
+  </data>
+  <data name="高性能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="高性能ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>高性能</value>
+  </data>
+  <data name="其他ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>电源选项</value>
+  </data>
   <data name="ToolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
     <value>217, 6</value>
   </data>
@@ -1126,13 +1207,13 @@
     <value>显示文件数</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>自动化</value>
   </data>
   <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
+    <value>177, 6</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>196, 22</value>
@@ -1153,7 +1234,7 @@
     <value>查找指定位置前的索引</value>
   </data>
   <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
     <value>回退</value>
@@ -1684,7 +1765,7 @@
     <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>146</value>
+    <value>96</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
     <value>6, 12</value>
@@ -3184,6 +3265,12 @@
   <data name="&gt;&gt;新建目录ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;新建压缩文件ToolStripMenuItem.Name" xml:space="preserve">
+    <value>新建压缩文件ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;新建压缩文件ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;选项ToolStripMenuItem.Name" xml:space="preserve">
     <value>选项ToolStripMenuItem</value>
   </data>
@@ -3436,6 +3523,42 @@
   <data name="&gt;&gt;WA3ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;电源选项ToolStripMenuItem.Name" xml:space="preserve">
+    <value>电源选项ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;电源选项ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;无更改ToolStripMenuItem.Name" xml:space="preserve">
+    <value>无更改ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;无更改ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;平衡ToolStripMenuItem.Name" xml:space="preserve">
+    <value>平衡ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;平衡ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;节能ToolStripMenuItem.Name" xml:space="preserve">
+    <value>节能ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;节能ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;高性能ToolStripMenuItem.Name" xml:space="preserve">
+    <value>高性能ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;高性能ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;其他ToolStripMenuItem.Name" xml:space="preserve">
+    <value>其他ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;其他ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;ToolStripTextBox1.Name" xml:space="preserve">
     <value>ToolStripTextBox1</value>
   </data>
@@ -3530,6 +3653,42 @@
     <value>重装带前清洁次数3ToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;重装带前清洁次数3ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;电源选项ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>电源选项ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;电源选项ToolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;无更改ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>无更改ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;无更改ToolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;平衡ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>平衡ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;平衡ToolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;节能ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>节能ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;节能ToolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;高性能ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>高性能ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;高性能ToolStripMenuItem1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;其他ToolStripMenuItem1.Name" xml:space="preserve">
+    <value>其他ToolStripMenuItem1</value>
+  </data>
+  <data name="&gt;&gt;其他ToolStripMenuItem1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;ToolStripSeparator7.Name" xml:space="preserve">

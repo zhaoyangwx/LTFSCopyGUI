@@ -899,6 +899,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 其他 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Other() As String
+            Get
+                Return ResourceManager.GetString("ResText_Other", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 覆盖不同文件： 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_OverwritingDF() As String

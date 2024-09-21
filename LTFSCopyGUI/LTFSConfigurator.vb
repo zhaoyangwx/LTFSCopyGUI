@@ -3708,4 +3708,68 @@ Public Class LTFSConfigurator
             Me.Enabled = True
         End If
     End Sub
+
+    Private Sub ReadThroughDiagnosticCommandToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ReadThroughDiagnosticCommandToolStripMenuItem.Click
+        Me.Enabled = False
+        Dim CMInfo As TapeUtils.CMParser = Nothing
+        TextBox8.Text = ""
+        Try
+            TapeUtils.SendSCSICommand(TapeDrive, {&H1D, &H11, 0, 0, &H14, 0}, {&HB0, 0, 0, &H10, 0, 0, 0, 0, 0, 0, &H1F, &HE0, 0, 0, 0, &H15, 0, 0, 0, 8}, 0)
+            Dim len As UInteger = &HC7A2
+            Dim len10h As Integer = TapeUtils.ReadBuffer(TapeDrive, &H10).Length
+            If len10h > 0 Then len = 6 + (len10h \ 16) * 50 + (len10h Mod 16) * 3
+            Dim bufferrawdata As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H1C, 1, &HB0, CByte((len >> 8) And &HFF), CByte(len And &HFF), 0}, &HC7A2)
+            Dim bufferdgtext As String = System.Text.Encoding.ASCII.GetString(bufferrawdata, 6, bufferrawdata.Count - 6)
+            bufferdgtext = bufferdgtext.Replace(Chr(0), "")
+            Dim textlines As String() = bufferdgtext.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+            Dim bufferdata As New List(Of Byte)
+            For Each l As String In textlines
+                If l Is Nothing OrElse l.Length <= 2 Then Continue For
+                Dim dataline As String() = l.Split({" "}, StringSplitOptions.RemoveEmptyEntries)
+                For Each b As String In dataline
+                    Try
+                        bufferdata.Add(Convert.ToByte(b, 16))
+                    Catch ex As Exception
+                        If b IsNot Nothing Then
+                            Throw New Exception($"Error with line:{l}{vbCrLf}    byte {b}({ex.ToString()}){vbCrLf}")
+                        Else
+                            Throw New Exception($"Error with line:{l}{vbCrLf}({ex.ToString()}){vbCrLf}")
+                        End If
+                    End Try
+                Next
+            Next
+            Dim errormsg As Exception = Nothing
+            CMInfo = New TapeUtils.CMParser(bufferdata.ToArray(), errormsg)
+            If errormsg IsNot Nothing Then Throw errormsg
+        Catch ex As Exception
+            TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf)
+        End Try
+        Try
+            TextBox8.AppendText(CMInfo.GetReport())
+        Catch ex As Exception
+            TextBox8.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+        End Try
+        Try
+            If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
+                TextBox8.AppendText(CMInfo.GetSerializedText())
+                TextBox8.AppendText(vbCrLf)
+            End If
+        Catch ex As Exception
+            TextBox8.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+        End Try
+        TextBox8.Select(0, 0)
+        TextBox8.ScrollToCaret()
+        If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+            Dim fn As String
+            Try
+                fn = CMInfo.ApplicationSpecificData.Barcode
+                If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
+                If fn Is Nothing Then fn = ""
+                IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBox8.Text)
+            Catch ex As Exception
+
+            End Try
+        End If
+        Me.Enabled = True
+    End Sub
 End Class

@@ -127,6 +127,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.ReadThroughDiagnosticCommandToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.Panel2.SuspendLayout()
@@ -444,7 +445,7 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStrip2
         '
-        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem})
+        Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem, Me.ReadThroughDiagnosticCommandToolStripMenuItem})
         Me.ContextMenuStrip2.Name = "ContextMenuStrip2"
         resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
         '
@@ -843,6 +844,11 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'ReadThroughDiagnosticCommandToolStripMenuItem
+        '
+        Me.ReadThroughDiagnosticCommandToolStripMenuItem.Name = "ReadThroughDiagnosticCommandToolStripMenuItem"
+        resources.ApplyResources(Me.ReadThroughDiagnosticCommandToolStripMenuItem, "ReadThroughDiagnosticCommandToolStripMenuItem")
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -981,4 +987,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents 不读取索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ContextMenuStrip2 As ContextMenuStrip
     Friend WithEvents BrowseBinaryFileToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ReadThroughDiagnosticCommandToolStripMenuItem As ToolStripMenuItem
 End Class
