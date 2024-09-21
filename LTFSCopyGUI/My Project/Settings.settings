@@ -89,5 +89,11 @@
     <Setting Name="LTFSWriter_ShowFileCount" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="LTFSWriter_PowerPolicyOnWriteBegin" Type="System.Guid" Scope="User">
+      <Value Profile="(Default)">8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_PowerPolicyOnWriteEnd" Type="System.Guid" Scope="User">
+      <Value Profile="(Default)">381b4222-f694-41f0-9685-ff5bb260df2e</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

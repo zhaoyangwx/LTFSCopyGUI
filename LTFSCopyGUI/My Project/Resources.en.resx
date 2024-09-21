@@ -696,4 +696,7 @@
   <data name="ResText_UIE" xml:space="preserve">
     <value>Update all indexes and eject?</value>
   </data>
+  <data name="ResText_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
 </root>

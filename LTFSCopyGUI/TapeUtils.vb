@@ -5005,6 +5005,16 @@ End SyncLock
             If a_CMBuffer.Length = 0 Then a_CMBuffer = ReadBuffer(handle, &H5)
             RunParse()
         End Sub
+        Public Sub New(ByVal BufferData As Byte(), Optional ByRef errorMsg As Exception = Nothing)
+            a_CMBuffer = BufferData
+            If a_CMBuffer.Length <> 0 Then
+                Try
+                    RunParse()
+                Catch ex As Exception
+                    errorMsg = ex
+                End Try
+            End If
+        End Sub
         Public Shared Function FromTapeDrive(TapeDrive As String) As CMParser
             Return New CMParser(TapeDrive)
         End Function

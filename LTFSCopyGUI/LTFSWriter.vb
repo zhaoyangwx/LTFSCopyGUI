@@ -247,6 +247,32 @@ Public Class LTFSWriter
         持续时间ToolStripMenuItem.Text = $"{My.Resources.ResText_STime}{My.Settings.LTFSWriter_AutoCleanTimeThreashould}s"
         去重SHA1ToolStripMenuItem.Checked = My.Settings.LTFSWriter_DeDupe
         右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
+        Select Case My.Settings.LTFSWriter_PowerPolicyOnWriteBegin
+            Case Guid.Empty
+                无更改ToolStripMenuItem.Checked = True
+            Case New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+                平衡ToolStripMenuItem.Checked = True
+            Case New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+                节能ToolStripMenuItem.Checked = True
+            Case New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+                高性能ToolStripMenuItem.Checked = True
+            Case Else
+                其他ToolStripMenuItem.Checked = True
+                其他ToolStripMenuItem.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}"
+        End Select
+        Select Case My.Settings.LTFSWriter_PowerPolicyOnWriteEnd
+            Case Guid.Empty
+                无更改ToolStripMenuItem1.Checked = True
+            Case New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+                平衡ToolStripMenuItem1.Checked = True
+            Case New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+                节能ToolStripMenuItem1.Checked = True
+            Case New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+                高性能ToolStripMenuItem1.Checked = True
+            Case Else
+                其他ToolStripMenuItem1.Checked = True
+                其他ToolStripMenuItem1.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}"
+        End Select
         Chart1.Titles(1).Text = My.Resources.ResText_SpeedBT
         Chart1.Titles(2).Text = My.Resources.ResText_FileRateBT
         TapeUtils.AllowPartition = Not DisablePartition
@@ -271,6 +297,24 @@ Public Class LTFSWriter
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashOnWriting = 计算校验ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashAsync = 异步校验CPU占用高ToolStripMenuItem.Checked
+        If 无更改ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = Guid.Empty
+        ElseIf 平衡ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+        ElseIf 节能ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+        ElseIf 高性能ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+        End If
+        If 无更改ToolStripMenuItem1.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = Guid.Empty
+        ElseIf 平衡ToolStripMenuItem1.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+        ElseIf 节能ToolStripMenuItem1.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+        ElseIf 高性能ToolStripMenuItem1.Checked Then
+            My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+        End If
         My.Settings.Save()
     End Sub
     Private Text3 As String = "", Text5 As String = ""
@@ -2799,6 +2843,9 @@ Public Class LTFSWriter
                     TapeUtils.PreventMediaRemoval(TapeDrive)
                     If Not LocateToWritePosition() Then Exit Sub
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
+                    If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
+                        Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                    End If
                     UFReadCount.Inc()
                     CurrentFilesProcessed = 0
                     CurrentBytesProcessed = 0
@@ -3255,6 +3302,9 @@ Public Class LTFSWriter
                 TapeUtils.Flush(TapeDrive)
                 TapeUtils.ReleaseUnit(TapeDrive)
                 TapeUtils.AllowMediaRemoval(TapeDrive)
+                If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
+                    Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}")
+                End If
                 Invoke(Sub()
                            LockGUI(False)
                            RefreshDisplay()
@@ -5616,6 +5666,371 @@ Public Class LTFSWriter
     Private Sub 加锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加锁ToolStripMenuItem.Click
         TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
         MessageBox.Show($"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
+    End Sub
+
+    Private Sub 新建压缩文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 新建压缩文件ToolStripMenuItem.Click
+        If ListView1.Tag IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            Dim dirname As String = FolderBrowserDialog1.SelectedPath
+
+            Dim th As New Threading.Thread(
+            Sub()
+                Dim OnWriteFinishMessage As String = ""
+                Try
+                    Dim StartTime As Date = Now
+                    PrintMsg("", True)
+                    PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                    PrintMsg(My.Resources.ResText_PrepW)
+                    TapeUtils.ReserveUnit(TapeDrive)
+                    TapeUtils.PreventMediaRemoval(TapeDrive)
+                    If Not LocateToWritePosition() Then Exit Sub
+                    Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
+                    UFReadCount.Inc()
+                    CurrentFilesProcessed = 0
+                    CurrentBytesProcessed = 0
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverwriteValue = 0
+                    If UnwrittenFiles.Count > 0 Then
+                        UFReadCount.Inc()
+                        UFReadCount.Dec()
+                        UnwrittenCountOverwriteValue = UnwrittenCount
+                        UnwrittenSizeOverrideValue = UnwrittenSize
+                        Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
+
+                        Dim HashTaskAwaitNumber As Integer = 0
+                        Threading.ThreadPool.SetMaxThreads(1024, 1024)
+                        Threading.ThreadPool.SetMinThreads(256, 256)
+
+                        Dim p As New TapeUtils.PositionData(TapeDrive)
+                        TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                        Try
+                            Dim fr As New FileRecord
+                            fr.File.fileuid = schema.highestfileuid + 1
+                            schema.highestfileuid += 1
+                            Dim fileextent As New ltfsindex.file.extent With
+                                            {.partition = ltfsindex.PartitionLabel.b,
+                                            .startblock = p.BlockNumber,
+                                            .bytecount = 0,
+                                            .byteoffset = 0,
+                                            .fileoffset = 0}
+                            fr.File.extentinfo.Add(fileextent)
+                            PrintMsg($"{My.Resources.ResText_Writing} {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}", False,
+                                 $"{My.Resources.ResText_Writing}: {fr.SourcePath}{vbCrLf}{My.Resources.ResText_Size}: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
+                                 }{My.Resources.ResText_WrittenTotal}: {IOManager.FormatSize(TotalBytesProcessed) _
+                                 } {My.Resources.ResText_Remaining}: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
+                                 } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
+                            'write to tape
+
+                            Select Case fr.Open()
+                                Case DialogResult.Ignore
+                                    PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                Case DialogResult.Abort
+                                    StopFlag = True
+                                    Throw New Exception(My.Resources.ResText_FileOpenError)
+                            End Select
+                            'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
+                            Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing
+                            If HashOnWrite Then sh = New IOManager.CheckSumBlockwiseCalculator
+                            Dim LastWriteTask As Task = Nothing
+                            Dim ExitWhileFlag As Boolean = False
+                            'Dim tstart As Date = Now
+                            'Dim tsub As Double = 0
+                            While Not StopFlag
+                                Dim buffer(plabel.blocksize - 1) As Byte
+                                Dim BytesReaded As UInteger
+                                While True
+                                    Try
+                                        BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
+                                        Exit While
+                                    Catch ex As Exception
+                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                            Case DialogResult.Abort
+                                                StopFlag = True
+                                                fr.Close()
+                                                Throw ex
+                                            Case DialogResult.Retry
+
+                                            Case DialogResult.Ignore
+                                                PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                        End Select
+                                    End Try
+                                End While
+
+                                If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                If ExitWhileFlag Then Exit While
+                                LastWriteTask = Task.Run(
+                                Sub()
+                                    If BytesReaded > 0 Then
+                                        CheckCount += 1
+                                        If CheckCount >= CheckCycle Then CheckCount = 0
+                                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
+                                            Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                                            While SpeedLimit > 0 AndAlso ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
+                                                Threading.Thread.Sleep(0)
+                                                ts = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                                            End While
+                                            SpeedLimitLastTriggerTime = Now
+                                        End If
+                                        Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
+                                        Dim succ As Boolean = False
+                                        While Not succ
+                                            Dim sense As Byte()
+                                            Try
+                                                'Dim t0 As Date = Now
+                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, True)
+                                                'tsub += (Now - t0).TotalMilliseconds
+                                                'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
+                                                SyncLock p
+                                                    p.BlockNumber += 1
+                                                End SyncLock
+                                            Catch ex As Exception
+                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Case DialogResult.Abort
+                                                        fr.Close()
+                                                        StopFlag = True
+                                                        Throw ex
+                                                    Case DialogResult.Retry
+                                                        succ = False
+                                                    Case DialogResult.Ignore
+                                                        succ = True
+                                                        Exit While
+                                                End Select
+                                                p = New TapeUtils.PositionData(TapeDrive)
+                                                Continue While
+                                            End Try
+                                            If (((sense(2) >> 6) And &H1) = 1) Then
+                                                If ((sense(2) And &HF) = 13) Then
+                                                    PrintMsg(My.Resources.ResText_VOF)
+                                                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
+                                                    StopFlag = True
+                                                    fr.Close()
+                                                    Exit Sub
+                                                Else
+                                                    PrintMsg(My.Resources.ResText_EWEOM, True)
+                                                    succ = True
+                                                    Exit While
+                                                End If
+                                            ElseIf sense(2) And &HF <> 0 Then
+                                                Try
+                                                    Throw New Exception("SCSI sense error")
+                                                Catch ex As Exception
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Case DialogResult.Abort
+                                                            fr.Close()
+                                                            StopFlag = True
+                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                        Case DialogResult.Retry
+                                                            succ = False
+                                                        Case DialogResult.Ignore
+                                                            succ = True
+                                                            Exit While
+                                                    End Select
+                                                End Try
+
+                                                p = New TapeUtils.PositionData(TapeDrive)
+                                            Else
+                                                succ = True
+                                                Exit While
+                                            End If
+                                        End While
+                                        If sh IsNot Nothing AndAlso succ Then
+                                            If 异步校验CPU占用高ToolStripMenuItem.Checked Then
+                                                sh.PropagateAsync(buffer, BytesReaded)
+                                            Else
+                                                sh.Propagate(buffer, BytesReaded)
+                                            End If
+                                        End If
+                                        If Flush Then CheckFlush()
+                                        If Clean Then CheckClean(True)
+                                        fr.File.WrittenBytes += BytesReaded
+                                        TotalBytesProcessed += BytesReaded
+                                        CurrentBytesProcessed += BytesReaded
+                                        TotalBytesUnindexed += BytesReaded
+                                    Else
+                                        ExitWhileFlag = True
+                                    End If
+                                End Sub)
+                            End While
+                            If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                            fr.CloseAsync()
+                            If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
+                                Threading.Interlocked.Increment(HashTaskAwaitNumber)
+                                Task.Run(Sub()
+                                             sh.ProcessFinalBlock()
+                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                             sh.StopFlag = True
+                                             Threading.Interlocked.Decrement(HashTaskAwaitNumber)
+                                         End Sub)
+                            ElseIf sh IsNot Nothing Then
+                                sh.StopFlag = True
+                            End If
+                            TotalFilesProcessed += 1
+                            CurrentFilesProcessed += 1
+                            p = GetPos
+                            If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+                            PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
+                            CurrentHeight = p.BlockNumber
+                            'mark as written
+                            fr.ParentDirectory.contents._file.Add(fr.File)
+                            fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
+                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                            If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(TapeDrive)
+                            Invoke(Sub()
+                                       If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
+                                           p = New TapeUtils.PositionData(TapeDrive)
+                                           RefreshCapacity()
+                                           Dim p2 As New TapeUtils.PositionData(TapeDrive)
+                                           If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                                               If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
+                                                   StopFlag = True
+                                               End If
+                                           End If
+                                       End If
+                                   End Sub)
+                        Catch ex As Exception
+                            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                                PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
+                            End Try
+                            While Pause
+                                Threading.Thread.Sleep(10)
+                        End While
+                        Marshal.FreeHGlobal(wBufferPtr)
+                        While HashTaskAwaitNumber > 0
+                            Threading.Thread.Sleep(1)
+                        End While
+                    End If
+                    UFReadCount.Dec()
+                    Me.Invoke(Sub() Timer1_Tick(sender, e))
+                    Dim TotalBytesWritten As Long = UnwrittenSizeOverrideValue
+                    While True
+                        Threading.Thread.Sleep(0)
+                        SyncLock UFReadCount
+                            If UFReadCount > 0 Then Continue While
+                            UnwrittenFiles.Clear()
+                            UnwrittenSizeOverrideValue = 0
+                            UnwrittenCountOverwriteValue = 0
+                            CurrentFilesProcessed = 0
+                            CurrentBytesProcessed = 0
+                            Exit While
+                        End SyncLock
+                    End While
+                    Modified = True
+                    If Not StopFlag Then
+                        Dim TimeCost As TimeSpan = Now - StartTime
+                        OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
+                        OnWriteFinished()
+                    Else
+                        OnWriteFinishMessage = (My.Resources.ResText_WCnd)
+                    End If
+                Catch ex As Exception
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                    PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
+                End Try
+                TapeUtils.Flush(TapeDrive)
+                TapeUtils.ReleaseUnit(TapeDrive)
+                TapeUtils.AllowMediaRemoval(TapeDrive)
+                Invoke(Sub()
+                           LockGUI(False)
+                           RefreshDisplay()
+                           RefreshCapacity()
+                           If Not StopFlag AndAlso WA0ToolStripMenuItem.Checked AndAlso MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WFUp, My.Resources.ResText_OpSucc, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                               更新数据区索引ToolStripMenuItem_Click(sender, e)
+                           End If
+                           PrintMsg(OnWriteFinishMessage)
+                           RaiseEvent WriteFinished()
+                       End Sub)
+            End Sub)
+            StopFlag = False
+            LockGUI()
+            th.Start()
+        End If
+    End Sub
+    Public Sub ResetPowerPolicyUI0()
+        无更改ToolStripMenuItem.Checked = False
+        平衡ToolStripMenuItem.Checked = False
+        节能ToolStripMenuItem.Checked = False
+        高性能ToolStripMenuItem.Checked = False
+        其他ToolStripMenuItem.Checked = False
+        其他ToolStripMenuItem.Text = My.Resources.ResText_Other
+    End Sub
+    Public Sub ResetPowerPolicyUI1()
+        无更改ToolStripMenuItem1.Checked = False
+        平衡ToolStripMenuItem1.Checked = False
+        节能ToolStripMenuItem1.Checked = False
+        高性能ToolStripMenuItem1.Checked = False
+        其他ToolStripMenuItem1.Checked = False
+        其他ToolStripMenuItem1.Text = My.Resources.ResText_Other
+    End Sub
+    Private Sub 无更改ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 无更改ToolStripMenuItem.Click
+        ResetPowerPolicyUI0()
+        无更改ToolStripMenuItem.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = Guid.Empty
+    End Sub
+
+    Private Sub 平衡ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 平衡ToolStripMenuItem.Click
+        ResetPowerPolicyUI0()
+        平衡ToolStripMenuItem.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+    End Sub
+
+    Private Sub 节能ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 节能ToolStripMenuItem.Click
+        ResetPowerPolicyUI0()
+        节能ToolStripMenuItem.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+    End Sub
+
+    Private Sub 高性能ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 高性能ToolStripMenuItem.Click
+        ResetPowerPolicyUI0()
+        高性能ToolStripMenuItem.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+    End Sub
+
+    Private Sub 其他ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 其他ToolStripMenuItem.Click
+        Try
+            Dim s As String = InputBox("Power policy GUID", "Power policy on write begin", "")
+            My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid(s)
+            ResetPowerPolicyUI0()
+            其他ToolStripMenuItem.Checked = True
+            其他ToolStripMenuItem.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}"
+        Catch ex As Exception
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
+        End Try
+    End Sub
+
+    Private Sub 无更改ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 无更改ToolStripMenuItem1.Click
+        ResetPowerPolicyUI1()
+        无更改ToolStripMenuItem1.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = Guid.Empty
+    End Sub
+
+    Private Sub 平衡ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 平衡ToolStripMenuItem1.Click
+        ResetPowerPolicyUI1()
+        平衡ToolStripMenuItem1.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("381b4222-f694-41f0-9685-ff5bb260df2e")
+    End Sub
+
+    Private Sub 节能ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 节能ToolStripMenuItem1.Click
+        ResetPowerPolicyUI1()
+        节能ToolStripMenuItem1.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("a1841308-3541-4fab-bc81-f71556f20b4a")
+    End Sub
+
+    Private Sub 高性能ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 高性能ToolStripMenuItem1.Click
+        ResetPowerPolicyUI1()
+        高性能ToolStripMenuItem1.Checked = True
+        My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c")
+    End Sub
+
+    Private Sub 其他ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 其他ToolStripMenuItem1.Click
+        Try
+            Dim s As String = InputBox("Power policy GUID", "Power policy on write end", "")
+            My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid(s)
+            ResetPowerPolicyUI1()
+            其他ToolStripMenuItem1.Checked = True
+            其他ToolStripMenuItem1.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}"
+        Catch ex As Exception
+            MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
+        End Try
     End Sub
 
     Private Sub 解锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 解锁ToolStripMenuItem.Click
