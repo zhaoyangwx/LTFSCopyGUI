@@ -227,7 +227,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAWgBCwFoAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAXABCwFwAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1008,40 +1008,40 @@
   <data name="WA3ToolStripMenuItem.Text" xml:space="preserve">
     <value>更新全部索引并弹出</value>
   </data>
-  <data name="无更改ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="无更改ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="无更改ToolStripMenuItem1.Text" xml:space="preserve">
     <value>无更改</value>
   </data>
-  <data name="平衡ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="平衡ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="平衡ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="平衡ToolStripMenuItem1.Text" xml:space="preserve">
     <value>平衡</value>
   </data>
-  <data name="节能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="节能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="节能ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="节能ToolStripMenuItem1.Text" xml:space="preserve">
     <value>节能</value>
   </data>
-  <data name="高性能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="高性能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="高性能ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="高性能ToolStripMenuItem1.Text" xml:space="preserve">
     <value>高性能</value>
   </data>
-  <data name="其他ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="其他ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="其他ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
     <value>其他</value>
   </data>
-  <data name="电源选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="电源选项ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
   </data>
-  <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
+  <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
     <value>电源选项</value>
   </data>
   <data name="ToolStripTextBox1.Enabled" type="System.Boolean, mscorlib">
@@ -1143,40 +1143,40 @@
   <data name="重装带前清洁次数3ToolStripMenuItem.Text" xml:space="preserve">
     <value>重装带前清洁次数：3</value>
   </data>
-  <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="无更改ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="无更改ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="无更改ToolStripMenuItem.Text" xml:space="preserve">
     <value>无更改</value>
   </data>
-  <data name="平衡ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="平衡ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="平衡ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="平衡ToolStripMenuItem.Text" xml:space="preserve">
     <value>平衡</value>
   </data>
-  <data name="节能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="节能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="节能ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="节能ToolStripMenuItem.Text" xml:space="preserve">
     <value>节能</value>
   </data>
-  <data name="高性能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="高性能ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="高性能ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="高性能ToolStripMenuItem.Text" xml:space="preserve">
     <value>高性能</value>
   </data>
-  <data name="其他ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
+  <data name="其他ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
   </data>
-  <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="其他ToolStripMenuItem.Text" xml:space="preserve">
     <value>其他</value>
   </data>
-  <data name="电源选项ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="电源选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
   </data>
-  <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
+  <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
     <value>电源选项</value>
   </data>
   <data name="ToolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
