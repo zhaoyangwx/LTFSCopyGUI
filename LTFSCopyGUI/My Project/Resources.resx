@@ -121,7 +121,7 @@
     <value>设置Barcode失败</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>  -s                                            不要自动读取索引
+    <value>-s                                            不要自动读取索引
   -t &lt;drive&gt;                                    直接读写
   ├  -t 0
   ├  -t TAPE0
@@ -164,7 +164,12 @@
                                            
   -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
                                                 SCSI命令执行
-  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600</value>
+  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600
+                                           
+  -svc [&lt;port, default=25900&gt;]
+                                                服务端
+  --remoteraw &lt;ip&gt; &lt;port&gt; &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
+                                                远程执行SCSI命令</value>
   </data>
   <data name="StrDefaultLicense" xml:space="preserve">
     <value> 非商业许可</value>

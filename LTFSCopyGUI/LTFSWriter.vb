@@ -3190,7 +3190,12 @@ Public Class LTFSWriter
                                                                 sh.Propagate(buffer, BytesReaded)
                                                             End If
                                                         End If
-                                                        If Flush Then CheckFlush()
+                                                        If Flush Then
+                                                            CheckFlush()
+                                                            If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
+                                                                Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                            End If
+                                                        End If
                                                         If Clean Then CheckClean(True)
                                                         fr.File.WrittenBytes += BytesReaded
                                                         TotalBytesProcessed += BytesReaded

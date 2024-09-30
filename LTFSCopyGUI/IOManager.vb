@@ -843,7 +843,54 @@ Public Class IOManager
             End SyncLock
         End Function
     End Class
+    Public Class NetworkCommand
+        Public Property HashCode As Integer
+        Public Property CommandType As CommandTypeDef
+        Enum CommandTypeDef
+            SCSICommand
+            SCSISenseData
+            General
+            GeneralData
+            SCSIIOCtlError
+        End Enum
+        Public Property PayLoad As New List(Of Byte())
+        Public Function GetSerializedText() As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(NetworkCommand))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            writer.Serialize(t, Me)
+            Return sb.ToString()
+        End Function
+        Public Shared Function FromXML(s As String) As NetworkCommand
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(NetworkCommand))
+            Dim t As IO.TextReader = New IO.StringReader(s)
+            Return CType(reader.Deserialize(t), NetworkCommand)
+        End Function
+        Public Function SendTo(target As Net.IPAddress, port As Integer) As NetworkCommand
+            Dim rawdata() As Byte = Text.Encoding.ASCII.GetBytes(Me.GetSerializedText())
+            Dim senddata As New List(Of Byte)
+            senddata.AddRange(BitConverter.GetBytes(rawdata.Length))
+            senddata.AddRange(rawdata)
 
+            Dim sck As New Net.Sockets.Socket(Net.Sockets.AddressFamily.InterNetwork, Net.Sockets.SocketType.Stream, Net.Sockets.ProtocolType.Tcp)
+            sck.Connect(New Net.IPEndPoint(target, port))
+            sck.SendTo(senddata.ToArray(), New Net.IPEndPoint(target, port))
+            Dim header(3) As Byte
+            Dim TaskFinished As Boolean = False
+            Dim result As NetworkCommand = Nothing
+            Task.Run(Sub()
+                         Dim hLength As Integer = sck.Receive(header, 4, Net.Sockets.SocketFlags.None)
+                         Dim length As Integer = BitConverter.ToInt32(header, 0)
+                         Dim data(length - 1) As Byte
+                         Dim dLength As Integer = sck.Receive(data, length, Net.Sockets.SocketFlags.None)
+                         Dim msg As String = Text.Encoding.ASCII.GetString(data)
+                         sck.Close()
+                         result = NetworkCommand.FromXML(msg)
+                         TaskFinished = True
+                     End Sub).Wait(10000)
+            Return result
+        End Function
+    End Class
 End Class
 Public Class ExplorerUtils
     Implements IComparer(Of String)
