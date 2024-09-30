@@ -127,7 +127,7 @@
     <value>Barcode write fail</value>
   </data>
   <data name="StrCMDHelpText" xml:space="preserve">
-    <value>  -s                                            Disable index reading
+    <value>-s                                            Disable index reading
   -t &lt;drive&gt;                                    LTFSWriter
   ├  -t 0
   ├  -t TAPE0
@@ -169,7 +169,12 @@
   └  -mkltfs TAPE0 C01234L5 "Tape 1234" 1 65535 524288 75 65535
                                            
   -raw &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; &lt;timeout, default=60000&gt;         SCSI command execute
-  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600</value>
+  └  -raw TAPE0 ""34 00 00 00 00 00 00 00 00"" ""00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00"" 1 600
+                                             
+  -svc [&lt;port, default=25900&gt;]
+                                                command server
+  --remoteraw &lt;ip&gt; &lt;port&gt; &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
+                                                remote SCSI command</value>
   </data>
   <data name="StrFormatError" xml:space="preserve">
     <value>Format failed</value>

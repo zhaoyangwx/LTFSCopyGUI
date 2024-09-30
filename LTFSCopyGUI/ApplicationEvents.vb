@@ -1,4 +1,5 @@
-﻿Imports Microsoft.VisualBasic.ApplicationServices
+﻿Imports System.Runtime.InteropServices
+Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
     ' 以下事件可用于 MyApplication: 
@@ -350,6 +351,158 @@ dataDir:{dataDir}
                                     Dim strSign As String = Convert.ToBase64String(bSign)
                                     Console.WriteLine($"{strBody}{vbCrLf}{strSign}")
                                 End If
+                                CloseConsole()
+                                End
+                            End If
+                        Case "-svc"
+                            If i < param.Count - 0 Then
+                                CheckUAC(e)
+                                InitConsole()
+                                Dim port As Integer = 25900
+                                If i + 2 <= param.Length - 1 Then
+                                    port = Integer.Parse(param(i + 2))
+                                End If
+
+                                Dim sck As New Net.Sockets.Socket(Net.Sockets.AddressFamily.InterNetwork, Net.Sockets.SocketType.Stream, Net.Sockets.ProtocolType.Tcp)
+                                Dim server As New Net.IPEndPoint(Net.IPAddress.Any, port)
+                                sck.Bind(server)
+                                sck.Listen(0)
+                                While True
+                                    Dim connect As Net.Sockets.Socket = sck.Accept()
+                                    Dim rEP As Net.IPEndPoint = CType(connect.RemoteEndPoint, Net.IPEndPoint)
+                                    Console.WriteLine($"In: {rEP.Address}:{rEP.Port}")
+                                    Dim header(3) As Byte
+                                    Dim hLength As Integer = connect.Receive(header, 4, Net.Sockets.SocketFlags.None)
+                                    If hLength <> 4 Then
+                                        connect.Close()
+                                        Console.WriteLine("Invalid data")
+                                        Continue While
+                                    End If
+                                    Dim length As Integer = BitConverter.ToInt32(header, 0)
+                                    Dim data(length - 1) As Byte
+                                    Dim dLength As Integer = connect.Receive(data, length, Net.Sockets.SocketFlags.None)
+                                    If dLength <> length Then
+                                        connect.Close()
+                                        Console.WriteLine("Invalid data")
+                                        Continue While
+                                    End If
+                                    Dim msg As String = Text.Encoding.ASCII.GetString(data)
+                                    Console.WriteLine(msg)
+                                    Console.WriteLine()
+                                    Console.WriteLine($"Out: ")
+                                    Dim cmd As IOManager.NetworkCommand
+                                    Try
+                                        cmd = IOManager.NetworkCommand.FromXML(msg)
+                                        Dim result As New IOManager.NetworkCommand With {.HashCode = cmd.HashCode}
+                                        Select Case cmd.CommandType
+                                            Case IOManager.NetworkCommand.CommandTypeDef.SCSICommand
+                                                result.CommandType = IOManager.NetworkCommand.CommandTypeDef.SCSISenseData
+                                                If cmd.PayLoad.Count = 5 Then
+                                                    Dim devpath As String = Text.Encoding.ASCII.GetString(cmd.PayLoad(0))
+                                                    Dim cdbdata As Byte() = cmd.PayLoad(1)
+                                                    Dim paramdata As Byte() = cmd.PayLoad(2)
+                                                    Dim datadir As Byte = cmd.PayLoad(3)(0)
+                                                    Dim timeout As Integer = BitConverter.ToInt32(cmd.PayLoad(4), 0)
+                                                    Dim cdbPtr As IntPtr = Marshal.AllocHGlobal(cdbdata.Length)
+                                                    Marshal.Copy(cdbdata, 0, cdbPtr, cdbdata.Length)
+                                                    Dim paramPtr As IntPtr = Marshal.AllocHGlobal(paramdata.Length)
+                                                    If paramdata.Length > 0 Then Marshal.Copy(paramdata, 0, paramdata.Length, paramPtr)
+                                                    Dim sensePtr As IntPtr = Marshal.AllocHGlobal(64)
+                                                    Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(devpath, cdbPtr, cdbdata.Length, paramPtr, paramdata.Length, datadir, timeout, sensePtr)
+                                                    Dim sensedata(63) As Byte
+                                                    Marshal.Copy(sensePtr, sensedata, 0, sensedata.Length)
+                                                    Marshal.Copy(paramPtr, paramdata, 0, paramdata.Length)
+                                                    Marshal.FreeHGlobal(cdbPtr)
+                                                    Marshal.FreeHGlobal(paramPtr)
+                                                    Marshal.FreeHGlobal(sensePtr)
+                                                    result.PayLoad.Add(paramdata)
+                                                    result.PayLoad.Add(sensedata)
+                                                    If Not succ Then result.CommandType = IOManager.NetworkCommand.CommandTypeDef.SCSIIOCtlError
+                                                End If
+                                            Case IOManager.NetworkCommand.CommandTypeDef.General
+                                                result.CommandType = IOManager.NetworkCommand.CommandTypeDef.GeneralData
+                                        End Select
+                                        Dim resp As String = result.GetSerializedText()
+                                        Dim respData As New List(Of Byte)
+                                        respData.AddRange(BitConverter.GetBytes(resp.Length))
+                                        respData.AddRange(Text.Encoding.ASCII.GetBytes(resp))
+                                        Console.WriteLine(resp)
+                                        connect.Send(respData.ToArray())
+                                    Catch ex As Exception
+                                        Console.WriteLine(ex.ToString())
+                                    End Try
+                                    connect.Close()
+                                End While
+                                AddHandler Console.CancelKeyPress,
+                                    Sub(ByVal senderc As Object, ByVal args As ConsoleCancelEventArgs)
+                                        sck.Shutdown(Net.Sockets.SocketShutdown.Both)
+                                        sck.Close()
+                                    End Sub
+                                CloseConsole()
+                                End
+                            End If
+                        Case "-remoteraw"
+                            CheckUAC(e)
+                            InitConsole()
+                            If i < param.Count - 6 Then
+                                Dim ipstr As String = param(i + 1)
+                                Dim ip As New Net.IPAddress(0)
+                                Net.IPAddress.TryParse(ipstr, ip)
+                                Dim port As String = param(i + 2)
+                                Dim TapeDrive As String = param(i + 3)
+                                If TapeDrive.StartsWith("TAPE") Then
+                                    TapeDrive = "\\.\" & TapeDrive
+                                ElseIf TapeDrive.StartsWith("\\.\") Then
+                                    'Do Nothing
+                                ElseIf TapeDrive = Val(TapeDrive).ToString Then
+                                    TapeDrive = "\\.\TAPE" & TapeDrive
+                                Else
+
+                                End If
+                                Dim cdb As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 4))
+                                Dim data As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 5))
+                                Dim dataDir As Byte = Val(param(i + 6))
+                                Dim TimeOut As Integer = 60000
+                                If i + 7 <= param.Length - 1 Then
+                                    TimeOut = Val(param(i + 7))
+                                End If
+                                Dim sense As Byte() = {}
+                                Dim pl As New List(Of Byte())
+                                pl.Add(Text.Encoding.ASCII.GetBytes(TapeDrive))
+                                pl.Add(cdb)
+                                pl.Add(data)
+                                pl.Add({dataDir})
+                                pl.Add(BitConverter.GetBytes(TimeOut))
+                                Dim cmd As New IOManager.NetworkCommand With {.CommandType = IOManager.NetworkCommand.CommandTypeDef.SCSICommand,
+                                    .PayLoad = pl,
+                                    .HashCode = Now.Ticks.GetHashCode()}
+                                Dim result As IOManager.NetworkCommand = cmd.SendTo(ip, Integer.Parse(port))
+                                If result.HashCode = cmd.HashCode AndAlso result.CommandType = IOManager.NetworkCommand.CommandTypeDef.SCSISenseData Then
+                                    data = result.PayLoad(0)
+                                    sense = result.PayLoad(1)
+                                    Console.WriteLine($"{TapeDrive}
+cdb:
+{TapeUtils.Byte2Hex(cdb)}
+param:
+{TapeUtils.Byte2Hex(data)}
+dataDir:{dataDir}
+
+{Resources.StrSCSISucc}
+sense:
+{TapeUtils.Byte2Hex(sense)}
+{TapeUtils.ParseSenseData(sense)}")
+                                Else
+                                    Console.WriteLine($"{TapeDrive}
+cdb:
+{TapeUtils.Byte2Hex(cdb)}
+param:
+{TapeUtils.Byte2Hex(data)}
+dataDir:{dataDir}
+
+
+{Resources.StrSCSIFail}")
+                                End If
+
                                 CloseConsole()
                                 End
                             End If

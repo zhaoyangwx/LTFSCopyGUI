@@ -163,12 +163,12 @@ Partial Class LTFSWriter
         Me.WA1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA2ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.电源选项ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.无更改ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.平衡ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.节能ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.高性能ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.其他ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.电源选项ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.无更改ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.平衡ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.节能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.高性能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.其他ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripTextBox1 = New System.Windows.Forms.ToolStripTextBox()
         Me.计算校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.异步校验CPU占用高ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -185,12 +185,12 @@ Partial Class LTFSWriter
         Me.速度上限ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.持续时间ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.重装带前清洁次数3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.电源选项ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.无更改ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.平衡ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.节能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.高性能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.其他ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
+        Me.电源选项ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.无更改ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.平衡ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.节能ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.高性能ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.其他ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator7 = New System.Windows.Forms.ToolStripSeparator()
         Me.启用日志记录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.总是更新数据区索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -913,36 +913,36 @@ Partial Class LTFSWriter
         Me.WA3ToolStripMenuItem.Name = "WA3ToolStripMenuItem"
         resources.ApplyResources(Me.WA3ToolStripMenuItem, "WA3ToolStripMenuItem")
         '
-        '电源选项ToolStripMenuItem
+        '电源选项ToolStripMenuItem1
         '
-        Me.电源选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem, Me.平衡ToolStripMenuItem, Me.节能ToolStripMenuItem, Me.高性能ToolStripMenuItem, Me.其他ToolStripMenuItem})
-        Me.电源选项ToolStripMenuItem.Name = "电源选项ToolStripMenuItem"
-        resources.ApplyResources(Me.电源选项ToolStripMenuItem, "电源选项ToolStripMenuItem")
+        Me.电源选项ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem1, Me.平衡ToolStripMenuItem1, Me.节能ToolStripMenuItem1, Me.高性能ToolStripMenuItem1, Me.其他ToolStripMenuItem1})
+        Me.电源选项ToolStripMenuItem1.Name = "电源选项ToolStripMenuItem1"
+        resources.ApplyResources(Me.电源选项ToolStripMenuItem1, "电源选项ToolStripMenuItem1")
         '
-        '无更改ToolStripMenuItem
+        '无更改ToolStripMenuItem1
         '
-        Me.无更改ToolStripMenuItem.Name = "无更改ToolStripMenuItem"
-        resources.ApplyResources(Me.无更改ToolStripMenuItem, "无更改ToolStripMenuItem")
+        Me.无更改ToolStripMenuItem1.Name = "无更改ToolStripMenuItem1"
+        resources.ApplyResources(Me.无更改ToolStripMenuItem1, "无更改ToolStripMenuItem1")
         '
-        '平衡ToolStripMenuItem
+        '平衡ToolStripMenuItem1
         '
-        Me.平衡ToolStripMenuItem.Name = "平衡ToolStripMenuItem"
-        resources.ApplyResources(Me.平衡ToolStripMenuItem, "平衡ToolStripMenuItem")
+        Me.平衡ToolStripMenuItem1.Name = "平衡ToolStripMenuItem1"
+        resources.ApplyResources(Me.平衡ToolStripMenuItem1, "平衡ToolStripMenuItem1")
         '
-        '节能ToolStripMenuItem
+        '节能ToolStripMenuItem1
         '
-        Me.节能ToolStripMenuItem.Name = "节能ToolStripMenuItem"
-        resources.ApplyResources(Me.节能ToolStripMenuItem, "节能ToolStripMenuItem")
+        Me.节能ToolStripMenuItem1.Name = "节能ToolStripMenuItem1"
+        resources.ApplyResources(Me.节能ToolStripMenuItem1, "节能ToolStripMenuItem1")
         '
-        '高性能ToolStripMenuItem
+        '高性能ToolStripMenuItem1
         '
-        Me.高性能ToolStripMenuItem.Name = "高性能ToolStripMenuItem"
-        resources.ApplyResources(Me.高性能ToolStripMenuItem, "高性能ToolStripMenuItem")
+        Me.高性能ToolStripMenuItem1.Name = "高性能ToolStripMenuItem1"
+        resources.ApplyResources(Me.高性能ToolStripMenuItem1, "高性能ToolStripMenuItem1")
         '
-        '其他ToolStripMenuItem
+        '其他ToolStripMenuItem1
         '
-        Me.其他ToolStripMenuItem.Name = "其他ToolStripMenuItem"
-        resources.ApplyResources(Me.其他ToolStripMenuItem, "其他ToolStripMenuItem")
+        Me.其他ToolStripMenuItem1.Name = "其他ToolStripMenuItem1"
+        resources.ApplyResources(Me.其他ToolStripMenuItem1, "其他ToolStripMenuItem1")
         '
         'ToolStripTextBox1
         '
@@ -1034,36 +1034,36 @@ Partial Class LTFSWriter
         Me.重装带前清洁次数3ToolStripMenuItem.Name = "重装带前清洁次数3ToolStripMenuItem"
         resources.ApplyResources(Me.重装带前清洁次数3ToolStripMenuItem, "重装带前清洁次数3ToolStripMenuItem")
         '
-        '电源选项ToolStripMenuItem1
+        '电源选项ToolStripMenuItem
         '
-        Me.电源选项ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem1, Me.平衡ToolStripMenuItem1, Me.节能ToolStripMenuItem1, Me.高性能ToolStripMenuItem1, Me.其他ToolStripMenuItem1})
-        Me.电源选项ToolStripMenuItem1.Name = "电源选项ToolStripMenuItem1"
-        resources.ApplyResources(Me.电源选项ToolStripMenuItem1, "电源选项ToolStripMenuItem1")
+        Me.电源选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem, Me.平衡ToolStripMenuItem, Me.节能ToolStripMenuItem, Me.高性能ToolStripMenuItem, Me.其他ToolStripMenuItem})
+        Me.电源选项ToolStripMenuItem.Name = "电源选项ToolStripMenuItem"
+        resources.ApplyResources(Me.电源选项ToolStripMenuItem, "电源选项ToolStripMenuItem")
         '
-        '无更改ToolStripMenuItem1
+        '无更改ToolStripMenuItem
         '
-        Me.无更改ToolStripMenuItem1.Name = "无更改ToolStripMenuItem1"
-        resources.ApplyResources(Me.无更改ToolStripMenuItem1, "无更改ToolStripMenuItem1")
+        Me.无更改ToolStripMenuItem.Name = "无更改ToolStripMenuItem"
+        resources.ApplyResources(Me.无更改ToolStripMenuItem, "无更改ToolStripMenuItem")
         '
-        '平衡ToolStripMenuItem1
+        '平衡ToolStripMenuItem
         '
-        Me.平衡ToolStripMenuItem1.Name = "平衡ToolStripMenuItem1"
-        resources.ApplyResources(Me.平衡ToolStripMenuItem1, "平衡ToolStripMenuItem1")
+        Me.平衡ToolStripMenuItem.Name = "平衡ToolStripMenuItem"
+        resources.ApplyResources(Me.平衡ToolStripMenuItem, "平衡ToolStripMenuItem")
         '
-        '节能ToolStripMenuItem1
+        '节能ToolStripMenuItem
         '
-        Me.节能ToolStripMenuItem1.Name = "节能ToolStripMenuItem1"
-        resources.ApplyResources(Me.节能ToolStripMenuItem1, "节能ToolStripMenuItem1")
+        Me.节能ToolStripMenuItem.Name = "节能ToolStripMenuItem"
+        resources.ApplyResources(Me.节能ToolStripMenuItem, "节能ToolStripMenuItem")
         '
-        '高性能ToolStripMenuItem1
+        '高性能ToolStripMenuItem
         '
-        Me.高性能ToolStripMenuItem1.Name = "高性能ToolStripMenuItem1"
-        resources.ApplyResources(Me.高性能ToolStripMenuItem1, "高性能ToolStripMenuItem1")
+        Me.高性能ToolStripMenuItem.Name = "高性能ToolStripMenuItem"
+        resources.ApplyResources(Me.高性能ToolStripMenuItem, "高性能ToolStripMenuItem")
         '
-        '其他ToolStripMenuItem1
+        '其他ToolStripMenuItem
         '
-        Me.其他ToolStripMenuItem1.Name = "其他ToolStripMenuItem1"
-        resources.ApplyResources(Me.其他ToolStripMenuItem1, "其他ToolStripMenuItem1")
+        Me.其他ToolStripMenuItem.Name = "其他ToolStripMenuItem"
+        resources.ApplyResources(Me.其他ToolStripMenuItem, "其他ToolStripMenuItem")
         '
         'ToolStripSeparator7
         '

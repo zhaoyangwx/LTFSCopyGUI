@@ -1628,7 +1628,7 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  查找类似   -s                                            不要自动读取索引
+        '''  查找类似 -s                                            不要自动读取索引
         '''  -t &lt;drive&gt;                                    直接读写
         '''  ├  -t 0
         '''  ├  -t TAPE0
@@ -1639,7 +1639,7 @@ Namespace My.Resources
         '''                                           
         '''  -c                                            LTFSConfigurator
         '''                                           
-        '''  -l                                            Changer Too [字符串的其余部分被截断]&quot;; 的本地化字符串。
+        '''  -l                                            Changer Tool        ''' [字符串的其余部分被截断]&quot;; 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property StrCMDHelpText() As String
             Get
