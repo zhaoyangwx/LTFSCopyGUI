@@ -748,4 +748,44 @@ Public Class Form1
             End If
         End If
     End Sub
+
+    Private Sub Button15_Click(sender As Object, e As EventArgs) Handles Button15.Click
+        Dim nws As New IOManager.NetworkCommand
+        Dim result As IOManager.NetworkCommand
+        Dim addr As New Net.IPAddress(0)
+        Net.IPAddress.TryParse("127.0.0.1", addr)
+        nws.CommandType = IOManager.NetworkCommand.CommandTypeDef.General
+        nws.HashCode = 0
+        nws.PayLoad.Clear()
+        nws.PayLoad.Add(Guid.Empty.ToByteArray())
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("ltfswriter"))
+        result = nws.SendTo(addr, 25900)
+        Dim frmID As New Guid(result.PayLoad(0))
+        nws.HashCode = 1
+        nws.PayLoad.Clear()
+        nws.PayLoad.Add(frmID.ToByteArray())
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("ltfswriter"))
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("-t"))
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("0"))
+        result = nws.SendTo(addr, 25900)
+        MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(0)))
+        nws.HashCode = 2
+        nws.PayLoad.Clear()
+        nws.PayLoad.Add(frmID.ToByteArray())
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("ltfswriter"))
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("show"))
+        result = nws.SendTo(addr, 25900)
+        MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(0)))
+
+        nws.HashCode = 3
+        nws.PayLoad.Clear()
+        nws.PayLoad.Add(frmID.ToByteArray())
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("ltfswriter"))
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes("gettext"))
+        nws.PayLoad.Add(System.Text.Encoding.UTF8.GetBytes(""))
+        result = nws.SendTo(addr, 25900)
+        MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(0)))
+        MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(1)))
+
+    End Sub
 End Class

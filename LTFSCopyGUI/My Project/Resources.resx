@@ -168,7 +168,7 @@
                                            
   -svc [&lt;port, default=25900&gt;]
                                                 服务端
-  --remoteraw &lt;ip&gt; &lt;port&gt; &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
+  -remoteraw &lt;ip&gt; &lt;port&gt; &lt;drive&gt; &lt;cdb&gt; &lt;param&gt; &lt;dataDir&gt; [&lt;timeout, default=60000&gt;]
                                                 远程执行SCSI命令</value>
   </data>
   <data name="StrDefaultLicense" xml:space="preserve">

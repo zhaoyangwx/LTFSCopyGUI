@@ -867,7 +867,7 @@ Public Class IOManager
             Return CType(reader.Deserialize(t), NetworkCommand)
         End Function
         Public Function SendTo(target As Net.IPAddress, port As Integer) As NetworkCommand
-            Dim rawdata() As Byte = Text.Encoding.ASCII.GetBytes(Me.GetSerializedText())
+            Dim rawdata() As Byte = Text.Encoding.UTF8.GetBytes(Me.GetSerializedText())
             Dim senddata As New List(Of Byte)
             senddata.AddRange(BitConverter.GetBytes(rawdata.Length))
             senddata.AddRange(rawdata)
@@ -883,7 +883,7 @@ Public Class IOManager
                          Dim length As Integer = BitConverter.ToInt32(header, 0)
                          Dim data(length - 1) As Byte
                          Dim dLength As Integer = sck.Receive(data, length, Net.Sockets.SocketFlags.None)
-                         Dim msg As String = Text.Encoding.ASCII.GetString(data)
+                         Dim msg As String = Text.Encoding.UTF8.GetString(data)
                          sck.Close()
                          result = NetworkCommand.FromXML(msg)
                          TaskFinished = True

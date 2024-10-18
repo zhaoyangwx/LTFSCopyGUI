@@ -367,6 +367,8 @@ dataDir:{dataDir}
                                 Dim server As New Net.IPEndPoint(Net.IPAddress.Any, port)
                                 sck.Bind(server)
                                 sck.Listen(0)
+                                Dim objList As New Dictionary(Of Guid, Object)
+
                                 While True
                                     Dim connect As Net.Sockets.Socket = sck.Accept()
                                     Dim rEP As Net.IPEndPoint = CType(connect.RemoteEndPoint, Net.IPEndPoint)
@@ -386,7 +388,7 @@ dataDir:{dataDir}
                                         Console.WriteLine("Invalid data")
                                         Continue While
                                     End If
-                                    Dim msg As String = Text.Encoding.ASCII.GetString(data)
+                                    Dim msg As String = Text.Encoding.UTF8.GetString(data)
                                     Console.WriteLine(msg)
                                     Console.WriteLine()
                                     Console.WriteLine($"Out: ")
@@ -398,7 +400,7 @@ dataDir:{dataDir}
                                             Case IOManager.NetworkCommand.CommandTypeDef.SCSICommand
                                                 result.CommandType = IOManager.NetworkCommand.CommandTypeDef.SCSISenseData
                                                 If cmd.PayLoad.Count = 5 Then
-                                                    Dim devpath As String = Text.Encoding.ASCII.GetString(cmd.PayLoad(0))
+                                                    Dim devpath As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(0))
                                                     Dim cdbdata As Byte() = cmd.PayLoad(1)
                                                     Dim paramdata As Byte() = cmd.PayLoad(2)
                                                     Dim datadir As Byte = cmd.PayLoad(3)(0)
@@ -421,11 +423,279 @@ dataDir:{dataDir}
                                                 End If
                                             Case IOManager.NetworkCommand.CommandTypeDef.General
                                                 result.CommandType = IOManager.NetworkCommand.CommandTypeDef.GeneralData
+                                                Try
+                                                    If cmd.PayLoad.Count >= 2 Then
+                                                        Dim ItemGuid As Guid = New Guid(cmd.PayLoad(0))
+                                                        Dim ItemType As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(1))
+                                                        If ItemGuid = Guid.Empty Then
+                                                            'new
+                                                            Select Case ItemType.ToLower
+                                                                Case "ltfswriter"
+                                                                    Dim itemID As Guid = Guid.NewGuid()
+                                                                    Dim LWF As LTFSWriter
+                                                                    Task.Run(Sub()
+                                                                                 LWF = New LTFSWriter()
+                                                                                 objList.Add(itemID, LWF)
+                                                                             End Sub).Wait()
+                                                                    result.PayLoad.Add(itemID.ToByteArray())
+                                                                    Console.WriteLine($"New LWF {itemID.ToString()}")
+                                                            End Select
+                                                        ElseIf Not objList.ContainsKey(ItemGuid) Then
+                                                            result.PayLoad.Add((New Guid()).ToByteArray())
+                                                        Else
+                                                            Select Case ItemType.ToLower
+                                                                Case "ltfswriter"
+                                                                    Dim LWF As LTFSWriter = Nothing
+                                                                    If Not objList.TryGetValue(ItemGuid, LWF) Then Exit Select
+                                                                    Dim Command As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(2))
+
+                                                                    Select Case Command
+                                                                        Case "show"
+                                                                            Task.Run(Sub()
+                                                                                         LWF.ShowDialog()
+                                                                                     End Sub)
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("show OK"))
+                                                                        Case "close"
+                                                                            LWF.Close()
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("close OK"))
+                                                                        Case "dispose"
+                                                                            LWF.Dispose()
+                                                                            objList.Remove(ItemGuid)
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("dispose OK"))
+                                                                        Case "-s"
+                                                                            Dim param1 As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(3))
+                                                                            Select Case param1.ToLower()
+                                                                                Case "on"
+                                                                                    IndexRead = False
+                                                                                    result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("-s on OK"))
+                                                                                Case "off"
+                                                                                    IndexRead = True
+                                                                                    result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("-s off OK"))
+                                                                            End Select
+                                                                            LWF.OfflineMode = Not IndexRead
+                                                                            If Not IndexRead Then LWF.ExtraPartitionCount = 1 Else LWF.ExtraPartitionCount = 0
+                                                                        Case "-t"
+                                                                            Dim param1 As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(3))
+                                                                            If param1.StartsWith("TAPE") Then
+                                                                                param1 = "\\.\" & param1
+                                                                            ElseIf param1.StartsWith("\\.\") Then
+                                                                                'Do Nothing
+                                                                            ElseIf param1 = Val(param1).ToString Then
+                                                                                param1 = "\\.\TAPE" & param1
+                                                                            Else
+
+                                                                            End If
+                                                                            LWF.TapeDrive = param1
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes($"-t {param1} OK"))
+                                                                        Case "click"
+                                                                            Dim ctrlName As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(3))
+                                                                            Dim objSearchList As New List(Of Object)
+                                                                            Dim FilterList As New List(Of Object)
+                                                                            For Each ctrl As Control In LWF.Controls
+                                                                                FilterList.Add(ctrl)
+                                                                            Next
+                                                                            While FilterList.Count > 0
+                                                                                Dim q As New List(Of Object)
+                                                                                For Each c As Object In FilterList
+                                                                                    If TypeOf c Is Button Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is Label Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is Panel Then
+                                                                                        q.AddRange(CType(c, Panel).Controls)
+                                                                                    ElseIf TypeOf c Is MenuStrip Then
+                                                                                        q.AddRange(CType(c, MenuStrip).Items)
+                                                                                    ElseIf TypeOf c Is ToolStrip Then
+                                                                                        q.AddRange(CType(c, ToolStrip).Items)
+                                                                                    ElseIf TypeOf c Is ToolStripMenuItem Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, ToolStripMenuItem).DropDownItems)
+                                                                                    ElseIf TypeOf c Is ToolStripDropDownButton Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ToolStripButton Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ToolStripStatusLabel Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ContextMenuStrip Then
+                                                                                        q.AddRange(CType(c, ContextMenuStrip).Items)
+                                                                                    ElseIf TypeOf c Is StatusStrip Then
+                                                                                        q.AddRange(CType(c, StatusStrip).Items)
+                                                                                    End If
+                                                                                Next
+                                                                                FilterList = q
+                                                                            End While
+                                                                            For Each obj As Object In objSearchList
+                                                                                If TypeOf obj Is Button Then
+                                                                                    With CType(obj, Button)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(Button).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is Label Then
+                                                                                    With CType(obj, Label)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(Label).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripMenuItem Then
+                                                                                    With CType(obj, ToolStripMenuItem)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(ToolStripMenuItem).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripDropDownButton Then
+                                                                                    With CType(obj, ToolStripDropDownButton)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(ToolStripDropDownButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripButton Then
+                                                                                    With CType(obj, ToolStripButton)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(ToolStripButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripStatusLabel Then
+                                                                                    With CType(obj, ToolStripStatusLabel)
+                                                                                        If .Name = ctrlName Then
+                                                                                            GetType(ToolStripStatusLabel).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                End If
+                                                                            Next
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("Not found"))
+                                                                        Case "gettext"
+                                                                            Dim ctrlName As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(3))
+                                                                            If ctrlName = "" Then
+                                                                                result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(LWF.Text))
+                                                                                Exit Select
+                                                                            End If
+                                                                            Dim objSearchList As New List(Of Object)
+                                                                            objSearchList.Add(LWF)
+                                                                            Dim FilterList As New List(Of Object)
+                                                                            For Each ctrl As Control In LWF.Controls
+                                                                                FilterList.Add(ctrl)
+                                                                            Next
+                                                                            While FilterList.Count > 0
+                                                                                Dim q As New List(Of Object)
+                                                                                For Each c As Object In FilterList
+                                                                                    If TypeOf c Is Button Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is Label Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is Panel Then
+                                                                                        q.AddRange(CType(c, Panel).Controls)
+                                                                                    ElseIf TypeOf c Is MenuStrip Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, MenuStrip).Items)
+                                                                                    ElseIf TypeOf c Is ToolStrip Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, ToolStrip).Items)
+                                                                                    ElseIf TypeOf c Is ToolStripMenuItem Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, ToolStripMenuItem).DropDownItems)
+                                                                                    ElseIf TypeOf c Is ToolStripDropDownButton Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ToolStripButton Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ToolStripStatusLabel Then
+                                                                                        objSearchList.Add(c)
+                                                                                    ElseIf TypeOf c Is ContextMenuStrip Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, ContextMenuStrip).Items)
+                                                                                    ElseIf TypeOf c Is StatusStrip Then
+                                                                                        objSearchList.Add(c)
+                                                                                        q.AddRange(CType(c, StatusStrip).Items)
+                                                                                    End If
+                                                                                Next
+                                                                                FilterList = q
+                                                                            End While
+                                                                            For Each obj As Object In objSearchList
+                                                                                If TypeOf obj Is Button Then
+                                                                                    With CType(obj, Button)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is Form Then
+                                                                                    With CType(obj, Form)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is Label Then
+                                                                                    With CType(obj, Label)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripMenuItem Then
+                                                                                    With CType(obj, ToolStripMenuItem)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripDropDownButton Then
+                                                                                    With CType(obj, ToolStripDropDownButton)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripButton Then
+                                                                                    With CType(obj, ToolStripButton)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                ElseIf TypeOf obj Is ToolStripStatusLabel Then
+                                                                                    With CType(obj, ToolStripStatusLabel)
+                                                                                        If .Name = ctrlName Then
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
+                                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(.Text))
+                                                                                            Exit Select
+                                                                                        End If
+                                                                                    End With
+                                                                                End If
+                                                                            Next
+                                                                            result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("Not found"))
+                                                                    End Select
+                                                            End Select
+                                                        End If
+                                                    End If
+                                                Catch ex As Exception
+                                                    result.PayLoad.Add(Text.Encoding.UTF8.GetBytes(ex.ToString()))
+                                                End Try
+
                                         End Select
                                         Dim resp As String = result.GetSerializedText()
                                         Dim respData As New List(Of Byte)
                                         respData.AddRange(BitConverter.GetBytes(resp.Length))
-                                        respData.AddRange(Text.Encoding.ASCII.GetBytes(resp))
+                                        respData.AddRange(Text.Encoding.UTF8.GetBytes(resp))
                                         Console.WriteLine(resp)
                                         connect.Send(respData.ToArray())
                                     Catch ex As Exception
@@ -468,7 +738,7 @@ dataDir:{dataDir}
                                 End If
                                 Dim sense As Byte() = {}
                                 Dim pl As New List(Of Byte())
-                                pl.Add(Text.Encoding.ASCII.GetBytes(TapeDrive))
+                                pl.Add(Text.Encoding.UTF8.GetBytes(TapeDrive))
                                 pl.Add(cdb)
                                 pl.Add(data)
                                 pl.Add({dataDir})

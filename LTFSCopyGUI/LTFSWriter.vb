@@ -1641,7 +1641,8 @@ Public Class LTFSWriter
         End If
     End Sub
 
-    Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False) As Boolean
+    Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False, Optional ByVal CheckOnly As Boolean = False) As Boolean
+        If CheckOnly Then Return (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush
         If (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush Then
             WriteCurrentIndex(False, False)
             TotalBytesUnindexed = 0
@@ -2793,10 +2794,25 @@ Public Class LTFSWriter
     End Sub
     Public Function LocateToWritePosition() As Boolean
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
-            TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
+            Dim p As TapeUtils.PositionData
+            While True
+                TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
+                p = GetPos
+                If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse p.BlockNumber <> schema.previousgenerationlocation.startblock Then
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Case DialogResult.Ignore
+                            Exit While
+                        Case DialogResult.Abort
+                            LockGUI(False)
+                            Return False
+                        Case DialogResult.Retry
+
+                    End Select
+                End If
+            End While
+
             schema.location.startblock = schema.previousgenerationlocation.startblock
             schema.location.partition = schema.previousgenerationlocation.partition
-            Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             PrintMsg(My.Resources.ResText_RI)
             Dim tmpf As String = $"{Application.StartupPath}\LWS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
@@ -2815,8 +2831,21 @@ Public Class LTFSWriter
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             If p.BlockNumber <> CurrentHeight Then
-                TapeUtils.Locate(TapeDrive, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
-                p = GetPos
+                While True
+                    TapeUtils.Locate(TapeDrive, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
+                    p = GetPos
+                    If p.PartitionNumber <> DataPartition OrElse p.BlockNumber <> CULng(CurrentHeight) Then
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                            Case DialogResult.Ignore
+                                Exit While
+                            Case DialogResult.Abort
+                                LockGUI(False)
+                                Return False
+                            Case DialogResult.Retry
+
+                        End Select
+                    End If
+                End While
                 PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             End If
         Else
@@ -3211,6 +3240,7 @@ Public Class LTFSWriter
                                             fr.CloseAsync()
                                             If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
                                                 Threading.Interlocked.Increment(HashTaskAwaitNumber)
+                                                Dim HashTask As Task =
                                                 Task.Run(Sub()
                                                              sh.ProcessFinalBlock()
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
@@ -3218,8 +3248,9 @@ Public Class LTFSWriter
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
+                                                If CheckUnindexedDataSizeLimit(CheckOnly:=True) Then HashTask.Wait()
                                             ElseIf sh IsNot Nothing Then
-                                                sh.StopFlag = True
+                                                    sh.StopFlag = True
                                             End If
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
@@ -6061,6 +6092,8 @@ Public Class LTFSWriter
         Select Case e.KeyCode
             Case Keys.KeyCode.F5
                 RefreshDisplay()
+            Case Keys.KeyCode.F8
+                LockGUI(AllowOperation)
         End Select
     End Sub
 
