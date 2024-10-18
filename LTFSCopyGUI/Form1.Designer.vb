@@ -69,6 +69,7 @@ Partial Class Form1
         Me.Button27 = New System.Windows.Forms.Button()
         Me.ComboBox1 = New System.Windows.Forms.ComboBox()
         Me.TabPage2 = New System.Windows.Forms.TabPage()
+        Me.Button15 = New System.Windows.Forms.Button()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.GroupBox1.SuspendLayout()
         Me.TabControl1.SuspendLayout()
@@ -282,6 +283,7 @@ Partial Class Form1
         'GroupBox3
         '
         resources.ApplyResources(Me.GroupBox3, "GroupBox3")
+        Me.GroupBox3.Controls.Add(Me.Button15)
         Me.GroupBox3.Controls.Add(Me.Button14)
         Me.GroupBox3.Controls.Add(Me.Button13)
         Me.GroupBox3.Controls.Add(Me.Button12)
@@ -371,6 +373,12 @@ Partial Class Form1
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
+        'Button15
+        '
+        resources.ApplyResources(Me.Button15, "Button15")
+        Me.Button15.Name = "Button15"
+        Me.Button15.UseVisualStyleBackColor = True
+        '
         'Form1
         '
         resources.ApplyResources(Me, "$this")
@@ -440,4 +448,5 @@ Partial Class Form1
     Friend WithEvents Button13 As Button
     Friend WithEvents Button14 As Button
     Friend WithEvents Label6 As Label
+    Friend WithEvents Button15 As Button
 End Class
