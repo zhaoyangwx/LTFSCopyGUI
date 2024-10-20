@@ -71,7 +71,7 @@ Partial Class ChangerTool
         '
         resources.ApplyResources(Me.ComboBox1, "ComboBox1")
         Me.ComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.ComboBox1.DropDownWidth = 270
+        Me.ComboBox1.DropDownWidth = 300
         Me.ComboBox1.FormattingEnabled = True
         Me.ComboBox1.Name = "ComboBox1"
         '
