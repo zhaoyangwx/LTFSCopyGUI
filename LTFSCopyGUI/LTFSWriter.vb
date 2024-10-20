@@ -2808,6 +2808,8 @@ Public Class LTFSWriter
                         Case DialogResult.Retry
 
                     End Select
+                Else
+                    Exit While
                 End If
             End While
 
@@ -2844,6 +2846,8 @@ Public Class LTFSWriter
                             Case DialogResult.Retry
 
                         End Select
+                    Else
+                        Exit While
                     End If
                 End While
                 PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
