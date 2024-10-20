@@ -22,7 +22,7 @@ Public Class LTFSConfigurator
         Get
             Dim result As String = ""
             Try
-                result = "\\.\TAPE" & GetCurDrive.DevIndex
+                result = $"\\.\{ GetCurDrive.DeviceType}{GetCurDrive.DevIndex}"
             Catch ex As Exception
                 If TextBox5.Text <> "" Then
                     result = TextBox5.Text
@@ -176,8 +176,8 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBox1.Text <> "" Then
-                Dim result As String = TapeUtils.MapTapeDrive(ComboBox1.Text, "TAPE" & CurDrive.DevIndex)
-                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " <=> " & ComboBox1.Text & ":"
+                Dim result As String = TapeUtils.MapTapeDrive(ComboBox1.Text, CurDrive.DeviceType & CurDrive.DevIndex)
+                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> " & ComboBox1.Text & ":"
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -191,7 +191,7 @@ Public Class LTFSConfigurator
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" Then
                 Dim result As String = TapeUtils.UnMapTapeDrive(ComboBox1.Text)
-                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " <=> ---" & ComboBox1.Text
+                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> ---" & ComboBox1.Text
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -215,7 +215,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " loaded"
+                               If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " loaded"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -246,7 +246,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " ejected"
+                               If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " ejected"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                                Panel1.Enabled = True
@@ -264,7 +264,7 @@ Public Class LTFSConfigurator
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" And ComboBox1.Text <> "" Then
                 Dim result As String = TapeUtils.MountTapeDrive(ComboBox1.Text)
-                If result = "" Then result = "TAPE" & CurDrive.DevIndex & " mounted"
+                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " mounted"
                 result &= vbCrLf
                 TextBox2.AppendText(result)
             End If
@@ -399,7 +399,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " loaded (unthread)"
+                               If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " loaded (unthread)"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -429,7 +429,7 @@ Public Class LTFSConfigurator
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
-                               If result = "" Then result = "TAPE" & CurDrive.DevIndex & " unthreaded"
+                               If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " unthreaded"
                                result &= vbCrLf
                                TextBox2.AppendText(result)
                            End Sub)
@@ -3771,5 +3771,35 @@ Public Class LTFSConfigurator
             End Try
         End If
         Me.Enabled = True
+    End Sub
+
+    Private Sub DiskToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DiskToolStripMenuItem.Click
+        LoadComplete = False
+        CheckBox3.Checked = False
+        ListBox1.Items.Clear()
+        Dim DevList As List(Of TapeUtils.TapeDrive)
+        LastDeviceList = TapeUtils.GetDiskDriveList()
+        DevList = LastDeviceList
+        For Each D As TapeUtils.TapeDrive In DevList
+            D.DeviceType = "PhysicalDrive"
+            ListBox1.Items.Add(D.ToString())
+        Next
+        ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
+        Dim t As String = ComboBox1.Text
+        ComboBox1.Items.Clear()
+        ComboBox1.Text = ""
+        For Each s As String In AvailableDriveLetters
+            ComboBox1.Items.Add(s)
+        Next
+        If ComboBox1.Items.Count > 0 Then
+            If Not ComboBox1.Items.Contains(t) Then
+                ComboBox1.SelectedIndex = 0
+            Else
+                ComboBox1.Text = t
+            End If
+        End If
+
+        LoadComplete = True
+        SelectedIndex = ListBox1.SelectedIndex
     End Sub
 End Class

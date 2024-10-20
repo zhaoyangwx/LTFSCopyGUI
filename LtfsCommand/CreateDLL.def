@@ -2,6 +2,7 @@ LIBRARY LtfsCommand
 
 EXPORTS
 _GetTapeDriveList
+_GetDiskDriveList
 _GetMediumChangerList
 _GetDriveMappings
 _StartLtfsService

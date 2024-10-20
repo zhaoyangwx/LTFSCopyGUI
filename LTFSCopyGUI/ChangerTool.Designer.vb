@@ -32,6 +32,8 @@ Partial Class ChangerTool
         Me.Label1 = New System.Windows.Forms.Label()
         Me.ComboBox2 = New System.Windows.Forms.ComboBox()
         Me.Button3 = New System.Windows.Forms.Button()
+        Me.CheckBox2 = New System.Windows.Forms.CheckBox()
+        Me.Button4 = New System.Windows.Forms.Button()
         Me.SuspendLayout()
         '
         'Button1
@@ -82,7 +84,7 @@ Partial Class ChangerTool
         '
         resources.ApplyResources(Me.ComboBox2, "ComboBox2")
         Me.ComboBox2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
-        Me.ComboBox2.DropDownWidth = 270
+        Me.ComboBox2.DropDownWidth = 300
         Me.ComboBox2.FormattingEnabled = True
         Me.ComboBox2.Name = "ComboBox2"
         '
@@ -92,10 +94,24 @@ Partial Class ChangerTool
         Me.Button3.Name = "Button3"
         Me.Button3.UseVisualStyleBackColor = True
         '
+        'CheckBox2
+        '
+        resources.ApplyResources(Me.CheckBox2, "CheckBox2")
+        Me.CheckBox2.Name = "CheckBox2"
+        Me.CheckBox2.UseVisualStyleBackColor = True
+        '
+        'Button4
+        '
+        resources.ApplyResources(Me.Button4, "Button4")
+        Me.Button4.Name = "Button4"
+        Me.Button4.UseVisualStyleBackColor = True
+        '
         'ChangerTool
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.Button4)
+        Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.Button3)
         Me.Controls.Add(Me.ComboBox2)
         Me.Controls.Add(Me.Label1)
@@ -120,4 +136,6 @@ Partial Class ChangerTool
     Friend WithEvents Label1 As Label
     Friend WithEvents ComboBox2 As ComboBox
     Friend WithEvents Button3 As Button
+    Friend WithEvents CheckBox2 As CheckBox
+    Friend WithEvents Button4 As Button
 End Class

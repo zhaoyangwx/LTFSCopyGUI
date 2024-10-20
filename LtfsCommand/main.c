@@ -55,6 +55,7 @@ static int EjectTapeDrive(CHAR driveLetter);
 static int MountTapeDrive(CHAR driveLetter);
 static int CheckTapeMedia(CHAR driveLetter);
 LPSTR _GetTapeDriveList();
+LPSTR _GetDiskDriveList();
 LPSTR _GetMediumChangerList();
 LPSTR _GetDriveMappings();
 LPSTR _StartLtfsService();
@@ -343,6 +344,26 @@ LPSTR _GetTapeDriveList()
 	LPSTR Buffer = (LPSTR)malloc(32768);
 	sprintf(Buffer, "");
 	if (TapeGetDriveList(&driveList, &numDrivesFound))
+	{
+		PTAPE_DRIVE drive = driveList;
+		while (drive != NULL)
+		{
+			sprintf(Buffer + strlen(Buffer), "%d|%s|%s|%s\r\n", drive->DevIndex, drive->SerialNumber, drive->VendorId, drive->ProductId);
+			drive = drive->Next;
+		}
+
+		TapeDestroyDriveList(driveList);
+	}
+	return Buffer;
+}
+
+LPSTR _GetDiskDriveList()
+{
+	PTAPE_DRIVE driveList;
+	DWORD numDrivesFound;
+	LPSTR Buffer = (LPSTR)malloc(32768);
+	sprintf(Buffer, "");
+	if (DiskGetDriveList(&driveList, &numDrivesFound))
 	{
 		PTAPE_DRIVE drive = driveList;
 		while (drive != NULL)
