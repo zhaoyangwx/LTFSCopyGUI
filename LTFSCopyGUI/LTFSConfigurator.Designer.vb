@@ -65,6 +65,7 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
         Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.BrowseBinaryFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ReadThroughDiagnosticCommandToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ButtonDebugLocate = New System.Windows.Forms.Button()
         Me.Label10 = New System.Windows.Forms.Label()
         Me.ButtonDebugReleaseUnit = New System.Windows.Forms.Button()
@@ -127,7 +128,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ReadThroughDiagnosticCommandToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuStrip3 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.DiskToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStrip1.SuspendLayout()
         Me.Panel2.SuspendLayout()
@@ -146,11 +148,13 @@ Partial Class LTFSConfigurator
         Me.TabPage5.SuspendLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStrip3.SuspendLayout()
         Me.SuspendLayout()
         '
         'Button1
         '
         resources.ApplyResources(Me.Button1, "Button1")
+        Me.Button1.ContextMenuStrip = Me.ContextMenuStrip3
         Me.Button1.Name = "Button1"
         Me.Button1.UseVisualStyleBackColor = True
         '
@@ -453,6 +457,11 @@ Partial Class LTFSConfigurator
         '
         Me.BrowseBinaryFileToolStripMenuItem.Name = "BrowseBinaryFileToolStripMenuItem"
         resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
+        '
+        'ReadThroughDiagnosticCommandToolStripMenuItem
+        '
+        Me.ReadThroughDiagnosticCommandToolStripMenuItem.Name = "ReadThroughDiagnosticCommandToolStripMenuItem"
+        resources.ApplyResources(Me.ReadThroughDiagnosticCommandToolStripMenuItem, "ReadThroughDiagnosticCommandToolStripMenuItem")
         '
         'ButtonDebugLocate
         '
@@ -844,10 +853,16 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ReadThroughDiagnosticCommandToolStripMenuItem
+        'ContextMenuStrip3
         '
-        Me.ReadThroughDiagnosticCommandToolStripMenuItem.Name = "ReadThroughDiagnosticCommandToolStripMenuItem"
-        resources.ApplyResources(Me.ReadThroughDiagnosticCommandToolStripMenuItem, "ReadThroughDiagnosticCommandToolStripMenuItem")
+        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem})
+        Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
+        resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
+        '
+        'DiskToolStripMenuItem
+        '
+        Me.DiskToolStripMenuItem.Name = "DiskToolStripMenuItem"
+        resources.ApplyResources(Me.DiskToolStripMenuItem, "DiskToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -880,6 +895,7 @@ Partial Class LTFSConfigurator
         Me.TabPage5.PerformLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStrip3.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -988,4 +1004,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents ContextMenuStrip2 As ContextMenuStrip
     Friend WithEvents BrowseBinaryFileToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ReadThroughDiagnosticCommandToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ContextMenuStrip3 As ContextMenuStrip
+    Friend WithEvents DiskToolStripMenuItem As ToolStripMenuItem
 End Class

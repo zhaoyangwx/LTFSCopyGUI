@@ -121,7 +121,25 @@
   <data name="Button1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left</value>
   </data>
+  <metadata name="ContextMenuStrip3.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>973, 17</value>
+  </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="DiskToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="DiskToolStripMenuItem.Text" xml:space="preserve">
+    <value>Disk</value>
+  </data>
+  <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 48</value>
+  </data>
+  <data name="&gt;&gt;ContextMenuStrip3.Name" xml:space="preserve">
+    <value>ContextMenuStrip3</value>
+  </data>
+  <data name="&gt;&gt;ContextMenuStrip3.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Button1.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 627</value>
   </data>
@@ -1009,7 +1027,7 @@
     <value>Read through diagnostic command</value>
   </data>
   <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>283, 70</value>
+    <value>283, 48</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip2.Name" xml:space="preserve">
     <value>ContextMenuStrip2</value>
@@ -2938,7 +2956,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <metadata name="SaveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
@@ -3247,6 +3265,12 @@
   <data name="&gt;&gt;BrowseBinaryFileToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;ReadThroughDiagnosticCommandToolStripMenuItem.Name" xml:space="preserve">
+    <value>ReadThroughDiagnosticCommandToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;ReadThroughDiagnosticCommandToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;SaveFileDialog1.Name" xml:space="preserve">
     <value>SaveFileDialog1</value>
   </data>
@@ -3271,10 +3295,10 @@
   <data name="&gt;&gt;OpenFileDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.OpenFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ReadThroughDiagnosticCommandToolStripMenuItem.Name" xml:space="preserve">
-    <value>ReadThroughDiagnosticCommandToolStripMenuItem</value>
+  <data name="&gt;&gt;DiskToolStripMenuItem.Name" xml:space="preserve">
+    <value>DiskToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;ReadThroughDiagnosticCommandToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;DiskToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

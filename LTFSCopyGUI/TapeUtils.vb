@@ -272,6 +272,7 @@ Public Class TapeUtils
 #End Region
 
     Private Declare Function _GetTapeDriveList Lib "LtfsCommand.dll" () As IntPtr
+    Private Declare Function _GetDiskDriveList Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _GetMediumChangerList Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _GetDriveMappings Lib "LtfsCommand.dll" () As IntPtr
     Private Declare Function _StartLtfsService Lib "LtfsCommand.dll" () As IntPtr
@@ -2202,6 +2203,34 @@ End SyncLock
         Next
         Return LDrive
     End Function
+    Public Shared Function GetDiskDriveList() As List(Of TapeDrive)
+        Dim p As IntPtr = _GetDiskDriveList()
+        'MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
+        Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        Dim LDrive As New List(Of TapeDrive)
+        For Each t As String In s
+            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
+            If q.Length = 4 Then
+                LDrive.Add(New TapeDrive(q(0), q(1), q(2), q(3)))
+            End If
+        Next
+        LDrive.Sort(New Comparison(Of TapeDrive)(
+                        Function(A As TapeDrive, B As TapeDrive) As Integer
+                            Return A.DevIndex.CompareTo(B.DevIndex)
+                        End Function))
+        s = GetDriveMappings().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        For Each t As String In s
+            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
+            If q.Length = 3 Then
+                For Each Drv As TapeDrive In LDrive
+                    If "TAPE" & Drv.DevIndex = q(1) And Drv.SerialNumber = q(2) Then
+                        Drv.DriveLetter = q(0)
+                    End If
+                Next
+            End If
+        Next
+        Return LDrive
+    End Function
     Public Shared Function GetMediumChangerList() As List(Of MediumChanger)
         Dim p As IntPtr = _GetMediumChangerList()
 
@@ -2849,6 +2878,7 @@ End SyncLock
         Public Property VendorId As String
         Public Property ProductId As String
         Public Property DriveLetter As String
+        Public Property DeviceType As String = "TAPE"
         Public Sub New()
 
         End Sub
@@ -2860,7 +2890,7 @@ End SyncLock
             Me.DriveLetter = DriveLetter.TrimEnd(" ")
         End Sub
         Public Overrides Function ToString() As String
-            Dim o As String = "TAPE" & DevIndex & ":"
+            Dim o As String = DeviceType & DevIndex & ":"
             If DriveLetter <> "" Then o &= " (" & DriveLetter & ":)"
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
@@ -2900,7 +2930,31 @@ End SyncLock
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
         End Function
-        Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal dSize As Integer = 8) As Byte()
+        Public Shared Function SCSIReportLUNs(Changer As String, Optional ByRef sense As Byte() = Nothing) As List(Of Byte)
+            Dim datalen As Byte() = SCSIReadParam(Changer, {&HA0, 0, 0, 0, 0, 0, 0, 0, 0, &H10, 0, 0}, 16)
+            Dim rdLen As Integer = datalen(0)
+            rdLen <<= 8
+            rdLen = rdLen Or datalen(1)
+            rdLen <<= 8
+            rdLen = rdLen Or datalen(2)
+            rdLen <<= 8
+            rdLen = rdLen Or datalen(3)
+            rdLen += 8
+            datalen(0) = rdLen >> 24 And &HFF
+            datalen(1) = rdLen >> 16 And &HFF
+            datalen(2) = rdLen >> 8 And &HFF
+            datalen(3) = rdLen And &HFF
+
+            Dim rawData As Byte() = SCSIReadParam(Changer, {&HA0, 0, 0, 0, 0, 0, datalen(0), datalen(1), datalen(2), datalen(3), 0, 0}, rdLen)
+            Dim valueCount As Integer = (rdLen - 8) / 8
+            Dim result As New List(Of Byte)
+            For i As Integer = 0 To valueCount - 1
+                result.Add(rawData(i * 8 + 8 + 1))
+            Next
+            Return result
+        End Function
+
+        Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal dSize As Integer = 8, Optional ByVal LUN As Byte = 0) As Byte()
             Dim cdb As IntPtr = Marshal.AllocHGlobal(12)
             Dim cdbBytes As Byte()
             Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(dSize)
@@ -2908,7 +2962,7 @@ End SyncLock
             Dim succ As Boolean
             If dSize <= 8 Then
                 dSize = 8
-                cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
+                cdbBytes = {&HB8, LUN << 5 Or &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
                 Marshal.Copy(cdbBytes, 0, cdb, 12)
                 SyncLock TapeUtils.SCSIOperationLock
                     Dim handle As IntPtr
@@ -2961,8 +3015,8 @@ End SyncLock
                 Return Nothing
             End If
         End Function
-        Public Shared Sub MoveMedium(Changer As String, src As UInt32, dest As UInt32, Optional ByVal sense As Byte() = Nothing)
-            SCSIReadParam(TapeDrive:=Changer, cdbData:={&HA5, 0, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, paramLen:=12,
+        Public Shared Sub MoveMedium(Changer As String, src As UInt32, dest As UInt32, Optional ByVal sense As Byte() = Nothing, Optional ByVal LUN As Byte = 0)
+            SCSIReadParam(TapeDrive:=Changer, cdbData:={&HA5, LUN << 5, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, paramLen:=12,
                 senseReport:=Function(s As Byte()) As Boolean
                                  If sense IsNot Nothing AndAlso sense.Length >= 64 Then
                                      Array.Copy(s, sense, Math.Min(64, s.Length))
@@ -2970,45 +3024,56 @@ End SyncLock
                                  Return True
                              End Function)
         End Sub
-        Public Sub RefreshElementStatus()
-            If RawElementData IsNot Nothing AndAlso RawElementData.Length > 8 Then
-                RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", dSize:=RawElementData.Length)
-            Else
-                RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}")
+        Public Sub RefreshElementStatus(Optional ByVal IgnoreLUN0 As Boolean = True)
+            Dim LUNList As List(Of Byte) = SCSIReportLUNs($"\\.\CHANGER{DevIndex}")
+            If LUNList IsNot Nothing AndAlso LUNList.Count > 0 Then
+                Elements = New List(Of Element)
+                For Each LUN As Byte In LUNList
+                    If IgnoreLUN0 AndAlso LUN = 0 Then Continue For
+                    If RawElementData IsNot Nothing AndAlso RawElementData.Length > 8 Then
+
+                        RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", dSize:=RawElementData.Length, LUN:=LUN)
+                    Else
+                        RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", LUN:=LUN)
+                    End If
+                    FirstElementAddressReported = CInt(RawElementData(0)) << 8 Or RawElementData(1)
+                    NumberofElementsAvailable = CInt(RawElementData(2)) << 8 Or RawElementData(3)
+                    ByteCountofReportAvailable = CInt(RawElementData(5)) << 16 Or CInt(RawElementData(6)) << 8 Or RawElementData(7)
+                    Dim offset As Integer = 8
+                    While offset < RawElementData.Length - 8
+                        Dim PageHeader(7) As Byte
+                        Array.Copy(RawElementData, offset, PageHeader, 0, 8)
+                        offset += 8
+                        Dim dlen As UInt16 = CInt(PageHeader(2)) << 8 Or PageHeader(3)
+                        Dim totallen As UInt32 = CInt(PageHeader(5)) << 16 Or CInt(PageHeader(6)) << 8 Or PageHeader(7)
+                        Dim dcount As Integer = totallen \ dlen
+                        Dim pagedata(dlen - 1) As Byte
+                        For i As Integer = 0 To dcount - 1
+                            Array.Copy(RawElementData, offset + dlen * i, pagedata, 0, dlen)
+                            Dim e As Element = Element.FromRaw(pagedata, New Element With {
+                                .LUN = LUN,
+                                .ElementTypeCode = PageHeader(0) And &HF,
+                                .PVolTag = PageHeader(1) >> 7 And 1,
+                                .AVolTag = PageHeader(1) >> 6 And 1,
+                                .ElementDescriptorLength = dlen,
+                                .ByteCountofDescriptorDataAvailable = totallen
+                                })
+                            Elements.Add(e)
+                        Next
+                        offset += totallen
+                    End While
+                Next
+
             End If
 
 
-            FirstElementAddressReported = CInt(RawElementData(0)) << 8 Or RawElementData(1)
-            NumberofElementsAvailable = CInt(RawElementData(2)) << 8 Or RawElementData(3)
-            ByteCountofReportAvailable = CInt(RawElementData(5)) << 16 Or CInt(RawElementData(6)) << 8 Or RawElementData(7)
-            Dim offset As Integer = 8
-            Elements = New List(Of Element)
-            While offset < RawElementData.Length - 8
-                Dim PageHeader(7) As Byte
-                Array.Copy(RawElementData, offset, PageHeader, 0, 8)
-                offset += 8
-                Dim dlen As UInt16 = CInt(PageHeader(2)) << 8 Or PageHeader(3)
-                Dim totallen As UInt32 = CInt(PageHeader(5)) << 16 Or CInt(PageHeader(6)) << 8 Or PageHeader(7)
-                Dim dcount As Integer = totallen \ dlen
-                Dim pagedata(dlen - 1) As Byte
-                For i As Integer = 0 To dcount - 1
-                    Array.Copy(RawElementData, offset + dlen * i, pagedata, 0, dlen)
-                    Dim e As Element = Element.FromRaw(pagedata, New Element With {
-                        .ElementTypeCode = PageHeader(0) And &HF,
-                        .PVolTag = PageHeader(1) >> 7 And 1,
-                        .AVolTag = PageHeader(1) >> 6 And 1,
-                        .ElementDescriptorLength = dlen,
-                        .ByteCountofDescriptorDataAvailable = totallen
-                        })
-                    Elements.Add(e)
-                Next
-                offset += totallen
 
-            End While
+
 
         End Sub
         <Serializable>
         Public Class Element
+            Public Property LUN As Byte = 0
             Public Property RawData As Byte()
             ''' <summary>
             ''' <para>1h = Medium Transport Element (robot hand)</para>

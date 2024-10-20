@@ -72,7 +72,7 @@ Public Class ChangerTool
     Public Sub RefreshCurrentChanger()
         If CurrentChanger Is Nothing Then Exit Sub
         Try
-            CurrentChanger.RefreshElementStatus()
+            CurrentChanger.RefreshElementStatus(Not CheckBox2.Checked)
         Catch ex As Exception
 
         End Try
@@ -89,7 +89,7 @@ Public Class ChangerTool
             ComboBox1.Items.Clear()
             ComboBox2.Items.Clear()
             For Each e As MediumChanger.Element In FullElement
-                Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
+                Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0")} LUN{e.LUN}"
                 Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
                 Dim ttext As String = e.ElementTypeCode.ToString()
                 If itext.Length > 0 Then itext &= " "
@@ -99,7 +99,7 @@ Public Class ChangerTool
                 ComboBox1.Items.Add(ctext)
             Next
             For Each e As MediumChanger.Element In EmptyElement
-                Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0")}"
+                Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0")} LUN{e.LUN}"
                 Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
                 Dim ttext As String = e.ElementTypeCode.ToString()
                 If itext.Length > 0 Then itext &= " "
@@ -132,6 +132,7 @@ Public Class ChangerTool
         If ComboBox2.SelectedIndex > EmptyElement.Count - 1 Then Exit Sub
         If MessageBox.Show(New Form With {.TopMost = True}, $"{ComboBox1.SelectedItem} -> {ComboBox2.SelectedItem}", "", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+            Dim LUN As Byte = FullElement(ComboBox1.SelectedIndex).LUN
             Dim src As UInt32 = FullElement(ComboBox1.SelectedIndex).ElementAddress
             Dim dest As UInt32 = EmptyElement(ComboBox2.SelectedIndex).ElementAddress
             SetUILock(True)
@@ -139,7 +140,7 @@ Public Class ChangerTool
                 Sub()
                     Dim sense(63) As Byte
                     Try
-                        MediumChanger.MoveMedium(drv, src, dest, sense)
+                        MediumChanger.MoveMedium(drv, src, dest, sense, LUN:=LUN)
                     Catch ex As Exception
                         Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}"))
                     Finally
@@ -176,6 +177,127 @@ Public Class ChangerTool
                           End Sub)
             End Sub)
     End Sub
+
+    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+        SetUILock(True)
+        Threading.Tasks.Task.Run(
+            Sub()
+                RefreshCurrentChanger()
+                Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+                Invoke(Sub() TextBox1.Clear())
+                Dim srcList As New List(Of MediumChanger.Element)
+                Dim TLList As New List(Of String)
+                For Each el As MediumChanger.Element In CurrentChanger.Elements
+                    If el.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.StorageElement Then
+                        srcList.Add(el)
+                        If el.Full Then TLList.Add(el.PrimaryVolumeTagInformation)
+                    End If
+                Next
+                srcList.Sort(New Comparison(Of MediumChanger.Element)(
+                     Function(a As MediumChanger.Element, b As MediumChanger.Element) As Integer
+                         Return a.ElementAddress.CompareTo(b.ElementAddress)
+                     End Function))
+                TLList.Sort()
+                Dim IsOnTarget As New Func(Of Boolean)(
+                    Function() As Boolean
+                        For i As Integer = 0 To TLList.Count - 1
+                            If srcList(i).PrimaryVolumeTagInformation <> TLList(i) Then Return False
+                        Next
+                        Return True
+                    End Function)
+                While Not IsOnTarget()
+                    Dim movecount As Integer = 0
+                    For i As Integer = 0 To TLList.Count - 1
+                        If Not srcList(i).Full Then
+                            Dim j As Integer = 0
+                            For j = 0 To srcList.Count - 1
+                                If srcList(j).PrimaryVolumeTagInformation = TLList(i) Then
+                                    Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0")} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0")}{vbCrLf}"
+                                    Invoke(Sub() TextBox1.AppendText(info))
+                                    While True
+                                        Dim sense(63) As Byte
+                                        Try
+                                            MediumChanger.MoveMedium(drv, srcList(j).ElementAddress, srcList(i).ElementAddress, sense, LUN:=srcList(j).LUN)
+                                            Dim sensekey As Byte = sense(2) And &HF
+                                            If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
+                                        Catch ex As Exception
+                                            Dim result As DialogResult
+                                            Me.Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
+                                            Select Case result
+                                                Case DialogResult.Ignore
+                                                    Exit While
+                                                Case DialogResult.Cancel
+                                                    Me.Invoke(Sub()
+                                                                  SetUILock(False)
+                                                              End Sub)
+                                                    Exit Sub
+                                                Case DialogResult.Retry
+                                                    Continue While
+                                            End Select
+                                        End Try
+                                        Exit While
+                                    End While
+                                    srcList(i).Full = True
+                                    srcList(i).PrimaryVolumeTagInformation = srcList(j).PrimaryVolumeTagInformation
+                                    srcList(j).Full = False
+                                    srcList(j).PrimaryVolumeTagInformation = ""
+                                    movecount += 1
+                                    Exit For
+                                End If
+                            Next
+                        End If
+                    Next
+                    If movecount = 0 Then
+                        For i As Integer = TLList.Count To srcList.Count - 1
+                            If Not srcList(i).Full Then
+                                For j As Integer = 0 To TLList.Count - 1
+                                    If srcList(j).Full AndAlso srcList(j).PrimaryVolumeTagInformation <> TLList(j) Then
+                                        Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0")} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0")}{vbCrLf}"
+                                        Invoke(Sub() TextBox1.AppendText(info))
+                                        While True
+                                            Dim sense(63) As Byte
+                                            Try
+                                                MediumChanger.MoveMedium(drv, srcList(j).ElementAddress, srcList(i).ElementAddress, sense, LUN:=srcList(j).LUN)
+                                                Dim sensekey As Byte = sense(2) And &HF
+                                                If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
+                                            Catch ex As Exception
+                                                Dim result As DialogResult
+                                                Me.Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
+                                                Select Case result
+                                                    Case DialogResult.Ignore
+                                                        Exit While
+                                                    Case DialogResult.Cancel
+                                                        Me.Invoke(Sub()
+                                                                      SetUILock(False)
+                                                                  End Sub)
+                                                        Exit Sub
+                                                    Case DialogResult.Retry
+                                                        Continue While
+                                                End Select
+                                            End Try
+                                            Exit While
+                                        End While
+                                        srcList(i).Full = True
+                                        srcList(i).PrimaryVolumeTagInformation = srcList(j).PrimaryVolumeTagInformation
+                                        srcList(j).Full = False
+                                        srcList(j).PrimaryVolumeTagInformation = ""
+                                        movecount += 1
+                                        Exit For
+                                    End If
+                                Next
+                                Exit For
+                            End If
+                        Next
+                    End If
+                    If movecount = 0 Then Exit While
+                End While
+                Me.Invoke(Sub()
+                              SetUILock(False)
+                          End Sub)
+            End Sub)
+
+    End Sub
+
     Public Sub SetUILock(Lock As Boolean)
         Me.Invoke(Sub()
                       For Each c As Control In Me.Controls
