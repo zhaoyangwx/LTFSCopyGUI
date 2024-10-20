@@ -136,6 +136,9 @@
   <data name="Button3.Text" xml:space="preserve">
     <value>Move</value>
   </data>
+  <data name="Button4.Text" xml:space="preserve">
+    <value>Sort</value>
+  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAMAEBAAAAEAIABoBAAANgAAACAgAAABACAAqBAAAJ4EAAAwMAAAAQAgAKglAABGFQAAKAAAABAA
