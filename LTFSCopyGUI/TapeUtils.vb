@@ -1,6 +1,8 @@
 ﻿Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports System.ComponentModel
+
 Imports LTFSCopyGUI
 
 Public Class TapeUtils
@@ -3403,61 +3405,107 @@ End SyncLock
     Public Class CMParser
         Const GUARD_WRAP_IDENTIFIER As Integer = &HFFFFFFFE
         Const UNUSED_WRAP_IDENTIFIER As Integer = &HFFFFFFFF
+        <Category("Internal")>
+        Public Property a_CMBuffer As Byte() = {}
 
-        Public a_CMBuffer As Byte() = {}
-
-        <Xml.Serialization.XmlIgnore> Public a_PageID As Integer
-        <Xml.Serialization.XmlIgnore> Public a_Offset As Integer
-        Public a_UnProt As Integer = 0
-        <Xml.Serialization.XmlIgnore> Public a_Key As Integer
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_PageID As Integer
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_Offset As Integer
+        <Category("Internal")>
+        Public Property a_UnProt As Integer = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_Key As Integer
         <Xml.Serialization.XmlIgnore> Public a_Index As Integer
-        Public a_Err As Integer = 0
-        <Xml.Serialization.XmlIgnore> Public a_Buffer As Byte()
-        <Xml.Serialization.XmlIgnore> Public at_Offset As Byte()
-        <Xml.Serialization.XmlIgnore> Public a_Length As Integer = 0
-        Public a_CleansRemaining As Integer = 0
-        Public a_CleanLength As Double
-        Public a_NWraps As Integer = 0
-        Public a_TapeDirLength As Integer = 16
-        Public a_SetsPerWrap As Integer = 0
-        <Xml.Serialization.XmlIgnore> Public a_SetID As Integer = 0
-        <Xml.Serialization.XmlIgnore> Public a_LastID As Integer = 0
-        Public a_Barcode As String
-        <Xml.Serialization.XmlIgnore> Public a_AttributeID As Integer
-        <Xml.Serialization.XmlIgnore> Public a_AttributeLength As Integer
-        Public a_HdrLength As Integer
-        Public a_DriveTypeIdentifier As Integer = 0
-        <Xml.Serialization.XmlIgnore> Public a_OutputStr As String = ""
-        Public a_TapeWritePassPartition As Integer = 0
-        Public a_NumPartitions As New List(Of EOD)
+        <Category("Internal")>
+        Public Property a_Err As Integer = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_Buffer As Byte()
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property at_Offset As Byte()
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_Length As Integer = 0
+        <Category("Internal")>
+        Public Property a_CleansRemaining As Integer = 0
+        <Category("Internal")>
+        Public Property a_CleanLength As Double
+        <Category("Internal")>
+        Public Property a_NWraps As Integer = 0
+        <Category("Internal")>
+        Public Property a_TapeDirLength As Integer = 16
+        <Category("Internal")>
+        Public Property a_SetsPerWrap As Integer = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_SetID As Integer = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_LastID As Integer = 0
+        <Category("Internal")>
+        Public Property a_Barcode As String
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_AttributeID As Integer
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_AttributeLength As Integer
+        <Category("Internal")>
+        Public Property a_HdrLength As Integer
+        <Category("Internal")>
+        Public Property a_DriveTypeIdentifier As Integer = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_OutputStr As String = ""
+        <Category("Internal")>
+        Public Property a_TapeWritePassPartition As Integer = 0
+        <Category("Internal")>
+        Public Property a_NumPartitions As New List(Of EOD)
         <Xml.Serialization.XmlIgnore> Public a_PartitionKey As Integer
-        <Xml.Serialization.XmlIgnore> Public a_set As Integer
-        Public g_ValidCM As Boolean = False
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore> Public Property a_set As Integer
+        <Category("Internal")>
+        Public Property g_ValidCM As Boolean = False
+        <Category("Internal")>
+        Public Property g_Channels As Integer = 8
+        <Category("Internal")>
+        Public Property g_LoadCount As Integer = 0
+        <Category("Internal")>
+        Public Property g_CartridgeSN As String = "          "
+        <Category("Internal")>
+        Public Property g_TPM As Integer = 0
+        <Category("Internal")>
+        Public Property g_Barcode As String = "        "
+        <Category("Internal")>
+        Public Property g_DHLTimeStamp As Integer = 0
+        <Category("Internal")>
+        Public Property g_FaultLogSize As Integer = 0
+        <Category("Internal")>
+        Public Property g_LtoPearlFlagEnable As Integer = 0
+        <Category("Internal")>
+        Public Property g_DHLPowerCount As Integer = 0
+        <Category("Internal")>
+        Public Property g_DHLPocCount As Integer = 0
 
-        Public g_Channels As Integer = 8
-        Public g_LoadCount As Integer = 0
-        Public g_CartridgeSN As String = "          "
-        Public g_TPM As Integer = 0
-        Public g_Barcode As String = "        "
-        Public g_DHLTimeStamp As Integer = 0
-        Public g_FaultLogSize As Integer = 0
-        Public g_LtoPearlFlagEnable As Integer = 0
-        Public g_DHLPowerCount As Integer = 0
-        Public g_DHLPocCount As Integer = 0
 
-
-        Public PageData As New List(Of Page)
-        Public CartridgeMfgData As New Cartridge_mfg
-        Public MediaMfgData As New Media_mfg
-        Public a_UsageData As New List(Of UsagePage)
-        Public UsageData As New List(Of Usage)
-        Public StatusData As New TapeStatus
-        Public InitialisationData As New Initialisation
-        Public PartitionEOD As New List(Of EOD)
-        Public CartridgeContentData As New CartridgeContent
-        Public TapeDirectoryData As New TapeDirectory
-        Public SuspendWriteData As New SuspendWrite
-        Public ApplicationSpecificData As New ApplicationSpecific
+        <Category("Pages")>
+        Public Property PageData As New List(Of Page)
+        <Category("PageData")>
+        Public Property CartridgeMfgData As New Cartridge_mfg
+        <Category("PageData")>
+        Public Property MediaMfgData As New Media_mfg
+        <Category("PageData")>
+        Public Property a_UsageData As New List(Of UsagePage)
+        <Category("PageData")>
+        Public Property UsageData As New List(Of Usage)
+        <Category("PageData")>
+        Public Property StatusData As New TapeStatus
+        <Category("PageData")>
+        Public Property InitialisationData As New Initialisation
+        <Category("PageData")>
+        Public Property PartitionEOD As New List(Of EOD)
+        <Category("PageData")>
+        Public Property CartridgeContentData As New CartridgeContent
+        <Category("PageData")>
+        Public Property TapeDirectoryData As New TapeDirectory
+        <Category("PageData")>
+        Public Property SuspendWriteData As New SuspendWrite
+        <Category("PageData")>
+        Public Property ApplicationSpecificData As New ApplicationSpecific
         Public Function a_Usage(index As Integer, Optional ByVal CreateNew As Boolean = True) As UsagePage
             For Each up As UsagePage In a_UsageData
                 If up.index = index Then Return up
@@ -3469,27 +3517,30 @@ End SyncLock
             End If
             Return Nothing
         End Function
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class UsagePage
-            Public index As Integer
-            Public data0 As Byte()
-            Public data1 As Integer
+            Public Property index As Integer
+            Public Property data0 As Byte()
+            Public Property data1 As Integer
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Page
-            Public a_Key As Integer
-            Public Version As Integer
-            Public Offset As Integer = -1
-            Public Length As Integer = -1
-            Public Type As TypeDef
+            Public Property a_Key As Integer
+            Public Property Version As Integer
+            Public Property Offset As Integer = -1
+            Public Property Length As Integer = -1
+            Public Property Type As TypeDef
             Public Enum TypeDef
                 unprotected
                 [protected]
             End Enum
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Cartridge_mfg
-            Public TapeVendor As String
-            Public CartridgeSN As String
-            Public CartridgeType As Integer
-            Public Format As String
+            Public Property TapeVendor As String
+            Public Property CartridgeSN As String
+            Public Property CartridgeType As Integer
+            Public Property Format As String
             Public ReadOnly Property IsLTO3Plus As Boolean
                 Get
                     Dim fmt As String = Format
@@ -3891,12 +3942,12 @@ End SyncLock
                 End Set
             End Property
 
-            Public MfgDate As String
-            Public TapeLength As Integer = 0
-            Public MediaCode As Integer
-            Public ParticleType As particle
-            Public SubstrateType As substrate
-            Public Servo_Band_ID As svbid
+            Public Property MfgDate As String
+            Public Property TapeLength As Integer = 0
+            Public Property MediaCode As Integer
+            Public Property ParticleType As particle
+            Public Property SubstrateType As substrate
+            Public Property Servo_Band_ID As svbid
             Public Enum particle
                 MP
                 BaFe
@@ -3910,56 +3961,58 @@ End SyncLock
                 non_UDIM
             End Enum
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Usage
-            Public Index As Integer
+            Public Property Index As Integer
 
-            Public PageID As Integer
-            Public DrvSN As String
-            Public ThreadCount As Integer
-            Public SetsWritten As Long
-            Public SetsRead As Long
-            Public TotalSets As Long
-            Public WriteRetries As Integer
-            Public ReadRetries As Integer
-            Public UnRecovWrites As Integer
-            Public UnRecovReads As Integer
-            Public SuspendedWrites As Integer
-            Public FatalSusWrites As Integer
-            Public SuspendedAppendWrites As Integer
-            Public LP3Passes As Integer
-            Public MidpointPasses As Integer
-            Public MaxTapeTemp As Integer
+            Public Property PageID As Integer
+            Public Property DrvSN As String
+            Public Property ThreadCount As Integer
+            Public Property SetsWritten As Long
+            Public Property SetsRead As Long
+            Public Property TotalSets As Long
+            Public Property WriteRetries As Integer
+            Public Property ReadRetries As Integer
+            Public Property UnRecovWrites As Integer
+            Public Property UnRecovReads As Integer
+            Public Property SuspendedWrites As Integer
+            Public Property FatalSusWrites As Integer
+            Public Property SuspendedAppendWrites As Integer
+            Public Property LP3Passes As Integer
+            Public Property MidpointPasses As Integer
+            Public Property MaxTapeTemp As Integer
 
-            Public CCQWriteFails As Integer
-            Public C2RecovErrors As Integer
-            Public DirectionChanges As Integer
-            Public TapePullingTime As Integer
-            Public TapeMetresPulled As Integer
-            Public Repositions As Integer
-            Public TotalLoadUnloads As Integer
-            Public StreamFails As Integer
+            Public Property CCQWriteFails As Integer
+            Public Property C2RecovErrors As Integer
+            Public Property DirectionChanges As Integer
+            Public Property TapePullingTime As Integer
+            Public Property TapeMetresPulled As Integer
+            Public Property Repositions As Integer
+            Public Property TotalLoadUnloads As Integer
+            Public Property StreamFails As Integer
 
-            Public MaxDriveTemp As Double
-            Public MinDriveTemp As Double
+            Public Property MaxDriveTemp As Double
+            Public Property MinDriveTemp As Double
 
-            Public LifeSetsWritten As Integer
-            Public LifeSetsRead As Integer
-            Public LifeWriteRetries As Integer
-            Public LifeReadRetries As Integer
-            Public LifeUnRecovWrites As Integer
-            Public LifeUnRecovReads As Integer
-            Public LifeSuspendedWrites As Integer
-            Public LifeFatalSuspWrites As Integer
-            Public LifeTapeMetresPulled As Integer
+            Public Property LifeSetsWritten As Integer
+            Public Property LifeSetsRead As Integer
+            Public Property LifeWriteRetries As Integer
+            Public Property LifeReadRetries As Integer
+            Public Property LifeUnRecovWrites As Integer
+            Public Property LifeUnRecovReads As Integer
+            Public Property LifeSuspendedWrites As Integer
+            Public Property LifeFatalSuspWrites As Integer
+            Public Property LifeTapeMetresPulled As Integer
 
-            Public LifeSuspAppendWrites As Integer
-            Public LifeLP3Passes As Integer
-            Public LifeMidpointPasses As Integer
+            Public Property LifeSuspAppendWrites As Integer
+            Public Property LifeLP3Passes As Integer
+            Public Property LifeMidpointPasses As Integer
 
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Media_mfg
-            Public MediaMfgDate As String
-            Public MediaVendor As String
+            Public Property MediaMfgDate As String
+            Public Property MediaVendor As String
             Public ReadOnly Property MediaVendor_Code As Integer
                 Get
                     With MediaVendor.ToUpper
@@ -3974,49 +4027,56 @@ End SyncLock
                 End Get
             End Property
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class TapeStatus
-            Public ThreadCount As Integer
-            Public EncryptedData As Boolean
-            Public LastLocation As Integer = 0
+            Public Property ThreadCount As Integer
+            Public Property EncryptedData As Boolean
+            Public Property LastLocation As Integer = 0
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Initialisation
-            Public LP1 As Integer
-            Public LP2 As Integer
-            Public LP3 As Integer
+            Public Property LP1 As Integer
+            Public Property LP2 As Integer
+            Public Property LP3 As Integer
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class EOD
-            Public Partition As Integer
-            Public Dataset As Integer
-            Public WrapNumber As Integer
-            Public Validity As Integer
-            Public PhysicalPosition As Integer
+            Public Property Partition As Integer
+            Public Property Dataset As Integer
+            Public Property WrapNumber As Integer
+            Public Property Validity As Integer
+            Public Property PhysicalPosition As Integer
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class CartridgeContent
-            Public Drive_Id As String
-            Public Cartridge_Content As Integer
-            Public PartitionedCartridge As Boolean
-            Public Type_M_Cartridge As Boolean
-            Public Drive_Firmware_Id As String
+            Public Property Drive_Id As String
+            Public Property Cartridge_Content As Integer
+            Public Property PartitionedCartridge As Boolean
+            Public Property Type_M_Cartridge As Boolean
+            Public Property Drive_Firmware_Id As String
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class TapeDirectory
-            Public FID_Tape_Write_Pass_Partition_0 As Integer
-            Public FID_Tape_Write_Pass_Partition_1 As Integer
-            Public FID_Tape_Write_Pass_Partition_2 As Integer
-            Public FID_Tape_Write_Pass_Partition_3 As Integer
-            Public Wrap As String
-            Public WrapEntryInfo As New List(Of WrapEntryItemSet)
-            Public CapacityLoss As New List(Of Double)
-            Public DatasetsOnWrapData As New List(Of Dataset)
+            Public Property FID_Tape_Write_Pass_Partition_0 As Integer
+            Public Property FID_Tape_Write_Pass_Partition_1 As Integer
+            Public Property FID_Tape_Write_Pass_Partition_2 As Integer
+            Public Property FID_Tape_Write_Pass_Partition_3 As Integer
+            Public Property Wrap As String
+            Public Property WrapEntryInfo As New List(Of WrapEntryItemSet)
+            Public Property CapacityLoss As New List(Of Double)
+            Public Property DatasetsOnWrapData As New List(Of Dataset)
+            <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class Dataset
-                Public Index As Integer
-                Public Data As Integer
+                Public Property Index As Integer
+                Public Property Data As Integer
             End Class
+            <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class WrapEntryItemSet
-                Public Index As Integer
-                Public Content As String
-                Public RawData As Integer()
-                Public RecCount As Integer
-                Public FileMarkCount As Integer
+                Public Property Index As Integer
+                Public Property Content As String
+                Public Property RawData As Integer()
+                Public Property RecCount As Integer
+                Public Property FileMarkCount As Integer
             End Class
             Public Function WrapEntry(Index As Integer, Optional ByVal CreateNew As Boolean = True) As WrapEntryItemSet
                 For Each d As WrapEntryItemSet In WrapEntryInfo
@@ -4041,6 +4101,7 @@ End SyncLock
                 Return Nothing
             End Function
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class SuspendWrite
             Public Function DataSetID(Index As Integer, Optional ByVal CreateNew As Boolean = True) As DataInfo
                 For Each di As DataInfo In DataSetList
@@ -4064,18 +4125,20 @@ End SyncLock
                 End If
                 Return Nothing
             End Function
-            Public DataSetList As New List(Of DataInfo)
-            Public WTapePassList As New List(Of DataInfo)
+            Public Property DataSetList As New List(Of DataInfo)
+            Public Property WTapePassList As New List(Of DataInfo)
+            <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class DataInfo
-                Public Index As Integer
-                Public Value As Integer
+                Public Property Index As Integer
+                Public Property Value As Integer
             End Class
         End Class
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class ApplicationSpecific
-            Public Barcode As String
-            Public Application_vendor As String
-            Public Application_name As String
-            Public Application_version As String
+            Public Property Barcode As String
+            Public Property Application_vendor As String
+            Public Property Application_name As String
+            Public Property Application_version As String
         End Class
         Public Enum gtype
             page
@@ -5332,7 +5395,9 @@ End SyncLock
 
 
 
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     <Serializable> Public Class PageData
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class DataItem
             Public Property Name As String
             Public Property StartByte As Integer
@@ -5345,6 +5410,7 @@ End SyncLock
             Public Property DynamicParamLenBitOffset As Byte
             Public Property DynamicParamLenTotalBits As Byte
             Public Property DynamicParamDataStartByte As Integer
+            <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class DynamicParamPage
                 Public ReadOnly Property Name As String
                     Get
@@ -5358,7 +5424,17 @@ End SyncLock
                 Public Property Parent As DataItem
                 Public Property Type As DataType
                 Public Property EnumTranslator As SerializableDictionary(Of Long, String)
-                <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
+                <Xml.Serialization.XmlIgnore>
+                Public Property RawData As Byte()
+                <Xml.Serialization.XmlIgnore>
+                Public ReadOnly Property LastByte As Byte
+                    Get
+                        If RawData Is Nothing OrElse RawData.Length = 0 Then Return Nothing
+                        Return RawData.Last
+                    End Get
+                End Property
+
+                <Xml.Serialization.XmlIgnore>
                 Public ReadOnly Property GetString As String
                     Get
                         If Parent Is Nothing Then Return ""
@@ -5434,6 +5510,18 @@ End SyncLock
                         End Select
                     End Get
                 End Property
+                <Xml.Serialization.XmlIgnore>
+                Public ReadOnly Property GetLong As Long
+                    Get
+                        Dim result As Long
+                        For i As Integer = 0 To RawData.Length - 1
+                            result <<= 8
+                            result = result Or RawData(i)
+                        Next
+                        Return result
+                    End Get
+                End Property
+
 
                 Public Shared Function [Next](ByVal PageData As DataItem, ByVal StartByte As Integer) As DynamicParamPage
                     Dim rawLen(Math.Ceiling(PageData.DynamicParamLenTotalBits / 8) - 1) As Byte
@@ -5469,7 +5557,11 @@ End SyncLock
                         Array.Copy(PageData.RawData, StartByte + PageData.DynamicParamDataStartByte, resultData, 0, LenValue)
                     End If
                     Dim dataType As DataType
-                    PageData.DynamicParamType.TryGetValue(PCode, dataType)
+                    Try
+                        PageData.DynamicParamType.TryGetValue(PCode, dataType)
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
                     Return New DynamicParamPage With {.Parent = PageData, .ParamCode = PCode, .RawData = resultData, .Type = dataType}
                 End Function
             End Class
@@ -5595,12 +5687,20 @@ End SyncLock
                 End Get
             End Property
             <Xml.Serialization.XmlIgnore> Public Property Parent As PageData
-
         End Class
         Public Property Name As String
         Public Property PageCode As Integer
         Public Property Items As New List(Of DataItem)
         <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
+            Get
+                Return _RawData
+            End Get
+            Set(value As Byte())
+                _RawData = value
+                _DynamicParamPages = Nothing
+            End Set
+        End Property
+        <Xml.Serialization.XmlIgnore> Private _RawData As Byte()
         Public Function GetSummary(Optional ByVal ShowTitle As Boolean = True) As String
             Dim sb As New StringBuilder
             If ShowTitle Then sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
@@ -5610,6 +5710,51 @@ End SyncLock
             Next
             If ShowTitle Then sb.AppendLine("".PadRight(64, "="))
             Return sb.ToString()
+        End Function
+
+        <Xml.Serialization.XmlIgnore> Public Property DynamicParamPages As List(Of DataItem.DynamicParamPage)
+            Get
+                If _DynamicParamPages Is Nothing Then
+                    _DynamicParamPages = New List(Of DataItem.DynamicParamPage)
+                    For Each it As TapeUtils.PageData.DataItem In Items
+                        If it.EnumTranslator Is Nothing Then Continue For
+                        Dim i As Integer = 0
+                        While i < it.RawData.Length - 1
+                            Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, i)
+                            If nextPage Is Nothing Then Continue While
+                            _DynamicParamPages.Add(nextPage)
+                            i += nextPage.RawData.Length + it.DynamicParamDataStartByte
+                        End While
+                    Next
+                End If
+                Return _DynamicParamPages
+            End Get
+            Set(value As List(Of DataItem.DynamicParamPage))
+                _DynamicParamPages = value
+            End Set
+        End Property
+        <Xml.Serialization.XmlIgnore> Private _DynamicParamPages As List(Of DataItem.DynamicParamPage)
+        Public Function TryGetPage(ParamCode As Integer) As DataItem.DynamicParamPage
+            Try
+                For Each p As DataItem.DynamicParamPage In DynamicParamPages
+                    If p.ParamCode = ParamCode Then Return p
+                Next
+            Catch ex As Exception
+            End Try
+            Return Nothing
+        End Function
+        Public Function TryGetPage(ParamName As String, Optional ByVal IgnoreCase As Boolean = True) As DataItem.DynamicParamPage
+            Try
+                For Each p As DataItem.DynamicParamPage In DynamicParamPages
+                    If IgnoreCase Then
+                        If p.Name.ToLower = ParamName.ToLower Then Return p
+                    Else
+                        If p.Name = ParamName Then Return p
+                    End If
+                Next
+            Catch ex As Exception
+            End Try
+            Return Nothing
         End Function
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(PageData))

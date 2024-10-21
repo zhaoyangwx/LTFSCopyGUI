@@ -370,53 +370,8 @@ Public Class LTFSWriter
             If False Then
                 Dim logdata As Byte()
                 Dim wcr, rcr, wh, wt, rh, rt As Long
-                If DataCompressionLogPage Is Nothing Then
-                    DataCompressionLogPage = New TapeUtils.PageData With {.Name = "Data Compression log page", .PageCode = &H1B}
-                    DataCompressionLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
-                                              .Parent = DataCompressionLogPage,
-                                              .Name = "Data Compression Parameter",
-                                              .StartByte = 4,
-                                              .BitOffset = 0,
-                                              .TotalBits = 0,
-                                              .DynamicParamCodeBitOffset = 0,
-                                              .DynamicParamCodeStartByte = 0,
-                                              .DynamicParamCodeTotalBits = 16,
-                                              .DynamicParamLenBitOffset = 0,
-                                              .DynamicParamLenStartByte = 3,
-                                              .DynamicParamLenTotalBits = 8,
-                                              .DynamicParamDataStartByte = 4,
-                                              .EnumTranslator = New SerializableDictionary(Of Long, String),
-                                              .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
-                                              .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
-                    With DataCompressionLogPage.Items.Last.EnumTranslator
-                        .Add(0, "Read compression ratio")
-                        .Add(1, "Write compression ratio")
-                        .Add(2, "Megabytes transferred to host")
-                        .Add(3, "Bytes transferred to host")
-                        .Add(4, "Megabytes read from tape")
-                        .Add(5, "Bytes read from tape")
-                        .Add(6, "Megabytes transferred from host")
-                        .Add(7, "Bytes transferred from host")
-                        .Add(8, "Megabytes written to tape")
-                        .Add(9, "Bytes written to tape")
-                        .Add(&H100, "Dara compression enabled")
-                    End With
-                    With DataCompressionLogPage.Items.Last.DynamicParamType
-                        .Add(0, TapeUtils.PageData.DataItem.DataType.Int16)
-                        .Add(1, TapeUtils.PageData.DataItem.DataType.Int16)
-                        .Add(2, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(3, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(4, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(5, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(6, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(7, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(8, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(9, TapeUtils.PageData.DataItem.DataType.Int32)
-                        .Add(&H100, TapeUtils.PageData.DataItem.DataType.Boolean)
-                    End With
-                End If
                 logdata = TapeUtils.LogSense(TapeDrive, &H1B, PageControl:=1)
-                DataCompressionLogPage.RawData = logdata
+                DataCompressionLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
                 For Each it As TapeUtils.PageData.DataItem In DataCompressionLogPage.Items
                     Dim pi As Integer = 0
                     While pi < it.RawData.Length - 1
@@ -964,70 +919,30 @@ Public Class LTFSWriter
 
         Invoke(Sub()
                    Try
-                       If CapacityLogPage Is Nothing Then
-                           CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
-                       End If
-                       If VolumeStatisticsLogPage Is Nothing Then
-                           VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
-                       End If
-                       CapacityLogPage.RawData = logdataCap
-                       VolumeStatisticsLogPage.RawData = logdataVStat
+                       CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
+                       VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
                        Dim Gen As Integer, WORM As Boolean, WP As Boolean
-                       For Each it As TapeUtils.PageData.DataItem In VolumeStatisticsLogPage.Items
-                           If it.EnumTranslator Is Nothing Then Continue For
-                           Dim i As Integer = 0
-                           While i < it.RawData.Length - 1
-                               Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, i)
-                               Select Case nextPage.ParamCode
-                                   Case &H45 'Personality
-                                       Gen = Integer.Parse(nextPage.GetString().Last)
-                                   Case &H80 'Write Protect
-                                       WP = nextPage.RawData.Last
-                                   Case &H81 'WORM
-                                       WORM = nextPage.RawData.Last
-                               End Select
-                               i += nextPage.RawData.Length + it.DynamicParamDataStartByte
-                           End While
-                       Next
+                       Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
+                       If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
+                       Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
+                       If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
+                       Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
+                       If WPPage IsNot Nothing Then WP = WPPage.LastByte
+
                        Dim MediaDescription As String = $"L{Gen}"
                        If WORM Then MediaDescription &= " WORM"
                        If WP Then MediaDescription &= " RO" Else MediaDescription &= " RW"
 
                        Dim cap0, cap1, max0, max1 As Long
-                       For Each it As TapeUtils.PageData.DataItem In CapacityLogPage.Items
-                           Dim i As Integer = 0
-                           While i < it.RawData.Length - 1
-                               Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, i)
-                               Select Case nextPage.ParamCode
-                                   Case 1
-                                       cap0 = 0
-                                       For j As Integer = 0 To nextPage.RawData.Length - 1
-                                           cap0 = cap0 << 8
-                                           cap0 = cap0 Or nextPage.RawData(j)
-                                       Next
-                                   Case 2
-                                       cap1 = 0
-                                       For j As Integer = 0 To nextPage.RawData.Length - 1
-                                           cap1 = cap1 << 8
-                                           cap1 = cap1 Or nextPage.RawData(j)
-                                       Next
-                                   Case 3
-                                       max0 = 0
-                                       For j As Integer = 0 To nextPage.RawData.Length - 1
-                                           max0 = max0 << 8
-                                           max0 = max0 Or nextPage.RawData(j)
-                                       Next
-                                   Case 4
-                                       max1 = 0
-                                       For j As Integer = 0 To nextPage.RawData.Length - 1
-                                           max1 = max1 << 8
-                                           max1 = max1 Or nextPage.RawData(j)
-                                       Next
-                               End Select
+                       Dim cp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(1)
+                       Dim cp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(2)
+                       Dim mp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(3)
+                       Dim mp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(4)
+                       If cp0 IsNot Nothing Then cap0 = cp0.GetLong
+                       If cp1 IsNot Nothing Then cap1 = cp1.GetLong
+                       If mp0 IsNot Nothing Then max0 = mp0.GetLong
+                       If mp1 IsNot Nothing Then max1 = mp1.GetLong
 
-                               i += nextPage.RawData.Length + it.DynamicParamDataStartByte
-                           End While
-                       Next
 
                        'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
                        Dim loss As Long

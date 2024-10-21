@@ -126,13 +126,13 @@
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="DiskToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>101, 22</value>
   </data>
   <data name="DiskToolStripMenuItem.Text" xml:space="preserve">
     <value>Disk</value>
   </data>
   <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 48</value>
+    <value>102, 26</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip3.Name" xml:space="preserve">
     <value>ContextMenuStrip3</value>
@@ -3247,6 +3247,12 @@
   <data name="$this.Text" xml:space="preserve">
     <value>LTFSConfigurator</value>
   </data>
+  <data name="&gt;&gt;DiskToolStripMenuItem.Name" xml:space="preserve">
+    <value>DiskToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;DiskToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;在当前进程运行ToolStripMenuItem.Name" xml:space="preserve">
     <value>在当前进程运行ToolStripMenuItem</value>
   </data>
@@ -3294,12 +3300,6 @@
   </data>
   <data name="&gt;&gt;OpenFileDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.OpenFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;DiskToolStripMenuItem.Name" xml:space="preserve">
-    <value>DiskToolStripMenuItem</value>
-  </data>
-  <data name="&gt;&gt;DiskToolStripMenuItem.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>LTFSConfigurator</value>

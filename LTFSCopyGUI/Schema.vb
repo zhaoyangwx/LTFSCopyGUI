@@ -1,50 +1,77 @@
-﻿<Serializable>
+﻿Imports System.ComponentModel
+
+<Serializable>
 Public Class ltfsindex
     'Public Property version As String
+    <Category("LTFSIndex")>
     Public Property creator As String = My.Application.Info.ProductName & " " & My.Application.Info.Version.ToString(3) & " - Windows - TapeUtils"
+    <Category("LTFSIndex")>
     Public Property volumeuuid As Guid
+    <Category("LTFSIndex")>
     Public Property generationnumber As ULong
+    <Category("LTFSIndex")>
     Public Property updatetime As String
     Public Enum PartitionLabel
         a
         b
     End Enum
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LocationDef
 
         Public Property partition As PartitionLabel = PartitionLabel.a
         Public Property startblock As ULong
     End Class
 
+    <Category("LTFSIndex")>
     Public Property location As New LocationDef
+    <Category("LTFSIndex")>
     Public Property previousgenerationlocation As New LocationDef
+    <Category("LTFSIndex")>
     Public Property allowpolicyupdate As Boolean
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class policy
         Public Structure indexpartitioncriteria
             Public Property size As Long
         End Structure
     End Class
+    <Category("LTFSIndex")>
     Public Property dataplacementpolicy As policy
     Public Enum volumelockstateValue
         unlocked
         locked
         permlocked
     End Enum
+    <Category("LTFSIndex")>
     Public Property volumelockstate As volumelockstateValue = volumelockstateValue.unlocked
+    <Category("LTFSIndex")>
     Public Property highestfileuid As Long
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class file
+        <Category("LTFSIndex")>
         Public Property name As String
+        <Category("LTFSIndex")>
         Public Property length As Long
+        <Category("LTFSIndex")>
         Public Property [readonly] As Boolean = False
+        <Category("LTFSIndex")>
         Public Property openforwrite As Boolean = True
+        <Category("LTFSIndex")>
         Public Property creationtime As String
+        <Category("LTFSIndex")>
         Public Property changetime As String
+        <Category("LTFSIndex")>
         Public Property modifytime As String
+        <Category("LTFSIndex")>
         Public Property accesstime As String
+        <Category("LTFSIndex")>
         Public Property backuptime As String
+        <Category("LTFSIndex")>
         Public Property fileuid As Long
+        <Category("Deprecated")>
+        <Xml.Serialization.XmlIgnore>
         Public Property sha1 As String
             Get
                 If Searializing Then Return Nothing
@@ -58,21 +85,42 @@ Public Class ltfsindex
                 SetXattr(xattr.HashType.SHA1, value)
             End Set
         End Property
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
         Public Property tag As String
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         Public Class refFile
             Public FileName As String
         End Class
-        <Xml.Serialization.XmlIgnore> Public fullpath As String
-        <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
-        <Xml.Serialization.XmlIgnore> Public WrittenBytes As Long = 0
-        <Xml.Serialization.XmlIgnore> Public TempObj As Object
-        <Xml.Serialization.XmlIgnore> Public SHA1ForeColor As Color = Color.Black
-        <Xml.Serialization.XmlIgnore> Public MD5ForeColor As Color = Color.Black
-        <Xml.Serialization.XmlIgnore> Public ItemForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property fullpath As String
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property Selected As Boolean = True
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property WrittenBytes As Long = 0
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property TempObj As Object
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property SHA1ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property MD5ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property ItemForeColor As Color = Color.Black
         <Serializable>
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         Public Class xattr
+            <Category("LTFSIndex")>
             Public Property key As String
+            <Category("LTFSIndex")>
             Public Property value As String
+            <TypeConverter(GetType(ExpandableObjectConverter))>
             Public Class HashType
                 Public Shared ReadOnly Property CRC32 As String = "ltfs.hash.crc32sum"
                 Public Shared ReadOnly Property MD5 As String = "ltfs.hash.md5sum"
@@ -86,6 +134,7 @@ Public Class ltfsindex
                 Return CType(reader.Deserialize(t), List(Of xattr))
             End Function
         End Class
+        <Category("LTFSIndex")>
         Public Property extendedattributes As New List(Of xattr)
         Public Function GetXAttrText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
@@ -116,14 +165,24 @@ Public Class ltfsindex
         End Sub
 
         <Serializable>
+        <TypeConverter(GetType(ExpandableObjectConverter))>
+        <Category("LTFSIndex")>
         Public Class extent
+            <Category("LTFSIndex")>
             Public Property fileoffset As Long
+            <Category("LTFSIndex")>
             Public Property partition As PartitionLabel
+            <Category("LTFSIndex")>
             Public Property startblock As Long
+            <Category("LTFSIndex")>
             Public Property byteoffset As Long
+            <Category("LTFSIndex")>
             Public Property bytecount As Long
-            <Xml.Serialization.XmlIgnore> Public Property TempInfo As Object
+            <Xml.Serialization.XmlIgnore>
+            <Category("Internal")>
+            Public Property TempInfo As Object
         End Class
+        <Category("LTFSIndex")>
         Public Property extentinfo As New List(Of extent)
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
@@ -153,30 +212,48 @@ Public Class ltfsindex
         End Function
     End Class
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class directory
+        <Category("LTFSIndex")>
         Public Property name As String
+        <Category("LTFSIndex")>
         Public Property [readonly] As Boolean = False
+        <Category("LTFSIndex")>
         Public Property creationtime As String
+        <Category("LTFSIndex")>
         Public Property changetime As String
+        <Category("LTFSIndex")>
         Public Property modifytime As String
+        <Category("LTFSIndex")>
         Public Property accesstime As String
+        <Category("LTFSIndex")>
         Public Property backuptime As String
+        <Category("LTFSIndex")>
         Public Property fileuid As Long
+        <Category("LTFSIndex")>
         Public Property contents As New contentsDef
-        <Xml.Serialization.XmlIgnore> Public ReadOnly Property Files As List(Of file)
-            Get
-                Return contents._file
-            End Get
-        End Property
-        <Xml.Serialization.XmlIgnore> Public ReadOnly Property Directories As List(Of directory)
-            Get
-                Return contents._directory
-            End Get
-        End Property
+        '<Xml.Serialization.XmlIgnore>
+        '<Category("Internal")>
+        'Public ReadOnly Property Files As List(Of file)
+        '    Get
+        '        Return contents._file
+        '    End Get
+        'End Property
+        '<Xml.Serialization.XmlIgnore>
+        '<Category("Internal")>
+        'Public ReadOnly Property Directories As List(Of directory)
+        '    Get
+        '        Return contents._directory
+        '    End Get
+        'End Property
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
         Public Property tag As String
 
         Private _TotalFiles, _TotalDirectories, _TotalFilesUnwritten As Long
-        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalFiles
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public ReadOnly Property TotalFiles
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -187,7 +264,9 @@ Public Class ltfsindex
                 Return _TotalFiles
             End Get
         End Property
-        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalFilesUnwritten
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public ReadOnly Property TotalFilesUnwritten
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -201,7 +280,9 @@ Public Class ltfsindex
                 Return _TotalFilesUnwritten
             End Get
         End Property
-        <Xml.Serialization.XmlIgnore> Public ReadOnly Property TotalDirectories
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public ReadOnly Property TotalDirectories
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -253,8 +334,12 @@ Public Class ltfsindex
         End Sub
 
 
-        <Xml.Serialization.XmlIgnore> Public fullpath As String
-        <Xml.Serialization.XmlIgnore> Public Selected As Boolean = True
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public Property fullpath As String
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public Property Selected As Boolean = True
 
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(directory))
@@ -288,15 +373,26 @@ Public Class ltfsindex
         End Function
     End Class
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class contentsDef
+        <Category("LTFSIndex")>
         Public Property _file As New List(Of file)
+        <Category("LTFSIndex")>
         Public Property _directory As New List(Of directory)
-        <Xml.Serialization.XmlIgnore> Public UnwrittenFiles As New List(Of file)
-        <Xml.Serialization.XmlIgnore> Public LastUnwrittenFilesCount As Integer
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public Property UnwrittenFiles As New List(Of file)
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public Property LastUnwrittenFilesCount As Integer
     End Class
+    <Category("LTFSIndex")>
     Public Property _file As New List(Of file)
+    <Category("LTFSIndex")>
     Public Property _directory As New List(Of directory)
-    <Xml.Serialization.XmlIgnore> Public Shared Searializing As Boolean = False
+    <Xml.Serialization.XmlIgnore>
+    <Category("Internal")>
+    Public Shared Property Searializing As Boolean = False
 
     Public Sub Standarize()
         Exit Sub
@@ -475,28 +571,40 @@ Public Class ltfsindex
     End Sub
 End Class
 
-<Serializable> Public Class ltfslabel
+<Serializable>
+<TypeConverter(GetType(ExpandableObjectConverter))>
+<Category("LTFSIndex")>
+Public Class ltfslabel
+    <Category("LTFSIndex")>
     Public Property creator As String = My.Application.Info.ProductName & " " & My.Application.Info.Version.ToString(3) & " - Windows - TapeUtils"
+    <Category("LTFSIndex")>
     Public Property formattime As String = Now.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+    <Category("LTFSIndex")>
     Public Property volumeuuid As Guid
     <Serializable>
     Public Enum PartitionLabel
         a
         b
     End Enum
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class PartitionLocation
 
         Public Property partition As PartitionLabel = PartitionLabel.a
     End Class
+    <Category("LTFSIndex")>
     Public Property location As New PartitionLocation
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class PartitionInfo
 
         Public Property index As PartitionLabel = PartitionLabel.a
         Public Property data As PartitionLabel = PartitionLabel.b
     End Class
+    <Category("LTFSIndex")>
     Public Property partitions As New PartitionInfo
+    <Category("LTFSIndex")>
     Public Property blocksize As Integer = 524288
+    <Category("LTFSIndex")>
     Public Property compression As Boolean = True
     Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
         Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfslabel))
@@ -546,8 +654,10 @@ End Class
     End Function
 End Class
 
+<TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class Vol1Label
     Private _label_identifier As String = "VOL".PadRight(3)
+    <Category("LTFSIndex")>
     Public Property label_identifier As String
         Set(value As String)
             _label_identifier = value.PadRight(3).Substring(0, 3)
@@ -556,8 +666,10 @@ Public Class Vol1Label
             Return _label_identifier
         End Get
     End Property
+    <Category("LTFSIndex")>
     Public Property label_number As Char = "1"
     Private _volume_identifier As String = "".PadRight(6)
+    <Category("LTFSIndex")>
     Public Property volume_identifier As String
         Set(value As String)
             _volume_identifier = value.PadRight(6).Substring(0, 6)
@@ -566,8 +678,10 @@ Public Class Vol1Label
             Return _volume_identifier
         End Get
     End Property
+    <Category("LTFSIndex")>
     Public Property volume_accessibility As Char = "L"
     Private _implementation_identifier As String = "LTFS".PadRight(13)
+    <Category("LTFSIndex")>
     Public Property implementation_identifier As String
         Set(value As String)
             _implementation_identifier = value.PadRight(13).Substring(0, 13)
@@ -577,6 +691,7 @@ Public Class Vol1Label
         End Get
     End Property
     Private _owner_identifier As String = "".PadRight(14).Substring(0, 14)
+    <Category("LTFSIndex")>
     Public Property owner_identifier As String
         Set(value As String)
             _owner_identifier = value.PadRight(14)
@@ -585,6 +700,7 @@ Public Class Vol1Label
             Return _owner_identifier
         End Get
     End Property
+    <Category("LTFSIndex")>
     Public Property label_standard_version As Char = "4"
 
     Public Function GenerateRawData(Optional ByVal Barcode As String = "") As Byte()

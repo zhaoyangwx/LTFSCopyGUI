@@ -325,7 +325,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Schema.vb" />
-    <Compile Include="SerializableDictionary.vb" />
     <Compile Include="SettingPanel.Designer.vb">
       <DependentUpon>SettingPanel.vb</DependentUpon>
     </Compile>
@@ -353,9 +352,6 @@
     <EmbeddedResource Include="FileBrowser.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FileBrowser.zh-Hant.resx">
-      <DependentUpon>FileBrowser.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="FileBrowser.zh.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>
@@ -365,22 +361,13 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.zh-Hant.resx">
-      <DependentUpon>Form1.vb</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="HashTaskWindow.resx">
-      <DependentUpon>HashTaskWindow.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="HashTaskWindow.zh-Hant.resx">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSConfigurator.en.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSConfigurator.resx">
-      <DependentUpon>LTFSConfigurator.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="LTFSConfigurator.zh-Hant.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSWriter.en.resx">
@@ -390,9 +377,6 @@
     <EmbeddedResource Include="LTFSWriter.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
       <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="LTFSWriter.zh-Hant.resx">
-      <DependentUpon>LTFSWriter.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.en.resx">
       <SubType>Designer</SubType>
