@@ -163,6 +163,16 @@ Public Class ltfsindex
         Public Property backuptime As String
         Public Property fileuid As Long
         Public Property contents As New contentsDef
+        <Xml.Serialization.XmlIgnore> Public ReadOnly Property Files As List(Of file)
+            Get
+                Return contents._file
+            End Get
+        End Property
+        <Xml.Serialization.XmlIgnore> Public ReadOnly Property Directories As List(Of directory)
+            Get
+                Return contents._directory
+            End Get
+        End Property
         Public Property tag As String
 
         Private _TotalFiles, _TotalDirectories, _TotalFilesUnwritten As Long
@@ -287,6 +297,7 @@ Public Class ltfsindex
     Public Property _file As New List(Of file)
     Public Property _directory As New List(Of directory)
     <Xml.Serialization.XmlIgnore> Public Shared Searializing As Boolean = False
+
     Public Sub Standarize()
         Exit Sub
         Dim q As New List(Of directory)

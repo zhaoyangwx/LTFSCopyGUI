@@ -210,13 +210,16 @@ Public Class Form1
         End If
     End Sub
     Public LoadComplete As Boolean = False
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        TextBox1.Text = My.Settings.LastFile
-        TextBox3.Text = My.Settings.Src
-        TextBox4.Text = My.Settings.Dest
+    Public Sub LoadSetting()
+        TextBox1.Text = My.Settings.IndexAnalyzer_LastFile
+        TextBox3.Text = My.Settings.IndexAnalyzer_Src
+        TextBox4.Text = My.Settings.IndexAnalyzer_Dest
         Label6.Text &= $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
-        CheckBox1.Checked = My.Settings.GenCMD
-        Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+        CheckBox1.Checked = My.Settings.IndexAnalyzer_GenCMD
+        Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+    End Sub
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        LoadSetting()
         LoadComplete = True
         RefreshDeviceList()
     End Sub
@@ -242,10 +245,10 @@ Public Class Form1
     End Sub
 
     Private Sub Form1_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        My.Settings.LastFile = TextBox1.Text
-        My.Settings.Src = TextBox3.Text
-        My.Settings.Dest = TextBox4.Text
-        My.Settings.GenCMD = CheckBox1.Checked
+        My.Settings.IndexAnalyzer_LastFile = TextBox1.Text
+        My.Settings.IndexAnalyzer_Src = TextBox3.Text
+        My.Settings.IndexAnalyzer_Dest = TextBox4.Text
+        My.Settings.IndexAnalyzer_GenCMD = CheckBox1.Checked
         My.Settings.Save()
     End Sub
     Public Class IndexedDirectory
@@ -787,5 +790,15 @@ Public Class Form1
         MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(0)))
         MessageBox.Show(System.Text.Encoding.UTF8.GetString(result.PayLoad(1)))
 
+    End Sub
+
+    Private Sub Button16_Click(sender As Object, e As EventArgs) Handles Button16.Click
+        Dim SP1 As New SettingPanel
+        SP1.PropertyGrid1.SelectedObject = My.MySettings.Default
+        SP1.MenuStrip1.Visible = True
+        If SP1.ShowDialog() = DialogResult.OK Then
+            LoadSetting()
+            My.Settings.Save()
+        End If
     End Sub
 End Class

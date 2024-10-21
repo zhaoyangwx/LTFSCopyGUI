@@ -51,7 +51,7 @@ Namespace My
 
                 End Try
             End If
-            My.Settings.License = Resources.StrDefaultLicense
+            My.Settings.Application_License = Resources.StrDefaultLicense
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
 
@@ -70,7 +70,7 @@ Namespace My
                     Dim bLicStr As Byte() = Convert.FromBase64String(strBody)
                     'lic_string = System.Text.Encoding.UTF8.GetString(rsa.Decrypt(key, False))
                     If rsa.VerifyData(bLicStr, "SHA256", bSign) Then
-                        My.Settings.License = System.Text.Encoding.UTF8.GetString(bLicStr)
+                        My.Settings.Application_License = System.Text.Encoding.UTF8.GetString(bLicStr)
                     Else
                         Throw New Exception()
                     End If
@@ -78,7 +78,7 @@ Namespace My
                     If rsa.PublicOnly Then
                         MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                     Else
-                        My.Settings.License = lic_string
+                        My.Settings.Application_License = lic_string
                         Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(lic_string)
                         Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                         Dim strBody As String = Convert.ToBase64String(bLicStr)
@@ -344,7 +344,7 @@ dataDir:{dataDir}
                                 If rsa.PublicOnly Then
                                     MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                                 Else
-                                    My.Settings.License = ltext
+                                    My.Settings.Application_License = ltext
                                     Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(ltext)
                                     Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                                     Dim strBody As String = Convert.ToBase64String(bLicStr)
@@ -779,7 +779,7 @@ dataDir:{dataDir}
                         Case Else
                             Try
                                 InitConsole()
-                                Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}{My.Settings.License}
+                                Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}
 {Resources.StrCMDHelpText}")
 
                                 CloseConsole()
@@ -792,6 +792,10 @@ dataDir:{dataDir}
                     End Select
                 Next
             End If
+        End Sub
+
+        Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
+
         End Sub
     End Class
 End Namespace

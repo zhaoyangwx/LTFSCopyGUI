@@ -71,6 +71,291 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 许可证文本显示 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_Application_License() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_Application_License", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 复制文件信息到剪贴板 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_FileBrowser_CopyInfo() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_FileBrowser_CopyInfo", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重新校验 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_HashTaskWindow_ReHash() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_HashTaskWindow_ReHash", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 目标路径 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_IndexAnalyzer_Dest() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_IndexAnalyzer_Dest", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 生成命令行 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_IndexAnalyzer_GenCMD() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_IndexAnalyzer_GenCMD", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 上一次的文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_IndexAnalyzer_LastFile() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_IndexAnalyzer_LastFile", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 源路径 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_IndexAnalyzer_Src() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_IndexAnalyzer_Src", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 自动刷新设备列表 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSConf_AutoRefresh() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSConf_AutoRefresh", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量损失判定速度下限 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoCleanDownLim() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoCleanDownLim", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量损失判定秒数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoCleanTimeThreashould() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoCleanTimeThreashould", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量损失判定速度上限 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoCleanUpperLim() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoCleanUpperLim", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量损失自动停顿 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoFlush() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoFlush", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 容量显示刷新间隔 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_CapacityRefreshInterval() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_CapacityRefreshInterval", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 重装带前清洁次数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_CleanCycle() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_CleanCycle", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 去重 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_DeDupe() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_DeDupe", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 禁用分区 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_DisablePartition() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_DisablePartition", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 文件标签设置 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_FileLabel() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_FileLabel", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 总是更新数据区索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ForceIndex() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ForceIndex", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 异步校验
+        '''性能更好，但CPU使用率更高
+        '''仅当计算校验开启有效 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_HashAsync() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_HashAsync", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 计算校验 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_HashOnWriting() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_HashOnWriting", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 索引更新间隔（字节） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_IndexWriteInterval() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_IndexWriteInterval", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 启用日志 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_LogEnabled() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_LogEnabled", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入完成后：
+        '''  0 - 什么都不做
+        '''  1 - 更新数据区索引
+        '''  2 - 更新全部索引
+        '''  3 - 更新全部索引并弹出 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_OnWriteFinished() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_OnWriteFinished", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 添加文件时覆盖已有文件 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_OverwriteExist() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_OverwriteExist", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入开始时切换电源策略 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_PowerPolicyOnWriteBegin() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_PowerPolicyOnWriteBegin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 写入结束后切换电源策略 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_PowerPolicyOnWriteEnd() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_PowerPolicyOnWriteEnd", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 预读字节数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_PreLoadBytes() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_PreLoadBytes", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 预读文件数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_PreLoadFileCount() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_PreLoadFileCount", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 显示文件数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ShowFileCount() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ShowFileCount", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 显示容量损失 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ShowLoss() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ShowLoss", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 添加文件时跳过符号链接 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_SkipSymlink() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_SkipSymlink", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 资源 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_() As String

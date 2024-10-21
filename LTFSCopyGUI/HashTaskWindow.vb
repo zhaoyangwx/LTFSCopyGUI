@@ -51,7 +51,7 @@ Public Class HashTaskWindow
     End Sub
 
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        CheckBox1.Checked = My.Settings.ReHash
+        CheckBox1.Checked = My.Settings.HashTaskWindow_ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory, .ReportSkip = Not DisableSkipInfo}
         If IO.File.Exists(Application.StartupPath & "\recovery.log") Then
             HashTask.LogFile = IO.File.ReadAllText(Application.StartupPath & "\recovery.log").Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
@@ -435,7 +435,7 @@ Public Class HashTaskWindow
             MessageBox.Show(New Form With {.TopMost = True}, "Task is still running.")
             Exit Sub
         Else
-            My.Settings.ReHash = CheckBox1.Checked
+            My.Settings.HashTaskWindow_ReHash = CheckBox1.Checked
             My.Settings.Save()
             Try
                 HashTask.Stop()

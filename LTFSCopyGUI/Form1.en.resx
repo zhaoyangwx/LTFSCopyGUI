@@ -244,6 +244,15 @@
   <data name="GroupBox3.Text" xml:space="preserve">
     <value>Other Tools</value>
   </data>
+  <data name="Button16.Location" type="System.Drawing.Point, System.Drawing">
+    <value>405, 20</value>
+  </data>
+  <data name="Button16.Text" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Button15.Location" type="System.Drawing.Point, System.Drawing">
+    <value>486, 20</value>
+  </data>
   <data name="Button14.Location" type="System.Drawing.Point, System.Drawing">
     <value>230, 20</value>
   </data>

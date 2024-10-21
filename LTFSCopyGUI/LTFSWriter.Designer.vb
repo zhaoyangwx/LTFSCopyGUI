@@ -77,6 +77,7 @@ Partial Class LTFSWriter
         Me.重命名ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.统计ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.详情ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.压缩索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.解压索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
@@ -280,7 +281,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip3
         '
-        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.剪切目录ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
+        Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.剪切目录ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.详情ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
         '
@@ -334,6 +335,11 @@ Partial Class LTFSWriter
         '
         Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
         resources.ApplyResources(Me.统计ToolStripMenuItem, "统计ToolStripMenuItem")
+        '
+        '详情ToolStripMenuItem
+        '
+        Me.详情ToolStripMenuItem.Name = "详情ToolStripMenuItem"
+        resources.ApplyResources(Me.详情ToolStripMenuItem, "详情ToolStripMenuItem")
         '
         '压缩索引ToolStripMenuItem
         '
@@ -1549,4 +1555,5 @@ Partial Class LTFSWriter
     Friend WithEvents 节能ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents 高性能ToolStripMenuItem1 As ToolStripMenuItem
     Friend WithEvents 其他ToolStripMenuItem1 As ToolStripMenuItem
+    Friend WithEvents 详情ToolStripMenuItem As ToolStripMenuItem
 End Class

@@ -704,4 +704,103 @@
   <data name="ResText_Other" xml:space="preserve">
     <value>Other</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanTimeThreashould" xml:space="preserve">
+    <value>Auto clean time threashould (seconds)</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanUpperLim" xml:space="preserve">
+    <value>Auto clean speed upper limit</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_DeDupe" xml:space="preserve">
+    <value>Dedupe</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_PowerPolicyOnWriteBegin" xml:space="preserve">
+    <value>Power policy before write start</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_PowerPolicyOnWriteEnd" xml:space="preserve">
+    <value>Power policy after write finished</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ShowFileCount" xml:space="preserve">
+    <value>Show file count</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ShowLoss" xml:space="preserve">
+    <value>Show capacity loss</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_SkipSymlink" xml:space="preserve">
+    <value>Skip symbolic link on adding files</value>
+  </data>
+  <data name="PropertyDescription_Application_License" xml:space="preserve">
+    <value>License string</value>
+  </data>
+  <data name="PropertyDescription_FileBrowser_CopyInfo" xml:space="preserve">
+    <value>Copy file info to clipboard</value>
+  </data>
+  <data name="PropertyDescription_HashTaskWindow_ReHash" xml:space="preserve">
+    <value>Re-hash</value>
+  </data>
+  <data name="PropertyDescription_IndexAnalyzer_Dest" xml:space="preserve">
+    <value>Destination path</value>
+  </data>
+  <data name="PropertyDescription_IndexAnalyzer_GenCMD" xml:space="preserve">
+    <value>Generate batch command</value>
+  </data>
+  <data name="PropertyDescription_IndexAnalyzer_LastFile" xml:space="preserve">
+    <value>Last file</value>
+  </data>
+  <data name="PropertyDescription_IndexAnalyzer_Src" xml:space="preserve">
+    <value>Source path</value>
+  </data>
+  <data name="PropertyDescription_LTFSConf_AutoRefresh" xml:space="preserve">
+    <value>Automatically refresh device list</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanDownLim" xml:space="preserve">
+    <value>Auto clean speed down limit</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoFlush" xml:space="preserve">
+    <value>Flush when capacity loss is detected</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_CapacityRefreshInterval" xml:space="preserve">
+    <value>Capacity refresh interval</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_CleanCycle" xml:space="preserve">
+    <value>Clean count before rethreading</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_DisablePartition" xml:space="preserve">
+    <value>Disable partition</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_FileLabel" xml:space="preserve">
+    <value>File label</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ForceIndex" xml:space="preserve">
+    <value>Always update index at data partition</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_HashAsync" xml:space="preserve">
+    <value>Hash async
+Better performance, but more CPU cost
+Valid only if HashOnWriting=True</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_HashOnWriting" xml:space="preserve">
+    <value>Hash on writing</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_IndexWriteInterval" xml:space="preserve">
+    <value>Index update interval (bytes)</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_LogEnabled" xml:space="preserve">
+    <value>Log enabled</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_OnWriteFinished" xml:space="preserve">
+    <value>On write finished:
+  0 - Do nothing
+  1 - Update data partition index
+  2 - Update all indexes
+  3 - Update indexes and eject</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_OverwriteExist" xml:space="preserve">
+    <value>Overwrite when adding files</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_PreLoadBytes" xml:space="preserve">
+    <value>Pre read bytes</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_PreLoadFileCount" xml:space="preserve">
+    <value>Pre read file count</value>
+  </data>
 </root>
