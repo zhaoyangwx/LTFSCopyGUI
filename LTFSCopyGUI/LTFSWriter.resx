@@ -129,7 +129,7 @@
     <value>1024, 19</value>
   </metadata>
   <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 202</value>
+    <value>125, 224</value>
   </data>
   <data name="&gt;&gt;ContextMenuStrip3.Name" xml:space="preserve">
     <value>ContextMenuStrip3</value>
@@ -152,7 +152,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAYABCwGAAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAbABCwGwAQsBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -530,13 +530,13 @@
     <value>8</value>
   </data>
   <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
     <value>提取</value>
   </data>
   <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
     <value>校验</value>
@@ -560,43 +560,49 @@
     <value>仅验证</value>
   </data>
   <data name="剪切目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="剪切目录ToolStripMenuItem.Text" xml:space="preserve">
     <value>剪切目录</value>
   </data>
   <data name="粘贴选中ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="粘贴选中ToolStripMenuItem.Text" xml:space="preserve">
     <value>粘贴选中</value>
   </data>
   <data name="重命名ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="重命名ToolStripMenuItem.Text" xml:space="preserve">
     <value>重命名</value>
   </data>
   <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
     <value>删除</value>
   </data>
   <data name="统计ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="统计ToolStripMenuItem.Text" xml:space="preserve">
     <value>统计</value>
   </data>
+  <data name="详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>124, 22</value>
+  </data>
+  <data name="详情ToolStripMenuItem.Text" xml:space="preserve">
+    <value>详情</value>
+  </data>
   <data name="压缩索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="压缩索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>压缩索引</value>
   </data>
   <data name="解压索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>124, 22</value>
   </data>
   <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>解压索引</value>
@@ -883,133 +889,20 @@
   <metadata name="MenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>112, 13</value>
   </metadata>
-  <data name="MenuStrip1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="MenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 25</value>
-  </data>
-  <data name="MenuStrip1.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="MenuStrip1.Text" xml:space="preserve">
-    <value>MenuStrip1</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Name" xml:space="preserve">
-    <value>MenuStrip1</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>44, 21</value>
-  </data>
-  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
-    <value>磁带</value>
-  </data>
   <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>索引操作</value>
   </data>
-  <data name="读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="读取索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>读取索引</value>
-  </data>
-  <data name="读取数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="读取数据区索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>读取数据区最新索引</value>
-  </data>
-  <data name="加载外部索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="加载外部索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>加载外部索引</value>
-  </data>
-  <data name="备份当前索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAICSURBVDhPnZLdS5NRHMd31z/h
-        jdCFt5YvjNZiOnjKNRyzhiF4IUphYb5tWSkl9oJGTd1AneHMSep0Ek5U8gVCiejCqAQNq41oiUNNsUkX
-        wdfzO+fR49aF4g++nPO8fD6/55zzaABojlKwJ0GNekctEoyPxUAJjmxjOLCF/r4N9LyIotOzArfrJ5zP
-        wgKePsFHe/VnlN/8KDqTgMCZacDV+pddHijZVQpUyZX8V1IQGNrkgqbG3/+De1BixHMh6Hu5zgX1938d
-        Dh4Me48LvF2rXHDL8fXoMGVP0N4W4YI4mOaJSYDZKJbQ2vIjXqAC0Y0dfI9s4tNyNF7A5jk5bil40hTC
-        1KQqYLEVzsGUP4Nz1gmkmYNIUQJSwMZLttdQFCfNheBBwzJGg0LQ6/vHzv0PHj9a45t653YIlRWLQqDC
-        Fy0jMBob5THW3l2Ef0AI3K4YTAUVcbEWOVBQWifgXAZf8MNgaJACh30B3V6gpTnGOxNEj9J0Cua/rGLh
-        2xquVj9EtmmYw7osH/T6Oimg39LTgf3PJgHB12qeYim8jvDKFqruOZFu8DG4B+lnn0N3pkYKblz/wNa9
-        zeGTRj+STykYHJ1FcPItpt68x9y7eZw323Ba34UMBqdq26HVVkoBVUnxLGyX/ciz9sKS64XZ7OFHRbtN
-        G0Zrpq4UgjMzyqTg+IFmF4uEe12paMzmAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="备份当前索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>184, 22</value>
-  </data>
-  <data name="备份当前索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>备份当前索引</value>
-  </data>
   <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
     <value>数据操作</value>
   </data>
-  <data name="写入数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAACbSURBVDhPvZJRDoMgEAUfXxAu
-        4VW4BufsAbe71Kdbuhptk35MENyZGANE5CfCw9aaROScPwjF3nuIC4G8yZEU4SN4LBDjbkBBSukVkFpH
-        JBo+gpEtwIgP6ScOvEjCwBxSoMOoenYrQBgppXwXMOz9LP8vcCbranfn/CfOIjkMXBG9bDd4C6wrDA7O
-        mEh0vwe8rM8DP+wxkbKI4Al9KN3pTJfS/gAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="写入数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="写入数据ToolStripMenuItem.Text" xml:space="preserve">
-    <value>写入数据</value>
-  </data>
-  <data name="更新数据区索引ToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="更新数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="更新数据区索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>更新数据区索引</value>
-  </data>
-  <data name="更新全部索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABzSURBVDhPrY7BEYAwCAT5W4IP
-        v3ZjJVaWpuwEg+NliEGcYB774OB2IGb+hRmCZZ/5xtwLZiiosisxQ5Smgy48SRM8y1+SangrAy0RKgGW
-        VlGDO/S6ykBLisA69GgEEYpgSytlazfjPpAhG7sYL4hQBHGYTpSgKEpq5pBgAAAAAElFTkSuQmCC
-</value>
-  </data>
-  <data name="更新全部索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="更新全部索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>更新全部索引（安全弹出）</value>
-  </data>
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
-  </data>
-  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>自动化</value>
+    <value>177, 6</value>
   </data>
   <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1049,36 +942,6 @@
   </data>
   <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
     <value>电源选项</value>
-  </data>
-  <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
-  </data>
-  <data name="无更改ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>无更改</value>
-  </data>
-  <data name="平衡ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
-  </data>
-  <data name="平衡ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>平衡</value>
-  </data>
-  <data name="节能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
-  </data>
-  <data name="节能ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>节能</value>
-  </data>
-  <data name="高性能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
-  </data>
-  <data name="高性能ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>高性能</value>
-  </data>
-  <data name="其他ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>112, 22</value>
-  </data>
-  <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>其他</value>
   </data>
   <data name="ToolStripTextBox1.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
@@ -1155,24 +1018,6 @@
   <data name="容量缺失检测参数ToolStripMenuItem.Text" xml:space="preserve">
     <value>容量缺失检测参数</value>
   </data>
-  <data name="速度下限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="速度下限ToolStripMenuItem.Text" xml:space="preserve">
-    <value>速度下限</value>
-  </data>
-  <data name="速度上限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="速度上限ToolStripMenuItem.Text" xml:space="preserve">
-    <value>速度上限</value>
-  </data>
-  <data name="持续时间ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="持续时间ToolStripMenuItem.Text" xml:space="preserve">
-    <value>持续时间</value>
-  </data>
   <data name="重装带前清洁次数3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
   </data>
@@ -1184,6 +1029,209 @@
   </data>
   <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
     <value>电源选项</value>
+  </data>
+  <data name="ToolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
+    <value>217, 6</value>
+  </data>
+  <data name="启用日志记录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="启用日志记录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>启用日志记录</value>
+  </data>
+  <data name="总是更新数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="总是更新数据区索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>总是更新数据区索引</value>
+  </data>
+  <data name="禁用分区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="禁用分区ToolStripMenuItem.Text" xml:space="preserve">
+    <value>禁用分区（LTO3需勾选）</value>
+  </data>
+  <data name="显示文件数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
+    <value>显示文件数</value>
+  </data>
+  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>自动化</value>
+  </data>
+  <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 6</value>
+  </data>
+  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
+    <value>回退</value>
+  </data>
+  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 21</value>
+  </data>
+  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
+    <value>磁带</value>
+  </data>
+  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>44, 21</value>
+  </data>
+  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>数据</value>
+  </data>
+  <data name="MenuStrip1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="MenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1349, 25</value>
+  </data>
+  <data name="MenuStrip1.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="MenuStrip1.Text" xml:space="preserve">
+    <value>MenuStrip1</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Name" xml:space="preserve">
+    <value>MenuStrip1</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="读取索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>读取索引</value>
+  </data>
+  <data name="读取数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="读取数据区索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>读取数据区最新索引</value>
+  </data>
+  <data name="加载外部索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="加载外部索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>加载外部索引</value>
+  </data>
+  <data name="备份当前索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAICSURBVDhPnZLdS5NRHMd31z/h
+        jdCFt5YvjNZiOnjKNRyzhiF4IUphYb5tWSkl9oJGTd1AneHMSep0Ek5U8gVCiejCqAQNq41oiUNNsUkX
+        wdfzO+fR49aF4g++nPO8fD6/55zzaABojlKwJ0GNekctEoyPxUAJjmxjOLCF/r4N9LyIotOzArfrJ5zP
+        wgKePsFHe/VnlN/8KDqTgMCZacDV+pddHijZVQpUyZX8V1IQGNrkgqbG3/+De1BixHMh6Hu5zgX1938d
+        Dh4Me48LvF2rXHDL8fXoMGVP0N4W4YI4mOaJSYDZKJbQ2vIjXqAC0Y0dfI9s4tNyNF7A5jk5bil40hTC
+        1KQqYLEVzsGUP4Nz1gmkmYNIUQJSwMZLttdQFCfNheBBwzJGg0LQ6/vHzv0PHj9a45t653YIlRWLQqDC
+        Fy0jMBob5THW3l2Ef0AI3K4YTAUVcbEWOVBQWifgXAZf8MNgaJACh30B3V6gpTnGOxNEj9J0Cua/rGLh
+        2xquVj9EtmmYw7osH/T6Oimg39LTgf3PJgHB12qeYim8jvDKFqruOZFu8DG4B+lnn0N3pkYKblz/wNa9
+        zeGTRj+STykYHJ1FcPItpt68x9y7eZw323Ba34UMBqdq26HVVkoBVUnxLGyX/ciz9sKS64XZ7OFHRbtN
+        G0Zrpq4UgjMzyqTg+IFmF4uEe12paMzmAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="备份当前索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>184, 22</value>
+  </data>
+  <data name="备份当前索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>备份当前索引</value>
+  </data>
+  <data name="写入数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAACbSURBVDhPvZJRDoMgEAUfXxAu
+        4VW4BufsAbe71Kdbuhptk35MENyZGANE5CfCw9aaROScPwjF3nuIC4G8yZEU4SN4LBDjbkBBSukVkFpH
+        JBo+gpEtwIgP6ScOvEjCwBxSoMOoenYrQBgppXwXMOz9LP8vcCbranfn/CfOIjkMXBG9bDd4C6wrDA7O
+        mEh0vwe8rM8DP+wxkbKI4Al9KN3pTJfS/gAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="写入数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="写入数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>写入数据</value>
+  </data>
+  <data name="更新数据区索引ToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="更新数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="更新数据区索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>更新数据区索引</value>
+  </data>
+  <data name="更新全部索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsQAAA7EAZUrDhsAAABzSURBVDhPrY7BEYAwCAT5W4IP
+        v3ZjJVaWpuwEg+NliEGcYB774OB2IGb+hRmCZZ/5xtwLZiiosisxQ5Smgy48SRM8y1+SangrAy0RKgGW
+        VlGDO/S6ykBLisA69GgEEYpgSytlazfjPpAhG7sYL4hQBHGYTpSgKEpq5pBgAAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="更新全部索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
+  </data>
+  <data name="更新全部索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>更新全部索引（安全弹出）</value>
+  </data>
+  <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="无更改ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>无更改</value>
+  </data>
+  <data name="平衡ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="平衡ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>平衡</value>
+  </data>
+  <data name="节能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="节能ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>节能</value>
+  </data>
+  <data name="高性能ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="高性能ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>高性能</value>
+  </data>
+  <data name="其他ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 22</value>
+  </data>
+  <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>其他</value>
+  </data>
+  <data name="速度下限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="速度下限ToolStripMenuItem.Text" xml:space="preserve">
+    <value>速度下限</value>
+  </data>
+  <data name="速度上限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="速度上限ToolStripMenuItem.Text" xml:space="preserve">
+    <value>速度上限</value>
+  </data>
+  <data name="持续时间ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="持续时间ToolStripMenuItem.Text" xml:space="preserve">
+    <value>持续时间</value>
   </data>
   <data name="无更改ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>112, 22</value>
@@ -1215,42 +1263,6 @@
   <data name="其他ToolStripMenuItem.Text" xml:space="preserve">
     <value>其他</value>
   </data>
-  <data name="ToolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
-    <value>217, 6</value>
-  </data>
-  <data name="启用日志记录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="启用日志记录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>启用日志记录</value>
-  </data>
-  <data name="总是更新数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="总是更新数据区索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>总是更新数据区索引</value>
-  </data>
-  <data name="禁用分区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="禁用分区ToolStripMenuItem.Text" xml:space="preserve">
-    <value>禁用分区（LTO3需勾选）</value>
-  </data>
-  <data name="显示文件数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>220, 22</value>
-  </data>
-  <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
-    <value>显示文件数</value>
-  </data>
-  <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
-    <value>121, 6</value>
-  </data>
-  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
-  </data>
-  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
-    <value>回退</value>
-  </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>196, 22</value>
   </data>
@@ -1268,12 +1280,6 @@
   </data>
   <data name="查找指定位置前的索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>查找指定位置前的索引</value>
-  </data>
-  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>44, 21</value>
-  </data>
-  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
-    <value>数据</value>
   </data>
   <data name="格式化ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>192, 22</value>
@@ -3041,6 +3047,12 @@
     <value>统计ToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;统计ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;详情ToolStripMenuItem.Name" xml:space="preserve">
+    <value>详情ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;详情ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;压缩索引ToolStripMenuItem.Name" xml:space="preserve">

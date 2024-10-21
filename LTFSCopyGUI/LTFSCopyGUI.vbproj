@@ -296,6 +296,7 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="IOManager.vb" />
+    <Compile Include="ApplicationWheels.vb" />
     <Compile Include="LTFSConfigurator.Designer.vb">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </Compile>
@@ -325,6 +326,12 @@
     </Compile>
     <Compile Include="Schema.vb" />
     <Compile Include="SerializableDictionary.vb" />
+    <Compile Include="SettingPanel.Designer.vb">
+      <DependentUpon>SettingPanel.vb</DependentUpon>
+    </Compile>
+    <Compile Include="SettingPanel.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="TapeCopy.Designer.vb">
       <DependentUpon>TapeCopy.vb</DependentUpon>
     </Compile>
@@ -395,6 +402,12 @@
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingPanel.en.resx">
+      <DependentUpon>SettingPanel.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SettingPanel.resx">
+      <DependentUpon>SettingPanel.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TapeCopy.resx">
       <DependentUpon>TapeCopy.vb</DependentUpon>

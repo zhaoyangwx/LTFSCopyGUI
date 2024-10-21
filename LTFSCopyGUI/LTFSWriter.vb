@@ -239,7 +239,7 @@ Public Class LTFSWriter
         总是更新数据区索引ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ForceIndex
         计算校验ToolStripMenuItem.Checked = My.Settings.LTFSWriter_HashOnWriting
         异步校验CPU占用高ToolStripMenuItem.Checked = My.Settings.LTFSWriter_HashAsync
-        预读文件数5ToolStripMenuItem.Text = $"{My.Resources.ResText_PFC}{My.Settings.LTFSWriter_PreLoadNum}"
+        预读文件数5ToolStripMenuItem.Text = $"{My.Resources.ResText_PFC}{My.Settings.LTFSWriter_PreLoadFileCount}"
         文件缓存32MiBToolStripMenuItem.Text = $"{My.Resources.ResText_FB}{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
         禁用分区ToolStripMenuItem.Checked = DisablePartition
         速度下限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMin}{My.Settings.LTFSWriter_AutoCleanDownLim} MiB/s"
@@ -917,7 +917,7 @@ Public Class LTFSWriter
         Save_Settings()
     End Sub
     Public Function GetLocInfo() As String
-        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}] "
         Try
@@ -929,7 +929,7 @@ Public Class LTFSWriter
             End SyncLock
             If CurrentHeight > 0 Then info &= $" {My.Resources.ResText_WritePointer}{CurrentHeight}"
             If Modified Then info &= "*"
-            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RPosErr)
         End Try
@@ -965,195 +965,10 @@ Public Class LTFSWriter
         Invoke(Sub()
                    Try
                        If CapacityLogPage Is Nothing Then
-                           CapacityLogPage = New TapeUtils.PageData With {.Name = "Tape Capacity log page", .PageCode = &H31, .RawData = logdataCap}
-                           CapacityLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
-                                           .Parent = CapacityLogPage,
-                                           .Name = "Data Compression Parameter",
-                                           .StartByte = 4,
-                                           .BitOffset = 0,
-                                           .TotalBits = 0,
-                                           .DynamicParamCodeBitOffset = 0,
-                                           .DynamicParamCodeStartByte = 0,
-                                           .DynamicParamCodeTotalBits = 16,
-                                           .DynamicParamLenBitOffset = 0,
-                                           .DynamicParamLenStartByte = 3,
-                                           .DynamicParamLenTotalBits = 8,
-                                           .DynamicParamDataStartByte = 4,
-                                           .EnumTranslator = New SerializableDictionary(Of Long, String),
-                                           .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
-                                           .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
-                           With CapacityLogPage.Items.Last.EnumTranslator
-                               .Add(1, "Partition 0 Remaining Capacity")
-                               .Add(2, "Partition 1 Remaining Capacity")
-                               .Add(3, "Partition 0 Maximum Capacity")
-                               .Add(4, "Partition 1 Maximum Capacity")
-                               .Add(5, "Partition 2 Remaining Capacity")
-                               .Add(6, "Partition 3 Remaining Capacity")
-                               .Add(7, "Partition 2 Maximum Capacity")
-                               .Add(8, "Partition 3 Maximum Capacity")
-                           End With
-                           With CapacityLogPage.Items.Last.DynamicParamType
-                               .Add(1, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(2, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(3, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(4, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(5, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(6, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(7, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(8, TapeUtils.PageData.DataItem.DataType.Int32)
-                           End With
+                           CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
                        End If
                        If VolumeStatisticsLogPage Is Nothing Then
-                           VolumeStatisticsLogPage = New TapeUtils.PageData With {.Name = "Volume Statistics Log page", .PageCode = &H17, .RawData = logdataVStat}
-                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
-                                           .Parent = VolumeStatisticsLogPage,
-                                           .Name = "Page Code",
-                                           .StartByte = 0,
-                                           .BitOffset = 0,
-                                           .TotalBits = 8,
-                                           .Type = TapeUtils.PageData.DataItem.DataType.Binary})
-                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
-                                           .Parent = VolumeStatisticsLogPage,
-                                           .Name = "Page Length",
-                                           .StartByte = 2,
-                                           .BitOffset = 0,
-                                           .TotalBits = 16,
-                                           .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                           VolumeStatisticsLogPage.Items.Add(New TapeUtils.PageData.DataItem With {
-                                           .Parent = VolumeStatisticsLogPage,
-                                           .Name = "Volume Statistics log parameters",
-                                           .StartByte = 4,
-                                           .BitOffset = 0,
-                                           .TotalBits = 0,
-                                           .DynamicParamCodeBitOffset = 0,
-                                           .DynamicParamCodeStartByte = 0,
-                                           .DynamicParamCodeTotalBits = 16,
-                                           .DynamicParamLenBitOffset = 0,
-                                           .DynamicParamLenStartByte = 3,
-                                           .DynamicParamLenTotalBits = 8,
-                                           .DynamicParamDataStartByte = 4,
-                                           .EnumTranslator = New SerializableDictionary(Of Long, String),
-                                           .DynamicParamType = New SerializableDictionary(Of Long, TapeUtils.PageData.DataItem.DataType),
-                                           .PageDataTemplate = New SerializableDictionary(Of Long, TapeUtils.PageData),
-                                           .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
-                           With VolumeStatisticsLogPage.Items.Last.EnumTranslator
-                               .Add(&H0, "Page valid")
-                               .Add(&H1, "Thread count")
-                               .Add(&H2, "Total data sets written")
-                               .Add(&H3, "Total write retries")
-                               .Add(&H4, "Total unrecovered write errors")
-                               .Add(&H5, "Total suspended writes")
-                               .Add(&H6, "Total fatal suspended writes")
-                               .Add(&H7, "Total datasets read")
-                               .Add(&H8, "Total read retries")
-                               .Add(&H9, "Total unrecovered read errors")
-                               .Add(&HC, "Last mount unrecovered write errors")
-                               .Add(&HD, "Last mount unrecovered read errors")
-                               .Add(&HE, "Last mount megabytes written")
-                               .Add(&HF, "Last mount megabytes read")
-                               .Add(&H10, "Lifetime megabytes written")
-                               .Add(&H11, "Lifetime megabytes read")
-                               .Add(&H12, "Last load write compression ratio")
-                               .Add(&H13, "Last load read compression ratio")
-                               .Add(&H14, "Medium mount time")
-                               .Add(&H15, "Medium ready time")
-                               .Add(&H16, "Total native capacity")
-                               .Add(&H17, "Total used native capacity")
-                               .Add(&H40, "Volume serial number")
-                               .Add(&H41, "Tape lot identifier")
-                               .Add(&H42, "Volume barcode")
-                               .Add(&H43, "Volume manufacturer")
-                               .Add(&H44, "Volume license code")
-                               .Add(&H45, "Volume personality")
-                               .Add(&H46, "Volume manufacture date")
-                               .Add(&H80, "Write protect")
-                               .Add(&H81, "Volume is WORM")
-                               .Add(&H82, "Maximum recommended tape path temperature exceeded")
-                               .Add(&H101, "Beginning of medium passes")
-                               .Add(&H102, "Middle of medium passes")
-                               .Add(&H200, "First encrypted logical object identifiers")
-                               .Add(&H201, "First unencrypted logical object on the EOP side of the first encrypted logical object identifiers")
-                               .Add(&H202, "Approximate native capacity of partitions")
-                               .Add(&H203, "Approximate used native capacity of partitions")
-                               .Add(&H300, "Mount history")
-                               .Add(&HF000, "Version number (vendor-unique)")
-                           End With
-                           With VolumeStatisticsLogPage.Items.Last.DynamicParamType
-                               .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64)
-                               .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H7, TapeUtils.PageData.DataItem.DataType.Int64)
-                               .Add(&H8, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H9, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&HC, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&HD, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&HE, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&HF, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H10, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H11, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H12, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H13, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H14, TapeUtils.PageData.DataItem.DataType.Int64)
-                               .Add(&H15, TapeUtils.PageData.DataItem.DataType.Int64)
-                               .Add(&H16, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H17, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H40, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H42, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H43, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H44, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H45, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H46, TapeUtils.PageData.DataItem.DataType.Text)
-                               .Add(&H80, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H81, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H82, TapeUtils.PageData.DataItem.DataType.Int16)
-                               .Add(&H101, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H102, TapeUtils.PageData.DataItem.DataType.Int32)
-                               .Add(&H200, TapeUtils.PageData.DataItem.DataType.PageData)
-                               .Add(&H201, TapeUtils.PageData.DataItem.DataType.PageData)
-                               .Add(&H202, TapeUtils.PageData.DataItem.DataType.PageData)
-                               .Add(&H203, TapeUtils.PageData.DataItem.DataType.PageData)
-                               .Add(&H300, TapeUtils.PageData.DataItem.DataType.PageData)
-                               .Add(&HF000, TapeUtils.PageData.DataItem.DataType.Int16)
-                           End With
-                           With VolumeStatisticsLogPage.Items.Last.PageDataTemplate
-                               Dim subPage As TapeUtils.PageData
-                               subPage = New TapeUtils.PageData With {.PageCode = &H200, .Name = "First encrypted logical object identifiers"}
-                               For i As Integer = 0 To 7
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 12 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 12 * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Int64})
-                               Next
-                               .Add(&H200, subPage)
-                               subPage = New TapeUtils.PageData With {.PageCode = &H201, .Name = "First unencrypted logical object on the EOP side of the first encrypted logical object identifiers"}
-                               For i As Integer = 0 To 7
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 12 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 12 * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Int64})
-                               Next
-                               .Add(&H201, subPage)
-                               subPage = New TapeUtils.PageData With {.PageCode = &H202, .Name = "Approximate native capacity of partitions"}
-                               For i As Integer = 0 To 7
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 8 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 8 * i, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Int32})
-                               Next
-                               .Add(&H202, subPage)
-                               subPage = New TapeUtils.PageData With {.PageCode = &H203, .Name = "Approximate used native capacity of partitions"}
-                               For i As Integer = 0 To 7
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Number", .StartByte = 2 + 8 * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Partition Record Data Counter", .StartByte = 4 + 8 * i, .BitOffset = 0, .TotalBits = 32, .Type = TapeUtils.PageData.DataItem.DataType.Int32})
-                               Next
-                               .Add(&H203, subPage)
-                               subPage = New TapeUtils.PageData With {.PageCode = &H300, .Name = "Mount history"}
-                               For i As Integer = 0 To 3
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Index", .StartByte = 2 + &H2C * i, .BitOffset = 0, .TotalBits = 16, .Type = TapeUtils.PageData.DataItem.DataType.Int16})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Vendor ID", .StartByte = 4 + &H2C * i, .BitOffset = 0, .TotalBits = 64, .Type = TapeUtils.PageData.DataItem.DataType.Text})
-                                   subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = $"Mount History Unit Serial Number", .StartByte = 12 + &H2C * i, .BitOffset = 0, .TotalBits = 256, .Type = TapeUtils.PageData.DataItem.DataType.Text})
-                               Next
-                               .Add(&H300, subPage)
-                           End With
+                           VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
                        End If
                        CapacityLogPage.RawData = logdataCap
                        VolumeStatisticsLogPage.RawData = logdataVStat
@@ -2895,7 +2710,7 @@ Public Class LTFSWriter
                         UnwrittenSizeOverrideValue = UnwrittenSize
                         Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
-                        Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadNum
+                        Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadFileCount
                         If PNum > 0 Then
                             For j As Integer = 0 To PNum
                                 If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
@@ -2942,7 +2757,7 @@ Public Class LTFSWriter
                                 AddHandler WriteList(CFNum).PreReadFinished, dl
                             End If
                             If ExitForFlag Then Exit For
-                            PNum = My.Settings.LTFSWriter_PreLoadNum
+                            PNum = My.Settings.LTFSWriter_PreLoadFileCount
                             If PNum > 0 AndAlso i + PNum < WriteList.Count Then
                                 WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
                             End If
@@ -3254,7 +3069,7 @@ Public Class LTFSWriter
                                                          End Sub)
                                                 If CheckUnindexedDataSizeLimit(CheckOnly:=True) Then HashTask.Wait()
                                             ElseIf sh IsNot Nothing Then
-                                                    sh.StopFlag = True
+                                                sh.StopFlag = True
                                             End If
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
@@ -4617,10 +4432,10 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 预读文件数5ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 预读文件数5ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SPreR, My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadNum)
+        Dim s As String = InputBox(My.Resources.ResText_SPreR, My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadFileCount)
         If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_PreLoadNum = Val(s)
-        预读文件数5ToolStripMenuItem.Text = $"{My.Resources.ResText_PFC}{My.Settings.LTFSWriter_PreLoadNum}"
+        My.Settings.LTFSWriter_PreLoadFileCount = Val(s)
+        预读文件数5ToolStripMenuItem.Text = $"{My.Resources.ResText_PFC}{My.Settings.LTFSWriter_PreLoadFileCount}"
     End Sub
 
     Private Sub 文件缓存32MiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 文件缓存32MiBToolStripMenuItem.Click
@@ -4636,16 +4451,27 @@ Public Class LTFSWriter
         If ListView1.Tag IsNot Nothing AndAlso
         ListView1.SelectedItems IsNot Nothing AndAlso
         ListView1.SelectedItems.Count > 0 Then
-            SyncLock ListView1.SelectedItems
-                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
-                    If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
-                        Dim f As ltfsindex.file = ItemSelected.Tag
-                        result.AppendLine(f.GetSerializedText())
-                    End If
-                Next
-            End SyncLock
+            If ListView1.SelectedItems.Count > 1 Then
+                SyncLock ListView1.SelectedItems
+                    For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+                        If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
+                            Dim f As ltfsindex.file = ItemSelected.Tag
+                            result.AppendLine(f.GetSerializedText())
+                        End If
+                    Next
+                End SyncLock
+                MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
+            Else
+                Dim PG1 As New SettingPanel
+                PG1.PropertyGrid1.SelectedObject = CType(ListView1.SelectedItems(0).Tag, ltfsindex.file)
+                PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name}"
+                If PG1.ShowDialog() = DialogResult.OK Then
+                    If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                End If
+            End If
+
         End If
-        MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
+
     End Sub
 
     Private Sub 禁用分区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 禁用分区ToolStripMenuItem.Click
@@ -6071,6 +5897,19 @@ Public Class LTFSWriter
         Catch ex As Exception
             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
         End Try
+    End Sub
+
+    Private Sub 详情ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 详情ToolStripMenuItem.Click
+        If TreeView1.SelectedNode IsNot Nothing Then
+            If TypeOf TreeView1.SelectedNode.Tag IsNot ltfsindex.directory Then Exit Sub
+            Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
+            Dim PG1 As New SettingPanel
+            PG1.PropertyGrid1.SelectedObject = d
+            PG1.Text = TextBoxSelectedPath.Text
+            If PG1.ShowDialog() = DialogResult.OK Then
+                If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+            End If
+        End If
     End Sub
 
     Private Sub 解锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 解锁ToolStripMenuItem.Click

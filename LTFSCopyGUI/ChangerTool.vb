@@ -42,7 +42,7 @@ Public Class ChangerTool
             Me.Close()
             Exit Sub
         End If
-        Text = $"ChangerTool - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.License}"
+        Text = $"ChangerTool - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         RefreshMCList()
         SetUILock(True)
         Threading.Tasks.Task.Run(Sub()
@@ -304,5 +304,16 @@ Public Class ChangerTool
                           c.Enabled = Not Lock
                       Next
                   End Sub)
+    End Sub
+
+    Private Sub ChangerTool_SizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
+        If Not LoadComplete Then Exit Sub
+        SuspendLayout()
+        Dim sample As New ChangerTool
+        ComboBox1.Width = (Width - sample.Width) / 2 + sample.ComboBox1.Width
+        ComboBox2.Width = (Width - sample.Width) / 2 + sample.ComboBox2.Width
+        ComboBox2.Left = (Width - sample.Width) / 2 + sample.ComboBox2.Left
+        Label1.Left = (Width - sample.Width) / 2 + sample.Label1.Left
+        ResumeLayout()
     End Sub
 End Class

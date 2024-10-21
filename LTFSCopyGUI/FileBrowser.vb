@@ -23,7 +23,7 @@ Public Class FileBrowser
             If EventLock Then Exit Sub
             EventLock = True
         End SyncLock
-        CheckBox1.Checked = My.Settings.CopyInfo
+        CheckBox1.Checked = My.Settings.FileBrowser_CopyInfo
         TreeView1.Nodes.Clear()
         If schema IsNot Nothing Then
             AddItem(TreeView1.Nodes, New ltfsindex.contentsDef With {._directory = schema._directory, ._file = schema._file})
@@ -279,7 +279,7 @@ Public Class FileBrowser
     End Sub
 
     Private Sub FileBrowser_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        My.Settings.CopyInfo = CheckBox1.Checked
+        My.Settings.FileBrowser_CopyInfo = CheckBox1.Checked
         My.Settings.Save()
     End Sub
 End Class

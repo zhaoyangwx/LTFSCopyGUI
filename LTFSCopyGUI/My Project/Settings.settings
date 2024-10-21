@@ -2,97 +2,97 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="My" GeneratedClassName="MySettings" UseMySettingsClassName="true">
   <Profiles />
   <Settings>
-    <Setting Name="LastFile" Type="System.String" Scope="User">
+    <Setting Name="IndexAnalyzer_LastFile" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\tmp\ltfs\LT0007.schema</Value>
     </Setting>
-    <Setting Name="Src" Type="System.String" Scope="User">
+    <Setting Name="IndexAnalyzer_Src" Type="System.String" Scope="User">
       <Value Profile="(Default)">L:\</Value>
     </Setting>
-    <Setting Name="Dest" Type="System.String" Scope="User">
+    <Setting Name="IndexAnalyzer_Dest" Type="System.String" Scope="User">
       <Value Profile="(Default)">U:\</Value>
     </Setting>
-    <Setting Name="ReHash" Type="System.Boolean" Scope="User">
+    <Setting Name="HashTaskWindow_ReHash" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="GenCMD" Type="System.Boolean" Scope="User">
+    <Setting Name="IndexAnalyzer_GenCMD" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="CopyInfo" Type="System.Boolean" Scope="User">
+    <Setting Name="FileBrowser_CopyInfo" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LTFSWriter_OverwriteExist" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_OverwriteExist" Description="覆盖已有文件" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_OnWriteFinished" Type="System.Byte" Scope="User">
+    <Setting Name="LTFSWriter_OnWriteFinished" Description="写入完成后：&#xD;&#xA;  0-什么都不做&#xD;&#xA;  1-更新数据区索引&#xD;&#xA;  2-更新全部索引&#xD;&#xA;  3-更新全部索引并弹出&#xD;&#xA;" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="LTFSWriter_AutoFlush" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_AutoFlush" Description="容量损失自动停顿开关" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_FileLabel" Type="System.String" Scope="User">
+    <Setting Name="LTFSWriter_FileLabel" Description="文件标签设置" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="LTFSWriter_LogEnabled" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_LogEnabled" Description="启用日志" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_ForceIndex" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_ForceIndex" Description="总是更新数据区索引" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LTFSConf_AutoRefresh" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LTFSWriter_CleanCycle" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_CleanCycle" Description="重装带前清洁次数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
-    <Setting Name="LTFSWriter_HashOnWriting" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_HashOnWriting" Description="计算校验" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LTFSWriter_HashAsync" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_HashAsync" Description="异步校验" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LTFSWriter_IndexWriteInterval" Type="System.Int64" Scope="User">
+    <Setting Name="LTFSWriter_IndexWriteInterval" Description="索引更新间隔（字节）" Type="System.Int64" Scope="User">
       <Value Profile="(Default)">38654705664</Value>
     </Setting>
-    <Setting Name="LTFSWriter_CapacityRefreshInterval" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_CapacityRefreshInterval" Description="容量显示刷新间隔" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1</Value>
     </Setting>
-    <Setting Name="LTFSWriter_PreLoadNum" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_PreLoadFileCount" Description="预读文件数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="LTFSWriter_PreLoadBytes" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_PreLoadBytes" Description="预读字节数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">8388608</Value>
     </Setting>
-    <Setting Name="LTFSWriter_DisablePartition" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_DisablePartition" Description="禁用分区" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="License" Type="System.String" Scope="User">
+    <Setting Name="Application_License" Type="System.String" Scope="User">
       <Value Profile="(Default)"> 非商业许可</Value>
     </Setting>
-    <Setting Name="LTFSWriter_AutoCleanDownLim" Type="System.Double" Scope="User">
+    <Setting Name="LTFSWriter_AutoCleanDownLim" Description="容量损失判定速度下限" Type="System.Double" Scope="User">
       <Value Profile="(Default)">60</Value>
     </Setting>
-    <Setting Name="LTFSWriter_AutoCleanUpperLim" Type="System.Double" Scope="User">
+    <Setting Name="LTFSWriter_AutoCleanUpperLim" Description="容量损失判定速度上限" Type="System.Double" Scope="User">
       <Value Profile="(Default)">87</Value>
     </Setting>
-    <Setting Name="LTFSWriter_AutoCleanTimeThreashould" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_AutoCleanTimeThreashould" Description="容量损失判定秒数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">3</Value>
     </Setting>
-    <Setting Name="LTFSWriter_DeDupe" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_DeDupe" Description="去重" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_ShowLoss" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_ShowLoss" Description="显示容量损失" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_SkipSymlink" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_SkipSymlink" Description="跳过符号链接" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="LTFSWriter_ShowFileCount" Type="System.Boolean" Scope="User">
+    <Setting Name="LTFSWriter_ShowFileCount" Description="显示文件数" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="LTFSWriter_PowerPolicyOnWriteBegin" Type="System.Guid" Scope="User">
+    <Setting Name="LTFSWriter_PowerPolicyOnWriteBegin" Description="写入开始时切换电源策略" Type="System.Guid" Scope="User">
       <Value Profile="(Default)">8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Value>
     </Setting>
-    <Setting Name="LTFSWriter_PowerPolicyOnWriteEnd" Type="System.Guid" Scope="User">
+    <Setting Name="LTFSWriter_PowerPolicyOnWriteEnd" Description="写入结束后切换电源策略" Type="System.Guid" Scope="User">
       <Value Profile="(Default)">381b4222-f694-41f0-9685-ff5bb260df2e</Value>
     </Setting>
   </Settings>
