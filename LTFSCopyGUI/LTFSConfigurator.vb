@@ -674,6 +674,10 @@ Public Class LTFSConfigurator
         Try
             If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
                 TextBox8.AppendText(CMInfo.GetSerializedText())
+                Dim PG1 As New SettingPanel
+                PG1.SelectedObject = CMInfo
+                PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
+                PG1.Show()
                 TextBox8.AppendText(vbCrLf)
             End If
         Catch ex As Exception
@@ -1796,6 +1800,10 @@ Public Class LTFSConfigurator
                 TextBox8.AppendText(CMInfo.GetReport())
                 If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
                     TextBox8.AppendText(CMInfo.GetSerializedText())
+                    Dim PG1 As New SettingPanel
+                    PG1.SelectedObject = CMInfo
+                    PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
+                    PG1.Show()
                     TextBox8.AppendText(vbCrLf)
                 End If
             Catch ex As Exception
@@ -1850,6 +1858,10 @@ Public Class LTFSConfigurator
         Try
             If CheckBox4.Checked AndAlso CMInfo IsNot Nothing Then
                 TextBox8.AppendText(CMInfo.GetSerializedText())
+                Dim PG1 As New SettingPanel
+                PG1.SelectedObject = CMInfo
+                PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
+                PG1.Show()
                 TextBox8.AppendText(vbCrLf)
             End If
         Catch ex As Exception

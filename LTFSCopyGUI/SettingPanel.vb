@@ -1,5 +1,13 @@
 ﻿Public Class SettingPanel
     Dim result As DialogResult = DialogResult.Cancel
+    Public Property SelectedObject As Object
+        Get
+            Return PropertyGrid1.SelectedObject
+        End Get
+        Set(value As Object)
+            PropertyGrid1.SelectedObject = value
+        End Set
+    End Property
     Private Sub PropertyGrid1_PropertyValueChanged(s As Object, e As PropertyValueChangedEventArgs) Handles PropertyGrid1.PropertyValueChanged
         result = DialogResult.OK
     End Sub
