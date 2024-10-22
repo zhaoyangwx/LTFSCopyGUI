@@ -1,6 +1,7 @@
 ﻿Imports System.ComponentModel
 
 <Serializable>
+<TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class ltfsindex
     'Public Property version As String
     <Category("LTFSIndex")>

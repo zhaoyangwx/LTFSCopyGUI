@@ -1,9 +1,12 @@
-﻿Imports System.IO
+﻿Imports System.ComponentModel
+Imports System.IO
 Imports System.Security.Cryptography
 Imports System.Threading
 Imports LTFSCopyGUI
 
+<TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class fsReport
         Public fs As IO.BufferedStream
         Public Sub New()
@@ -116,6 +119,7 @@ Public Class IOManager
         Return result
     End Function
 
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class HashTask
         Public Event TaskStarted(Message As String)
         Public Event TaskCancelled(Message As String)
@@ -125,11 +129,11 @@ Public Class IOManager
         Public Event ErrorOccured(Message As String)
         Public Event ProgressReport(Message As String)
         Public Property BufferWrite As Integer = 4 * 1024 * 1024
-        Public schema As ltfsindex
-        Public IgnoreExisting As Boolean = True
-        Public ReportSkip As Boolean = True
+        Public Property schema As ltfsindex
+        Public Property IgnoreExisting As Boolean = True
+        Public Property ReportSkip As Boolean = True
         Private _TargetDirectory As String
-        Public LogFile As String() = {}
+        Public Property LogFile As String() = {}
         Public Property TargetDirectory As String
             Set(value As String)
                 _TargetDirectory = value.TrimEnd("\")
@@ -449,6 +453,7 @@ Public Class IOManager
             End Get
         End Property
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class EventedStream
         Inherits Stream
         Implements IDisposable
@@ -590,15 +595,17 @@ Public Class IOManager
 
 
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class IndexedLHashDirectory
-        Public LTFSIndexDir As ltfsindex.directory
-        Public LHash_Dir As ltfsindex.directory
+        Public Property LTFSIndexDir As ltfsindex.directory
+        Public Property LHash_Dir As ltfsindex.directory
         Public Sub New(index As ltfsindex.directory, lhash As ltfsindex.directory)
             LTFSIndexDir = index
             LHash_Dir = lhash
         End Sub
     End Class
 
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class CheckSumBlockwiseCalculator
         Private Property sha1 As SHA1
         Private Property md5 As MD5
@@ -611,7 +618,7 @@ Public Class IOManager
             Public block As Byte()
             Public Len As Integer
         End Structure
-        Private q As New Queue(Of QueueBlock)
+        Public Property q As New Queue(Of QueueBlock)
         Dim thHashAsync As New Task(
             Sub()
                 While Not StopFlag
@@ -705,6 +712,7 @@ Public Class IOManager
         End Property
     End Class
 
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LTFSFileStream
         Inherits Stream
         Public Event LogPrint(s As String)
@@ -843,6 +851,7 @@ Public Class IOManager
             End SyncLock
         End Function
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class NetworkCommand
         Public Property HashCode As Integer
         Public Property CommandType As CommandTypeDef
