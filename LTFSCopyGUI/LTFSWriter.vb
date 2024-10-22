@@ -5,14 +5,22 @@ Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
 
 Public Class LTFSWriter
+    <Category("LTFSWriter")>
     Public Property TapeDrive As String = ""
+    <Category("LTFSWriter")>
     Public Property schema As ltfsindex
+    <Category("LTFSWriter")>
     Public Property plabel As New ltfslabel With {.blocksize = 524288}
+    <Category("LTFSWriter")>
     Public Property Modified As Boolean = False
+    <Category("LTFSWriter")>
     Public Property OfflineMode As Boolean = False
+    <Category("LTFSWriter")>
     Public Property IndexPartition As Byte = 0
+    <Category("LTFSWriter")>
     Public Property DataPartition As Byte = 1
     Private _EncryptionKey As Byte()
+    <Category("LTFSWriter")>
     Public Property EncryptionKey As Byte()
         Get
             Return _EncryptionKey
@@ -37,6 +45,7 @@ Public Class LTFSWriter
         End If
     End Function
 
+    <Category("LTFSWriter")>
     Public Property IndexWriteInterval As Long
         Get
             Return My.Settings.LTFSWriter_IndexWriteInterval
@@ -54,6 +63,7 @@ Public Class LTFSWriter
     End Property
 
     Private _TotalBytesUnindexed As Long
+    <Category("LTFSWriter")>
     Public Property TotalBytesUnindexed As Long
         Set(value As Long)
             _TotalBytesUnindexed = value
@@ -65,18 +75,27 @@ Public Class LTFSWriter
             Return _TotalBytesUnindexed
         End Get
     End Property
+    <Category("LTFSWriter")>
     Public Property TotalBytesProcessed As Long = 0
+    <Category("LTFSWriter")>
     Public Property TotalFilesProcessed As Long = 0
+    <Category("LTFSWriter")>
     Public Property CurrentBytesProcessed As Long = 0
+    <Category("LTFSWriter")>
     Public Property CurrentFilesProcessed As Long = 0
+    <Category("LTFSWriter")>
     Public Property CurrentHeight As Long = 0
+    <Category("LTFSWriter")>
     Public ReadOnly Property GetPos As TapeUtils.PositionData
         Get
             Return TapeUtils.ReadPosition(TapeDrive)
         End Get
     End Property
+    <Category("LTFSWriter")>
     Public Property ExtraPartitionCount As Byte = 0
+    <Category("LTFSWriter")>
     Public Property CapReduceCount As Long = 0
+    <Category("LTFSWriter")>
     Public Property CapacityRefreshInterval As Integer
         Get
             Return My.Settings.LTFSWriter_CapacityRefreshInterval
@@ -92,6 +111,7 @@ Public Class LTFSWriter
         End Set
     End Property
     Private _SpeedLimit As Integer = 0
+    <Category("LTFSWriter")>
     Public Property SpeedLimit As Integer
         Set(value As Integer)
             value = Math.Max(0, value)
@@ -106,9 +126,13 @@ Public Class LTFSWriter
             Return _SpeedLimit
         End Get
     End Property
+    <Category("LTFSWriter")>
     Public Property SpeedLimitLastTriggerTime As Date = Now
-    Public CheckCount As Integer = 0
+    <Category("LTFSWriter")>
+    Public Property CheckCount As Integer = 0
+    <Category("LTFSWriter")>
     Public Property CheckCycle As Integer = 10
+    <Category("LTFSWriter")>
     Public Property CleanCycle
         Set(value)
             value = Math.Max(0, value)
@@ -124,6 +148,7 @@ Public Class LTFSWriter
             Return My.Settings.LTFSWriter_CleanCycle
         End Get
     End Property
+    <Category("LTFSWriter")>
     Public Property HashOnWrite As Boolean
         Get
             Return 计算校验ToolStripMenuItem.Checked
@@ -133,14 +158,22 @@ Public Class LTFSWriter
         End Set
     End Property
 
+    <Category("LTFSWriter")>
     Public Property AllowOperation As Boolean = True
     Public OperationLock As New Object
+    <Category("LTFSWriter")>
     Public Property Barcode As String = ""
+    <Category("LTFSWriter")>
     Public Property StopFlag As Boolean = False
+    <Category("LTFSWriter")>
     Public Property Pause As Boolean = False
+    <Category("LTFSWriter")>
     Public Property Flush As Boolean = False
+    <Category("LTFSWriter")>
     Public Property Clean As Boolean = False
+    <Category("LTFSWriter")>
     Public Property Clean_last As Date = Now
+    <Category("LTFSWriter")>
     Public Property DisablePartition As Boolean
         Get
             Return My.Settings.LTFSWriter_DisablePartition
@@ -151,23 +184,34 @@ Public Class LTFSWriter
             TapeUtils.AllowPartition = Not DisablePartition
         End Set
     End Property
+    <Category("LTFSWriter")>
     Public Property Session_Start_Time As Date = Now
-    Public logFile As String = IO.Path.Combine(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+    <Category("LTFSWriter")>
+    Public Property logFile As String = IO.Path.Combine(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+    <Category("LTFSWriter")>
     Public Property SilentMode As Boolean = False
+    <Category("LTFSWriter")>
     Public Property SilentAutoEject As Boolean = False
-    Public BufferedBytes As Long = 0
+    <Category("LTFSWriter")>
+    Public Property BufferedBytes As Long = 0
     Private ddelta, fdelta, rwhdelta, rwtdelta As Long
-    Public SMaxNum As Integer = 600
-    Public PMaxNum As Integer = 3600 * 6
-    Public SpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
-    Public NativeSpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
-    Public FileRateHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
+    <Category("LTFSWriter")>
+    Public Property SMaxNum As Integer = 600
+    <Category("LTFSWriter")>
+    Public Property PMaxNum As Integer = 3600 * 6
+    <Category("LTFSWriter")>
+    Public Property SpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
+    <Category("LTFSWriter")>
+    Public Property NativeSpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
+    <Category("LTFSWriter")>
+    Public Property FileRateHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
 
     Public FileDroper As FileDropHandler
     Public Event LTFSLoaded()
     Public Event WriteFinished()
     Public Event TapeEjected()
 
+    <Category("LTFSWriter")>
     Public Property MyClipBoard As New LTFSClipBoard With {.ContentChanged =
         Sub()
             Me.Invoke(Sub()
@@ -175,9 +219,10 @@ Public Class LTFSWriter
                           粘贴选中ToolStripMenuItem1.Visible = Not MyClipBoard.IsEmpty
                       End Sub)
         End Sub}
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LTFSClipBoard
-        Public Directory As New List(Of ltfsindex.directory)
-        Public File As New List(Of ltfsindex.file)
+        Public Property Directory As New List(Of ltfsindex.directory)
+        Public Property File As New List(Of ltfsindex.file)
         Public ContentChanged As Action
         Public ReadOnly Property IsEmpty
             Get
@@ -359,7 +404,39 @@ Public Class LTFSWriter
                       End If
                   End Sub)
     End Sub
-    Public DataCompressionLogPage As TapeUtils.PageData
+    <Category("LTFSWriter")>
+    Public Property DataCompressionLogPage As TapeUtils.PageData
+    <Category("UI")>
+    Public ReadOnly Property ControlList As List(Of Control)
+        Get
+            Dim result As New List(Of Control)
+            For Each c As Control In Controls
+                result.Add(c)
+                If TypeOf c Is SplitContainer Then
+                    For Each d As Control In CType(c, SplitContainer).Panel1.Controls
+                        result.Add(d)
+                    Next
+                    For Each d As Control In CType(c, SplitContainer).Panel2.Controls
+                        result.Add(d)
+                    Next
+                End If
+                If TypeOf c Is Panel Then
+                    For Each d As Control In CType(c, Panel).Controls
+                        result.Add(d)
+                    Next
+                End If
+            Next
+            Return result
+        End Get
+    End Property
+    <Category("TapeUtils")>
+    Public ReadOnly Property CurrentLogPages As List(Of TapeUtils.PageData)
+        Get
+            Return TapeUtils.PageData.GetAllPagesFromDrive(driveHandle)
+        End Get
+    End Property
+
+
     Public d_last As Long = 0
     Public t_last As Long = 0
     Public rwh_last As Long = 0
@@ -372,52 +449,18 @@ Public Class LTFSWriter
                 Dim wcr, rcr, wh, wt, rh, rt As Long
                 logdata = TapeUtils.LogSense(TapeDrive, &H1B, PageControl:=1)
                 DataCompressionLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
-                For Each it As TapeUtils.PageData.DataItem In DataCompressionLogPage.Items
-                    Dim pi As Integer = 0
-                    While pi < it.RawData.Length - 1
-                        Dim nextPage As TapeUtils.PageData.DataItem.DynamicParamPage = TapeUtils.PageData.DataItem.DynamicParamPage.Next(it, pi)
-                        Select Case nextPage.ParamCode
-                            Case 0
-                                rcr = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    rcr = rcr << 8
-                                    rcr = rcr Or nextPage.RawData(j)
-                                Next
-                            Case 1
-                                wcr = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    wcr = wcr << 8
-                                    wcr = wcr Or nextPage.RawData(j)
-                                Next
-                            Case 3
-                                rh = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    rh = rh << 8
-                                    rh = rh Or nextPage.RawData(j)
-                                Next
-                            Case 5
-                                rt = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    rt = rt << 8
-                                    rt = rt Or nextPage.RawData(j)
-                                Next
-                            Case 7
-                                wh = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    wh = wh << 8
-                                    wh = wh Or nextPage.RawData(j)
-                                Next
-                            Case 9
-                                wt = 0
-                                For j As Integer = 0 To nextPage.RawData.Length - 1
-                                    wt = wt << 8
-                                    wt = wt Or nextPage.RawData(j)
-                                Next
-                        End Select
-
-                        pi += nextPage.RawData.Length + it.DynamicParamDataStartByte
-                    End While
-                Next
+                Dim rcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(0)
+                Dim wcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(1)
+                Dim rhP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(3)
+                Dim rtP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(5)
+                Dim whP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(7)
+                Dim wtP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(9)
+                If rcrP IsNot Nothing Then rcr = rcrP.GetLong()
+                If wcrP IsNot Nothing Then wcr = wcrP.GetLong()
+                If rhP IsNot Nothing Then rh = rhP.GetLong()
+                If rtP IsNot Nothing Then rt = rtP.GetLong()
+                If whP IsNot Nothing Then wh = whP.GetLong()
+                If wtP IsNot Nothing Then wt = wtP.GetLong()
                 Dim rwhval As Long = rh + wh
                 If rwhval = 0 Then rwh_last = 0
                 If rwhval >= rwh_last Then
@@ -532,11 +575,12 @@ Public Class LTFSWriter
             PrintMsg(ex.ToString)
         End Try
     End Sub
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class FileRecord
-        Public ParentDirectory As ltfsindex.directory
-        Public SourcePath As String
-        Public File As ltfsindex.file
-        Public Buffer As Byte() = Nothing
+        Public Property ParentDirectory As ltfsindex.directory
+        Public Property SourcePath As String
+        Public Property File As ltfsindex.file
+        Public Property Buffer As Byte() = Nothing
         Private OperationLock As New Object
         Public Sub RemoveUnwritten()
             ParentDirectory.contents.UnwrittenFiles.Remove(File)
@@ -586,11 +630,11 @@ Public Class LTFSWriter
             End With
             ParentDirectory.contents.UnwrittenFiles.Add(File)
         End Sub
-        Public fs As IO.FileStream
-        Public fsB As IO.BufferedStream
-        Public fsPreRead As IO.FileStream
-        Public PreReadOffset As Long = 0
-        Public PreReadByteCount As Long = 0
+        Public Property fs As IO.FileStream
+        Public Property fsB As IO.BufferedStream
+        Public Property fsPreRead As IO.FileStream
+        Public Property PreReadOffset As Long = 0
+        Public Property PreReadByteCount As Long = 0
         Public PreReadOffsetLock As New Object
         Public Event PreReadFinished()
         'Public ReadOnly Property PreReadEnabled
@@ -764,6 +808,7 @@ Public Class LTFSWriter
             End If
         End Function
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class IntLock
         Public Property Value As Integer = 0
         Public Sub Inc()
@@ -787,8 +832,11 @@ Public Class LTFSWriter
         End Operator
     End Class
     Public UFReadCount As IntLock = 0
-    Public UnwrittenFiles As New List(Of FileRecord)
+    <Category("LTFSWriter")>
+    Public Property UnwrittenFiles As New List(Of FileRecord)
+    <Category("LTFSWriter")>
     Public Property UnwrittenSizeOverrideValue As ULong = 0
+    <Category("LTFSWriter")>
     Public ReadOnly Property UnwrittenSize
         Get
             If UnwrittenSizeOverrideValue > 0 Then Return UnwrittenSizeOverrideValue
@@ -805,14 +853,18 @@ Public Class LTFSWriter
             Return result
         End Get
     End Property
+    <Category("LTFSWriter")>
     Public Property UnwrittenCountOverwriteValue As ULong = 0
+    <Category("LTFSWriter")>
     Public ReadOnly Property UnwrittenCount
         Get
             If UnwrittenCountOverwriteValue > 0 Then Return UnwrittenCountOverwriteValue
             Return UnwrittenFiles.Count
         End Get
     End Property
-    Dim LastRefresh As Date = Now
+    <Category("LTFSWriter")>
+    Public Property LastRefresh As Date = Now
+    <Category("LTFSWriter")>
     Public Property driveHandle As IntPtr
     Private Sub LTFSWriter_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim scrH As Integer = Screen.GetWorkingArea(Me).Height
@@ -909,8 +961,12 @@ Public Class LTFSWriter
         result.UnlockBits(bd)
         Return result
     End Function
-    Public MaxCapacity As Long = 0
-    Public CapacityLogPage, VolumeStatisticsLogPage As TapeUtils.PageData
+    <Category("LTFSWriter")>
+    Public Property MaxCapacity As Long = 0
+    <Category("LTFSWriter")>
+    Public Property CapacityLogPage As TapeUtils.PageData
+    <Category("LTFSWriter")>
+    Public Property VolumeStatisticsLogPage As TapeUtils.PageData
 
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
@@ -1024,13 +1080,17 @@ Public Class LTFSWriter
                End Sub)
         Return result
     End Function
-    Public Function GetCapacityMegaBytes() As Long
-        If ExtraPartitionCount > 0 Then
-            Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
-        Else
-            Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
-        End If
-    End Function
+    <Category("LTFSWriter")>
+    Public ReadOnly Property GetCapacityMegaBytes As Long
+        Get
+            If ExtraPartitionCount > 0 Then
+                Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+            Else
+                Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
+            End If
+        End Get
+    End Property
+
     Public Sub RefreshDisplay()
         Invoke(
             Sub()
@@ -1595,6 +1655,7 @@ Public Class LTFSWriter
             Exit Sub
         End If
     End Sub
+    <Category("LTFSWriter")>
     Public Property ParallelAdd As Boolean = False
     Public ExplorerComparer As New ExplorerUtils()
     Public Function IsSameFile(f As IO.FileInfo, f0 As ltfsindex.file) As Boolean
@@ -2232,7 +2293,8 @@ Public Class LTFSWriter
     Private Sub 重命名目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 重命名目录ToolStripMenuItem.Click
         RenameDir()
     End Sub
-    Dim RestorePosition As TapeUtils.PositionData
+    <Category("LTFSWriter")>
+    Public Property RestorePosition As TapeUtils.PositionData
     Public Sub RestoreFile(FileName As String, FileIndex As ltfsindex.file)
         If Not FileName.StartsWith("\\") Then FileName = $"\\?\{FileName}"
         Dim FileExist As Boolean = True
@@ -4422,6 +4484,7 @@ Public Class LTFSWriter
         去重SHA1ToolStripMenuItem.Checked = My.Settings.LTFSWriter_DeDupe
         My.Settings.Save()
     End Sub
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LTFSMountFSBase
         Inherits Fsp.FileSystemBase
         Public LW As LTFSWriter
@@ -4448,6 +4511,7 @@ Public Class LTFSWriter
             End If
             Return STATUS_UNEXPECTED_IO_ERROR
         End Function
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         Class FileDesc
             Public IsDirectory As Boolean
             Public LTFSFile As ltfsindex.file
@@ -4796,6 +4860,7 @@ Public Class LTFSWriter
         End Function
     End Class
 
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LTFSMountFuseSvc
         Inherits Fsp.Service
         Public LW As LTFSWriter
@@ -5269,7 +5334,7 @@ Public Class LTFSWriter
             End If
 
         Else
-                Dim sum As Integer = 0
+            Dim sum As Integer = 0
             For i As Integer = 0 To newkey.Length - 1
                 sum += newkey(i)
             Next
@@ -5443,6 +5508,19 @@ Public Class LTFSWriter
         LockGUI()
         th.Start()
     End Sub
+    <Category("TapeUtils")>
+    Public ReadOnly Property TapeUtils_DriveOpenCount As SerializableDictionary(Of String, Integer)
+        Get
+            Return TapeUtils.DriveOpenCount
+        End Get
+    End Property
+    <Category("TapeUtils")>
+    Public ReadOnly Property TapeUtils_DriveHandle As SerializableDictionary(Of String, IntPtr)
+        Get
+            Return TapeUtils.DriveHandle
+        End Get
+    End Property
+
 
     Private Sub 加锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加锁ToolStripMenuItem.Click
         TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
@@ -5670,10 +5748,10 @@ Public Class LTFSWriter
                                    End Sub)
                         Catch ex As Exception
                             MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
-                                PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
-                            End Try
-                            While Pause
-                                Threading.Thread.Sleep(10)
+                            PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
+                        End Try
+                        While Pause
+                            Threading.Thread.Sleep(10)
                         End While
                         Marshal.FreeHGlobal(wBufferPtr)
                         While HashTaskAwaitNumber > 0
@@ -5852,6 +5930,11 @@ Public Class LTFSWriter
                 RefreshDisplay()
             Case Keys.KeyCode.F8
                 LockGUI(AllowOperation)
+            Case Keys.KeyCode.F12
+                Dim SP1 As New SettingPanel
+                SP1.Text = Text
+                SP1.SelectedObject = Me
+                SP1.Show()
         End Select
     End Sub
 

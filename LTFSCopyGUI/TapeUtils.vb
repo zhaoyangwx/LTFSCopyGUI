@@ -5,6 +5,7 @@ Imports System.ComponentModel
 
 Imports LTFSCopyGUI
 
+<TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class TapeUtils
 #Region "winapi"
     Public Class SetupAPI
@@ -352,8 +353,8 @@ Public Class TapeUtils
                                            senseBuffer As IntPtr) As Boolean
 
     End Function
-    Public Shared DriveOpenCount As New Dictionary(Of String, Integer)
-    Public Shared DriveHandle As New Dictionary(Of String, IntPtr)
+    Public Shared Property DriveOpenCount As New SerializableDictionary(Of String, Integer)
+    Public Shared Property DriveHandle As New SerializableDictionary(Of String, IntPtr)
     Public Shared Function OpenTapeDrive(TapeDrive As String, ByRef handle As IntPtr) As Boolean
         If Not DriveHandle.ContainsKey(TapeDrive) Then
             DriveOpenCount.Add(TapeDrive, 0)
@@ -847,13 +848,21 @@ Public Class TapeUtils
         End SyncLock
     End Function
     Public Shared Function LogSense(TapeDrive As String, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
-        Dim Header As Byte() = SCSIReadParam(TapeDrive, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, 0, 4, 0}, 4)
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = LogSense(handle, PageCode, senseReport, PageControl)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function LogSense(handle As IntPtr, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
+        Dim Header As Byte() = SCSIReadParam(handle, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, 0, 4, 0}, 4)
         If Header.Length < 4 Then Return {0, 0, 0, 0}
         Dim PageLen As Integer = Header(2)
         PageLen <<= 8
         PageLen = PageLen Or Header(3)
-
-        Return SCSIReadParam(TapeDrive:=TapeDrive, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
+        Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
     End Function
     Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
         Dim Header As Byte() = SCSIReadParam(handle, {&H1A, 0, PageID, 0, 4, 0}, 4)
@@ -1707,8 +1716,8 @@ Public Class TapeUtils
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
             Dim result As Byte() = Write(handle, Data, BlockSize, senseEnabled)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
-        Return result
-End SyncLock
+            Return result
+        End SyncLock
     End Function
     Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean) As Byte()
         Dim sense(63) As Byte
@@ -3402,6 +3411,7 @@ End SyncLock
     End Class
 
     <Serializable>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class CMParser
         Const GUARD_WRAP_IDENTIFIER As Integer = &HFFFFFFFE
         Const UNUSED_WRAP_IDENTIFIER As Integer = &HFFFFFFFF
@@ -5521,6 +5531,20 @@ End SyncLock
                         Return result
                     End Get
                 End Property
+                <Xml.Serialization.XmlIgnore>
+                Public ReadOnly Property GetPage As PageData
+                    Get
+                        If Type = DataType.PageData Then
+                            Dim pagedata As PageData
+                            If Parent.PageDataTemplate.TryGetValue(ParamCode, pagedata) Then
+                                pagedata.RawData = RawData
+                                Return pagedata
+                            End If
+                        End If
+                        Return Nothing
+                    End Get
+                End Property
+
 
 
                 Public Shared Function [Next](ByVal PageData As DataItem, ByVal StartByte As Integer) As DynamicParamPage
@@ -7773,32 +7797,40 @@ End SyncLock
             End Select
             Return pdata
         End Function
-    End Class
-    Public Shared Function ReduceDataUnit(MBytes As Int64) As String
-            Dim Result As Decimal = MBytes
-            Dim ResultUnit As Integer = 0
-            While Result >= 1000
-                Result /= 1024
-                ResultUnit += 3
-            End While
-            Dim ResultString As String = Math.Round(Result, 2)
-            Select Case ResultUnit
-                Case 0
-                    Return ResultString & " MiB"
-                Case 3
-                    Return ResultString & " GiB"
-                Case 6
-                    Return ResultString & " TiB"
-                Case 9
-                    Return ResultString & " PiB"
-                Case 12
-                    Return ResultString & " EiB"
-                Case 15
-                    Return ResultString & " ZiB"
-                Case 18
-                    Return ResultString & " YiB"
-                Case Else
-                    Return ResultString & " << " & ResultUnit & "MiB"
-            End Select
+        Public Shared Function GetAllPagesFromDrive(handle As IntPtr) As List(Of PageData)
+            Dim result As New List(Of PageData)
+            For Each pagecode As Byte In [Enum].GetValues(GetType(DefaultPages))
+                Dim logdata As Byte() = LogSense(handle, pagecode)
+                result.Add(PageData.CreateDefault(pagecode, logdata))
+            Next
+            Return result
         End Function
     End Class
+    Public Shared Function ReduceDataUnit(MBytes As Int64) As String
+        Dim Result As Decimal = MBytes
+        Dim ResultUnit As Integer = 0
+        While Result >= 1000
+            Result /= 1024
+            ResultUnit += 3
+        End While
+        Dim ResultString As String = Math.Round(Result, 2)
+        Select Case ResultUnit
+            Case 0
+                Return ResultString & " MiB"
+            Case 3
+                Return ResultString & " GiB"
+            Case 6
+                Return ResultString & " TiB"
+            Case 9
+                Return ResultString & " PiB"
+            Case 12
+                Return ResultString & " EiB"
+            Case 15
+                Return ResultString & " ZiB"
+            Case 18
+                Return ResultString & " YiB"
+            Case Else
+                Return ResultString & " << " & ResultUnit & "MiB"
+        End Select
+    End Function
+End Class

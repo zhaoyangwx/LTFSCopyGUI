@@ -1534,7 +1534,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button12_Click(sender As Object, e As EventArgs) Handles Button12.Click
         If ComboBox4.SelectedIndex >= 0 Then
-            Dim logdata As Byte() = TapeUtils.LogSense(ConfTapeDrive, PageItem(ComboBox4.SelectedIndex).PageCode, PageControl:=ComboBox5.SelectedIndex)
+            Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=PageItem(ComboBox4.SelectedIndex).PageCode, PageControl:=ComboBox5.SelectedIndex)
             PageItem(ComboBox4.SelectedIndex).RawData = logdata
             TextBox8.Text = PageItem(ComboBox4.SelectedIndex).GetSummary()
             If CheckBox5.Checked Then
