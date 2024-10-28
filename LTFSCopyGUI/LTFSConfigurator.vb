@@ -1904,29 +1904,35 @@ Public Class LTFSConfigurator
     Public ReadOnly Property ControlList As List(Of Object)
         Get
             Dim result As New List(Of Object)
+            Dim q As New List(Of Control)
             For Each c As Control In Controls
-                result.Add(c)
-                If TypeOf c Is SplitContainer Then
-                    For Each d As Control In CType(c, SplitContainer).Panel1.Controls
-                        result.Add(d)
-                    Next
-                    For Each d As Control In CType(c, SplitContainer).Panel2.Controls
-                        result.Add(d)
-                    Next
-                End If
-                If TypeOf c Is Panel Then
-                    For Each d As Control In CType(c, Panel).Controls
-                        result.Add(d)
-                    Next
-                End If
-                If TypeOf c Is TabControl Then
-                    For Each d As TabPage In CType(c, TabControl).TabPages
-                        For Each e As Control In d.Controls
-                            result.Add(e)
-                        Next
-                    Next
-                End If
+                q.Add(c)
             Next
+            While q.Count > 0
+                Dim q2 As New List(Of Control)
+                For Each c As Control In q
+                    result.Add(c)
+                    If TypeOf c Is SplitContainer Then
+                        For Each d As Control In CType(c, SplitContainer).Panel1.Controls
+                            q2.Add(d)
+                        Next
+                        For Each d As Control In CType(c, SplitContainer).Panel2.Controls
+                            q2.Add(d)
+                        Next
+                    ElseIf TypeOf c Is Panel Then
+                        For Each d As Control In CType(c, Panel).Controls
+                            q2.Add(d)
+                        Next
+                    ElseIf TypeOf c Is TabControl Then
+                        For Each d As TabPage In CType(c, TabControl).TabPages
+                            For Each e As Control In d.Controls
+                                q2.Add(e)
+                            Next
+                        Next
+                    End If
+                Next
+                q = q2
+            End While
             Return result
         End Get
     End Property
