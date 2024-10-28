@@ -123,10 +123,10 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="PropertyGrid1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 25</value>
+    <value>0, 0</value>
   </data>
   <data name="PropertyGrid1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>477, 544</value>
+    <value>477, 569</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PropertyGrid1.TabIndex" type="System.Int32, mscorlib">
@@ -148,13 +148,13 @@
     <value>17, 17</value>
   </metadata>
   <data name="打开ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>100, 22</value>
   </data>
   <data name="打开ToolStripMenuItem.Text" xml:space="preserve">
     <value>打开</value>
   </data>
   <data name="保存ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>100, 22</value>
   </data>
   <data name="保存ToolStripMenuItem.Text" xml:space="preserve">
     <value>保存</value>

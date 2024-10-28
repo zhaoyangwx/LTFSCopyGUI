@@ -136,6 +136,7 @@ Public Class ltfsindex
             End Function
         End Class
         <Category("LTFSIndex")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of xattr), xattr)))>
         Public Property extendedattributes As New List(Of xattr)
         Public Function GetXAttrText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
@@ -184,6 +185,7 @@ Public Class ltfsindex
             Public Property TempInfo As Object
         End Class
         <Category("LTFSIndex")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of extent), extent)))>
         Public Property extentinfo As New List(Of extent)
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
@@ -377,19 +379,24 @@ Public Class ltfsindex
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class contentsDef
         <Category("LTFSIndex")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
         Public Property _file As New List(Of file)
         <Category("LTFSIndex")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of directory), directory)))>
         Public Property _directory As New List(Of directory)
         <Xml.Serialization.XmlIgnore>
         <Category("Internal")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
         Public Property UnwrittenFiles As New List(Of file)
         <Xml.Serialization.XmlIgnore>
         <Category("Internal")>
         Public Property LastUnwrittenFilesCount As Integer
     End Class
     <Category("LTFSIndex")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
     Public Property _file As New List(Of file)
     <Category("LTFSIndex")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of directory), directory)))>
     Public Property _directory As New List(Of directory)
     <Xml.Serialization.XmlIgnore>
     <Category("Internal")>

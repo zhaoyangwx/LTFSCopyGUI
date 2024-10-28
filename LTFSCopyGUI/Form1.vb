@@ -688,6 +688,7 @@ Public Class Form1
         AddHandler LWF.Load, OnLWFLoad
         LWF.Show()
     End Sub
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.TapeDrive), TapeUtils.TapeDrive)))>
     Dim DevList As List(Of TapeUtils.TapeDrive)
     Public Sub RefreshDeviceList()
         LoadComplete = False

@@ -1,4 +1,5 @@
-﻿Imports System.Runtime.InteropServices
+﻿Imports System.ComponentModel
+Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
@@ -8,6 +9,7 @@ Namespace My
     ' UnhandledException:在应用程序遇到未经处理的异常时引发。
     ' StartupNextInstance:在启动单实例应用程序且应用程序已处于活动状态时引发。 
     ' NetworkAvailabilityChanged:在连接或断开网络连接时引发。
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Partial Friend Class MyApplication
         <System.Runtime.InteropServices.DllImport("kernel32.dll")>
         Public Shared Function AllocConsole() As Boolean

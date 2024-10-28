@@ -78,6 +78,7 @@ Public Class LTFSConfigurator
             Return _SelectedIndex
         End Get
     End Property
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.TapeDrive), TapeUtils.TapeDrive)))>
     Public Property LastDeviceList As List(Of TapeUtils.TapeDrive)
     Public ReadOnly Property DeviceList As List(Of TapeUtils.TapeDrive)
         Get
@@ -85,6 +86,7 @@ Public Class LTFSConfigurator
             Return LastDeviceList
         End Get
     End Property
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Char), Char)))>
     Public ReadOnly Property AvailableDriveLetters As List(Of Char)
         Get
             Dim Result As New List(Of Char)
@@ -1820,32 +1822,8 @@ Public Class LTFSConfigurator
         Dim CMInfo As TapeUtils.CMParser = Nothing
         TextBox8.Text = ""
         Try
-            TapeUtils.SendSCSICommand(TapeDrive, {&H1D, &H11, 0, 0, &H14, 0}, {&HB0, 0, 0, &H10, 0, 0, 0, 0, 0, 0, &H1F, &HE0, 0, 0, 0, &H15, 0, 0, 0, 8}, 0)
-            Dim len As UInteger = &HC7A2
-            Dim len10h As Integer = TapeUtils.ReadBuffer(TapeDrive, &H10).Length
-            If len10h > 0 Then len = 6 + (len10h \ 16) * 50 + (len10h Mod 16) * 3
-            Dim bufferrawdata As Byte() = TapeUtils.SCSIReadParam(TapeDrive, {&H1C, 1, &HB0, CByte((len >> 8) And &HFF), CByte(len And &HFF), 0}, &HC7A2)
-            Dim bufferdgtext As String = System.Text.Encoding.ASCII.GetString(bufferrawdata, 6, bufferrawdata.Count - 6)
-            bufferdgtext = bufferdgtext.Replace(Chr(0), "")
-            Dim textlines As String() = bufferdgtext.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-            Dim bufferdata As New List(Of Byte)
-            For Each l As String In textlines
-                If l Is Nothing OrElse l.Length <= 2 Then Continue For
-                Dim dataline As String() = l.Split({" "}, StringSplitOptions.RemoveEmptyEntries)
-                For Each b As String In dataline
-                    Try
-                        bufferdata.Add(Convert.ToByte(b, 16))
-                    Catch ex As Exception
-                        If b IsNot Nothing Then
-                            Throw New Exception($"Error with line:{l}{vbCrLf}    byte {b}({ex.ToString()}){vbCrLf}")
-                        Else
-                            Throw New Exception($"Error with line:{l}{vbCrLf}({ex.ToString()}){vbCrLf}")
-                        End If
-                    End Try
-                Next
-            Next
             Dim errormsg As Exception = Nothing
-            CMInfo = New TapeUtils.CMParser(bufferdata.ToArray(), errormsg)
+            CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(TapeDrive), errormsg)
             If errormsg IsNot Nothing Then Throw errormsg
         Catch ex As Exception
             TextBox8.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf)

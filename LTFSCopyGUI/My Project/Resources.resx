@@ -811,4 +811,38 @@
   <data name="PropertyDescription_LTFSWriter_PreLoadFileCount" xml:space="preserve">
     <value>预读文件数</value>
   </data>
+  <data name="PropertyDescription_mkltfs_Barcode" xml:space="preserve">
+    <value>条码，0-20个ASCII字符，默认为空</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_BlockLen" xml:space="preserve">
+    <value>块大小，1-2097152，默认为524288</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_Capacity" xml:space="preserve">
+    <value>磁带容量，0-65535，默认为65535</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_EncryptionKey" xml:space="preserve">
+    <value>加密密钥</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_ExtraPartitionCount" xml:space="preserve">
+    <value>用于控制是否分区，0或者1，默认为1</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_ImmediateMode" xml:space="preserve">
+    <value>立即模式。此处无效</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_MaxExtraPartitionAllowed" xml:space="preserve">
+    <value>当前支持的额外分区数量。只读</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_P0Size" xml:space="preserve">
+    <value>分区0大小，单位为GB，将向上取整到偶数个wrap，默认为1
+P0Size和P1Size至多一个为65535，表示取剩余空间
+P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_P1Size" xml:space="preserve">
+    <value>P1Size: 分区1大小，单位为GB，将向上取整到偶数个wrap，默认为65535
+P0Size和P1Size至多一个为65535，表示取剩余空间
+P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_VolumeLabel" xml:space="preserve">
+    <value>卷标，任意长度Unicode字符，默认为空</value>
+  </data>
 </root>

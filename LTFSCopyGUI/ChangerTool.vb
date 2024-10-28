@@ -1,10 +1,13 @@
-﻿Imports System.Runtime.InteropServices
+﻿Imports System.ComponentModel
+Imports System.Runtime.InteropServices
 Imports System.Text
 Imports LTFSCopyGUI.TapeUtils
 Imports LTFSCopyGUI.TapeUtils.SetupAPI
 
 Public Class ChangerTool
     Public LoadComplete As Boolean = False
+    '<TypeConverter(GetType(ExpandableObjectConverter))>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.MediumChanger), TapeUtils.MediumChanger)))>
     Public Property LastDeviceList As List(Of TapeUtils.MediumChanger)
     Public ReadOnly Property CurrentChanger As MediumChanger
         Get
@@ -139,12 +142,14 @@ Public Class ChangerTool
             Dim th As New Threading.Thread(
                 Sub()
                     Dim sense(63) As Byte
+                    Dim succ As Boolean = False
+                    Dim ex As Exception = Nothing
                     Try
                         MediumChanger.MoveMedium(drv, src, dest, sense, LUN:=LUN)
-                    Catch ex As Exception
-                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}"))
+                    Catch ex
+                        succ = False
                     Finally
-                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}"))
+                        succ = True
                     End Try
                     SetUILock(False)
                     Me.Invoke(Sub()
@@ -158,6 +163,11 @@ Public Class ChangerTool
                                                         SetUILock(False)
                                                     End Sub)
                                       End Sub)
+                                  End If
+                                  If succ Then
+                                      MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}")
+                                  Else
+                                      MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}")
                                   End If
                               End Sub)
                 End Sub)
@@ -315,5 +325,15 @@ Public Class ChangerTool
         ComboBox2.Left = (Width - sample.Width) / 2 + sample.ComboBox2.Left
         Label1.Left = (Width - sample.Width) / 2 + sample.Label1.Left
         ResumeLayout()
+    End Sub
+
+    Private Sub ChangerTool_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
+        Select Case e.KeyCode
+            Case Keys.KeyCode.F12
+                Dim SP1 As New SettingPanel
+                SP1.Text = Text
+                SP1.SelectedObject = Me
+                SP1.Show()
+        End Select
     End Sub
 End Class

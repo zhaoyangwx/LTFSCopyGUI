@@ -803,4 +803,38 @@ Valid only if HashOnWriting=True</value>
   <data name="PropertyDescription_LTFSWriter_PreLoadFileCount" xml:space="preserve">
     <value>Pre read file count</value>
   </data>
+  <data name="PropertyDescription_mkltfs_Barcode" xml:space="preserve">
+    <value>0-20 ASCII characters. Default=empty</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_BlockLen" xml:space="preserve">
+    <value>1-2097152. Default=524288</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_Capacity" xml:space="preserve">
+    <value>0-65535. Default=65535 (Full length)</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_EncryptionKey" xml:space="preserve">
+    <value>Encryption key</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_ExtraPartitionCount" xml:space="preserve">
+    <value>0 or 1. Default=1 (partitioned)</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_ImmediateMode" xml:space="preserve">
+    <value>Unused</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_MaxExtraPartitionAllowed" xml:space="preserve">
+    <value>Extra partition number allowed. Readonly.</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_P0Size" xml:space="preserve">
+    <value>Partition 0 Size in GB, will round up to nearest multiple-of-two wraps. Default=1
+If one Partition Size field is set to 65535, the corresponding partition will occupy whatever capacity remains after satisfying the specified size for the other partitions. At most one partition size may be set to 65535.
+If no Partition Size field is set to 65535, the sum of the specified partition sizes must not exceed the total available capacity</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_P1Size" xml:space="preserve">
+    <value>Partition 1 Size in GB, will round up to nearest multiple-of-two wraps. Default=65535
+If one Partition Size field is set to 65535, the corresponding partition will occupy whatever capacity remains after satisfying the specified size for the other partitions. At most one partition size may be set to 65535.
+If no Partition Size field is set to 65535, the sum of the specified partition sizes must not exceed the total available capacity</value>
+  </data>
+  <data name="PropertyDescription_mkltfs_VolumeLabel" xml:space="preserve">
+    <value>Unicode string. Default=empty</value>
+  </data>
 </root>
