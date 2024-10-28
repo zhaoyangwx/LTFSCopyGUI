@@ -117,38 +117,38 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Button1.Text" xml:space="preserve">
+  <data name="ButtonRefresh.Text" xml:space="preserve">
     <value>Refresh</value>
   </data>
-  <data name="Button2.Text" xml:space="preserve">
+  <data name="ButtonStartFUSESvc.Text" xml:space="preserve">
     <value>Start FUSE</value>
   </data>
-  <data name="Button3.Text" xml:space="preserve">
+  <data name="ButtonStopFUSESvc.Text" xml:space="preserve">
     <value>Stop FUSE</value>
   </data>
-  <data name="Button4.Text" xml:space="preserve">
+  <data name="ButtonRemount.Text" xml:space="preserve">
     <value>Remount</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 12</value>
   </data>
-  <data name="Label1.Text" xml:space="preserve">
+  <data name="LabelDrive.Text" xml:space="preserve">
     <value>Drive</value>
   </data>
   <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
     <value>41, 12</value>
   </data>
-  <data name="Label2.Text" xml:space="preserve">
+  <data name="LabelLetter.Text" xml:space="preserve">
     <value>Letter</value>
   </data>
-  <data name="Button6.Text" xml:space="preserve">
+  <data name="ButtonAssign.Text" xml:space="preserve">
     <value>Assign</value>
   </data>
-  <data name="Button7.Text" xml:space="preserve">
+  <data name="ButtonRemove.Text" xml:space="preserve">
     <value>Remove</value>
   </data>
-  <data name="Label3.Text" xml:space="preserve">
+  <data name="LabelInfo.Text" xml:space="preserve">
     <value>Info</value>
   </data>
   <data name="Button8.Location" type="System.Drawing.Point, System.Drawing">
@@ -157,32 +157,26 @@
   <data name="Button8.Size" type="System.Drawing.Size, System.Drawing">
     <value>102, 23</value>
   </data>
-  <data name="Button8.Text" xml:space="preserve">
+  <data name="ButtonLoadThreaded.Text" xml:space="preserve">
     <value>Load threaded</value>
   </data>
-  <data name="Button9.Text" xml:space="preserve">
+  <data name="ButtonEject.Text" xml:space="preserve">
     <value>Eject</value>
   </data>
-  <data name="Button10.Text" xml:space="preserve">
+  <data name="ButtonMount.Text" xml:space="preserve">
     <value>Mount</value>
   </data>
-  <data name="Button5.Text" xml:space="preserve">
+  <data name="ButtonChangerTool.Text" xml:space="preserve">
     <value>Changer</value>
   </data>
   <data name="CheckBox3.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 16</value>
   </data>
-  <data name="CheckBox3.Text" xml:space="preserve">
+  <data name="CheckBoxAutoRefresh.Text" xml:space="preserve">
     <value>Auto refresh</value>
   </data>
-  <data name="Button30.Text" xml:space="preserve">
+  <data name="ButtonFileSorter.Text" xml:space="preserve">
     <value>FileSorter</value>
-  </data>
-  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 48</value>
-  </data>
-  <data name="Button27.Text" xml:space="preserve">
-    <value>LTFSWriter</value>
   </data>
   <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 22</value>
@@ -196,7 +190,13 @@
   <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Disable index autoload</value>
   </data>
-  <data name="Button14.Text" xml:space="preserve">
+  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 48</value>
+  </data>
+  <data name="ButtonLTFSWriter.Text" xml:space="preserve">
+    <value>LTFSWriter</value>
+  </data>
+  <data name="ButtonUnthread.Text" xml:space="preserve">
     <value>Unthread</value>
   </data>
   <data name="Button13.Location" type="System.Drawing.Point, System.Drawing">
@@ -205,7 +205,7 @@
   <data name="Button13.Size" type="System.Drawing.Size, System.Drawing">
     <value>131, 23</value>
   </data>
-  <data name="Button13.Text" xml:space="preserve">
+  <data name="ButtonLoadUnthreaded.Text" xml:space="preserve">
     <value>Load (not threaded)</value>
   </data>
   <data name="CheckBox1.Location" type="System.Drawing.Point, System.Drawing">
@@ -214,13 +214,13 @@
   <data name="CheckBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>132, 16</value>
   </data>
-  <data name="CheckBox1.Text" xml:space="preserve">
+  <data name="CheckBoxDebugPanel.Text" xml:space="preserve">
     <value>SCSI Command Panel</value>
   </data>
   <data name="Label6.Size" type="System.Drawing.Size, System.Drawing">
     <value>113, 12</value>
   </data>
-  <data name="Label6.Text" xml:space="preserve">
+  <data name="LabelDebugPanel.Text" xml:space="preserve">
     <value>SCSI Command Panel</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
