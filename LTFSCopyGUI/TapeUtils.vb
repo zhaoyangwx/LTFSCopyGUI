@@ -574,6 +574,46 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
+    Public Shared Function ReceiveDiagCM(TapeDrive As String, Optional ByVal len10h As Integer = 0) As Byte()
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Byte() = ReceiveDiagCM(handle, len10h)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function ReceiveDiagCM(handle As IntPtr, Optional ByVal len10h As Integer = 0) As Byte()
+        Dim bufferrawdata As Byte()
+        SyncLock SCSIOperationLock
+            TapeUtils.SendSCSICommand(handle, {&H1D, &H11, 0, 0, &H14, 0}, {&HB0, 0, 0, &H10, 0, 0, 0, 0, 0, 0, &H1F, &HE0, 0, 0, 0, &H15, 0, 0, 0, 8}, 0)
+            Dim len As UInteger = &HC7A2
+            If len10h = 0 Then len10h = TapeUtils.ReadBuffer(handle, &H10).Length
+            If len10h > 0 Then len = 6 + (len10h \ 16) * 50 + (len10h Mod 16) * 3
+            bufferrawdata = TapeUtils.SCSIReadParam(handle, {&H1C, 1, &HB0, CByte((len >> 8) And &HFF), CByte(len And &HFF), 0}, &HC7A2)
+        End SyncLock
+
+        Dim bufferdgtext As String = System.Text.Encoding.ASCII.GetString(bufferrawdata, 6, bufferrawdata.Count - 6)
+        bufferdgtext = bufferdgtext.Replace(Chr(0), "")
+        Dim textlines As String() = bufferdgtext.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        Dim bufferdata As New List(Of Byte)
+        For Each l As String In textlines
+            If l Is Nothing OrElse l.Length <= 2 Then Continue For
+            Dim dataline As String() = l.Split({" "}, StringSplitOptions.RemoveEmptyEntries)
+            For Each b As String In dataline
+                Try
+                    bufferdata.Add(Convert.ToByte(b, 16))
+                Catch ex As Exception
+                    If b IsNot Nothing Then
+                        Throw New Exception($"Error with line:{l}{vbCrLf}    byte {b}({ex.ToString()}){vbCrLf}")
+                    Else
+                        Throw New Exception($"Error with line:{l}{vbCrLf}({ex.ToString()}){vbCrLf}")
+                    End If
+                End Try
+            Next
+        Next
+        Return bufferdata.ToArray()
+    End Function
 #End Region
 
     Public Shared Function ReadFileMark(handle As IntPtr, Optional ByRef sense As Byte() = Nothing) As Boolean
@@ -2399,6 +2439,101 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
+    <Category("Options")>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    Public Class MKLTFS_Param
+        Private _Barcode As String = ""
+        <Category("Common")>
+        <LocalizedDescription("PropertyDescription_mkltfs_Barcode")>
+        Public Property Barcode As String
+            Get
+                Return _Barcode
+            End Get
+            Set(value As String)
+                Dim asciiString As New StringBuilder()
+                For Each ch As Char In value
+                    If Asc(ch) >= 0 AndAlso Asc(ch) <= 127 Then
+                        asciiString.Append(ch)
+                    End If
+                Next
+                value = asciiString.ToString()
+                If value.Length > 20 Then value = value.Substring(0, 20)
+                _Barcode = value
+            End Set
+        End Property
+        <Category("Common")>
+        <LocalizedDescription("PropertyDescription_mkltfs_VolumeLabel")>
+        Public Property VolumeLabel As String = ""
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_MaxExtraPartitionAllowed")>
+        Public ReadOnly Property MaxExtraPartitionAllowed As Byte
+        Private Property _ExtraPartitionCount As Byte = 1
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_ExtraPartitionCount")>
+        Public Property ExtraPartitionCount As Byte
+            Get
+                Return _ExtraPartitionCount
+            End Get
+            Set(value As Byte)
+                _ExtraPartitionCount = Math.Min(1, value)
+            End Set
+        End Property
+        Private _BlockLen As Long = 524288
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_BlockLen")>
+        Public Property BlockLen As Long
+            Get
+                Return _BlockLen
+            End Get
+            Set(value As Long)
+                _BlockLen = Math.Max(1, Math.Min(value, 2097152))
+            End Set
+        End Property
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_ImmediateMode")>
+        Public Property ImmediateMode As Boolean = True
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_Capacity")>
+        Public Property Capacity As UInt16 = &HFFFF
+        Private _P0Size As UInt16 = 1
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_P0Size")>
+        Public Property P0Size As UInt16
+            Get
+                Return _P0Size
+            End Get
+            Set(value As UInt16)
+                _P0Size = value
+                If value < &HFFFF Then
+                    _P1Size = &HFFFF
+                Else
+                    _P1Size = 1
+                End If
+            End Set
+        End Property
+        Private Property _P1Size As UInt16 = &HFFFF
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_P1Size")>
+        Public Property P1Size As UInt16
+            Get
+                Return _P1Size
+            End Get
+            Set(value As UInt16)
+                _P1Size = value
+                If value < &HFFFF Then
+                    _P0Size = &HFFFF
+                Else
+                    _P0Size = 1
+                End If
+            End Set
+        End Property
+        <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_EncryptionKey")>
+        Public Property EncryptionKey As Byte() = Nothing
+        Public Sub New(MaxExtraPartitionAllowed As Byte)
+            Me.MaxExtraPartitionAllowed = MaxExtraPartitionAllowed
+        End Sub
+    End Class
     Public Shared Function mkltfs(TapeDrive As String,
                                   Optional ByVal Barcode As String = "",
                                   Optional ByVal VolumeName As String = "",
@@ -2907,6 +3042,7 @@ Public Class TapeUtils
             Return o
         End Function
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     <Serializable>
     Public Class MediumChanger
         Public Property DevIndex As String
@@ -2914,6 +3050,7 @@ Public Class TapeUtils
         Public Property VendorId As String
         Public Property ProductId As String
         Public Property RawElementData As Byte()
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Element), Element)))>
         Public Property Elements As New List(Of Element)
         ''' <summary>
         ''' The lowest element address found for the specified Element Type Code that is greater than or equal to the Starting Element Address.
@@ -3082,6 +3219,7 @@ Public Class TapeUtils
 
 
         End Sub
+        <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable>
         Public Class Element
             Public Property LUN As Byte = 0
@@ -3355,6 +3493,7 @@ Public Class TapeUtils
             Return sb.ToString()
         End Function
     End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class GX256
         Public Shared ExpTable(255) As Byte
         Public Shared LogTable(255) As Byte
@@ -3493,20 +3632,24 @@ Public Class TapeUtils
 
 
         <Category("Pages")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Page), Page)))>
         Public Property PageData As New List(Of Page)
         <Category("PageData")>
         Public Property CartridgeMfgData As New Cartridge_mfg
         <Category("PageData")>
         Public Property MediaMfgData As New Media_mfg
         <Category("PageData")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of UsagePage), UsagePage)))>
         Public Property a_UsageData As New List(Of UsagePage)
         <Category("PageData")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Usage), Usage)))>
         Public Property UsageData As New List(Of Usage)
         <Category("PageData")>
         Public Property StatusData As New TapeStatus
         <Category("PageData")>
         Public Property InitialisationData As New Initialisation
         <Category("PageData")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of EOD), EOD)))>
         Public Property PartitionEOD As New List(Of EOD)
         <Category("PageData")>
         Public Property CartridgeContentData As New CartridgeContent
@@ -3623,6 +3766,34 @@ Public Class TapeUtils
                     Return ""
                 End Get
             End Property
+            Public Shared Function GetCMLength(Abbr As String) As Integer
+                Select Case Abbr.ToUpper
+                    Case "CU"
+                        Return 4096
+                    Case "L1"
+                        Return 4096
+                    Case "L2"
+                        Return 4096
+                    Case "L3"
+                        Return 4096
+                    Case "L4"
+                        Return 8160
+                    Case "L5"
+                        Return 8160
+                    Case "L6"
+                        Return 16352
+                    Case "L7"
+                        Return 16352
+                    Case "M8"
+                        Return 16352
+                    Case "L8"
+                        Return 16352
+                    Case "L9"
+                        Return 32736
+                    Case Else
+                        Return 0
+                End Select
+            End Function
             Public Property KB_PER_DATASET As Integer
                 Get
                     Select Case CartridgeTypeAbbr
@@ -4072,8 +4243,11 @@ Public Class TapeUtils
             Public Property FID_Tape_Write_Pass_Partition_2 As Integer
             Public Property FID_Tape_Write_Pass_Partition_3 As Integer
             Public Property Wrap As String
+            <TypeConverter(GetType(ListTypeDescriptor(Of List(Of WrapEntryItemSet), WrapEntryItemSet)))>
             Public Property WrapEntryInfo As New List(Of WrapEntryItemSet)
+            <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Double), Double)))>
             Public Property CapacityLoss As New List(Of Double)
+            <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Dataset), Dataset)))>
             Public Property DatasetsOnWrapData As New List(Of Dataset)
             <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class Dataset
@@ -4135,7 +4309,9 @@ Public Class TapeUtils
                 End If
                 Return Nothing
             End Function
+            <TypeConverter(GetType(ListTypeDescriptor(Of List(Of DataInfo), DataInfo)))>
             Public Property DataSetList As New List(Of DataInfo)
+            <TypeConverter(GetType(ListTypeDescriptor(Of List(Of DataInfo), DataInfo)))>
             Public Property WTapePassList As New List(Of DataInfo)
             <TypeConverter(GetType(ExpandableObjectConverter))>
             <Serializable> Public Class DataInfo
@@ -5714,6 +5890,7 @@ Public Class TapeUtils
         End Class
         Public Property Name As String
         Public Property PageCode As Integer
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of DataItem), DataItem)))>
         Public Property Items As New List(Of DataItem)
         <Xml.Serialization.XmlIgnore> Public Property RawData As Byte()
             Get
@@ -5736,7 +5913,9 @@ Public Class TapeUtils
             Return sb.ToString()
         End Function
 
-        <Xml.Serialization.XmlIgnore> Public Property DynamicParamPages As List(Of DataItem.DynamicParamPage)
+        <Xml.Serialization.XmlIgnore>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of DataItem.DynamicParamPage), DataItem.DynamicParamPage)))>
+        Public Property DynamicParamPages As List(Of DataItem.DynamicParamPage)
             Get
                 If _DynamicParamPages Is Nothing Then
                     _DynamicParamPages = New List(Of DataItem.DynamicParamPage)

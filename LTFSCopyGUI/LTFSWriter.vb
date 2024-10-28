@@ -221,7 +221,9 @@ Public Class LTFSWriter
         End Sub}
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class LTFSClipBoard
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of ltfsindex.directory), ltfsindex.directory)))>
         Public Property Directory As New List(Of ltfsindex.directory)
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of ltfsindex.file), ltfsindex.file)))>
         Public Property File As New List(Of ltfsindex.file)
         Public ContentChanged As Action
         Public ReadOnly Property IsEmpty
@@ -407,9 +409,10 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property DataCompressionLogPage As TapeUtils.PageData
     <Category("UI")>
-    Public ReadOnly Property ControlList As List(Of Control)
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Object), Object)))>
+    Public ReadOnly Property ControlList As List(Of Object)
         Get
-            Dim result As New List(Of Control)
+            Dim result As New List(Of Object)
             For Each c As Control In Controls
                 result.Add(c)
                 If TypeOf c Is SplitContainer Then
@@ -429,7 +432,93 @@ Public Class LTFSWriter
             Return result
         End Get
     End Property
+    <Category("UI")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of NamedObject), NamedObject)))>
+    Public ReadOnly Property Field As List(Of NamedObject)
+        Get
+            Dim result As New List(Of NamedObject)
+            For Each f As Reflection.FieldInfo In Me.GetType().GetFields(
+                Reflection.BindingFlags.Public Or
+                Reflection.BindingFlags.NonPublic Or
+                Reflection.BindingFlags.Instance Or
+                Reflection.BindingFlags.Static)
+                Dim o As Object = f.GetValue(Me)
+                If o IsNot Nothing Then result.Add(New NamedObject(f.Name, f, Me))
+            Next
+            Return result
+        End Get
+    End Property
+    <Category("Application")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of NamedObject), NamedObject)))>
+    Public ReadOnly Property App As List(Of NamedObject)
+        Get
+            Dim result As New List(Of NamedObject)
+            Dim AppInstance As Application = CType(Activator.CreateInstance(GetType(Application), True), Application)
+            For Each f As Reflection.FieldInfo In GetType(Application).GetFields(
+                Reflection.BindingFlags.Public Or
+                Reflection.BindingFlags.NonPublic Or
+                Reflection.BindingFlags.Instance Or
+                Reflection.BindingFlags.Static)
+                Dim o As Object = f.GetValue(AppInstance)
+                If o IsNot Nothing Then result.Add(New NamedObject(f.Name, f, AppInstance))
+            Next
+            Return result
+        End Get
+    End Property
+    <Category("Application")>
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    Public ReadOnly Property Computer
+        Get
+            Return My.Computer
+        End Get
+    End Property
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    <Category("Application")>
+    Public ReadOnly Property Forms
+        Get
+            Return My.Forms
+        End Get
+    End Property
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    <Category("Application")>
+    Public ReadOnly Property Settings
+        Get
+            Return My.Settings
+        End Get
+    End Property
+    '<TypeConverter(GetType(ExpandableObjectConverter))>
+    '<Category("Application")>
+    'Public ReadOnly Property Resources As List(Of NamedObject)
+    '    Get
+    '        Dim result As New List(Of NamedObject)
+    '        Dim asm As Reflection.Assembly = Reflection.Assembly.GetExecutingAssembly()
+    '        Dim tRes As Type = GetType(My.Resources.Resources)
+    '        For Each f As Reflection.FieldInfo In tRes.GetFields(
+    '            Reflection.BindingFlags.Public Or
+    '            Reflection.BindingFlags.NonPublic Or
+    '            Reflection.BindingFlags.Instance Or
+    '            Reflection.BindingFlags.Static)
+    '            Dim o As Object = f.GetValue(Nothing)
+    '            If o IsNot Nothing Then result.Add(New NamedObject(f.Name, f, Nothing))
+    '        Next
+    '        Return result
+    '    End Get
+    'End Property
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    <Category("Application")>
+    Public ReadOnly Property User
+        Get
+            Return My.User
+        End Get
+    End Property
+    <Category("Application")>
+    Public ReadOnly Property WebServices
+        Get
+            Return My.WebServices
+        End Get
+    End Property
     <Category("TapeUtils")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.PageData), TapeUtils.PageData)))>
     Public ReadOnly Property CurrentLogPages As List(Of TapeUtils.PageData)
         Get
             Return TapeUtils.PageData.GetAllPagesFromDrive(driveHandle)
@@ -833,6 +922,7 @@ Public Class LTFSWriter
     End Class
     Public UFReadCount As IntLock = 0
     <Category("LTFSWriter")>
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of FileRecord), FileRecord)))>
     Public Property UnwrittenFiles As New List(Of FileRecord)
     <Category("LTFSWriter")>
     Public Property UnwrittenSizeOverrideValue As ULong = 0
@@ -1004,7 +1094,14 @@ Public Class LTFSWriter
                        Dim loss As Long
 
                        If My.Settings.LTFSWriter_ShowLoss Then
-                           Dim CMInfo As New TapeUtils.CMParser(TapeDrive)
+                           Dim CMInfo As TapeUtils.CMParser
+                           Try
+                               Dim errormsg As Exception = Nothing
+                               CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(TapeDrive, TapeUtils.CMParser.Cartridge_mfg.GetCMLength($"L{Gen}")), errormsg)
+                               If errormsg IsNot Nothing Then Throw errormsg
+                           Catch ex As Exception
+                               CMInfo = New TapeUtils.CMParser(TapeDrive)
+                           End Try
                            Dim nLossDS As Long = 0
                            Dim DataSize As New List(Of Long)
                            If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
@@ -3631,15 +3728,21 @@ Public Class LTFSWriter
             Dim modedata As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
             Dim MaxExtraPartitionAllowed As Byte = modedata(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-            Barcode = TapeUtils.ReadBarcode(TapeDrive)
-            Dim VolumeLabel As String = ""
+            Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+            If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
+            param.Barcode = TapeUtils.ReadBarcode(TapeDrive)
+            param.EncryptionKey = EncryptionKey
             Dim Confirm As Boolean = False
+            Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
+            msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
+            msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
             While Not Confirm
-                Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, Barcode)
-                If VolumeLabel = "" Then VolumeLabel = Barcode
-                VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, VolumeLabel)
+                If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
+                msDialog.ShowDialog()
+                'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
+                'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
 
-                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
+                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
                     Case DialogResult.Yes
                         Confirm = True
                         Exit While
@@ -3650,10 +3753,8 @@ Public Class LTFSWriter
                 End Select
             End While
             LockGUI()
-            Dim DefaultBlockSize As Long = 524288
 
-            If MaxExtraPartitionAllowed = 0 Then DefaultBlockSize = 65536
-            TapeUtils.mkltfs(TapeDrive, Barcode, VolumeLabel, MaxExtraPartitionAllowed, DefaultBlockSize, False,
+            TapeUtils.mkltfs(TapeDrive, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                 Sub(Message As String)
                     'ProgressReport
                     PrintMsg(Message)
@@ -3672,7 +3773,7 @@ Public Class LTFSWriter
                     PrintMsg(Message)
                     LockGUI(False)
                     Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                End Sub, EncryptionKey:=EncryptionKey)
+                End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
         End If
     End Sub
     Public Function ImportSHA1(schhash As ltfsindex, Overwrite As Boolean) As String
