@@ -837,4 +837,16 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_mkltfs_VolumeLabel" xml:space="preserve">
     <value>Unicode string. Default=empty</value>
   </data>
+  <data name="ResText_Busy" xml:space="preserve">
+    <value>Busy</value>
+  </data>
+  <data name="ResText_Idle" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="ResText_NotReady" xml:space="preserve">
+    <value>Not ready</value>
+  </data>
+  <data name="ResText_Succ" xml:space="preserve">
+    <value>Success</value>
+  </data>
 </root>

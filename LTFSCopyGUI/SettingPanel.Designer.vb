@@ -76,6 +76,7 @@ Partial Class SettingPanel
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.Controls.Add(Me.PropertyGrid1)
         Me.Controls.Add(Me.MenuStrip1)
+        Me.DoubleBuffered = True
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "SettingPanel"
         Me.MenuStrip1.ResumeLayout(False)

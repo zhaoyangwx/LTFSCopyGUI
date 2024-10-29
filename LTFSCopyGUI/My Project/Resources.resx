@@ -845,4 +845,16 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_mkltfs_VolumeLabel" xml:space="preserve">
     <value>卷标，任意长度Unicode字符，默认为空</value>
   </data>
+  <data name="ResText_Busy" xml:space="preserve">
+    <value>操作执行中</value>
+  </data>
+  <data name="ResText_Idle" xml:space="preserve">
+    <value>空闲</value>
+  </data>
+  <data name="ResText_NotReady" xml:space="preserve">
+    <value>未就绪</value>
+  </data>
+  <data name="ResText_Succ" xml:space="preserve">
+    <value>操作成功完成</value>
+  </data>
 </root>

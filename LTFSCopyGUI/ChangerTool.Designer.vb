@@ -121,6 +121,7 @@ Partial Class ChangerTool
         Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.ListBox1)
         Me.Controls.Add(Me.Button1)
+        Me.DoubleBuffered = True
         Me.KeyPreview = True
         Me.Name = "ChangerTool"
         Me.ResumeLayout(False)

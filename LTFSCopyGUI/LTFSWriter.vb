@@ -88,7 +88,7 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public ReadOnly Property GetPos As TapeUtils.PositionData
         Get
-            Return TapeUtils.ReadPosition(TapeDrive)
+            Return TapeUtils.ReadPosition(driveHandle)
         End Get
     End Property
     <Category("LTFSWriter")>
@@ -371,6 +371,11 @@ Public Class LTFSWriter
         ToolStripStatusLabel3.ToolTipText = TextT3
         ToolStripStatusLabel5.Text = Text5
         ToolStripStatusLabel5.ToolTipText = TextT5
+        If IOCtlNum > 0 Then
+            ToolStripStatusLabelS6.ForeColor = Color.Brown
+        Else
+            ToolStripStatusLabelS6.ForeColor = Color.Green
+        End If
         If schema IsNot Nothing AndAlso
             schema._directory IsNot Nothing AndAlso
             schema._directory.Count > 0 AndAlso
@@ -380,6 +385,35 @@ Public Class LTFSWriter
             Dim img As Image = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
             ListView1.CreateGraphics().DrawImage(img, 0, 0)
         End If
+    End Sub
+    Public Enum LWStatus
+        NotReady
+        Idle
+        Busy
+        Succ
+        Err
+    End Enum
+    Public Sub SetStatusLight(status As LWStatus)
+        Invoke(Sub()
+                   Select Case status
+                       Case LWStatus.NotReady
+                           ToolStripStatusLabelS1.ForeColor = Color.Gray
+                           ToolStripStatusLabelS1.ToolTipText = My.Resources.ResText_NotReady
+                       Case LWStatus.Idle
+                           ToolStripStatusLabelS1.ForeColor = Color.Blue
+                           ToolStripStatusLabelS1.ToolTipText = My.Resources.ResText_Idle
+                       Case LWStatus.Busy
+                           ToolStripStatusLabelS1.ForeColor = Color.Orange
+                           ToolStripStatusLabelS1.ToolTipText = My.Resources.ResText_Busy
+                       Case LWStatus.Succ
+                           ToolStripStatusLabelS1.ForeColor = Color.Green
+                           ToolStripStatusLabelS1.ToolTipText = My.Resources.ResText_Succ
+                       Case LWStatus.Err
+                           ToolStripStatusLabelS1.ForeColor = Color.Red
+                           ToolStripStatusLabelS1.ToolTipText = My.Resources.ResText_Error
+                   End Select
+               End Sub)
+
     End Sub
     Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False, Optional ByVal ForceLog As Boolean = False)
         Me.Invoke(Sub()
@@ -549,7 +583,7 @@ Public Class LTFSWriter
             If False Then
                 Dim logdata As Byte()
                 Dim wcr, rcr, wh, wt, rh, rt As Long
-                logdata = TapeUtils.LogSense(TapeDrive, &H1B, PageControl:=1)
+                logdata = TapeUtils.LogSense(driveHandle, &H1B, PageControl:=1)
                 DataCompressionLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
                 Dim rcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(0)
                 Dim wcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(1)
@@ -633,9 +667,10 @@ Public Class LTFSWriter
                     End If
                 End If
             End If
-            SyncLock OperationLock
+            If Threading.Monitor.TryEnter(OperationLock) Then
                 If AllowOperation Then CheckClean()
-            End SyncLock
+                Threading.Monitor.Exit(OperationLock)
+            End If
 
             i = 0
             Chart1.Series(0).Points.Clear()
@@ -675,6 +710,7 @@ Public Class LTFSWriter
             End If
         Catch ex As Exception
             PrintMsg(ex.ToString)
+            SetStatusLight(LWStatus.Err)
         End Try
     End Sub
     <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -969,6 +1005,9 @@ Public Class LTFSWriter
     Public Property LastRefresh As Date = Now
     <Category("LTFSWriter")>
     Public Property driveHandle As IntPtr
+    <Category("TapeUtils")>
+    Public Property IOCtlNum As Integer
+
     Private Sub LTFSWriter_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim scrH As Integer = Screen.GetWorkingArea(Me).Height
         If scrH - Top - Height <= 0 Then
@@ -982,8 +1021,24 @@ Public Class LTFSWriter
             读取索引ToolStripMenuItem_Click(sender, e)
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_ErrP)
+            SetStatusLight(LWStatus.Err)
         End Try
+        AddHandler TapeUtils.IOCtlStart, Sub() Threading.Interlocked.Increment(_IOCtlNum)
+        AddHandler TapeUtils.IOCtlFinished, Sub() Threading.Interlocked.Decrement(_IOCtlNum)
+        Task.Run(Sub()
+                     While True AndAlso Me IsNot Nothing
+                         Try
+                             Threading.Thread.Sleep(Timer1.Interval)
+                             If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
+                                 SyncLock TapeUtils.SCSIOperationLock
+                                     RefreshDriveLEDIndicator()
+                                 End SyncLock
+                             End If
+                         Catch ex As Exception
 
+                         End Try
+                     End While
+                 End Sub)
     End Sub
     Private Sub LTFSWriter_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         Static ForceCloseCount As Integer = 0
@@ -1042,6 +1097,7 @@ Public Class LTFSWriter
             info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RPosErr)
+            SetStatusLight(LWStatus.Err)
         End Try
         Return info
     End Function
@@ -1070,93 +1126,148 @@ Public Class LTFSWriter
     Public Property CapacityLogPage As TapeUtils.PageData
     <Category("LTFSWriter")>
     Public Property VolumeStatisticsLogPage As TapeUtils.PageData
+    Public Property DeviceStatusLogPage As TapeUtils.PageData
+    Public Property DTDStatusLogPage As TapeUtils.PageData
+    Public Sub RefreshDriveLEDIndicator()
+        Dim logdataDSLP As Byte() = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
+        Dim logdataDTD As Byte() = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
+        Invoke(Sub()
+                   DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
+                   DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
+                   Dim DevStatusBits As TapeUtils.PageData = DeviceStatusLogPage.TryGetPage(&H1).GetPage
+                   Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
+                   If DevStatusBits IsNot Nothing Then
+                       For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
+                           Select Case item.Name.ToLower
+                               Case "cleaning required flag"
+                                   CleanFlag = CleanFlag Or item.RawData(0)
+                               Case "cleaning requested flag"
+                                   CleanFlag = CleanFlag Or item.RawData(0)
+                               Case "device status"
+                                   DriveFlag = (item.RawData(0) <> 1)
+                               Case "medium status"
+                                   TapeFlag = (item.RawData(0) <> 1)
+                           End Select
+                       Next
+                   End If
+                   Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
+                   If VHFData IsNot Nothing Then
+                       For Each item As TapeUtils.PageData.DataItem In VHFData.Items
+                           Select Case item.Name.ToLower
+                               Case "encryption parameters present"
+                                   EncryptionFlag = (item.RawData(0) = 1)
+                           End Select
+                       Next
+                   End If
+                   If EncryptionFlag Then
+                       ToolStripStatusLabelS2.ForeColor = Color.Blue
+                   Else
+                       ToolStripStatusLabelS2.ForeColor = Color.Gray
+                   End If
+                   If CleanFlag Then
+                       ToolStripStatusLabelS3.ForeColor = Color.Orange
+                   Else
+                       ToolStripStatusLabelS3.ForeColor = Color.Gray
+                   End If
+                   If TapeFlag Then
+                       ToolStripStatusLabelS4.ForeColor = Color.Orange
+                   Else
+                       ToolStripStatusLabelS4.ForeColor = Color.Gray
+                   End If
+                   If DriveFlag Then
+                       ToolStripStatusLabelS5.ForeColor = Color.Orange
+                   Else
+                       ToolStripStatusLabelS5.ForeColor = Color.Gray
+                   End If
+               End Sub)
 
+    End Sub
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
-        Dim logdataCap As Byte() = TapeUtils.LogSense(TapeDrive, &H31, PageControl:=1)
-        Dim logdataVStat As Byte() = TapeUtils.LogSense(TapeDrive, &H17, PageControl:=1)
+        Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
+        Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, PageControl:=1)
+        RefreshDriveLEDIndicator()
+        Try
+            CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
+            VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
+            Dim Gen As Integer, WORM As Boolean, WP As Boolean
+            Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
+            If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
+            Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
+            If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
+            Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
+            If WPPage IsNot Nothing Then WP = WPPage.LastByte
 
-        Invoke(Sub()
-                   Try
-                       CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
-                       VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
-                       Dim Gen As Integer, WORM As Boolean, WP As Boolean
-                       Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
-                       If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
-                       Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
-                       If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
-                       Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
-                       If WPPage IsNot Nothing Then WP = WPPage.LastByte
+            Dim MediaDescription As String = $"L{Gen}"
+            If WORM Then MediaDescription &= " WORM"
+            If WP Then MediaDescription &= " RO" Else MediaDescription &= " RW"
 
-                       Dim MediaDescription As String = $"L{Gen}"
-                       If WORM Then MediaDescription &= " WORM"
-                       If WP Then MediaDescription &= " RO" Else MediaDescription &= " RW"
-
-                       Dim cap0, cap1, max0, max1 As Long
-                       Dim cp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(1)
-                       Dim cp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(2)
-                       Dim mp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(3)
-                       Dim mp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(4)
-                       If cp0 IsNot Nothing Then cap0 = cp0.GetLong
-                       If cp1 IsNot Nothing Then cap1 = cp1.GetLong
-                       If mp0 IsNot Nothing Then max0 = mp0.GetLong
-                       If mp1 IsNot Nothing Then max1 = mp1.GetLong
+            Dim cap0, cap1, max0, max1 As Long
+            Dim cp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(1)
+            Dim cp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(2)
+            Dim mp0 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(3)
+            Dim mp1 As TapeUtils.PageData.DataItem.DynamicParamPage = CapacityLogPage.TryGetPage(4)
+            If cp0 IsNot Nothing Then cap0 = cp0.GetLong
+            If cp1 IsNot Nothing Then cap1 = cp1.GetLong
+            If mp0 IsNot Nothing Then max0 = mp0.GetLong
+            If mp1 IsNot Nothing Then max1 = mp1.GetLong
 
 
-                       'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
-                       Dim loss As Long
+            'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
+            Dim loss As Long
 
-                       If My.Settings.LTFSWriter_ShowLoss Then
-                           Dim CMInfo As TapeUtils.CMParser
-                           Try
-                               Dim errormsg As Exception = Nothing
-                               CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(TapeDrive, TapeUtils.CMParser.Cartridge_mfg.GetCMLength($"L{Gen}")), errormsg)
-                               If errormsg IsNot Nothing Then Throw errormsg
-                           Catch ex As Exception
-                               CMInfo = New TapeUtils.CMParser(TapeDrive)
-                           End Try
-                           Dim nLossDS As Long = 0
-                           Dim DataSize As New List(Of Long)
-                           If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
-                           Dim StartBlock As Integer = 0
-                           Dim CurrSize As Long = 0
-                           Dim gw As Boolean = False
-                           For wn As Integer = 0 To CMInfo.a_NWraps - 1
-                               Dim StartBlockStr As String = StartBlock.ToString()
-                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Or CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
-                               Dim EndBlock As Integer = StartBlock + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
-                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
-                               StartBlock += CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
-                               If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
-                                   nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
-                                   CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
-                                   StartBlock = 0
-                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
-                                   CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
-                               ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then
-                                   StartBlock = 0
-                                   If gw Then
-                                       DataSize.Add(CurrSize)
-                                       CurrSize = 0
-                                       gw = False
-                                   Else
-                                       gw = True
-                                   End If
-                               End If
-                           Next
-                           loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
+            If My.Settings.LTFSWriter_ShowLoss Then
+                Dim CMInfo As TapeUtils.CMParser
+                Try
+                    Dim errormsg As Exception = Nothing
+                    CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(driveHandle, TapeUtils.CMParser.Cartridge_mfg.GetCMLength($"L{Gen}")), errormsg)
+                    If errormsg IsNot Nothing Then Throw errormsg
+                Catch ex As Exception
+                    CMInfo = New TapeUtils.CMParser(driveHandle)
+                End Try
+                Dim nLossDS As Long = 0
+                Dim DataSize As New List(Of Long)
+                If CMInfo.CartridgeMfgData.CartridgeTypeAbbr = "CU" Then Exit Try
+                Dim StartBlock As Integer = 0
+                Dim CurrSize As Long = 0
+                Dim gw As Boolean = False
+                For wn As Integer = 0 To CMInfo.a_NWraps - 1
+                    Dim StartBlockStr As String = StartBlock.ToString()
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Or CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then StartBlockStr = ""
+                    Dim EndBlock As Integer = StartBlock + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount - 1
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then EndBlock += 1
+                    StartBlock += CMInfo.TapeDirectoryData.WrapEntryInfo(wn).RecCount + CMInfo.TapeDirectoryData.WrapEntryInfo(wn).FileMarkCount
+                    If CMInfo.TapeDirectoryData.CapacityLoss(wn) >= 0 Then
+                        nLossDS += Math.Max(0, CMInfo.a_SetsPerWrap - CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data)
+                        CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -1 Then
+                        StartBlock = 0
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -2 Then
+                        CurrSize += CMInfo.TapeDirectoryData.DatasetsOnWrapData(wn).Data
+                    ElseIf CMInfo.TapeDirectoryData.CapacityLoss(wn) = -3 Then
+                        StartBlock = 0
+                        If gw Then
+                            DataSize.Add(CurrSize)
+                            CurrSize = 0
+                            gw = False
+                        Else
+                            gw = True
+                        End If
+                    End If
+                Next
+                loss = nLossDS * CMInfo.CartridgeMfgData.KB_PER_DATASET * 1000
 
-                       End If
-                       Dim lshbits As Byte = 20
+            End If
+            Dim lshbits As Byte = 20
 
-                       'DAT Unit in KB
-                       If max0 > 20 * 1024 * 1024 Then lshbits = 10
+            'DAT Unit in KB
+            If max0 > 20 * 1024 * 1024 Then lshbits = 10
 
-                       If ExtraPartitionCount > 0 Then
-                           MaxCapacity = max1
-                           If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 1).AsNumeric
-                           'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+            If ExtraPartitionCount > 0 Then
+                MaxCapacity = max1
+                If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 1).AsNumeric
+                'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+                Invoke(Sub()
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}"
                            If cap1 >= 4096 Then
@@ -1164,11 +1275,13 @@ Public Class LTFSWriter
                            Else
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
                            End If
-                           result(2) = max1 - cap1
-                           result(3) = max1
-                       Else
-                           MaxCapacity = max0
-                           If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 1, 0).AsNumeric
+                       End Sub)
+                result(2) = max1 - cap1
+                result(3) = max1
+            Else
+                MaxCapacity = max0
+                If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 0).AsNumeric
+                Invoke(Sub()
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
                            If cap0 >= 4096 Then
@@ -1176,27 +1289,36 @@ Public Class LTFSWriter
                            Else
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(255, 127, 127))
                            End If
-                       End If
-                       result(0) = max0 - cap0
-                       result(1) = max0
-                       If My.Settings.LTFSWriter_ShowLoss Then
+                       End Sub)
+
+            End If
+            result(0) = max0 - cap0
+            result(1) = max0
+            If My.Settings.LTFSWriter_ShowLoss Then
+                Invoke(Sub()
                            ToolStripStatusLabel2.Text &= $" Loss:{IOManager.FormatSize(loss)}"
                            ToolStripStatusLabel2.ToolTipText &= $" Loss:{IOManager.FormatSize(loss)}"
-                       End If
-                       LastRefresh = Now
-                   Catch ex As Exception
-                       PrintMsg(My.Resources.ResText_RCErr, TooltipText:=ex.ToString)
-                   End Try
-               End Sub)
+                       End Sub)
+            End If
+            LastRefresh = Now
+        Catch ex As Exception
+            PrintMsg(My.Resources.ResText_RCErr, TooltipText:=ex.ToString)
+            SetStatusLight(LWStatus.Err)
+        End Try
         Return result
     End Function
     <Category("LTFSWriter")>
     Public ReadOnly Property GetCapacityMegaBytes As Long
         Get
-            If ExtraPartitionCount > 0 Then
-                Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
+            If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
+                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                If ExtraPartitionCount > 0 Then
+                    Return TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 0, 1).AsNumeric
+                Else
+                    Return TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 0, 0).AsNumeric
+                End If
             Else
-                Return TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
+                Return 0
             End If
         End Get
     End Property
@@ -1315,6 +1437,7 @@ Public Class LTFSWriter
                     ToolStripStatusLabel4.ToolTipText = ToolStripStatusLabel4.Text
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_RDErr)
+                    SetStatusLight(LWStatus.Err)
                 End Try
 
             End Sub)
@@ -1323,14 +1446,18 @@ Public Class LTFSWriter
         Try
             If True OrElse AllowOperation Then
                 Task.Run(Sub()
-                             RefreshCapacity()
-                             PrintMsg(My.Resources.ResText_CRef)
+                             If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
+                                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                                 RefreshCapacity()
+                                 PrintMsg(My.Resources.ResText_CRef)
+                             End If
                          End Sub)
             Else
                 LastRefresh = Now - New TimeSpan(0, 0, CapacityRefreshInterval)
             End If
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_CRefErr)
+            SetStatusLight(LWStatus.Err)
         End Try
 
     End Sub
@@ -1525,6 +1652,7 @@ Public Class LTFSWriter
                 End If
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_NavErr)
+                SetStatusLight(LWStatus.Err)
             End Try
             ListView1.EndUpdate()
         End If
@@ -1552,8 +1680,9 @@ Public Class LTFSWriter
         Return False
     End Function
     Public Sub WriteCurrentIndex(Optional ByVal GotoEOD As Boolean = True, Optional ByVal ClearCurrentStat As Boolean = True)
+        SetStatusLight(LWStatus.Busy)
         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-        If GotoEOD Then TapeUtils.Locate(TapeDrive, 0, DataPartition, TapeUtils.LocateDestType.EOD)
+        If GotoEOD Then TapeUtils.Locate(driveHandle, 0UL, DataPartition, TapeUtils.LocateDestType.EOD)
         Dim CurrentPos As TapeUtils.PositionData = GetPos
         PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
         If ExtraPartitionCount > 0 AndAlso schema IsNot Nothing AndAlso schema.location.partition <> CurrentPos.PartitionNumber Then
@@ -1564,7 +1693,7 @@ Public Class LTFSWriter
             Throw New Exception($"{My.Resources.ResText_CurPos}p{CurrentPos.PartitionNumber}b{CurrentPos.BlockNumber}{My.Resources.ResText_IndexNAllowed}")
             Exit Sub
         End If
-        TapeUtils.WriteFileMark(TapeDrive)
+        TapeUtils.WriteFileMark(driveHandle)
         schema.generationnumber += 1
         schema.updatetime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
         schema.location.partition = ltfsindex.PartitionLabel.b
@@ -1578,7 +1707,7 @@ Public Class LTFSWriter
         'Dim sdata As Byte() = Encoding.UTF8.GetBytes(schema.GetSerializedText())
         PrintMsg(My.Resources.ResText_WI)
         'TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
-        TapeUtils.Write(TapeDrive, tmpf, plabel.blocksize)
+        TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
         IO.File.Delete(tmpf)
         'While sdata.Length > 0
         '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
@@ -1591,14 +1720,16 @@ Public Class LTFSWriter
             CurrentBytesProcessed = 0
             CurrentFilesProcessed = 0
         End If
-        TapeUtils.WriteFileMark(TapeDrive)
+        TapeUtils.WriteFileMark(driveHandle)
         PrintMsg(My.Resources.ResText_WIF)
         CurrentPos = GetPos
         CurrentHeight = CurrentPos.BlockNumber
         PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
         Modified = ExtraPartitionCount > 0
+        SetStatusLight(LWStatus.Succ)
     End Sub
     Public Sub RefreshIndexPartition()
+        SetStatusLight(LWStatus.Busy)
         Dim block1 As ULong = schema.location.startblock
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
             block1 = schema.previousgenerationlocation.startblock
@@ -1606,10 +1737,10 @@ Public Class LTFSWriter
         If ExtraPartitionCount > 0 Then
             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
             PrintMsg(My.Resources.ResText_Locating)
-            TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
+            TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-            TapeUtils.WriteFileMark(TapeDrive)
+            TapeUtils.WriteFileMark(driveHandle)
             PrintMsg($"Filemark Written", LogOnly:=True)
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
                 schema.previousgenerationlocation = New ltfsindex.LocationDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
@@ -1628,19 +1759,20 @@ Public Class LTFSWriter
             'Dim sdata As Byte() = Encoding.UTF8.GetBytes(schema.GetSerializedText())
             PrintMsg(My.Resources.ResText_WI)
             'TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
-            TapeUtils.Write(TapeDrive, tmpf, plabel.blocksize)
+            TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
             IO.File.Delete(tmpf)
             'While sdata.Length > 0
             '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
             '    sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
             '    TapeUtils.Write(TapeDrive, wdata)
             'End While
-            TapeUtils.WriteFileMark(TapeDrive)
+            TapeUtils.WriteFileMark(driveHandle)
             PrintMsg(My.Resources.ResText_WIF)
             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
         End If
-        TapeUtils.WriteVCI(TapeDrive, schema.generationnumber, block0, block1, schema.volumeuuid.ToString(), ExtraPartitionCount)
+        TapeUtils.WriteVCI(driveHandle, schema.generationnumber, block0, block1, schema.volumeuuid.ToString(), ExtraPartitionCount)
         Modified = False
+        SetStatusLight(LWStatus.Succ)
     End Sub
     ''' <summary>
     ''' 
@@ -1654,25 +1786,25 @@ Public Class LTFSWriter
         Try
             If ExtraPartitionCount = 0 Then Return -1
             'record previous position
-            Dim pPrevious As New TapeUtils.PositionData(TapeDrive)
+            Dim pPrevious As New TapeUtils.PositionData(driveHandle)
             'locate
-            TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
-            Dim pFMIndex As New TapeUtils.PositionData(TapeDrive)
+            TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
+            Dim pFMIndex As New TapeUtils.PositionData(driveHandle)
             Dim pStartBlock As Long = pFMIndex.BlockNumber
             'Dump old index
-            If Not TapeUtils.ReadFileMark(TapeDrive) Then Return -1
+            If Not TapeUtils.ReadFileMark(driveHandle) Then Return -1
             Dim tmpf As String = $"{Application.StartupPath}\LIT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
+            TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
             'Write data
-            TapeUtils.Locate(TapeDrive, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
-            TapeUtils.Write(TapeDrive, Data, plabel.blocksize)
+            TapeUtils.Locate(driveHandle, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
+            TapeUtils.Write(driveHandle, Data, plabel.blocksize)
             'Recover old index
-            TapeUtils.WriteFileMark(TapeDrive)
-            TapeUtils.Write(TapeDrive, tmpf, plabel.blocksize)
+            TapeUtils.WriteFileMark(driveHandle)
+            TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
             IO.File.Delete(tmpf)
-            TapeUtils.WriteFileMark(TapeDrive)
+            TapeUtils.WriteFileMark(driveHandle)
             'Recover position
-            If RetainPosisiton Then TapeUtils.Locate(TapeDrive, pPrevious.BlockNumber, pPrevious.PartitionNumber)
+            If RetainPosisiton Then TapeUtils.Locate(driveHandle, pPrevious.BlockNumber, pPrevious.PartitionNumber)
             Return pStartBlock
         Catch ex As Exception
             MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
@@ -1702,6 +1834,7 @@ Public Class LTFSWriter
         Return DumpDataToIndexPartition(s, RetainPosisiton)
     End Function
     Public Sub UpdataAllIndex()
+        SetStatusLight(LWStatus.Busy)
         If (My.Settings.LTFSWriter_ForceIndex OrElse (TotalBytesUnindexed <> 0)) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
             PrintMsg(My.Resources.ResText_UDI)
             WriteCurrentIndex(False)
@@ -1709,13 +1842,13 @@ Public Class LTFSWriter
         PrintMsg(My.Resources.ResText_UI)
         RefreshIndexPartition()
         AutoDump()
-        TapeUtils.ReleaseUnit(TapeDrive)
-        TapeUtils.AllowMediaRemoval(TapeDrive)
+        TapeUtils.ReleaseUnit(driveHandle)
+        TapeUtils.AllowMediaRemoval(driveHandle)
         PrintMsg(My.Resources.ResText_IUd)
         If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then Me.Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = False)
         If SilentMode Then
             If SilentAutoEject Then
-                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
                 RaiseEvent TapeEjected()
             End If
         Else
@@ -1724,7 +1857,7 @@ Public Class LTFSWriter
                        DoEject = WA3ToolStripMenuItem.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_PEj, My.Resources.ResText_Hint, MessageBoxButtons.OKCancel) = DialogResult.OK
                    End Sub)
             If DoEject Then
-                TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
                 PrintMsg(My.Resources.ResText_Ejd)
                 RaiseEvent TapeEjected()
             End If
@@ -1733,6 +1866,8 @@ Public Class LTFSWriter
                    LockGUI(False)
                    RefreshDisplay()
                End Sub)
+
+        SetStatusLight(LWStatus.Succ)
     End Sub
     Public Sub OnWriteFinished()
         If WA0ToolStripMenuItem.Checked Then Exit Sub
@@ -1742,10 +1877,11 @@ Public Class LTFSWriter
             Try
                 If (My.Settings.LTFSWriter_ForceIndex OrElse TotalBytesUnindexed <> 0) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
                     WriteCurrentIndex(False)
-                    TapeUtils.Flush(TapeDrive)
+                    TapeUtils.Flush(driveHandle)
                 End If
             Catch ex As Exception
                 PrintMsg($"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
+                SetStatusLight(LWStatus.Err)
             End Try
             SilentMode = SilentBefore
             Exit Sub
@@ -2250,6 +2386,7 @@ Public Class LTFSWriter
     End Sub
     Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False,
                             Optional ByVal exceptExtention As String() = Nothing)
+        SetStatusLight(LWStatus.Busy)
         Dim th As New Threading.Thread(
                 Sub()
                     StopFlag = False
@@ -2289,6 +2426,7 @@ Public Class LTFSWriter
                             End If
                         Catch ex As Exception
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
+                            SetStatusLight(LWStatus.Err)
                         End Try
                     Next
 
@@ -2298,6 +2436,7 @@ Public Class LTFSWriter
                     StopFlag = False
                     RefreshDisplay()
                     PrintMsg(My.Resources.ResText_AddFin)
+                    SetStatusLight(LWStatus.Succ)
                     LockGUI(False)
                 End Sub)
         LockGUI()
@@ -2469,20 +2608,21 @@ Public Class LTFSWriter
                             Dim TotalBytes As Long = fe.bytecount
                             'Dim p As New TapeUtils.PositionData(TapeDrive)
                             If RestorePosition Is Nothing OrElse RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
-                                TapeUtils.Locate(TapeDrive, BlockAddress, GetPartitionNumber(Partition), TapeUtils.LocateDestType.Block)
-                                RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                                TapeUtils.Locate(driveHandle, BlockAddress, GetPartitionNumber(Partition), TapeUtils.LocateDestType.Block)
+                                RestorePosition = New TapeUtils.PositionData(driveHandle)
                             End If
                             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
                             Dim ReadedSize As Long = 0
                             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                                 Dim CurrentBlockLen As UInteger = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                                Dim Data As Byte() = TapeUtils.ReadBlock(TapeDrive, Nothing, CurrentBlockLen, True)
+                                Dim Data As Byte() = TapeUtils.ReadBlock(driveHandle, Nothing, CurrentBlockLen, True)
                                 SyncLock RestorePosition
                                     RestorePosition.BlockNumber += 1
                                 End SyncLock
                                 If Data.Length <> CurrentBlockLen OrElse CurrentBlockLen = 0 Then
                                     PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {CurrentBlockLen}", LogOnly:=True, ForceLog:=True)
                                     succ = False
+                                    SetStatusLight(LWStatus.Err)
                                     Exit Do
                                 End If
                                 ReadedSize += CurrentBlockLen - ByteOffset
@@ -2506,12 +2646,14 @@ Public Class LTFSWriter
 
                         If Not succ Then
                             PrintMsg($"{FileIndex.name}{My.Resources.ResText_RestoreErr}", ForceLog:=True)
+                            SetStatusLight(LWStatus.Err)
                             Exit For
                         End If
                         If StopFlag Then Exit Sub
                     Next
                 Catch ex As Exception
                     PrintMsg($"{FileIndex.name}{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                    SetStatusLight(LWStatus.Err)
                 End Try
 
                 fs.Flush()
@@ -2562,29 +2704,33 @@ Public Class LTFSWriter
                                 UnwrittenSizeOverrideValue += FI.length
                                 FI.TempObj = Nothing
                             Next
+                            SetStatusLight(LWStatus.Busy)
                             PrintMsg(My.Resources.ResText_Restoring)
                             StopFlag = False
-                            TapeUtils.ReserveUnit(TapeDrive)
-                            TapeUtils.PreventMediaRemoval(TapeDrive)
-                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            TapeUtils.ReserveUnit(driveHandle)
+                            TapeUtils.PreventMediaRemoval(driveHandle)
+                            RestorePosition = New TapeUtils.PositionData(driveHandle)
                             For Each FileIndex As ltfsindex.file In flist
                                 Dim FileName As String = IO.Path.Combine(BasePath, FileIndex.name)
                                 RestoreFile(FileName, FileIndex)
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
+                                    SetStatusLight(LWStatus.Idle)
                                     Exit Sub
                                 End If
                             Next
                         Catch ex As Exception
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                            SetStatusLight(LWStatus.Err)
                         End Try
-                        TapeUtils.AllowMediaRemoval(TapeDrive)
-                        TapeUtils.ReleaseUnit(TapeDrive)
+                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
                         PrintMsg(My.Resources.ResText_RestFin)
+                        SetStatusLight(LWStatus.Succ)
                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_RestFin))
                     End Sub)
             th.Start()
@@ -2595,6 +2741,7 @@ Public Class LTFSWriter
             Dim th As New Threading.Thread(
                     Sub()
                         PrintMsg(My.Resources.ResText_Restoring)
+                        SetStatusLight(LWStatus.Busy)
                         Try
                             StopFlag = False
                             Dim FileList As New List(Of FileRecord)
@@ -2648,25 +2795,28 @@ Public Class LTFSWriter
                             Next
                             PrintMsg(My.Resources.ResText_RestFile)
                             Dim c As Integer = 0
-                            TapeUtils.ReserveUnit(TapeDrive)
-                            TapeUtils.PreventMediaRemoval(TapeDrive)
-                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            TapeUtils.ReserveUnit(driveHandle)
+                            TapeUtils.PreventMediaRemoval(driveHandle)
+                            RestorePosition = New TapeUtils.PositionData(driveHandle)
                             For Each fr As FileRecord In FileList
                                 c += 1
                                 PrintMsg($"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.SourcePath}")
                                 RestoreFile(fr.SourcePath, fr.File)
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
+                                    SetStatusLight(LWStatus.Idle)
                                     Exit Try
                                 End If
                             Next
                             PrintMsg(My.Resources.ResText_RestFin)
+                            SetStatusLight(LWStatus.Succ)
                         Catch ex As Exception
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                            SetStatusLight(LWStatus.Err)
                         End Try
-                        TapeUtils.AllowMediaRemoval(TapeDrive)
-                        TapeUtils.ReleaseUnit(TapeDrive)
+                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.ReleaseUnit(driveHandle)
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
@@ -2688,6 +2838,7 @@ Public Class LTFSWriter
                         UpdataAllIndex()
                     Catch ex As Exception
                         PrintMsg(My.Resources.ResText_IUErr, False, $"{My.Resources.ResText_IUErr}: {ex.ToString}")
+                        SetStatusLight(LWStatus.Err)
                         LockGUI(False)
                     End Try
                 End Sub)
@@ -2698,7 +2849,7 @@ Public Class LTFSWriter
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
             Dim p As TapeUtils.PositionData
             While True
-                TapeUtils.Locate(TapeDrive, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
+                TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
                 p = GetPos
                 If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse p.BlockNumber <> schema.previousgenerationlocation.startblock Then
                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
@@ -2720,7 +2871,7 @@ Public Class LTFSWriter
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             PrintMsg(My.Resources.ResText_RI)
             Dim tmpf As String = $"{Application.StartupPath}\LWS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
+            TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
             PrintMsg(My.Resources.ResText_AI)
             'Dim sch2 As ltfsindex = ltfsindex.FromSchemaText(Encoding.UTF8.GetString(schraw))
             Dim sch2 As ltfsindex = ltfsindex.FromSchFile(tmpf)
@@ -2736,7 +2887,7 @@ Public Class LTFSWriter
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             If p.BlockNumber <> CurrentHeight Then
                 While True
-                    TapeUtils.Locate(TapeDrive, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(driveHandle, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
                     p = GetPos
                     If p.PartitionNumber <> DataPartition OrElse p.BlockNumber <> CULng(CurrentHeight) Then
                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
@@ -2770,12 +2921,13 @@ Public Class LTFSWriter
             Sub()
                 Dim OnWriteFinishMessage As String = ""
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     Dim StartTime As Date = Now
                     PrintMsg("", True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_PrepW)
-                    TapeUtils.ReserveUnit(TapeDrive)
-                    TapeUtils.PreventMediaRemoval(TapeDrive)
+                    TapeUtils.ReserveUnit(driveHandle)
+                    TapeUtils.PreventMediaRemoval(driveHandle)
                     If Not LocateToWritePosition() Then Exit Sub
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
@@ -2832,8 +2984,8 @@ Public Class LTFSWriter
                             End While
                         End If
 
-                        Dim p As New TapeUtils.PositionData(TapeDrive)
-                        TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                        Dim p As New TapeUtils.PositionData(driveHandle)
+                        TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                         For i As Integer = 0 To WriteList.Count - 1
                             If i < WriteList.Count - 1 Then
                                 Dim CFNum As Integer = i
@@ -2931,7 +3083,7 @@ Public Class LTFSWriter
                                             While Not succ
                                                 Dim sense As Byte()
                                                 Try
-                                                    sense = TapeUtils.Write(TapeDrive, FileData)
+                                                    sense = TapeUtils.Write(driveHandle, FileData)
                                                     SyncLock p
                                                         p.BlockNumber += 1
                                                     End SyncLock
@@ -2947,7 +3099,7 @@ Public Class LTFSWriter
                                                             succ = True
                                                             Exit While
                                                     End Select
-                                                    p = New TapeUtils.PositionData(TapeDrive)
+                                                    p = New TapeUtils.PositionData(driveHandle)
                                                     Continue While
                                                 End Try
                                                 If ((sense(2) >> 6) And &H1) = 1 Then
@@ -2979,7 +3131,7 @@ Public Class LTFSWriter
                                                         End Select
                                                     End Try
 
-                                                    p = New TapeUtils.PositionData(TapeDrive)
+                                                    p = New TapeUtils.PositionData(driveHandle)
                                                 Else
                                                     succ = True
                                                 End If
@@ -3035,6 +3187,7 @@ Public Class LTFSWriter
 
                                                             Case DialogResult.Ignore
                                                                 PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                                                SetStatusLight(LWStatus.Err)
                                                                 Continue For
                                                         End Select
                                                     End Try
@@ -3061,7 +3214,7 @@ Public Class LTFSWriter
                                                             Dim sense As Byte()
                                                             Try
                                                                 'Dim t0 As Date = Now
-                                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, True)
+                                                                sense = TapeUtils.Write(driveHandle, wBufferPtr, BytesReaded, True)
                                                                 'tsub += (Now - t0).TotalMilliseconds
                                                                 'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
                                                                 SyncLock p
@@ -3079,7 +3232,7 @@ Public Class LTFSWriter
                                                                         succ = True
                                                                         Exit While
                                                                 End Select
-                                                                p = New TapeUtils.PositionData(TapeDrive)
+                                                                p = New TapeUtils.PositionData(driveHandle)
                                                                 Continue While
                                                             End Try
                                                             If (((sense(2) >> 6) And &H1) = 1) Then
@@ -3089,6 +3242,7 @@ Public Class LTFSWriter
                                                                     StopFlag = True
                                                                     fr.Close()
                                                                     ExitForFlag = True
+                                                                    SetStatusLight(LWStatus.Err)
                                                                     Exit Sub
                                                                 Else
                                                                     PrintMsg(My.Resources.ResText_EWEOM, True)
@@ -3112,7 +3266,7 @@ Public Class LTFSWriter
                                                                     End Select
                                                                 End Try
 
-                                                                p = New TapeUtils.PositionData(TapeDrive)
+                                                                p = New TapeUtils.PositionData(driveHandle)
                                                             Else
                                                                 succ = True
                                                                 Exit While
@@ -3177,12 +3331,12 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(TapeDrive)
+                                If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
                                 Invoke(Sub()
                                            If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
-                                               p = New TapeUtils.PositionData(TapeDrive)
+                                               p = New TapeUtils.PositionData(driveHandle)
                                                RefreshCapacity()
-                                               Dim p2 As New TapeUtils.PositionData(TapeDrive)
+                                               Dim p2 As New TapeUtils.PositionData(driveHandle)
                                                If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                                    If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
                                                        StopFlag = True
@@ -3193,6 +3347,7 @@ Public Class LTFSWriter
                             Catch ex As Exception
                                 MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
+                                SetStatusLight(LWStatus.Err)
                             End Try
                             While Pause
                                 Threading.Thread.Sleep(10)
@@ -3240,10 +3395,11 @@ Public Class LTFSWriter
                 Catch ex As Exception
                     MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
+                    SetStatusLight(LWStatus.Err)
                 End Try
-                TapeUtils.Flush(TapeDrive)
-                TapeUtils.ReleaseUnit(TapeDrive)
-                TapeUtils.AllowMediaRemoval(TapeDrive)
+                TapeUtils.Flush(driveHandle)
+                TapeUtils.ReleaseUnit(driveHandle)
+                TapeUtils.AllowMediaRemoval(driveHandle)
                 If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
                     Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}")
                 End If
@@ -3255,6 +3411,7 @@ Public Class LTFSWriter
                                更新数据区索引ToolStripMenuItem_Click(sender, e)
                            End If
                            PrintMsg(OnWriteFinishMessage)
+                           SetStatusLight(LWStatus.Succ)
                            RaiseEvent WriteFinished()
                        End Sub)
             End Sub)
@@ -3270,23 +3427,24 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
-                    TapeUtils.Locate(TapeDrive:=TapeDrive, BlockAddress:=schema.location.startblock, Partition:=schema.location.partition, DestType:=TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(handle:=driveHandle, BlockAddress:=schema.location.startblock, Partition:=schema.location.partition, DestType:=TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
+                    TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     Dim CurrentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
                     If CurrentPos.PartitionNumber < ExtraPartitionCount Then
                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_IPCanc))
                         Exit Try
                     End If
-                    TapeUtils.Locate(TapeDrive, CULng(CurrentPos.BlockNumber - 1), CurrentPos.PartitionNumber, TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(driveHandle, CULng(CurrentPos.BlockNumber - 1), CurrentPos.PartitionNumber, TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    TapeUtils.WriteFileMark(TapeDrive)
+                    TapeUtils.WriteFileMark(driveHandle)
                     PrintMsg($"FileMark written", LogOnly:=True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
@@ -3297,10 +3455,10 @@ Public Class LTFSWriter
                     PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                     CurrentHeight = p.BlockNumber
                     If ExtraPartitionCount = 0 Then
-                        TapeUtils.Write(TapeDrive, {0})
+                        TapeUtils.Write(driveHandle, {0})
                         PrintMsg($"Byte written", LogOnly:=True)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        TapeUtils.Locate(TapeDrive, CULng(CurrentHeight), 0, TapeUtils.LocateDestType.Block)
+                        TapeUtils.Locate(driveHandle, CULng(CurrentHeight), CByte(0), TapeUtils.LocateDestType.Block)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     End If
                     While True
@@ -3319,9 +3477,11 @@ Public Class LTFSWriter
                               End Sub)
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_RFailed)
+                    SetStatusLight(LWStatus.Err)
                 End Try
                 Modified = False
                 PrintMsg(My.Resources.ResText_RollBacked)
+                SetStatusLight(LWStatus.Succ)
                 Me.Invoke(Sub()
                               LockGUI(False)
                               Text = GetLocInfo()
@@ -3345,17 +3505,18 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_RBing)
                     Dim genbefore As Integer = schema.generationnumber
                     Dim prevpart As ltfsindex.PartitionLabel = schema.previousgenerationlocation.partition
                     Dim prevblk As Long = schema.previousgenerationlocation.startblock
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    TapeUtils.Locate(TapeDrive:=TapeDrive, BlockAddress:=schema.previousgenerationlocation.startblock, Partition:=schema.previousgenerationlocation.partition, DestType:=TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(handle:=driveHandle, BlockAddress:=schema.previousgenerationlocation.startblock, Partition:=schema.previousgenerationlocation.partition, DestType:=TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
+                    TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
@@ -3381,11 +3542,13 @@ Public Class LTFSWriter
                               End Sub)
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_RFailed)
+                    SetStatusLight(LWStatus.Err)
                 End Try
                 Me.Invoke(Sub()
                               LockGUI(False)
                               Text = GetLocInfo()
                               PrintMsg(My.Resources.ResText_RBFin)
+                              SetStatusLight(LWStatus.Succ)
                           End Sub)
             End Sub)
         LockGUI()
@@ -3395,10 +3558,11 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
-                    ExtraPartitionCount = TapeUtils.ModeSense(TapeDrive, &H11)(3)
-                    TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(TapeDrive).MaximumBlockLength
+                    ExtraPartitionCount = TapeUtils.ModeSense(driveHandle, &H11)(3)
+                    TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
                         If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
@@ -3419,12 +3583,12 @@ Public Class LTFSWriter
                                 EncryptionKey = newkey
                             End If
                         End If
-                        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
+                        TapeUtils.SetEncryption(driveHandle, EncryptionKey)
                     End If
-                    TapeUtils.Locate(TapeDrive, 0, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(driveHandle, 0UL, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim senseData As Byte()
-                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(TapeDrive, senseData))
+                    Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(driveHandle, senseData))
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim VOL1LabelLegal As Boolean = False
                     VOL1LabelLegal = (header.Length = 80)
@@ -3436,28 +3600,29 @@ Public Class LTFSWriter
                         PrintMsg(My.Resources.ResText_NVOL1)
                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_NLTFS}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}", My.Resources.ResText_Error))
                         LockGUI(False)
+                        SetStatusLight(LWStatus.NotReady)
                         Exit Try
                     End If
-                    TapeUtils.Locate(TapeDrive, 1, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.FileMark)
+                    TapeUtils.Locate(driveHandle, 1UL, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.FileMark)
                     PrintMsg(My.Resources.ResText_RLTFSInfo)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    TapeUtils.ReadFileMark(TapeDrive)
+                    TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim pltext As String = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
+                    Dim pltext As String = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(driveHandle))
                     plabel = ltfslabel.FromXML(pltext)
-                    TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                    TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                     If plabel.location.partition = plabel.partitions.data Then
                         DataPartition = GetPos().PartitionNumber
                         IndexPartition = (DataPartition + 1) Mod 2
                         If ExtraPartitionCount > 0 Then
                             IndexPartition = 255
                             PrintMsg($"Data partition detected. Switching to index partition", LogOnly:=True)
-                            TapeUtils.Locate(TapeDrive, 1, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                            TapeUtils.Locate(driveHandle, 1UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
                             PrintMsg(My.Resources.ResText_RLTFSInfo)
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                            TapeUtils.ReadFileMark(TapeDrive)
+                            TapeUtils.ReadFileMark(driveHandle)
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                            pltext = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(TapeDrive))
+                            pltext = Encoding.UTF8.GetString(TapeUtils.ReadToFileMark(driveHandle))
                             plabel = ltfslabel.FromXML(pltext)
                         End If
                     Else
@@ -3465,16 +3630,16 @@ Public Class LTFSWriter
                         DataPartition = (IndexPartition + 1) Mod 2
                     End If
 
-                    Barcode = TapeUtils.ReadBarcode(TapeDrive)
+                    Barcode = TapeUtils.ReadBarcode(driveHandle)
                     PrintMsg($"Barcode = {Barcode}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
                     If ExtraPartitionCount = 0 Then
                         IndexPartition = 0
-                        TapeUtils.Locate(TapeDrive, 0, 0, TapeUtils.LocateDestType.EOD)
+                        TapeUtils.Locate(driveHandle, 0UL, CByte(0), TapeUtils.LocateDestType.EOD)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                         PrintMsg(My.Resources.ResText_RI)
                         If DisablePartition Then
-                            TapeUtils.Space6(TapeDrive, -2, TapeUtils.LocateDestType.FileMark)
+                            TapeUtils.Space6(driveHandle, -2, TapeUtils.LocateDestType.FileMark)
                         Else
                             Dim p As TapeUtils.PositionData = GetPos
                             Dim FM As ULong = p.FileNumber
@@ -3482,23 +3647,24 @@ Public Class LTFSWriter
                             If FM <= 1 Then
                                 PrintMsg(My.Resources.ResText_IRFailed)
                                 Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
+                                SetStatusLight(LWStatus.Err)
                                 LockGUI(False)
                                 Exit Try
                             End If
-                            TapeUtils.Locate(TapeDrive, CULng(FM - 1), 0, TapeUtils.LocateDestType.FileMark)
+                            TapeUtils.Locate(driveHandle, CULng(FM - 1), CByte(0), TapeUtils.LocateDestType.FileMark)
                         End If
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        TapeUtils.ReadFileMark(TapeDrive)
+                        TapeUtils.ReadFileMark(driveHandle)
                     Else
-                        TapeUtils.Locate(TapeDrive, 3, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        TapeUtils.ReadFileMark(TapeDrive)
+                        TapeUtils.ReadFileMark(driveHandle)
                     End If
                     PrintMsg(My.Resources.ResText_RI)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
 
-                    TapeUtils.ReadToFileMark(TapeDrive, tmpf, plabel.blocksize)
+                    TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(tmpf)
@@ -3546,11 +3712,13 @@ Public Class LTFSWriter
                               End Sub)
 
                     PrintMsg(My.Resources.ResText_IRSucc)
+                    SetStatusLight(LWStatus.Succ)
                     LockGUI(False)
                     Invoke(Sub() RaiseEvent LTFSLoaded())
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IRFailed)
                     PrintMsg($"{ex.ToString}{vbCrLf}{ex.StackTrace}", LogOnly:=True)
+                    SetStatusLight(LWStatus.Err)
                     LockGUI(False)
                 End Try
             End Sub)
@@ -3565,35 +3733,37 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim currentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
-                    If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
-                    TapeUtils.Locate(TapeDrive, 0, DataPartition, TapeUtils.LocateDestType.EOD)
+                    If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(driveHandle, 0UL, CByte(1), TapeUtils.LocateDestType.Block)
+                    TapeUtils.Locate(driveHandle, 0UL, DataPartition, TapeUtils.LocateDestType.EOD)
                     PrintMsg(My.Resources.ResText_RI)
                     currentPos = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
                     If DisablePartition Then
-                        TapeUtils.Space6(TapeDrive, -2, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Space6(driveHandle, -2, TapeUtils.LocateDestType.FileMark)
                     Else
                         Dim FM As Long = currentPos.FileNumber
                         If FM <= 1 Then
                             PrintMsg(My.Resources.ResText_IRFailed)
+                            SetStatusLight(LWStatus.Err)
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
                             LockGUI(False)
                             Exit Try
                         End If
-                        TapeUtils.Locate(TapeDrive:=TapeDrive, BlockAddress:=FM - 1, Partition:=DataPartition, DestType:=TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(handle:=driveHandle, BlockAddress:=FM - 1, Partition:=DataPartition, DestType:=TapeUtils.LocateDestType.FileMark)
                     End If
 
-                    TapeUtils.ReadFileMark(TapeDrive)
+                    TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
                         IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
                     End If
                     outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile, plabel.blocksize)
+                    TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(My.Resources.ResText_AISucc)
@@ -3617,8 +3787,10 @@ Public Class LTFSWriter
                               End Sub)
                     CurrentHeight = -1
                     PrintMsg(My.Resources.ResText_IRSucc)
+                    SetStatusLight(LWStatus.Succ)
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IRFailed)
+                    SetStatusLight(LWStatus.Err)
                 End Try
                 LockGUI(False)
             End Sub)
@@ -3629,14 +3801,17 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
         Sub()
             Try
+                SetStatusLight(LWStatus.Busy)
                 If (My.Settings.LTFSWriter_ForceIndex OrElse TotalBytesUnindexed <> 0) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
                     WriteCurrentIndex(False)
-                    TapeUtils.Flush(TapeDrive)
+                    TapeUtils.Flush(driveHandle)
                     PrintMsg(My.Resources.ResText_DPIWritten)
+                    SetStatusLight(LWStatus.Succ)
                 End If
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_DPIWFailed, False, $"{My.Resources.ResText_DPIWFailed}: {ex.ToString}")
                 Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
+                SetStatusLight(LWStatus.Err)
             End Try
             Invoke(Sub()
                        LockGUI(False)
@@ -3671,7 +3846,7 @@ Public Class LTFSWriter
             ExtraPartitionCount = schema.location.partition
             RefreshDisplay()
             Modified = False
-            Dim MAM080C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 8, 12, 0)
+            Dim MAM080C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 8, 12, 0)
             Dim VCI As Byte() = {}
             If MAM080C IsNot Nothing Then
                 VCI = MAM080C.RawData
@@ -3679,6 +3854,7 @@ Public Class LTFSWriter
             If Not Silent Then MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_ILdedP}{vbCrLf}{vbCrLf}{My.Resources.ResText_VCID}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
         Catch ex As Exception
             MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IAErrp}{ex.Message}")
+            SetStatusLight(LWStatus.Err)
         End Try
     End Sub
     Private Sub 加载外部索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加载外部索引ToolStripMenuItem.Click
@@ -3687,6 +3863,7 @@ Public Class LTFSWriter
         End If
     End Sub
     Public Function AutoDump() As String
+        SetStatusLight(LWStatus.Busy)
         Dim FileName As String = Barcode
         If FileName = "" Then FileName = schema.volumeuuid.ToString()
         Dim outputfile As String = $"schema\LTFSIndex_Autosave_{FileName _
@@ -3700,24 +3877,27 @@ Public Class LTFSWriter
         outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
         PrintMsg(My.Resources.ResText_Exporting)
         schema.SaveFile(outputfile)
-        Dim cmData As New TapeUtils.CMParser(TapeDrive)
+        Dim cmData As New TapeUtils.CMParser(driveHandle)
         Try
             Dim CMReport As String = cmData.GetReport()
             If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
         Catch ex As Exception
-
+            SetStatusLight(LWStatus.Err)
         End Try
         PrintMsg(My.Resources.ResText_IndexBaked, False, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}")
+        SetStatusLight(LWStatus.Succ)
         Return outputfile
     End Function
     Private Sub 备份当前索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 备份当前索引ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     Dim outputfile As String = AutoDump()
                     Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}"))
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IndexBakF)
+                    SetStatusLight(LWStatus.Err)
                 End Try
                 LockGUI(False)
             End Sub)
@@ -3737,13 +3917,13 @@ Public Class LTFSWriter
                 End SyncLock
             End While
             'nop
-            TapeUtils.ReadPosition(TapeDrive)
-            Dim modedata As Byte() = TapeUtils.ModeSense(TapeDrive, &H11)
+            TapeUtils.ReadPosition(driveHandle)
+            Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
             Dim MaxExtraPartitionAllowed As Byte = modedata(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
             If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
-            param.Barcode = TapeUtils.ReadBarcode(TapeDrive)
+            param.Barcode = TapeUtils.ReadBarcode(driveHandle)
             param.EncryptionKey = EncryptionKey
             Dim Confirm As Boolean = False
             Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
@@ -3767,7 +3947,8 @@ Public Class LTFSWriter
             End While
             LockGUI()
 
-            TapeUtils.mkltfs(TapeDrive, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
+            SetStatusLight(LWStatus.Busy)
+            TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                 Sub(Message As String)
                     'ProgressReport
                     PrintMsg(Message)
@@ -3775,6 +3956,7 @@ Public Class LTFSWriter
                 Sub(Message As String)
                     'OnFinished
                     PrintMsg(My.Resources.ResText_FmtFin)
+                    SetStatusLight(LWStatus.Succ)
                     LockGUI(False)
                     Me.Invoke(Sub()
                                   MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FmtFin)
@@ -3784,12 +3966,14 @@ Public Class LTFSWriter
                 Sub(Message As String)
                     'OnError
                     PrintMsg(Message)
+                    SetStatusLight(LWStatus.Err)
                     LockGUI(False)
                     Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
                 End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
         End If
     End Sub
     Public Function ImportSHA1(schhash As ltfsindex, Overwrite As Boolean) As String
+        SetStatusLight(LWStatus.Busy)
         Dim fprocessed As Integer = 0, fhash As Integer = 0
         Dim q As New List(Of IOManager.IndexedLHashDirectory)
         q.Add(New IOManager.IndexedLHashDirectory(schema._directory(0), schhash._directory(0)))
@@ -3833,6 +4017,7 @@ Public Class LTFSWriter
                             MessageBox.Show(New Form With {.TopMost = True}, $"{f.fileuid}:{d.LTFSIndexDir.name}\{f.name} {f.sha1}")
                         End If
                     Catch ex As Exception
+                        SetStatusLight(LWStatus.Err)
                         PrintMsg(ex.ToString)
                     End Try
                 Next
@@ -3852,6 +4037,7 @@ Public Class LTFSWriter
     End Function
     Private Sub 合并SHA1ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 合并SHA1ToolStripMenuItem.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            SetStatusLight(LWStatus.Busy)
             Try
                 Dim schhash As ltfsindex
                 PrintMsg(My.Resources.ResText_RI)
@@ -3871,7 +4057,9 @@ Public Class LTFSWriter
                 PrintMsg($"{My.Resources.ResText_Imported} {result}")
             Catch ex As Exception
                 PrintMsg(ex.ToString)
+                SetStatusLight(LWStatus.Err)
             End Try
+            SetStatusLight(LWStatus.Succ)
         End If
     End Sub
     Private Sub 设置高度ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置高度ToolStripMenuItem.Click
@@ -3880,6 +4068,7 @@ Public Class LTFSWriter
         Dim Pos As Long = p.BlockNumber
         If MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_SetH1}{Pos}{My.Resources.ResText_SetH2}{vbCrLf}{My.Resources.ResText_SetH3}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
             CurrentHeight = Pos
+            SetStatusLight(LWStatus.Idle)
         End If
     End Sub
     Private Sub 定位到起始块ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 定位到起始块ToolStripMenuItem.Click
@@ -3894,13 +4083,15 @@ Public Class LTFSWriter
                 Dim th As New Threading.Thread(
                         Sub()
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                            TapeUtils.Locate(TapeDrive:=TapeDrive, BlockAddress:=ext.startblock, Partition:=GetPartitionNumber(ext.partition), DestType:=TapeUtils.LocateDestType.Block)
+                            TapeUtils.Locate(handle:=driveHandle, BlockAddress:=ext.startblock, Partition:=GetPartitionNumber(ext.partition), DestType:=TapeUtils.LocateDestType.Block)
                             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                             LockGUI(False)
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Located}{ext.startblock}"))
                             PrintMsg($"{My.Resources.ResText_Located}{ext.startblock}")
+                            SetStatusLight(LWStatus.Idle)
                         End Sub)
                 LockGUI()
+                SetStatusLight(LWStatus.Busy)
                 PrintMsg(My.Resources.ResText_Locating)
                 th.Start()
             End If
@@ -3940,7 +4131,7 @@ Public Class LTFSWriter
             Dim Loc As TapeUtils.PositionData = GetPos
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
-            TapeUtils.Flush(TapeDrive)
+            TapeUtils.Flush(driveHandle)
             RefreshCapacity()
         End If
     End Sub
@@ -3953,7 +4144,7 @@ Public Class LTFSWriter
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             If Not Loc.EOP Then
-                TapeUtils.DoReload(TapeDrive, LockVolume, EncryptionKey)
+                TapeUtils.DoReload(driveHandle, LockVolume, EncryptionKey)
             End If
             RefreshCapacity()
         End If
@@ -3981,7 +4172,7 @@ Public Class LTFSWriter
     Private Sub ToolStripDropDownButton3_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton3.Click
         ToolStripDropDownButton3.Enabled = False
         Task.Run(Sub()
-                     TapeUtils.DoReload(TapeDrive, Not AllowOperation, EncryptionKey)
+                     TapeUtils.DoReload(driveHandle, Not AllowOperation, EncryptionKey)
                      Invoke(Sub() ToolStripDropDownButton3.Enabled = True)
                  End Sub)
 
@@ -4022,11 +4213,11 @@ Public Class LTFSWriter
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
 
                 If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
-                    TapeUtils.Locate(TapeDrive:=TapeDrive, BlockAddress:=fe.startblock, Partition:=GetPartitionNumber(fe.partition))
-                    RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                    TapeUtils.Locate(handle:=driveHandle, BlockAddress:=fe.startblock, Partition:=GetPartitionNumber(fe.partition))
+                    RestorePosition = New TapeUtils.PositionData(driveHandle)
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
-                Dim blk As Byte() = TapeUtils.ReadBlock(TapeDrive:=TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                Dim blk As Byte() = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
                 SyncLock RestorePosition
                     RestorePosition.BlockNumber += 1
                 End SyncLock
@@ -4036,7 +4227,7 @@ Public Class LTFSWriter
                 Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                 Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                 While TotalBytesToRead > 0
-                    blk = TapeUtils.ReadBlock(TapeDrive:=TapeDrive, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                    blk = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
                     SyncLock RestorePosition
                         RestorePosition.BlockNumber += 1
                     End SyncLock
@@ -4105,6 +4296,7 @@ Public Class LTFSWriter
                 End If
             Next
             PrintMsg(My.Resources.ResText_OpSucc)
+            SetStatusLight(LWStatus.Idle)
             RefreshDisplay()
         End If
     End Sub
@@ -4132,27 +4324,31 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
                 Sub()
                     Try
+                        SetStatusLight(LWStatus.Busy)
                         If (My.Settings.LTFSWriter_ForceIndex OrElse TotalBytesUnindexed <> 0) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
                             PrintMsg(My.Resources.ResText_UDI)
                             WriteCurrentIndex(False)
-                            TapeUtils.Flush(TapeDrive)
+                            TapeUtils.Flush(driveHandle)
                         End If
                         AutoDump()
                         PrintMsg(My.Resources.ResText_UI)
                         RefreshIndexPartition()
-                        TapeUtils.ReleaseUnit(TapeDrive)
-                        TapeUtils.AllowMediaRemoval(TapeDrive)
+                        TapeUtils.ReleaseUnit(driveHandle)
+                        TapeUtils.AllowMediaRemoval(driveHandle)
                         PrintMsg(My.Resources.ResText_IUd)
                         If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then 更新数据区索引ToolStripMenuItem.Enabled = False
-                        TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                        SetStatusLight(LWStatus.Busy)
+                        TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
                         PrintMsg(My.Resources.ResText_Ejd)
                         Invoke(Sub()
+                                   SetStatusLight(LWStatus.Succ)
                                    LockGUI(False)
                                    RefreshDisplay()
                                    RaiseEvent TapeEjected()
                                End Sub)
                     Catch ex As Exception
                         PrintMsg(My.Resources.ResText_IUErr)
+                        SetStatusLight(LWStatus.Err)
                         LockGUI(False)
                     End Try
                 End Sub)
@@ -4167,6 +4363,7 @@ Public Class LTFSWriter
 
     Private Sub 校验源文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 校验源文件ToolStripMenuItem.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            SetStatusLight(LWStatus.Busy)
             Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = FolderBrowserDialog1.SelectedPath, .TargetDirectory = "", .DisableSkipInfo = True}
             Dim p As String = ""
             If OpenFileDialog1.FileName <> "" Then p = New IO.FileInfo(OpenFileDialog1.FileName).DirectoryName
@@ -4202,6 +4399,7 @@ Public Class LTFSWriter
                 q = q1
             End While
             PrintMsg($"{hcount}/{fcount}")
+            SetStatusLight(LWStatus.Idle)
             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
             RefreshDisplay()
         End If
@@ -4245,7 +4443,7 @@ Public Class LTFSWriter
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
                             Next
-                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            RestorePosition = New TapeUtils.PositionData(driveHandle)
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
                                     If (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (FileIndex.SHA1ForeColor.Equals(Color.Black) OrElse FileIndex.SHA1ForeColor.Equals(Color.Red)))) AndAlso
@@ -4317,6 +4515,7 @@ Public Class LTFSWriter
                             Next
                         Catch ex As Exception
                             PrintMsg(My.Resources.ResText_HErr)
+                            SetStatusLight(LWStatus.Err)
                         End Try
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
@@ -4324,6 +4523,7 @@ Public Class LTFSWriter
                         LockGUI(False)
                         RefreshDisplay()
                         PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
+                        SetStatusLight(LWStatus.Idle)
                     End Sub)
             th.Start()
         End If
@@ -4341,6 +4541,7 @@ Public Class LTFSWriter
     Public Sub HashSelectedDir(selectedDir As ltfsindex.directory, Overwrite As Boolean, ValidateOnly As Boolean)
         Dim th As New Threading.Thread(
             Sub()
+                SetStatusLight(LWStatus.Busy)
                 Dim fc As Long = 0, ec As Long = 0
                 PrintMsg(My.Resources.ResText_Hashing)
                 Try
@@ -4378,7 +4579,7 @@ Public Class LTFSWriter
                     Next
                     PrintMsg(My.Resources.ResText_Hashing)
                     Dim c As Integer = 0
-                    RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                    RestorePosition = New TapeUtils.PositionData(driveHandle)
                     For Each fr As FileRecord In FileList
                         c += 1
                         PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
@@ -4451,11 +4652,13 @@ Public Class LTFSWriter
                     Next
                     PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
                 Catch ex As Exception
+                    SetStatusLight(LWStatus.Err)
                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
                     PrintMsg(My.Resources.ResText_HErr)
                 End Try
                 UnwrittenSizeOverrideValue = 0
                 UnwrittenCountOverwriteValue = 0
+                SetStatusLight(LWStatus.Idle)
                 LockGUI(False)
                 RefreshDisplay()
             End Sub)
@@ -5069,6 +5272,7 @@ Public Class LTFSWriter
 
     Private Sub 启动FTP服务只读ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动FTP服务只读ToolStripMenuItem.Click
         Dim svc As New FTPService()
+        SetStatusLight(LWStatus.Busy)
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"FTPSVC> {s}")
                                  End Sub
@@ -5081,6 +5285,7 @@ Public Class LTFSWriter
         MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
         svc.StopService()
         MessageBox.Show(New Form With {.TopMost = True}, "Service stopped.")
+        SetStatusLight(LWStatus.Idle)
     End Sub
 
     Private Sub 右下角显示容量损失ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 右下角显示容量损失ToolStripMenuItem.Click
@@ -5098,10 +5303,10 @@ Public Class LTFSWriter
                          Dim tmpf As String = $"{Application.StartupPath}\LDS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
                          d.SaveFile(tmpf)
                          Dim ms As New IO.FileStream(tmpf, IO.FileMode.Open)
-                         TapeUtils.ReserveUnit(TapeDrive)
-                         TapeUtils.PreventMediaRemoval(TapeDrive)
+                         TapeUtils.ReserveUnit(driveHandle)
+                         TapeUtils.PreventMediaRemoval(driveHandle)
                          If Not LocateToWritePosition() Then Exit Sub
-                         Dim pos As New TapeUtils.PositionData(TapeDrive)
+                         Dim pos As New TapeUtils.PositionData(driveHandle)
                          Dim fadd As New ltfsindex.file With {.name = d.name,
                                  .accesstime = d.accesstime,
                                  .backuptime = d.backuptime,
@@ -5145,13 +5350,14 @@ Public Class LTFSWriter
                                  While Not succ
                                      Dim sense As Byte()
                                      Try
-                                         sense = TapeUtils.Write(TapeDrive:=TapeDrive, Data:=wBufferPtr, Length:=BytesReaded, senseEnabled:=True)
+                                         sense = TapeUtils.Write(handle:=driveHandle, Data:=wBufferPtr, Length:=BytesReaded, senseEnabled:=True)
                                          SyncLock pos
                                              pos.BlockNumber += 1
                                          End SyncLock
                                      Catch ex As Exception
                                          Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{ My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                              Case DialogResult.Abort
+                                                 SetStatusLight(LWStatus.Err)
                                                  Throw ex
                                              Case DialogResult.Retry
                                                  succ = False
@@ -5159,7 +5365,7 @@ Public Class LTFSWriter
                                                  succ = True
                                                  Exit While
                                          End Select
-                                         pos = New TapeUtils.PositionData(TapeDrive)
+                                         pos = New TapeUtils.PositionData(driveHandle)
                                          Continue While
                                      End Try
                                      If (((sense(2) >> 6) And &H1) = 1) Then
@@ -5168,6 +5374,7 @@ Public Class LTFSWriter
                                              Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                              StopFlag = True
                                              ms.Close()
+                                             SetStatusLight(LWStatus.Err)
                                              Exit Sub
                                          Else
                                              PrintMsg(My.Resources.ResText_EWEOM, True)
@@ -5180,6 +5387,7 @@ Public Class LTFSWriter
                                          Catch ex As Exception
                                              Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                  Case DialogResult.Abort
+                                                     SetStatusLight(LWStatus.Err)
                                                      Throw New Exception(TapeUtils.ParseSenseData(sense))
                                                  Case DialogResult.Retry
                                                      succ = False
@@ -5189,7 +5397,7 @@ Public Class LTFSWriter
                                              End Select
                                          End Try
 
-                                         pos = New TapeUtils.PositionData(TapeDrive)
+                                         pos = New TapeUtils.PositionData(driveHandle)
                                      Else
                                          succ = True
                                          Exit While
@@ -5221,9 +5429,10 @@ Public Class LTFSWriter
                          PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                          CurrentHeight = pos.BlockNumber
                          Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
-                         TapeUtils.Flush(TapeDrive)
-                         TapeUtils.ReleaseUnit(TapeDrive)
-                         TapeUtils.AllowMediaRemoval(TapeDrive)
+                         SetStatusLight(LWStatus.Succ)
+                         TapeUtils.Flush(driveHandle)
+                         TapeUtils.ReleaseUnit(driveHandle)
+                         TapeUtils.AllowMediaRemoval(driveHandle)
                          Invoke(Sub() TreeView1.SelectedNode = TreeView1.SelectedNode.Parent)
                          RefreshDisplay()
                          RefreshCapacity()
@@ -5239,15 +5448,18 @@ Public Class LTFSWriter
             If f.GetXAttr("ltfscopygui.archive").ToLower = "true" Then
                 LockGUI(True)
                 Task.Run(Sub()
+                             SetStatusLight(LWStatus.Busy)
                              Try
                                  Dim tmpf As String = $"{Application.StartupPath}\LDS_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-                                 RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                                 RestorePosition = New TapeUtils.PositionData(driveHandle)
                                  RestoreFile(tmpf, f)
                                  Dim dindex As ltfsindex.directory = ltfsindex.directory.FromFile(tmpf)
                                  d.contents._file.Remove(f)
                                  d.contents._directory.Add(dindex)
                                  IO.File.Delete(tmpf)
+                                 SetStatusLight(LWStatus.Idle)
                              Catch ex As Exception
+                                 SetStatusLight(LWStatus.Err)
                                  PrintMsg($"解压索引出错：{ex.ToString}", ForceLog:=True)
                              End Try
 
@@ -5285,6 +5497,7 @@ Public Class LTFSWriter
             Dim th As New Threading.Thread(
                     Sub()
                         Try
+                            SetStatusLight(LWStatus.Busy)
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
@@ -5294,26 +5507,29 @@ Public Class LTFSWriter
                             Next
                             PrintMsg(My.Resources.ResText_Writing)
                             StopFlag = False
-                            TapeUtils.ReserveUnit(TapeDrive)
-                            TapeUtils.PreventMediaRemoval(TapeDrive)
-                            RestorePosition = New TapeUtils.PositionData(TapeDrive)
+                            TapeUtils.ReserveUnit(driveHandle)
+                            TapeUtils.PreventMediaRemoval(driveHandle)
+                            RestorePosition = New TapeUtils.PositionData(driveHandle)
                             For Each FileIndex As ltfsindex.file In flist
                                 MoveToIndexPartition(FileIndex)
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
+                                    SetStatusLight(LWStatus.Idle)
                                     Exit Sub
                                 End If
                             Next
                         Catch ex As Exception
+                            SetStatusLight(LWStatus.Err)
                             PrintMsg(My.Resources.ResText_RestoreErr)
                         End Try
-                        TapeUtils.AllowMediaRemoval(TapeDrive)
-                        TapeUtils.ReleaseUnit(TapeDrive)
+                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
                         PrintMsg(My.Resources.ResText_AddFin)
+                        SetStatusLight(LWStatus.Succ)
                         Invoke(Sub()
                                    RefreshDisplay()
                                    MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_AddFin)
@@ -5458,7 +5674,7 @@ Public Class LTFSWriter
                 EncryptionKey = newkey
             End If
         End If
-        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
+        TapeUtils.SetEncryption(driveHandle, EncryptionKey)
     End Sub
 
     Private Sub 设置密码ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置密码ToolStripMenuItem.Click
@@ -5475,7 +5691,7 @@ Public Class LTFSWriter
             newkey = sha256.Hash()
             EncryptionKey = newkey
         End If
-        TapeUtils.SetEncryption(TapeDrive, EncryptionKey)
+        TapeUtils.SetEncryption(driveHandle, EncryptionKey)
     End Sub
 
     Private Sub 剪切文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 剪切文件ToolStripMenuItem.Click
@@ -5557,40 +5773,42 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim data As Byte()
                     Dim currentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
                     If ExtraPartitionCount = 0 Then
-                        TapeUtils.Locate(TapeDrive, blocknum, 0)
+                        TapeUtils.Locate(driveHandle, blocknum, 0)
                     Else
-                        If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(TapeDrive, 0, 1, TapeUtils.LocateDestType.Block)
-                        TapeUtils.Locate(TapeDrive, blocknum, DataPartition)
+                        If currentPos.PartitionNumber <> 1 Then TapeUtils.Locate(driveHandle, 0UL, CByte(1), TapeUtils.LocateDestType.Block)
+                        TapeUtils.Locate(driveHandle, blocknum, DataPartition)
                     End If
                     PrintMsg(My.Resources.ResText_RI)
                     currentPos = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
                     If DisablePartition Then
-                        TapeUtils.Space6(TapeDrive, -2, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Space6(driveHandle, -2, TapeUtils.LocateDestType.FileMark)
                     Else
                         Dim FM As Long = currentPos.FileNumber
                         If FM <= 1 Then
                             PrintMsg(My.Resources.ResText_IRFailed)
+                            SetStatusLight(LWStatus.Err)
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_NLTFS, My.Resources.ResText_Error))
                             LockGUI(False)
                             Exit Try
                         End If
-                        TapeUtils.Locate(TapeDrive, FM - 1, DataPartition, TapeUtils.LocateDestType.FileMark)
+                        TapeUtils.Locate(driveHandle, CULng(FM - 1), DataPartition, TapeUtils.LocateDestType.FileMark)
                     End If
 
-                    TapeUtils.ReadFileMark(TapeDrive)
+                    TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
                     If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
                         IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
                     End If
                     outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-                    TapeUtils.ReadToFileMark(TapeDrive, outputfile)
+                    TapeUtils.ReadToFileMark(driveHandle, outputfile)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(My.Resources.ResText_AISucc)
@@ -5614,7 +5832,9 @@ Public Class LTFSWriter
                               End Sub)
                     CurrentHeight = -1
                     PrintMsg(My.Resources.ResText_IRSucc)
+                    SetStatusLight(LWStatus.Idle)
                 Catch ex As Exception
+                    SetStatusLight(LWStatus.Err)
                     PrintMsg(My.Resources.ResText_IRFailed)
                 End Try
                 LockGUI(False)
@@ -5653,8 +5873,8 @@ Public Class LTFSWriter
                     PrintMsg("", True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_PrepW)
-                    TapeUtils.ReserveUnit(TapeDrive)
-                    TapeUtils.PreventMediaRemoval(TapeDrive)
+                    TapeUtils.ReserveUnit(driveHandle)
+                    TapeUtils.PreventMediaRemoval(driveHandle)
                     If Not LocateToWritePosition() Then Exit Sub
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     UFReadCount.Inc()
@@ -5673,8 +5893,8 @@ Public Class LTFSWriter
                         Threading.ThreadPool.SetMaxThreads(1024, 1024)
                         Threading.ThreadPool.SetMinThreads(256, 256)
 
-                        Dim p As New TapeUtils.PositionData(TapeDrive)
-                        TapeUtils.SetBlockSize(TapeDrive, plabel.blocksize)
+                        Dim p As New TapeUtils.PositionData(driveHandle)
+                        TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                         Try
                             Dim fr As New FileRecord
                             fr.File.fileuid = schema.highestfileuid + 1
@@ -5749,7 +5969,7 @@ Public Class LTFSWriter
                                             Dim sense As Byte()
                                             Try
                                                 'Dim t0 As Date = Now
-                                                sense = TapeUtils.Write(TapeDrive, wBufferPtr, BytesReaded, True)
+                                                sense = TapeUtils.Write(driveHandle, wBufferPtr, BytesReaded, True)
                                                 'tsub += (Now - t0).TotalMilliseconds
                                                 'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
                                                 SyncLock p
@@ -5767,7 +5987,7 @@ Public Class LTFSWriter
                                                         succ = True
                                                         Exit While
                                                 End Select
-                                                p = New TapeUtils.PositionData(TapeDrive)
+                                                p = New TapeUtils.PositionData(driveHandle)
                                                 Continue While
                                             End Try
                                             If (((sense(2) >> 6) And &H1) = 1) Then
@@ -5799,7 +6019,7 @@ Public Class LTFSWriter
                                                     End Select
                                                 End Try
 
-                                                p = New TapeUtils.PositionData(TapeDrive)
+                                                p = New TapeUtils.PositionData(driveHandle)
                                             Else
                                                 succ = True
                                                 Exit While
@@ -5847,12 +6067,12 @@ Public Class LTFSWriter
                             fr.ParentDirectory.contents._file.Add(fr.File)
                             fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                            If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(TapeDrive)
+                            If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
                             Invoke(Sub()
                                        If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
-                                           p = New TapeUtils.PositionData(TapeDrive)
+                                           p = New TapeUtils.PositionData(driveHandle)
                                            RefreshCapacity()
-                                           Dim p2 As New TapeUtils.PositionData(TapeDrive)
+                                           Dim p2 As New TapeUtils.PositionData(driveHandle)
                                            If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                                If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
                                                    StopFlag = True
@@ -5899,9 +6119,9 @@ Public Class LTFSWriter
                     MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                 End Try
-                TapeUtils.Flush(TapeDrive)
-                TapeUtils.ReleaseUnit(TapeDrive)
-                TapeUtils.AllowMediaRemoval(TapeDrive)
+                TapeUtils.Flush(driveHandle)
+                TapeUtils.ReleaseUnit(driveHandle)
+                TapeUtils.AllowMediaRemoval(driveHandle)
                 Invoke(Sub()
                            LockGUI(False)
                            RefreshDisplay()

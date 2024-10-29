@@ -99,6 +99,7 @@ Partial Class FileBrowser
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.TreeView1)
+        Me.DoubleBuffered = True
         Me.Name = "FileBrowser"
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
