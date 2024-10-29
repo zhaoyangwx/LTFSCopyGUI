@@ -353,6 +353,22 @@ Public Class TapeUtils
                                            senseBuffer As IntPtr) As Boolean
 
     End Function
+    Public Shared Function TapeSCSIIOCtlUnmanaged(handle As IntPtr,
+                                           cdb As IntPtr,
+                                           cdbLength As Byte,
+                                           dataBuffer As IntPtr,
+                                           bufferLength As UInt32,
+                                           dataIn As Byte,
+                                           timeoutValue As UInt32,
+                                           senseBuffer As IntPtr) As Boolean
+        RaiseEvent IOCtlStart()
+        Dim result As Boolean = _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+        RaiseEvent IOCtlFinished()
+        Return result
+    End Function
+    Public Shared Event IOCtlStart()
+    Public Shared Event IOCtlFinished()
+
     Public Shared Property DriveOpenCount As New SerializableDictionary(Of String, Integer)
     Public Shared Property DriveHandle As New SerializableDictionary(Of String, IntPtr)
     Public Shared Function OpenTapeDrive(TapeDrive As String, ByRef handle As IntPtr) As Boolean
@@ -441,6 +457,10 @@ Public Class TapeUtils
     Public Shared Function ReadBarcode(TapeDrive As String) As String
         'TC_MAM_BARCODE = 0x0806 LEN = 32
         Return ReadMAMAttributeString(TapeDrive, 8, 6).TrimEnd(" ")
+    End Function
+    Public Shared Function ReadBarcode(handle As IntPtr) As String
+        'TC_MAM_BARCODE = 0x0806 LEN = 32
+        Return ReadMAMAttributeString(handle, 8, 6).TrimEnd(" ")
     End Function
     Public Shared Function ReadRemainingCapacity(TapeDrive As String, Optional ByVal Partition As Byte = 0) As UInt64
         Return MAMAttribute.FromTapeDrive(TapeDrive, &H0, Partition).AsNumeric
@@ -537,7 +557,7 @@ Public Class TapeUtils
         Dim sense As IntPtr = Marshal.AllocHGlobal(64)
         SyncLock SCSIOperationLock
             Flush(handle)
-            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
+            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
             Marshal.Copy(data0, lenData, 0, lenData.Length)
             Marshal.FreeHGlobal(cdb0)
             Marshal.FreeHGlobal(data0)
@@ -554,7 +574,7 @@ Public Class TapeUtils
             Dim dumpData(BufferLen - 1) As Byte
             Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
             Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
+            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
             Marshal.Copy(data1, dumpData, 0, dumpData.Length)
             Marshal.FreeHGlobal(cdb1)
             Marshal.FreeHGlobal(data1)
@@ -826,7 +846,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
         Marshal.Copy(dataBuffer, paramData, 0, paramLen)
         Marshal.Copy(senseBuffer, senseData, 0, 64)
         Marshal.FreeHGlobal(cdb)
@@ -858,7 +878,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        While Not _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        While Not TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
             Marshal.Copy(senseBuffer, senseData, 0, 64)
             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
                 Case DialogResult.Abort
@@ -1538,6 +1558,9 @@ Public Class TapeUtils
     Public Shared Function ReadMAMAttributeString(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
         Return System.Text.Encoding.UTF8.GetString(GetMAMAttributeBytes(TapeDrive, PageCode_H, PageCode_L).ToArray())
     End Function
+    Public Shared Function ReadMAMAttributeString(handle As IntPtr, PageCode_H As Byte, PageCode_L As Byte) As String 'TC_MAM_BARCODE = 0x0806 LEN = 32
+        Return System.Text.Encoding.UTF8.GetString(GetMAMAttributeBytes(handle, PageCode_H, PageCode_L).ToArray())
+    End Function
     Public Class PositionData
         Public Property BOP As Boolean
         Public Property EOP As Boolean
@@ -1682,7 +1705,7 @@ Public Class TapeUtils
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
         If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(senseBufferPtr)
@@ -1728,7 +1751,7 @@ Public Class TapeUtils
             cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(Data, i, dataBuffer, TransferLen)
-            Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
+            Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
             If Not succ Then
                 Marshal.Copy(senseBufferPtr, sense, 0, 64)
                 Marshal.FreeHGlobal(cdb)
@@ -1774,7 +1797,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1830,7 +1853,7 @@ Public Class TapeUtils
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
                 If succ Then
                     Exit Do
                 Else
@@ -1904,7 +1927,7 @@ Public Class TapeUtils
         Dim Result As Byte() = {}
         Dim succ As Boolean = False
         Try
-            succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
+            succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
         Catch ex As Exception
             Throw New Exception("SCSIIOError")
         End Try
@@ -1927,7 +1950,7 @@ Public Class TapeUtils
                 succ = False
                 Dim senseBuffer2 As IntPtr = Marshal.AllocHGlobal(64)
                 Try
-                    succ = _TapeSCSIIOCtlUnmanaged(handle, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
+                    succ = TapeSCSIIOCtlUnmanaged(handle, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
                 Catch ex As Exception
                     Throw New Exception("SCSIIOError")
                 End Try
@@ -2175,7 +2198,7 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
@@ -2212,7 +2235,7 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
             Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
@@ -3115,7 +3138,7 @@ Public Class TapeUtils
                 SyncLock TapeUtils.SCSIOperationLock
                     Dim handle As IntPtr
                     TapeUtils.OpenTapeDrive(Changer, handle)
-                    succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer)
+                    succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer)
                     TapeUtils.CloseTapeDrive(handle)
                 End SyncLock
                 If succ Then
@@ -3143,7 +3166,7 @@ Public Class TapeUtils
             SyncLock TapeUtils.SCSIOperationLock
                 Dim handle As IntPtr
                 TapeUtils.OpenTapeDrive(Changer, handle)
-                succ = _TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer)
+                succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer)
                 TapeUtils.CloseTapeDrive(handle)
             End SyncLock
             If succ Then
@@ -7947,7 +7970,7 @@ Public Class TapeUtils
                             .Add(2, "Device status degraded")
                             .Add(3, "Device status failed")
                         End With
-                        subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Device Status", .StartByte = 2, .BitOffset = 6, .TotalBits = 2, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
+                        subpage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subpage, .Name = "Medium Status", .StartByte = 2, .BitOffset = 6, .TotalBits = 2, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
                         subpage.Items.Last.EnumTranslator = New SerializableDictionary(Of Long, String)
                         With subpage.Items.Last.EnumTranslator
                             .Add(0, "Field not supported")

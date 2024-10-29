@@ -353,7 +353,7 @@ Public Class LTFSConfigurator
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
+                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
@@ -751,7 +751,7 @@ Public Class LTFSConfigurator
         Dim handle As IntPtr
         SyncLock TapeUtils.SCSIOperationLock
             TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-            TapeUtils._TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
             TapeUtils.CloseTapeDrive(handle)
         End SyncLock
         Marshal.FreeHGlobal(cdb)

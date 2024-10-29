@@ -62,6 +62,8 @@ Partial Class HashTaskWindow
         Dim Title1 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title2 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Dim Title3 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
+        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
+        Me.Chart1 = New System.Windows.Forms.DataVisualization.Charting.Chart()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
         Me.Button1 = New System.Windows.Forms.Button()
@@ -84,140 +86,19 @@ Partial Class HashTaskWindow
         Me.LogrithmToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator2 = New System.Windows.Forms.ToolStripSeparator()
         Me.WordwrapToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-        Me.Chart1 = New System.Windows.Forms.DataVisualization.Charting.Chart()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button4 = New System.Windows.Forms.Button()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.NumericUpDown1 = New System.Windows.Forms.NumericUpDown()
         Me.CheckBox3 = New System.Windows.Forms.CheckBox()
-        Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
         Me.SplitContainer1.SuspendLayout()
         CType(Me.Chart1, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStrip1.SuspendLayout()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
-        '
-        'TextBox1
-        '
-        resources.ApplyResources(Me.TextBox1, "TextBox1")
-        Me.TextBox1.Name = "TextBox1"
-        '
-        'ProgressBar1
-        '
-        resources.ApplyResources(Me.ProgressBar1, "ProgressBar1")
-        Me.ProgressBar1.Name = "ProgressBar1"
-        '
-        'Button1
-        '
-        resources.ApplyResources(Me.Button1, "Button1")
-        Me.Button1.Name = "Button1"
-        Me.Button1.UseVisualStyleBackColor = True
-        '
-        'Button2
-        '
-        resources.ApplyResources(Me.Button2, "Button2")
-        Me.Button2.Name = "Button2"
-        Me.Button2.UseVisualStyleBackColor = True
-        '
-        'CheckBox1
-        '
-        resources.ApplyResources(Me.CheckBox1, "CheckBox1")
-        Me.CheckBox1.Name = "CheckBox1"
-        Me.CheckBox1.UseVisualStyleBackColor = True
-        '
-        'Button3
-        '
-        resources.ApplyResources(Me.Button3, "Button3")
-        Me.Button3.Name = "Button3"
-        Me.Button3.UseVisualStyleBackColor = True
-        '
-        'SaveFileDialog1
-        '
-        resources.ApplyResources(Me.SaveFileDialog1, "SaveFileDialog1")
-        '
-        'ProgressBar2
-        '
-        resources.ApplyResources(Me.ProgressBar2, "ProgressBar2")
-        Me.ProgressBar2.Name = "ProgressBar2"
-        '
-        'Timer1
-        '
-        Me.Timer1.Enabled = True
-        Me.Timer1.Interval = 1000
-        '
-        'ContextMenuStrip1
-        '
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
-        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        '
-        'SToolStripMenuItem
-        '
-        resources.ApplyResources(Me.SToolStripMenuItem, "SToolStripMenuItem")
-        Me.SToolStripMenuItem.Name = "SToolStripMenuItem"
-        '
-        'MinToolStripMenuItem
-        '
-        resources.ApplyResources(Me.MinToolStripMenuItem, "MinToolStripMenuItem")
-        Me.MinToolStripMenuItem.Name = "MinToolStripMenuItem"
-        '
-        'MinToolStripMenuItem1
-        '
-        resources.ApplyResources(Me.MinToolStripMenuItem1, "MinToolStripMenuItem1")
-        Me.MinToolStripMenuItem1.Name = "MinToolStripMenuItem1"
-        '
-        'MinToolStripMenuItem2
-        '
-        resources.ApplyResources(Me.MinToolStripMenuItem2, "MinToolStripMenuItem2")
-        Me.MinToolStripMenuItem2.Name = "MinToolStripMenuItem2"
-        '
-        'HToolStripMenuItem
-        '
-        resources.ApplyResources(Me.HToolStripMenuItem, "HToolStripMenuItem")
-        Me.HToolStripMenuItem.Name = "HToolStripMenuItem"
-        '
-        'HToolStripMenuItem1
-        '
-        resources.ApplyResources(Me.HToolStripMenuItem1, "HToolStripMenuItem1")
-        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
-        '
-        'HToolStripMenuItem2
-        '
-        resources.ApplyResources(Me.HToolStripMenuItem2, "HToolStripMenuItem2")
-        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
-        '
-        'ToolStripSeparator1
-        '
-        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
-        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        '
-        'LinearToolStripMenuItem
-        '
-        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
-        Me.LinearToolStripMenuItem.CheckOnClick = True
-        Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
-        '
-        'LogrithmToolStripMenuItem
-        '
-        resources.ApplyResources(Me.LogrithmToolStripMenuItem, "LogrithmToolStripMenuItem")
-        Me.LogrithmToolStripMenuItem.CheckOnClick = True
-        Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
-        '
-        'ToolStripSeparator2
-        '
-        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
-        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
-        '
-        'WordwrapToolStripMenuItem
-        '
-        resources.ApplyResources(Me.WordwrapToolStripMenuItem, "WordwrapToolStripMenuItem")
-        Me.WordwrapToolStripMenuItem.Checked = True
-        Me.WordwrapToolStripMenuItem.CheckOnClick = True
-        Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
-        Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
         '
         'SplitContainer1
         '
@@ -226,12 +107,10 @@ Partial Class HashTaskWindow
         '
         'SplitContainer1.Panel1
         '
-        resources.ApplyResources(Me.SplitContainer1.Panel1, "SplitContainer1.Panel1")
         Me.SplitContainer1.Panel1.Controls.Add(Me.Chart1)
         '
         'SplitContainer1.Panel2
         '
-        resources.ApplyResources(Me.SplitContainer1.Panel2, "SplitContainer1.Panel2")
         Me.SplitContainer1.Panel2.Controls.Add(Me.TextBox1)
         '
         'Chart1
@@ -349,6 +228,125 @@ Partial Class HashTaskWindow
         Me.Chart1.Titles.Add(Title2)
         Me.Chart1.Titles.Add(Title3)
         '
+        'TextBox1
+        '
+        resources.ApplyResources(Me.TextBox1, "TextBox1")
+        Me.TextBox1.Name = "TextBox1"
+        '
+        'ProgressBar1
+        '
+        resources.ApplyResources(Me.ProgressBar1, "ProgressBar1")
+        Me.ProgressBar1.Name = "ProgressBar1"
+        '
+        'Button1
+        '
+        resources.ApplyResources(Me.Button1, "Button1")
+        Me.Button1.Name = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'Button2
+        '
+        resources.ApplyResources(Me.Button2, "Button2")
+        Me.Button2.Name = "Button2"
+        Me.Button2.UseVisualStyleBackColor = True
+        '
+        'CheckBox1
+        '
+        resources.ApplyResources(Me.CheckBox1, "CheckBox1")
+        Me.CheckBox1.Name = "CheckBox1"
+        Me.CheckBox1.UseVisualStyleBackColor = True
+        '
+        'Button3
+        '
+        resources.ApplyResources(Me.Button3, "Button3")
+        Me.Button3.Name = "Button3"
+        Me.Button3.UseVisualStyleBackColor = True
+        '
+        'SaveFileDialog1
+        '
+        resources.ApplyResources(Me.SaveFileDialog1, "SaveFileDialog1")
+        '
+        'ProgressBar2
+        '
+        resources.ApplyResources(Me.ProgressBar2, "ProgressBar2")
+        Me.ProgressBar2.Name = "ProgressBar2"
+        '
+        'Timer1
+        '
+        Me.Timer1.Enabled = True
+        Me.Timer1.Interval = 1000
+        '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SToolStripMenuItem, Me.MinToolStripMenuItem, Me.MinToolStripMenuItem1, Me.MinToolStripMenuItem2, Me.HToolStripMenuItem, Me.HToolStripMenuItem1, Me.HToolStripMenuItem2, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogrithmToolStripMenuItem, Me.ToolStripSeparator2, Me.WordwrapToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
+        '
+        'SToolStripMenuItem
+        '
+        Me.SToolStripMenuItem.Name = "SToolStripMenuItem"
+        resources.ApplyResources(Me.SToolStripMenuItem, "SToolStripMenuItem")
+        '
+        'MinToolStripMenuItem
+        '
+        Me.MinToolStripMenuItem.Name = "MinToolStripMenuItem"
+        resources.ApplyResources(Me.MinToolStripMenuItem, "MinToolStripMenuItem")
+        '
+        'MinToolStripMenuItem1
+        '
+        Me.MinToolStripMenuItem1.Name = "MinToolStripMenuItem1"
+        resources.ApplyResources(Me.MinToolStripMenuItem1, "MinToolStripMenuItem1")
+        '
+        'MinToolStripMenuItem2
+        '
+        Me.MinToolStripMenuItem2.Name = "MinToolStripMenuItem2"
+        resources.ApplyResources(Me.MinToolStripMenuItem2, "MinToolStripMenuItem2")
+        '
+        'HToolStripMenuItem
+        '
+        Me.HToolStripMenuItem.Name = "HToolStripMenuItem"
+        resources.ApplyResources(Me.HToolStripMenuItem, "HToolStripMenuItem")
+        '
+        'HToolStripMenuItem1
+        '
+        Me.HToolStripMenuItem1.Name = "HToolStripMenuItem1"
+        resources.ApplyResources(Me.HToolStripMenuItem1, "HToolStripMenuItem1")
+        '
+        'HToolStripMenuItem2
+        '
+        Me.HToolStripMenuItem2.Name = "HToolStripMenuItem2"
+        resources.ApplyResources(Me.HToolStripMenuItem2, "HToolStripMenuItem2")
+        '
+        'ToolStripSeparator1
+        '
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
+        '
+        'LinearToolStripMenuItem
+        '
+        Me.LinearToolStripMenuItem.CheckOnClick = True
+        Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
+        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
+        '
+        'LogrithmToolStripMenuItem
+        '
+        Me.LogrithmToolStripMenuItem.CheckOnClick = True
+        Me.LogrithmToolStripMenuItem.Name = "LogrithmToolStripMenuItem"
+        resources.ApplyResources(Me.LogrithmToolStripMenuItem, "LogrithmToolStripMenuItem")
+        '
+        'ToolStripSeparator2
+        '
+        Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
+        '
+        'WordwrapToolStripMenuItem
+        '
+        Me.WordwrapToolStripMenuItem.Checked = True
+        Me.WordwrapToolStripMenuItem.CheckOnClick = True
+        Me.WordwrapToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
+        Me.WordwrapToolStripMenuItem.Name = "WordwrapToolStripMenuItem"
+        resources.ApplyResources(Me.WordwrapToolStripMenuItem, "WordwrapToolStripMenuItem")
+        '
         'CheckBox2
         '
         resources.ApplyResources(Me.CheckBox2, "CheckBox2")
@@ -396,14 +394,15 @@ Partial Class HashTaskWindow
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.ProgressBar1)
+        Me.DoubleBuffered = True
         Me.Name = "HashTaskWindow"
-        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         Me.SplitContainer1.Panel2.PerformLayout()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
         CType(Me.Chart1, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStrip1.ResumeLayout(False)
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
         Me.PerformLayout()
