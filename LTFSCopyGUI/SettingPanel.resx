@@ -118,15 +118,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="PropertyGrid1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
+  <data name="PropertyGrid1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="PropertyGrid1.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
   <data name="PropertyGrid1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>477, 569</value>
+    <value>477, 528</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="PropertyGrid1.TabIndex" type="System.Int32, mscorlib">
@@ -142,7 +142,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;PropertyGrid1.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>2</value>
   </data>
   <metadata name="MenuStrip1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
@@ -190,7 +190,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;MenuStrip1.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
   <metadata name="OpenFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>138, 17</value>
@@ -204,6 +204,63 @@
   <data name="SaveFileDialog1.Filter" xml:space="preserve">
     <value>Config files|*.config|All files|*.*</value>
   </data>
+  <data name="Button1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom</value>
+  </data>
+  <data name="Button1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>160, 534</value>
+  </data>
+  <data name="Button1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="Button1.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="Button1.Text" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="&gt;&gt;Button1.Name" xml:space="preserve">
+    <value>Button1</value>
+  </data>
+  <data name="&gt;&gt;Button1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Button1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;Button1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="Button2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom</value>
+  </data>
+  <data name="Button2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="Button2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>241, 534</value>
+  </data>
+  <data name="Button2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="Button2.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="Button2.Text" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="&gt;&gt;Button2.Name" xml:space="preserve">
+    <value>Button2</value>
+  </data>
+  <data name="&gt;&gt;Button2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Button2.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;Button2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -212,6 +269,265 @@
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>477, 569</value>
+  </data>
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAMAEBAAAAEAIABoBAAANgAAACAgAAABACAAqBAAAJ4EAAAwMAAAAQAgAKglAABGFQAAKAAAABAA
+        AAAgAAAAAQAgAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awdra2v7a2tr+2traxxra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawFra2tDa2trAGtr
+        awBra2tya2tr/2tra/9ra2uLa2trAGtrawBra2tCa2trD2trawBra2sAa2trAGtraxRra2v2a2tr/2tr
+        a5Jra2uka2tr/2tra/9ra2v/a2tr/2tra69ra2uNa2tr/2tra/9ra2sea2trAGtrawBra2sta2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trQWtrawBra2sAa2trAGtr
+        a29ra2v/a2tr/2tra/9ra2uia2trRWtra0Fra2uWa2tr/2tra/9ra2v/a2triWtrawBra2sAa2trAGtr
+        awBra2uVa2tr/2tra/9ra2tUa2trAGtrawBra2sAa2trAGtrazlra2v/a2tr/2tra65ra2sAa2trAGtr
+        aypra2tva2tr/2tra/9ra2u3a2trAGtrawBra2sAa2trAGtrawBra2sAa2trlWtra/9ra2v/a2trfGtr
+        azBra2v/a2tr/2tra/9ra2v/a2trSGtrawBra2sAa2trAGtrawBra2sAa2trAGtray5ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra09ra2sAa2trAGtrawBra2sAa2trAGtrawBra2sza2tr/2tr
+        a/9ra2v/a2tr/2traxZra2tYa2tr/2tra/9ra2vGa2trAGtrawBra2sAa2trAGtrawBra2sAa2trp2tr
+        a/9ra2v/a2trZGtrax1ra2sAa2trAGtra4Zra2v/a2tr/2tra3Bra2sAa2trAGtrawBra2sAa2trVGtr
+        a/9ra2v/a2troWtrawBra2sAa2trAGtrawBra2t6a2tr/2tra/9ra2v/a2trwWtra2Bra2tba2trs2tr
+        a/9ra2v/a2tr/2tra5Nra2sAa2trAGtrawBra2sta2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trRWtrawBra2sAa2trD2tra+Fra2v/a2tre2tra45ra2v/a2tr/2tr
+        a/9ra2v/a2trmGtra3Zra2v/a2tr82traxZra2sAa2trAGtrawBra2sAa2trLWtrawBra2sAa2trZGtr
+        a/9ra2v/a2trfmtrawBra2sAa2trLWtrawVra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awVra2v5a2tr/Gtraxhra2sAa2trAGtrawBra2sAa2trAGtrawD8PwAAzDMAAIABAACAAQAAwAMAAMPD
+        AAAH4AAAB+AAAAfgAAAH4AAAw8MAAMADAACAAQAAgAEAAOwzAAD8PwAAKAAAACAAAABAAAAAAQAgAAAA
+        AAAAEAAAAAAAAAAAAAAAAAAAAAAAAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sra2tr22tra/Jra2vya2tr5Wtra0Rra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra4Nra2v/a2tr/2tra/9ra2v/a2trzWtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trlmtra/9ra2v/a2tr/2tra/9ra2vSa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trJmtra55ra2tba2trAGtrawBra2sAa2trAGtraxpra2v5a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2s8a2trAGtrawBra2sAa2trAGtrazxra2uea2trSmtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrayxra2v/a2tr/2tra/9ra2tra2trAGtray5ra2ufa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2uxa2trQWtrawBra2tHa2tr/2tra/9ra2v/a2trVmtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2soa2tr/2tra/9ra2v/a2tr/2tra/9ra2v3a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr92tra/9ra2v/a2tr/2tra/9ra2v/a2trSmtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra5Fra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2vKa2trAGtrawBra2sAa2trAGtrawBra2sAa2trIGtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra0Bra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trHGtra/Rra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr92tra6hra2uFa2trgmtra55ra2vla2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2tFa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trxmtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra25ra2sBa2trAGtrawBra2sAa2trAGtrawBra2tSa2tr62tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr+mtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        axBra2v/a2tr/2tra/9ra2v/a2tr/2tra/hra2sga2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trzmtra/9ra2v/a2tr/2tra/9ra2v/a2trNmtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trh2tra/9ra2v/a2tr/2tra/9ra2v/a2trH2trawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2tr9Wtra/9ra2v/a2tr/2tra/9ra2u9a2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtraxpra2v8a2tr/2tra/9ra2v/a2tr/2tra45ra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2tGa2tr/2tra/9ra2v/a2tr/2tra/9ra2s6a2trAGtr
+        awBra2sAa2trJWtra7Rra2vJa2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trDmtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2vpa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2vMa2trvGtraz1ra2vua2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra9Fra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra5Zra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trn2tr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trfmtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v8a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2uja2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2uAa2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2vUa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra+Jra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtra6Vra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr8Gtrawxra2t5a2trkGtr
+        a+xra2v/a2tr/2tra/9ra2v/a2tr/2trayBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2tr+2tra/9ra2v/a2tr/2tra/9ra2v9a2trmWtra31ra2sia2trAGtr
+        awBra2sAa2trAGtra/Bra2v/a2tr/2tra/9ra2v/a2trtGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra3Bra2v/a2tr/2tra/9ra2v/a2tr/2traxVra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trb2tra/9ra2v/a2tr/2tra/9ra2v/a2trUWtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sZa2tr/2tra/9ra2v/a2tr/2tra/9ra2una2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2tr92tra/9ra2v/a2tr/2tra/9ra2v/a2trVGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trLGtra/Zra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        ayNra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2vFa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2trqmtrazFra2sAa2trAGtrawBra2sAa2trIGtra4hra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v6a2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trP2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra99ra2uoa2trpWtra89ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2tqa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrazhra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2tca2trAGtrawBra2sAa2trAGtrawBra2sAa2trjmtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra8hra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sUa2tr8mtra/9ra2v/a2tr/2tra/9ra2vHa2tr+2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trx2tra/9ra2v/a2tr/2tra/9ra2v/a2trLmtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sOa2tr72tra/9ra2v/a2trQWtrawBra2sJa2trdGtra+Zra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v8a2trhmtraxdra2sAa2trIGtra/9ra2v/a2tr/2tray1ra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sFa2trd2trazNra2sAa2trAGtrawBra2sAa2trAGtr
+        a+tra2v/a2tr/2tra/9ra2v/a2tr/GtraxRra2sAa2trAGtrawBra2sAa2trFmtra3dra2sha2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trjWtra/9ra2v/a2tr/2tra/9ra2vOa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2t9a2tr/2tra/9ra2v/a2tr/2tra8Rra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtraxZra2vGa2tr82tra/Jra2vWa2trK2trawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawD/+B////gf///4H//48A8f8EACD+AA
+        AAfgAAAH4AAAB/AAAA/4A+Af8A/4D/Af/A/gP/wHAD/+AAB//gAAf/4AAH/+AAB//gAAP/4A8D/8B/Af
+        +A/4D/AP+APAH/AAAA/gAAAH4AAAB+AAAAfwQAIP+PgPH//4H///+B////gf/ygAAAAwAAAAYAAAAAEA
+        IAAAAAAAACQAAAAAAAAAAAAAAAAAAAAAAABra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtraw5ra2vHa2tr8Gtr
+        a/Jra2vya2tr8mtra9pra2s7a2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        a6tra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v2a2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtra8hra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra81ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sCa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2trTWtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawdra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        a4Rra2v5a2tr7Wtra1tra2sAa2trAGtrawBra2sAa2trAGtrawBra2sCa2trw2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr72trayFra2sAa2trAGtrawBra2sAa2trAGtrawBra2soa2tr1Wtr
+        a/9ra2uxa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trnGtra/9ra2v/a2tr/2tra/9ra2t1a2trAGtrawBra2sAa2trKWtra5Jra2v4a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2uua2trQWtrawBra2sAa2trAGtr
+        az5ra2v/a2tr/2tra/9ra2v/a2tr12trawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2uca2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trsWtra3Nra2u7a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a9Vra2t7a2trk2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra9dra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra3Bra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2u5a2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra+Nra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2trAmtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra59ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2vra2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awJra2vka2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2sla2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sFa2tr6mtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr4mtra8lra2vFa2tr2Gtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2trazlra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trRmtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr22tra3Nra2sha2trAGtrawBra2sAa2trAGtraw5ra2tWa2truWtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trkWtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trLGtra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2tla2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrazRra2vVa2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trcGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trlWtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr5Gtraxlra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2troGtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr22trawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2vwa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra6Fra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2trazhra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2tna2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2sea2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2via2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra7hra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2voa2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a45ra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2ska2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2sUa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawNra2sDa2trQGtra8hra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2trawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trwWtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2vxa2trWGtrawxra2sCa2trAGtrawBra2sOa2trxGtra/1ra2v7a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trsWtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trT2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v8a2tr3Wtrazxra2vLa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trVWtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trBWtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/Nra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trHmtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtra9pra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/pra2v0a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trCWtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra8Vra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/Nra2v2a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2trDWtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra8hra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/Rra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trLGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra+dra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2uea2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trb2trawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trGWtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra9Nra2sAa2trg2tr
+        a8Rra2vDa2tr+2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr1GtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trcGtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra81ra2vDa2trn2tr
+        aw1ra2sAa2trAGtrawBra2sAa2trBmtra4lra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        ax1ra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2tr5mtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2vAa2trG2tr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2vNa2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra8dra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2tga2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2tHa2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2tja2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtraw1ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra5lra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2tr9Gtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trQmtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAmtra+dra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2traxxra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trdWtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a2Zra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sra2tr6mtr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trvGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trIGtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2u6a2trMmtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trDmtr
+        a4dra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trZWtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trbGtra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra8lra2t2a2trMGtraw5ra2sKa2trIGtr
+        a1pra2uta2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trsmtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2s0a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra3Nra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        ayJra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2tVa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtra8Jra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra9Zra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trAWtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra0Rra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2uFa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2tfa2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trb2trazNra2t7a2tr6Gtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr+mtra5Zra2s7a2trUmtra+9ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra51ra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trX2tra/9ra2v/a2tr/2tra/9ra2s4a2trAGtrawBra2sAa2trAGtra1Bra2u+a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra99ra2tta2trB2trawBra2sAa2trAGtr
+        awlra2vga2tr/2tra/9ra2v/a2trnGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra0Nra2u/a2trsGtrayFra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trjWtra/9ra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trzWtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trl2tra8Vra2tva2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtra/pra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2v/a2trK2tr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra8Nra2v/a2tr/2tra/9ra2v/a2tr/2tr
+        a/9ra2v/a2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtra85ra2v/a2tr/2tr
+        a/9ra2v/a2tr/2tra/9ra2v/a2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        a4hra2v/a2tr/2tra/9ra2v/a2tr/2tra/9ra2vUa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2uaa2tr7Wtra/Jra2vya2tr82tra7tra2sPa2trAGtrawBra2sAa2trAGtr
+        awBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtrawBra2sAa2trAGtr
+        awD///AP//8AAP//8A///wAA///wD///AAD///AP//8AAP+/8Af9/wAA/w/AA/D/AAD+BwAA4H8AAPwA
+        AAAAPwAA+AAAAAAfAAD4AAAAAA8AAPgAAAAAHwAA+AAAAAAfAAD8AAAAAD8AAP4AA8AAfwAA/gAf+AB/
+        AAD+AD/+AH8AAP4A//8APwAA/AD//4A/AAD8Af//gB8AAMAD///AAwAAAAP//8AAAAAAA///wAAAAAAD
+        ///gAAAAAAP//+AAAAAAA///4AAAAAAD///gAAAAAAP//8AAAACAA///wAAAAPAB///ADwAA/AH//4A/
+        AAD8AP//AD8AAP4Af/4APwAA/gA//AB/AAD+AA/wAH8AAP4AAAAAfwAA/AAAAAA/AAD4AAAAAB8AAPgA
+        AAAAHwAA+AAAAAAPAAD4AAAAAB8AAPwAAAAAPwAA/geAAOB/AAD/D+AH+P8AAP//8Af//wAA///wD///
+        AAD///AP//8AAP//8A///wAA///4D///AAA=
+</value>
+  </data>
+  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Settings</value>

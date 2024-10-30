@@ -327,7 +327,10 @@ Public Class TapeUtils
                                            timeoutValue As UInt32,
                                            senseBuffer As IntPtr) As Boolean
         SyncLock SCSIOperationLock
-            Return _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+            RaiseEvent IOCtlStart()
+            Dim result As Boolean = _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+            RaiseEvent IOCtlFinished()
+            Return result
         End SyncLock
     End Function
     <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>

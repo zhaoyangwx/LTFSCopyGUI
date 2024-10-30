@@ -30,6 +30,8 @@ Partial Class SettingPanel
         Me.保存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
+        Me.Button1 = New System.Windows.Forms.Button()
+        Me.Button2 = New System.Windows.Forms.Button()
         Me.MenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -70,10 +72,24 @@ Partial Class SettingPanel
         Me.SaveFileDialog1.FileName = "Application.config"
         resources.ApplyResources(Me.SaveFileDialog1, "SaveFileDialog1")
         '
+        'Button1
+        '
+        resources.ApplyResources(Me.Button1, "Button1")
+        Me.Button1.Name = "Button1"
+        Me.Button1.UseVisualStyleBackColor = True
+        '
+        'Button2
+        '
+        resources.ApplyResources(Me.Button2, "Button2")
+        Me.Button2.Name = "Button2"
+        Me.Button2.UseVisualStyleBackColor = True
+        '
         'SettingPanel
         '
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.Controls.Add(Me.Button2)
+        Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.PropertyGrid1)
         Me.Controls.Add(Me.MenuStrip1)
         Me.DoubleBuffered = True
@@ -93,4 +109,6 @@ Partial Class SettingPanel
     Friend WithEvents 保存ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
+    Friend WithEvents Button1 As Button
+    Friend WithEvents Button2 As Button
 End Class

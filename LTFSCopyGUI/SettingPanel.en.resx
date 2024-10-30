@@ -118,6 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>39, 21</value>
+  </data>
+  <data name="文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>File</value>
+  </data>
   <data name="打开ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>108, 22</value>
   </data>
@@ -130,10 +136,10 @@
   <data name="保存ToolStripMenuItem.Text" xml:space="preserve">
     <value>Save</value>
   </data>
-  <data name="文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>39, 21</value>
+  <data name="Button1.Text" xml:space="preserve">
+    <value>OK</value>
   </data>
-  <data name="文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>File</value>
+  <data name="Button2.Text" xml:space="preserve">
+    <value>Cancel</value>
   </data>
 </root>
