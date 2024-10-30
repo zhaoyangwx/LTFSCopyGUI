@@ -3332,18 +3332,18 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                 If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
-                                Invoke(Sub()
-                                           If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
-                                               p = New TapeUtils.PositionData(driveHandle)
-                                               RefreshCapacity()
-                                               Dim p2 As New TapeUtils.PositionData(driveHandle)
-                                               If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                                If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
+                                    p = New TapeUtils.PositionData(driveHandle)
+                                    RefreshCapacity()
+                                    Dim p2 As New TapeUtils.PositionData(driveHandle)
+                                    If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                                        Invoke(Sub()
                                                    If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
                                                        StopFlag = True
                                                    End If
-                                               End If
-                                           End If
-                                       End Sub)
+                                               End Sub)
+                                    End If
+                                End If
                             Catch ex As Exception
                                 MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
@@ -3403,10 +3403,10 @@ Public Class LTFSWriter
                 If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
                     Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}")
                 End If
+                LockGUI(False)
+                RefreshDisplay()
+                RefreshCapacity()
                 Invoke(Sub()
-                           LockGUI(False)
-                           RefreshDisplay()
-                           RefreshCapacity()
                            If Not StopFlag AndAlso WA0ToolStripMenuItem.Checked AndAlso MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WFUp, My.Resources.ResText_OpSucc, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                                更新数据区索引ToolStripMenuItem_Click(sender, e)
                            End If
@@ -3471,10 +3471,8 @@ Public Class LTFSWriter
                             Exit While
                         End SyncLock
                     End While
-                    Me.Invoke(Sub()
-                                  RefreshDisplay()
-                                  RefreshCapacity()
-                              End Sub)
+                    RefreshDisplay()
+                    RefreshCapacity()
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_RFailed)
                     SetStatusLight(LWStatus.Err)
@@ -3537,9 +3535,9 @@ Public Class LTFSWriter
                     End While
                     Me.Invoke(Sub()
                                   PrintMsg($"gen{genbefore}->{schema.generationnumber}: p{prevpart} block{prevblk}->p{schema.location.partition} block{schema.location.startblock}")
-                                  RefreshDisplay()
-                                  RefreshCapacity()
                               End Sub)
+                    RefreshDisplay()
+                    RefreshCapacity()
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_RFailed)
                     SetStatusLight(LWStatus.Err)
@@ -3548,8 +3546,8 @@ Public Class LTFSWriter
                               LockGUI(False)
                               Text = GetLocInfo()
                               PrintMsg(My.Resources.ResText_RBFin)
-                              SetStatusLight(LWStatus.Succ)
                           End Sub)
+                SetStatusLight(LWStatus.Succ)
             End Sub)
         LockGUI()
         th.Start()
@@ -3707,9 +3705,9 @@ Public Class LTFSWriter
                                   Text = GetLocInfo()
                                   ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
                                   ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
-                                  RefreshDisplay()
-                                  RefreshCapacity()
                               End Sub)
+                    RefreshDisplay()
+                    RefreshCapacity()
 
                     PrintMsg(My.Resources.ResText_IRSucc)
                     SetStatusLight(LWStatus.Succ)
@@ -3782,9 +3780,9 @@ Public Class LTFSWriter
                     Me.Invoke(Sub()
                                   MaxCapacity = 0
                                   ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
-                                  RefreshDisplay()
-                                  RefreshCapacity()
                               End Sub)
+                    RefreshDisplay()
+                    RefreshCapacity()
                     CurrentHeight = -1
                     PrintMsg(My.Resources.ResText_IRSucc)
                     SetStatusLight(LWStatus.Succ)
@@ -5827,9 +5825,9 @@ Public Class LTFSWriter
                     Me.Invoke(Sub()
                                   ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
                                   MaxCapacity = 0
-                                  RefreshDisplay()
-                                  RefreshCapacity()
                               End Sub)
+                    RefreshDisplay()
+                    RefreshCapacity()
                     CurrentHeight = -1
                     PrintMsg(My.Resources.ResText_IRSucc)
                     SetStatusLight(LWStatus.Idle)
@@ -6068,18 +6066,18 @@ Public Class LTFSWriter
                             fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
-                            Invoke(Sub()
-                                       If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
-                                           p = New TapeUtils.PositionData(driveHandle)
-                                           RefreshCapacity()
-                                           Dim p2 As New TapeUtils.PositionData(driveHandle)
-                                           If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                            If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
+                                p = New TapeUtils.PositionData(driveHandle)
+                                RefreshCapacity()
+                                Dim p2 As New TapeUtils.PositionData(driveHandle)
+                                If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
+                                    Invoke(Sub()
                                                If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
                                                    StopFlag = True
                                                End If
-                                           End If
-                                       End If
-                                   End Sub)
+                                           End Sub)
+                                End If
+                            End If
                         Catch ex As Exception
                             MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
                             PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
@@ -6122,10 +6120,10 @@ Public Class LTFSWriter
                 TapeUtils.Flush(driveHandle)
                 TapeUtils.ReleaseUnit(driveHandle)
                 TapeUtils.AllowMediaRemoval(driveHandle)
+                LockGUI(False)
+                RefreshDisplay()
+                RefreshCapacity()
                 Invoke(Sub()
-                           LockGUI(False)
-                           RefreshDisplay()
-                           RefreshCapacity()
                            If Not StopFlag AndAlso WA0ToolStripMenuItem.Checked AndAlso MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_WFUp, My.Resources.ResText_OpSucc, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                                更新数据区索引ToolStripMenuItem_Click(sender, e)
                            End If
