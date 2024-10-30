@@ -367,14 +367,37 @@ Public Class LTFSWriter
     Private Text3 As String = "", Text5 As String = ""
     Private TextT3 As String = "", TextT5 As String = ""
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
+        Static blinkcycle As Integer
+        Const blinkticks As Integer = 2
+        blinkcycle += 1
+        blinkcycle = blinkcycle Mod (2 * blinkticks)
         ToolStripStatusLabel3.Text = Text3
         ToolStripStatusLabel3.ToolTipText = TextT3
         ToolStripStatusLabel5.Text = Text5
         ToolStripStatusLabel5.ToolTipText = TextT5
         If IOCtlNum > 0 Then
-            ToolStripStatusLabelS6.ForeColor = Color.Brown
+            If blinkcycle < blinkticks Then
+                ToolStripStatusLabelS6.ForeColor = Color.Transparent
+            Else
+                ToolStripStatusLabelS6.ForeColor = Color.LimeGreen
+            End If
         Else
             ToolStripStatusLabelS6.ForeColor = Color.Green
+        End If
+        If blinkcycle < blinkticks Then
+            If ToolStripStatusLabelS3.ForeColor <> Color.Gray Then
+                ToolStripStatusLabelS3.ForeColor = Color.Transparent
+            End If
+            If ToolStripStatusLabelS4.ForeColor <> Color.Gray Then
+                ToolStripStatusLabelS4.ForeColor = Color.Transparent
+            End If
+        Else
+            If ToolStripStatusLabelS3.ForeColor <> Color.Gray Then
+                ToolStripStatusLabelS3.ForeColor = Color.Orange
+            End If
+            If ToolStripStatusLabelS4.ForeColor <> Color.Gray Then
+                ToolStripStatusLabelS4.ForeColor = Color.Orange
+            End If
         End If
         If schema IsNot Nothing AndAlso
             schema._directory IsNot Nothing AndAlso
@@ -1026,7 +1049,7 @@ Public Class LTFSWriter
         AddHandler TapeUtils.IOCtlStart, Sub() Threading.Interlocked.Increment(_IOCtlNum)
         AddHandler TapeUtils.IOCtlFinished, Sub() Threading.Interlocked.Decrement(_IOCtlNum)
         Task.Run(Sub()
-                     While True AndAlso Me IsNot Nothing
+                     While True AndAlso Me IsNot Nothing AndAlso Me.Visible
                          Try
                              Threading.Thread.Sleep(Timer1.Interval)
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
