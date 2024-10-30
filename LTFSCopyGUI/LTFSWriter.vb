@@ -1324,10 +1324,10 @@ Public Class LTFSWriter
     End Property
 
     Public Sub RefreshDisplay()
+        If schema Is Nothing Then Exit Sub
         Invoke(
             Sub()
                 If My.Settings.LTFSWriter_ShowFileCount Then schema._directory(0).DeepRefreshCount()
-                If schema Is Nothing Then Exit Sub
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
                     Dim old_select_path As String = ""
@@ -3931,7 +3931,7 @@ Public Class LTFSWriter
             msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
             While Not Confirm
                 If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
-                msDialog.ShowDialog()
+                If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
                 'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
                 'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
 
