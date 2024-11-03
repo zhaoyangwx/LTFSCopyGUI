@@ -233,7 +233,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAATABDAEwAQwBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAZgBDAGYAQwBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -1120,22 +1120,28 @@
     <value>检测到容量缺失自动停顿</value>
   </data>
   <data name="速度下限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="速度下限ToolStripMenuItem.Text" xml:space="preserve">
     <value>速度下限</value>
   </data>
   <data name="速度上限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="速度上限ToolStripMenuItem.Text" xml:space="preserve">
     <value>速度上限</value>
   </data>
   <data name="持续时间ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>124, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="持续时间ToolStripMenuItem.Text" xml:space="preserve">
     <value>持续时间</value>
+  </data>
+  <data name="错误率ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="错误率ToolStripMenuItem.Text" xml:space="preserve">
+    <value>错误率</value>
   </data>
   <data name="容量缺失检测参数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>220, 22</value>
@@ -1316,9 +1322,6 @@
   </data>
   <data name="校验源文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>校验源文件</value>
-  </data>
-  <data name="挂载盘符只读ToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
   </data>
   <data name="挂载盘符只读ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>192, 22</value>
@@ -1692,6 +1695,9 @@
   <metadata name="StatusStrip2.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>225, 56</value>
   </metadata>
+  <data name="ToolStripStatusLabel6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>0, 21</value>
+  </data>
   <data name="ToolStripStatusLabel3.Size" type="System.Drawing.Size, System.Drawing">
     <value>1234, 21</value>
   </data>
@@ -3712,6 +3718,12 @@
   <data name="&gt;&gt;持续时间ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;错误率ToolStripMenuItem.Name" xml:space="preserve">
+    <value>错误率ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;错误率ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;重装带前清洁次数3ToolStripMenuItem.Name" xml:space="preserve">
     <value>重装带前清洁次数3ToolStripMenuItem</value>
   </data>
@@ -3999,6 +4011,12 @@
   </data>
   <data name="&gt;&gt;Timer2.Type" xml:space="preserve">
     <value>System.Windows.Forms.Timer, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ToolStripStatusLabel6.Name" xml:space="preserve">
+    <value>ToolStripStatusLabel6</value>
+  </data>
+  <data name="&gt;&gt;ToolStripStatusLabel6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;ToolStripStatusLabel3.Name" xml:space="preserve">
     <value>ToolStripStatusLabel3</value>

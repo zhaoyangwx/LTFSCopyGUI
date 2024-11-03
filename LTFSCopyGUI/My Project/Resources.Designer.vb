@@ -152,6 +152,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 容量损失检测错误率指数下限 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 容量损失判定秒数 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoCleanTimeThreashould() As String
@@ -833,6 +842,15 @@ Namespace My.Resources
         Friend ReadOnly Property ResText_ErrP() As String
             Get
                 Return ResourceManager.GetString("ResText_ErrP", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 错误率指数： 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ErrRateLog() As String
+            Get
+                Return ResourceManager.GetString("ResText_ErrRateLog", resourceCulture)
             End Get
         End Property
         

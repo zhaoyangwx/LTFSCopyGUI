@@ -1,7 +1,10 @@
 ﻿Public Class TapeCopy
     Public TapeA As String, TapeB As String, Operation_Cancel_Flag As Boolean = False
     Public FlushFlag As Boolean = False
-    Public progval As Integer = 0
+    Public progval As Long = 0
+    Public progLastVal As Long = 0
+    Public lastIncVal As Long = 0
+    Public FlushCounter As Long = 0
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         FlushFlag = True
     End Sub
@@ -11,6 +14,25 @@
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-copy"})
             Me.Close()
             Exit Sub
+        End If
+        FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
+    End Sub
+
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+        Dim progsnap As Integer = progval
+        lastIncVal = Math.Max(0, progsnap - progLastVal)
+        progLastVal = progsnap
+
+        If CheckBox1.Checked Then
+            If lastIncVal <= My.Settings.LTFSWriter_AutoCleanUpperLim AndAlso lastIncVal >= My.Settings.LTFSWriter_AutoCleanDownLim Then
+                FlushCounter -= 1
+                If FlushCounter = 0 Then
+                    FlushFlag = True
+                    FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
+                End If
+            Else
+                FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
+            End If
         End If
     End Sub
 
@@ -22,29 +44,38 @@
             Button1.Text = "Stop"
             TapeA = TextBox1.Text
             TapeB = TextBox2.Text
+            Dim handleA, handleB As IntPtr
+            TapeUtils.OpenTapeDrive(TapeA, handleA)
+            TapeUtils.OpenTapeDrive(TapeB, handleB)
             Dim BlockCount As Integer = NumericUpDown1.Value
             Dim BlockLen As UInteger = NumericUpDown2.Value
             progval = 0
-            Dim running As Boolean  = true
+            progLastVal = 0
+            Dim running As Boolean = True
             Dim th As New Threading.Thread(
                 Sub()
                     Dim sense(63) As Byte
                     Me.Invoke(Sub() Button1.Enabled = True)
                     Dim readData As Byte()
                     Dim Add_Key As UInt16
-                    For i As Integer = 1 To BlockCount
+                    Dim i As Integer = 0
+                    Do
+                        i += 1
                         Try
-                            If FlushFlag Then TapeUtils.Flush(TapeB)
-                            readData = TapeUtils.ReadBlock(TapeA, sense, BlockLen)
+                            If FlushFlag Then
+                                TapeUtils.Flush(handleB)
+                                FlushFlag = False
+                            End If
+                            readData = TapeUtils.ReadBlock(handleA, sense, BlockLen)
                             Add_Key = CInt(sense(12)) << 8 Or sense(13)
                             Dim succ As Boolean = False
                             While Not succ
                                 Dim sense2 As Byte() = Nothing
                                 If readData.Length > 0 Then
-                                    sense2 = TapeUtils.Write(TapeB, readData)
+                                    sense2 = TapeUtils.Write(handleB, readData)
                                     progval = i
                                 ElseIf Add_Key <> 0 AndAlso Not ((Add_Key > 1 And Add_Key <> 4)) Then
-                                    sense2 = TapeUtils.WriteFileMark(TapeB)
+                                    sense2 = TapeUtils.WriteFileMark(handleB)
                                     progval = i
                                 Else
                                     succ = True
@@ -52,7 +83,7 @@
                                 If sense2 IsNot Nothing AndAlso sense2.Length > 2 AndAlso (sense2(2) And &HF) <> 0 Then
                                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"sense err {TapeUtils.Byte2Hex(sense2, True)}", "Warning", MessageBoxButtons.AbortRetryIgnore)
                                         Case DialogResult.Abort
-                                            Exit For
+                                            Exit Do
                                         Case DialogResult.Retry
                                             succ = False
                                         Case DialogResult.Ignore
@@ -68,28 +99,32 @@
                                 running = False
                                 Threading.Thread.Sleep(200)
                                 PrintMsg($"EOD detected. {i} blocks transferred.")
-                                Exit For
+                                Exit Do
                             ElseIf Operation_Cancel_Flag Then
                                 running = False
                                 Threading.Thread.Sleep(200)
                                 Operation_Cancel_Flag = False
                                 PrintMsg($"Operation cancelled. {i} blocks transferred.")
-                                Exit For
+                                Exit Do
                             End If
                         Catch ex As Exception
                             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                         End Try
-                    Next
+                    Loop While i < BlockCount OrElse BlockCount <= 0
                     TapeUtils.Flush(TapeB)
+                    TapeUtils.CloseTapeDrive(handleA)
+                    TapeUtils.CloseTapeDrive(handleB)
                     running = False
                     Invoke(Sub() Button1.Text = "Start")
                 End Sub)
+            Dim maxStr As String = ""
+            If BlockCount > 0 Then maxStr = BlockCount.ToString Else maxStr = "unlimited"
             Dim thprog As New Threading.Thread(
                 Sub()
                     While running
                         Dim prog As Integer = Math.Min(10000, Math.Max(0, progval * 10000 / Math.Max(1, BlockCount)))
                         Invoke(Sub() ProgressBar1.Value = prog)
-                        PrintMsg($"{progval}/{BlockCount}")
+                        PrintMsg($"{progval}/{maxStr} (+ {(lastIncVal * (BlockLen / 1048576)).ToString("F2")}MiB/s)")
                         Threading.Thread.Sleep(100)
                     End While
                 End Sub)

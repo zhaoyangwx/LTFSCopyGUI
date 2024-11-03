@@ -202,7 +202,7 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property SpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
     <Category("LTFSWriter")>
-    Public Property NativeSpeedHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
+    Public Property ErrRateLog As List(Of Double) = New Double(PMaxNum) {}.ToList()
     <Category("LTFSWriter")>
     Public Property FileRateHistory As List(Of Double) = New Double(PMaxNum) {}.ToList()
 
@@ -292,6 +292,7 @@ Public Class LTFSWriter
         速度下限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMin}{My.Settings.LTFSWriter_AutoCleanDownLim} MiB/s"
         速度上限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMax}{My.Settings.LTFSWriter_AutoCleanUpperLim} MiB/s"
         持续时间ToolStripMenuItem.Text = $"{My.Resources.ResText_STime}{My.Settings.LTFSWriter_AutoCleanTimeThreashould}s"
+        错误率ToolStripMenuItem.Text = $"{My.Resources.ResText_ErrRateLog}{My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould}"
         去重SHA1ToolStripMenuItem.Checked = My.Settings.LTFSWriter_DeDupe
         右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
         Select Case My.Settings.LTFSWriter_PowerPolicyOnWriteBegin
@@ -594,51 +595,81 @@ Public Class LTFSWriter
             Return TapeUtils.PageData.GetAllPagesFromDrive(driveHandle)
         End Get
     End Property
+    Public LastNoCCPs(31) As Integer
+    Public LastC1Err(31) As Integer
+    Public Property ErrLogRateHistory As Double
+    Public Function ReadChanLRInfo() As Double
+        Dim result As Double = Double.NegativeInfinity
+        Dim WERLHeader As Byte()
+        Dim WERLPage As Byte()
+        If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
+            WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+            If WERLHeader.Length <> 4 Then
+                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
+                Return 0
+            End If
+            Dim WERLPageLen As Integer = WERLHeader(2)
+            WERLPageLen <<= 8
+            WERLPageLen = WERLPageLen Or WERLHeader(3)
+            If WERLPageLen = 0 Then
+                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                PrintMsg("Page is empty. Skip Errrate Check", LogOnly:=True)
+                Return 0
+            End If
+            WERLPageLen += 4
+            WERLPage = TapeUtils.SCSIReadParam(handle:=driveHandle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+            Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+        Else
+            PrintMsg("Device is busy. Skip Errrate Check", LogOnly:=True)
+            Return 0
+        End If
+        Dim debuginfo As New StringBuilder
+        Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+        Try
+            For ch As Integer = 4 To WERLData.Length - 5 Step 5
+                Dim chan As Integer = (ch - 4) \ 5
+                Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
+                'Dim C1cwerr As Integer = Integer.Parse(WERLData(ch + 1), Globalization.NumberStyles.HexNumber)
+                'Dim Headerrr As Integer = Integer.Parse(WERLData(ch + 2), Globalization.NumberStyles.HexNumber)
+                'Dim WrPasserr As Integer = Integer.Parse(WERLData(ch + 3), Globalization.NumberStyles.HexNumber)
+                Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
+                debuginfo.Append($"CH{chan} CCP={NoCCPs} C1={C1err}")
+                If NoCCPs - LastNoCCPs(chan) > 0 Then
+                    Dim errRateLogValue As Double = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
+                    If errRateLogValue < 0 Then
+                        result = Math.Max(result, errRateLogValue)
+                    End If
+                    debuginfo.Append($" LR={errRateLogValue}{vbTab}")
+                End If
+                LastC1Err(chan) = C1err
+                LastNoCCPs(chan) = NoCCPs
+            Next
+        Catch
+        End Try
+        If result < -10 Then result = 0
+        If result < 0 Then ErrLogRateHistory = result
+        debuginfo.Append($" Result={result}")
+        PrintMsg(debuginfo.ToString(), LogOnly:=True)
+        Return result
+    End Function
 
 
     Public d_last As Long = 0
     Public t_last As Long = 0
-    Public rwh_last As Long = 0
-    Public rwt_last As Long = 0
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Try
             Dim i As Integer
             If False Then
-                Dim logdata As Byte()
-                Dim wcr, rcr, wh, wt, rh, rt As Long
-                logdata = TapeUtils.LogSense(driveHandle, &H1B, PageControl:=1)
-                DataCompressionLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
-                Dim rcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(0)
-                Dim wcrP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(1)
-                Dim rhP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(3)
-                Dim rtP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(5)
-                Dim whP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(7)
-                Dim wtP As TapeUtils.PageData.DataItem.DynamicParamPage = DataCompressionLogPage.TryGetPage(9)
-                If rcrP IsNot Nothing Then rcr = rcrP.GetLong()
-                If wcrP IsNot Nothing Then wcr = wcrP.GetLong()
-                If rhP IsNot Nothing Then rh = rhP.GetLong()
-                If rtP IsNot Nothing Then rt = rtP.GetLong()
-                If whP IsNot Nothing Then wh = whP.GetLong()
-                If wtP IsNot Nothing Then wt = wtP.GetLong()
-                Dim rwhval As Long = rh + wh
-                If rwhval = 0 Then rwh_last = 0
-                If rwhval >= rwh_last Then
-                    rwhdelta = rwhval - rwh_last
-                End If
-                rwh_last = rwhval
-                Dim rwtval As Long = rt + wt
-                If rwtval = 0 Then rwt_last = 0
-                If rwtval >= rwt_last Then
-                    rwtdelta = rwtval - rwt_last
-                End If
-                rwt_last = rwtval
-                NativeSpeedHistory.Add(rwtdelta)
-                While NativeSpeedHistory.Count > PMaxNum
-                    NativeSpeedHistory.RemoveAt(0)
+                Dim lr As Double = Math.Max(-11, ReadChanLRInfo())
+
+                ErrRateLog.Add(lr)
+                While ErrRateLog.Count > PMaxNum
+                    ErrRateLog.RemoveAt(0)
                 End While
                 i = 0
                 Chart1.Series(2).Points.Clear()
-                For Each val As Double In NativeSpeedHistory.GetRange(NativeSpeedHistory.Count - SMaxNum, SMaxNum)
+                For Each val As Double In ErrRateLog.GetRange(ErrRateLog.Count - SMaxNum, SMaxNum)
                     Chart1.Series(2).Points.AddXY(i, val)
                     i += 1
                 Next
@@ -683,7 +714,6 @@ Public Class LTFSWriter
                 End If
                 Flush = FlushNow
                 If FlushNow Then
-                    CapReduceCount += 1
                     If CleanCycle > 0 AndAlso (CapReduceCount Mod CleanCycle = 0) Then
                         Flush = False
                         Clean = True
@@ -720,10 +750,21 @@ Public Class LTFSWriter
             ToolStripStatusLabel4.Text &= $"{ IOManager.FormatSize(Math.Max(0, USize - CurrentBytesProcessed))}/{IOManager.FormatSize(USize)}"
             ToolStripStatusLabel4.Text &= $"  {My.Resources.ResText_S3}{IOManager.FormatSize(TotalBytesUnindexed)}"
             ToolStripStatusLabel4.ToolTipText = ToolStripStatusLabel4.Text
+            ToolStripStatusLabel6.Text = ""
             If USize > 0 AndAlso CurrentBytesProcessed >= 0 AndAlso CurrentBytesProcessed <= USize Then
                 ToolStripProgressBar1.Value = CurrentBytesProcessed / USize * 10000
                 ToolStripProgressBar1.ToolTipText = $"{My.Resources.ResText_S4}{IOManager.FormatSize(CurrentBytesProcessed)}/{IOManager.FormatSize(USize)}"
+                Dim CurrentTime As Date = Now
+                Dim totalTimeCost As Long = (CurrentTime - StartTime).Ticks
+                If totalTimeCost > 0 AndAlso CurrentBytesProcessed > 0 Then
+                    Dim eteTotalCost As Long = totalTimeCost / CurrentBytesProcessed * USize
+                    Dim RemainTicks As Long = eteTotalCost - totalTimeCost
+                    Dim remainTime As New TimeSpan(RemainTicks)
+                    ToolStripStatusLabel6.Text = $"{vbCrLf}{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
+                    ToolStripProgressBar1.ToolTipText &= ToolStripStatusLabel6.Text
+                End If
             End If
+            ToolStripStatusLabel6.ToolTipText = ToolStripStatusLabel6.Text
             Text = GetLocInfo()
             Static GCCollectCounter As Integer
             GCCollectCounter += 1
@@ -1238,7 +1279,7 @@ Public Class LTFSWriter
 
             'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
             Dim loss As Long
-
+            Dim errRate As Double = ReadChanLRInfo()
             If My.Settings.LTFSWriter_ShowLoss Then
                 Dim CMInfo As TapeUtils.CMParser
                 Try
@@ -1317,6 +1358,13 @@ Public Class LTFSWriter
             End If
             result(0) = max0 - cap0
             result(1) = max0
+            If errRate < 0 Then
+                Invoke(Sub()
+                           ToolStripStatusLabel2.Text &= $" Err:{errRate.ToString("f2")}"
+                           ToolStripStatusLabel2.ToolTipText &= $" Err:{errRate.ToString("f2")}"
+                       End Sub)
+            End If
+
             If My.Settings.LTFSWriter_ShowLoss Then
                 Invoke(Sub()
                            ToolStripStatusLabel2.Text &= $" Loss:{IOManager.FormatSize(loss)}"
@@ -2529,32 +2577,38 @@ Public Class LTFSWriter
         If ListView1.Tag IsNot Nothing Then
             Dim s As String = InputBox(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, "")
             If s <> "" Then
-                If (s.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
+                If (s.Replace("\", "").Replace("/", "").IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
                     MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
                     Exit Sub
                 End If
+                Dim dirList As String() = s.Split({"\", "/"}, StringSplitOptions.RemoveEmptyEntries)
                 Dim d As ltfsindex.directory = ListView1.Tag
-                SyncLock d.contents._directory
-                    For Each dold As ltfsindex.directory In d.contents._directory
-                        If dold IsNot d And dold.name = s Then
-                            MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNExist)
-                            Exit Sub
-                        End If
-                    Next
-                End SyncLock
+                For Each newdirName As String In dirList
 
-                Dim newdir As New ltfsindex.directory With {
-                    .name = s,
-                    .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
-                    .fileuid = schema.highestfileuid + 1,
-                    .backuptime = .creationtime,
-                    .accesstime = .creationtime,
-                    .changetime = .creationtime,
-                    .modifytime = .creationtime,
-                    .readonly = False
-                    }
-                schema.highestfileuid += 1
-                d.contents._directory.Add(newdir)
+                    SyncLock d.contents._directory
+                        For Each dold As ltfsindex.directory In d.contents._directory
+                            If dold IsNot d And dold.name = newdirName Then
+                                MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNExist)
+                                Exit Sub
+                            End If
+                        Next
+                    End SyncLock
+
+                    Dim newdir As New ltfsindex.directory With {
+                        .name = newdirName,
+                        .creationtime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z"),
+                        .fileuid = schema.highestfileuid + 1,
+                        .backuptime = .creationtime,
+                        .accesstime = .creationtime,
+                        .changetime = .creationtime,
+                        .modifytime = .creationtime,
+                        .readonly = False
+                        }
+                    schema.highestfileuid += 1
+                    d.contents._directory.Add(newdir)
+                    d = newdir
+                Next
+
                 RefreshDisplay()
             End If
         End If
@@ -2939,13 +2993,14 @@ Public Class LTFSWriter
         End If
         Return True
     End Function
+    Public StartTime As Date
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
                 Dim OnWriteFinishMessage As String = ""
                 Try
                     SetStatusLight(LWStatus.Busy)
-                    Dim StartTime As Date = Now
+                    StartTime = Now
                     PrintMsg("", True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_PrepW)
@@ -3331,7 +3386,10 @@ Public Class LTFSWriter
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
-                                                If CheckUnindexedDataSizeLimit(CheckOnly:=True) Then HashTask.Wait()
+                                                If CheckUnindexedDataSizeLimit(CheckOnly:=True) Then
+                                                    HashTask.Wait()
+                                                    SetStatusLight(LWStatus.Busy)
+                                                End If
                                             ElseIf sh IsNot Nothing Then
                                                 sh.StopFlag = True
                                             End If
@@ -3354,7 +3412,10 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
+                                If CheckUnindexedDataSizeLimit() Then
+                                    p = New TapeUtils.PositionData(driveHandle)
+                                    SetStatusLight(LWStatus.Busy)
+                                End If
                                 If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
                                     p = New TapeUtils.PositionData(driveHandle)
                                     RefreshCapacity()
@@ -4152,8 +4213,13 @@ Public Class LTFSWriter
             Dim Loc As TapeUtils.PositionData = GetPos
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
-            TapeUtils.Flush(driveHandle)
-            RefreshCapacity()
+            If ReadChanLRInfo() < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
+                PrintMsg("Error rate log OK, ignore", LogOnly:=True)
+            Else
+                Threading.Interlocked.Increment(CapReduceCount)
+                TapeUtils.Flush(driveHandle)
+                RefreshCapacity()
+            End If
         End If
     End Sub
     Public Sub CheckClean(Optional ByVal LockVolume As Boolean = False)
@@ -5661,7 +5727,7 @@ Public Class LTFSWriter
                                                                     While Not AllowOperation
                                                                         Threading.Thread.Sleep(100)
                                                                     End While
-                                                                    If chkAutoDelete.Checked OrElse MessageBox.Show($"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                                                                    If chkAutoDelete.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, $"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
                                                                         For Each s As String In DelList
                                                                             If IO.File.Exists(s) Then IO.File.Delete(s)
                                                                         Next
@@ -5879,7 +5945,7 @@ Public Class LTFSWriter
 
     Private Sub 加锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加锁ToolStripMenuItem.Click
         TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
-        MessageBox.Show($"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
+        MessageBox.Show(New Form With {.TopMost = True}, $"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
     End Sub
 
     Private Sub 新建压缩文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 新建压缩文件ToolStripMenuItem.Click
@@ -6262,7 +6328,15 @@ Public Class LTFSWriter
 
     Private Sub 解锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 解锁ToolStripMenuItem.Click
         TapeUtils.CloseTapeDrive(driveHandle)
-        MessageBox.Show($"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
+        MessageBox.Show(New Form With {.TopMost = True}, $"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
+    End Sub
+
+    Private Sub 错误率ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 错误率ToolStripMenuItem.Click
+        Dim s As String = InputBox(My.Resources.ResText_ErrRateLog, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould)
+        If s = "" Then Exit Sub
+        My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould = Val(s)
+        My.Settings.Save()
+        错误率ToolStripMenuItem.Text = $"{My.Resources.ResText_ErrRateLog}{My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould}s"
     End Sub
 
     Private Sub 容量刷新间隔30sToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 容量刷新间隔30sToolStripMenuItem.Click

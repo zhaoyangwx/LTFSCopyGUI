@@ -95,5 +95,8 @@
     <Setting Name="LTFSWriter_PowerPolicyOnWriteEnd" Description="写入结束后切换电源策略" Type="System.Guid" Scope="User">
       <Value Profile="(Default)">381b4222-f694-41f0-9685-ff5bb260df2e</Value>
     </Setting>
+    <Setting Name="LTFSWriter_AutoCleanErrRateLogThreashould" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">-3.7</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
