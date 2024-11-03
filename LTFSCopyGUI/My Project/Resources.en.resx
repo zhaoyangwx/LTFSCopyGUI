@@ -849,4 +849,10 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="ResText_Succ" xml:space="preserve">
     <value>Success</value>
   </data>
+  <data name="ResText_ErrRateLog" xml:space="preserve">
+    <value>Error rate log value: </value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould" xml:space="preserve">
+    <value>Auto clean error rate log value down limit</value>
+  </data>
 </root>

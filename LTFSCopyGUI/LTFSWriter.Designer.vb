@@ -185,6 +185,7 @@ Partial Class LTFSWriter
         Me.速度下限ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.速度上限ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.持续时间ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.错误率ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.重装带前清洁次数3ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.电源选项ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.无更改ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -236,6 +237,7 @@ Partial Class LTFSWriter
         Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
+        Me.ToolStripStatusLabel6 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ToolStripStatusLabel3 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ToolStripStatusLabelS1 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.ToolStripStatusLabelS2 = New System.Windows.Forms.ToolStripStatusLabel()
@@ -724,9 +726,10 @@ Partial Class LTFSWriter
         Series3.BorderWidth = 2
         Series3.ChartArea = "ChartArea1"
         Series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series3.Color = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(255, Byte), Integer), CType(CType(192, Byte), Integer))
+        Series3.Color = System.Drawing.Color.Red
         Series3.Name = "Series3"
         Series3.Points.Add(DataPoint33)
+        Series3.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
         Me.Chart1.Series.Add(Series1)
         Me.Chart1.Series.Add(Series2)
         Me.Chart1.Series.Add(Series3)
@@ -1022,7 +1025,7 @@ Partial Class LTFSWriter
         '
         '容量缺失检测参数ToolStripMenuItem
         '
-        Me.容量缺失检测参数ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.速度下限ToolStripMenuItem, Me.速度上限ToolStripMenuItem, Me.持续时间ToolStripMenuItem})
+        Me.容量缺失检测参数ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.速度下限ToolStripMenuItem, Me.速度上限ToolStripMenuItem, Me.持续时间ToolStripMenuItem, Me.错误率ToolStripMenuItem})
         Me.容量缺失检测参数ToolStripMenuItem.Name = "容量缺失检测参数ToolStripMenuItem"
         resources.ApplyResources(Me.容量缺失检测参数ToolStripMenuItem, "容量缺失检测参数ToolStripMenuItem")
         '
@@ -1040,6 +1043,11 @@ Partial Class LTFSWriter
         '
         Me.持续时间ToolStripMenuItem.Name = "持续时间ToolStripMenuItem"
         resources.ApplyResources(Me.持续时间ToolStripMenuItem, "持续时间ToolStripMenuItem")
+        '
+        '错误率ToolStripMenuItem
+        '
+        Me.错误率ToolStripMenuItem.Name = "错误率ToolStripMenuItem"
+        resources.ApplyResources(Me.错误率ToolStripMenuItem, "错误率ToolStripMenuItem")
         '
         '重装带前清洁次数3ToolStripMenuItem
         '
@@ -1176,8 +1184,8 @@ Partial Class LTFSWriter
         '
         '挂载盘符只读ToolStripMenuItem
         '
-        resources.ApplyResources(Me.挂载盘符只读ToolStripMenuItem, "挂载盘符只读ToolStripMenuItem")
         Me.挂载盘符只读ToolStripMenuItem.Name = "挂载盘符只读ToolStripMenuItem"
+        resources.ApplyResources(Me.挂载盘符只读ToolStripMenuItem, "挂载盘符只读ToolStripMenuItem")
         '
         '启动FTP服务只读ToolStripMenuItem
         '
@@ -1318,11 +1326,16 @@ Partial Class LTFSWriter
         '
         'StatusStrip2
         '
-        Me.StatusStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripStatusLabel3, Me.ToolStripStatusLabelS1, Me.ToolStripStatusLabelS2, Me.ToolStripStatusLabelS3, Me.ToolStripStatusLabelS4, Me.ToolStripStatusLabelS5, Me.ToolStripStatusLabelS6})
+        Me.StatusStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripStatusLabel6, Me.ToolStripStatusLabel3, Me.ToolStripStatusLabelS1, Me.ToolStripStatusLabelS2, Me.ToolStripStatusLabelS3, Me.ToolStripStatusLabelS4, Me.ToolStripStatusLabelS5, Me.ToolStripStatusLabelS6})
         resources.ApplyResources(Me.StatusStrip2, "StatusStrip2")
         Me.StatusStrip2.Name = "StatusStrip2"
         Me.StatusStrip2.ShowItemToolTips = True
         Me.StatusStrip2.SizingGrip = False
+        '
+        'ToolStripStatusLabel6
+        '
+        Me.ToolStripStatusLabel6.Name = "ToolStripStatusLabel6"
+        resources.ApplyResources(Me.ToolStripStatusLabel6, "ToolStripStatusLabel6")
         '
         'ToolStripStatusLabel3
         '
@@ -1606,4 +1619,6 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripStatusLabelS4 As ToolStripStatusLabel
     Friend WithEvents ToolStripStatusLabelS5 As ToolStripStatusLabel
     Friend WithEvents ToolStripStatusLabelS6 As ToolStripStatusLabel
+    Friend WithEvents 错误率ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ToolStripStatusLabel6 As ToolStripStatusLabel
 End Class

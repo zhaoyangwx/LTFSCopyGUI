@@ -662,42 +662,46 @@ Public Class LTFSConfigurator
         Me.Enabled = False
         Dim CMInfo As TapeUtils.CMParser = Nothing
         TextBoxDebugOutput.Text = ""
-        Try
-            CMInfo = New TapeUtils.CMParser(TapeDrive)
-        Catch ex As Exception
-            TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf)
-        End Try
-        Try
-            TextBoxDebugOutput.AppendText(CMInfo.GetReport())
-        Catch ex As Exception
-            TextBoxDebugOutput.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
-        End Try
-        Try
-            If CheckBoxParseCMData.Checked AndAlso CMInfo IsNot Nothing Then
-                TextBoxDebugOutput.AppendText(CMInfo.GetSerializedText())
-                Dim PG1 As New SettingPanel
-                PG1.SelectedObject = CMInfo
-                PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
-                PG1.Show()
-                TextBoxDebugOutput.AppendText(vbCrLf)
-            End If
-        Catch ex As Exception
-            TextBoxDebugOutput.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
-        End Try
-        TextBoxDebugOutput.Select(0, 0)
-        TextBoxDebugOutput.ScrollToCaret()
-        If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
-            Dim fn As String
-            Try
-                fn = CMInfo.ApplicationSpecificData.Barcode
-                If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
-                If fn Is Nothing Then fn = ""
-                IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
-            Catch ex As Exception
+        Task.Run(Sub()
+                     Try
+                         CMInfo = New TapeUtils.CMParser(TapeDrive)
+                     Catch ex As Exception
+                         Invoke(Sub() TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf))
+                     End Try
+                     Invoke(Sub()
+                                Try
+                                    TextBoxDebugOutput.AppendText(CMInfo.GetReport())
+                                Catch ex As Exception
+                                    TextBoxDebugOutput.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+                                End Try
+                                Try
+                                    If CheckBoxParseCMData.Checked AndAlso CMInfo IsNot Nothing Then
+                                        TextBoxDebugOutput.AppendText(CMInfo.GetSerializedText())
+                                        Dim PG1 As New SettingPanel
+                                        PG1.SelectedObject = CMInfo
+                                        PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
+                                        PG1.Show()
+                                        TextBoxDebugOutput.AppendText(vbCrLf)
+                                    End If
+                                Catch ex As Exception
+                                    TextBoxDebugOutput.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+                                End Try
+                                TextBoxDebugOutput.Select(0, 0)
+                                TextBoxDebugOutput.ScrollToCaret()
+                                If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+                                    Dim fn As String
+                                    Try
+                                        fn = CMInfo.ApplicationSpecificData.Barcode
+                                        If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
+                                        If fn Is Nothing Then fn = ""
+                                        IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
+                                    Catch ex As Exception
 
-            End Try
-        End If
-        Me.Enabled = True
+                                    End Try
+                                End If
+                                Me.Enabled = True
+                            End Sub)
+                 End Sub)
     End Sub
 
     Private Sub ButtonDebugDumpMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpMAM.Click
@@ -1546,38 +1550,45 @@ Public Class LTFSConfigurator
         End If
     End Sub
     Public TestEnabled As Boolean
+    Public blist As List(Of Byte())
     Private Sub ButtonTest_Click(sender As Object, e As EventArgs) Handles ButtonTest.Click
         If TestEnabled Then
             ButtonTest.Enabled = False
             TestEnabled = False
             Exit Sub
         End If
+        Dim progmax As Long
         If MessageBox.Show(New Form With {.TopMost = True}, "Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             TestEnabled = True
             Dim progval As Long = 0
+            Dim info As String = ""
             Dim running As Boolean = True
             Dim randomNum As Boolean = RadioButtonTest1.Checked
             Dim blkLen As Integer = NumericUpDownTestBlkSize.Value
             Dim blkNum As Long = NumericUpDownTestBlkNum.Value
+            progmax = blkNum * blkLen
             Dim sec As Integer = -1
             Dim SenseMsg As String = ""
             Dim th As New Threading.Thread(
             Sub()
                 Dim r As New Random()
                 Dim b(blkLen - 1) As Byte
-                Dim blist As New List(Of Byte())
-                For i As Integer = 0 To 999
-                    If randomNum Then
-                        r.NextBytes(b)
-                    End If
-                    blist.Add(b.Clone())
-                Next
+                If blist Is Nothing Then
+                    blist = New List(Of Byte())(1000)
+                    For i As Integer = 0 To 999
+                        If randomNum Then
+                            r.NextBytes(b)
+                        End If
+                        blist.Add(b.Clone())
+                    Next
+                End If
+
                 Invoke(Sub() TextBoxDebugOutput.AppendText($"Start{vbCrLf}"))
                 sec = 0
                 Dim handle As IntPtr
                 Dim bH(7) As Byte
                 SyncLock TapeUtils.SCSIOperationLock
-                    If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show("False")
+                    If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show(New Form With {.TopMost = True}, "False")
                     If blkLen = 0 Then
                         For i As Long = 0 To blkNum
                             If Not TestEnabled Then Exit For
@@ -1585,6 +1596,7 @@ Public Class LTFSConfigurator
                             progval = i * blkLen
                         Next
                     Else
+                        Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
                         For i As Long = 0 To blkNum
                             If Not TestEnabled Then Exit For
                             Dim sense As Byte() = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
@@ -1609,6 +1621,37 @@ Public Class LTFSConfigurator
                             Else
                                 SenseMsg = ""
                             End If
+                            If i Mod 200 = 0 Then
+                                Dim result As New StringBuilder
+                                Dim WERLHeader As Byte() = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                                If WERLHeader.Length <> 4 Then Exit Sub
+                                Dim WERLPageLen As Integer = WERLHeader(2)
+                                WERLPageLen <<= 8
+                                WERLPageLen = WERLPageLen Or WERLHeader(3)
+                                If WERLPageLen = 0 Then Exit Sub
+                                WERLPageLen += 4
+                                Dim WERLPage As Byte() = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+                                Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                info = ""
+                                Try
+                                    For ch As Integer = 4 To WERLData.Length - 5 Step 5
+                                        Dim chan As Integer = (ch - 4) \ 5
+                                        Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
+                                        'Dim C1cwerr As Integer = Integer.Parse(WERLData(ch + 1), Globalization.NumberStyles.HexNumber)
+                                        'Dim Headerrr As Integer = Integer.Parse(WERLData(ch + 2), Globalization.NumberStyles.HexNumber)
+                                        'Dim WrPasserr As Integer = Integer.Parse(WERLData(ch + 3), Globalization.NumberStyles.HexNumber)
+                                        Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
+
+                                        If NoCCPs - LastNoCCPs(chan) > 0 Then
+                                            result.Append(Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2").PadLeft(6).PadRight(7))
+                                            LastC1Err(chan) = C1err
+                                            LastNoCCPs(chan) = NoCCPs
+                                        End If
+                                    Next
+                                Catch
+                                End Try
+                                info = result.ToString()
+                            End If
                             progval = i * blkLen
                         Next
                     End If
@@ -1627,17 +1670,18 @@ Public Class LTFSConfigurator
             Dim thprog As New Threading.Thread(
             Sub()
                 Dim lastval As Long = 0
+                Dim len1 As Integer = progmax.ToString().Length
                 While running
                     Threading.Thread.Sleep(1000)
                     Dim prognow As Long = progval
                     Invoke(Sub()
-                               TextBoxDebugOutput.AppendText($"{sec}: {prognow} (+{IOManager.FormatSize(prognow - lastval)}) {SenseMsg}{vbCrLf}")
+                               TextBoxDebugOutput.AppendText($"{sec}: {prognow.ToString().PadLeft(len1)} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
                            End Sub)
                     If sec >= 0 Then sec += 1
                     lastval = prognow
                 End While
                 Invoke(Sub()
-                           TextBoxDebugOutput.AppendText($"{sec}: {progval} (+{IOManager.FormatSize(progval - lastval)}) {SenseMsg}{vbCrLf}")
+                           TextBoxDebugOutput.AppendText($"{sec}: {progval.ToString().PadLeft(len1)} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
                            TextBoxDebugOutput.AppendText($"End")
                        End Sub)
             End Sub)
@@ -1952,4 +1996,8 @@ Public Class LTFSConfigurator
             Return result
         End Get
     End Property
+
+    Private Sub RadioButtonTest1_CheckedChanged(sender As Object, e As EventArgs) Handles RadioButtonTest1.CheckedChanged
+        blist = Nothing
+    End Sub
 End Class

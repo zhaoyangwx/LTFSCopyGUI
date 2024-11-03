@@ -857,4 +857,10 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="ResText_Succ" xml:space="preserve">
     <value>操作成功完成</value>
   </data>
+  <data name="ResText_ErrRateLog" xml:space="preserve">
+    <value>错误率指数：</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould" xml:space="preserve">
+    <value>容量损失检测错误率指数下限</value>
+  </data>
 </root>
