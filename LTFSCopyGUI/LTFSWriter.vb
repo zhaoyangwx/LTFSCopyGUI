@@ -3226,6 +3226,13 @@ Public Class LTFSWriter
                                                          End Sub)
                                             End If
                                             If fr.fs IsNot Nothing Then fr.Close()
+                                            If Flush Then
+                                                If CheckFlush() Then
+                                                    If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
+                                                        Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                    End If
+                                                End If
+                                            End If
                                             fr.File.WrittenBytes += finfo.Length
                                             TotalBytesProcessed += finfo.Length
                                             CurrentBytesProcessed += finfo.Length
@@ -3358,9 +3365,10 @@ Public Class LTFSWriter
                                                             End If
                                                         End If
                                                         If Flush Then
-                                                            CheckFlush()
-                                                            If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
-                                                                Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                            If CheckFlush() Then
+                                                                If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
+                                                                    Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                                End If
                                                             End If
                                                         End If
                                                         If Clean Then CheckClean(True)
@@ -4207,7 +4215,7 @@ Public Class LTFSWriter
         SMaxNum = 3600 * 6
         Chart1.Titles(0).Text = H6ToolStripMenuItem.Text
     End Sub
-    Public Sub CheckFlush()
+    Public Function CheckFlush() As Boolean
         If Threading.Interlocked.Exchange(Flush, False) Then
             PrintMsg("Flush Triggered", LogOnly:=True)
             Dim Loc As TapeUtils.PositionData = GetPos
@@ -4215,13 +4223,17 @@ Public Class LTFSWriter
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             If ReadChanLRInfo() < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
+                Return False
             Else
                 Threading.Interlocked.Increment(CapReduceCount)
                 TapeUtils.Flush(driveHandle)
                 RefreshCapacity()
+                Return True
             End If
+        Else
+            Return False
         End If
-    End Sub
+    End Function
     Public Sub CheckClean(Optional ByVal LockVolume As Boolean = False)
         If Threading.Interlocked.Exchange(Clean, False) Then
             If (Now - Clean_last).TotalSeconds < 300 Then Exit Sub
