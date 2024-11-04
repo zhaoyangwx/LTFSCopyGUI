@@ -667,7 +667,7 @@ Public Class LTFSWriter
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.PageData), TapeUtils.PageData)))>
     Public ReadOnly Property CurrentLogPages As List(Of TapeUtils.PageData)
         Get
-            Return TapeUtils.PageData.GetAllPagesFromDrive(TapeDrive)
+            Return TapeUtils.PageData.GetAllPagesFromDrive(Handle)
         End Get
     End Property
     Public LastNoCCPs(31) As Integer
