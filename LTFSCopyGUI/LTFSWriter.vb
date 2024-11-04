@@ -965,7 +965,8 @@ Public Class LTFSWriter
             Return 1
         End Function
         Public Function BeginOpen(Optional BufferSize As Integer = 0, Optional ByVal BlockSize As UInteger = 524288) As Integer
-            While True
+            Dim retryCount As Integer = 0
+            While retryCount < 3
                 Try
                     SyncLock OperationLock
                         If fs IsNot Nothing Then Return 1
@@ -985,18 +986,13 @@ Public Class LTFSWriter
                     If BufferSize = 0 Then BufferSize = 524288
                     Exit While
                 Catch ex As Exception
-                    'Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                    '    Case DialogResult.Abort
-                    '        Return 3
-                    '    Case DialogResult.Retry
-                    '
-                    '    Case DialogResult.Ignore
-                    '        Return 5
-                    'End Select
+                    Threading.Thread.Sleep(100)
+                    Threading.Interlocked.Increment(retryCount)
                 End Try
             End While
             Task.Run(Sub()
-                         While True
+                         retryCount = 0
+                         While retryCount < 3
                              Try
                                  SyncLock OperationLock
                                      If fs IsNot Nothing Then Exit Sub
@@ -1010,14 +1006,8 @@ Public Class LTFSWriter
                                      Exit While
                                  End SyncLock
                              Catch ex As Exception
-                                 'Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                 '    Case DialogResult.Abort
-                                 '        Exit While
-                                 '    Case DialogResult.Retry
-                                 '
-                                 '    Case DialogResult.Ignore
-                                 '        Exit While
-                                 'End Select
+                                 Threading.Thread.Sleep(100)
+                                 Threading.Interlocked.Increment(retryCount)
                              End Try
                          End While
                      End Sub)
@@ -1195,9 +1185,10 @@ Public Class LTFSWriter
                                           End Sub)
                              End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
-                                 SyncLock TapeUtils.SCSIOperationLock
+                                 If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
                                      RefreshDriveLEDIndicator()
-                                 End SyncLock
+                                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                                 End If
                              End If
                          Catch ex As Exception
 
