@@ -519,6 +519,81 @@ Public Class LTFSWriter
             Return result
         End Get
     End Property
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    Public Class MyThreadInfo
+        Public Property Address As ULong
+        Public Property ManagedThreadId As Integer
+        Public Property Stack As String
+        Public Property IsThreadpoolCompletionPort As Boolean
+        Public Property IsThreadpoolWorker As Boolean
+        Public Property IsThreadpoolWait As Boolean
+        Public Property OSThreadId As UInteger
+        Public Property IsAborted As Boolean
+        Public Property IsAlive As Boolean
+        Public Property IsBackground As Boolean
+        Public Property IsGC As Boolean
+        Public Property IsThreadpoolGate As Boolean
+        Public Property IsThreadpoolTimer As Boolean
+    End Class
+    <TypeConverter(GetType(ExpandableObjectConverter))>
+    Public Class StackTraceResult
+        Public Property Message As String
+        Public Property ThreadCount As Integer
+        Public Property ThreadInfo As New List(Of MyThreadInfo)
+        Public Property StackSummary As Dictionary(Of String, Integer)
+    End Class
+    <Category("Application")>
+    Public ReadOnly Property StackTraces As StackTraceResult
+        Get
+            Try
+                Dim threadLogDic As New Dictionary(Of String, Integer)()
+                Dim threads = New List(Of MyThreadInfo)()
+
+                Using target As Microsoft.Diagnostics.Runtime.DataTarget = Microsoft.Diagnostics.Runtime.DataTarget.CreateSnapshotAndAttach(Process.GetCurrentProcess().Id)
+                    Dim runtime As Microsoft.Diagnostics.Runtime.ClrRuntime = target.ClrVersions.First().CreateRuntime()
+                    ' We can't get the thread name from the ClrThead objects, so we'll look for
+                    ' Thread instances on the heap and get the names from those.    
+                    For Each thread As Microsoft.Diagnostics.Runtime.ClrThread In runtime.Threads
+                        Dim t As Microsoft.Diagnostics.Runtime.ClrThread = thread
+
+                        Dim stack As String = ""
+                        For Each clrStackFrame In thread.EnumerateStackTrace()
+                            stack += $"{clrStackFrame.Method}" & vbLf
+                        Next
+                        threads.Add(New MyThreadInfo() With {
+                            .Address = t.Address,
+                            .ManagedThreadId = t.ManagedThreadId,
+                            .OSThreadId = t.OSThreadId,
+                            .IsAborted = Nothing,
+                            .IsAlive = t.IsAlive,
+                            .IsBackground = Nothing,
+                            .IsGC = t.IsGc,
+                            .IsThreadpoolGate = Nothing,
+                            .IsThreadpoolTimer = Nothing,
+                            .IsThreadpoolWait = Nothing,
+                            .IsThreadpoolWorker = Nothing,
+                            .IsThreadpoolCompletionPort = Nothing,
+                            .Stack = stack
+                        })
+                    Next
+                End Using
+
+                Dim stackDic = threads.GroupBy(Function(t) t.Stack).ToDictionary(Function(t) t.Key, Function(t) t.Count)
+
+                Dim output As New StackTraceResult
+                output.ThreadCount = threads.Count
+                output.ThreadInfo = threads
+                output.StackSummary = stackDic
+                Return output
+            Catch e As Exception
+                Console.WriteLine(e)
+                Return New StackTraceResult With {.Message = e.Message & e.StackTrace}
+            End Try
+
+            Return New StackTraceResult With {.Message = "err"}
+        End Get
+
+    End Property
     <Category("Application")>
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of NamedObject), NamedObject)))>
     Public ReadOnly Property App As List(Of NamedObject)
@@ -592,7 +667,7 @@ Public Class LTFSWriter
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.PageData), TapeUtils.PageData)))>
     Public ReadOnly Property CurrentLogPages As List(Of TapeUtils.PageData)
         Get
-            Return TapeUtils.PageData.GetAllPagesFromDrive(driveHandle)
+            Return TapeUtils.PageData.GetAllPagesFromDrive(TapeDrive)
         End Get
     End Property
     Public LastNoCCPs(31) As Integer
@@ -6372,10 +6447,13 @@ Public Class LTFSWriter
             Case Keys.KeyCode.F8
                 LockGUI(AllowOperation)
             Case Keys.KeyCode.F12
-                Dim SP1 As New SettingPanel
-                SP1.Text = Text
-                SP1.SelectedObject = Me
-                SP1.Show()
+                Task.Run(Sub()
+                             Dim SP1 As New SettingPanel
+                             SP1.Text = Text
+                             SP1.SelectedObject = Me
+                             SP1.ShowDialog()
+                         End Sub)
+
         End Select
     End Sub
 
