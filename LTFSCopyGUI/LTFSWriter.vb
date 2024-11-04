@@ -732,6 +732,7 @@ Public Class LTFSWriter
 
     Public d_last As Long = 0
     Public t_last As Long = 0
+    Public TickCount As Long = 0
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Try
             Dim i As Integer
@@ -835,7 +836,7 @@ Public Class LTFSWriter
                     Dim eteTotalCost As Long = totalTimeCost / CurrentBytesProcessed * USize
                     Dim RemainTicks As Long = eteTotalCost - totalTimeCost
                     Dim remainTime As New TimeSpan(RemainTicks)
-                    ToolStripStatusLabel6.Text = $"{vbCrLf}{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
+                    ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
                     ToolStripProgressBar1.ToolTipText &= ToolStripStatusLabel6.Text
                 End If
             End If
@@ -851,6 +852,11 @@ Public Class LTFSWriter
             PrintMsg(ex.ToString)
             SetStatusLight(LWStatus.Err)
         End Try
+        If TickCount < Long.MaxValue Then
+            Threading.Interlocked.Increment(TickCount)
+        Else
+            TickCount = 0
+        End If
     End Sub
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class FileRecord
@@ -1165,9 +1171,29 @@ Public Class LTFSWriter
         AddHandler TapeUtils.IOCtlStart, Sub() Threading.Interlocked.Increment(_IOCtlNum)
         AddHandler TapeUtils.IOCtlFinished, Sub() Threading.Interlocked.Decrement(_IOCtlNum)
         Task.Run(Sub()
+                     Dim LastTick As Long = 0
+                     Dim UIHangCount As Integer = 0
+                     Dim DebugPanelAutoShowup As Boolean = True
                      While True AndAlso Me IsNot Nothing AndAlso Me.Visible
                          Try
                              Threading.Thread.Sleep(Timer1.Interval)
+                             Dim NowTick As Long = TickCount
+                             If LastTick = NowTick Then
+                                 UIHangCount += 1
+                             Else
+                                 UIHangCount = 0
+                             End If
+                             LastTick = NowTick
+                             If UIHangCount > 20 AndAlso DebugPanelAutoShowup Then
+                                 Task.Run(Sub()
+                                              DebugPanelAutoShowup = False
+                                              Dim SP1 As New SettingPanel
+                                              SP1.Text = Text
+                                              SP1.SelectedObject = Me
+                                              SP1.ShowDialog()
+                                              DebugPanelAutoShowup = True
+                                          End Sub)
+                             End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
                                  SyncLock TapeUtils.SCSIOperationLock
                                      RefreshDriveLEDIndicator()
