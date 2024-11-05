@@ -1512,6 +1512,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 提取出错：SCSI指令执行失败 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_RErrSCSI() As String
+            Get
+                Return ResourceManager.GetString("ResText_RErrSCSI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 正在提取文件 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_RestFile() As String

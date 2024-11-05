@@ -863,4 +863,7 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould" xml:space="preserve">
     <value>容量损失检测错误率指数下限</value>
   </data>
+  <data name="ResText_RErrSCSI" xml:space="preserve">
+    <value>提取出错：SCSI指令执行失败</value>
+  </data>
 </root>

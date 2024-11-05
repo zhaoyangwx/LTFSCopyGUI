@@ -171,7 +171,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("容量损失自动停顿"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_AutoFlush")>
         Public Property LTFSWriter_AutoFlush() As Boolean
