@@ -3148,7 +3148,9 @@ Public Class LTFSWriter
                     If Not LocateToWritePosition() Then Exit Sub
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
-                        Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                        Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
+                                      .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
+                                      .WindowStyle = ProcessWindowStyle.Hidden})
                     End If
                     UFReadCount.Inc()
                     CurrentFilesProcessed = 0
@@ -3368,7 +3370,9 @@ Public Class LTFSWriter
                                             If Flush Then
                                                 If CheckFlush() Then
                                                     If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
-                                                        Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                        Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
+                                                                      .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
+                                                                      .WindowStyle = ProcessWindowStyle.Hidden})
                                                     End If
                                                 End If
                                             End If
@@ -3506,7 +3510,9 @@ Public Class LTFSWriter
                                                         If Flush Then
                                                             If CheckFlush() Then
                                                                 If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
-                                                                    Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}")
+                                                                    Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
+                                                                                  .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
+                                                                                  .WindowStyle = ProcessWindowStyle.Hidden})
                                                                 End If
                                                             End If
                                                         End If
@@ -3632,7 +3638,9 @@ Public Class LTFSWriter
                 TapeUtils.ReleaseUnit(driveHandle)
                 TapeUtils.AllowMediaRemoval(driveHandle)
                 If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
-                    Process.Start("powercfg", $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}")
+                    Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
+                                  .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}",
+                                  .WindowStyle = ProcessWindowStyle.Hidden})
                 End If
                 LockGUI(False)
                 RefreshDisplay()
