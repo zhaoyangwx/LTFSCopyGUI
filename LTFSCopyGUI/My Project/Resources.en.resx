@@ -855,4 +855,7 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_LTFSWriter_AutoCleanErrRateLogThreashould" xml:space="preserve">
     <value>Auto clean error rate log value down limit</value>
   </data>
+  <data name="ResText_RErrSCSI" xml:space="preserve">
+    <value>Read error: SCSI command failed.</value>
+  </data>
 </root>

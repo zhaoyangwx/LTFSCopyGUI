@@ -170,6 +170,8 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property Flush As Boolean = False
     <Category("LTFSWriter")>
+    Public Property ForceFlush As Boolean = False
+    <Category("LTFSWriter")>
     Public Property Clean As Boolean = False
     <Category("LTFSWriter")>
     Public Property Clean_last As Date = Now
@@ -440,29 +442,29 @@ Public Class LTFSWriter
 
     End Sub
     Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False, Optional ByVal ForceLog As Boolean = False)
-        Me.Invoke(Sub()
-                      If ForceLog OrElse My.Settings.LTFSWriter_LogEnabled Then
-                          Dim logType As String = "info"
-                          If Warning Then logType = "warn"
-                          Dim ExtraMsg As String = ""
-                          If TooltipText <> "" Then
-                              ExtraMsg = $"({TooltipText})"
-                          End If
-                          If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
-                              IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
-                          End If
-                          IO.File.AppendAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
-                      End If
-                      If LogOnly Then Exit Sub
-                      If TooltipText = "" Then TooltipText = s
-                      If Not Warning Then
-                          Text3 = s
-                          TextT3 = TooltipText
-                      Else
-                          Text5 = s
-                          TextT5 = TooltipText
-                      End If
-                  End Sub)
+        Me.BeginInvoke(Sub()
+                           If ForceLog OrElse My.Settings.LTFSWriter_LogEnabled Then
+                               Dim logType As String = "info"
+                               If Warning Then logType = "warn"
+                               Dim ExtraMsg As String = ""
+                               If TooltipText <> "" Then
+                                   ExtraMsg = $"({TooltipText})"
+                               End If
+                               If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
+                                   IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
+                               End If
+                               IO.File.AppendAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
+                           End If
+                           If LogOnly Then Exit Sub
+                           If TooltipText = "" Then TooltipText = s
+                           If Not Warning Then
+                               Text3 = s
+                               TextT3 = TooltipText
+                           Else
+                               Text5 = s
+                               TextT5 = TooltipText
+                           End If
+                       End Sub)
     End Sub
     <Category("LTFSWriter")>
     Public Property DataCompressionLogPage As TapeUtils.PageData
@@ -673,11 +675,11 @@ Public Class LTFSWriter
     Public LastNoCCPs(31) As Integer
     Public LastC1Err(31) As Integer
     Public Property ErrLogRateHistory As Double
-    Public Function ReadChanLRInfo() As Double
+    Public Function ReadChanLRInfo(Optional ByVal TimeOut As Integer = 200) As Double
         Dim result As Double = Double.NegativeInfinity
         Dim WERLHeader As Byte()
         Dim WERLPage As Byte()
-        If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
+        If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
             WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
             If WERLHeader.Length <> 4 Then
                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
@@ -833,7 +835,7 @@ Public Class LTFSWriter
                 Dim CurrentTime As Date = Now
                 Dim totalTimeCost As Long = (CurrentTime - StartTime).Ticks
                 If totalTimeCost > 0 AndAlso CurrentBytesProcessed > 0 Then
-                    Dim eteTotalCost As Long = totalTimeCost / CurrentBytesProcessed * USize
+                    Dim eteTotalCost As Double = totalTimeCost / CurrentBytesProcessed * USize
                     Dim RemainTicks As Long = eteTotalCost - totalTimeCost
                     Dim remainTime As New TimeSpan(RemainTicks)
                     ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
@@ -1175,14 +1177,16 @@ Public Class LTFSWriter
                              End If
                              LastTick = NowTick
                              If UIHangCount > 20 AndAlso DebugPanelAutoShowup Then
-                                 Task.Run(Sub()
-                                              DebugPanelAutoShowup = False
-                                              Dim SP1 As New SettingPanel
-                                              SP1.Text = Text
-                                              SP1.SelectedObject = Me
-                                              SP1.ShowDialog()
-                                              DebugPanelAutoShowup = True
-                                          End Sub)
+                                 Dim th As New Threading.Thread(
+                                    Sub()
+                                        DebugPanelAutoShowup = False
+                                        Dim SP1 As New SettingPanel
+                                        SP1.Text = Text
+                                        SP1.SelectedObject = Me
+                                        SP1.ShowDialog()
+                                        DebugPanelAutoShowup = True
+                                    End Sub)
+                                 th.Start()
                              End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
                                  If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
@@ -1912,23 +1916,15 @@ Public Class LTFSWriter
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             schema.location.startblock = p.BlockNumber
         End If
-        'schema.previousgenerationlocation.partition = ltfsindex.PartitionLabel.b
         Dim block0 As ULong = schema.location.startblock
         If ExtraPartitionCount > 0 Then
             schema.location.partition = ltfsindex.PartitionLabel.a
             PrintMsg(My.Resources.ResText_GI)
             Dim tmpf As String = $"{Application.StartupPath}\LWI_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
             schema.SaveFile(tmpf)
-            'Dim sdata As Byte() = Encoding.UTF8.GetBytes(schema.GetSerializedText())
             PrintMsg(My.Resources.ResText_WI)
-            'TapeUtils.Write(TapeDrive, sdata, plabel.blocksize)
             TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
             IO.File.Delete(tmpf)
-            'While sdata.Length > 0
-            '    Dim wdata As Byte() = sdata.Take(Math.Min(plabel.blocksize, sdata.Length)).ToArray
-            '    sdata = sdata.Skip(Math.Min(plabel.blocksize, sdata.Length)).ToArray()
-            '    TapeUtils.Write(TapeDrive, wdata)
-            'End While
             TapeUtils.WriteFileMark(driveHandle)
             PrintMsg(My.Resources.ResText_WIF)
             PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -2784,7 +2780,55 @@ Public Class LTFSWriter
                             Dim ReadedSize As Long = 0
                             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                                 Dim CurrentBlockLen As UInteger = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                                Dim Data As Byte() = TapeUtils.ReadBlock(driveHandle, Nothing, CurrentBlockLen, True)
+                                Dim Data As Byte()
+                                Dim readsucc As Boolean = False
+                                While Not readsucc
+                                    Dim sense() As Byte = {}
+                                    Try
+                                        Data = TapeUtils.ReadBlock(driveHandle, sense, CurrentBlockLen, True)
+
+                                    Catch ex As Exception
+                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                            Case DialogResult.Abort
+                                                StopFlag = True
+                                                Throw ex
+                                            Case DialogResult.Retry
+                                                readsucc = False
+                                            Case DialogResult.Ignore
+                                                readsucc = True
+                                                Exit While
+                                        End Select
+                                        Continue While
+                                    End Try
+                                    If ((sense(2) >> 6) And &H1) = 1 Then
+                                        If (sense(2) And &HF) = 13 Then
+                                            readsucc = True
+                                        Else
+                                            PrintMsg(My.Resources.ResText_EWEOM, True)
+                                            readsucc = True
+                                            Exit While
+                                        End If
+                                    ElseIf sense(2) And &HF <> 0 Then
+                                        PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+                                        Try
+                                            Throw New Exception("SCSI sense error")
+                                        Catch ex As Exception
+                                            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                Case DialogResult.Abort
+                                                    fs.Close()
+                                                    StopFlag = True
+                                                    Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                Case DialogResult.Retry
+                                                    readsucc = False
+                                                Case DialogResult.Ignore
+                                                    readsucc = True
+                                                    Exit While
+                                            End Select
+                                        End Try
+                                    Else
+                                        readsucc = True
+                                    End If
+                                End While
                                 SyncLock RestorePosition
                                     RestorePosition.BlockNumber += 1
                                 End SyncLock
@@ -2869,6 +2913,7 @@ Public Class LTFSWriter
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
                             UnwrittenCountOverwriteValue = flist.Count
+                            StartTime = Now
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
                                 FI.TempObj = Nothing
@@ -2885,6 +2930,7 @@ Public Class LTFSWriter
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
                                     SetStatusLight(LWStatus.Idle)
+                                    LockGUI(False)
                                     Exit Sub
                                 End If
                             Next
@@ -2907,14 +2953,14 @@ Public Class LTFSWriter
     End Sub
     Private Sub 提取ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem1.Click
         If TreeView1.SelectedNode IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+            Dim FileList As New List(Of FileRecord)
+            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
             Dim th As New Threading.Thread(
                     Sub()
                         PrintMsg(My.Resources.ResText_Restoring)
                         SetStatusLight(LWStatus.Busy)
                         Try
                             StopFlag = False
-                            Dim FileList As New List(Of FileRecord)
-                            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
                             Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
                                 Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
                                     For Each f As ltfsindex.file In tapeDir.contents._file
@@ -2958,6 +3004,7 @@ Public Class LTFSWriter
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
                             UnwrittenCountOverwriteValue = FileList.Count
+                            StartTime = Now
                             For Each FI As FileRecord In FileList
                                 UnwrittenSizeOverrideValue += FI.File.length
                                 FI.File.TempObj = Nothing
@@ -4313,10 +4360,11 @@ Public Class LTFSWriter
             Dim Loc As TapeUtils.PositionData = GetPos
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
-            If ReadChanLRInfo() < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
+            If Not ForceFlush AndAlso ReadChanLRInfo(10000) < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
                 Return False
             Else
+                ForceFlush = False
                 Threading.Interlocked.Increment(CapReduceCount)
                 TapeUtils.Flush(driveHandle)
                 RefreshCapacity()
@@ -4358,6 +4406,7 @@ Public Class LTFSWriter
         Pause = False
     End Sub
     Private Sub ToolStripDropDownButton2_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton2.Click
+        ForceFlush = True
         Flush = True
     End Sub
     Private Sub ToolStripDropDownButton3_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton3.Click
@@ -4527,7 +4576,7 @@ Public Class LTFSWriter
                         TapeUtils.ReleaseUnit(driveHandle)
                         TapeUtils.AllowMediaRemoval(driveHandle)
                         PrintMsg(My.Resources.ResText_IUd)
-                        If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then 更新数据区索引ToolStripMenuItem.Enabled = False
+                        If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = False)
                         SetStatusLight(LWStatus.Busy)
                         TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
                         PrintMsg(My.Resources.ResText_Ejd)
@@ -4538,7 +4587,7 @@ Public Class LTFSWriter
                                    RaiseEvent TapeEjected()
                                End Sub)
                     Catch ex As Exception
-                        PrintMsg(My.Resources.ResText_IUErr)
+                        PrintMsg(My.Resources.ResText_IUErr, TooltipText:=$"{My.Resources.ResText_IUErr}{vbCrLf}{ex.ToString()}")
                         SetStatusLight(LWStatus.Err)
                         LockGUI(False)
                     End Try
