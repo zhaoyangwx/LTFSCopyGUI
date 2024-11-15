@@ -674,7 +674,32 @@ Public Class LTFSWriter
     End Property
     Public LastNoCCPs(31) As Integer
     Public LastC1Err(31) As Integer
+    Public ChanErrLogRateHistory As New List(Of Double)
+    Private _ErrLogRateHistory As Double
     Public Property ErrLogRateHistory As Double
+        Set(value As Double)
+            _ErrLogRateHistory = value
+            BeginInvoke(Sub() ToolStripStatusLabelErrLog.Text = $"{value.ToString("f2")}")
+            BeginInvoke(Sub()
+                            Dim result As New StringBuilder
+                            result.Append($"Max Error Rate Log: {value.ToString("f2")}")
+                            SyncLock ChanErrLogRateHistory
+                                For i As Integer = 0 To ChanErrLogRateHistory.Count - 1
+                                    If ChanErrLogRateHistory(i) < 0 Then
+                                        result.Append($"{vbCrLf}Channel {i}: {ChanErrLogRateHistory(i).ToString("f2")}")
+                                    Else
+                                        result.Append($"{vbCrLf}Channel {i}: N/A")
+                                    End If
+
+                                Next
+                            End SyncLock
+                            ToolStripStatusLabelErrLog.ToolTipText = result.ToString()
+                        End Sub)
+        End Set
+        Get
+            Return _ErrLogRateHistory
+        End Get
+    End Property
     Public Function ReadChanLRInfo(Optional ByVal TimeOut As Integer = 200) As Double
         Dim result As Double = Double.NegativeInfinity
         Dim WERLHeader As Byte()
@@ -704,6 +729,7 @@ Public Class LTFSWriter
         Dim debuginfo As New StringBuilder
         Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
         Try
+            Dim AllResults As New List(Of Double)
             For ch As Integer = 4 To WERLData.Length - 5 Step 5
                 Dim chan As Integer = (ch - 4) \ 5
                 Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
@@ -714,6 +740,7 @@ Public Class LTFSWriter
                 debuginfo.Append($"CH{chan} CCP={NoCCPs} C1={C1err}")
                 If NoCCPs - LastNoCCPs(chan) > 0 Then
                     Dim errRateLogValue As Double = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
+                    AllResults.Add(errRateLogValue)
                     If errRateLogValue < 0 Then
                         result = Math.Max(result, errRateLogValue)
                     End If
@@ -722,6 +749,7 @@ Public Class LTFSWriter
                 LastC1Err(chan) = C1err
                 LastNoCCPs(chan) = NoCCPs
             Next
+            ChanErrLogRateHistory = AllResults
         Catch
         End Try
         If result < -10 Then result = 0
@@ -839,7 +867,7 @@ Public Class LTFSWriter
                     Dim RemainTicks As Long = eteTotalCost - totalTimeCost
                     Dim remainTime As New TimeSpan(RemainTicks)
                     ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
-                    ToolStripProgressBar1.ToolTipText &= ToolStripStatusLabel6.Text
+                    ToolStripProgressBar1.ToolTipText &= vbCrLf & ToolStripStatusLabel6.Text
                 End If
             End If
             ToolStripStatusLabel6.ToolTipText = ToolStripStatusLabel6.Text
@@ -1346,6 +1374,7 @@ Public Class LTFSWriter
         Dim result(3) As Long
         Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
         Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, PageControl:=1)
+        Dim errRate As Double = ReadChanLRInfo()
         RefreshDriveLEDIndicator()
         Try
             CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
@@ -1375,7 +1404,6 @@ Public Class LTFSWriter
 
             'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
             Dim loss As Long
-            Dim errRate As Double = ReadChanLRInfo()
             If My.Settings.LTFSWriter_ShowLoss Then
                 Dim CMInfo As TapeUtils.CMParser
                 Try
@@ -1454,12 +1482,12 @@ Public Class LTFSWriter
             End If
             result(0) = max0 - cap0
             result(1) = max0
-            If errRate < 0 Then
-                Invoke(Sub()
-                           ToolStripStatusLabel2.Text &= $" Err:{errRate.ToString("f2")}"
-                           ToolStripStatusLabel2.ToolTipText &= $" Err:{errRate.ToString("f2")}"
-                       End Sub)
-            End If
+            'If errRate < 0 Then
+            '    Invoke(Sub()
+            '               ToolStripStatusLabel2.Text &= $" Err:{errRate.ToString("f2")}"
+            '               ToolStripStatusLabel2.ToolTipText &= $" Err:{errRate.ToString("f2")}"
+            '           End Sub)
+            'End If
 
             If My.Settings.LTFSWriter_ShowLoss Then
                 Invoke(Sub()
@@ -3796,7 +3824,7 @@ Public Class LTFSWriter
             Sub()
                 Try
                     SetStatusLight(LWStatus.Busy)
-                    PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
+                    PrintMsg($"Position = {TapeUtils.ReadPosition(driveHandle).ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
                     ExtraPartitionCount = TapeUtils.ModeSense(driveHandle, &H11)(3)
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength

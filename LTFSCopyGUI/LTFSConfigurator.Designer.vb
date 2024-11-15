@@ -534,7 +534,7 @@ Partial Class LTFSConfigurator
         'NumericUpDownBlockLen
         '
         resources.ApplyResources(Me.NumericUpDownBlockLen, "NumericUpDownBlockLen")
-        Me.NumericUpDownBlockLen.Maximum = New Decimal(New Integer() {524288, 0, 0, 0})
+        Me.NumericUpDownBlockLen.Maximum = New Decimal(New Integer() {1048576, 0, 0, 0})
         Me.NumericUpDownBlockLen.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
         Me.NumericUpDownBlockLen.Name = "NumericUpDownBlockLen"
         Me.NumericUpDownBlockLen.Value = New Decimal(New Integer() {524288, 0, 0, 0})
