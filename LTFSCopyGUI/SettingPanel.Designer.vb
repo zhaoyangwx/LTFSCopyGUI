@@ -81,13 +81,16 @@ Partial Class SettingPanel
         'Button2
         '
         resources.ApplyResources(Me.Button2, "Button2")
+        Me.Button2.DialogResult = System.Windows.Forms.DialogResult.Cancel
         Me.Button2.Name = "Button2"
         Me.Button2.UseVisualStyleBackColor = True
         '
         'SettingPanel
         '
+        Me.AcceptButton = Me.Button1
         resources.ApplyResources(Me, "$this")
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.CancelButton = Me.Button2
         Me.Controls.Add(Me.Button2)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.PropertyGrid1)

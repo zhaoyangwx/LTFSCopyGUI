@@ -104,9 +104,10 @@ Public Class LTFSConfigurator
     End Property
     Public UILock As New Object
     Public Sub RefreshUI(Optional RefreshDevList As Boolean = True)
+        If Not LoadComplete Then Exit Sub
         Task.Run(Sub()
                      LoadComplete = False
-                     If Threading.Monitor.TryEnter(UILock, 300) Then
+                     If Threading.Monitor.TryEnter(UILock, 100) Then
                          Dim DevList As List(Of TapeUtils.TapeDrive)
                          If RefreshDevList OrElse LastDeviceList Is Nothing Then DevList = DeviceList Else DevList = LastDeviceList
                          Invoke(Sub()
@@ -147,12 +148,12 @@ Public Class LTFSConfigurator
             Me.Close()
             Exit Sub
         End If
-        RefreshUI()
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBoxBufferPage.SelectedIndex = 3
         ComboBoxLocateType.SelectedIndex = 0
         Text = $"LTFSConfigurator - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         LoadComplete = True
+        RefreshUI()
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles ButtonStartFUSESvc.Click
@@ -791,21 +792,29 @@ Public Class LTFSConfigurator
         Dim ReadLen As UInteger = NumericUpDownBlockLen.Value
         Task.Run(Sub()
                      Dim sense(63) As Byte
-                     Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
+                     Dim readData As Byte()
+                     Try
+                         readData = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
+                         Invoke(Sub()
+                                    Dim DiffBytes As Int32
+                                    For i As Integer = 3 To 6
+                                        DiffBytes <<= 8
+                                        DiffBytes = DiffBytes Or sense(i)
+                                    Next
+                                    Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                                    TextBoxDebugOutput.Text = TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf & vbCrLf & "Raw data:" & vbCrLf
+                                    TextBoxDebugOutput.Text &= "Length: " & readData.Length & vbCrLf
+                                    If DiffBytes < 0 Then
+                                        TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
+                                        TextBoxDebugOutput.Text &= "Excess data is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
+                                    End If
+                                    TextBoxDebugOutput.Text &= Byte2Hex(readData, True)
+                                End Sub)
+                     Catch ex As Exception
+
+                     End Try
+
                      Invoke(Sub()
-                                Dim DiffBytes As Int32
-                                For i As Integer = 3 To 6
-                                    DiffBytes <<= 8
-                                    DiffBytes = DiffBytes Or sense(i)
-                                Next
-                                Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
-                                TextBoxDebugOutput.Text = TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf & vbCrLf & "Raw data:" & vbCrLf
-                                TextBoxDebugOutput.Text &= "Length: " & readData.Length & vbCrLf
-                                If DiffBytes < 0 Then
-                                    TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
-                                    TextBoxDebugOutput.Text &= "Excess data Is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
-                                End If
-                                TextBoxDebugOutput.Text &= Byte2Hex(readData, True)
                                 Enabled = True
                             End Sub)
                  End Sub)
@@ -844,11 +853,24 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
-        TextBoxDebugOutput.Text = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(ConfTapeDrive,
-                                                                            CULng(NumericUpDownBlockNum.Value),
-                                                                            CByte(NumericUpDownPartitionNum.Value),
-                                                                            System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBoxLocateType.SelectedItem)))
-        Me.Enabled = True
+        Dim blk As ULong = NumericUpDownBlockNum.Value
+        Dim partition As Byte = NumericUpDownPartitionNum.Value
+        Dim dest As TapeUtils.LocateDestType = System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBoxLocateType.SelectedItem)
+        Task.Run(Sub()
+                     Dim result As String = ""
+                     Try
+                         result = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(ConfTapeDrive, blk, partition, dest))
+                     Catch ex As Exception
+
+                     End Try
+
+                     Invoke(Sub()
+                                TextBoxDebugOutput.Text = result
+                                Me.Enabled = True
+                            End Sub)
+                 End Sub)
+
+
 
     End Sub
 
@@ -1662,23 +1684,25 @@ Public Class LTFSConfigurator
                         End If
                         If i Mod 200 = 0 Then
                             Dim result As New StringBuilder
-                            Dim WERLHeader As Byte() = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-                            If WERLHeader.Length <> 4 Then Exit Sub
-                            Dim WERLPageLen As Integer = WERLHeader(2)
-                            WERLPageLen <<= 8
-                            WERLPageLen = WERLPageLen Or WERLHeader(3)
-                            If WERLPageLen = 0 Then Exit Sub
-                            WERLPageLen += 4
-                            Dim WERLPage As Byte() = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+                            Dim WERLHeader As Byte()
+                            Dim WERLPage As Byte()
+                            Dim WERLPageLen As Integer
+                            SyncLock TapeUtils.SCSIOperationLock
+                                WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                                If WERLHeader.Length <> 4 Then Exit Sub
+                                WERLPageLen = WERLHeader(2)
+                                WERLPageLen <<= 8
+                                WERLPageLen = WERLPageLen Or WERLHeader(3)
+                                If WERLPageLen = 0 Then Exit Sub
+                                WERLPageLen += 4
+                                WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+                            End SyncLock
                             Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                             info = ""
                             Try
                                 For ch As Integer = 4 To WERLData.Length - 5 Step 5
                                     Dim chan As Integer = (ch - 4) \ 5
                                     Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
-                                    'Dim C1cwerr As Integer = Integer.Parse(WERLData(ch + 1), Globalization.NumberStyles.HexNumber)
-                                    'Dim Headerrr As Integer = Integer.Parse(WERLData(ch + 2), Globalization.NumberStyles.HexNumber)
-                                    'Dim WrPasserr As Integer = Integer.Parse(WERLData(ch + 3), Globalization.NumberStyles.HexNumber)
                                     Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
 
                                     If NoCCPs - LastNoCCPs(chan) > 0 Then

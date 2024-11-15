@@ -478,7 +478,7 @@ Public Class TapeUtils
             Return data.MaximumBlockLength
         End Operator
     End Class
-    Public Shared Property GlobalBlockLimit As Integer = 524288
+    Public Shared Property GlobalBlockLimit As Integer = 1048576
 #Region "SCSIOP_READ"
     Public Shared Function ReadBlock(handle As IntPtr, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
         Dim senseRaw(63) As Byte
@@ -499,12 +499,12 @@ Public Class TapeUtils
                 DiffBytes = DiffBytes Or sense(i)
             Next
             If Truncate Then DiffBytes = Math.Max(DiffBytes, 0)
-            DataLen = BlockSizeLimit - DiffBytes
-            If Not Truncate AndAlso DiffBytes < 0 Then
+            DataLen = Math.Min(BlockSizeLimit, BlockSizeLimit - DiffBytes)
+            If Not Truncate AndAlso DiffBytes < 0 AndAlso (BlockSizeLimit - DiffBytes) < GlobalBlockLimit Then
                 Marshal.FreeHGlobal(RawDataU)
                 Dim p As New PositionData(handle:=handle)
                 Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
-                Return ReadBlock(handle:=handle, sense:=sense, BlockSizeLimit:=DataLen, Truncate:=Truncate)
+                Return ReadBlock(handle:=handle, sense:=sense, BlockSizeLimit:=(BlockSizeLimit - DiffBytes), Truncate:=Truncate)
             End If
 
         End SyncLock
@@ -897,10 +897,17 @@ Public Class TapeUtils
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
         While Not TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+            Dim ErrCode As UInteger = GetLastError()
             Marshal.Copy(senseBuffer, senseData, 0, 64)
-            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"读取出错{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}原始sense数据{vbCrLf}{Byte2Hex(senseData, True)}", "警告", MessageBoxButtons.AbortRetryIgnore)
+            Select Case MessageBox.Show($"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{Hex(ErrCode).PadLeft(8, "0")}h",
+                                        My.Resources.ResText_Warning,
+                                        MessageBoxButtons.AbortRetryIgnore,
+                                        Nothing,
+                                        MessageBoxDefaultButton.Button2,
+                                        MessageBoxOptions.DefaultDesktopOnly)
                 Case DialogResult.Abort
                     Throw New Exception("SCSI Error")
+                    Exit While
                 Case DialogResult.Retry
 
                 Case DialogResult.Ignore
