@@ -447,7 +447,7 @@ Public Class LTFSWriter
                                Dim logType As String = "info"
                                If Warning Then logType = "warn"
                                Dim ExtraMsg As String = ""
-                               If TooltipText <> "" Then
+                               If TooltipText IsNot Nothing AndAlso TooltipText <> "" Then
                                    ExtraMsg = $"({TooltipText})"
                                End If
                                If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
@@ -456,13 +456,13 @@ Public Class LTFSWriter
                                IO.File.AppendAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
                            End If
                            If LogOnly Then Exit Sub
-                           If TooltipText = "" Then TooltipText = s
+                           If TooltipText IsNot Nothing AndAlso TooltipText = "" Then TooltipText = s
                            If Not Warning Then
                                Text3 = s
-                               TextT3 = TooltipText
+                               If TooltipText IsNot Nothing Then TextT3 = TooltipText
                            Else
                                Text5 = s
-                               TextT5 = TooltipText
+                               If TooltipText IsNot Nothing Then TextT5 = TooltipText
                            End If
                        End Sub)
     End Sub
@@ -1650,7 +1650,7 @@ Public Class LTFSWriter
                              If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
                                  Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                                  RefreshCapacity()
-                                 PrintMsg(My.Resources.ResText_CRef)
+                                 PrintMsg(My.Resources.ResText_CRef, TooltipText:=Nothing)
                              End If
                          End Sub)
             Else
