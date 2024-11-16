@@ -702,9 +702,16 @@ Public Class LTFSWriter
     End Property
     Public Function ReadChanLRInfo(Optional ByVal TimeOut As Integer = 200) As Double
         Dim result As Double = Double.NegativeInfinity
+        Dim debuginfo As New StringBuilder
         Dim WERLHeader As Byte()
         Dim WERLPage As Byte()
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
+            Dim pos As New TapeUtils.PositionData(driveHandle)
+            Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage))
+            Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
+            Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage))
+            Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
+            debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
             WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
             If WERLHeader.Length <> 4 Then
                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
@@ -726,7 +733,6 @@ Public Class LTFSWriter
             PrintMsg("Device is busy. Skip Errrate Check", LogOnly:=True)
             Return 0
         End If
-        Dim debuginfo As New StringBuilder
         Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
         Try
             Dim AllResults As New List(Of Double)
@@ -737,7 +743,7 @@ Public Class LTFSWriter
                 'Dim Headerrr As Integer = Integer.Parse(WERLData(ch + 2), Globalization.NumberStyles.HexNumber)
                 'Dim WrPasserr As Integer = Integer.Parse(WERLData(ch + 3), Globalization.NumberStyles.HexNumber)
                 Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
-                debuginfo.Append($"CH{chan} CCP={NoCCPs} C1={C1err}")
+                debuginfo.Append($"CH={chan} CCP={NoCCPs} C1={C1err}")
                 If NoCCPs - LastNoCCPs(chan) > 0 Then
                     Dim errRateLogValue As Double = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
                     AllResults.Add(errRateLogValue)
@@ -3599,7 +3605,8 @@ Public Class LTFSWriter
                                 End If
                                 If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
                                     p = New TapeUtils.PositionData(driveHandle)
-                                    RefreshCapacity()
+                                    Dim capValue As Long() = RefreshCapacity()
+                                    fr.File.SetXattr("ltfscopygui.capacityremain", capValue(p.PartitionNumber * 2))
                                     Dim p2 As New TapeUtils.PositionData(driveHandle)
                                     If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                         Invoke(Sub()
