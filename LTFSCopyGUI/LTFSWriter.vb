@@ -3022,6 +3022,9 @@ Public Class LTFSWriter
                             If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                             IterDir(selectedDir, New IO.DirectoryInfo(ODir))
                             FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
+                                                                            If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
+                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo Is Nothing Then Return 0.CompareTo(0)
                                                                             If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
                                                                             If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
                                                                             If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)

@@ -457,6 +457,7 @@ Public Class Form1
                             Dim sch As ltfsindex = ltfsindex.FromSchFile(fl.FullName)
                             ltfsindex.WSort(sch._directory,
                                             Sub(fid As ltfsindex.file)
+                                                If fid.extentinfo Is Nothing Then Exit Sub
                                                 For Each ext As ltfsindex.file.extent In fid.extentinfo
                                                     ext.TempInfo = fid
                                                     extlist.Add(ext)

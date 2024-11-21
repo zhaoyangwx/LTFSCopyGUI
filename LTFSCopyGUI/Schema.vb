@@ -165,6 +165,18 @@ Public Class ltfsindex
             Next
             extendedattributes.Add(New xattr With {.key = key, .value = value})
         End Sub
+        Private _symlink As String = Nothing
+        <Category("LTFSIndex")>
+        <Xml.Serialization.XmlElement(IsNullable:=False)>
+        Public Property symlink As String
+            Get
+                Return _symlink
+            End Get
+            Set(value As String)
+                _symlink = value
+                If value IsNot Nothing Then extentinfo = Nothing
+            End Set
+        End Property
 
         <Serializable>
         <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -184,8 +196,10 @@ Public Class ltfsindex
             <Category("Internal")>
             Public Property TempInfo As Object
         End Class
+
         <Category("LTFSIndex")>
         <TypeConverter(GetType(ListTypeDescriptor(Of List(Of extent), extent)))>
+        <Xml.Serialization.XmlElement(IsNullable:=False)>
         Public Property extentinfo As New List(Of extent)
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
