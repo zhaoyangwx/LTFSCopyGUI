@@ -693,7 +693,7 @@ Public Class LTFSWriter
 
                                 Next
                             End SyncLock
-                            ToolStripStatusLabelErrLog.ToolTipText = result.ToString()
+                            SetCapLossChannelInfo(result.ToString())
                         End Sub)
         End Set
         Get
@@ -1200,6 +1200,8 @@ Public Class LTFSWriter
                      Dim LastTick As Long = 0
                      Dim UIHangCount As Integer = 0
                      Dim DebugPanelAutoShowup As Boolean = True
+                     Dim ToolTipChanErrLogShown As Boolean = False
+                     Dim ToolTipChanErrLogShownLock As New Object
                      While True AndAlso Me IsNot Nothing AndAlso Me.Visible
                          Try
                              Threading.Thread.Sleep(Timer1.Interval)
@@ -1227,6 +1229,28 @@ Public Class LTFSWriter
                                      RefreshDriveLEDIndicator()
                                      Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                                  End If
+                             End If
+                             If ToolTipChanErrLogShowing Then
+                                 If Not ToolTipChanErrLogShown Then
+                                     BeginInvoke(Sub() ToolTipChanErrLog.Show(CapLossChannelInfo, StatusStrip2, New Point(ToolStripStatusLabelErrLog.Bounds.Right - 1, ToolStripStatusLabelErrLog.Bounds.Bottom - 1)))
+                                     ToolTipChanErrLogShown = True
+                                 End If
+                             Else
+                                 ToolTipChanErrLogShown = False
+                                 'If ToolTipChanErrLogShown Then
+                                 '    If Threading.Monitor.TryEnter(ToolTipChanErrLogShownLock) Then
+                                 '        Task.Run(Sub()
+                                 '                     Threading.Thread.Sleep(1000)
+                                 '                     If Threading.Interlocked.Exchange(ToolTipChanErrLogShowingChanged, False) Then Exit Sub
+                                 '                     If Not ToolTipChanErrLogShowing Then
+                                 '                         BeginInvoke(Sub() ToolTipChanErrLog.Hide(StatusStrip2))
+                                 '                         ToolTipChanErrLogShown = False
+                                 '                     End If
+                                 '                 End Sub)
+                                 '        Threading.Monitor.Exit(ToolTipChanErrLogShownLock)
+                                 '    End If
+                                 '
+                                 'End If
                              End If
                          Catch ex As Exception
 
@@ -1376,6 +1400,10 @@ Public Class LTFSWriter
                End Sub)
 
     End Sub
+    Public Property CapLossChannelInfo As String
+    Public Sub SetCapLossChannelInfo(Text As String)
+        CapLossChannelInfo = Text
+    End Sub
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
         Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
@@ -1491,7 +1519,7 @@ Public Class LTFSWriter
             'If errRate < 0 Then
             '    Invoke(Sub()
             '               ToolStripStatusLabel2.Text &= $" Err:{errRate.ToString("f2")}"
-            '               ToolStripStatusLabel2.ToolTipText &= $" Err:{errRate.ToString("f2")}"
+            '               ChanInfo &= $" Err:{errRate.ToString("f2")}"
             '           End Sub)
             'End If
 
@@ -1628,6 +1656,7 @@ Public Class LTFSWriter
                         new_select.Expand()
                     Else
                         TreeView1.SelectedNode = TreeView1.TopNode
+                        TreeView1.SelectedNode.Expand()
                     End If
                 Catch ex As Exception
 
@@ -6552,8 +6581,149 @@ Public Class LTFSWriter
         WA3ToolStripMenuItem.Checked = True
     End Sub
 
+    <Category("LTFSWriter")>
+    Public Property LastSearchKW As String = ""
+    Public Sub GetSearchInput()
+        LastSearchKW = InputBox("Keyword", "Search", LastSearchKW)
+    End Sub
+    Public Sub Search()
+        Dim SearchStart As String = ""
+        Dim result As New StringBuilder
+        If TreeView1.SelectedNode IsNot Nothing Then
+            If TreeView1.SelectedNode.Tag IsNot Nothing Then
+                If TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.directory Then
+                    SearchStart = GetPath(TreeView1.SelectedNode) & "\"
+                    If ListView1.Tag IsNot Nothing AndAlso
+                                             ListView1.SelectedItems IsNot Nothing AndAlso
+                                             ListView1.SelectedItems.Count > 0 Then
+                        SearchStart &= CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name
+                    End If
+                End If
+            End If
+        End If
+        SearchStart = SearchStart.TrimStart("\")
+        If SearchStart = "" Then SearchStart = "\"
+        Dim dirIndexStack As New List(Of Integer)
+        Dim dirStack As New List(Of ltfsindex.directory)
+        Dim fileindex As Integer = 0
+        Dim pathSeg() As String = SearchStart.Split({"\"}, StringSplitOptions.None)
+        dirIndexStack.Add(0)
+        dirStack.Add(schema._directory(0))
+        For i As Integer = 1 To pathSeg.Count - 2
+            For j As Integer = 0 To dirStack(i - 1).contents._directory.Count - 1
+                If dirStack(i - 1).contents._directory(j).name = pathSeg(i) Then
+                    dirIndexStack.Add(j)
+                    dirStack.Add(dirStack(i - 1).contents._directory(j))
+                    Exit For
+                End If
+            Next
+        Next
+        If pathSeg.Last = "" Then
+            fileindex = 0
+            While dirStack.Last.contents._directory.Count > 0
+                dirStack.Add(dirStack.Last.contents._directory(0))
+                dirIndexStack.Add(0)
+            End While
+        Else
+            For j As Integer = 0 To dirStack.Last.contents._file.Count - 1
+                If dirStack.Last.contents._file(j).name = pathSeg.Last Then
+                    fileindex = j
+                    Exit For
+                End If
+            Next
+        End If
+        LockGUI(True)
+        Task.Run(Sub()
+
+                     While dirStack.Count > 0
+                         Dim currpath As String = "Searching: "
+                         For Each d As ltfsindex.directory In dirStack
+                             currpath &= "\" & d.name
+                         Next
+                         PrintMsg(currpath)
+                         Do
+                             If fileindex >= dirStack.Last.contents._file.Count - 1 Then Exit Do
+                             fileindex += 1
+                             If dirStack.Last.contents._file(fileindex).name.Contains(LastSearchKW) Then
+                                 Invoke(Sub()
+                                            Dim nd As TreeNode = TreeView1.Nodes(0)
+                                            Try
+                                                For n As Integer = 1 To dirIndexStack.Count - 1
+                                                    nd = nd.Nodes(dirIndexStack(n))
+                                                Next
+                                            Catch ex As Exception
+
+                                            End Try
+                                            If nd IsNot TreeView1.SelectedNode Then
+                                                TreeView1.SelectedNode = nd
+                                                RefreshDisplay()
+                                            End If
+                                            For Each it As ListViewItem In ListView1.Items
+                                                it.Selected = False
+                                            Next
+                                            Try
+                                                ListView1.Items(fileindex).Focused = True
+                                                ListView1.Items(fileindex).Selected = True
+                                                ListView1.EnsureVisible(fileindex)
+                                                PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
+                                            Catch ex As Exception
+
+                                            End Try
+                                            LockGUI(False)
+                                        End Sub)
+                                 Exit Sub
+                             End If
+                         Loop While fileindex < dirStack.Last.contents._file.Count - 1
+                         Dim returned As Boolean = False
+                         If dirStack.Count - 2 >= 0 Then
+                             While dirIndexStack.Last >= dirStack(dirStack.Count - 2).contents._directory.Count - 1
+                                 dirStack.RemoveAt(dirStack.Count - 1)
+                                 dirIndexStack.RemoveAt(dirIndexStack.Count - 1)
+                                 fileindex = 0
+                                 returned = True
+                                 If dirStack.Count <= 1 Then Exit While
+                             End While
+                             If returned Then
+                                 If dirStack.Count <= 1 Then Exit While
+                                 dirIndexStack(dirIndexStack.Count - 1) += 1
+                                 dirStack.RemoveAt(dirStack.Count - 1)
+                                 dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                                 Continue While
+                             End If
+
+                         End If
+
+                         If dirStack(dirStack.Count - 1).contents._directory.Count > 0 Then
+                             dirStack.Add(dirStack.Last.contents._directory(0))
+                             dirIndexStack.Add(0)
+                             fileindex = 0
+                         Else
+                             If dirStack.Count <= 1 Then Exit While
+                             dirIndexStack(dirIndexStack.Count - 1) += 1
+                             dirStack.RemoveAt(dirStack.Count - 1)
+                             dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                         End If
+
+                         If dirStack.Count <= 1 Then Exit While
+                     End While
+                     Invoke(Sub() LockGUI(False))
+                     PrintMsg($"""{LastSearchKW}"" not found.")
+                     MessageBox.Show(New Form With {.TopMost = True}, $"""{LastSearchKW}"" not found.")
+                 End Sub)
+    End Sub
     Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
+            Case Keys.KeyCode.F
+                If Not AllowOperation Then Exit Sub
+                If Not e.Control Then Exit Select
+                If e.Alt Then Exit Select
+                If e.Shift Then Exit Select
+                GetSearchInput()
+                Search()
+            Case Keys.KeyCode.F3
+                If Not AllowOperation Then Exit Sub
+                If LastSearchKW = "" Then GetSearchInput()
+                Search()
             Case Keys.KeyCode.F5
                 RefreshDisplay()
             Case Keys.KeyCode.F8
@@ -6580,6 +6750,33 @@ Public Class LTFSWriter
             TapeUtils.CloseTapeDrive(driveHandle)
         Catch
         End Try
+    End Sub
+
+    Private Sub ToolTipChanErrLog_Popup(sender As Object, e As PopupEventArgs) Handles ToolTipChanErrLog.Popup
+        Task.Run(Sub()
+                     Threading.Thread.Sleep(3000)
+                     ToolTipChanErrLogShowing = False
+                     BeginInvoke(Sub() ToolTipChanErrLog.Hide(StatusStrip2))
+                 End Sub)
+    End Sub
+
+    Private ToolTipChanErrLogShowingChanged As Boolean = False
+    Private _ToolTipChanErrLogShowing As Boolean
+    Public Property ToolTipChanErrLogShowing As Boolean
+        Get
+            Return _ToolTipChanErrLogShowing
+        End Get
+        Set(value As Boolean)
+            _ToolTipChanErrLogShowing = value
+            ToolTipChanErrLogShowingChanged = True
+        End Set
+    End Property
+    Private Sub ToolStripStatusLabelErrLog_MouseHover(sender As Object, e As EventArgs) Handles ToolStripStatusLabelErrLog.MouseHover
+        ToolTipChanErrLogShowing = True
+    End Sub
+
+    Private Sub ToolStripStatusLabelErrLog_MouseLeave(sender As Object, e As EventArgs) Handles ToolStripStatusLabelErrLog.MouseLeave
+        ToolTipChanErrLogShowing = False
     End Sub
 
 End Class

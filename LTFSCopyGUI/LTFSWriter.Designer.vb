@@ -249,6 +249,7 @@ Partial Class LTFSWriter
         Me.TextBoxSelectedPath = New System.Windows.Forms.TextBox()
         Me.ContextMenuStrip4 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -1405,6 +1406,15 @@ Partial Class LTFSWriter
         Me.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem"
         resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
         '
+        'ToolTipChanErrLog
+        '
+        Me.ToolTipChanErrLog.AutoPopDelay = 3600000
+        Me.ToolTipChanErrLog.InitialDelay = 500
+        Me.ToolTipChanErrLog.ReshowDelay = 100
+        Me.ToolTipChanErrLog.ShowAlways = True
+        Me.ToolTipChanErrLog.UseAnimation = False
+        Me.ToolTipChanErrLog.UseFading = False
+        '
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
@@ -1630,4 +1640,5 @@ Partial Class LTFSWriter
     Friend WithEvents 错误率ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripStatusLabel6 As ToolStripStatusLabel
     Friend WithEvents ToolStripStatusLabelErrLog As ToolStripStatusLabel
+    Friend WithEvents ToolTipChanErrLog As ToolTip
 End Class
