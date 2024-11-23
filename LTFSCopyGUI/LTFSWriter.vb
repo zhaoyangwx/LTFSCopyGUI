@@ -6583,10 +6583,12 @@ Public Class LTFSWriter
 
     <Category("LTFSWriter")>
     Public Property LastSearchKW As String = ""
-    Public Sub GetSearchInput()
+    Public Function GetSearchInput() As String
         LastSearchKW = InputBox("Keyword", "Search", LastSearchKW)
-    End Sub
-    Public Sub Search()
+        Return LastSearchKW
+    End Function
+    Public Sub Search(Optional ByVal KW As String = Nothing)
+        If KW Is Nothing Then KW = LastSearchKW
         Dim SearchStart As String = ""
         Dim result As New StringBuilder
         If TreeView1.SelectedNode IsNot Nothing Then
@@ -6644,7 +6646,7 @@ Public Class LTFSWriter
                          Do
                              If fileindex >= dirStack.Last.contents._file.Count - 1 Then Exit Do
                              fileindex += 1
-                             If dirStack.Last.contents._file(fileindex).name.Contains(LastSearchKW) Then
+                             If dirStack.Last.contents._file(fileindex).name.Contains(KW) Then
                                  Invoke(Sub()
                                             Dim nd As TreeNode = TreeView1.Nodes(0)
                                             Try
@@ -6718,8 +6720,7 @@ Public Class LTFSWriter
                 If Not e.Control Then Exit Select
                 If e.Alt Then Exit Select
                 If e.Shift Then Exit Select
-                GetSearchInput()
-                Search()
+                Search(GetSearchInput())
             Case Keys.KeyCode.F3
                 If Not AllowOperation Then Exit Sub
                 If LastSearchKW = "" Then GetSearchInput()
