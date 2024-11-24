@@ -167,7 +167,6 @@ Public Class ltfsindex
         End Sub
         Private _symlink As String = Nothing
         <Category("LTFSIndex")>
-        <Xml.Serialization.XmlElement(IsNullable:=False)>
         Public Property symlink As String
             Get
                 Return _symlink
@@ -199,7 +198,6 @@ Public Class ltfsindex
 
         <Category("LTFSIndex")>
         <TypeConverter(GetType(ListTypeDescriptor(Of List(Of extent), extent)))>
-        <Xml.Serialization.XmlElement(IsNullable:=False)>
         Public Property extentinfo As New List(Of extent)
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(file))
