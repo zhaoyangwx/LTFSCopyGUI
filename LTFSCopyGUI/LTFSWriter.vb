@@ -408,8 +408,12 @@ Public Class LTFSWriter
             schema._directory(0) IsNot Nothing AndAlso (
             ListView1.Items Is Nothing OrElse
             ListView1.Items.Count = 0) Then
-            Dim img As Image = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
-            ListView1.CreateGraphics().DrawImage(img, 0, 0)
+            Try
+                Dim img As Image = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
+                ListView1.CreateGraphics().DrawImage(img, 0, 0)
+            Catch ex As Exception
+
+            End Try
         End If
     End Sub
     Public Enum LWStatus
