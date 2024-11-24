@@ -4788,7 +4788,7 @@ Public Class LTFSWriter
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
                                     Else
                                         Dim blk0 As Byte() = Nothing
-                                        If FileIndex.extentinfo.Count = 0 OrElse FileIndex.extentinfo(0).startblock = 0 Then
+                                        If FileIndex.length > 0 AndAlso FileIndex.symlink Is Nothing AndAlso (FileIndex.extentinfo.Count = 0 OrElse FileIndex.extentinfo(0).startblock = 0) Then
                                             blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, FileIndex.length))
                                             Dim p As New TapeUtils.PositionData(handle:=driveHandle)
                                             If blk0.Count = 0 Then
@@ -4942,7 +4942,7 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
                             Else
                                 Dim blk0 As Byte() = Nothing
-                                If fr.File.extentinfo.Count = 0 OrElse fr.File.extentinfo(0).startblock = 0 Then
+                                If fr.File.length > 0 AndAlso fr.File.symlink Is Nothing AndAlso (fr.File.extentinfo.Count = 0 OrElse fr.File.extentinfo(0).startblock = 0) Then
                                     blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, fr.File.length))
                                     Dim p As New TapeUtils.PositionData(handle:=driveHandle)
                                     If blk0.Count = 0 Then
