@@ -174,7 +174,7 @@ Public Class ltfsindex
             End Get
             Set(value As String)
                 _symlink = value
-                If value IsNot Nothing Then extentinfo = Nothing
+                'If value IsNot Nothing Then extentinfo = Nothing
             End Set
         End Property
 
