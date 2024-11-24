@@ -874,7 +874,7 @@ Public Class LTFSWriter
                 Dim totalTimeCost As Long = (CurrentTime - StartTime).Ticks
                 If totalTimeCost > 0 AndAlso CurrentBytesProcessed > 0 Then
                     Dim eteTotalCost As Double = totalTimeCost / CurrentBytesProcessed * USize
-                    Dim RemainTicks As Long = eteTotalCost - totalTimeCost
+                    Dim RemainTicks As Long = Math.Min(Long.MaxValue, eteTotalCost) - totalTimeCost
                     Dim remainTime As New TimeSpan(RemainTicks)
                     ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
                     ToolStripProgressBar1.ToolTipText &= vbCrLf & ToolStripStatusLabel6.Text
@@ -1564,6 +1564,8 @@ Public Class LTFSWriter
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
                     Dim old_select_path As String = ""
+                    Dim old_select_index As Integer
+                    If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
                     Dim new_select As TreeNode = Nothing
                     Dim IterDirectory As Action(Of ltfsindex.directory, TreeNode, Integer) =
                         Sub(dir As ltfsindex.directory, node As TreeNode, ByVal MaxDepth As Integer)
@@ -1661,6 +1663,10 @@ Public Class LTFSWriter
                     Else
                         TreeView1.SelectedNode = TreeView1.TopNode
                         TreeView1.SelectedNode.Expand()
+                    End If
+                    If old_select_index >= 0 Then
+                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
+                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
                     End If
                 Catch ex As Exception
 
@@ -4522,7 +4528,7 @@ Public Class LTFSWriter
         WA2ToolStripMenuItem.Checked = True
         WA3ToolStripMenuItem.Checked = False
     End Sub
-    Public Function CalculateChecksum(FileIndex As ltfsindex.file) As Dictionary(Of String, String)
+    Public Function CalculateChecksum(FileIndex As ltfsindex.file, Optional ByVal blk0 As Byte() = Nothing) As Dictionary(Of String, String)
         Dim HT As New IOManager.CheckSumBlockwiseCalculator
         If FileIndex.length > 0 Then
             Dim CreateNew As Boolean = True
@@ -4530,13 +4536,23 @@ Public Class LTFSWriter
                                                                                                                           Return a.fileoffset.CompareTo(b.fileoffset)
                                                                                                                       End Function))
             For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-
-                If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
-                    TapeUtils.Locate(handle:=driveHandle, BlockAddress:=fe.startblock, Partition:=GetPartitionNumber(fe.partition))
+                If blk0 IsNot Nothing Then
                     RestorePosition = New TapeUtils.PositionData(driveHandle)
+                    RestorePosition.BlockNumber -= 1
+                Else
+                    If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
+                        TapeUtils.Locate(handle:=driveHandle, BlockAddress:=fe.startblock, Partition:=GetPartitionNumber(fe.partition))
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                    End If
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
-                Dim blk As Byte() = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                Dim blk As Byte()
+                If blk0 IsNot Nothing Then
+                    blk = blk0
+                    blk0 = Nothing
+                Else
+                    blk = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                End If
                 SyncLock RestorePosition
                     RestorePosition.BlockNumber += 1
                 End SyncLock
@@ -4749,7 +4765,7 @@ Public Class LTFSWriter
                     flist.Add(SI.Tag)
                 End If
             Next
-
+            StartTime = Now
             Dim th As New Threading.Thread(
                     Sub()
                         Try
@@ -4771,7 +4787,19 @@ Public Class LTFSWriter
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
                                     Else
-                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
+                                        Dim blk0 As Byte() = Nothing
+                                        If FileIndex.extentinfo.Count = 0 OrElse FileIndex.extentinfo(0).startblock = 0 Then
+                                            blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, FileIndex.length))
+                                            Dim p As New TapeUtils.PositionData(handle:=driveHandle)
+                                            If blk0.Count = 0 Then
+                                                TapeUtils.ReadToFileMark(driveHandle)
+                                                blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, FileIndex.length))
+                                            End If
+                                            p = New TapeUtils.PositionData(handle:=driveHandle)
+                                            FileIndex.extentinfo.Clear()
+                                            FileIndex.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = FileIndex.length, .startblock = p.BlockNumber - 1, .partition = ltfsindex.PartitionLabel.b})
+                                        End If
+                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex, blk0)
                                         If result IsNot Nothing Then
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                                 FileIndex.SHA1ForeColor = Color.DarkGreen
@@ -4860,6 +4888,7 @@ Public Class LTFSWriter
     Public Sub HashSelectedDir(selectedDir As ltfsindex.directory, Overwrite As Boolean, ValidateOnly As Boolean)
         Dim th As New Threading.Thread(
             Sub()
+                StartTime = Now
                 SetStatusLight(LWStatus.Busy)
                 Dim fc As Long = 0, ec As Long = 0
                 PrintMsg(My.Resources.ResText_Hashing)
@@ -4882,9 +4911,12 @@ Public Class LTFSWriter
                     'If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                     IterDir(selectedDir, ODir)
                     FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
-                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
-                                                                    If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
-                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
+                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
+                                                                    If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
+                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
+                                                                    If a.File.extentinfo(0).startblock = 0 OrElse b.File.extentinfo(0).startblock = 0 Then
+                                                                        Return a.File.fileuid.CompareTo(b.File.fileuid)
+                                                                    End If
                                                                     If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
                                                                     If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
                                                                     Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
@@ -4909,7 +4941,19 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
                             Else
-                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                                Dim blk0 As Byte() = Nothing
+                                If fr.File.extentinfo.Count = 0 OrElse fr.File.extentinfo(0).startblock = 0 Then
+                                    blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, fr.File.length))
+                                    Dim p As New TapeUtils.PositionData(handle:=driveHandle)
+                                    If blk0.Count = 0 Then
+                                        TapeUtils.ReadToFileMark(driveHandle)
+                                        blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, fr.File.length))
+                                    End If
+                                    p = New TapeUtils.PositionData(handle:=driveHandle)
+                                    fr.File.extentinfo.Clear()
+                                    fr.File.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = fr.File.length, .startblock = p.BlockNumber - 1, .partition = ltfsindex.PartitionLabel.b})
+                                End If
+                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File, blk0)
                                 If result IsNot Nothing Then
                                     If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
                                         fr.File.SHA1ForeColor = Color.Green
