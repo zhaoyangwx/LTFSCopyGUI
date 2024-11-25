@@ -1665,8 +1665,8 @@ Public Class LTFSWriter
                         TreeView1.SelectedNode.Expand()
                     End If
                     If old_select_index >= 0 Then
-                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
                         ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
+                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
                     End If
                 Catch ex As Exception
 
@@ -4789,13 +4789,15 @@ Public Class LTFSWriter
                                     Else
                                         Dim blk0 As Byte() = Nothing
                                         If FileIndex.length > 0 AndAlso FileIndex.symlink Is Nothing AndAlso (FileIndex.extentinfo.Count = 0 OrElse FileIndex.extentinfo(0).startblock = 0) Then
+                                            PrintMsg("Extent missing. Try to reconstruct.", LogOnly:=True)
                                             blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, FileIndex.length))
                                             Dim p As New TapeUtils.PositionData(handle:=driveHandle)
                                             If blk0.Count = 0 Then
+                                                PrintMsg("Filemark Found. Skip index.", LogOnly:=True)
                                                 TapeUtils.ReadToFileMark(driveHandle)
                                                 blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, FileIndex.length))
+                                                p = New TapeUtils.PositionData(handle:=driveHandle)
                                             End If
-                                            p = New TapeUtils.PositionData(handle:=driveHandle)
                                             FileIndex.extentinfo.Clear()
                                             FileIndex.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = FileIndex.length, .startblock = p.BlockNumber - 1, .partition = ltfsindex.PartitionLabel.b})
                                         End If
@@ -4806,14 +4808,14 @@ Public Class LTFSWriter
                                             ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
                                                 FileIndex.SHA1ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.sha1} sha1calc={result.Item("SHA1")}", ForceLog:=True)
+                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
                                             End If
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
                                                 FileIndex.MD5ForeColor = Color.DarkGreen
                                             ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
                                                 FileIndex.MD5ForeColor = Color.Red
                                                 Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.sha1} md5calc={result.Item("MD5")}", ForceLog:=True)
+                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
                                             End If
                                         End If
                                     End If
@@ -4943,13 +4945,15 @@ Public Class LTFSWriter
                             Else
                                 Dim blk0 As Byte() = Nothing
                                 If fr.File.length > 0 AndAlso fr.File.symlink Is Nothing AndAlso (fr.File.extentinfo.Count = 0 OrElse fr.File.extentinfo(0).startblock = 0) Then
+                                    PrintMsg("Extent missing. Try to reconstruct.", LogOnly:=True)
                                     blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, fr.File.length))
                                     Dim p As New TapeUtils.PositionData(handle:=driveHandle)
                                     If blk0.Count = 0 Then
+                                        PrintMsg("Filemark Found. Skip index.", LogOnly:=True)
                                         TapeUtils.ReadToFileMark(driveHandle)
                                         blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, fr.File.length))
+                                        p = New TapeUtils.PositionData(handle:=driveHandle)
                                     End If
-                                    p = New TapeUtils.PositionData(handle:=driveHandle)
                                     fr.File.extentinfo.Clear()
                                     fr.File.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = fr.File.length, .startblock = p.BlockNumber - 1, .partition = ltfsindex.PartitionLabel.b})
                                 End If
@@ -4959,14 +4963,14 @@ Public Class LTFSWriter
                                         fr.File.SHA1ForeColor = Color.Green
                                     ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
                                         fr.File.SHA1ForeColor = Color.Red
-                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
+                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
                                         Threading.Interlocked.Increment(ec)
                                     End If
                                     If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
                                         fr.File.MD5ForeColor = Color.Green
                                     ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
                                         fr.File.MD5ForeColor = Color.Red
-                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.sha1} sha1calc={result}", ForceLog:=True)
+                                        PrintMsg($"MD5 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} md5logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
                                         Threading.Interlocked.Increment(ec)
                                     End If
                                 End If
