@@ -1272,8 +1272,6 @@ Public Class LTFSWriter
                 If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X1, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
                     Save_Settings()
                     e.Cancel = False
-
-                    Me.Close()
                     Exit Sub
                 End If
             End If
@@ -5908,7 +5906,9 @@ Public Class LTFSWriter
 
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
-        IndexWriteInterval = Val(InputBox(My.Resources.ResText_SIIntv, My.Resources.ResText_Setting, IndexWriteInterval))
+        Dim result As String = InputBox(My.Resources.ResText_SIIntv, My.Resources.ResText_Setting, IndexWriteInterval)
+        If result = "" Then Exit Sub
+        IndexWriteInterval = Val(result)
     End Sub
 
     Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
@@ -6681,12 +6681,17 @@ Public Class LTFSWriter
         Else
             For j As Integer = 0 To dirStack.Last.contents._file.Count - 1
                 If dirStack.Last.contents._file(j).name = pathSeg.Last Then
-                    fileindex = j
+                    fileindex = j + 1
                     Exit For
                 End If
             Next
         End If
         LockGUI(True)
+        Dim FIDMode As Boolean = KW.ToLower.StartsWith("fid:")
+        Dim FID As String = ""
+        If FIDMode Then
+            FID = KW.Substring(4).TrimStart().TrimEnd()
+        End If
         Task.Run(Sub()
 
                      While dirStack.Count > 0
@@ -6695,42 +6700,46 @@ Public Class LTFSWriter
                              currpath &= "\" & d.name
                          Next
                          PrintMsg(currpath)
-                         Do
-                             If fileindex >= dirStack.Last.contents._file.Count - 1 Then Exit Do
-                             fileindex += 1
-                             If dirStack.Last.contents._file(fileindex).name.Contains(KW) Then
-                                 Invoke(Sub()
-                                            Dim nd As TreeNode = TreeView1.Nodes(0)
-                                            Try
-                                                For n As Integer = 1 To dirIndexStack.Count - 1
-                                                    nd = nd.Nodes(dirIndexStack(n))
+                         If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
+                             Do
+                                 If fileindex > dirStack.Last.contents._file.Count - 1 Then Exit Do
+                                 If (FIDMode AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID) OrElse dirStack.Last.contents._file(fileindex).name.Contains(KW) Then
+                                     Invoke(Sub()
+                                                Dim nd As TreeNode = TreeView1.Nodes(0)
+                                                Try
+                                                    For n As Integer = 1 To dirIndexStack.Count - 1
+                                                        Invoke(Sub() nd.Expand())
+                                                        nd = nd.Nodes(dirIndexStack(n))
+                                                    Next
+                                                Catch ex As Exception
+
+                                                End Try
+                                                If nd IsNot TreeView1.SelectedNode Then
+                                                    TreeView1.SelectedNode = nd
+                                                    RefreshDisplay()
+                                                End If
+                                                For Each it As ListViewItem In ListView1.Items
+                                                    it.Selected = False
                                                 Next
-                                            Catch ex As Exception
+                                                Try
+                                                    ListView1.Items(fileindex).Focused = True
+                                                    ListView1.Items(fileindex).Selected = True
+                                                    ListView1.EnsureVisible(fileindex)
+                                                    PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
+                                                Catch ex As Exception
 
-                                            End Try
-                                            If nd IsNot TreeView1.SelectedNode Then
-                                                TreeView1.SelectedNode = nd
-                                                RefreshDisplay()
-                                            End If
-                                            For Each it As ListViewItem In ListView1.Items
-                                                it.Selected = False
-                                            Next
-                                            Try
-                                                ListView1.Items(fileindex).Focused = True
-                                                ListView1.Items(fileindex).Selected = True
-                                                ListView1.EnsureVisible(fileindex)
-                                                PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
-                                            Catch ex As Exception
+                                                End Try
+                                                LockGUI(False)
+                                            End Sub)
+                                     Exit Sub
+                                 End If
+                                 fileindex += 1
+                             Loop While fileindex <= dirStack.Last.contents._file.Count - 1
+                         End If
 
-                                            End Try
-                                            LockGUI(False)
-                                        End Sub)
-                                 Exit Sub
-                             End If
-                         Loop While fileindex < dirStack.Last.contents._file.Count - 1
                          Dim returned As Boolean = False
                          If dirStack.Count - 2 >= 0 Then
-                             While dirIndexStack.Last >= dirStack(dirStack.Count - 2).contents._directory.Count - 1
+                             While dirIndexStack.Last > dirStack(dirStack.Count - 2).contents._directory.Count - 1
                                  dirStack.RemoveAt(dirStack.Count - 1)
                                  dirIndexStack.RemoveAt(dirIndexStack.Count - 1)
                                  fileindex = 0
@@ -6740,24 +6749,29 @@ Public Class LTFSWriter
                              If returned Then
                                  If dirStack.Count <= 1 Then Exit While
                                  dirIndexStack(dirIndexStack.Count - 1) += 1
-                                 dirStack.RemoveAt(dirStack.Count - 1)
-                                 dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                                 If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
+                                     dirStack.RemoveAt(dirStack.Count - 1)
+                                     dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                                 End If
                                  Continue While
                              End If
 
                          End If
+                         If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
+                             If dirStack(dirStack.Count - 1).contents._directory.Count > 0 Then
+                                 dirStack.Add(dirStack.Last.contents._directory(0))
+                                 dirIndexStack.Add(0)
+                                 fileindex = 0
+                             Else
+                                 If dirStack.Count <= 1 Then Exit While
+                                 dirIndexStack(dirIndexStack.Count - 1) += 1
+                                 If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
+                                     dirStack.RemoveAt(dirStack.Count - 1)
+                                     dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                                 End If
 
-                         If dirStack(dirStack.Count - 1).contents._directory.Count > 0 Then
-                             dirStack.Add(dirStack.Last.contents._directory(0))
-                             dirIndexStack.Add(0)
-                             fileindex = 0
-                         Else
-                             If dirStack.Count <= 1 Then Exit While
-                             dirIndexStack(dirIndexStack.Count - 1) += 1
-                             dirStack.RemoveAt(dirStack.Count - 1)
-                             dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                             End If
                          End If
-
                          If dirStack.Count <= 1 Then Exit While
                      End While
                      Invoke(Sub() LockGUI(False))
