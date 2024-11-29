@@ -798,6 +798,8 @@ Public Class Form1
         Dim SP1 As New SettingPanel
         SP1.PropertyGrid1.SelectedObject = My.MySettings.Default
         SP1.MenuStrip1.Visible = True
+        SP1.PropertyGrid1.Top += SP1.MenuStrip1.Height
+        SP1.PropertyGrid1.Height -= SP1.MenuStrip1.Height
         If SP1.ShowDialog() = DialogResult.OK Then
             LoadSetting()
             My.Settings.Save()
