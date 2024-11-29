@@ -295,7 +295,6 @@ Partial Class Form1
         '
         'Button16
         '
-        Me.Button16.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.Button16, "Button16")
         Me.Button16.Name = "Button16"
         Me.Button16.UseVisualStyleBackColor = True
@@ -308,21 +307,18 @@ Partial Class Form1
         '
         'Button14
         '
-        Me.Button14.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.Button14, "Button14")
         Me.Button14.Name = "Button14"
         Me.Button14.UseVisualStyleBackColor = True
         '
         'Button13
         '
-        Me.Button13.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.Button13, "Button13")
         Me.Button13.Name = "Button13"
         Me.Button13.UseVisualStyleBackColor = True
         '
         'Button12
         '
-        Me.Button12.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.Button12, "Button12")
         Me.Button12.Name = "Button12"
         Me.Button12.UseVisualStyleBackColor = True
