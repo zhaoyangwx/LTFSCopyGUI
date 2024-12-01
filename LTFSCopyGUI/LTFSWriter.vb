@@ -906,7 +906,7 @@ Public Class LTFSWriter
         Public Property Buffer As Byte() = Nothing
         Private OperationLock As New Object
         Public Sub RemoveUnwritten()
-            ParentDirectory.contents.UnwrittenFiles.Remove(File)
+            ParentDirectory.UnwrittenFiles.Remove(File)
         End Sub
         Public Sub New()
 
@@ -951,7 +951,7 @@ Public Class LTFSWriter
                     MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
                 End Try
             End With
-            ParentDirectory.contents.UnwrittenFiles.Add(File)
+            ParentDirectory.UnwrittenFiles.Add(File)
         End Sub
         Public Property fs As IO.FileStream
         Public Property fsB As IO.BufferedStream
@@ -991,7 +991,7 @@ Public Class LTFSWriter
                         fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                         Exit While
                     Catch ex As Exception
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                             Case DialogResult.Abort
                                 Return 3
                             Case DialogResult.Retry
@@ -1219,12 +1219,14 @@ Public Class LTFSWriter
                              If UIHangCount > 20 AndAlso DebugPanelAutoShowup Then
                                  Dim th As New Threading.Thread(
                                     Sub()
-                                        DebugPanelAutoShowup = False
-                                        Dim SP1 As New SettingPanel
-                                        SP1.Text = Text
-                                        SP1.SelectedObject = Me
-                                        SP1.ShowDialog()
-                                        DebugPanelAutoShowup = True
+                                        If MessageBox.Show("UI hang detected. Show debug panel?", "Debug", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                                            DebugPanelAutoShowup = False
+                                            Dim SP1 As New SettingPanel
+                                            SP1.Text = Text
+                                            SP1.SelectedObject = Me
+                                            SP1.ShowDialog()
+                                            DebugPanelAutoShowup = True
+                                        End If
                                     End Sub)
                                  th.Start()
                              End If
@@ -1817,8 +1819,8 @@ Public Class LTFSWriter
                         Next
 
                     End SyncLock
-                    SyncLock d.contents.UnwrittenFiles
-                        For Each f As ltfsindex.file In d.contents.UnwrittenFiles
+                    SyncLock d.UnwrittenFiles
+                        For Each f As ltfsindex.file In d.UnwrittenFiles
                             Dim li As New ListViewItem
                             SyncLock f
                                 li.Tag = f
@@ -2055,7 +2057,7 @@ Public Class LTFSWriter
             f.extentinfo = {New ltfsindex.file.extent With {.startblock = startblock, .bytecount = len, .byteoffset = 0, .fileoffset = 0, .partition = ltfsindex.PartitionLabel.a}}.ToList()
             IO.File.Delete(tmpf)
         Catch ex As Exception
-            MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
+            MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}")
         End Try
 
     End Sub
@@ -2187,9 +2189,9 @@ Public Class LTFSWriter
                     SyncLock UFReadCount
                         If UFReadCount > 0 Then Continue While
 
-                        For i As Integer = d.contents.LastUnwrittenFilesCount - 1 To 0 Step -1
-                            If f.Name.ToLower = d.contents.UnwrittenFiles(i).name.ToLower Then
-                                d.contents.UnwrittenFiles.RemoveAt(i)
+                        For i As Integer = d.LastUnwrittenFilesCount - 1 To 0 Step -1
+                            If f.Name.ToLower = d.UnwrittenFiles(i).name.ToLower Then
+                                d.UnwrittenFiles.RemoveAt(i)
                                 For j As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
                                     Dim oldf As FileRecord = UnwrittenFiles(j)
                                     If oldf.ParentDirectory Is d AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
@@ -2284,9 +2286,9 @@ Public Class LTFSWriter
                             Threading.Thread.Sleep(0)
                             SyncLock UFReadCount
                                 If UFReadCount > 0 Then Continue While
-                                For i As Integer = dT.contents.LastUnwrittenFilesCount - 1 To 0 Step -1
-                                    If dT.contents.UnwrittenFiles(i).name.ToLower = f.Name.ToLower Then
-                                        dT.contents.UnwrittenFiles.RemoveAt(i)
+                                For i As Integer = dT.LastUnwrittenFilesCount - 1 To 0 Step -1
+                                    If dT.UnwrittenFiles(i).name.ToLower = f.Name.ToLower Then
+                                        dT.UnwrittenFiles.RemoveAt(i)
                                         For j As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
                                             Dim oldf As FileRecord = UnwrittenFiles(j)
                                             If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
@@ -2350,7 +2352,7 @@ Public Class LTFSWriter
                                     For i As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
                                         Dim oldf As FileRecord = UnwrittenFiles(i)
                                         If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                            oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
+                                            oldf.ParentDirectory.UnwrittenFiles.Remove(oldf.File)
                                             UnwrittenFiles.RemoveAt(i)
                                             FileExist = True
                                             Exit For
@@ -2405,7 +2407,7 @@ Public Class LTFSWriter
                         If UFReadCount > 0 Then Continue While
                         For Each oldf As FileRecord In UnwrittenFiles
                             If oldf.ParentDirectory Is d1 AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                oldf.ParentDirectory.contents.UnwrittenFiles.Remove(oldf.File)
+                                oldf.ParentDirectory.UnwrittenFiles.Remove(oldf.File)
                                 UnwrittenFiles.Remove(oldf)
                                 FileExist = True
                                 Exit For
@@ -2465,8 +2467,8 @@ Public Class LTFSWriter
                 Dim IterAllDirectory As Action(Of ltfsindex.directory) =
                     Sub(d1 As ltfsindex.directory)
                         Dim RList As New List(Of FileRecord)
-                        SyncLock d1.contents.UnwrittenFiles
-                            For Each f As ltfsindex.file In d1.contents.UnwrittenFiles
+                        SyncLock d1.UnwrittenFiles
+                            For Each f As ltfsindex.file In d1.UnwrittenFiles
                                 UFReadCount.Inc()
                                 For Each fr As FileRecord In UnwrittenFiles
                                     If fr.File Is f Then
@@ -2570,7 +2572,7 @@ Public Class LTFSWriter
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = ItemSelected.Tag
                         Dim d As ltfsindex.directory = ListView1.Tag
-                        If d.contents.UnwrittenFiles.Contains(f) Then
+                        If d.UnwrittenFiles.Contains(f) Then
                             While True
                                 Threading.Thread.Sleep(0)
                                 SyncLock UFReadCount
@@ -2625,7 +2627,7 @@ Public Class LTFSWriter
                     Dim PList As List(Of String) = Paths.ToList()
                     PList.Sort(ExplorerComparer)
                     ltfsindex.WSort({d}.ToList, Nothing, Sub(d1 As ltfsindex.directory)
-                                                             d1.contents.LastUnwrittenFilesCount = d1.contents.UnwrittenFiles.Count
+                                                             d1.LastUnwrittenFilesCount = d1.UnwrittenFiles.Count
                                                          End Sub)
                     For Each path As String In PList
                         If Not path.StartsWith("\\") Then path = $"\\?\{path}"
@@ -2859,7 +2861,7 @@ Public Class LTFSWriter
                                         Data = TapeUtils.ReadBlock(driveHandle, sense, CurrentBlockLen, True)
 
                                     Catch ex As Exception
-                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                             Case DialogResult.Abort
                                                 StopFlag = True
                                                 Throw ex
@@ -3101,7 +3103,7 @@ Public Class LTFSWriter
                             PrintMsg(My.Resources.ResText_RestFin)
                             SetStatusLight(LWStatus.Succ)
                         Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                             SetStatusLight(LWStatus.Err)
                         End Try
@@ -3359,7 +3361,7 @@ Public Class LTFSWriter
                                                     FileData = fr.ReadAllBytes()
                                                     Exit While
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             fr.Close()
@@ -3381,7 +3383,7 @@ Public Class LTFSWriter
                                                         p.BlockNumber += 1
                                                     End SyncLock
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             fr.Close()
@@ -3480,7 +3482,7 @@ Public Class LTFSWriter
                                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
                                                         Exit While
                                                     Catch ex As Exception
-                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                             Case DialogResult.Abort
                                                                 StopFlag = True
                                                                 fr.Close()
@@ -3523,7 +3525,7 @@ Public Class LTFSWriter
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
                                                             Catch ex As Exception
-                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
                                                                         fr.Close()
                                                                         StopFlag = True
@@ -3637,7 +3639,7 @@ Public Class LTFSWriter
                                 End If
                                 'mark as written
                                 fr.ParentDirectory.contents._file.Add(fr.File)
-                                fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
+                                fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                 If CheckUnindexedDataSizeLimit() Then
                                     p = New TapeUtils.PositionData(driveHandle)
@@ -3657,7 +3659,7 @@ Public Class LTFSWriter
                                     End If
                                 End If
                             Catch ex As Exception
-                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                                 SetStatusLight(LWStatus.Err)
                             End Try
@@ -3705,7 +3707,7 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                     SetStatusLight(LWStatus.Err)
                 End Try
@@ -4029,7 +4031,7 @@ Public Class LTFSWriter
                     Invoke(Sub() RaiseEvent LTFSLoaded())
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IRFailed)
-                    PrintMsg($"{ex.ToString}{vbCrLf}{ex.StackTrace}", LogOnly:=True)
+                    PrintMsg($"{ex.ToString}", LogOnly:=True)
                     SetStatusLight(LWStatus.Err)
                     LockGUI(False)
                 End Try
@@ -5018,7 +5020,7 @@ Public Class LTFSWriter
                     PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
                 Catch ex As Exception
                     SetStatusLight(LWStatus.Err)
-                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}"))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
                     PrintMsg(My.Resources.ResText_HErr)
                 End Try
                 UnwrittenSizeOverrideValue = 0
@@ -5276,7 +5278,7 @@ Public Class LTFSWriter
                 Host.MaxComponentLength = 4096
 
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}")
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -5298,7 +5300,7 @@ Public Class LTFSWriter
                 VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
                 'VolumeInfo.SetVolumeLabel(VolumeLabel)
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}")
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -5654,6 +5656,12 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 右下角显示容量损失ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 右下角显示容量损失ToolStripMenuItem.Click
+        If Not My.Settings.LTFSWriter_ShowLoss Then
+            If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_CapLossPerfWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
+                右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
+                Exit Sub
+            End If
+        End If
         My.Settings.LTFSWriter_ShowLoss = Not My.Settings.LTFSWriter_ShowLoss
         右下角显示容量损失ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowLoss
         My.Settings.Save()
@@ -6069,7 +6077,7 @@ Public Class LTFSWriter
             For Each SI As ListViewItem In ListView1.SelectedItems
                 If TypeOf SI.Tag Is ltfsindex.file Then
                     Dim f As ltfsindex.file = CType(SI.Tag, ltfsindex.file)
-                    If Not d.contents.UnwrittenFiles.Contains(f) Then
+                    If Not d.UnwrittenFiles.Contains(f) Then
                         flist.Add(f)
                         d.contents._file.Remove(f)
                     End If
@@ -6302,7 +6310,7 @@ Public Class LTFSWriter
                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
                                         Exit While
                                     Catch ex As Exception
-                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                             Case DialogResult.Abort
                                                 StopFlag = True
                                                 fr.Close()
@@ -6343,7 +6351,7 @@ Public Class LTFSWriter
                                                     p.BlockNumber += 1
                                                 End SyncLock
                                             Catch ex As Exception
-                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                     Case DialogResult.Abort
                                                         fr.Close()
                                                         StopFlag = True
@@ -6432,7 +6440,7 @@ Public Class LTFSWriter
                             CurrentHeight = p.BlockNumber
                             'mark as written
                             fr.ParentDirectory.contents._file.Add(fr.File)
-                            fr.ParentDirectory.contents.UnwrittenFiles.Remove(fr.File)
+                            fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
                             If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
@@ -6448,7 +6456,7 @@ Public Class LTFSWriter
                                 End If
                             End If
                         Catch ex As Exception
-                            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                             PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                         End Try
                         While Pause
@@ -6483,7 +6491,7 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}{vbCrLf}{ex.StackTrace}")
+                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                 End Try
                 TapeUtils.Flush(driveHandle)

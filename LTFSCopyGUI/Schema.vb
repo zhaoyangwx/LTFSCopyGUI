@@ -245,6 +245,13 @@ Public Class ltfsindex
         Public Property backuptime As String
         <Category("LTFSIndex")>
         Public Property fileuid As Long
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
+        Public Property UnwrittenFiles As New List(Of file)
+        <Xml.Serialization.XmlIgnore>
+        <Category("Internal")>
+        Public Property LastUnwrittenFilesCount As Integer
         <Category("LTFSIndex")>
         Public Property contents As New contentsDef
         '<Xml.Serialization.XmlIgnore>
@@ -289,7 +296,7 @@ Public Class ltfsindex
                 If _TotalFiles = 0 AndAlso contents._file IsNot Nothing AndAlso contents._file.Count > 0 Then
                     RefreshCount()
                 End If
-                If _TotalFilesUnwritten = 0 AndAlso contents.UnwrittenFiles IsNot Nothing AndAlso contents.UnwrittenFiles.Count > 0 Then
+                If _TotalFilesUnwritten = 0 AndAlso UnwrittenFiles IsNot Nothing AndAlso UnwrittenFiles.Count > 0 Then
                     RefreshCount()
                 End If
                 Return _TotalFilesUnwritten
@@ -315,8 +322,8 @@ Public Class ltfsindex
                 Else
                     _TotalFiles = 0
                 End If
-                If contents.UnwrittenFiles IsNot Nothing Then
-                    _TotalFilesUnwritten = contents.UnwrittenFiles.Count
+                If UnwrittenFiles IsNot Nothing Then
+                    _TotalFilesUnwritten = UnwrittenFiles.Count
                 Else
                     _TotalFilesUnwritten = 0
                 End If
@@ -324,8 +331,8 @@ Public Class ltfsindex
                 If contents._file IsNot Nothing Then
                     _TotalFiles = contents._file.Count
                 End If
-                If contents.UnwrittenFiles IsNot Nothing Then
-                    _TotalFilesUnwritten = contents.UnwrittenFiles.Count
+                If UnwrittenFiles IsNot Nothing Then
+                    _TotalFilesUnwritten = UnwrittenFiles.Count
                 End If
                 For Each d As directory In contents._directory
                     _TotalFiles += d.TotalFiles
@@ -396,13 +403,6 @@ Public Class ltfsindex
         <Category("LTFSIndex")>
         <TypeConverter(GetType(ListTypeDescriptor(Of List(Of directory), directory)))>
         Public Property _directory As New List(Of directory)
-        <Xml.Serialization.XmlIgnore>
-        <Category("Internal")>
-        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
-        Public Property UnwrittenFiles As New List(Of file)
-        <Xml.Serialization.XmlIgnore>
-        <Category("Internal")>
-        Public Property LastUnwrittenFilesCount As Integer
     End Class
     <Category("LTFSIndex")>
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of file), file)))>
