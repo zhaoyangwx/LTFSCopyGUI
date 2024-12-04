@@ -1206,6 +1206,7 @@ Public Class LTFSWriter
                      Dim DebugPanelAutoShowup As Boolean = True
                      Dim ToolTipChanErrLogShown As Boolean = False
                      Dim ToolTipChanErrLogShownLock As New Object
+                     Dim thF12Lock As New Object
                      While True AndAlso Me IsNot Nothing AndAlso Me.Visible
                          Try
                              Threading.Thread.Sleep(Timer1.Interval)
@@ -1219,16 +1220,23 @@ Public Class LTFSWriter
                              If UIHangCount > 20 AndAlso DebugPanelAutoShowup Then
                                  Dim th As New Threading.Thread(
                                     Sub()
-                                        If MessageBox.Show("UI hang detected. Show debug panel?", "Debug", MessageBoxButtons.OKCancel) = DialogResult.OK Then
-                                            DebugPanelAutoShowup = False
-                                            Dim SP1 As New SettingPanel
-                                            SP1.Text = Text
-                                            SP1.SelectedObject = Me
-                                            SP1.ShowDialog()
-                                            DebugPanelAutoShowup = True
+                                        If Threading.Monitor.TryEnter(thF12Lock) Then
+                                            If MessageBox.Show("UI hang detected. Show debug panel?", "Debug", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                                                DebugPanelAutoShowup = False
+                                                Dim SP1 As New SettingPanel
+                                                SP1.Text = Text
+                                                SP1.SelectedObject = Me
+                                                SP1.ShowDialog()
+                                                DebugPanelAutoShowup = True
+                                            End If
+                                            Threading.Monitor.Exit(thF12Lock)
                                         End If
                                     End Sub)
-                                 th.Start()
+                                 If Threading.Monitor.TryEnter(thF12Lock) Then
+                                     Threading.Monitor.Exit(thF12Lock)
+                                     th.Start()
+                                 End If
+
                              End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
                                  If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
@@ -1420,9 +1428,9 @@ Public Class LTFSWriter
             Dim Gen As Integer, WORM As Boolean, WP As Boolean
             Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
             If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
-            Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
+            Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
             If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
-            Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
+            Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
             If WPPage IsNot Nothing Then WP = WPPage.LastByte
 
             Dim MediaDescription As String = $"L{Gen}"
