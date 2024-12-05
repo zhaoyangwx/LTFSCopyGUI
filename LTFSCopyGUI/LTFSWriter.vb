@@ -1240,8 +1240,10 @@ Public Class LTFSWriter
                              End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
                                  If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
-                                     RefreshDriveLEDIndicator()
                                      Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                                     SyncLock TapeUtils.SCSIOperationLock
+                                         RefreshDriveLEDIndicator()
+                                     End SyncLock
                                  End If
                              End If
                              If ToolTipChanErrLogShowing Then
@@ -1410,7 +1412,6 @@ Public Class LTFSWriter
                        ToolStripStatusLabelS5.ForeColor = Color.Gray
                    End If
                End Sub)
-
     End Sub
     Public Property CapLossChannelInfo As String
     Public Sub SetCapLossChannelInfo(Text As String)
