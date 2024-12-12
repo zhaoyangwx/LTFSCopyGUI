@@ -77,6 +77,8 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugReadPosition = New System.Windows.Forms.Button()
         Me.ButtonDebugDumpIndex = New System.Windows.Forms.Button()
         Me.ButtonDebugErase = New System.Windows.Forms.Button()
+        Me.ContextMenuStripErase = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.ReInitializeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.NumericUpDownBlockLen = New System.Windows.Forms.NumericUpDown()
         Me.CheckBoxEnableDumpLog = New System.Windows.Forms.CheckBox()
         Me.LabelReadBlockLim = New System.Windows.Forms.Label()
@@ -130,8 +132,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ContextMenuStripErase = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.ReInitializeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.QuickEraseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -142,6 +143,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownPartitionNum, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripCMReader.SuspendLayout()
         CType(Me.NumericUpDownEraseCycle, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStripErase.SuspendLayout()
         CType(Me.NumericUpDownBlockLen, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageBuffer.SuspendLayout()
         Me.TabPageMAM.SuspendLayout()
@@ -151,7 +153,6 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.SuspendLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.ContextMenuStripErase.SuspendLayout()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -535,6 +536,17 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugErase.Name = "ButtonDebugErase"
         Me.ButtonDebugErase.UseVisualStyleBackColor = True
         '
+        'ContextMenuStripErase
+        '
+        Me.ContextMenuStripErase.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ReInitializeToolStripMenuItem, Me.QuickEraseToolStripMenuItem})
+        Me.ContextMenuStripErase.Name = "ContextMenuStripErase"
+        resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
+        '
+        'ReInitializeToolStripMenuItem
+        '
+        Me.ReInitializeToolStripMenuItem.Name = "ReInitializeToolStripMenuItem"
+        resources.ApplyResources(Me.ReInitializeToolStripMenuItem, "ReInitializeToolStripMenuItem")
+        '
         'NumericUpDownBlockLen
         '
         resources.ApplyResources(Me.NumericUpDownBlockLen, "NumericUpDownBlockLen")
@@ -868,16 +880,10 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ContextMenuStripErase
+        'QuickEraseToolStripMenuItem
         '
-        Me.ContextMenuStripErase.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ReInitializeToolStripMenuItem})
-        Me.ContextMenuStripErase.Name = "ContextMenuStripErase"
-        resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
-        '
-        'ReInitializeToolStripMenuItem
-        '
-        Me.ReInitializeToolStripMenuItem.Name = "ReInitializeToolStripMenuItem"
-        resources.ApplyResources(Me.ReInitializeToolStripMenuItem, "ReInitializeToolStripMenuItem")
+        Me.QuickEraseToolStripMenuItem.Name = "QuickEraseToolStripMenuItem"
+        resources.ApplyResources(Me.QuickEraseToolStripMenuItem, "QuickEraseToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -900,6 +906,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownPartitionNum, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripCMReader.ResumeLayout(False)
         CType(Me.NumericUpDownEraseCycle, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStripErase.ResumeLayout(False)
         CType(Me.NumericUpDownBlockLen, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPageBuffer.ResumeLayout(False)
         Me.TabPageBuffer.PerformLayout()
@@ -913,7 +920,6 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.PerformLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.ContextMenuStripErase.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -1026,4 +1032,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents DiskToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ContextMenuStripErase As ContextMenuStrip
     Friend WithEvents ReInitializeToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents QuickEraseToolStripMenuItem As ToolStripMenuItem
 End Class
