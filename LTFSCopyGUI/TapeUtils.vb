@@ -2546,6 +2546,7 @@ Public Class TapeUtils
             End Get
             Set(value As Byte)
                 _ExtraPartitionCount = Math.Min(1, value)
+                _ExtraPartitionCount = Math.Min(_ExtraPartitionCount, MaxExtraPartitionAllowed)
             End Set
         End Property
         Private _BlockLen As Long = 524288
@@ -2602,6 +2603,7 @@ Public Class TapeUtils
         Public Property EncryptionKey As Byte() = Nothing
         Public Sub New(MaxExtraPartitionAllowed As Byte)
             Me.MaxExtraPartitionAllowed = MaxExtraPartitionAllowed
+            Me._ExtraPartitionCount = Math.Min(Me._ExtraPartitionCount, Me.MaxExtraPartitionAllowed)
         End Sub
     End Class
     Public Shared Function mkltfs(TapeDrive As String,

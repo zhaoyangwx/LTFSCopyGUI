@@ -1421,14 +1421,15 @@ Public Class LTFSWriter
         Dim result(3) As Long
         Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
         Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, PageControl:=1)
-        Dim errRate As Double = ReadChanLRInfo()
-        RefreshDriveLEDIndicator()
         Try
             CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
             VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
             Dim Gen As Integer, WORM As Boolean, WP As Boolean
             Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
             If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
+            Dim errRate As Double = 0
+            If Gen > 0 Then errRate = ReadChanLRInfo()
+            RefreshDriveLEDIndicator()
             Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
             If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
             Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
@@ -4245,6 +4246,7 @@ Public Class LTFSWriter
             Dim MaxExtraPartitionAllowed As Byte = modedata(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+
             If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
             param.Barcode = TapeUtils.ReadBarcode(driveHandle)
             param.EncryptionKey = EncryptionKey

@@ -2100,4 +2100,25 @@ Public Class LTFSConfigurator
                      Invoke(Sub() Me.Enabled = True)
                  End Sub)
     End Sub
+
+    Private Sub QuickEraseToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles QuickEraseToolStripMenuItem.Click
+        Me.Enabled = False
+        Task.Run(Sub()
+                     Dim cdbData As Byte() = {19, 0, 0, 0, 0, 0}
+                     Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
+                     Marshal.Copy(cdbData, 0, cdb, 6)
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim sense As IntPtr = Marshal.AllocHGlobal(127)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(cdb)
+                     Marshal.FreeHGlobal(data)
+                     Marshal.FreeHGlobal(sense)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
 End Class
