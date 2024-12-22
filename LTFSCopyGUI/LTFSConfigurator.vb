@@ -944,6 +944,7 @@ Public Class LTFSConfigurator
                             BlkNum = Block
                         End If
                         If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                            MessageBox.Show(TapeUtils.ParseSenseData(sense))
                             Operation_Cancel_Flag = False
                             Exit While
                         End If
