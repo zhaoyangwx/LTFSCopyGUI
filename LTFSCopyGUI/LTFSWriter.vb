@@ -2268,6 +2268,7 @@ Public Class LTFSWriter
                                                       End Function))
             For Each f As IO.FileInfo In flist
                 Try
+                    If StopFlag Then Exit For
                     If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
                         For Each ext As String In exceptExtention
                             If f.FullName.ToLower().EndsWith(ext.ToLower()) Then
@@ -3151,10 +3152,10 @@ Public Class LTFSWriter
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
             Dim p As TapeUtils.PositionData
             While True
-                TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
+                Dim add_code As UShort = TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
                 p = GetPos
                 If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse p.BlockNumber <> schema.previousgenerationlocation.startblock Then
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                         Case DialogResult.Ignore
                             Exit While
                         Case DialogResult.Abort
