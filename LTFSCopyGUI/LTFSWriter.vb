@@ -1417,25 +1417,47 @@ Public Class LTFSWriter
     Public Sub SetCapLossChannelInfo(Text As String)
         CapLossChannelInfo = Text
     End Sub
+    Public CMOnce As TapeUtils.CMParser
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
         Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
         Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, PageControl:=1)
         Try
             CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
-            VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
-            Dim Gen As Integer, WORM As Boolean, WP As Boolean
-            Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
-            If GenPage IsNot Nothing Then Gen = Integer.Parse(GenPage.GetString().Last)
+            Dim Gen As Integer, WORM As Boolean, WP As Boolean, GenStr As String = ""
+            If logdataVStat Is Nothing OrElse logdataVStat.Length <= 4 Then
+                If CMOnce Is Nothing Then CMOnce = New TapeUtils.CMParser(driveHandle)
+                If CMOnce IsNot Nothing Then
+                    GenStr = CMOnce.CartridgeMfgData.CartridgeTypeAbbr
+                End If
+            Else
+                VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
+                Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
+                If GenPage IsNot Nothing Then
+                    Gen = Integer.Parse(GenPage.GetString().Last)
+                    GenStr = $"L{Gen}"
+                    If Gen = 7 OrElse Gen = 8 Then
+                        If CMOnce Is Nothing Then CMOnce = New TapeUtils.CMParser(driveHandle)
+                        If CMOnce IsNot Nothing Then
+                            GenStr = CMOnce.CartridgeMfgData.CartridgeTypeAbbr
+                        End If
+                    End If
+                Else
+                    If CMOnce Is Nothing Then CMOnce = New TapeUtils.CMParser(driveHandle)
+                    If CMOnce IsNot Nothing Then
+                        GenStr = CMOnce.CartridgeMfgData.CartridgeTypeAbbr
+                    End If
+                End If
+                Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
+                If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
+                Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
+                If WPPage IsNot Nothing Then WP = WPPage.LastByte
+            End If
             Dim errRate As Double = 0
             If Gen > 0 Then errRate = ReadChanLRInfo()
             RefreshDriveLEDIndicator()
-            Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
-            If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
-            Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
-            If WPPage IsNot Nothing Then WP = WPPage.LastByte
 
-            Dim MediaDescription As String = $"L{Gen}"
+            Dim MediaDescription As String = $"{GenStr}"
             If WORM Then MediaDescription &= " WORM"
             If WP Then MediaDescription &= " RO" Else MediaDescription &= " RW"
 
@@ -3190,10 +3212,10 @@ Public Class LTFSWriter
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             If p.BlockNumber <> CurrentHeight Then
                 While True
-                    TapeUtils.Locate(driveHandle, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
+                    Dim add_code As UShort = TapeUtils.Locate(driveHandle, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
                     p = GetPos
                     If p.PartitionNumber <> DataPartition OrElse p.BlockNumber <> CULng(CurrentHeight) Then
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                             Case DialogResult.Ignore
                                 Exit While
                             Case DialogResult.Abort
