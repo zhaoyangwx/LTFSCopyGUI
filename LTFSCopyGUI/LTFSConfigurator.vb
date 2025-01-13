@@ -574,16 +574,23 @@ Public Class LTFSConfigurator
         Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String = ""
+                    Dim sense(63) As Byte
                     Try
-                        result &= TapeUtils.SetBarcode(ConfTapeDrive, barcode)
+                        result &= TapeUtils.SetBarcode(ConfTapeDrive, barcode, Function(senseData As Byte()) As Boolean
+                                                                                   sense = senseData
+                                                                                   Return True
+                                                                               End Function)
                         result = result.Replace("True", "").Replace("False", "Failed")
+
                     Catch ex As Exception
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
                                If result = "" Then result = ConfTapeDrive & " Barcode = " & barcode
-                               result &= vbCrLf
-                               TextBoxMsg.AppendText(result)
+                               result &= vbCrLf & vbCrLf & "SenseBuffer" & vbCrLf
+                               result &= Byte2Hex(sense) & vbCrLf
+                               result &= TapeUtils.ParseSenseData(sense) & vbCrLf
+                               TextBoxDebugOutput.Text = result
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True

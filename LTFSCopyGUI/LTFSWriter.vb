@@ -1596,8 +1596,6 @@ Public Class LTFSWriter
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
                     Dim old_select_path As String = ""
-                    Dim old_select_index As Integer
-                    If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
                     Dim new_select As TreeNode = Nothing
                     Dim IterDirectory As Action(Of ltfsindex.directory, TreeNode, Integer) =
                         Sub(dir As ltfsindex.directory, node As TreeNode, ByVal MaxDepth As Integer)
@@ -1696,10 +1694,6 @@ Public Class LTFSWriter
                         TreeView1.SelectedNode = TreeView1.TopNode
                         TreeView1.SelectedNode.Expand()
                     End If
-                    If old_select_index >= 0 Then
-                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
-                        ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
-                    End If
                 Catch ex As Exception
 
                 End Try
@@ -1769,7 +1763,10 @@ Public Class LTFSWriter
     Public Sub TriggerTreeView1Event()
         If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
             ListView1.BeginUpdate()
+            Dim old_select_index As Integer, old_node As Object = ListView1.Tag
+            If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
             Try
+
                 If TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.directory Then
                     If TreeView1.SelectedNode.Parent IsNot Nothing Then
                         压缩索引ToolStripMenuItem.Enabled = True
@@ -1922,11 +1919,17 @@ Public Class LTFSWriter
                 Else
                     'ListView1.BackgroundImage = Nothing
                 End If
+
             Catch ex As Exception
                 PrintMsg(My.Resources.ResText_NavErr)
                 SetStatusLight(LWStatus.Err)
             End Try
             ListView1.EndUpdate()
+            If old_node IsNot Nothing AndAlso ListView1.Tag IsNot Nothing AndAlso old_node Is ListView1.Tag AndAlso old_select_index >= 0 Then
+                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
+                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
+                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).EnsureVisible()
+            End If
         End If
     End Sub
     Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles TreeView1.AfterSelect
@@ -2061,7 +2064,7 @@ Public Class LTFSWriter
             TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
             'Write data
             TapeUtils.Locate(driveHandle, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
-            TapeUtils.Write(driveHandle, Data, plabel.blocksize)
+            TapeUtils.Write(handle:=driveHandle, Data:=Data, BlockSize:=plabel.blocksize, senseEnabled:=False)
             'Recover old index
             TapeUtils.WriteFileMark(driveHandle)
             TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
@@ -6834,6 +6837,29 @@ Public Class LTFSWriter
                 If LastSearchKW = "" Then GetSearchInput()
                 Search()
             Case Keys.KeyCode.F5
+                If e.Control Then
+                    Dim cmp As New ExplorerUtils
+                    If ListView1.Tag IsNot Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
+                        Dim dir As ltfsindex.directory = CType(ListView1.Tag, ltfsindex.directory)
+                        dir.contents._file.Sort(New Comparison(Of ltfsindex.file)(
+                                                Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
+                                                    If e.Alt Then
+                                                        Return a.name.CompareTo(b.name)
+                                                    Else
+                                                        Return cmp.Compare(a.name, b.name)
+                                                    End If
+                                                End Function))
+                        dir.contents._directory.Sort(New Comparison(Of ltfsindex.directory)(
+                                                Function(a As ltfsindex.directory, b As ltfsindex.directory) As Integer
+                                                    If e.Alt Then
+                                                        Return a.name.CompareTo(b.name)
+                                                    Else
+                                                        Return cmp.Compare(a.name, b.name)
+                                                    End If
+                                                End Function))
+
+                    End If
+                End If
                 RefreshDisplay()
             Case Keys.KeyCode.F8
                 LockGUI(AllowOperation)
