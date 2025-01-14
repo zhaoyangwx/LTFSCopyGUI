@@ -4584,11 +4584,37 @@ Public Class LTFSWriter
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
                 Dim blk As Byte()
+                Dim sense As Byte() = {}
                 If blk0 IsNot Nothing Then
                     blk = blk0
                     blk0 = Nothing
                 Else
-                    blk = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                    Dim succ As Boolean = False
+                    While Not succ
+                        blk = TapeUtils.ReadBlock(handle:=driveHandle, sense:=sense, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                        If ((sense(2) >> 6) And &H1) = 1 Then
+                            succ = True
+                            Exit While
+                        ElseIf sense(2) And &HF <> 0 Then
+                            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+                            Try
+                                Throw New Exception("SCSI sense error")
+                            Catch ex As Exception
+                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                    Case DialogResult.Abort
+                                        StopFlag = True
+                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                    Case DialogResult.Retry
+                                        succ = False
+                                    Case DialogResult.Ignore
+                                        succ = True
+                                        Exit While
+                                End Select
+                            End Try
+                        Else
+                            succ = True
+                        End If
+                    End While
                 End If
                 SyncLock RestorePosition
                     RestorePosition.BlockNumber += 1
@@ -4599,7 +4625,32 @@ Public Class LTFSWriter
                 Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                 Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                 While TotalBytesToRead > 0
-                    blk = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                    Dim succ As Boolean = False
+                    While Not succ
+                        blk = TapeUtils.ReadBlock(handle:=driveHandle, sense:=sense, BlockSizeLimit:=Math.Min(plabel.blocksize, TotalBytesToRead))
+                        If ((sense(2) >> 6) And &H1) = 1 Then
+                            succ = True
+                            Exit While
+                        ElseIf sense(2) And &HF <> 0 Then
+                            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+                            Try
+                                Throw New Exception("SCSI sense error")
+                            Catch ex As Exception
+                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                    Case DialogResult.Abort
+                                        StopFlag = True
+                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                    Case DialogResult.Retry
+                                        succ = False
+                                    Case DialogResult.Ignore
+                                        succ = True
+                                        Exit While
+                                End Select
+                            End Try
+                        Else
+                            succ = True
+                        End If
+                    End While
                     SyncLock RestorePosition
                         RestorePosition.BlockNumber += 1
                     End SyncLock
