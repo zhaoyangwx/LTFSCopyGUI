@@ -411,7 +411,30 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-
+    Public Shared Function IsOpened(TapeDrive As String) As Boolean
+        SyncLock DriveHandle
+            If DriveHandle.ContainsKey(TapeDrive) Then
+                Return DriveOpenCount(TapeDrive) > 0
+            Else
+                Return False
+            End If
+        End SyncLock
+    End Function
+    Public Shared Function IsOpened(handle As IntPtr) As Boolean
+        SyncLock DriveHandle
+            If DriveHandle.ContainsValue(handle) Then
+                For Each key As String In DriveHandle.Keys
+                    If DriveHandle(key).Equals(handle) Then
+                        If DriveOpenCount(key) > 0 Then
+                            Return True
+                        End If
+                    End If
+                Next
+            Else
+                Return False
+            End If
+        End SyncLock
+    End Function
 
 
     Structure LPSECURITY_ATTRIBUTES
@@ -1143,7 +1166,6 @@ Public Class TapeUtils
             Return SetMAMAttribute(handle, &H80C, VCIData, AttributeFormat.Binary, ExtraPartitionCount, SenseReport)
         End SyncLock
     End Function
-
     Public Shared Function ParseAdditionalSenseCode(Add_Code As UInt16) As String
         Dim Msg As New StringBuilder
         Select Case Add_Code

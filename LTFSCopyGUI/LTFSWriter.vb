@@ -378,14 +378,18 @@ Public Class LTFSWriter
         ToolStripStatusLabel3.ToolTipText = TextT3
         ToolStripStatusLabel5.Text = Text5
         ToolStripStatusLabel5.ToolTipText = TextT5
-        If IOCtlNum > 0 Then
-            If blinkcycle < blinkticks Then
-                ToolStripStatusLabelS6.ForeColor = Color.Transparent
+        If TapeUtils.IsOpened(driveHandle) Then
+            If IOCtlNum > 0 Then
+                If blinkcycle < blinkticks Then
+                    ToolStripStatusLabelS6.ForeColor = Color.Transparent
+                Else
+                    ToolStripStatusLabelS6.ForeColor = Color.LimeGreen
+                End If
             Else
-                ToolStripStatusLabelS6.ForeColor = Color.LimeGreen
+                ToolStripStatusLabelS6.ForeColor = Color.Green
             End If
         Else
-            ToolStripStatusLabelS6.ForeColor = Color.Green
+            ToolStripStatusLabelS6.ForeColor = Color.Gray
         End If
         If blinkcycle < blinkticks Then
             If ToolStripStatusLabelS3.ForeColor <> Color.Gray Then
@@ -1954,6 +1958,53 @@ Public Class LTFSWriter
         End If
         Return False
     End Function
+
+    Public Function TryExecute(ByVal command As Func(Of Byte()))
+        Dim succ As Boolean = False
+        While Not succ
+            Dim sense() As Byte
+            Try
+                sense = command()
+            Catch ex As Exception
+                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Case DialogResult.Abort
+                        Throw ex
+                    Case DialogResult.Retry
+                        succ = False
+                    Case DialogResult.Ignore
+                        succ = True
+                        Exit While
+                End Select
+                Continue While
+            End Try
+            If ((sense(2) >> 6) And &H1) = 1 Then
+                If (sense(2) And &HF) = 13 Then
+                    succ = True
+                Else
+                    succ = True
+                    Exit While
+                End If
+            ElseIf sense(2) And &HF <> 0 Then
+                PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+                Try
+                    Throw New Exception("SCSI sense error")
+                Catch ex As Exception
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Case DialogResult.Abort
+                            Throw New Exception(TapeUtils.ParseSenseData(sense))
+                        Case DialogResult.Retry
+                            succ = False
+                        Case DialogResult.Ignore
+                            succ = True
+                            Exit While
+                    End Select
+                End Try
+            Else
+                succ = True
+            End If
+        End While
+        Return succ
+    End Function
     Public Sub WriteCurrentIndex(Optional ByVal GotoEOD As Boolean = True, Optional ByVal ClearCurrentStat As Boolean = True)
         SetStatusLight(LWStatus.Busy)
         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
@@ -1968,7 +2019,9 @@ Public Class LTFSWriter
             Throw New Exception($"{My.Resources.ResText_CurPos}p{CurrentPos.PartitionNumber}b{CurrentPos.BlockNumber}{My.Resources.ResText_IndexNAllowed}")
             Exit Sub
         End If
-        TapeUtils.WriteFileMark(driveHandle)
+        TryExecute(Function() As Byte()
+                       Return TapeUtils.WriteFileMark(driveHandle)
+                   End Function)
         schema.generationnumber += 1
         schema.updatetime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
         schema.location.partition = ltfsindex.PartitionLabel.b
@@ -2015,6 +2068,7 @@ Public Class LTFSWriter
             TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
+            schema.location.startblock = p.BlockNumber + 1
             TapeUtils.WriteFileMark(driveHandle)
             PrintMsg($"Filemark Written", LogOnly:=True)
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
@@ -2022,7 +2076,6 @@ Public Class LTFSWriter
             End If
             p = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-            schema.location.startblock = p.BlockNumber
         End If
         Dim block0 As ULong = schema.location.startblock
         If ExtraPartitionCount > 0 Then
@@ -3908,6 +3961,7 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
                     PrintMsg($"Position = {TapeUtils.ReadPosition(driveHandle).ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
@@ -4083,6 +4137,7 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim currentPos As TapeUtils.PositionData = GetPos
@@ -4267,6 +4322,7 @@ Public Class LTFSWriter
                 End SyncLock
             End While
             'nop
+            If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
             TapeUtils.ReadPosition(driveHandle)
             Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
             Dim MaxExtraPartitionAllowed As Byte = modedata(2)
@@ -6236,6 +6292,7 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Try
+                    If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim data As Byte()
@@ -6321,6 +6378,7 @@ Public Class LTFSWriter
 
     Private Sub 加锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 加锁ToolStripMenuItem.Click
         TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
+        If TapeUtils.IsOpened(driveHandle) Then SetStatusLight(LWStatus.Idle)
         MessageBox.Show(New Form With {.TopMost = True}, $"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
     End Sub
 
@@ -6704,6 +6762,7 @@ Public Class LTFSWriter
 
     Private Sub 解锁ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 解锁ToolStripMenuItem.Click
         TapeUtils.CloseTapeDrive(driveHandle)
+        If Not TapeUtils.IsOpened(driveHandle) Then SetStatusLight(LWStatus.NotReady)
         MessageBox.Show(New Form With {.TopMost = True}, $"Lock: {TapeUtils.DriveOpenCount(TapeDrive)}")
     End Sub
 

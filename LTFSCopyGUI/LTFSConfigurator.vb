@@ -368,11 +368,7 @@ Public Class LTFSConfigurator
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
-                                  TextBoxDebugOutput.Text = "DataBuffer" & vbCrLf
-                                  TextBoxDebugOutput.Text &= Byte2Hex(dataData, True)
-                                  TextBoxDebugOutput.Text &= vbCrLf & vbCrLf & "SenseBuffer" & vbCrLf
-                                  TextBoxDebugOutput.Text &= Byte2Hex(senseBuffer) & vbCrLf
-                                  TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(senseBuffer) & vbCrLf
+                                  PrintCommandResult(cdbData, dataData, senseBuffer)
                               End Sub)
                     'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
                     Marshal.FreeHGlobal(cdb)
@@ -612,8 +608,13 @@ Public Class LTFSConfigurator
         Dim PN As Byte = NumericUpDownPartitionNum.Value
         Task.Run(Sub()
                      Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, PCH, PCL, PN)
-                     If ResultB.Length = 0 Then Exit Sub
-                     Dim Result As String = System.Text.Encoding.UTF8.GetString(ResultB)
+                     Dim Result As String = ""
+                     If ResultB.Length = 0 Then
+
+                     Else
+                         Result = System.Text.Encoding.UTF8.GetString(ResultB)
+                     End If
+
                      Invoke(Sub()
                                 If Result <> "" Then TextBoxDebugOutput.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
                                 TextBoxDebugOutput.AppendText(Byte2Hex(ResultB))
@@ -779,13 +780,16 @@ Public Class LTFSConfigurator
                      Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
                      Marshal.Copy(cdbData, 0, cdb, 6)
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(127)
+                     Dim senseData(63) As Byte
+                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
+                     Marshal.Copy(sense, senseData, 0, senseData.Length)
+                     PrintCommandResult(cdbData, Nothing, senseData)
                      Marshal.FreeHGlobal(cdb)
                      Marshal.FreeHGlobal(data)
                      Marshal.FreeHGlobal(sense)
@@ -2095,38 +2099,60 @@ Public Class LTFSConfigurator
                      Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
                      Marshal.Copy(cdbData, 0, cdb, 6)
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(127)
+                     Dim senseData(63) As Byte
+                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
+                     Marshal.Copy(sense, senseData, 0, senseData.Length)
                      Marshal.FreeHGlobal(cdb)
                      Marshal.FreeHGlobal(data)
                      Marshal.FreeHGlobal(sense)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub()
+                                PrintCommandResult(cdbData, Nothing, senseData)
+                                Me.Enabled = True
+                            End Sub)
                  End Sub)
     End Sub
 
     Private Sub QuickEraseToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles QuickEraseToolStripMenuItem.Click
         Me.Enabled = False
         Task.Run(Sub()
-                     Dim cdbData As Byte() = {19, 0, 0, 0, 0, 0}
+                     Dim cdbData As Byte() = {&H19, 0, 0, 0, 0, 0}
                      Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
                      Marshal.Copy(cdbData, 0, cdb, 6)
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(127)
+                     Dim senseData(63) As Byte
+                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 2, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
+                     Marshal.Copy(sense, senseData, 0, senseData.Length)
                      Marshal.FreeHGlobal(cdb)
                      Marshal.FreeHGlobal(data)
                      Marshal.FreeHGlobal(sense)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub()
+                                PrintCommandResult(cdbData, Nothing, senseData)
+                                Me.Enabled = True
+                            End Sub)
                  End Sub)
+    End Sub
+    Public Sub PrintCommandResult(ByVal cdb As Byte(), ByVal param As Byte(), ByVal sense As Byte())
+
+        Invoke(Sub()
+                   TextBoxDebugOutput.Text = "CDB" & vbCrLf
+                   TextBoxDebugOutput.Text &= Byte2Hex(cdb, True)
+                   TextBoxDebugOutput.Text &= vbCrLf & vbCrLf & "Param" & vbCrLf
+                   If param IsNot Nothing AndAlso param.Length > 0 Then TextBoxDebugOutput.Text &= Byte2Hex(param, True) & vbCrLf
+                   TextBoxDebugOutput.Text &= vbCrLf & vbCrLf & "Sense" & vbCrLf
+                   If sense IsNot Nothing AndAlso sense.Length > 0 Then TextBoxDebugOutput.Text &= Byte2Hex(sense, True) & vbCrLf
+                   TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense)
+               End Sub)
     End Sub
 End Class
