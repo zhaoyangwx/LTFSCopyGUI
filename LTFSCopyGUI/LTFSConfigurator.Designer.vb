@@ -79,6 +79,7 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugErase = New System.Windows.Forms.Button()
         Me.ContextMenuStripErase = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.ReInitializeToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.QuickEraseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.NumericUpDownBlockLen = New System.Windows.Forms.NumericUpDown()
         Me.CheckBoxEnableDumpLog = New System.Windows.Forms.CheckBox()
         Me.LabelReadBlockLim = New System.Windows.Forms.Label()
@@ -132,7 +133,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.QuickEraseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -164,6 +164,7 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripRefreshDeviceList
         '
+        Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
@@ -318,6 +319,7 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripLTFSWriter
         '
+        Me.ContextMenuStripLTFSWriter.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripLTFSWriter.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.在当前进程运行ToolStripMenuItem, Me.不读取索引ToolStripMenuItem})
         Me.ContextMenuStripLTFSWriter.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStripLTFSWriter, "ContextMenuStripLTFSWriter")
@@ -353,6 +355,7 @@ Partial Class LTFSConfigurator
         'Panel2
         '
         resources.ApplyResources(Me.Panel2, "Panel2")
+        Me.Panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.Panel2.Controls.Add(Me.TabControl1)
         Me.Panel2.Controls.Add(Me.LabelTimeout)
         Me.Panel2.Controls.Add(Me.TextBoxTimeoutValue)
@@ -464,6 +467,7 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripCMReader
         '
+        Me.ContextMenuStripCMReader.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripCMReader.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem, Me.ReadThroughDiagnosticCommandToolStripMenuItem})
         Me.ContextMenuStripCMReader.Name = "ContextMenuStrip2"
         resources.ApplyResources(Me.ContextMenuStripCMReader, "ContextMenuStripCMReader")
@@ -538,6 +542,7 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripErase
         '
+        Me.ContextMenuStripErase.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripErase.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ReInitializeToolStripMenuItem, Me.QuickEraseToolStripMenuItem})
         Me.ContextMenuStripErase.Name = "ContextMenuStripErase"
         resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
@@ -546,6 +551,11 @@ Partial Class LTFSConfigurator
         '
         Me.ReInitializeToolStripMenuItem.Name = "ReInitializeToolStripMenuItem"
         resources.ApplyResources(Me.ReInitializeToolStripMenuItem, "ReInitializeToolStripMenuItem")
+        '
+        'QuickEraseToolStripMenuItem
+        '
+        Me.QuickEraseToolStripMenuItem.Name = "QuickEraseToolStripMenuItem"
+        resources.ApplyResources(Me.QuickEraseToolStripMenuItem, "QuickEraseToolStripMenuItem")
         '
         'NumericUpDownBlockLen
         '
@@ -879,11 +889,6 @@ Partial Class LTFSConfigurator
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        '
-        'QuickEraseToolStripMenuItem
-        '
-        Me.QuickEraseToolStripMenuItem.Name = "QuickEraseToolStripMenuItem"
-        resources.ApplyResources(Me.QuickEraseToolStripMenuItem, "QuickEraseToolStripMenuItem")
         '
         'LTFSConfigurator
         '
