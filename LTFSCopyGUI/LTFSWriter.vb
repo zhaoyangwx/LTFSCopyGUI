@@ -2068,12 +2068,12 @@ Public Class LTFSWriter
             TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-            schema.location.startblock = p.BlockNumber + 1
             TapeUtils.WriteFileMark(driveHandle)
             PrintMsg($"Filemark Written", LogOnly:=True)
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
                 schema.previousgenerationlocation = New ltfsindex.LocationDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
             End If
+            schema.location.startblock = p.BlockNumber + 1
             p = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
         End If
