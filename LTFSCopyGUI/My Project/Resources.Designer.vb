@@ -603,6 +603,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 显示容量损失会大大降低写入性能。仍要开启？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_CapLossPerfWarning() As String
+            Get
+                Return ResourceManager.GetString("ResText_CapLossPerfWarning", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 可用空间 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_CapRem() As String

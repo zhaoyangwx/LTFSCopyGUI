@@ -858,4 +858,7 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="ResText_RErrSCSI" xml:space="preserve">
     <value>Read error: SCSI command failed.</value>
   </data>
+  <data name="ResText_CapLossPerfWarning" xml:space="preserve">
+    <value>Showing capacity loss will significantly reduce write performance. Continue?</value>
+  </data>
 </root>
