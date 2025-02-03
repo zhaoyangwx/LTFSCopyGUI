@@ -414,7 +414,7 @@ dataDir:{dataDir}
                                                     Dim cdbPtr As IntPtr = Marshal.AllocHGlobal(cdbdata.Length)
                                                     Marshal.Copy(cdbdata, 0, cdbPtr, cdbdata.Length)
                                                     Dim paramPtr As IntPtr = Marshal.AllocHGlobal(paramdata.Length)
-                                                    If paramdata.Length > 0 Then Marshal.Copy(paramdata, 0, paramdata.Length, paramPtr)
+                                                    If paramdata.Length > 0 Then Marshal.Copy(paramdata, 0, paramPtr, paramdata.Length)
                                                     Dim sensePtr As IntPtr = Marshal.AllocHGlobal(64)
                                                     Dim succ As Boolean = TapeUtils._TapeSCSIIOCtlFullC(devpath, cdbPtr, cdbdata.Length, paramPtr, paramdata.Length, datadir, timeout, sensePtr)
                                                     Dim sensedata(63) As Byte
