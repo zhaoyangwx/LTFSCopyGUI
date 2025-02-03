@@ -6296,7 +6296,6 @@ Public Class LTFSWriter
                     If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
                     PrintMsg(My.Resources.ResText_Locating)
-                    Dim data As Byte()
                     Dim currentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {currentPos.ToString()}", LogOnly:=True)
                     If ExtraPartitionCount = 0 Then

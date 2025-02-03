@@ -2232,13 +2232,18 @@ Public Class TapeUtils
 
             End Set
         End Property
+        Public Shared Function FromTapeDrive(driveHandle As IntPtr, PageCode_H As Byte, PageCode_L As Byte, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
+            Dim RawData As Byte() = GetMAMAttributeBytes(driveHandle, PageCode_H, PageCode_L, PartitionNumber)
+            If RawData.Length = 0 Then Return Nothing
+            Return New MAMAttribute With {.ID = (CUShort(PageCode_H) << 8) Or PageCode_L, .RawData = RawData}
+        End Function
         Public Shared Function FromTapeDrive(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
             Dim RawData As Byte() = GetMAMAttributeBytes(TapeDrive, PageCode_H, PageCode_L, PartitionNumber)
             If RawData.Length = 0 Then Return Nothing
             Return New MAMAttribute With {.ID = (CUShort(PageCode_H) << 8) Or PageCode_L, .RawData = RawData}
         End Function
         Public Shared Function FromTapeDrive(TapeDrive As String, PageCode As UInt16, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
-            Return FromTapeDrive(TapeDrive, (PageCode >> 8) And &HFF, PageCode And &HFF, PartitionNumber)
+            Return FromTapeDrive(TapeDrive:=TapeDrive, PageCode_H:=(PageCode >> 8) And &HFF, PageCode_L:=PageCode And &HFF, PartitionNumber:=PartitionNumber)
         End Function
 
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
