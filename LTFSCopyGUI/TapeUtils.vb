@@ -7125,33 +7125,33 @@ Public Class TapeUtils
                     End With
                     With pdata.Items.Last.DynamicParamType
                         .Add(&H0, TapeUtils.PageData.DataItem.DataType.Int64)
-                        .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H7, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H8, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H9, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HA, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HB, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HC, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HD, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HE, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&HF, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H10, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H11, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H12, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H13, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H14, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H15, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H16, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H17, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H40, TapeUtils.PageData.DataItem.DataType.Text）
-                        .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text）
-                        .Add(&H80, TapeUtils.PageData.DataItem.DataType.Int64）
-                        .Add(&H81, TapeUtils.PageData.DataItem.DataType.Int64）
+                        .Add(&H1, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H2, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H3, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H4, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H5, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H6, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H7, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H8, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H9, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HA, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HB, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HC, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HD, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HE, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&HF, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H10, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H11, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H12, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H13, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H14, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H15, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H16, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H17, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H40, TapeUtils.PageData.DataItem.DataType.Text)
+                        .Add(&H41, TapeUtils.PageData.DataItem.DataType.Text)
+                        .Add(&H80, TapeUtils.PageData.DataItem.DataType.Int64)
+                        .Add(&H81, TapeUtils.PageData.DataItem.DataType.Int64)
                         .Add(&H1000, TapeUtils.PageData.DataItem.DataType.PageData)
                     End With
 
