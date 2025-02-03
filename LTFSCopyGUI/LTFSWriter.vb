@@ -2073,13 +2073,14 @@ Public Class LTFSWriter
             If schema.location.partition = ltfsindex.PartitionLabel.b Then
                 schema.previousgenerationlocation = New ltfsindex.LocationDef With {.partition = schema.location.partition, .startblock = schema.location.startblock}
             End If
+
             schema.location.startblock = p.BlockNumber + 1
+            schema.location.partition = ltfsindex.PartitionLabel.a
             p = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
         End If
         Dim block0 As ULong = schema.location.startblock
         If ExtraPartitionCount > 0 Then
-            schema.location.partition = ltfsindex.PartitionLabel.a
             PrintMsg(My.Resources.ResText_GI)
             Dim tmpf As String = $"{Application.StartupPath}\LWI_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
             schema.SaveFile(tmpf)
