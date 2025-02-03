@@ -1,7 +1,8 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.IO
 Imports System.Security.Cryptography
 Imports System.Threading
+Imports Blake3
 Imports LTFSCopyGUI
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -611,9 +612,13 @@ Public Class IOManager
         Private Property md5 As MD5
         Private Property resultBytesSHA1 As Byte()
         Private Property resultBytesMD5 As Byte()
+        Private Property resultBytesBlake As Hash
         Private Property Lock As New Object
         Public Property StopFlag As Boolean = False
         Private Property thStarted As Boolean = False
+        Private Property BlakeStream As New MemoryStream
+        Private Property WrittenBlakeBlock1 As Int32 = 0
+        Private Property WrittenBlakeBlock2 As Int32 = 0
         Structure QueueBlock
             Public block As Byte()
             Public Len As Integer
@@ -636,8 +641,13 @@ Public Class IOManager
                                 Dim sha1task As Task = Task.Run(Sub()
                                                                     sha1.TransformBlock(.block, 0, .Len, .block, 0)
                                                                 End Sub)
+                                Dim blaketask As Task = Task.Run(Sub()
+                                                                     BlakeStream.Write(.block, WrittenBlakeBlock1, .Len)
+                                                                     WrittenBlakeBlock1 += .Len
+                                                                 End Sub)
                                 sha1task.Wait()
                                 md5task.Wait()
+                                blaketask.Wait()
                             End With
                             blk.block = Nothing
                         End While
@@ -663,6 +673,11 @@ Public Class IOManager
                 Dim md5task As Task = Task.Run(Sub()
                                                    md5.TransformBlock(block, 0, Len, block, 0)
                                                End Sub)
+                Dim blaketask As Task = Task.Run(Sub()
+                                                     BlakeStream.Write(block, WrittenBlakeBlock2, Len)
+                                                     WrittenBlakeBlock2 += Len
+                                                 End Sub)
+                blaketask.Wait()
                 sha1task.Wait()
                 md5task.Wait()
             End SyncLock
@@ -693,6 +708,9 @@ Public Class IOManager
                 md5.TransformFinalBlock({}, 0, 0)
                 resultBytesSHA1 = sha1.Hash
                 resultBytesMD5 = md5.Hash
+                Dim blake3Stream = New Blake3Stream(BlakeStream)
+                resultBytesBlake = blake3Stream.ComputeHash()
+                blake3Stream.Dispose()
             End SyncLock
             StopFlag = True
         End Sub
@@ -707,6 +725,13 @@ Public Class IOManager
             Get
                 SyncLock Lock
                     Return BitConverter.ToString(resultBytesMD5).Replace("-", "").ToUpper()
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property BlakeValue As String
+            Get
+                SyncLock Lock
+                    Return resultBytesBlake.ToString()
                 End SyncLock
             End Get
         End Property

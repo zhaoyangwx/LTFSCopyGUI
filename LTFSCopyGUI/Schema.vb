@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 
 <Serializable>
 <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -128,6 +128,7 @@ Public Class ltfsindex
                 Public Shared ReadOnly Property SHA1 As String = "ltfs.hash.sha1sum"
                 Public Shared ReadOnly Property SHA256 As String = "ltfs.hash.sha256sum"
                 Public Shared ReadOnly Property SHA512 As String = "ltfs.hash.sha512sum"
+                Public Shared ReadOnly Property BLAKE3 As String = "ltfs.hash.blake3sum"
             End Class
             Public Shared Function FromXMLList(s As String) As List(Of xattr)
                 Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
