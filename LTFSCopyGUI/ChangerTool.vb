@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports LTFSCopyGUI.TapeUtils
@@ -329,7 +329,7 @@ Public Class ChangerTool
 
     Private Sub ChangerTool_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
-            Case Keys.KeyCode.F12
+            Case Keys.F12
                 Dim SP1 As New SettingPanel
                 SP1.Text = Text
                 SP1.SelectedObject = Me

@@ -1,7 +1,8 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.IO
 Imports System.Security.Cryptography
 Imports System.Threading
+Imports Blake3
 Imports LTFSCopyGUI
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -9,47 +10,57 @@ Public Class IOManager
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class fsReport
         Public fs As IO.BufferedStream
-        Public Sub New()
 
+        Public Sub New()
         End Sub
+
         Public Sub New(fst As IO.BufferedStream)
             fs = fst
         End Sub
     End Class
+
     Public Event ErrorOccured(s As String)
+
     Public Shared Function FormatSize(l As Long, Optional ByVal More As Boolean = False) As String
         If l < 1024 Then
             Return l & " Bytes"
-        ElseIf l < 1024 ^ 2 Then
-            Return (l / 1024).ToString("F2") & " KiB"
-        ElseIf l < 1024 ^ 3 Then
-            Return (l / 1024 ^ 2).ToString("F2") & " MiB"
-        ElseIf Not More OrElse l < 1024 ^ 4 Then
-            Return (l / 1024 ^ 3).ToString("F2") & " GiB"
-        ElseIf l < 1024 ^ 5 Then
-            Return (l / 1024 ^ 4).ToString("F2") & " TiB"
+        ElseIf l < 1024^2 Then
+            Return (l/1024).ToString("F2") & " KiB"
+        ElseIf l < 1024^3 Then
+            Return (l/1024^2).ToString("F2") & " MiB"
+        ElseIf Not More OrElse l < 1024^4 Then
+            Return (l/1024^3).ToString("F2") & " GiB"
+        ElseIf l < 1024^5 Then
+            Return (l/1024^4).ToString("F2") & " TiB"
         Else
-            Return (l / 1024 ^ 5).ToString("F2") & " PiB"
+            Return (l/1024^5).ToString("F2") & " PiB"
         End If
     End Function
+
     Public Shared Function SHA1(filename As String, LogFile As String()) As String
         If LogFile.Contains("[hash] " & filename) Then
 
             Return LogFile(Array.IndexOf(LogFile, LogFile.First(Function(s As String) As Boolean
-                                                                    Return s = "[hash] " & filename
-                                                                End Function)) + 1).TrimStart(" ").Substring(0, 40)
+                Return s = "[hash] " & filename
+            End Function)) + 1).TrimStart(" ").Substring(0, 40)
         End If
         Return ""
     End Function
-    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing, Optional ByVal fs As fsReport = Nothing, Optional ByVal OnFileReading As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
+
+    Public Shared Function SHA1(filename As String, Optional ByVal OnFinished As Action(Of String) = Nothing,
+                                Optional ByVal fs As fsReport = Nothing,
+                                Optional ByVal OnFileReading As _
+                                   Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Nothing) As String
         If OnFinished Is Nothing Then
 
-            Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
-                Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
+            Using _
+                fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                Dim fsinb As New IO.BufferedStream(fsin0, 512*1024)
                 Dim fsine As New EventedStream With {.baseStream = fsinb}
-                If OnFileReading IsNot Nothing Then AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
+                If OnFileReading IsNot Nothing Then _
+                    AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
                 'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
-                Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                Dim fsin As New IO.BufferedStream(fsine, 512*1024)
                 If fs IsNot Nothing Then fs.fs = fsin
                 Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
                     fsin.Position = 0
@@ -69,31 +80,33 @@ Public Class IOManager
             End Using
         Else
             Dim thHash As New Threading.Thread(
-                    Sub()
-                        Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
-                            Dim fsinb As New IO.BufferedStream(fsin0, 512 * 1024)
-                            Dim fsine As New EventedStream With {.baseStream = fsinb}
-                            AddHandler fsine.Readed, Sub(args As EventedStream.ReadStreamEventArgs) OnFileReading(args, fsine)
-                            'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
-                            Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
-                            If fs IsNot Nothing Then fs.fs = fsin
-                            Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
-                                fsin.Position = 0
-                                Dim hashValue() As Byte
+                Sub()
+                    Using fsin0 As IO.FileStream = IO.File.Open(filename, IO.FileMode.Open, IO.FileAccess.Read)
+                        Dim fsinb As New IO.BufferedStream(fsin0, 512*1024)
+                        Dim fsine As New EventedStream With {.baseStream = fsinb}
+                        AddHandler fsine.Readed,
+                                                  Sub(args As EventedStream.ReadStreamEventArgs) _
+                                                  OnFileReading(args, fsine)
+                        'Dim fsin As New IO.BufferedStream(fsine, 512 * 1024)
+                        Dim fsin As New IO.BufferedStream(fsine, 512*1024)
+                        If fs IsNot Nothing Then fs.fs = fsin
+                        Using algo As Security.Cryptography.SHA1 = Security.Cryptography.SHA1.Create()
+                            fsin.Position = 0
+                            Dim hashValue() As Byte
 
-                                hashValue = algo.ComputeHash(fsine)
-                                'While fsin.Read(block, 0, block.Length) > 0
-                                '
-                                'End While
-                                fsin.Close()
-                                Dim result As New Text.StringBuilder()
-                                For i As Integer = 0 To hashValue.Length - 1
-                                    result.Append(String.Format("{0:X2}", hashValue(i)))
-                                Next
-                                OnFinished(result.ToString)
-                            End Using
+                            hashValue = algo.ComputeHash(fsine)
+                            'While fsin.Read(block, 0, block.Length) > 0
+                            '
+                            'End While
+                            fsin.Close()
+                            Dim result As New Text.StringBuilder()
+                            For i As Integer = 0 To hashValue.Length - 1
+                                result.Append(String.Format("{0:X2}", hashValue(i)))
+                            Next
+                            OnFinished(result.ToString)
                         End Using
-                    End Sub)
+                    End Using
+                End Sub)
             thHash.Start()
             Return ""
         End If
@@ -107,14 +120,14 @@ Public Class IOManager
         Dim outputh As Integer = input.Height
         If outputw > outputsize.Width Then
             outputw = outputsize.Width
-            outputh = input.Height / input.Width * outputsize.Width
+            outputh = input.Height/input.Width*outputsize.Width
         End If
         If outputh > outputsize.Height Then
             outputh = outputsize.Height
-            outputw = input.Width / input.Height * outputsize.Height
+            outputw = input.Width/input.Height*outputsize.Height
         End If
         g.FillRectangle(Brushes.White, New Rectangle(0, 0, result.Width, result.Height))
-        g.DrawImage(input, outputsize.Width \ 2 - outputw \ 2, outputsize.Height \ 2 - outputh \ 2, outputw, outputh)
+        g.DrawImage(input, outputsize.Width\2 - outputw\2, outputsize.Height\2 - outputh\2, outputw, outputh)
         g.Dispose()
         Return result
     End Function
@@ -128,12 +141,13 @@ Public Class IOManager
         Public Event TaskFinished(Message As String)
         Public Event ErrorOccured(Message As String)
         Public Event ProgressReport(Message As String)
-        Public Property BufferWrite As Integer = 4 * 1024 * 1024
+        Public Property BufferWrite As Integer = 4*1024*1024
         Public Property schema As ltfsindex
         Public Property IgnoreExisting As Boolean = True
         Public Property ReportSkip As Boolean = True
         Private _TargetDirectory As String
         Public Property LogFile As String() = {}
+
         Public Property TargetDirectory As String
             Set(value As String)
                 _TargetDirectory = value.TrimEnd("\")
@@ -142,8 +156,10 @@ Public Class IOManager
                 Return _TargetDirectory
             End Get
         End Property
+
         Private _BaseDirectory As String
         Private fs As fsReport
+
         Public Property BaseDirectory As String
             Set(value As String)
                 _BaseDirectory = value.TrimEnd("\")
@@ -152,11 +168,13 @@ Public Class IOManager
                 Return _BaseDirectory
             End Get
         End Property
+
         Public OperationLock As New Object
         Private thHash As Threading.Thread
         Private fout As IO.FileStream = Nothing
         Private fob As IO.BufferedStream = Nothing
         Dim f_outpath As String
+
         Public Sub Start()
             SyncLock OperationLock
                 If schema Is Nothing Then
@@ -178,7 +196,7 @@ Public Class IOManager
                                         Dim p As Long = fs.fs.Position
                                         Dim l As Long = fs.fs.Length
                                         RaiseEvent ProgressReport("#fmax" & 10000)
-                                        RaiseEvent ProgressReport("#fval" & p / l * 10000)
+                                        RaiseEvent ProgressReport("#fval" & p/l*10000)
                                         RaiseEvent ProgressReport("#dmax" & l)
                                         RaiseEvent ProgressReport("#dval" & p)
                                     End SyncLock
@@ -242,32 +260,41 @@ Public Class IOManager
                         If totalSize = 0 Then totalSize = 1
                         RaiseEvent ProgressReport("#smax" & totalSize)
                         RaiseEvent ProgressReport("Sorting")
-                        flist.Sort(New Comparison(Of ltfsindex.file)(Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
-                                                                         If a.extentinfo.Count = 0 Then Return a.extentinfo.Count.CompareTo(b.extentinfo.Count)
-                                                                         If b.extentinfo.Count = 0 Then Return a.extentinfo.Count.CompareTo(b.extentinfo.Count)
-                                                                         If a.extentinfo(0).partition <> b.extentinfo(0).partition Then
-                                                                             Return a.extentinfo(0).partition.CompareTo(b.extentinfo(0).partition)
-                                                                         End If
-                                                                         If a.extentinfo(0).startblock <> b.extentinfo(0).startblock Then
-                                                                             Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
-                                                                         Else
-                                                                             Return a.name.CompareTo(b.name)
-                                                                         End If
-                                                                     End Function))
+                        flist.Sort(
+                            New Comparison(Of ltfsindex.file)(
+                                Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
+                                    If a.extentinfo.Count = 0 Then _
+                                                                 Return a.extentinfo.Count.CompareTo(b.extentinfo.Count)
+                                    If b.extentinfo.Count = 0 Then _
+                                                                 Return a.extentinfo.Count.CompareTo(b.extentinfo.Count)
+                                    If a.extentinfo(0).partition <> b.extentinfo(0).partition Then
+                                        Return a.extentinfo(0).partition.CompareTo(b.extentinfo(0).partition)
+                                    End If
+                                    If a.extentinfo(0).startblock <> b.extentinfo(0).startblock Then
+                                        Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
+                                    Else
+                                        Return a.name.CompareTo(b.name)
+                                    End If
+                                End Function))
                         RaiseEvent ProgressReport("#max" & 10000)
                         RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
                             Dim SkipCurrent As Boolean = False
                             Try
-                                If TargetDirectory <> "" Then f_outpath = "\\?\" & IO.Path.Combine(TargetDirectory, f.fullpath)
+                                If TargetDirectory <> "" Then _
+                                                 f_outpath = "\\?\" & IO.Path.Combine(TargetDirectory, f.fullpath)
                                 f.fullpath = "\\?\" & IO.Path.Combine(BaseDirectory, f.fullpath)
                                 If f.sha1 Is Nothing Then f.sha1 = ""
-                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or (TargetDirectory <> "" And Not IO.File.Exists(f_outpath)) Then
+                                If _
+                                                 f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or
+                                                 (TargetDirectory <> "" And Not IO.File.Exists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
-                                        Dim action_writefile As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) = Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
-                                                                                                                              End Sub
+                                        Dim action_writefile _
+                                                As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) =
+                                                Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
+                                                End Sub
 
                                         If TargetDirectory <> "" Then
                                             If Not IO.Directory.Exists(TargetDirectory) Then
@@ -286,14 +313,17 @@ Public Class IOManager
                                                     fout = Nothing
                                                     Exit Try
                                                 End If
-                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew, IO.FileAccess.Write, IO.FileShare.Write, BufferWrite, FileOptions.WriteThrough)
+                                                fout = New IO.FileStream(f_outpath, IO.FileMode.CreateNew,
+                                                                         IO.FileAccess.Write, IO.FileShare.Write,
+                                                                         BufferWrite, FileOptions.WriteThrough)
                                                 'fout = IO.File.OpenWrite(f_outpath)
 
                                                 'fob = New IO.BufferedStream(fout, 1024 * 1024)
                                                 action_writefile =
-                                                    Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
-                                                        fout.Write(args.Buffer, args.Offset, Math.Min(args.Count, st.Length - fout.Position))
-                                                    End Sub
+                                                 Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
+                                                     fout.Write(args.Buffer, args.Offset,
+                                                                Math.Min(args.Count, st.Length - fout.Position))
+                                                 End Sub
                                             Catch ex As Exception
                                                 RaiseEvent ErrorOccured(ex.ToString)
                                             End Try
@@ -365,9 +395,10 @@ Public Class IOManager
                             SyncLock OperationLock
                                 RaiseEvent ProgressReport("#dval" & 0)
                                 Threading.Interlocked.Add(hashedSize, f.length)
-                                RaiseEvent ProgressReport("#val" & hashedSize / totalSize * 10000)
+                                RaiseEvent ProgressReport("#val" & hashedSize/totalSize*10000)
                                 RaiseEvent ProgressReport("#tval" & progval)
-                                If ReportSkip OrElse (Not SkipCurrent) Then RaiseEvent ProgressReport("  " & f.sha1 & "  " & f.length & vbCrLf)
+                                If ReportSkip OrElse (Not SkipCurrent) Then _
+                                                 RaiseEvent ProgressReport("  " & f.sha1 & "  " & f.length & vbCrLf)
                                 RaiseEvent ProgressReport("#ssum" & hashedSize)
                             End SyncLock
 
@@ -385,6 +416,7 @@ Public Class IOManager
             End SyncLock
             RaiseEvent TaskStarted("")
         End Sub
+
         Public Sub [Stop]()
             SyncLock OperationLock
                 Try
@@ -419,6 +451,7 @@ Public Class IOManager
                 End Try
             End SyncLock
         End Sub
+
         Public Sub Pause()
             SyncLock OperationLock
                 Try
@@ -430,6 +463,7 @@ Public Class IOManager
                 End Try
             End SyncLock
         End Sub
+
         Public Sub [Resume]()
             SyncLock OperationLock
                 Try
@@ -441,22 +475,27 @@ Public Class IOManager
                 End Try
             End SyncLock
         End Sub
+
         Public Enum TaskStatus
             Idle
             Running
             Paused
         End Enum
+
         Private _Status As TaskStatus = TaskStatus.Idle
+
         Public ReadOnly Property Status As TaskStatus
             Get
                 Return _Status
             End Get
         End Property
     End Class
+
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class EventedStream
         Inherits Stream
         Implements IDisposable
+
         Class ReadStreamEventArgs
             Inherits EventArgs
 
@@ -468,6 +507,7 @@ Public Class IOManager
 
             Public Denied As Boolean = False
         End Class
+
         Class WriteStreamEventArgs
             Inherits EventArgs
 
@@ -479,6 +519,7 @@ Public Class IOManager
 
             Public Denied As Boolean = False
         End Class
+
         Public Class FlushStreamEventArgs
             Inherits EventArgs
 
@@ -586,19 +627,20 @@ Public Class IOManager
             End If
             baseStream.Write(buffer, offset, count)
         End Sub
+
         Public Event PreviewFlush(args As FlushStreamEventArgs)
         Public Event PreviewSetLength(args As SetStreamLengthEventArgs)
         Public Event PreviewSeek(args As SeekStreamEventArgs)
         Public Event PreviewWrite(args As WriteStreamEventArgs)
         Public Event PreviewRead(args As ReadStreamEventArgs)
         Public Event Readed(args As ReadStreamEventArgs)
-
-
     End Class
+
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class IndexedLHashDirectory
         Public Property LTFSIndexDir As ltfsindex.directory
         Public Property LHash_Dir As ltfsindex.directory
+
         Public Sub New(index As ltfsindex.directory, lhash As ltfsindex.directory)
             LTFSIndexDir = index
             LHash_Dir = lhash
@@ -609,16 +651,23 @@ Public Class IOManager
     Public Class CheckSumBlockwiseCalculator
         Private Property sha1 As SHA1
         Private Property md5 As MD5
+        Private Property Blake As Hasher
         Private Property resultBytesSHA1 As Byte()
         Private Property resultBytesMD5 As Byte()
+        Private Property resultBytesBlake As Hash
         Private Property Lock As New Object
         Public Property StopFlag As Boolean = False
         Private Property thStarted As Boolean = False
+        'Private Property BlakeStream As New MemoryStream
+        'Private Property WrittenBlakeBlock1 As Int32 = 0
+        'Private Property WrittenBlakeBlock2 As Int32 = 0
         Structure QueueBlock
             Public block As Byte()
             Public Len As Integer
         End Structure
+
         Public Property q As New Queue(Of QueueBlock)
+
         Dim thHashAsync As New Task(
             Sub()
                 While Not StopFlag
@@ -629,52 +678,68 @@ Public Class IOManager
                                 blk = q.Dequeue()
                             End SyncLock
                             With blk
-                                If .Len = -1 Then .Len = .block.Length
+                                If .Len = - 1 Then .Len = .block.Length
                                 Dim md5task As Task = Task.Run(Sub()
-                                                                   md5.TransformBlock(.block, 0, .Len, .block, 0)
-                                                               End Sub)
+                                    md5.TransformBlock(.block, 0, .Len, .block, 0)
+                                End Sub)
                                 Dim sha1task As Task = Task.Run(Sub()
-                                                                    sha1.TransformBlock(.block, 0, .Len, .block, 0)
-                                                                End Sub)
+                                    sha1.TransformBlock(.block, 0, .Len, .block, 0)
+                                End Sub)
+                                Dim blaketask As Task = Task.Run(Sub()
+                                    'BlakeStream.Write(.block, WrittenBlakeBlock1, .Len)
+                                    'WrittenBlakeBlock1 += .Len
+                                    Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
+                                    Blake.UpdateWithJoin(segment)
+                                End Sub)
                                 sha1task.Wait()
                                 md5task.Wait()
+                                blaketask.Wait()
                             End With
                             blk.block = Nothing
                         End While
                     End SyncLock
                     Threading.Thread.Sleep(1)
                 End While
-
             End Sub)
+
         Public Sub New()
+            Blake = Hasher.NewInstance()
             sha1 = SHA1.Create()
             md5 = MD5.Create()
         End Sub
 
-        Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
+        Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = - 1)
             While q.Count > 0
                 Threading.Thread.Sleep(1)
             End While
             SyncLock Lock
-                If Len = -1 Then Len = block.Length
+                If Len = - 1 Then Len = block.Length
                 Dim sha1task As Task = Task.Run(Sub()
-                                                    sha1.TransformBlock(block, 0, Len, block, 0)
-                                                End Sub)
+                    sha1.TransformBlock(block, 0, Len, block, 0)
+                End Sub)
                 Dim md5task As Task = Task.Run(Sub()
-                                                   md5.TransformBlock(block, 0, Len, block, 0)
-                                               End Sub)
+                    md5.TransformBlock(block, 0, Len, block, 0)
+                End Sub)
+                Dim blaketask As Task = Task.Run(Sub()
+                    'BlakeStream.Write(block, WrittenBlakeBlock2, Len)
+                    'WrittenBlakeBlock2 += Len
+                    Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
+                    Blake.UpdateWithJoin(segment)
+                End Sub)
+                blaketask.Wait()
                 sha1task.Wait()
                 md5task.Wait()
             End SyncLock
         End Sub
-        Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = -1)
+
+        Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = - 1)
             SyncLock Lock
                 If Not thStarted Then
                     thHashAsync.Start()
                     thStarted = True
                 End If
             End SyncLock
-            If Len = -1 Then Len = block.Length
+            If Len = - 1 Then Len = block.Length
             While q.Count > 1024
                 Threading.Thread.Sleep(0)
             End While
@@ -684,6 +749,7 @@ Public Class IOManager
                 End SyncLock
             End SyncLock
         End Sub
+
         Public Sub ProcessFinalBlock()
             While q.Count > 0
                 Threading.Thread.Sleep(1)
@@ -693,9 +759,11 @@ Public Class IOManager
                 md5.TransformFinalBlock({}, 0, 0)
                 resultBytesSHA1 = sha1.Hash
                 resultBytesMD5 = md5.Hash
+                resultBytesBlake = Blake.Finalize()
             End SyncLock
             StopFlag = True
         End Sub
+
         Public ReadOnly Property SHA1Value As String
             Get
                 SyncLock Lock
@@ -703,10 +771,19 @@ Public Class IOManager
                 End SyncLock
             End Get
         End Property
+
         Public ReadOnly Property MD5Value As String
             Get
                 SyncLock Lock
                     Return BitConverter.ToString(resultBytesMD5).Replace("-", "").ToUpper()
+                End SyncLock
+            End Get
+        End Property
+
+        Public ReadOnly Property BlakeValue As String
+            Get
+                SyncLock Lock
+                    Return resultBytesBlake.ToString()
                 End SyncLock
             End Get
         End Property
@@ -721,16 +798,19 @@ Public Class IOManager
         Public Property BlockSize As Integer
         Public Property ExtraPartitionCount As Integer
         Public Shared OperationLock As New Object
+
         Public Sub New(file As ltfsindex.file, drive As String, blksize As Integer, xtrPCount As Integer)
             FileInfo = file
             TapeDrive = drive
             BlockSize = blksize
             ExtraPartitionCount = xtrPCount
-            FileInfo.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(
-                                     Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
-                                         Return a.fileoffset.CompareTo(b.fileoffset)
-                                     End Function))
+            FileInfo.extentinfo.Sort(
+                New Comparison(Of ltfsindex.file.extent)(
+                    Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
+                        Return a.fileoffset.CompareTo(b.fileoffset)
+                    End Function))
         End Sub
+
         Public Overrides ReadOnly Property CanRead As Boolean
             Get
                 Return TapeDrive <> ""
@@ -754,7 +834,9 @@ Public Class IOManager
                 Return FileInfo.length
             End Get
         End Property
+
         Private _Position As Long
+
         Public Function GetExtent(offset As Long)
             SyncLock OperationLock
                 For i As Integer = 0 To FileInfo.extentinfo.Count - 1
@@ -768,12 +850,16 @@ Public Class IOManager
 
             Return Nothing
         End Function
+
         Public Function WithinExtent(offset As Long, partition As Integer, ext As ltfsindex.file.extent) As Boolean
             If ext Is Nothing Then Return False
             With ext
-                Return .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset AndAlso partition = Math.Min(ExtraPartitionCount, ext.partition)
+                Return _
+                    .fileoffset <= offset AndAlso .fileoffset + .bytecount > offset AndAlso
+                    partition = Math.Min(ExtraPartitionCount, ext.partition)
             End With
         End Function
+
         Public Overrides Property Position As Long
             Get
                 Return _Position
@@ -784,10 +870,11 @@ Public Class IOManager
                     If value >= FileInfo.length Then value = FileInfo.length - 1
                     Dim ext As ltfsindex.file.extent = GetExtent(value)
                     Dim p As New TapeUtils.PositionData(TapeDrive)
-                    Dim targetBlock As ULong = ext.startblock + (value - ext.fileoffset) \ BlockSize
+                    Dim targetBlock As ULong = ext.startblock + (value - ext.fileoffset)\BlockSize
                     Dim targetPartition As Byte = Math.Min(ExtraPartitionCount, ext.partition)
                     If p.BlockNumber <> targetBlock OrElse p.PartitionNumber <> targetPartition Then
-                        RaiseEvent LogPrint($"LOCATE {TapeDrive} B{targetBlock}P{targetPartition} (File position {value})")
+                        RaiseEvent _
+                            LogPrint($"LOCATE {TapeDrive} B{targetBlock}P{targetPartition} (File position {value})")
                         TapeUtils.Locate(TapeDrive, targetBlock, targetPartition)
                     End If
                     _Position = value
@@ -796,7 +883,6 @@ Public Class IOManager
         End Property
 
         Public Overrides Sub Flush()
-
         End Sub
 
         Public Overrides Sub SetLength(value As Long)
@@ -821,7 +907,9 @@ Public Class IOManager
                 Return Position
             End SyncLock
         End Function
+
         Public Shared ReadLock As New Object
+
         Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
             SyncLock ReadLock
                 RaiseEvent LogPrint($"ReadFile: Offset {offset} Count{count}")
@@ -836,10 +924,11 @@ Public Class IOManager
                         CUrrentP = New TapeUtils.PositionData(TapeDrive).PartitionNumber
                     End If
                     If ext Is Nothing Then Exit While
-                    Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
+                    Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset)\BlockSize
                     Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
                     Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
-                    Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive:=TapeDrive, BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
+                    Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive := TapeDrive,
+                                                             BlockSizeLimit := Math.Min(BlockSize, BytesRemaining))
                     Dim bytesReaded As Integer = data.Length - fByteOffset
                     Dim destIndex As Integer = offset + rBytes
                     Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))
@@ -851,10 +940,12 @@ Public Class IOManager
             End SyncLock
         End Function
     End Class
+
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class NetworkCommand
         Public Property HashCode As Integer
         Public Property CommandType As CommandTypeDef
+
         Enum CommandTypeDef
             SCSICommand
             SCSISenseData
@@ -862,7 +953,9 @@ Public Class IOManager
             GeneralData
             SCSIIOCtlError
         End Enum
+
         Public Property PayLoad As New List(Of Byte())
+
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(NetworkCommand))
             Dim sb As New Text.StringBuilder
@@ -870,41 +963,49 @@ Public Class IOManager
             writer.Serialize(t, Me)
             Return sb.ToString()
         End Function
+
         Public Shared Function FromXML(s As String) As NetworkCommand
             Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(NetworkCommand))
             Dim t As IO.TextReader = New IO.StringReader(s)
             Return CType(reader.Deserialize(t), NetworkCommand)
         End Function
+
         Public Function SendTo(target As Net.IPAddress, port As Integer) As NetworkCommand
             Dim rawdata() As Byte = Text.Encoding.UTF8.GetBytes(Me.GetSerializedText())
             Dim senddata As New List(Of Byte)
             senddata.AddRange(BitConverter.GetBytes(rawdata.Length))
             senddata.AddRange(rawdata)
 
-            Dim sck As New Net.Sockets.Socket(Net.Sockets.AddressFamily.InterNetwork, Net.Sockets.SocketType.Stream, Net.Sockets.ProtocolType.Tcp)
+            Dim _
+                sck As _
+                    New Net.Sockets.Socket(Net.Sockets.AddressFamily.InterNetwork, Net.Sockets.SocketType.Stream,
+                                           Net.Sockets.ProtocolType.Tcp)
             sck.Connect(New Net.IPEndPoint(target, port))
             sck.SendTo(senddata.ToArray(), New Net.IPEndPoint(target, port))
             Dim header(3) As Byte
             Dim TaskFinished As Boolean = False
             Dim result As NetworkCommand = Nothing
             Task.Run(Sub()
-                         Dim hLength As Integer = sck.Receive(header, 4, Net.Sockets.SocketFlags.None)
-                         Dim length As Integer = BitConverter.ToInt32(header, 0)
-                         Dim data(length - 1) As Byte
-                         Dim dLength As Integer = sck.Receive(data, length, Net.Sockets.SocketFlags.None)
-                         Dim msg As String = Text.Encoding.UTF8.GetString(data)
-                         sck.Close()
-                         result = NetworkCommand.FromXML(msg)
-                         TaskFinished = True
-                     End Sub).Wait(10000)
+                Dim hLength As Integer = sck.Receive(header, 4, Net.Sockets.SocketFlags.None)
+                Dim length As Integer = BitConverter.ToInt32(header, 0)
+                Dim data(length - 1) As Byte
+                Dim dLength As Integer = sck.Receive(data, length, Net.Sockets.SocketFlags.None)
+                Dim msg As String = Text.Encoding.UTF8.GetString(data)
+                sck.Close()
+                result = NetworkCommand.FromXML(msg)
+                TaskFinished = True
+            End Sub).Wait(10000)
             Return result
         End Function
     End Class
 End Class
+
 Public Class ExplorerUtils
     Implements IComparer(Of String)
-    Declare Unicode Function StrCmpLogicalW Lib "shlwapi.dll" (ByVal s1 As String, ByVal s2 As String) As Int32
-    Public Function Compare(ByVal x As String, ByVal y As String) As Integer Implements System.Collections.Generic.IComparer(Of String).Compare
+    Declare Unicode Function StrCmpLogicalW Lib "shlwapi.dll"(ByVal s1 As String, ByVal s2 As String) As Int32
+
+    Public Function Compare(ByVal x As String, ByVal y As String) As Integer _
+        Implements System.Collections.Generic.IComparer(Of String).Compare
         Return StrCmpLogicalW(x, y)
     End Function
 End Class

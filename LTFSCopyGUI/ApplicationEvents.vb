@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.ApplicationServices
 
@@ -534,7 +534,7 @@ dataDir:{dataDir}
                                                                                 If TypeOf obj Is Button Then
                                                                                     With CType(obj, Button)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(Button).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(Button).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
@@ -542,7 +542,7 @@ dataDir:{dataDir}
                                                                                 ElseIf TypeOf obj Is Label Then
                                                                                     With CType(obj, Label)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(Label).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(Label).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
@@ -550,7 +550,7 @@ dataDir:{dataDir}
                                                                                 ElseIf TypeOf obj Is ToolStripMenuItem Then
                                                                                     With CType(obj, ToolStripMenuItem)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(ToolStripMenuItem).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(ToolStripMenuItem).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
@@ -558,7 +558,7 @@ dataDir:{dataDir}
                                                                                 ElseIf TypeOf obj Is ToolStripDropDownButton Then
                                                                                     With CType(obj, ToolStripDropDownButton)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(ToolStripDropDownButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(ToolStripDropDownButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
@@ -566,7 +566,7 @@ dataDir:{dataDir}
                                                                                 ElseIf TypeOf obj Is ToolStripButton Then
                                                                                     With CType(obj, ToolStripButton)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(ToolStripButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(ToolStripButton).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
@@ -574,7 +574,7 @@ dataDir:{dataDir}
                                                                                 ElseIf TypeOf obj Is ToolStripStatusLabel Then
                                                                                     With CType(obj, ToolStripStatusLabel)
                                                                                         If .Name = ctrlName Then
-                                                                                            GetType(ToolStripStatusLabel).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
+                                                                                            Call GetType(ToolStripStatusLabel).GetMethod("OnClick", Reflection.BindingFlags.NonPublic Or Reflection.BindingFlags.Instance).Invoke(obj, {EventArgs.Empty})
                                                                                             result.PayLoad.Add(Text.Encoding.UTF8.GetBytes("OK"))
                                                                                             Exit Select
                                                                                         End If
