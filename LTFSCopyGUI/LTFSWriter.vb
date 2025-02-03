@@ -3404,6 +3404,7 @@ Public Class LTFSWriter
                                                 If fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True).Equals(sha1value) Then
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
                                                     dupe = True
                                                     dupeFile = fref
                                                 End If
@@ -3725,6 +3726,7 @@ Public Class LTFSWriter
                                 Else
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, "D41D8CD98F00B204E9800998ECF8427E")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, "AF1349B9F5F9A1A6A0404DEA36DCC9499BCB25C9ADC112B7CC9A93CAE41F3262")
                                     TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
