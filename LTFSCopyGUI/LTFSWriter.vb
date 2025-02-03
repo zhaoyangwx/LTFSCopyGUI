@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports Fsp.Interop
@@ -3529,6 +3529,7 @@ Public Class LTFSWriter
                                                              sh.ProcessFinalBlock()
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
                                             End If
@@ -3702,6 +3703,7 @@ Public Class LTFSWriter
                                                              sh.ProcessFinalBlock()
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
@@ -4731,6 +4733,7 @@ Public Class LTFSWriter
         Dim result As New Dictionary(Of String, String)
         result.Add("SHA1", HT.SHA1Value)
         result.Add("MD5", HT.MD5Value)
+        result.Add("BLAKE", HT.BlakeValue)
         Return result
     End Function
 
@@ -5933,6 +5936,7 @@ Public Class LTFSWriter
                          sh.ProcessFinalBlock()
                          fadd.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                          fadd.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                         fadd.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                          If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                          schema.highestfileuid += 1
                          p.contents._directory.Remove(d)
@@ -6572,6 +6576,7 @@ Public Class LTFSWriter
                                              sh.ProcessFinalBlock()
                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                              sh.StopFlag = True
                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                          End Sub)
@@ -6936,17 +6941,17 @@ Public Class LTFSWriter
     End Sub
     Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
-            Case Keys.KeyCode.F
+            Case Keys.F
                 If Not AllowOperation Then Exit Sub
                 If Not e.Control Then Exit Select
                 If e.Alt Then Exit Select
                 If e.Shift Then Exit Select
                 Search(GetSearchInput())
-            Case Keys.KeyCode.F3
+            Case Keys.F3
                 If Not AllowOperation Then Exit Sub
                 If LastSearchKW = "" Then GetSearchInput()
                 Search()
-            Case Keys.KeyCode.F5
+            Case Keys.F5
                 If e.Control Then
                     Dim cmp As New ExplorerUtils
                     If ListView1.Tag IsNot Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
@@ -6971,9 +6976,9 @@ Public Class LTFSWriter
                     End If
                 End If
                 RefreshDisplay()
-            Case Keys.KeyCode.F8
+            Case Keys.F8
                 LockGUI(AllowOperation)
-            Case Keys.KeyCode.F12
+            Case Keys.F12
                 Task.Run(Sub()
                              Dim SP1 As New SettingPanel
                              SP1.Text = Text
