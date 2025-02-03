@@ -783,7 +783,7 @@ Public Class IOManager
         Public ReadOnly Property BlakeValue As String
             Get
                 SyncLock Lock
-                    Return resultBytesBlake.ToString()
+                    Return resultBytesBlake.ToString().ToUpper()
                 End SyncLock
             End Get
         End Property
