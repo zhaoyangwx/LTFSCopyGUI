@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports Fsp.Interop
@@ -6937,17 +6937,17 @@ Public Class LTFSWriter
     End Sub
     Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
-            Case Keys.KeyCode.F
+            Case Keys.F
                 If Not AllowOperation Then Exit Sub
                 If Not e.Control Then Exit Select
                 If e.Alt Then Exit Select
                 If e.Shift Then Exit Select
                 Search(GetSearchInput())
-            Case Keys.KeyCode.F3
+            Case Keys.F3
                 If Not AllowOperation Then Exit Sub
                 If LastSearchKW = "" Then GetSearchInput()
                 Search()
-            Case Keys.KeyCode.F5
+            Case Keys.F5
                 If e.Control Then
                     Dim cmp As New ExplorerUtils
                     If ListView1.Tag IsNot Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
@@ -6972,9 +6972,9 @@ Public Class LTFSWriter
                     End If
                 End If
                 RefreshDisplay()
-            Case Keys.KeyCode.F8
+            Case Keys.F8
                 LockGUI(AllowOperation)
-            Case Keys.KeyCode.F12
+            Case Keys.F12
                 Task.Run(Sub()
                              Dim SP1 As New SettingPanel
                              SP1.Text = Text

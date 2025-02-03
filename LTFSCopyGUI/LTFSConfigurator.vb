@@ -2027,7 +2027,7 @@ Public Class LTFSConfigurator
 
     Private Sub LTFSConfigurator_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
-            Case Keys.KeyCode.F12
+            Case Keys.F12
                 Dim SP1 As New SettingPanel
                 SP1.Text = Text
                 SP1.SelectedObject = Me
