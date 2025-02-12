@@ -1694,39 +1694,44 @@ Public Class LTFSConfigurator
                         Else
                             SenseMsg = ""
                         End If
-                        If i Mod 200 = 0 Then
-                            Dim result As New StringBuilder
-                            Dim WERLHeader As Byte()
-                            Dim WERLPage As Byte()
-                            Dim WERLPageLen As Integer
-                            SyncLock TapeUtils.SCSIOperationLock
-                                WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-                                If WERLHeader.Length <> 4 Then Exit Sub
-                                WERLPageLen = WERLHeader(2)
-                                WERLPageLen <<= 8
-                                WERLPageLen = WERLPageLen Or WERLHeader(3)
-                                If WERLPageLen = 0 Then Exit Sub
-                                WERLPageLen += 4
-                                WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
-                            End SyncLock
-                            Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
-                            info = ""
-                            Try
-                                For ch As Integer = 4 To WERLData.Length - 5 Step 5
-                                    Dim chan As Integer = (ch - 4) \ 5
-                                    Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
-                                    Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
+                        Try
+                            If i Mod 200 = 0 Then
+                                Dim result As New StringBuilder
+                                Dim WERLHeader As Byte()
+                                Dim WERLPage As Byte()
+                                Dim WERLPageLen As Integer
+                                SyncLock TapeUtils.SCSIOperationLock
+                                    WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                                    If WERLHeader.Length <> 4 Then Exit Try
+                                    WERLPageLen = WERLHeader(2)
+                                    WERLPageLen <<= 8
+                                    WERLPageLen = WERLPageLen Or WERLHeader(3)
+                                    If WERLPageLen = 0 Then Exit Try
+                                    WERLPageLen += 4
+                                    WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+                                End SyncLock
+                                Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                info = ""
+                                Try
+                                    For ch As Integer = 4 To WERLData.Length - 5 Step 5
+                                        Dim chan As Integer = (ch - 4) \ 5
+                                        Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
+                                        Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
 
-                                    If NoCCPs - LastNoCCPs(chan) > 0 Then
-                                        result.Append(Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2").PadLeft(6).PadRight(7))
-                                        LastC1Err(chan) = C1err
-                                        LastNoCCPs(chan) = NoCCPs
-                                    End If
-                                Next
-                            Catch
-                            End Try
-                            info = result.ToString()
-                        End If
+                                        If NoCCPs - LastNoCCPs(chan) > 0 Then
+                                            result.Append(Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2").PadLeft(6).PadRight(7))
+                                            LastC1Err(chan) = C1err
+                                            LastNoCCPs(chan) = NoCCPs
+                                        End If
+                                    Next
+                                Catch
+                                End Try
+                                info = result.ToString()
+                            End If
+                        Catch ex As Exception
+                            info = ex.ToString()
+                        End Try
+
                         progval = i * blkLen
                     Next
                 End If
