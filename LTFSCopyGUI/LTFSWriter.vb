@@ -3402,9 +3402,9 @@ Public Class LTFSWriter
                                                 PrintMsg($"{My.Resources.ResText_CHashing}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
                                                 If sha1value = "" Then sha1value = IOManager.SHA1(fr.SourcePath)
                                                 If fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True).Equals(sha1value) Then
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True), True)
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True), True)
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
                                                     dupe = True
                                                     dupeFile = fref
                                                 End If
@@ -3530,7 +3530,9 @@ Public Class LTFSWriter
                                                              sh.ProcessFinalBlock()
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                                             If sh.BlakeValue IsNot Nothing Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                                             End If
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
                                             End If
@@ -3704,7 +3706,9 @@ Public Class LTFSWriter
                                                              sh.ProcessFinalBlock()
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                                             If sh.BlakeValue IsNot Nothing Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                                             End If
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
@@ -4735,7 +4739,7 @@ Public Class LTFSWriter
         Dim result As New Dictionary(Of String, String)
         result.Add("SHA1", HT.SHA1Value)
         result.Add("MD5", HT.MD5Value)
-        result.Add("BLAKE", HT.BlakeValue)
+        If HT.BlakeValue IsNot Nothing Then result.Add("BLAKE", HT.BlakeValue)
         Return result
     End Function
 
@@ -5938,7 +5942,7 @@ Public Class LTFSWriter
                          sh.ProcessFinalBlock()
                          fadd.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                          fadd.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                         fadd.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                         If sh.BlakeValue IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                          If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                          schema.highestfileuid += 1
                          p.contents._directory.Remove(d)
@@ -6578,7 +6582,7 @@ Public Class LTFSWriter
                                              sh.ProcessFinalBlock()
                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
                                              fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                             If sh.BlakeValue IsNot Nothing Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                              sh.StopFlag = True
                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                          End Sub)
