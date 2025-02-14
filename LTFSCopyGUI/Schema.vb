@@ -157,7 +157,8 @@ Public Class ltfsindex
             End If
         End Function
 
-        Public Sub SetXattr(key As String, value As String)
+        Public Sub SetXattr(key As String, value As String, Optional ByVal IgnoreBlank As Boolean = False)
+            If IgnoreBlank AndAlso value.Length = 0 Then Exit Sub
             For Each x As xattr In extendedattributes
                 If x.key.ToLower = key.ToLower Then
                     x.value = value
