@@ -197,6 +197,33 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 校验开关 - BLAKE3 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验开关 - MD5 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_MD5() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_MD5", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验开关 - SHA1 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 重装带前清洁次数 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_CleanCycle() As String

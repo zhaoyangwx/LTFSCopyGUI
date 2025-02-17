@@ -869,4 +869,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="ResText_CapLossPerfWarning" xml:space="preserve">
     <value>显示容量损失会大大降低写入性能。仍要开启？</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3" xml:space="preserve">
+    <value>校验开关 - BLAKE3</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_MD5" xml:space="preserve">
+    <value>校验开关 - MD5</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1" xml:space="preserve">
+    <value>校验开关 - SHA1</value>
+  </data>
 </root>

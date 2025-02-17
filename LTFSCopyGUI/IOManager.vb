@@ -679,13 +679,18 @@ Public Class IOManager
                             End SyncLock
                             With blk
                                 If .Len = - 1 Then .Len = .block.Length
-                                Dim md5task As Task = Task.Run(Sub()
+                                Dim md5task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task = Task.Run(
+                                Sub()
                                     md5.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim sha1task As Task = Task.Run(Sub()
+                                Dim sha1task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task = Task.Run(
+                                Sub()
                                     sha1.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim blaketask As Task = Task.Run(
+                                Dim blaketask As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                                 Sub()
                                     'BlakeStream.Write(.block, WrittenBlakeBlock1, .Len)
                                     'WrittenBlakeBlock1 += .Len
@@ -697,9 +702,9 @@ Public Class IOManager
                                     End Try
 
                                 End Sub)
-                                sha1task.Wait()
-                                md5task.Wait()
-                                blaketask.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
                             End With
                             blk.block = Nothing
                         End While
@@ -710,12 +715,12 @@ Public Class IOManager
 
         Public Sub New()
             Try
-                Blake = Hasher.NewInstance()
+                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then Blake = Hasher.NewInstance()
             Catch ex As Exception
 
             End Try
-            sha1 = SHA1.Create()
-            md5 = MD5.Create()
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1 = SHA1.Create()
+            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5 = MD5.Create()
         End Sub
 
         Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = - 1)
@@ -724,13 +729,18 @@ Public Class IOManager
             End While
             SyncLock Lock
                 If Len = - 1 Then Len = block.Length
-                Dim sha1task As Task = Task.Run(Sub()
-                    sha1.TransformBlock(block, 0, Len, block, 0)
-                End Sub)
-                Dim md5task As Task = Task.Run(Sub()
-                    md5.TransformBlock(block, 0, Len, block, 0)
-                End Sub)
-                Dim blaketask As Task = Task.Run(
+                Dim sha1task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task = Task.Run(
+                    Sub()
+                        sha1.TransformBlock(block, 0, Len, block, 0)
+                    End Sub)
+                Dim md5task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task = Task.Run(
+                    Sub()
+                        md5.TransformBlock(block, 0, Len, block, 0)
+                    End Sub)
+                Dim blaketask As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                     Sub()
                         'BlakeStream.Write(block, WrittenBlakeBlock2, Len)
                         'WrittenBlakeBlock2 += Len
@@ -741,9 +751,9 @@ Public Class IOManager
 
                         End Try
                     End Sub)
-                blaketask.Wait()
-                sha1task.Wait()
-                md5task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
             End SyncLock
         End Sub
 
@@ -770,12 +780,16 @@ Public Class IOManager
                 Threading.Thread.Sleep(1)
             End While
             SyncLock Lock
-                sha1.TransformFinalBlock({}, 0, 0)
-                md5.TransformFinalBlock({}, 0, 0)
-                resultBytesSHA1 = sha1.Hash
-                resultBytesMD5 = md5.Hash
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                    sha1.TransformFinalBlock({}, 0, 0)
+                    resultBytesSHA1 = sha1.Hash
+                End If
+                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                    md5.TransformFinalBlock({}, 0, 0)
+                    resultBytesMD5 = md5.Hash
+                End If
                 Try
-                    resultBytesBlake = Blake.Finalize()
+                    If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then resultBytesBlake = Blake.Finalize()
                 Catch ex As Exception
                     resultBytesBlake = Nothing
                 End Try
@@ -787,7 +801,11 @@ Public Class IOManager
         Public ReadOnly Property SHA1Value As String
             Get
                 SyncLock Lock
-                    Return BitConverter.ToString(resultBytesSHA1).Replace("-", "").ToUpper()
+                    Try
+                        Return BitConverter.ToString(resultBytesSHA1).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
                 End SyncLock
             End Get
         End Property
@@ -795,7 +813,11 @@ Public Class IOManager
         Public ReadOnly Property MD5Value As String
             Get
                 SyncLock Lock
-                    Return BitConverter.ToString(resultBytesMD5).Replace("-", "").ToUpper()
+                    Try
+                        Return BitConverter.ToString(resultBytesMD5).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
                 End SyncLock
             End Get
         End Property

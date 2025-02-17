@@ -3528,9 +3528,9 @@ Public Class LTFSWriter
                                                              Dim sh As New IOManager.CheckSumBlockwiseCalculator
                                                              sh.Propagate(FileData)
                                                              sh.ProcessFinalBlock()
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                                                             If sh.BlakeValue IsNot Nothing Then
+                                                             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                                             If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                                             If sh.BlakeValue IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
                                                                  fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                                              End If
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
@@ -3704,9 +3704,9 @@ Public Class LTFSWriter
                                                 Dim HashTask As Task =
                                                 Task.Run(Sub()
                                                              sh.ProcessFinalBlock()
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
-                                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
-                                                             If sh.BlakeValue IsNot Nothing Then
+                                                             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                                             If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                                             If sh.BlakeValue IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
                                                                  fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                                              End If
                                                              sh.StopFlag = True

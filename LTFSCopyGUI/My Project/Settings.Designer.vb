@@ -286,6 +286,49 @@ Namespace My
                 Me("LTFSWriter_HashAsync") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - SHA1"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1")>
+        Public Property LTFSWriter_ChecksumEnabled_SHA1() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_SHA1"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_SHA1") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - MD5"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_MD5")>
+        Public Property LTFSWriter_ChecksumEnabled_MD5() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_MD5"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_MD5") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - BLAKE3"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3")>
+        Public Property LTFSWriter_ChecksumEnabled_BLAKE3() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_BLAKE3"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_BLAKE3") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("索引更新间隔（字节）"),
