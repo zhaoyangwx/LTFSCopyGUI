@@ -861,4 +861,13 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="ResText_CapLossPerfWarning" xml:space="preserve">
     <value>Showing capacity loss will significantly reduce write performance. Continue?</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3" xml:space="preserve">
+    <value>Checksum switch - BLAKE3</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_MD5" xml:space="preserve">
+    <value>Checksum switch - MD5</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1" xml:space="preserve">
+    <value>Checksum switch - SHA1</value>
+  </data>
 </root>
