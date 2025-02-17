@@ -5072,7 +5072,7 @@ Public Class TapeUtils
                             Dim TapeDirectoryEntry As Byte()
                             For a_Index = 0 To a_NWraps - 1
                                 DatasetsOnWrap_Index = a_Index
-                                TapeDirectoryEntry = substr(a_Buffer, a_HdrLength + a_TapeDirLength * a_Index, 32)
+                                TapeDirectoryEntry = substr(a_Buffer, a_HdrLength + a_TapeDirLength * a_Index, a_TapeDirLength)
                                 a = g_GetDWord(TapeDirectoryEntry, 4)
                                 If a = UNUSED_WRAP_IDENTIFIER OrElse a = GUARD_WRAP_IDENTIFIER Then
                                     a = 0

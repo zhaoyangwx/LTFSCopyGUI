@@ -4291,8 +4291,8 @@ Public Class LTFSWriter
         outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
         PrintMsg(My.Resources.ResText_Exporting)
         schema.SaveFile(outputfile)
-        Dim cmData As New TapeUtils.CMParser(driveHandle)
         Try
+            Dim cmData As New TapeUtils.CMParser(driveHandle)
             Dim CMReport As String = cmData.GetReport()
             If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
         Catch ex As Exception
