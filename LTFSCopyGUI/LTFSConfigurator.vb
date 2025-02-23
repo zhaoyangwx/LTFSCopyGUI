@@ -2160,4 +2160,56 @@ Public Class LTFSConfigurator
                    TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense)
                End Sub)
     End Sub
+
+    Private Sub ButtonDiagTest_Click(sender As Object, e As EventArgs) Handles ButtonDiagTest.Click
+        If Not MessageBox.Show(New Form With {.TopMost = True}, "Diagnostic write will corrupt data near target position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            Exit Sub
+        End If
+        Dim th As New Threading.Thread(
+            Sub()
+                Try
+                    Dim cdbData() As Byte = {&H1D, &H11, 0, 0, &H24, 0}
+                    Dim dataData() As Byte = {&H96, 0, 0, &H20, 0, 0, 0, &HFA,
+                    0, 0, 0, 0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, CByte(NumericUpDownTestSpeed.Value >> 8 And &HFF), CByte(NumericUpDownTestSpeed.Value And &HFF),
+                    0, CByte(NumericUpDownTestStartLen.Value >> 16 And &HFF), CByte(NumericUpDownTestStartLen.Value >> 8 And &HFF), CByte(NumericUpDownTestStartLen.Value And &HFF), 0, 0, 0, CByte(NumericUpDownTestWrap.Value And &HFF),
+                    0, 0, 0, 0}
+                    Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
+                    Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
+                    Dim dataBufferPtr As IntPtr
+                    dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
+                    Marshal.Copy(dataData, 0, dataBufferPtr, dataData.Length)
+                    Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+
+                    Dim senseBuffer(63) As Byte
+                    Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
+                    Dim succ As Boolean
+                    SyncLock TapeUtils.SCSIOperationLock
+                        Dim handle As IntPtr
+                        TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, 0, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
+                        TapeUtils.CloseTapeDrive(handle)
+                    End SyncLock
+                    Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
+                    Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
+                    Me.Invoke(Sub()
+                                  PrintCommandResult(cdbData, dataData, senseBuffer)
+                              End Sub)
+                    'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
+                    Marshal.FreeHGlobal(cdb)
+                    Marshal.FreeHGlobal(dataBufferPtr)
+                    Marshal.FreeHGlobal(senseBufferPtr)
+                    If succ Then
+                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "OK")
+                    Else
+                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "FAIL")
+                    End If
+                Catch ex As Exception
+                    MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+                End Try
+                Me.Invoke(Sub() Panel2.Enabled = True)
+            End Sub)
+        Panel2.Enabled = False
+        th.Start()
+    End Sub
 End Class

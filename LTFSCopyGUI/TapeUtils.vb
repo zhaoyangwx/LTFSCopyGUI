@@ -5574,16 +5574,28 @@ Public Class TapeUtils
                 Output.Append(("| Serial number: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
             End Try
             Try
-                Dim Medium_Manufacturer As String = Me.CartridgeMfgData.TapeVendor 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
-                Output.Append(("| Manufacturer: ".PadRight(28) & Medium_Manufacturer).PadRight(74) & "|" & vbCrLf)
+                Dim Tape_Manufacturer As String = Me.CartridgeMfgData.TapeVendor 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
+                Output.Append(("| Tape Vendor: ".PadRight(28) & Tape_Manufacturer).PadRight(74) & "|" & vbCrLf)
             Catch ex As Exception
-                Output.Append(("| Manufacturer: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                Output.Append(("| Tape Vendor: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
             End Try
             Try
-                Dim Medium_Man_Date As String = Me.CartridgeMfgData.MfgDate 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
-                Output.Append(("| Manufacture date: ".PadRight(28) & Medium_Man_Date).PadRight(74) & "|" & vbCrLf)
+                Dim Tape_Man_Date As String = Me.CartridgeMfgData.MfgDate 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
+                Output.Append(("| Tape mfg date: ".PadRight(28) & Tape_Man_Date).PadRight(74) & "|" & vbCrLf)
             Catch ex As Exception
-                Output.Append(("| Manufacture date: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+                Output.Append(("| Tape mfg date: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim Medium_Manufacturer As String = Me.MediaMfgData.MediaVendor 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 0).AsString
+                Output.Append(("| Media Vendor: ".PadRight(28) & Medium_Manufacturer).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Media Vendor: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
+            End Try
+            Try
+                Dim Medium_Man_Date As String = Me.MediaMfgData.MediaMfgDate 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 4, 6).AsString
+                Output.Append(("| Media mfg date: ".PadRight(28) & Medium_Man_Date).PadRight(74) & "|" & vbCrLf)
+            Catch ex As Exception
+                Output.Append(("| Media mfg date: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
             End Try
             Try
                 Dim CMData As Byte() = Me.a_CMBuffer

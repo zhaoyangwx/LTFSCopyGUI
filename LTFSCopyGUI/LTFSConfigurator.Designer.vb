@@ -113,7 +113,7 @@ Partial Class LTFSConfigurator
         Me.RadioButtonTest2 = New System.Windows.Forms.RadioButton()
         Me.RadioButtonTest1 = New System.Windows.Forms.RadioButton()
         Me.NumericUpDownTestBlkNum = New System.Windows.Forms.NumericUpDown()
-        Me.LabelTestBlockNum = New System.Windows.Forms.Label()
+        Me.LabelTestBlockCount = New System.Windows.Forms.Label()
         Me.NumericUpDownTestBlkSize = New System.Windows.Forms.NumericUpDown()
         Me.LabelTestBlocksize = New System.Windows.Forms.Label()
         Me.LabelTimeout = New System.Windows.Forms.Label()
@@ -133,6 +133,13 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.LabelTestSpeed = New System.Windows.Forms.Label()
+        Me.LabelTestStartLen = New System.Windows.Forms.Label()
+        Me.NumericUpDownTestSpeed = New System.Windows.Forms.NumericUpDown()
+        Me.NumericUpDownTestStartLen = New System.Windows.Forms.NumericUpDown()
+        Me.NumericUpDownTestWrap = New System.Windows.Forms.NumericUpDown()
+        Me.LabelTestWrap = New System.Windows.Forms.Label()
+        Me.ButtonDiagTest = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -153,6 +160,9 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.SuspendLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -746,12 +756,19 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
+        Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
+        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestWrap)
+        Me.TabPageTest.Controls.Add(Me.LabelTestWrap)
+        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestStartLen)
+        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSpeed)
+        Me.TabPageTest.Controls.Add(Me.LabelTestStartLen)
+        Me.TabPageTest.Controls.Add(Me.LabelTestSpeed)
         Me.TabPageTest.Controls.Add(Me.ButtonRDErrRateLog)
         Me.TabPageTest.Controls.Add(Me.ButtonTest)
         Me.TabPageTest.Controls.Add(Me.RadioButtonTest2)
         Me.TabPageTest.Controls.Add(Me.RadioButtonTest1)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestBlkNum)
-        Me.TabPageTest.Controls.Add(Me.LabelTestBlockNum)
+        Me.TabPageTest.Controls.Add(Me.LabelTestBlockCount)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestBlkSize)
         Me.TabPageTest.Controls.Add(Me.LabelTestBlocksize)
         resources.ApplyResources(Me.TabPageTest, "TabPageTest")
@@ -792,10 +809,10 @@ Partial Class LTFSConfigurator
         Me.NumericUpDownTestBlkNum.Name = "NumericUpDownTestBlkNum"
         Me.NumericUpDownTestBlkNum.Value = New Decimal(New Integer() {1024, 0, 0, 0})
         '
-        'LabelTestBlockNum
+        'LabelTestBlockCount
         '
-        resources.ApplyResources(Me.LabelTestBlockNum, "LabelTestBlockNum")
-        Me.LabelTestBlockNum.Name = "LabelTestBlockNum"
+        resources.ApplyResources(Me.LabelTestBlockCount, "LabelTestBlockCount")
+        Me.LabelTestBlockCount.Name = "LabelTestBlockCount"
         '
         'NumericUpDownTestBlkSize
         '
@@ -890,6 +907,48 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'LabelTestSpeed
+        '
+        resources.ApplyResources(Me.LabelTestSpeed, "LabelTestSpeed")
+        Me.LabelTestSpeed.Name = "LabelTestSpeed"
+        '
+        'LabelTestStartLen
+        '
+        resources.ApplyResources(Me.LabelTestStartLen, "LabelTestStartLen")
+        Me.LabelTestStartLen.Name = "LabelTestStartLen"
+        '
+        'NumericUpDownTestSpeed
+        '
+        resources.ApplyResources(Me.NumericUpDownTestSpeed, "NumericUpDownTestSpeed")
+        Me.NumericUpDownTestSpeed.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestSpeed.Name = "NumericUpDownTestSpeed"
+        Me.NumericUpDownTestSpeed.Value = New Decimal(New Integer() {7120, 0, 0, 0})
+        '
+        'NumericUpDownTestStartLen
+        '
+        resources.ApplyResources(Me.NumericUpDownTestStartLen, "NumericUpDownTestStartLen")
+        Me.NumericUpDownTestStartLen.Maximum = New Decimal(New Integer() {16777215, 0, 0, 0})
+        Me.NumericUpDownTestStartLen.Name = "NumericUpDownTestStartLen"
+        Me.NumericUpDownTestStartLen.Value = New Decimal(New Integer() {832584, 0, 0, 0})
+        '
+        'NumericUpDownTestWrap
+        '
+        resources.ApplyResources(Me.NumericUpDownTestWrap, "NumericUpDownTestWrap")
+        Me.NumericUpDownTestWrap.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestWrap.Name = "NumericUpDownTestWrap"
+        Me.NumericUpDownTestWrap.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'LabelTestWrap
+        '
+        resources.ApplyResources(Me.LabelTestWrap, "LabelTestWrap")
+        Me.LabelTestWrap.Name = "LabelTestWrap"
+        '
+        'ButtonDiagTest
+        '
+        resources.ApplyResources(Me.ButtonDiagTest, "ButtonDiagTest")
+        Me.ButtonDiagTest.Name = "ButtonDiagTest"
+        Me.ButtonDiagTest.UseVisualStyleBackColor = True
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -925,6 +984,9 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.PerformLayout()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1019,7 +1081,7 @@ Partial Class LTFSConfigurator
     Friend WithEvents NumericUpDownTestBlkSize As NumericUpDown
     Friend WithEvents LabelTestBlocksize As Label
     Friend WithEvents NumericUpDownTestBlkNum As NumericUpDown
-    Friend WithEvents LabelTestBlockNum As Label
+    Friend WithEvents LabelTestBlockCount As Label
     Friend WithEvents RadioButtonTest2 As RadioButton
     Friend WithEvents RadioButtonTest1 As RadioButton
     Friend WithEvents ButtonTest As Button
@@ -1038,4 +1100,11 @@ Partial Class LTFSConfigurator
     Friend WithEvents ContextMenuStripErase As ContextMenuStrip
     Friend WithEvents ReInitializeToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents QuickEraseToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ButtonDiagTest As Button
+    Friend WithEvents NumericUpDownTestWrap As NumericUpDown
+    Friend WithEvents LabelTestWrap As Label
+    Friend WithEvents NumericUpDownTestStartLen As NumericUpDown
+    Friend WithEvents NumericUpDownTestSpeed As NumericUpDown
+    Friend WithEvents LabelTestStartLen As Label
+    Friend WithEvents LabelTestSpeed As Label
 End Class
