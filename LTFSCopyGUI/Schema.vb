@@ -113,6 +113,15 @@ Public Class ltfsindex
         Public Property MD5ForeColor As Color = Color.Black
         <Category("Internal")>
         <Xml.Serialization.XmlIgnore>
+        Public Property BLAKE3ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property XxHash3ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property XxHash128ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
         Public Property ItemForeColor As Color = Color.Black
         <Serializable>
         <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -129,6 +138,8 @@ Public Class ltfsindex
                 Public Shared ReadOnly Property SHA256 As String = "ltfs.hash.sha256sum"
                 Public Shared ReadOnly Property SHA512 As String = "ltfs.hash.sha512sum"
                 Public Shared ReadOnly Property BLAKE3 As String = "ltfs.hash.blake3sum"
+                Public Shared ReadOnly Property XxHash3 As String = "ltfs.hash.xxhash3sum"
+                Public Shared ReadOnly Property XxHash128 As String = "ltfs.hash.xxhash128sum"
             End Class
             Public Shared Function FromXMLList(s As String) As List(Of xattr)
                 Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))

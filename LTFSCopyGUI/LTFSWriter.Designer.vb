@@ -86,7 +86,6 @@ Partial Class LTFSWriter
         Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_sha1 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_fileuid = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_openforwrite = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_readonly = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
@@ -99,7 +98,6 @@ Partial Class LTFSWriter
         Me.Column_Partition = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_FriendlyLen = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_writtenBytes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_md5 = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.提取ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -386,7 +384,7 @@ Partial Class LTFSWriter
         'ListView1
         '
         Me.ListView1.AllowColumnReorder = True
-        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_sha1, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes, Me.Column_md5})
+        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
         Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
         resources.ApplyResources(Me.ListView1, "ListView1")
         Me.ListView1.HideSelection = False
@@ -408,10 +406,6 @@ Partial Class LTFSWriter
         'Column_creationtime
         '
         resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
-        '
-        'Column_sha1
-        '
-        resources.ApplyResources(Me.Column_sha1, "Column_sha1")
         '
         'Column_fileuid
         '
@@ -460,10 +454,6 @@ Partial Class LTFSWriter
         'Column_writtenBytes
         '
         resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
-        '
-        'Column_md5
-        '
-        resources.ApplyResources(Me.Column_md5, "Column_md5")
         '
         'ContextMenuStrip1
         '
@@ -1462,7 +1452,6 @@ Partial Class LTFSWriter
     Friend WithEvents Column_changetime As ColumnHeader
     Friend WithEvents SplitContainer1 As SplitContainer
     Friend WithEvents TreeView1 As TreeView
-    Friend WithEvents Column_sha1 As ColumnHeader
     Friend WithEvents Column_fileuid As ColumnHeader
     Friend WithEvents Column_openforwrite As ColumnHeader
     Friend WithEvents Column_readonly As ColumnHeader
@@ -1603,7 +1592,6 @@ Partial Class LTFSWriter
     Friend WithEvents 显示文件数ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 移动到索引区ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 查找指定位置前的索引ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents Column_md5 As ColumnHeader
     Friend WithEvents TextBoxSelectedPath As TextBox
     Friend WithEvents ContextMenuStrip4 As ContextMenuStrip
     Friend WithEvents DebugToolStripMenuItem As ToolStripMenuItem
