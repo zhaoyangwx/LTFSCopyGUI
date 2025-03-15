@@ -224,6 +224,24 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 校验开关 - XxHash128 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash128() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash128", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验开关 - XxHash3 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash3() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash3", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 重装带前清洁次数 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_CleanCycle() As String

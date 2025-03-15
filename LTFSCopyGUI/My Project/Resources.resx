@@ -878,4 +878,10 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1" xml:space="preserve">
     <value>校验开关 - SHA1</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash3" xml:space="preserve">
+    <value>校验开关 - XxHash3</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash128" xml:space="preserve">
+    <value>校验开关 - XxHash128</value>
+  </data>
 </root>

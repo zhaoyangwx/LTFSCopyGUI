@@ -1380,9 +1380,9 @@ Public Class LTFSWriter
                                Case "cleaning requested flag"
                                    CleanFlag = CleanFlag Or item.RawData(0)
                                Case "device status"
-                                   DriveFlag = (item.RawData(0) <> 1)
+                                   DriveFlag = (item.RawData(0) > 1)
                                Case "medium status"
-                                   TapeFlag = (item.RawData(0) <> 1)
+                                   TapeFlag = (item.RawData(0) > 1)
                            End Select
                        Next
                    End If
@@ -1792,6 +1792,34 @@ Public Class LTFSWriter
                     Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
                     ListView1.Items.Clear()
                     ListView1.Tag = d
+                    Dim colIndex As Integer = 3
+                    While ListView1.Columns.Count > 15
+                        ListView1.Columns.RemoveAt(3)
+                    End While
+                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = 252, .Text = "SHA1", .DisplayIndex = colIndex})
+                        colIndex += 1
+                    End If
+                    If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = 204, .Text = "MD5", .DisplayIndex = colIndex})
+                        colIndex += 1
+                    End If
+                    If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = 396, .Text = "BLAKE3", .DisplayIndex = colIndex})
+                        colIndex += 1
+                    End If
+                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = 108, .Text = "XxHash3", .DisplayIndex = colIndex})
+                        colIndex += 1
+                    End If
+                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = 204, .Text = "XxHash128", .DisplayIndex = colIndex})
+                        colIndex += 1
+                    End If
+                    For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
+                        ListView1.Columns(i).DisplayIndex = i
+                    Next
+
                     SyncLock d.contents._file
                         For Each f As ltfsindex.file In d.contents._file
                             Dim li As New ListViewItem
@@ -1799,54 +1827,88 @@ Public Class LTFSWriter
                             li.Text = f.name
                             li.ImageIndex = 2
                             li.StateImageIndex = 2
-                            Dim s(15) As String
-                            s(0) = f.length
-                            s(1) = f.creationtime
-                            s(2) = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
-                            s(15) = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
-                            s(3) = f.fileuid
-                            s(4) = f.openforwrite
-                            s(5) = f.readonly
-                            s(6) = f.changetime
-                            s(7) = f.modifytime
-                            s(8) = f.accesstime
-                            s(9) = f.backuptime
+                            Dim s As New List(Of String)
+                            s.Add(f.length)
+                            s.Add(f.creationtime)
+                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True))
+                            End If
+                            s.Add(f.fileuid)
+                            s.Add(f.openforwrite)
+                            s.Add(f.readonly)
+                            s.Add(f.changetime)
+                            s.Add(f.modifytime)
+                            s.Add(f.accesstime)
+                            s.Add(f.backuptime)
                             If f.tag IsNot Nothing Then
-                                s(10) = f.tag.ToString()
+                                s.Add(f.tag.ToString())
                             Else
-                                s(10) = ""
+                                s.Add("")
                             End If
                             If f.extentinfo IsNot Nothing Then
                                 If f.extentinfo.Count > 0 Then
                                     Try
-                                        s(11) = (f.extentinfo(0).startblock.ToString())
-                                        s(12) = (f.extentinfo(0).partition.ToString())
+                                        s.Add((f.extentinfo(0).startblock.ToString()))
                                     Catch ex As Exception
-                                        s(11) = ("-")
-                                        s(12) = ("-")
+                                        s.Add(("-"))
+                                    End Try
+                                    Try
+                                        s.Add((f.extentinfo(0).partition.ToString()))
+                                    Catch ex As Exception
+                                        s.Add(("-"))
                                     End Try
                                 End If
                             Else
-                                s(11) = ("-")
-                                s(12) = ("-")
+                                s.Add(("-"))
+                                s.Add(("-"))
                             End If
-                            s(13) = IOManager.FormatSize(f.length)
+                            s.Add(IOManager.FormatSize(f.length))
                             If f.WrittenBytes > 0 Then
-                                s(14) = (IOManager.FormatSize(f.WrittenBytes))
+                                s.Add(IOManager.FormatSize(f.WrittenBytes))
                             Else
-                                s(14) = ("-")
+                                s.Add("-")
                             End If
                             For Each t As String In s
                                 li.SubItems.Add(t)
                             Next
                             li.ForeColor = f.ItemForeColor
-                            If Not f.SHA1ForeColor.Equals(Color.Black) Then
+                            Dim colID As Integer = 3
+                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso Not f.SHA1ForeColor.Equals(Color.Black) Then
                                 li.UseItemStyleForSubItems = False
-                                li.SubItems(3).ForeColor = f.SHA1ForeColor
+                                li.SubItems(colID).ForeColor = f.SHA1ForeColor
+                                colID += 1
                             End If
-                            If Not f.MD5ForeColor.Equals(Color.Black) Then
+                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso Not f.MD5ForeColor.Equals(Color.Black) Then
                                 li.UseItemStyleForSubItems = False
-                                li.SubItems(16).ForeColor = f.MD5ForeColor
+                                li.SubItems(colID).ForeColor = f.MD5ForeColor
+                                colID += 1
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso Not f.BLAKE3ForeColor.Equals(Color.Black) Then
+                                li.UseItemStyleForSubItems = False
+                                li.SubItems(colID).ForeColor = f.BLAKE3ForeColor
+                                colID += 1
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso Not f.XxHash3ForeColor.Equals(Color.Black) Then
+                                li.UseItemStyleForSubItems = False
+                                li.SubItems(colID).ForeColor = f.XxHash3ForeColor
+                                colID += 1
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso Not f.XxHash128ForeColor.Equals(Color.Black) Then
+                                li.UseItemStyleForSubItems = False
+                                li.SubItems(colID).ForeColor = f.XxHash128ForeColor
+                                colID += 1
                             End If
                             ListView1.Items.Add(li)
                         Next
@@ -1858,42 +1920,55 @@ Public Class LTFSWriter
                             SyncLock f
                                 li.Tag = f
                                 li.Text = f.name
-                                Dim s(15) As String
-                                s(0) = f.length
-                                s(1) = f.creationtime
-                                s(2) = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
-                                s(15) = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
-                                s(3) = f.fileuid
-                                s(4) = f.openforwrite
-                                s(5) = f.readonly
-                                s(6) = f.changetime
-                                s(7) = f.modifytime
-                                s(8) = f.accesstime
-                                s(9) = f.backuptime
+                                Dim s As New List(Of String)
+                                s.Add(f.length)
+                                s.Add(f.creationtime)
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
+                                End If
+                                s.Add(f.fileuid)
+                                s.Add(f.openforwrite)
+                                s.Add(f.readonly)
+                                s.Add(f.changetime)
+                                s.Add(f.modifytime)
+                                s.Add(f.accesstime)
+                                s.Add(f.backuptime)
                                 If f.tag IsNot Nothing Then
-                                    s(10) = f.tag.ToString()
+                                    s.Add(f.tag.ToString())
                                 Else
-                                    s(10) = ""
+                                    s.Add("")
                                 End If
                                 If f.extentinfo IsNot Nothing Then
                                     If f.extentinfo.Count > 0 Then
                                         Try
-                                            s(11) = (f.extentinfo(0).startblock.ToString())
-                                            s(12) = (f.extentinfo(0).partition.ToString())
+                                            s.Add((f.extentinfo(0).startblock.ToString())）
                                         Catch ex As Exception
-                                            s(11) = ("-")
-                                            s(12) = ("-")
+                                            s.Add(("-"))
+                                        End Try
+                                        Try
+                                            s.Add((f.extentinfo(0).partition.ToString()))
+                                        Catch ex As Exception
+                                            s.Add(("-"))
                                         End Try
                                     End If
                                 Else
-                                    s(11) = ("-")
-                                    s(12) = ("-")
+                                    s.Add("-")
+                                    s.Add("-")
                                 End If
-                                s(13) = IOManager.FormatSize(f.length)
+                                s.Add(IOManager.FormatSize(f.length))
                                 If f.WrittenBytes > 0 Then
-                                    s(14) = (IOManager.FormatSize(f.WrittenBytes))
+                                    s.Add(IOManager.FormatSize(f.WrittenBytes))
                                 Else
-                                    s(14) = ("-")
+                                    s.Add("-")
                                 End If
                                 For Each t As String In s
                                     li.SubItems.Add(t)
@@ -1929,7 +2004,7 @@ Public Class LTFSWriter
                 SetStatusLight(LWStatus.Err)
             End Try
             ListView1.EndUpdate()
-            If old_node IsNot Nothing AndAlso ListView1.Tag IsNot Nothing AndAlso old_node Is ListView1.Tag AndAlso old_select_index >= 0 Then
+            If old_node IsNot Nothing AndAlso ListView1.Tag IsNot Nothing AndAlso ListView1.Items.Count > 0 AndAlso old_node Is ListView1.Tag AndAlso old_select_index >= 0 Then
                 ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
                 ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
                 ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).EnsureVisible()
@@ -3405,6 +3480,8 @@ Public Class LTFSWriter
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True), True)
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True), True)
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True), True)
+                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True), True)
                                                     dupe = True
                                                     dupeFile = fref
                                                 End If
@@ -3532,6 +3609,12 @@ Public Class LTFSWriter
                                                              If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                                                              If sh.BlakeValue IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
                                                                  fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                                             End If
+                                                             If sh.XXHash3Value IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, sh.XXHash3Value)
+                                                             End If
+                                                             If sh.XXHash128Value IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, sh.XXHash128Value)
                                                              End If
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
@@ -3709,6 +3792,12 @@ Public Class LTFSWriter
                                                              If sh.BlakeValue IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
                                                                  fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
                                                              End If
+                                                             If sh.XXHash3Value IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, sh.XXHash3Value)
+                                                             End If
+                                                             If sh.XXHash128Value IsNot Nothing AndAlso My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                                                 fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, sh.XXHash128Value)
+                                                             End If
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
@@ -3731,6 +3820,8 @@ Public Class LTFSWriter
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, "D41D8CD98F00B204E9800998ECF8427E")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, "AF1349B9F5F9A1A6A0404DEA36DCC9499BCB25C9ADC112B7CC9A93CAE41F3262")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, "2D06800538D394C2")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, LTFSConfigurator.Byte2Hex(IO.Hashing.XxHash128.Hash({})).Replace(" ", "").Replace("|", "").ToUpper())
                                     TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
@@ -4402,6 +4493,9 @@ Public Class LTFSWriter
                             If flookup.name = f.name And flookup.length = f.length Then
                                 Dim sha1value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)
                                 Dim md5value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5)
+                                Dim blake3value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)
+                                Dim xxhash3value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)
+                                Dim xxhash128value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)
                                 If Not Overwrite Then
                                     If Not (sha1value0 IsNot Nothing AndAlso sha1value0 <> "" AndAlso sha1value0.Length = 40) Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
@@ -4411,6 +4505,18 @@ Public Class LTFSWriter
                                         PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.MD5, flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5))
                                     End If
+                                    If Not (blake3value0 IsNot Nothing AndAlso blake3value0 <> "" AndAlso blake3value0.Length = 64) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {blake3value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3))
+                                    End If
+                                    If Not (xxhash3value0 IsNot Nothing AndAlso xxhash3value0 <> "" AndAlso xxhash3value0.Length = 16) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {xxhash3value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3))
+                                    End If
+                                    If Not (xxhash128value0 IsNot Nothing AndAlso xxhash128value0 <> "" AndAlso xxhash128value0.Length = 16) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {xxhash128value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128))
+                                    End If
                                 Else
                                     If flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1).Length = 40 Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
@@ -4419,6 +4525,18 @@ Public Class LTFSWriter
                                     If flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5).Length = 32 Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.MD5, flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3).Length = 64 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {blake3value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, flookup.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3).Length = 16 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {xxhash3value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128).Length = 32 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {xxhash128value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128))
                                     End If
                                 End If
 
@@ -4739,7 +4857,9 @@ Public Class LTFSWriter
         Dim result As New Dictionary(Of String, String)
         result.Add("SHA1", HT.SHA1Value)
         result.Add("MD5", HT.MD5Value)
-        If HT.BlakeValue IsNot Nothing Then result.Add("BLAKE", HT.BlakeValue)
+        If HT.BlakeValue IsNot Nothing Then result.Add("BLAKE3", HT.BlakeValue)
+        If HT.XXHash3Value IsNot Nothing Then result.Add("XxHash3", HT.XXHash3Value)
+        If HT.XXHash128Value IsNot Nothing Then result.Add("XxHash128", HT.XXHash128Value)
         Return result
     End Function
 
@@ -4935,8 +5055,11 @@ Public Class LTFSWriter
                             RestorePosition = New TapeUtils.PositionData(driveHandle)
                             For Each FileIndex As ltfsindex.file In flist
                                 If ValidOnly Then
-                                    If (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (FileIndex.SHA1ForeColor.Equals(Color.Black) OrElse FileIndex.SHA1ForeColor.Equals(Color.Red)))) AndAlso
-                                       (FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (FileIndex.MD5ForeColor.Equals(Color.Black) OrElse FileIndex.MD5ForeColor.Equals(Color.Red)))) Then
+                                    If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (FileIndex.SHA1ForeColor.Equals(Color.Black) OrElse FileIndex.SHA1ForeColor.Equals(Color.Red)))) AndAlso
+                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_MD5) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (FileIndex.MD5ForeColor.Equals(Color.Black) OrElse FileIndex.MD5ForeColor.Equals(Color.Red)))) AndAlso
+                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "" OrElse (Not (FileIndex.BLAKE3ForeColor.Equals(Color.Black) OrElse FileIndex.BLAKE3ForeColor.Equals(Color.Red)))) AndAlso
+                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash3) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "" OrElse (Not (FileIndex.XxHash3ForeColor.Equals(Color.Black) OrElse FileIndex.XxHash3ForeColor.Equals(Color.Red)))) AndAlso
+                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash128) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "" OrElse (Not (FileIndex.XxHash128ForeColor.Equals(Color.Black) OrElse FileIndex.XxHash128ForeColor.Equals(Color.Red)))) Then
                                         'Skip
                                         Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
                                         Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -4957,55 +5080,149 @@ Public Class LTFSWriter
                                         End If
                                         Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex, blk0)
                                         If result IsNot Nothing Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
-                                                FileIndex.SHA1ForeColor = Color.DarkGreen
-                                            ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
-                                                FileIndex.SHA1ForeColor = Color.Red
-                                                Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
+                                                    FileIndex.SHA1ForeColor = Color.DarkGreen
+                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
+                                                    FileIndex.SHA1ForeColor = Color.Red
+                                                    Threading.Interlocked.Increment(ec)
+                                                    PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
+                                                End If
                                             End If
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
-                                                FileIndex.MD5ForeColor = Color.DarkGreen
-                                            ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
-                                                FileIndex.MD5ForeColor = Color.Red
-                                                Threading.Interlocked.Increment(ec)
-                                                PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
+                                                    FileIndex.MD5ForeColor = Color.DarkGreen
+                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
+                                                    FileIndex.MD5ForeColor = Color.Red
+                                                    Threading.Interlocked.Increment(ec)
+                                                    PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
+                                                End If
                                             End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = result.Item("BLAKE3") Then
+                                                    FileIndex.BLAKE3ForeColor = Color.DarkGreen
+                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> "" Then
+                                                    FileIndex.BLAKE3ForeColor = Color.Red
+                                                    Threading.Interlocked.Increment(ec)
+                                                    PrintMsg($"BLAKE3 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} blake3logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)} blake3calc={result.Item("BLAKE3")}", ForceLog:=True)
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = result.Item("XxHash3") Then
+                                                    FileIndex.XxHash3ForeColor = Color.DarkGreen
+                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> "" Then
+                                                    FileIndex.XxHash3ForeColor = Color.Red
+                                                    Threading.Interlocked.Increment(ec)
+                                                    PrintMsg($"XxHash3 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} xxhash3logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)} xxhash3calc={result.Item("XxHash3")}", ForceLog:=True)
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = result.Item("XxHash128") Then
+                                                    FileIndex.XxHash128ForeColor = Color.DarkGreen
+                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> "" Then
+                                                    FileIndex.XxHash128ForeColor = Color.Red
+                                                    Threading.Interlocked.Increment(ec)
+                                                    PrintMsg($"XxHash128 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} xxhash128logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)} xxhash128calc={result.Item("XxHash128")}", ForceLog:=True)
+                                                End If
+                                            End If
+
                                         End If
                                     End If
                                 ElseIf Overwrite Then
                                     Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
                                     If result IsNot Nothing Then
-                                        If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                            FileIndex.SHA1ForeColor = Color.Blue
-                                        Else
-                                            FileIndex.SHA1ForeColor = Color.Green
-                                        End If
-                                        If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                            FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                            FileIndex.MD5ForeColor = Color.Blue
-                                        Else
-                                            FileIndex.MD5ForeColor = Color.Green
-                                        End If
-                                        If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                    End If
-                                Else
-                                    If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" Then
-                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
-                                        If result IsNot Nothing Then
+                                        If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                                 FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                                 FileIndex.SHA1ForeColor = Color.Blue
                                             Else
                                                 FileIndex.SHA1ForeColor = Color.Green
                                             End If
+                                        End If
+                                        If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
                                             If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                                 FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                                 FileIndex.MD5ForeColor = Color.Blue
                                             Else
                                                 FileIndex.MD5ForeColor = Color.Green
                                             End If
+                                        End If
+                                        If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
+                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
+                                                FileIndex.BLAKE3ForeColor = Color.Blue
+                                            Else
+                                                FileIndex.BLAKE3ForeColor = Color.Green
+                                            End If
+                                        End If
+                                        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
+                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
+                                                FileIndex.XxHash3ForeColor = Color.Blue
+                                            Else
+                                                FileIndex.XxHash3ForeColor = Color.Green
+                                            End If
+                                        End If
+                                        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
+                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
+                                                FileIndex.XxHash128ForeColor = Color.Blue
+                                            Else
+                                                FileIndex.XxHash128ForeColor = Color.Green
+                                            End If
+                                        End If
+
+                                        If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                                    End If
+                                Else
+                                    If (My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "") OrElse
+                                    (My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "") OrElse
+                                    (My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "") OrElse
+                                    (My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "") OrElse
+                                    (My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "") Then
+                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
+                                        If result IsNot Nothing Then
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                                    FileIndex.SHA1ForeColor = Color.Blue
+                                                Else
+                                                    FileIndex.SHA1ForeColor = Color.Green
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                                    FileIndex.MD5ForeColor = Color.Blue
+                                                Else
+                                                    FileIndex.MD5ForeColor = Color.Green
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
+                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
+                                                    FileIndex.BLAKE3ForeColor = Color.Blue
+                                                Else
+                                                    FileIndex.BLAKE3ForeColor = Color.Green
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
+                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
+                                                    FileIndex.XxHash3ForeColor = Color.Blue
+                                                Else
+                                                    FileIndex.XxHash3ForeColor = Color.Green
+                                                End If
+                                            End If
+                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
+                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
+                                                    FileIndex.XxHash128ForeColor = Color.Blue
+                                                Else
+                                                    FileIndex.XxHash128ForeColor = Color.Green
+                                                End If
+                                            End If
+
                                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                         End If
                                     Else
@@ -5091,8 +5308,11 @@ Public Class LTFSWriter
                         c += 1
                         PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
                         If ValidateOnly Then
-                            If (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
-                               (fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (fr.File.MD5ForeColor.Equals(Color.Black) OrElse fr.File.MD5ForeColor.Equals(Color.Red)))) Then
+                            If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
+                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_MD5) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (fr.File.MD5ForeColor.Equals(Color.Black) OrElse fr.File.MD5ForeColor.Equals(Color.Red)))) AndAlso
+                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "" OrElse (Not (fr.File.BLAKE3ForeColor.Equals(Color.Black) OrElse fr.File.BLAKE3ForeColor.Equals(Color.Red)))) AndAlso
+                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash3) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "" OrElse (Not (fr.File.XxHash3ForeColor.Equals(Color.Black) OrElse fr.File.XxHash3ForeColor.Equals(Color.Red)))) AndAlso
+                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash128) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "" OrElse (Not (fr.File.XxHash128ForeColor.Equals(Color.Black) OrElse fr.File.XxHash128ForeColor.Equals(Color.Red)))) Then
                                 'skip
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
@@ -5113,52 +5333,147 @@ Public Class LTFSWriter
                                 End If
                                 Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File, blk0)
                                 If result IsNot Nothing Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
-                                        fr.File.SHA1ForeColor = Color.Green
-                                    ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
-                                        fr.File.SHA1ForeColor = Color.Red
-                                        PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
-                                        Threading.Interlocked.Increment(ec)
+                                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
+                                            fr.File.SHA1ForeColor = Color.Green
+                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
+                                            fr.File.SHA1ForeColor = Color.Red
+                                            PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
+                                            Threading.Interlocked.Increment(ec)
+                                        End If
                                     End If
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
-                                        fr.File.MD5ForeColor = Color.Green
-                                    ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
-                                        fr.File.MD5ForeColor = Color.Red
-                                        PrintMsg($"MD5 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} md5logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
-                                        Threading.Interlocked.Increment(ec)
+                                    If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
+                                            fr.File.MD5ForeColor = Color.Green
+                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
+                                            fr.File.MD5ForeColor = Color.Red
+                                            PrintMsg($"MD5 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} md5logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
+                                            Threading.Interlocked.Increment(ec)
+                                        End If
                                     End If
+                                    If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = result.Item("BLAKE3") Then
+                                            fr.File.BLAKE3ForeColor = Color.Green
+                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> "" Then
+                                            fr.File.BLAKE3ForeColor = Color.Red
+                                            PrintMsg($"BLAKE3 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} blake3logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)} blake3calc={result.Item("BLAKE3")}", ForceLog:=True)
+                                            Threading.Interlocked.Increment(ec)
+                                        End If
+                                    End If
+                                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = result.Item("XxHash3") Then
+                                            fr.File.XxHash3ForeColor = Color.Green
+                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> "" Then
+                                            fr.File.XxHash3ForeColor = Color.Red
+                                            PrintMsg($"XxHash3 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} xxhash3logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)} xxhash3calc={result.Item("XxHash3")}", ForceLog:=True)
+                                            Threading.Interlocked.Increment(ec)
+                                        End If
+                                    End If
+                                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = result.Item("XxHash128") Then
+                                            fr.File.XxHash128ForeColor = Color.Green
+                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> "" Then
+                                            fr.File.XxHash128ForeColor = Color.Red
+                                            PrintMsg($"XxHash128 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} xxhash128logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)} xxhash128calc={result.Item("XxHash128")}", ForceLog:=True)
+                                            Threading.Interlocked.Increment(ec)
+                                        End If
+                                    End If
+
                                 End If
                             End If
                         ElseIf Overwrite Then
                             Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
-                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                fr.File.SHA1ForeColor = Color.Blue
-                            Else
-                                fr.File.SHA1ForeColor = Color.Green
-                            End If
-                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                fr.File.MD5ForeColor = Color.Blue
-                            Else
-                                fr.File.MD5ForeColor = Color.Green
-                            End If
-                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                        Else
-                            If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" Then
-                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
                                     fr.File.SHA1ForeColor = Color.Blue
                                 Else
                                     fr.File.SHA1ForeColor = Color.Green
                                 End If
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
                                     fr.File.MD5ForeColor = Color.Blue
                                 Else
-                                    fr.File.SHA1ForeColor = Color.Green
+                                    fr.File.MD5ForeColor = Color.Green
                                 End If
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
+                                    fr.File.BLAKE3ForeColor = Color.Blue
+                                Else
+                                    fr.File.BLAKE3ForeColor = Color.Green
+                                End If
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
+                                    fr.File.XxHash3ForeColor = Color.Blue
+                                Else
+                                    fr.File.XxHash3ForeColor = Color.Green
+                                End If
+                            End If
+                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
+                                    fr.File.XxHash128ForeColor = Color.Blue
+                                Else
+                                    fr.File.XxHash128ForeColor = Color.Green
+                                End If
+                            End If
+
+                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                        Else
+                            If (My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "") OrElse
+                            (My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "") OrElse
+                            (My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "") OrElse
+                            (My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "") OrElse
+                            (My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "") Then
+                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
+                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
+                                        fr.File.SHA1ForeColor = Color.Blue
+                                    Else
+                                        fr.File.SHA1ForeColor = Color.Green
+                                    End If
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
+                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
+                                        fr.File.MD5ForeColor = Color.Blue
+                                    Else
+                                        fr.File.MD5ForeColor = Color.Green
+                                    End If
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
+                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
+                                        fr.File.BLAKE3ForeColor = Color.Blue
+                                    Else
+                                        fr.File.BLAKE3ForeColor = Color.Green
+                                    End If
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
+                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
+                                        fr.File.XxHash3ForeColor = Color.Blue
+                                    Else
+                                        fr.File.XxHash3ForeColor = Color.Green
+                                    End If
+                                End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+
+                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
+                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
+                                        fr.File.XxHash128ForeColor = Color.Blue
+                                    Else
+                                        fr.File.XxHash128ForeColor = Color.Green
+                                    End If
+                                End If
+
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             Else
                                 Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
@@ -5940,9 +6255,11 @@ Public Class LTFSWriter
                              End If
                          End While
                          sh.ProcessFinalBlock()
-                         fadd.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
-                         fadd.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                         If sh.SHA1Value IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                         If sh.MD5Value IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                          If sh.BlakeValue IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                         If sh.XXHash3Value IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, sh.XXHash3Value)
+                         If sh.XXHash128Value IsNot Nothing Then fadd.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, sh.XXHash128Value)
                          If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                          schema.highestfileuid += 1
                          p.contents._directory.Remove(d)
@@ -6580,9 +6897,10 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Increment(HashTaskAwaitNumber)
                                 Task.Run(Sub()
                                              sh.ProcessFinalBlock()
-                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
-                                             fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
+                                             If sh.SHA1Value IsNot Nothing Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, sh.SHA1Value)
+                                             If sh.MD5Value IsNot Nothing Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, sh.MD5Value)
                                              If sh.BlakeValue IsNot Nothing Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, sh.BlakeValue)
+                                             If sh.XXHash3Value IsNot Nothing Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, sh.XXHash3Value)
                                              sh.StopFlag = True
                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                          End Sub)

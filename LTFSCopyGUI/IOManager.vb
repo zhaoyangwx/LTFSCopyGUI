@@ -3,6 +3,7 @@ Imports System.IO
 Imports System.Security.Cryptography
 Imports System.Threading
 Imports Blake3
+Imports System.IO.Hashing
 Imports LTFSCopyGUI
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -652,9 +653,13 @@ Public Class IOManager
         Private Property sha1 As SHA1
         Private Property md5 As MD5
         Private Property Blake As Hasher
+        Private Property XxHash3 As XxHash3
+        Private Property XxHash128 As XxHash128
         Private Property resultBytesSHA1 As Byte()
         Private Property resultBytesMD5 As Byte()
         Private Property resultBytesBlake As Hash
+        Private Property resultXxHash3 As Byte()
+        Private Property resultXxHash128 As Byte()
         Private Property Lock As New Object
         Public Property StopFlag As Boolean = False
         Private Property thStarted As Boolean = False
@@ -700,11 +705,32 @@ Public Class IOManager
                                     Catch ex As Exception
 
                                     End Try
+                                End Sub)
+                                Dim xxhash3task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task = Task.Run(
+                                Sub()
+                                    Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
+                                    Try
+                                        XxHash3.Append(segment)
+                                    Catch ex As Exception
 
+                                    End Try
+                                End Sub)
+                                Dim xxhash128task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task = Task.Run(
+                                Sub()
+                                    Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
+                                    Try
+                                        XxHash128.Append(segment)
+                                    Catch ex As Exception
+
+                                    End Try
                                 End Sub)
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task.Wait()
                             End With
                             blk.block = Nothing
                         End While
@@ -721,6 +747,14 @@ Public Class IOManager
             End Try
             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1 = SHA1.Create()
             If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5 = MD5.Create()
+            Try
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then XxHash3 = New IO.Hashing.XxHash3()
+            Catch ex As Exception
+            End Try
+            Try
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then XxHash128 = New IO.Hashing.XxHash128()
+            Catch ex As Exception
+            End Try
         End Sub
 
         Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = - 1)
@@ -751,9 +785,31 @@ Public Class IOManager
 
                         End Try
                     End Sub)
+                Dim xxhash3task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task = Task.Run(
+                    Sub()
+                        Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
+                        Try
+                            XxHash3.Append(segment)
+                        Catch ex As Exception
+
+                        End Try
+                    End Sub)
+                Dim xxhash128task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task = Task.Run(
+                    Sub()
+                        Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
+                        Try
+                            XxHash128.Append(segment)
+                        Catch ex As Exception
+
+                        End Try
+                    End Sub)
                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task.Wait()
             End SyncLock
         End Sub
 
@@ -793,7 +849,20 @@ Public Class IOManager
                 Catch ex As Exception
                     resultBytesBlake = Nothing
                 End Try
-
+                Try
+                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                        resultXxHash3 = XxHash3.GetHashAndReset()
+                    End If
+                Catch ex As Exception
+                    resultXxHash3 = Nothing
+                End Try
+                Try
+                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                        resultXxHash128 = XxHash128.GetHashAndReset()
+                    End If
+                Catch ex As Exception
+                    resultXxHash128 = Nothing
+                End Try
             End SyncLock
             StopFlag = True
         End Sub
@@ -827,6 +896,28 @@ Public Class IOManager
                 SyncLock Lock
                     Try
                         Return resultBytesBlake.ToString().ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property XXHash3Value As String
+            Get
+                SyncLock Lock
+                    Try
+                        Return BitConverter.ToString(resultXxHash3).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property XXHash128Value As String
+            Get
+                SyncLock Lock
+                    Try
+                        Return BitConverter.ToString(resultXxHash128).Replace("-", "").ToUpper()
                     Catch ex As Exception
                         Return Nothing
                     End Try

@@ -304,7 +304,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - MD5"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_MD5")>
         Public Property LTFSWriter_ChecksumEnabled_MD5() As Boolean
@@ -318,7 +318,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - BLAKE3"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_BLAKE3")>
         Public Property LTFSWriter_ChecksumEnabled_BLAKE3() As Boolean
@@ -327,6 +327,34 @@ Namespace My
             End Get
             Set
                 Me("LTFSWriter_ChecksumEnabled_BLAKE3") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - XxHash3"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash3")>
+        Public Property LTFSWriter_ChecksumEnabled_XxHash3() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_XxHash3"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_XxHash3") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - XxHash128"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_XxHash128")>
+        Public Property LTFSWriter_ChecksumEnabled_XxHash128() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_XxHash128"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_XxHash128") = Value
             End Set
         End Property
 
