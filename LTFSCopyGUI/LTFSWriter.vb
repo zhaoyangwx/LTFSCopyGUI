@@ -4473,8 +4473,9 @@ Public Class LTFSWriter
             Dim MaxExtraPartitionAllowed As Byte = modedata(2)
             If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
             Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
-
+            If My.Settings.LTFSWriter_DisablePartition Then param.ExtraPartitionCount = 0
             If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
+            param.BlockLen = Math.Min(param.BlockLen, TapeUtils.GlobalBlockLimit)
             param.Barcode = TapeUtils.ReadBarcode(driveHandle)
             param.EncryptionKey = EncryptionKey
             Dim Confirm As Boolean = False

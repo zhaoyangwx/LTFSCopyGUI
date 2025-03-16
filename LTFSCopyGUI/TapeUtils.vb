@@ -830,7 +830,7 @@ Public Class TapeUtils
 
 
             Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
-            If Add_Code <> 0 Then
+            If Add_Code <> 0 AndAlso ((sense(2) And &HF) <> 8) Then
                 If DestType = LocateDestType.EOD Then
                     If Not ReadPosition(handle).EOD Then
                         SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
@@ -842,6 +842,7 @@ Public Class TapeUtils
                     Locate(handle, 0, 0)
                     Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
                 Else
+
                     SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3, 0, 0,
                                             BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
                                             BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
@@ -852,6 +853,8 @@ Public Class TapeUtils
 
                 End If
                 Add_Code = CInt(sense(12)) << 8 Or sense(13)
+            Else
+                Add_Code = 0
             End If
             Return Add_Code
         End SyncLock
