@@ -599,6 +599,25 @@ Namespace My
                 Me("LTFSWriter_PowerPolicyOnWriteEnd") = Value
             End Set
         End Property
+
+        '''<summary>
+        '''驱动器指令类型
+        '''</summary>
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("驱动器指令类型"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("LTO"),
+         Category("TapeUtils"),
+         LocalizedDescription("PropertyDescription_TapeUtils_DriverType")>
+        Public Property TapeUtils_DriverType() As Global.LTFSCopyGUI.TapeUtils.DriverType
+            Get
+                Return CType(Me("TapeUtils_DriverType"), Global.LTFSCopyGUI.TapeUtils.DriverType)
+            End Get
+            Set
+                Me("TapeUtils_DriverType") = Value
+                TapeUtils.DriverTypeSetting = Value
+            End Set
+        End Property
     End Class
 End Namespace
 
