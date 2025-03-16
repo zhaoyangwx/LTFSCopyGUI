@@ -873,6 +873,17 @@ Public Class LTFSWriter
             ToolStripStatusLabel6.Text = ""
             If USize > 0 AndAlso CurrentBytesProcessed >= 0 AndAlso CurrentBytesProcessed <= USize Then
                 ToolStripProgressBar1.Value = CurrentBytesProcessed / USize * 10000
+                With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                    If ToolStripProgressBar1.Value = 0 OrElse ToolStripProgressBar1.Value = ToolStripProgressBar1.Maximum Then
+                        .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress)
+                        .SetProgressValue(0, ToolStripProgressBar1.Maximum)
+                    Else
+                        If Not Pause Then
+                            .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
+                        End If
+                        .SetProgressValue(ToolStripProgressBar1.Value, ToolStripProgressBar1.Maximum)
+                    End If
+                End With
                 ToolStripProgressBar1.ToolTipText = $"{My.Resources.ResText_S4}{IOManager.FormatSize(CurrentBytesProcessed)}/{IOManager.FormatSize(USize)}"
                 Dim CurrentTime As Date = Now
                 Dim totalTimeCost As Long = (CurrentTime - StartTime).Ticks
@@ -1368,53 +1379,59 @@ Public Class LTFSWriter
         Dim logdataDSLP As Byte() = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
         Dim logdataDTD As Byte() = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
         Invoke(Sub()
-                   DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
-                   DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
-                   Dim DevStatusBits As TapeUtils.PageData = DeviceStatusLogPage.TryGetPage(&H1).GetPage
-                   Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
-                   If DevStatusBits IsNot Nothing Then
-                       For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
-                           Select Case item.Name.ToLower
-                               Case "cleaning required flag"
-                                   CleanFlag = CleanFlag Or item.RawData(0)
-                               Case "cleaning requested flag"
-                                   CleanFlag = CleanFlag Or item.RawData(0)
-                               Case "device status"
-                                   DriveFlag = (item.RawData(0) > 1)
-                               Case "medium status"
-                                   TapeFlag = (item.RawData(0) > 1)
-                           End Select
-                       Next
-                   End If
-                   Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
-                   If VHFData IsNot Nothing Then
-                       For Each item As TapeUtils.PageData.DataItem In VHFData.Items
-                           Select Case item.Name.ToLower
-                               Case "encryption parameters present"
-                                   EncryptionFlag = (item.RawData(0) = 1)
-                           End Select
-                       Next
-                   End If
-                   If EncryptionFlag Then
-                       ToolStripStatusLabelS2.ForeColor = Color.Blue
-                   Else
-                       ToolStripStatusLabelS2.ForeColor = Color.Gray
-                   End If
-                   If CleanFlag Then
-                       ToolStripStatusLabelS3.ForeColor = Color.Orange
-                   Else
-                       ToolStripStatusLabelS3.ForeColor = Color.Gray
-                   End If
-                   If TapeFlag Then
-                       ToolStripStatusLabelS4.ForeColor = Color.Orange
-                   Else
-                       ToolStripStatusLabelS4.ForeColor = Color.Gray
-                   End If
-                   If DriveFlag Then
-                       ToolStripStatusLabelS5.ForeColor = Color.Orange
-                   Else
-                       ToolStripStatusLabelS5.ForeColor = Color.Gray
-                   End If
+                   Try
+                       DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
+                       DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
+                       Dim Page1 As TapeUtils.PageData.DataItem.DynamicParamPage = DeviceStatusLogPage.TryGetPage(&H1)
+                       If Page1 Is Nothing Then Exit Sub
+                       Dim DevStatusBits As TapeUtils.PageData = Page1.GetPage
+                       Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
+                       If DevStatusBits IsNot Nothing Then
+                           For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
+                               Select Case item.Name.ToLower
+                                   Case "cleaning required flag"
+                                       CleanFlag = CleanFlag Or item.RawData(0)
+                                   Case "cleaning requested flag"
+                                       CleanFlag = CleanFlag Or item.RawData(0)
+                                   Case "device status"
+                                       DriveFlag = (item.RawData(0) > 1)
+                                   Case "medium status"
+                                       TapeFlag = (item.RawData(0) > 1)
+                               End Select
+                           Next
+                       End If
+                       Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
+                       If VHFData IsNot Nothing Then
+                           For Each item As TapeUtils.PageData.DataItem In VHFData.Items
+                               Select Case item.Name.ToLower
+                                   Case "encryption parameters present"
+                                       EncryptionFlag = (item.RawData(0) = 1)
+                               End Select
+                           Next
+                       End If
+                       If EncryptionFlag Then
+                           ToolStripStatusLabelS2.ForeColor = Color.Blue
+                       Else
+                           ToolStripStatusLabelS2.ForeColor = Color.Gray
+                       End If
+                       If CleanFlag Then
+                           ToolStripStatusLabelS3.ForeColor = Color.Orange
+                       Else
+                           ToolStripStatusLabelS3.ForeColor = Color.Gray
+                       End If
+                       If TapeFlag Then
+                           ToolStripStatusLabelS4.ForeColor = Color.Orange
+                       Else
+                           ToolStripStatusLabelS4.ForeColor = Color.Gray
+                       End If
+                       If DriveFlag Then
+                           ToolStripStatusLabelS5.ForeColor = Color.Orange
+                       Else
+                           ToolStripStatusLabelS5.ForeColor = Color.Gray
+                       End If
+                   Catch ex As Exception
+
+                   End Try
                End Sub)
     End Sub
     Public Property CapLossChannelInfo As String
@@ -3081,8 +3098,22 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Add(TotalBytesProcessed, CurrentBlockLen - ByteOffset)
                                 Threading.Interlocked.Add(CurrentBytesProcessed, CurrentBlockLen - ByteOffset)
                                 ByteOffset = 0
+                                If Pause Then
+                                    Invoke(Sub()
+                                               With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                                   .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Paused)
+                                               End With
+                                           End Sub)
+                                End If
                                 While Pause
                                     Threading.Thread.Sleep(10)
+                                    If Not Pause Then
+                                        Invoke(Sub()
+                                                   With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                                       .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
+                                                   End With
+                                               End Sub)
+                                    End If
                                 End While
                             End While
                             If StopFlag Then
@@ -3852,8 +3883,22 @@ Public Class LTFSWriter
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                                 SetStatusLight(LWStatus.Err)
                             End Try
+                            If Pause Then
+                                Invoke(Sub()
+                                           With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                               .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Paused)
+                                           End With
+                                       End Sub)
+                            End If
                             While Pause
                                 Threading.Thread.Sleep(10)
+                                If Not Pause Then
+                                    Invoke(Sub()
+                                               With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                                   .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
+                                               End With
+                                           End Sub)
+                                End If
                             End While
                             If StopFlag Then
                                 Exit For
@@ -4286,7 +4331,7 @@ Public Class LTFSWriter
                     Modified = False
                     Me.Invoke(Sub()
                                   MaxCapacity = 0
-                                  ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
+                                  ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
                               End Sub)
                     RefreshDisplay()
                     RefreshCapacity()
@@ -4845,8 +4890,22 @@ Public Class LTFSWriter
                     Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
                     Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
                     If StopFlag Then Return Nothing
+                    If Pause Then
+                        Invoke(Sub()
+                                   With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                       .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Paused)
+                                   End With
+                               End Sub)
+                    End If
                     While Pause
                         Threading.Thread.Sleep(10)
+                        If Not Pause Then
+                            Invoke(Sub()
+                                       With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                           .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
+                                       End With
+                                   End Sub)
+                        End If
                     End While
                 End While
             Next
@@ -6672,7 +6731,7 @@ Public Class LTFSWriter
                     End While
                     Modified = False
                     Me.Invoke(Sub()
-                                  ToolStripStatusLabel1.ToolTipText = ToolStripStatusLabel1.Text
+                                  ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
                                   MaxCapacity = 0
                               End Sub)
                     RefreshDisplay()
@@ -6934,8 +6993,22 @@ Public Class LTFSWriter
                             MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                             PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                         End Try
+                        If Pause Then
+                            Invoke(Sub()
+                                       With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                           .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Paused)
+                                       End With
+                                   End Sub)
+                        End If
                         While Pause
                             Threading.Thread.Sleep(10)
+                            If Not Pause Then
+                                Invoke(Sub()
+                                           With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
+                                               .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
+                                           End With
+                                       End Sub)
+                            End If
                         End While
                         Marshal.FreeHGlobal(wBufferPtr)
                         While HashTaskAwaitNumber > 0
@@ -7333,7 +7406,6 @@ Public Class LTFSWriter
                      BeginInvoke(Sub() ToolTipChanErrLog.Hide(StatusStrip2))
                  End Sub)
     End Sub
-
     Private ToolTipChanErrLogShowingChanged As Boolean = False
     Private _ToolTipChanErrLogShowing As Boolean
     Public Property ToolTipChanErrLogShowing As Boolean

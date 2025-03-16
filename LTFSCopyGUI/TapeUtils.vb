@@ -674,7 +674,11 @@ Public Class TapeUtils
             Dim data As Byte() = ReadBlock(handle:=handle, sense:=sense)
             If data.Length = 0 Then Return True
             Dim p As New PositionData(handle)
-            Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
+            If Not TapeUtils.AllowPartition Then
+                Space6(handle:=handle, Count:=-1, Code:=LocateDestType.Block)
+            Else
+                Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
+            End If
             Return False
         End SyncLock
     End Function
@@ -782,29 +786,48 @@ Public Class TapeUtils
     Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
         SyncLock SCSIOperationLock
             Dim sense(63) As Byte
-            'Dim d As Byte() = SCSIReadParam(TapeDrive, {&H2B, 2, 0,
-            '                                BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-            '                                0, Partition, 0}, 64, Function(senseData As Byte()) As Boolean
-            '                                                          sense = senseData
-            '                                                          Return True
-            '                                                      End Function)
-            If AllowPartition OrElse DestType <> 0 Then
-                Dim CP As Byte = 0
-                If ReadPosition(handle).PartitionNumber <> Partition Then CP = 1
-                SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3 Or CP << 1, 0, Partition,
-                                                BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
-                                                BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                                0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                            sense = senseData
-                                                                                            Return True
-                                                                                        End Function)
-            Else
-                SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                                0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                           sense = senseData
-                                                                                           Return True
-                                                                                       End Function)
-            End If
+            Select Case DriverTypeSetting
+                Case DriverType.LTO
+                    If AllowPartition OrElse DestType <> 0 Then
+                        Dim CP As Byte = 0
+                        If ReadPosition(handle).PartitionNumber <> Partition Then CP = 1
+                        SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3 Or CP << 1, 0, Partition,
+                                                        BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
+                                                        BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                                        0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                    sense = senseData
+                                                                                                    Return True
+                                                                                                End Function)
+                    Else
+                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                                        0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                   sense = senseData
+                                                                                                   Return True
+                                                                                               End Function)
+                    End If
+                Case DriverType.M2488
+
+                Case DriverType.SLR
+                    Select Case DestType
+                        Case LocateDestType.Block
+                            SCSIReadParam(handle:=handle, cdbData:={&H2B, 4, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                                                 0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                            sense = senseData
+                                                                                                            Return True
+                                                                                                        End Function)
+                        Case LocateDestType.FileMark
+                            Locate(handle, 0, 0)
+                            Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
+                        Case LocateDestType.EOD
+                            If Not ReadPosition(handle).EOD Then
+                                SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                                            sense = senseData
+                                                                                                                            Return True
+                                                                                                                        End Function)
+                            End If
+                    End Select
+            End Select
+
 
             Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
             If Add_Code <> 0 Then
@@ -1670,6 +1693,7 @@ Public Class TapeUtils
     Public Enum DriverType
         LTO = 0
         M2488 = 1
+        SLR = 2
     End Enum
     Public Shared Function ReadPosition(handle As IntPtr) As PositionData
         Return ReadPosition(handle, DriverType.LTO)
@@ -1710,15 +1734,22 @@ Public Class TapeUtils
                         result.BlockNumber = result.BlockNumber Or param(4 + i)
                     Next
                 End If
-                If sense IsNot Nothing AndAlso sense.Length >= 14 Then result.AddSenseKey = CInt(sense(12)) << 8 Or sense(13)
             Case DriverType.M2488
-
+            Case DriverType.SLR
+                param = SCSIReadParam(handle, {&H34, 1, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
+                result.BOP = param(0) >> 7 And &H1
+                result.EOP = param(0) >> 6 And &H1
+                For i As Integer = 0 To 3
+                    result.BlockNumber <<= 8
+                    result.BlockNumber = result.BlockNumber Or param(4 + i)
+                Next
             Case Else
         End Select
+        If sense IsNot Nothing AndAlso sense.Length >= 14 Then result.AddSenseKey = CInt(sense(12)) << 8 Or sense(13)
         Return result
     End Function
     Public Shared Function ReadPosition(TapeDrive As String) As PositionData
-        Return ReadPosition(TapeDrive, DriverType.LTO)
+        Return ReadPosition(TapeDrive, My.Settings.TapeUtils_DriverType)
     End Function
     Public Shared Function ReadPosition(TapeDrive As String, ByVal DriverType As DriverType) As PositionData
         SyncLock SCSIOperationLock

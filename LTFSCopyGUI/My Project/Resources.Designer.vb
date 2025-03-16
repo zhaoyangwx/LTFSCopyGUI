@@ -504,6 +504,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 驱动器指令类型 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_TapeUtils_DriverType() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_TapeUtils_DriverType", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 资源 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_() As String

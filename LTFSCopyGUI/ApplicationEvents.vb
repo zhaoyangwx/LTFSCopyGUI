@@ -53,6 +53,7 @@ Namespace My
 
                 End Try
             End If
+            TapeUtils.DriverTypeSetting = My.Settings.TapeUtils_DriverType
             My.Settings.Application_License = Resources.StrDefaultLicense
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
