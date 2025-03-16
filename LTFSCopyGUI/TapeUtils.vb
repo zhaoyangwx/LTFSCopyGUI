@@ -807,7 +807,7 @@ Public Class TapeUtils
                     End If
                 Case DriverType.M2488
 
-                Case DriverType.SLR
+                Case DriverType.SLR3
                     Select Case DestType
                         Case LocateDestType.Block
                             SCSIReadParam(handle:=handle, cdbData:={&H2B, 4, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
@@ -1000,21 +1000,25 @@ Public Class TapeUtils
             Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
         End SyncLock
     End Function
-    Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+    Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal SkipHeader As Boolean = True) As Byte()
         SyncLock SCSIOperationLock
             Dim Header As Byte() = SCSIReadParam(handle, {&H1A, 0, PageID, 0, 4, 0}, 4)
             If Header.Length = 0 Then Return {0, 0, 0, 0}
             Dim PageLen As Byte = Header(0)
             If PageLen = 0 Then Return {0, 0, 0, 0}
-            Dim DescripterLen As Byte = Header(3)
-            Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).Skip(4 + DescripterLen).ToArray()
+            Dim DescriptorLen As Byte = Header(3)
+            If SkipHeader Then
+                Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).Skip(4 + DescriptorLen).ToArray()
+            Else
+                Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).ToArray()
+            End If
         End SyncLock
     End Function
-    Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Byte()
+    Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal SkipHeader As Boolean = True) As Byte()
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As Byte() = ModeSense(handle, PageID, senseReport)
+            Dim result As Byte() = ModeSense(handle, PageID, senseReport, SkipHeader)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
@@ -1696,7 +1700,7 @@ Public Class TapeUtils
     Public Enum DriverType
         LTO = 0
         M2488 = 1
-        SLR = 2
+        SLR3 = 2
     End Enum
     Public Shared Function ReadPosition(handle As IntPtr) As PositionData
         Return ReadPosition(handle, DriverType.LTO)
@@ -1738,7 +1742,7 @@ Public Class TapeUtils
                     Next
                 End If
             Case DriverType.M2488
-            Case DriverType.SLR
+            Case DriverType.SLR3
                 param = SCSIReadParam(handle, {&H34, 1, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
                 result.BOP = param(0) >> 7 And &H1
                 result.EOP = param(0) >> 6 And &H1
