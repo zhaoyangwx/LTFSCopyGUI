@@ -1,6 +1,7 @@
 Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports LTFSCopyGUI.TapeUtils
 
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
@@ -458,98 +459,110 @@ Public Class LTFSConfigurator
                 Sub()
                     Invoke(Sub() TextBoxDebugOutput.Text = "Start erase ..." & vbCrLf)
                     Try
-                        'result = TapeUtils.LoadTapeDrive(dL, True)
+                        Select Case My.Settings.TapeUtils_DriverType
+                            Case DriverType.LTO
+                                'result = TapeUtils.LoadTapeDrive(dL, True)
+                                'Load and Thread
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Loading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
 
-                        'Load and Thread
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Loading.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
+                                'Mode Sense
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SENSE"))
+                                Dim ModeData As Byte()
+                                ModeData = TapeUtils.ModeSense(TapeDrive, &H11)
+                                Invoke(Sub() TextBoxDebugOutput.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
+                                ReDim Preserve ModeData(11)
+                                'Mode Select:1st Partition to Minimum 
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SELECT - Partition mode page.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, ModeData(2), 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
 
-                        'Mode Sense
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SENSE"))
-                        Dim ModeData As Byte()
-                        ModeData = TapeUtils.ModeSense(TapeDrive, &H11)
-                        Invoke(Sub() TextBoxDebugOutput.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
-                        ReDim Preserve ModeData(11)
-                        'Mode Select:1st Partition to Minimum 
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SELECT - Partition mode page.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H15, &H10, 0, 0, &H10, 0}, {0, 0, &H10, 0, &H11, &HA, ModeData(2), 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), 0, 1, &HFF, &HFF}, 0) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
+                                'Format
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Partitioning.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                For i As Integer = 1 To NumericUpDownEraseCycle.Value
+                                    'Unthread
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
+                                    If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                    Else
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                        Exit Try
+                                    End If
+                                    'Thread
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("Threading.."))
+                                    If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                    Else
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                        Exit Try
+                                    End If
+                                    'Erase
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing " & i & "/" & NumericUpDownEraseCycle.Value & ".."))
+                                    If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=320) Then
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                    Else
+                                        Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                        Exit Try
+                                    End If
+                                Next
+                                'Unthread
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                'Thread
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Threading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                'Remove Partition
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Reinitializing.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 0, 0, 0, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                'Unload
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Unloading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 0, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
 
-                        'Format
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Partitioning.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 1, 0, 0, 0}, Nothing, 0) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
-                        For i As Integer = 1 To NumericUpDownEraseCycle.Value
-                            'Unthread
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
-                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                            Else
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                                Exit Try
-                            End If
-                            'Thread
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("Threading.."))
-                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                            Else
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                                Exit Try
-                            End If
-                            'Erase
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing " & i & "/" & NumericUpDownEraseCycle.Value & ".."))
-                            If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=320) Then
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                            Else
-                                Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                                Exit Try
-                            End If
-                        Next
-                        'Unthread
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
-                        'Thread
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Threading.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
-                        'Remove Partition
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Reinitializing.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {4, 0, 0, 0, 0, 0}) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
-                        'Unload
-                        Invoke(Sub() TextBoxDebugOutput.AppendText("Unloading.."))
-                        If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 0, 0}) Then
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
-                            Exit Try
-                        End If
+                            Case DriverType.SLR3
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText(" -- Please reload the tape manually --" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                        End Select
                     Catch ex As Exception
                         Invoke(Sub() TextBoxDebugOutput.AppendText(ex.ToString()))
                     End Try
@@ -1721,14 +1734,14 @@ Public Class LTFSConfigurator
                 Dim handle As IntPtr
                 Dim bH(7) As Byte
                 If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show(New Form With {.TopMost = True}, "False")
-                    If blkLen = 0 Then
-                        For i As Long = 0 To blkNum
-                            If Not TestEnabled Then Exit For
-                            TapeUtils.WriteFileMark(handle)
-                            progval = i * blkLen
-                        Next
-                    Else
-                        Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
+                If blkLen = 0 Then
+                    For i As Long = 0 To blkNum
+                        If Not TestEnabled Then Exit For
+                        TapeUtils.WriteFileMark(handle)
+                        progval = i * blkLen
+                    Next
+                Else
+                    Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
                     For i As Long = 0 To blkNum
                         If Not TestEnabled Then Exit For
                         Dim sense As Byte() = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
