@@ -1,7 +1,7 @@
 Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
-Imports LTFSCopyGUI.TapeUtils
+
 
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
@@ -460,7 +460,7 @@ Public Class LTFSConfigurator
                     Invoke(Sub() TextBoxDebugOutput.Text = "Start erase ..." & vbCrLf)
                     Try
                         Select Case My.Settings.TapeUtils_DriverType
-                            Case DriverType.LTO
+                            Case My.Settings.TapeUtils_DriverType.LTO
                                 'result = TapeUtils.LoadTapeDrive(dL, True)
                                 'Load and Thread
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Loading.."))
@@ -553,7 +553,7 @@ Public Class LTFSConfigurator
                                     Exit Try
                                 End If
 
-                            Case DriverType.SLR3
+                            Case My.Settings.TapeUtils_DriverType.SLR3
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
                                 If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
@@ -708,7 +708,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
         Select Case TapeUtils.DriverTypeSetting
-            Case DriverType.LTO
+            Case My.Settings.TapeUtils_DriverType.LTO
                 Dim CMInfo As TapeUtils.CMParser = Nothing
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
@@ -751,7 +751,7 @@ Public Class LTFSConfigurator
                                         Me.Enabled = True
                                     End Sub)
                          End Sub)
-            Case DriverType.SLR3
+            Case My.Settings.TapeUtils_DriverType.SLR3
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
                              Invoke(Sub() TextBoxDebugOutput.AppendText("SLR Tape is NOT supported with ReadInfo function.".PadRight(74) & vbCrLf))
