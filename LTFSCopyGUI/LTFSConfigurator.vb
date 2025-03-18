@@ -557,7 +557,13 @@ Public Class LTFSConfigurator
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
                                 If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
-                                    Invoke(Sub() TextBoxDebugOutput.AppendText(" -- Please reload the tape manually --" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Reloading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
                                 Else
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
                                     Exit Try
@@ -701,48 +707,58 @@ Public Class LTFSConfigurator
     End Function
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
-        Dim CMInfo As TapeUtils.CMParser = Nothing
-        TextBoxDebugOutput.Text = ""
-        Task.Run(Sub()
-                     Try
-                         CMInfo = New TapeUtils.CMParser(TapeDrive)
-                     Catch ex As Exception
-                         Invoke(Sub() TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf))
-                     End Try
-                     Invoke(Sub()
-                                Try
-                                    TextBoxDebugOutput.AppendText(CMInfo.GetReport())
-                                Catch ex As Exception
-                                    TextBoxDebugOutput.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
-                                End Try
-                                Try
-                                    If CheckBoxParseCMData.Checked AndAlso CMInfo IsNot Nothing Then
-                                        TextBoxDebugOutput.AppendText(CMInfo.GetSerializedText())
-                                        Dim PG1 As New SettingPanel
-                                        PG1.SelectedObject = CMInfo
-                                        PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
-                                        PG1.Show()
-                                        TextBoxDebugOutput.AppendText(vbCrLf)
-                                    End If
-                                Catch ex As Exception
-                                    TextBoxDebugOutput.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
-                                End Try
-                                TextBoxDebugOutput.Select(0, 0)
-                                TextBoxDebugOutput.ScrollToCaret()
-                                If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
-                                    Dim fn As String
-                                    Try
-                                        fn = CMInfo.ApplicationSpecificData.Barcode
-                                        If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
-                                        If fn Is Nothing Then fn = ""
-                                        IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
-                                    Catch ex As Exception
+        Select Case TapeUtils.DriverTypeSetting
+            Case DriverType.LTO
+                Dim CMInfo As TapeUtils.CMParser = Nothing
+                TextBoxDebugOutput.Text = ""
+                Task.Run(Sub()
+                             Try
+                                 CMInfo = New TapeUtils.CMParser(TapeDrive)
+                             Catch ex As Exception
+                                 Invoke(Sub() TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf))
+                             End Try
+                             Invoke(Sub()
+                                        Try
+                                            TextBoxDebugOutput.AppendText(CMInfo.GetReport())
+                                        Catch ex As Exception
+                                            TextBoxDebugOutput.AppendText("Report generation failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+                                        End Try
+                                        Try
+                                            If CheckBoxParseCMData.Checked AndAlso CMInfo IsNot Nothing Then
+                                                TextBoxDebugOutput.AppendText(CMInfo.GetSerializedText())
+                                                Dim PG1 As New SettingPanel
+                                                PG1.SelectedObject = CMInfo
+                                                PG1.Text = CMInfo.CartridgeMfgData.CartridgeSN
+                                                PG1.Show()
+                                                TextBoxDebugOutput.AppendText(vbCrLf)
+                                            End If
+                                        Catch ex As Exception
+                                            TextBoxDebugOutput.AppendText("CM Data Parsing failed.".PadRight(74) & vbCrLf & ex.ToString & vbCrLf)
+                                        End Try
+                                        TextBoxDebugOutput.Select(0, 0)
+                                        TextBoxDebugOutput.ScrollToCaret()
+                                        If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+                                            Dim fn As String
+                                            Try
+                                                fn = CMInfo.ApplicationSpecificData.Barcode
+                                                If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
+                                                If fn Is Nothing Then fn = ""
+                                                IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
+                                            Catch ex As Exception
 
-                                    End Try
-                                End If
-                                Me.Enabled = True
-                            End Sub)
-                 End Sub)
+                                            End Try
+                                        End If
+                                        Me.Enabled = True
+                                    End Sub)
+                         End Sub)
+            Case DriverType.SLR3
+                TextBoxDebugOutput.Text = ""
+                Task.Run(Sub()
+                             Invoke(Sub() TextBoxDebugOutput.AppendText("SLR Tape is NOT supported with ReadInfo function.".PadRight(74) & vbCrLf))
+                         End Sub)
+                Me.Enabled = True
+        End Select
+
     End Sub
 
     Private Sub ButtonDebugDumpMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpMAM.Click
@@ -2234,7 +2250,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonDiagTest_Click(sender As Object, e As EventArgs) Handles ButtonDiagTest.Click
-        If Not MessageBox.Show(New Form With {.TopMost = True}, "Diagnostic write will corrupt data near target position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+        If Not My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.LTO OrElse Not MessageBox.Show(New Form With {.TopMost = True}, "Diagnostic write will corrupt data near target position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Exit Sub
         End If
         Dim th As New Threading.Thread(
