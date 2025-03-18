@@ -494,6 +494,27 @@ Public Class TapeUtils
     Public Shared Function ReadRemainingCapacity(TapeDrive As String, Optional ByVal Partition As Byte = 0) As UInt64
         Return MAMAttribute.FromTapeDrive(TapeDrive, &H0, Partition).AsNumeric
     End Function
+    Public Shared Function Inquiry(handle As IntPtr) As TapeDrive
+        SyncLock SCSIOperationLock
+            Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4)(3) + 4
+            If PageLen = 4 Then Return Nothing
+            Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen)
+            Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray())
+            PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60)
+            Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).TrimEnd(" ")
+            Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).TrimEnd(" ")
+            Return New TapeDrive With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
+        End SyncLock
+    End Function
+    Public Shared Function Inquiry(TapeDrive As String) As TapeDrive
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As TapeDrive = Inquiry(handle)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
     Public Class BlockLimits
         Public MaximumBlockLength As UInt64
         Public MinimumBlockLength As UInt16

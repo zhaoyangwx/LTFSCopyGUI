@@ -1328,10 +1328,16 @@ Public Class LTFSWriter
         End If
         Save_Settings()
     End Sub
+    Dim CurrDrive As TapeUtils.TapeDrive
     Public Function GetLocInfo() As String
-        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        Dim DriveInfo As String = ""
+        If TapeUtils.IsOpened(driveHandle) Then
+            If CurrDrive Is Nothing Then CurrDrive = TapeUtils.Inquiry(driveHandle)
+            If CurrDrive IsNot Nothing Then DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
+        End If
+        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
-        If TapeDrive <> "" Then info &= $"[{TapeDrive}] "
+        If TapeDrive <> "" Then info &= $"[{TapeDrive}{DriveInfo}] "
         Try
             SyncLock schema
                 info &= $"{My.Resources.ResText_Index}{schema.generationnumber} - {My.Resources.ResText_Partition}{schema.location.partition} - {My.Resources.ResText_Block}{schema.location.startblock}"
@@ -5100,6 +5106,7 @@ Public Class LTFSWriter
                 End If
             Next
             StartTime = Now
+            SetStatusLight(LWStatus.Busy)
             Dim th As New Threading.Thread(
                     Sub()
                         Try
