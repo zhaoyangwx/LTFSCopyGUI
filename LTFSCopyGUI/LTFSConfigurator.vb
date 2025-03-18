@@ -2,7 +2,6 @@ Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
 
-
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
     Private _SelectedIndex As Integer
