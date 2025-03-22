@@ -146,6 +146,8 @@ Public Class ChangerTool
             EmptyElement.RemoveAt(destElementIndex)
             FullElement.Insert(srcElementIndex, destElement)
             EmptyElement.Insert(destElementIndex, srcElement)
+            srcElement.Full = False
+            destElement.Full = True
             SetUILock(True)
             Dim th As New Threading.Thread(
                 Sub()
@@ -159,10 +161,8 @@ Public Class ChangerTool
                     Finally
                         succ = True
                     End Try
-                    SetUILock(False)
                     Me.Invoke(Sub()
                                   If CheckBox1.Checked Then
-                                      SetUILock(True)
                                       Threading.Tasks.Task.Run(
                                       Sub()
                                           RefreshCurrentChanger()
@@ -171,6 +171,11 @@ Public Class ChangerTool
                                                         SetUILock(False)
                                                     End Sub)
                                       End Sub)
+                                  Else
+                                      Me.Invoke(Sub()
+                                                    SwitchChanger()
+                                                    SetUILock(False)
+                                                End Sub)
                                   End If
                                   If succ Then
                                       MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}")
