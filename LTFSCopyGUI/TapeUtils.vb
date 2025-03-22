@@ -8193,5 +8193,5 @@ Public Class TapeUtils
         End Select
     End Function
 
-    Public Shared Property TagDictionary As Dictionary(Of String,String) = new Dictionary(Of String,String)
+    Public Shared Property TagDictionary As Dictionary(Of String, String) = New Dictionary(Of String, String)
 End Class
