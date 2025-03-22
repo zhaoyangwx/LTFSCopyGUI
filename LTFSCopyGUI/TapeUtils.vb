@@ -1631,10 +1631,10 @@ Public Class TapeUtils
         SyncLock SCSIOperationLock
             Dim Loc As New PositionData(handle)
             AllowMediaRemoval(handle)
-            LoadEject(handle, LoadOption.Unthread)
-            LoadEject(handle, LoadOption.LoadThreaded, EncryptionKey)
+            LoadEject(handle:=handle, LoadOption:=LoadOption.Unthread)
+            LoadEject(handle:=handle, LoadOption:=LoadOption.LoadThreaded, EncryptionKey:=EncryptionKey)
             If Lock Then PreventMediaRemoval(handle)
-            Locate(handle, Loc.BlockNumber, Loc.PartitionNumber, TapeUtils.LocateDestType.Block)
+            Locate(handle:=handle, BlockAddress:=Loc.BlockNumber, Partition:=Loc.PartitionNumber, DestType:=TapeUtils.LocateDestType.Block)
         End SyncLock
         Return True
     End Function
