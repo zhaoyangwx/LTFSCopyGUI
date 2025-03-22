@@ -142,10 +142,6 @@ Public Class ChangerTool
             Dim destElement As MediumChanger.Element = EmptyElement(destElementIndex)
             Dim src As UInt32 = srcElement.ElementAddress
             Dim dest As UInt32 = destElement.ElementAddress
-            FullElement.RemoveAt(srcElementIndex)
-            EmptyElement.RemoveAt(destElementIndex)
-            FullElement.Insert(srcElementIndex, destElement)
-            EmptyElement.Insert(destElementIndex, srcElement)
             srcElement.Full = False
             destElement.Full = True
             SetUILock(True)
