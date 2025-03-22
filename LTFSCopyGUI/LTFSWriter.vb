@@ -4773,11 +4773,16 @@ Public Class LTFSWriter
         Flush = True
     End Sub
     Private Sub ToolStripDropDownButton3_Click(sender As Object, e As EventArgs) Handles ToolStripDropDownButton3.Click
-        ToolStripDropDownButton3.Enabled = False
-        Task.Run(Sub()
-                     TapeUtils.DoReload(driveHandle, Not AllowOperation, EncryptionKey)
-                     Invoke(Sub() ToolStripDropDownButton3.Enabled = True)
-                 End Sub)
+        If Not AllowOperation Then
+            Clean = True
+        Else
+            ToolStripDropDownButton3.Enabled = False
+            Task.Run(Sub()
+                         TapeUtils.DoReload(driveHandle, Not AllowOperation, EncryptionKey)
+                         Invoke(Sub() ToolStripDropDownButton3.Enabled = True)
+                     End Sub)
+        End If
+
 
     End Sub
     Private Sub ToolStripStatusLabel4_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel4.Click
