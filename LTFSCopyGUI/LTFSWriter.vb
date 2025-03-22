@@ -1333,7 +1333,13 @@ Public Class LTFSWriter
         Dim DriveInfo As String = ""
         If TapeUtils.IsOpened(driveHandle) Then
             If CurrDrive Is Nothing Then CurrDrive = TapeUtils.Inquiry(driveHandle)
-            If CurrDrive IsNot Nothing Then DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
+            If CurrDrive IsNot Nothing Then
+                If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
+                    DriveInfo = TapeUtils.TagDictionary(CurrDrive.SerialNumber)
+                Else
+                    DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
+                End If
+            End If
         End If
         If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
