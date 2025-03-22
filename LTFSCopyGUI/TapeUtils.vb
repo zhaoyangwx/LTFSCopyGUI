@@ -8192,4 +8192,6 @@ Public Class TapeUtils
                 Return ResultString & " << " & ResultUnit & "MiB"
         End Select
     End Function
+
+    Public Shared Property TagDictionary As Dictionary(Of String,String) = new Dictionary(Of String,String)
 End Class

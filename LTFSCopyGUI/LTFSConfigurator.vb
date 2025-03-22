@@ -113,7 +113,11 @@ Public Class LTFSConfigurator
                          Invoke(Sub()
                                     ListBox1.Items.Clear()
                                     For Each D As TapeUtils.TapeDrive In DevList
-                                        ListBox1.Items.Add(D.ToString())
+                                        If TapeUtils.TagDictionary.ContainsKey(D.SerialNumber) Then
+                                            ListBox1.Items.Add(TapeUtils.TagDictionary(D.SerialNumber))
+                                        Else
+                                            ListBox1.Items.Add(D.ToString())
+                                        End If
                                     Next
                                     ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
                                     Dim t As String = ComboBoxDriveLetter.Text
