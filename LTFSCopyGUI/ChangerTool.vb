@@ -142,8 +142,13 @@ Public Class ChangerTool
             Dim destElement As MediumChanger.Element = EmptyElement(destElementIndex)
             Dim src As UInt32 = srcElement.ElementAddress
             Dim dest As UInt32 = destElement.ElementAddress
-            srcElement.Full = False
-            destElement.Full = True
+            srcElement.Full = Not srcElement.Full
+            destElement.Full = Not destElement.Full
+            destElement.Identifier = srcElement.Identifier
+            destElement.IdentifierLength = srcElement.IdentifierLength
+            srcElement.Identifier = ""
+            srcElement.IdentifierLength = 0
+
             SetUILock(True)
             Dim th As New Threading.Thread(
                 Sub()

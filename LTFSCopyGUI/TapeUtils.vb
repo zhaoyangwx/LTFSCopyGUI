@@ -815,16 +815,16 @@ Public Class TapeUtils
                         SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3 Or CP << 1, 0, Partition,
                                                         BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
                                                         BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                                        0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                                    sense = senseData
-                                                                                                    Return True
-                                                                                                End Function)
-                    Else
-                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                                        0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
+                                                        0, 0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                    sense = senseData
                                                                                                    Return True
                                                                                                End Function)
+                    Else
+                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                                        0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                sense = senseData
+                                                                                                Return True
+                                                                                            End Function)
                     End If
                 Case DriverType.M2488
 
@@ -832,10 +832,10 @@ Public Class TapeUtils
                     Select Case DestType
                         Case LocateDestType.Block
                             SCSIReadParam(handle:=handle, cdbData:={&H2B, 4, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
-                                                                 0, 0, 0}, paramLen:=6464, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                                            sense = senseData
-                                                                                                            Return True
-                                                                                                        End Function)
+                                                                 0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                         sense = senseData
+                                                                                                         Return True
+                                                                                                     End Function)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
                             Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
