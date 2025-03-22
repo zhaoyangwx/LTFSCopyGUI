@@ -1335,7 +1335,7 @@ Public Class LTFSWriter
             If CurrDrive Is Nothing Then CurrDrive = TapeUtils.Inquiry(driveHandle)
             If CurrDrive IsNot Nothing Then
                 If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
-                    DriveInfo = TapeUtils.TagDictionary(CurrDrive.SerialNumber)
+                    DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
                 Else
                     DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
                 End If

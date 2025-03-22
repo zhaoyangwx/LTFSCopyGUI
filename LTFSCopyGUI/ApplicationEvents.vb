@@ -58,7 +58,7 @@ Namespace My
                     Dim driverTags As String() = IO.File.ReadAllLines(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
                     For Each line As String In driverTags
                         Dim result = line.Split(CType(";", Char))
-                        TapeUtils.TagDictionary.Add(result(0),result(1))
+                        TapeUtils.TagDictionary.Add(result(0), result(1))
                     Next
                 Catch ex As Exception
 
