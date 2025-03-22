@@ -1635,6 +1635,7 @@ Public Class TapeUtils
             LoadEject(handle:=handle, LoadOption:=LoadOption.LoadThreaded, EncryptionKey:=EncryptionKey)
             If Lock Then PreventMediaRemoval(handle)
             Locate(handle:=handle, BlockAddress:=Loc.BlockNumber, Partition:=Loc.PartitionNumber, DestType:=TapeUtils.LocateDestType.Block)
+
         End SyncLock
         Return True
     End Function
@@ -2571,7 +2572,7 @@ Public Class TapeUtils
         End While
 
 
-        If result AndAlso LoadOption = LoadOption.LoadThreaded Then
+        If result AndAlso LoadOption = LoadOption.LoadThreaded AndAlso EncryptionKey IsNot Nothing Then
             SetEncryption(handle:=handle, EncryptionKey:=EncryptionKey)
         End If
         Return result

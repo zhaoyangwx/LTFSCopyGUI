@@ -136,8 +136,16 @@ Public Class ChangerTool
         If MessageBox.Show(New Form With {.TopMost = True}, $"{ComboBox1.SelectedItem} -> {ComboBox2.SelectedItem}", "", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
             Dim LUN As Byte = FullElement(ComboBox1.SelectedIndex).LUN
-            Dim src As UInt32 = FullElement(ComboBox1.SelectedIndex).ElementAddress
-            Dim dest As UInt32 = EmptyElement(ComboBox2.SelectedIndex).ElementAddress
+            Dim srcElementIndex = ComboBox1.SelectedIndex
+            Dim destElementIndex = ComboBox2.SelectedIndex
+            Dim srcElement As MediumChanger.Element = FullElement(srcElementIndex)
+            Dim destElement As MediumChanger.Element = EmptyElement(destElementIndex)
+            Dim src As UInt32 = srcElement.ElementAddress
+            Dim dest As UInt32 = destElement.ElementAddress
+            FullElement.RemoveAt(srcElementIndex)
+            EmptyElement.RemoveAt(destElementIndex)
+            FullElement.Insert(srcElementIndex, destElement)
+            EmptyElement.Insert(destElementIndex, srcElement)
             SetUILock(True)
             Dim th As New Threading.Thread(
                 Sub()
