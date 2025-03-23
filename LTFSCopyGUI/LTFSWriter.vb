@@ -753,7 +753,11 @@ Public Class LTFSWriter
                 Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
                 debuginfo.Append($"CH={chan} CCP={NoCCPs} C1={C1err}")
                 If NoCCPs - LastNoCCPs(chan) > 0 Then
-                    Dim errRateLogValue As Double = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
+                    Dim errRateLogValue As Double = 0
+                    Try
+                        errRateLogValue = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
+                    Catch ex As Exception
+                    End Try
                     AllResults.Add(errRateLogValue)
                     If errRateLogValue < 0 Then
                         result = Math.Max(result, errRateLogValue)
