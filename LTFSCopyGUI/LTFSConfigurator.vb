@@ -1867,8 +1867,8 @@ Public Class LTFSConfigurator
     Private Sub Button15_Click(sender As Object, e As EventArgs) Handles ButtonRDErrRateLog.Click
         Panel1.Enabled = False
         Task.Run(Sub()
+                     Dim result As New StringBuilder
                      Try
-                         Dim result As New StringBuilder
                          Dim WERLHeader As Byte()
                          Dim RERLHeader As Byte()
                          Dim WERLPage As Byte()
