@@ -1867,33 +1867,33 @@ Public Class LTFSConfigurator
     Private Sub Button15_Click(sender As Object, e As EventArgs) Handles ButtonRDErrRateLog.Click
         Panel1.Enabled = False
         Task.Run(Sub()
-                     Dim result As New StringBuilder
-                     Dim WERLHeader As Byte()
-                     Dim RERLHeader As Byte()
-                     Dim WERLPage As Byte()
-                     Dim RERLPage As Byte()
-                     SyncLock TapeUtils.SCSIOperationLock
-                         WERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-                         If WERLHeader.Length <> 4 Then Exit Sub
-                         RERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
-                         If RERLHeader.Length <> 4 Then Exit Sub
-                         Dim WERLPageLen As Integer = WERLHeader(2)
-                         WERLPageLen <<= 8
-                         WERLPageLen = WERLPageLen Or WERLHeader(3)
-                         If WERLPageLen = 0 Then Exit Sub
-                         WERLPageLen += 4
-                         WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
-
-                         Dim RERLPageLen As Integer = RERLHeader(2)
-                         RERLPageLen <<= 8
-                         RERLPageLen = RERLPageLen Or RERLHeader(3)
-                         If RERLPageLen = 0 Then Exit Sub
-                         RERLPageLen += 4
-                         RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, paramLen:=RERLPageLen)
-                     End SyncLock
-                     Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
-                     Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                      Try
+                         Dim result As New StringBuilder
+                         Dim WERLHeader As Byte()
+                         Dim RERLHeader As Byte()
+                         Dim WERLPage As Byte()
+                         Dim RERLPage As Byte()
+                         SyncLock TapeUtils.SCSIOperationLock
+                             WERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                             If WERLHeader.Length <> 4 Then Exit Sub
+                             RERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
+                             If RERLHeader.Length <> 4 Then Exit Sub
+                             Dim WERLPageLen As Integer = WERLHeader(2)
+                             WERLPageLen <<= 8
+                             WERLPageLen = WERLPageLen Or WERLHeader(3)
+                             If WERLPageLen = 0 Then Exit Sub
+                             WERLPageLen += 4
+                             WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+
+                             Dim RERLPageLen As Integer = RERLHeader(2)
+                             RERLPageLen <<= 8
+                             RERLPageLen = RERLPageLen Or RERLHeader(3)
+                             If RERLPageLen = 0 Then Exit Sub
+                             RERLPageLen += 4
+                             RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, paramLen:=RERLPageLen)
+                         End SyncLock
+                         Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                         Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                          result.AppendLine($"Write Error Rate Log")
                          result.AppendLine($"  Datasets Written     : {WERLData(0)}")
                          result.AppendLine($"  CWI-4 Sets Written   : {WERLData(1)}")
