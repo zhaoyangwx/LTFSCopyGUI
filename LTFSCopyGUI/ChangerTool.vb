@@ -144,11 +144,8 @@ Public Class ChangerTool
             Dim dest As UInt32 = destElement.ElementAddress
             srcElement.Full = Not srcElement.Full
             destElement.Full = Not destElement.Full
-            destElement.Identifier = srcElement.Identifier
-            destElement.IdentifierLength = srcElement.IdentifierLength
-            srcElement.Identifier = ""
-            srcElement.IdentifierLength = 0
-
+            destElement.PrimaryVolumeTagInformation = srcElement.PrimaryVolumeTagInformation
+            srcElement.PrimaryVolumeTagInformation = ""
             SetUILock(True)
             Dim th As New Threading.Thread(
                 Sub()
