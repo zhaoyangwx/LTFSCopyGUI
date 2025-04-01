@@ -4722,15 +4722,18 @@ Public Class LTFSWriter
         Chart1.Titles(0).Text = H6ToolStripMenuItem.Text
     End Sub
     Public Function CheckFlush() As Boolean
+        Static LRHistory As Double
         If Threading.Interlocked.Exchange(Flush, False) Then
             PrintMsg("Flush Triggered", LogOnly:=True)
             Dim Loc As TapeUtils.PositionData = GetPos
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
-            If Not ForceFlush AndAlso ReadChanLRInfo(10000) < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
+            Dim ChanLRValue As Double = ReadChanLRInfo(10000)
+            If Not ForceFlush AndAlso ChanLRValue < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
                 Return False
-            Else
+            ElseIf LRHistory = 0 OrElse ChanLRValue <> 0 Then
+                LRHistory = ChanLRValue
                 ForceFlush = False
                 Threading.Interlocked.Increment(CapReduceCount)
                 TapeUtils.Flush(driveHandle)
@@ -5843,6 +5846,8 @@ Public Class LTFSWriter
         Public Sub New(path0 As String)
             TapeDrive = path0
         End Sub
+        Private fbytes As Long = 0
+
         Public Overrides Function GetVolumeInfo(<Out> ByRef VolumeInfo As VolumeInfo) As Int32
             VolumeInfo = New VolumeInfo()
             VolumeLabel = LW.schema._directory(0).name
@@ -5851,7 +5856,23 @@ Public Class LTFSWriter
                 VolumeInfo.FreeSize = TapeUtils.MAMAttribute.FromTapeDrive(LW.TapeDrive, 0, 0, LW.ExtraPartitionCount).AsNumeric << 20
                 'VolumeInfo.SetVolumeLabel(VolumeLabel)
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}")
+                LW.PrintMsg(ex.ToString(), LogOnly:=True)
+                If fbytes = 0 Then
+                    Dim q As New List(Of ltfsindex.directory)
+                    q.Add(LW.schema._directory(0))
+                    While q.Count > 0
+                        Dim q2 As New List(Of ltfsindex.directory)
+                        For Each qd As ltfsindex.directory In q
+                            For Each qf As ltfsindex.file In qd.contents._file
+                                Threading.Interlocked.Add(fbytes, qf.length)
+                            Next
+                            q2.AddRange(qd.contents._directory)
+                        Next
+                        q = q2
+                    End While
+                End If
+                VolumeInfo.TotalSize = fbytes
+                VolumeInfo.FreeSize = 0
             End Try
             Return STATUS_SUCCESS
         End Function
