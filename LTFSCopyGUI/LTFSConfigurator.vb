@@ -1813,6 +1813,8 @@ Public Class LTFSConfigurator
                                             result.Append(Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2").PadLeft(6).PadRight(7))
                                             LastC1Err(chan) = C1err
                                             LastNoCCPs(chan) = NoCCPs
+                                        Else
+                                            result.Append("-".PadLeft(4).PadRight(7))
                                         End If
                                     Next
                                 Catch
@@ -1845,13 +1847,13 @@ Public Class LTFSConfigurator
                     Threading.Thread.Sleep(1000)
                     Dim prognow As Long = progval
                     Invoke(Sub()
-                               TextBoxDebugOutput.AppendText($"{sec}: {prognow.ToString().PadLeft(len1)} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
+                               TextBoxDebugOutput.AppendText($"{sec.ToString().PadLeft(4)}: {prognow.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
                            End Sub)
                     If sec >= 0 Then sec += 1
                     lastval = prognow
                 End While
                 Invoke(Sub()
-                           TextBoxDebugOutput.AppendText($"{sec}: {progval.ToString().PadLeft(len1)} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
+                           TextBoxDebugOutput.AppendText($"{sec.ToString().PadLeft(4)}: {progval.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
                            TextBoxDebugOutput.AppendText($"End")
                        End Sub)
             End Sub)
