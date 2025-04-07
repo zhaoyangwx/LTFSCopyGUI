@@ -371,7 +371,7 @@ Public Class LTFSWriter
     Private TextT3 As String = "", TextT5 As String = ""
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
         Static blinkcycle As Integer
-        Const blinkticks As Integer = 2
+        Const blinkticks As Integer = 1
         blinkcycle += 1
         blinkcycle = blinkcycle Mod (2 * blinkticks)
         ToolStripStatusLabel3.Text = Text3
