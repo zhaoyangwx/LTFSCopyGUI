@@ -784,20 +784,6 @@ Public Class LTFSWriter
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Try
             Dim i As Integer
-            If False Then
-                Dim lr As Double = Math.Max(-11, ReadChanLRInfo())
-
-                ErrRateLog.Add(lr)
-                While ErrRateLog.Count > PMaxNum
-                    ErrRateLog.RemoveAt(0)
-                End While
-                i = 0
-                Chart1.Series(2).Points.Clear()
-                For Each val As Double In ErrRateLog.GetRange(ErrRateLog.Count - SMaxNum, SMaxNum)
-                    Chart1.Series(2).Points.AddXY(i, val)
-                    i += 1
-                Next
-            End If
 
             Dim pnow As Long = TotalBytesProcessed
             If pnow = 0 Then d_last = 0
@@ -824,11 +810,11 @@ Public Class LTFSWriter
             End While
 
             If APToolStripMenuItem.Checked AndAlso fdelta = 0 Then
-                Dim FlushNow As Boolean = True
+                Dim AutoFlushTriggered As Boolean = True
                 For j As Integer = 1 To My.Settings.LTFSWriter_AutoCleanTimeThreashould
                     Dim n As Double = SpeedHistory(SpeedHistory.Count - j)
-                    If n < My.Settings.LTFSWriter_AutoCleanDownLim Or n > My.Settings.LTFSWriter_AutoCleanUpperLim Then
-                        FlushNow = False
+                    If (Not IsWriting) OrElse n < My.Settings.LTFSWriter_AutoCleanDownLim Or n > My.Settings.LTFSWriter_AutoCleanUpperLim Then
+                        AutoFlushTriggered = False
                         Exit For
                     End If
                 Next
@@ -836,16 +822,23 @@ Public Class LTFSWriter
                     ToolStripDropDownButton3.ToolTipText = $"{My.Resources.ResText_C0}{vbCrLf}{My.Resources.ResText_C1}{CapReduceCount}{vbCrLf}"
                     If CapReduceCount >= CleanCycle Then ToolStripDropDownButton3.ToolTipText &= $"{My.Resources.ResText_C2}{Clean_last.ToString("yyyy/MM/dd HH:mm:ss")}"
                 End If
-                Flush = FlushNow
-                If FlushNow Then
-                    If CleanCycle > 0 AndAlso (CapReduceCount Mod CleanCycle = 0) Then
+                Flush = AutoFlushTriggered
+                If AutoFlushTriggered Then
+                    If CleanCycle > 0 AndAlso CapReduceCount > 0 AndAlso (CapReduceCount Mod CleanCycle = 0) Then
                         Flush = False
                         Clean = True
                     End If
                 End If
             End If
+
             If Threading.Monitor.TryEnter(OperationLock) Then
-                If AllowOperation Then CheckClean()
+                If AllowOperation And Clean Then
+                    AllowOperation = False
+                    Task.Run(Sub()
+                                 CheckClean()
+                                 AllowOperation = True
+                             End Sub)
+                End If
                 Threading.Monitor.Exit(OperationLock)
             End If
 
@@ -1210,9 +1203,11 @@ Public Class LTFSWriter
         FileDroper = New FileDropHandler(ListView1)
         Load_Settings()
         If OfflineMode Then Exit Sub
+        Dim driveOpened As Boolean = False
         Try
             TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
-            读取索引ToolStripMenuItem_Click(sender, e)
+            driveOpened = True
+
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_ErrP)
             SetStatusLight(LWStatus.Err)
@@ -1292,6 +1287,7 @@ Public Class LTFSWriter
                          End Try
                      End While
                  End Sub)
+        If driveOpened Then BeginInvoke(Sub() 读取索引ToolStripMenuItem_Click(sender, e))
     End Sub
     Private Sub LTFSWriter_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         Static ForceCloseCount As Integer = 0
@@ -1336,16 +1332,19 @@ Public Class LTFSWriter
     Public Function GetLocInfo() As String
         Dim DriveInfo As String = ""
         If TapeUtils.IsOpened(driveHandle) Then
-            If CurrDrive Is Nothing Then CurrDrive = TapeUtils.Inquiry(driveHandle)
+            If CurrDrive Is Nothing AndAlso Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
+                CurrDrive = TapeUtils.Inquiry(driveHandle)
+                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+            End If
             If CurrDrive IsNot Nothing Then
-                If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
-                    DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
-                Else
-                    DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
+                    If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
+                        DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
+                    Else
+                        DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
+                    End If
                 End If
             End If
-        End If
-        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+            If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}{DriveInfo}] "
         Try
@@ -1392,8 +1391,14 @@ Public Class LTFSWriter
     Public Property DeviceStatusLogPage As TapeUtils.PageData
     Public Property DTDStatusLogPage As TapeUtils.PageData
     Public Sub RefreshDriveLEDIndicator()
-        Dim logdataDSLP As Byte() = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
-        Dim logdataDTD As Byte() = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
+        Dim logdataDSLP As Byte()
+        Dim logdataDTD As Byte()
+        SyncLock OperationLock
+            SyncLock TapeUtils.SCSIOperationLock
+                logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
+                logdataDTD = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
+            End SyncLock
+        End SyncLock
         Invoke(Sub()
                    Try
                        DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
@@ -3007,6 +3012,7 @@ Public Class LTFSWriter
             Threading.Interlocked.Increment(TotalFilesProcessed)
             Exit Sub
         End If
+        IsWriting = False
         If IO.File.Exists(FileName) Then
             Dim fi As New IO.FileInfo(FileName)
             fi.Attributes = fi.Attributes And Not IO.FileAttributes.ReadOnly
@@ -3319,8 +3325,13 @@ Public Class LTFSWriter
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                             SetStatusLight(LWStatus.Err)
                         End Try
-                        TapeUtils.AllowMediaRemoval(driveHandle)
-                        TapeUtils.ReleaseUnit(driveHandle)
+                        SyncLock OperationLock
+                            SyncLock TapeUtils.SCSIOperationLock
+                                TapeUtils.AllowMediaRemoval(driveHandle)
+                                TapeUtils.ReleaseUnit(driveHandle)
+                            End SyncLock
+                        End SyncLock
+
                         UnwrittenSizeOverrideValue = 0
                         UnwrittenCountOverwriteValue = 0
                         LockGUI(False)
@@ -3421,6 +3432,7 @@ Public Class LTFSWriter
         Return True
     End Function
     Public StartTime As Date
+    Public Property IsWriting As Boolean = False
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
@@ -3434,6 +3446,7 @@ Public Class LTFSWriter
                     TapeUtils.ReserveUnit(driveHandle)
                     TapeUtils.PreventMediaRemoval(driveHandle)
                     If Not LocateToWritePosition() Then Exit Sub
+                    IsWriting = True
                     Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
                     If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
                         Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
@@ -3980,6 +3993,7 @@ Public Class LTFSWriter
                            SetStatusLight(LWStatus.Succ)
                            RaiseEvent WriteFinished()
                        End Sub)
+                IsWriting = False
             End Sub)
         StopFlag = False
         LockGUI()
