@@ -571,6 +571,21 @@ Public Class LTFSConfigurator
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
                                     Exit Try
                                 End If
+                            Case My.Settings.TapeUtils_DriverType.SLR1
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
+                                Invoke(Sub() TextBoxDebugOutput.AppendText("Reloading.."))
+                                If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, 1, 0}) Then
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
+                                Else
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
+                                    Exit Try
+                                End If
                         End Select
                     Catch ex As Exception
                         Invoke(Sub() TextBoxDebugOutput.AppendText(ex.ToString()))

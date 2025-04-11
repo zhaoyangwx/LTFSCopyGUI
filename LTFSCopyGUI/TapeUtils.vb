@@ -4,6 +4,7 @@ Imports System.Text
 Imports System.ComponentModel
 
 Imports LTFSCopyGUI
+Imports System.ComponentModel.DataAnnotations
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class TapeUtils
@@ -532,11 +533,28 @@ Public Class TapeUtils
         Dim DiffBytes As Int32
         Dim DataLen As Integer
         SyncLock SCSIOperationLock
-            RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+            Select Case DriverTypeSetting
+                Case DriverType.LTO
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
                                               paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                          senseRaw = senseData
                                                                                          Return True
                                                                                      End Function)
+                Case DriverType.SLR3
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+                                              paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                         senseRaw = senseData
+                                                                                         Return True
+                                                                                     End Function)
+                Case DriverType.SLR1
+                    Dim BlockCount As Integer = Math.Ceiling(BlockSizeLimit / 512)
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 1, BlockCount >> 16 And &HFF, BlockCount >> 8 And &HFF, BlockCount And &HFF, 0},
+                                              paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                         senseRaw = senseData
+                                                                                         Return True
+                                                                                     End Function)
+
+            End Select
             sense = senseRaw
             For i As Integer = 3 To 6
                 DiffBytes <<= 8
@@ -725,7 +743,7 @@ Public Class TapeUtils
                 Dim readData As Byte() = ReadBlock(handle, sense, BlockSizeLimit)
                 Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                 If readData.Length > 0 Then
-                    Buffer.AddRange(readData)
+                    buffer.AddRange(readData)
                 End If
                 If (Add_Key >= 1 And Add_Key <> 4) Then
                     Exit While
@@ -836,6 +854,25 @@ Public Class TapeUtils
                                                                                                          sense = senseData
                                                                                                          Return True
                                                                                                      End Function)
+                        Case LocateDestType.FileMark
+                            Locate(handle, 0, 0)
+                            Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
+                        Case LocateDestType.EOD
+                            If Not ReadPosition(handle).EOD Then
+                                SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                                                            sense = senseData
+                                                                                                                            Return True
+                                                                                                                        End Function)
+                            End If
+                    End Select
+                Case DriverType.SLR1
+                    Select Case DestType
+                        Case LocateDestType.Block
+                            SCSIReadParam(handle:=handle, cdbData:={&HC, 0, BlockAddress >> 16 And &HF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                                            0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
+                                                                                              sense = senseData
+                                                                                              Return True
+                                                                                          End Function)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
                             Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
@@ -1773,6 +1810,12 @@ Public Class TapeUtils
                     result.BlockNumber <<= 8
                     result.BlockNumber = result.BlockNumber Or param(4 + i)
                 Next
+            Case DriverType.SLR1
+                param = SCSIReadParam(handle, {&H2, 0, 0, 0, 3, 0}, 3)
+                For i As Integer = 0 To 2
+                    result.BlockNumber <<= 8
+                    result.BlockNumber = result.BlockNumber Or param(0 + i)
+                Next
             Case Else
         End Select
         If sense IsNot Nothing AndAlso sense.Length >= 14 Then result.AddSenseKey = CInt(sense(12)) << 8 Or sense(13)
@@ -1801,13 +1844,33 @@ Public Class TapeUtils
     End Function
     Public Shared Function Write(handle As IntPtr, Data As Byte()) As Byte()
         Dim sense(63) As Byte
-        Dim succ As Boolean =
+        Select Case My.Settings.TapeUtils_DriverType
+            Case DriverType.LTO
+                Dim succ As Boolean =
             SendSCSICommandUnmanaged(handle, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
                         End Function)
-        If Not succ Then Throw New Exception("SCSI Failure")
+                If Not succ Then Throw New Exception("SCSI Failure")
+            Case DriverType.SLR3
+                Dim succ As Boolean =
+            SendSCSICommandUnmanaged(handle, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+                        Function(senseData As Byte()) As Boolean
+                            sense = senseData
+                            Return True
+                        End Function)
+                If Not succ Then Throw New Exception("SCSI Failure")
+            Case DriverType.SLR1
+                Dim BlockCount As Integer = Math.Ceiling(Data.Length / 512)
+                Dim succ As Boolean =
+            SendSCSICommandUnmanaged(handle, {&HA, 1, BlockCount >> 16 And &HFF, BlockCount >> 8 And &HFF, BlockCount And &HFF, 0}, Data, 0,
+                        Function(senseData As Byte()) As Boolean
+                            sense = senseData
+                            Return True
+                        End Function)
+                If Not succ Then Throw New Exception("SCSI Failure")
+        End Select
         Return sense
     End Function
     Public Shared Function Write(TapeDrive As String, Data As IntPtr, Length As Integer) As Byte()
@@ -1866,7 +1929,14 @@ Public Class TapeUtils
         Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         For i As Integer = 0 To Data.Length - 1 Step BlockSize
             Dim TransferLen As UInteger = Math.Min(BlockSize, Data.Length - i)
-            cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
+            Select Case My.Settings.TapeUtils_DriverType
+                Case DriverType.LTO
+                    cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
+                Case DriverType.SLR3
+                    cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
+                Case DriverType.SLR1
+                    cdbData = {&HA, 1, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
+            End Select
             Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(Data, i, dataBuffer, TransferLen)
             Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
