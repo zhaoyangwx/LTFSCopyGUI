@@ -714,28 +714,32 @@ Public Class LTFSWriter
         Dim WERLHeader As Byte()
         Dim WERLPage As Byte()
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
-            Dim pos As New TapeUtils.PositionData(driveHandle)
-            Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage))
-            Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
-            Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage))
-            Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
-            debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
-            WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-            If WERLHeader.Length <> 4 Then
-                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
-                PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
-                Return 0
-            End If
-            Dim WERLPageLen As Integer = WERLHeader(2)
-            WERLPageLen <<= 8
-            WERLPageLen = WERLPageLen Or WERLHeader(3)
-            If WERLPageLen = 0 Then
-                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
-                PrintMsg("Page is empty. Skip Errrate Check", LogOnly:=True)
-                Return 0
-            End If
-            WERLPageLen += 4
-            WERLPage = TapeUtils.SCSIReadParam(handle:=driveHandle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+            Try
+                Dim pos As New TapeUtils.PositionData(driveHandle)
+                Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage))
+                Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
+                Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage))
+                Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
+                debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
+                WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                If WERLHeader.Length <> 4 Then
+                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
+                    Return 0
+                End If
+                Dim WERLPageLen As Integer = WERLHeader(2)
+                WERLPageLen <<= 8
+                WERLPageLen = WERLPageLen Or WERLHeader(3)
+                If WERLPageLen = 0 Then
+                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    PrintMsg("Page is empty. Skip Errrate Check", LogOnly:=True)
+                    Return 0
+                End If
+                WERLPageLen += 4
+                WERLPage = TapeUtils.SCSIReadParam(handle:=driveHandle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+            Catch ex As Exception
+                PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
+            End Try
             Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
         Else
             PrintMsg("Device is busy. Skip Errrate Check", LogOnly:=True)
@@ -832,13 +836,17 @@ Public Class LTFSWriter
             End If
 
             If Threading.Monitor.TryEnter(OperationLock) Then
-                If AllowOperation And Clean Then
-                    AllowOperation = False
-                    Task.Run(Sub()
-                                 CheckClean()
-                                 AllowOperation = True
-                             End Sub)
-                End If
+                Try
+                    If AllowOperation And Clean Then
+                        AllowOperation = False
+                        Task.Run(Sub()
+                                     CheckClean()
+                                     AllowOperation = True
+                                 End Sub)
+                    End If
+                Catch ex As Exception
+                    PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
+                End Try
                 Threading.Monitor.Exit(OperationLock)
             End If
 
@@ -1333,9 +1341,13 @@ Public Class LTFSWriter
         Dim DriveInfo As String = ""
         If TapeUtils.IsOpened(driveHandle) Then
             If CurrDrive Is Nothing AndAlso Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
-                CurrDrive = TapeUtils.Inquiry(driveHandle)
-                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
-            End If
+                Try
+                    CurrDrive = TapeUtils.Inquiry(driveHandle)
+                Catch ex As Exception
+                    PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
+                End Try
+            Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+        End If
             If CurrDrive IsNot Nothing Then
                     If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
                         DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"

@@ -1723,6 +1723,7 @@ Public Class TapeUtils
         LTO = 0
         M2488 = 1
         SLR3 = 2
+        T10K = 3
     End Enum
     Public Shared Function ReadPosition(handle As IntPtr) As PositionData
         Return ReadPosition(handle, DriverType.LTO)
@@ -2814,12 +2815,23 @@ Public Class TapeUtils
                     End If
                     'Format
                     ProgressReport("Partitioning..")
-                    If TapeUtils.SendSCSICommand(handle, {4, 0, 1, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
-                        ProgressReport("     OK" & vbCrLf)
-                    Else
-                        OnError("     Fail" & vbCrLf)
-                        Return False
-                    End If
+                    Select Case DriverTypeSetting
+                        Case DriverType.T10K
+                            If TapeUtils.SendSCSICommand(handle, {4, 0, 2, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
+                                ProgressReport("     OK" & vbCrLf)
+                            Else
+                                OnError("     Fail" & vbCrLf)
+                                Return False
+                            End If
+                        Case Else
+                            If TapeUtils.SendSCSICommand(handle, {4, 0, 1, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
+                                ProgressReport("     OK" & vbCrLf)
+                            Else
+                                OnError("     Fail" & vbCrLf)
+                                Return False
+                            End If
+                    End Select
+
                 End If
                 'Set Vendor
                 ProgressReport($"WRITE ATTRIBUTE: Vendor=OPEN..")
