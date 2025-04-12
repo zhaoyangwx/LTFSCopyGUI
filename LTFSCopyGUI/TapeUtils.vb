@@ -2815,286 +2815,197 @@ Public Class TapeUtils
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
-                Dim senseReportFunc As Func(Of Byte(), Boolean) = Function(sense As Byte()) As Boolean
-                                                                      If sense(2) And &HF = 0 Then Return True
-                                                                      ProgressReport(ParseSenseData(sense))
-                                                                      Return False
-                                                                  End Function
-
-                'Load and Thread
-                ProgressReport("Loading..")
-                If TapeUtils.SendSCSICommand(handle, {&H1B, 0, 0, 0, 1, 0}, senseReport:=senseReportFunc) Then
-                    ProgressReport("Load OK" & vbCrLf)
-                Else
-                    OnError("Load Fail" & vbCrLf)
-                    Return False
-                End If
-                ProgressReport("Mode Sense..")
-                Dim ModeData As Byte() = TapeUtils.ModeSense(handle, &H11, senseReport:=senseReportFunc)
-                ProgressReport(Byte2Hex(ModeData))
-                ReDim Preserve ModeData(11)
-                Dim MaxExtraPartitionAllowed As Byte = ModeData(2)
-                ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
-                ProgressReport($"Extra partitions: {ExtraPartitionCount}")
-                If Not AllowPartition Then ExtraPartitionCount = 0
-                If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
-
-                'Set Capacity
-                ProgressReport("Set Capacity..")
-                If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}, senseReport:=senseReportFunc) Then
-                    ProgressReport("Set Capacity OK" & vbCrLf)
-                Else
-                    OnError("Set Capacity Fail" & vbCrLf)
-                    Return False
-                End If
-
-                'Format
-                ProgressReport("Initializing tape..")
-                Dim DisableFormat As Boolean = False
                 Try
-                    Dim cmdata As New CMParser(handle)
-                    DisableFormat = cmdata.CartridgeMfgData.IsLTO9Plus OrElse (Not cmdata.CartridgeMfgData.IsLTO3Plus)
-                Catch ex As Exception
-                    ProgressReport("CMData parse failed")
-                End Try
-                If DisableFormat Then
-                    ProgressReport("LTO9 detected, skip initialization" & vbCrLf)
-                Else
-                    If TapeUtils.SendSCSICommand(handle, {4, 0, 0, 0, 0, 0}, senseReport:=senseReportFunc) Then
-                        ProgressReport("Initialization OK" & vbCrLf)
-                    Else
-                        OnError("Initialization Fail" & vbCrLf)
-                        Return False
-                    End If
-                End If
+                    Dim senseReportFunc As Func(Of Byte(), Boolean) = Function(sense As Byte()) As Boolean
+                                                                          If sense(2) And &HF = 0 Then Return True
+                                                                          ProgressReport(ParseSenseData(sense))
+                                                                          Return False
+                                                                      End Function
 
-                If ExtraPartitionCount > 0 Then
-                    'Mode Select:1st Partition to Minimum 
-                    ProgressReport("MODE SELECT - Partition mode page..")
-                    If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0, senseReport:=senseReportFunc) Then
-                        ProgressReport("MODE SELECT 11h OK" & vbCrLf)
+                    'Load and Thread
+                    ProgressReport("Loading..")
+                    If TapeUtils.SendSCSICommand(handle, {&H1B, 0, 0, 0, 1, 0}, senseReport:=senseReportFunc) Then
+                        ProgressReport("Load OK" & vbCrLf)
                     Else
-                        OnError("MODE SELECT 11h Fail" & vbCrLf)
+                        OnError("Load Fail" & vbCrLf)
                         Return False
                     End If
+                    ProgressReport("Mode Sense..")
+                    Dim ModeData As Byte() = TapeUtils.ModeSense(handle, &H11, senseReport:=senseReportFunc)
+                    ProgressReport(Byte2Hex(ModeData))
+                    ReDim Preserve ModeData(11)
+                    Dim MaxExtraPartitionAllowed As Byte = ModeData(2)
+                    ExtraPartitionCount = Math.Min(MaxExtraPartitionAllowed, ExtraPartitionCount)
+                    ProgressReport($"Extra partitions: {ExtraPartitionCount}")
+                    If Not AllowPartition Then ExtraPartitionCount = 0
+                    If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
+
+                    'Set Capacity
+                    ProgressReport("Set Capacity..")
+                    If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}, senseReport:=senseReportFunc) Then
+                        ProgressReport("Set Capacity OK" & vbCrLf)
+                    Else
+                        OnError("Set Capacity Fail" & vbCrLf)
+                        Return False
+                    End If
+
                     'Format
-                    ProgressReport("Partitioning..")
-                    Select Case DriverTypeSetting
-                        Case DriverType.T10K
-                            If TapeUtils.SendSCSICommand(handle, {4, 0, 2, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
-                                ProgressReport("     OK" & vbCrLf)
-                            Else
-                                OnError("     Fail" & vbCrLf)
-                                Return False
-                            End If
-                        Case Else
-                            If TapeUtils.SendSCSICommand(handle, {4, 0, 1, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
-                                ProgressReport("     OK" & vbCrLf)
-                            Else
-                                OnError("     Fail" & vbCrLf)
-                                Return False
-                            End If
-                    End Select
-
-                End If
-                'Set Vendor
-                ProgressReport($"WRITE ATTRIBUTE: Vendor=OPEN..")
-                If TapeUtils.SetMAMAttribute(handle, &H800, "OPEN".PadRight(8), SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0800 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0800 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set AppName
-                ProgressReport($"WRITE ATTRIBUTE: Application Name = LTFSCopyGUI..")
-                If TapeUtils.SetMAMAttribute(handle, &H801, "LTFSCopyGUI".PadRight(32), SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0801 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0801 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set Version
-                ProgressReport($"WRITE ATTRIBUTE: Application Version={My.Application.Info.Version.ToString(3)}..")
-                If TapeUtils.SetMAMAttribute(handle, &H802, My.Application.Info.Version.ToString(3).PadRight(8), SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0802 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0802 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set TextLabel
-                ProgressReport($"WRITE ATTRIBUTE: TextLabel= ..")
-                If TapeUtils.SetMAMAttribute(handle, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text, SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0803 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0803 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set TLI
-                ProgressReport($"WRITE ATTRIBUTE: Localization Identifier = 0..")
-                If TapeUtils.SetMAMAttribute(handle, &H805, {0}, TapeUtils.AttributeFormat.Binary, SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE:0805 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE:0805 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set Barcode
-                Barcode = Barcode.PadRight(32).Substring(0, 32)
-                ProgressReport($"WRITE ATTRIBUTE: Barcode={Barcode}..")
-                If TapeUtils.SetBarcode(handle, Barcode, senseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0806 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0806 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set Version
-                Dim LTFSVersion As String = "2.4.0"
-                If ExtraPartitionCount = 0 Then LTFSVersion = "2.4.1"
-                ProgressReport($"WRITE ATTRIBUTE: Format Version={LTFSVersion}..")
-                If TapeUtils.SetMAMAttribute(handle, &H80B, LTFSVersion.PadRight(16), SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 080B OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 080B Fail" & vbCrLf)
-                    Return False
-                End If
-                'Mode Select:Block Length
-                ProgressReport($"MODE SELECT - Block Size {BlockLen}..")
-                Dim blkSenseData As Byte() = TapeUtils.SetBlockSize(handle:=handle, BlockSize:=BlockLen)
-                senseReportFunc(blkSenseData)
-                If blkSenseData.Length > 0 Then
-                    ProgressReport($"MODE SELECT - Block Size {BlockLen} OK" & vbCrLf)
-                Else
-                    OnError($"MODE SELECT - Block Size {BlockLen} Fail" & vbCrLf)
-                    Return False
-                End If
-                'Locate
-                ProgressReport("Locate to data partition..")
-                Dim LocateAddCode As UShort = TapeUtils.Locate(handle, 0, ExtraPartitionCount)
-                If LocateAddCode = 0 Then
-                    ProgressReport($"Locate P{ExtraPartitionCount}B0 OK" & vbCrLf)
-                Else
-                    OnError($"Locate P{ExtraPartitionCount}B0 Fail{vbCrLf}{ParseAdditionalSenseCode(LocateAddCode)}" & vbCrLf)
-                    Return False
-                End If
-                'Set Encryption key
-                SetEncryption(handle, EncryptionKey, SenseReport:=senseReportFunc)
-                'Write VOL1Label
-                ProgressReport("Write VOL1Label..")
-                If TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
-                    ProgressReport("Write VOL1Label OK" & vbCrLf)
-                Else
-                    OnError("Write VOL1Label Fail" & vbCrLf)
-                    Return False
-                End If
-
-                'Write FileMark
-                ProgressReport("Write FileMark..")
-                If TapeUtils.WriteFileMark(handle).Length > 0 Then
-                    ProgressReport("Write FileMark OK" & vbCrLf)
-                Else
-                    OnError("Write FileMark Fail" & vbCrLf)
-                    Return False
-                End If
-
-                Dim plabel As New ltfslabel()
-                plabel.volumeuuid = Guid.NewGuid()
-                plabel.location.partition = ltfslabel.PartitionLabel.b
-                plabel.partitions.index = ltfslabel.PartitionLabel.a
-                plabel.partitions.data = ltfslabel.PartitionLabel.b
-                plabel.blocksize = BlockLen
-
-                'Write ltfslabel
-                ProgressReport("Write ltfslabel..")
-                Dim WriteSenseData As Byte() = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText()))
-                senseReportFunc(WriteSenseData)
-                If WriteSenseData.Length > 0 Then
-                    ProgressReport("Write ltfslabel OK" & vbCrLf)
-                Else
-                    OnError("Write ltfslabel Fail" & vbCrLf)
-                    Return False
-                End If
-
-                'Write FileMark
-                ProgressReport("Write FileMark..")
-                WriteSenseData = TapeUtils.WriteFileMark(handle, 2)
-                senseReportFunc(WriteSenseData)
-                If WriteSenseData.Length > 0 Then
-                    ProgressReport("Write 2FileMark OK" & vbCrLf)
-                Else
-                    OnError("Write 2FileMark Fail" & vbCrLf)
-                    Return False
-                End If
-
-                Dim pindex As New ltfsindex
-                pindex.volumeuuid = plabel.volumeuuid
-                pindex.generationnumber = 1
-                pindex.creator = plabel.creator
-                pindex.updatetime = plabel.formattime
-                pindex.location.partition = ltfslabel.PartitionLabel.b
-                pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
-                pindex.previousgenerationlocation = Nothing
-                pindex.highestfileuid = 1
-                Dim block1 As ULong = pindex.location.startblock
-                pindex._directory = New List(Of ltfsindex.directory)
-                pindex._directory.Add(New ltfsindex.directory With {.name = VolumeName, .readonly = False,
-                                              .creationtime = plabel.formattime, .changetime = .creationtime,
-                                              .accesstime = .creationtime, .modifytime = .creationtime, .backuptime = .creationtime, .fileuid = 1, .contents = New ltfsindex.contentsDef()})
-
-                'Write ltfsindex
-                ProgressReport("Write ltfsindex..")
-                WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText()))
-                senseReportFunc(WriteSenseData)
-                If WriteSenseData.Length > 0 Then
-                    ProgressReport("Write ltfsindex OK" & vbCrLf)
-                Else
-                    OnError("Write ltfsindex Fail" & vbCrLf)
-                    Return False
-                End If
-
-                'Write FileMark
-                ProgressReport("Write FileMark..")
-                WriteSenseData = TapeUtils.WriteFileMark(handle)
-                senseReportFunc(WriteSenseData)
-                If WriteSenseData.Length > 0 Then
-                    ProgressReport("Write FileMark OK" & vbCrLf)
-                Else
-                    OnError("Write FileMark Fail" & vbCrLf)
-                    Return False
-                End If
-                Dim block0 As ULong
-                If ExtraPartitionCount > 0 Then
-                    'Locate
-                    ProgressReport("Locate to index partition..")
-                    LocateAddCode = TapeUtils.Locate(handle, 0, 0)
-                    If LocateAddCode = 0 Then
-                        ProgressReport("Locate P0B0 OK" & vbCrLf)
+                    ProgressReport("Initializing tape..")
+                    Dim DisableFormat As Boolean = False
+                    Try
+                        Dim cmdata As New CMParser(handle)
+                        DisableFormat = cmdata.CartridgeMfgData.IsLTO9Plus OrElse (Not cmdata.CartridgeMfgData.IsLTO3Plus)
+                    Catch ex As Exception
+                        ProgressReport("CMData parse failed")
+                    End Try
+                    If DisableFormat Then
+                        ProgressReport("LTO9 detected, skip initialization" & vbCrLf)
                     Else
-                        OnError($"Locate P0B0 Fail{vbCrLf}{ParseAdditionalSenseCode(LocateAddCode)}" & vbCrLf)
+                        If TapeUtils.SendSCSICommand(handle, {4, 0, 0, 0, 0, 0}, senseReport:=senseReportFunc) Then
+                            ProgressReport("Initialization OK" & vbCrLf)
+                        Else
+                            OnError("Initialization Fail" & vbCrLf)
+                            Return False
+                        End If
+                    End If
+
+                    If ExtraPartitionCount > 0 Then
+                        'Mode Select:1st Partition to Minimum 
+                        ProgressReport("MODE SELECT - Partition mode page..")
+                        If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0, senseReport:=senseReportFunc) Then
+                            ProgressReport("MODE SELECT 11h OK" & vbCrLf)
+                        Else
+                            OnError("MODE SELECT 11h Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Format
+                        ProgressReport("Partitioning..")
+                        Select Case DriverTypeSetting
+                            Case DriverType.T10K
+                                If TapeUtils.SendSCSICommand(handle, {4, 0, 2, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
+                                    ProgressReport("     OK" & vbCrLf)
+                                Else
+                                    OnError("     Fail" & vbCrLf)
+                                    Return False
+                                End If
+                            Case Else
+                                If TapeUtils.SendSCSICommand(handle, {4, 0, 1, 0, 0, 0}, Nothing, 0, senseReport:=senseReportFunc) Then
+                                    ProgressReport("     OK" & vbCrLf)
+                                Else
+                                    OnError("     Fail" & vbCrLf)
+                                    Return False
+                                End If
+                        End Select
+
+                    End If
+                    'Set Vendor
+                    ProgressReport($"WRITE ATTRIBUTE: Vendor=OPEN..")
+                    If TapeUtils.SetMAMAttribute(handle, &H800, "OPEN".PadRight(8), SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0800 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0800 Fail" & vbCrLf)
                         Return False
                     End If
+                    'Set AppName
+                    ProgressReport($"WRITE ATTRIBUTE: Application Name = LTFSCopyGUI..")
+                    If TapeUtils.SetMAMAttribute(handle, &H801, "LTFSCopyGUI".PadRight(32), SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0801 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0801 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set Version
+                    ProgressReport($"WRITE ATTRIBUTE: Application Version={My.Application.Info.Version.ToString(3)}..")
+                    If TapeUtils.SetMAMAttribute(handle, &H802, My.Application.Info.Version.ToString(3).PadRight(8), SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0802 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0802 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set TextLabel
+                    ProgressReport($"WRITE ATTRIBUTE: TextLabel= ..")
+                    If TapeUtils.SetMAMAttribute(handle, &H803, "".PadRight(160), TapeUtils.AttributeFormat.Text, SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0803 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0803 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set TLI
+                    ProgressReport($"WRITE ATTRIBUTE: Localization Identifier = 0..")
+                    If TapeUtils.SetMAMAttribute(handle, &H805, {0}, TapeUtils.AttributeFormat.Binary, SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE:0805 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE:0805 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set Barcode
+                    Barcode = Barcode.PadRight(32).Substring(0, 32)
+                    ProgressReport($"WRITE ATTRIBUTE: Barcode={Barcode}..")
+                    If TapeUtils.SetBarcode(handle, Barcode, senseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0806 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0806 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set Version
+                    Dim LTFSVersion As String = "2.4.0"
+                    If ExtraPartitionCount = 0 Then LTFSVersion = "2.4.1"
+                    ProgressReport($"WRITE ATTRIBUTE: Format Version={LTFSVersion}..")
+                    If TapeUtils.SetMAMAttribute(handle, &H80B, LTFSVersion.PadRight(16), SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 080B OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 080B Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Mode Select:Block Length
+                    ProgressReport($"MODE SELECT - Block Size {BlockLen}..")
+                    Dim blkSenseData As Byte() = TapeUtils.SetBlockSize(handle:=handle, BlockSize:=BlockLen)
+                    senseReportFunc(blkSenseData)
+                    If blkSenseData.Length > 0 Then
+                        ProgressReport($"MODE SELECT - Block Size {BlockLen} OK" & vbCrLf)
+                    Else
+                        OnError($"MODE SELECT - Block Size {BlockLen} Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Locate
+                    ProgressReport("Locate to data partition..")
+                    Dim LocateAddCode As UShort = TapeUtils.Locate(handle, 0, ExtraPartitionCount)
+                    If LocateAddCode = 0 Then
+                        ProgressReport($"Locate P{ExtraPartitionCount}B0 OK" & vbCrLf)
+                    Else
+                        OnError($"Locate P{ExtraPartitionCount}B0 Fail{vbCrLf}{ParseAdditionalSenseCode(LocateAddCode)}" & vbCrLf)
+                        Return False
+                    End If
+                    'Set Encryption key
+                    SetEncryption(handle, EncryptionKey, SenseReport:=senseReportFunc)
                     'Write VOL1Label
                     ProgressReport("Write VOL1Label..")
-                    WriteSenseData = TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode))
-                    senseReportFunc(WriteSenseData)
-                    If WriteSenseData.Length > 0 Then
+                    If TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode)).Length > 0 Then
                         ProgressReport("Write VOL1Label OK" & vbCrLf)
                     Else
                         OnError("Write VOL1Label Fail" & vbCrLf)
                         Return False
                     End If
+
                     'Write FileMark
                     ProgressReport("Write FileMark..")
-                    WriteSenseData = TapeUtils.WriteFileMark(handle)
-                    senseReportFunc(WriteSenseData)
-                    If WriteSenseData.Length > 0 Then
+                    If TapeUtils.WriteFileMark(handle).Length > 0 Then
                         ProgressReport("Write FileMark OK" & vbCrLf)
                     Else
                         OnError("Write FileMark Fail" & vbCrLf)
                         Return False
                     End If
+
+                    Dim plabel As New ltfslabel()
+                    plabel.volumeuuid = Guid.NewGuid()
+                    plabel.location.partition = ltfslabel.PartitionLabel.b
+                    plabel.partitions.index = ltfslabel.PartitionLabel.a
+                    plabel.partitions.data = ltfslabel.PartitionLabel.b
+                    plabel.blocksize = BlockLen
+
                     'Write ltfslabel
-                    plabel.location.partition = ltfslabel.PartitionLabel.a
                     ProgressReport("Write ltfslabel..")
-                    WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText()))
+                    Dim WriteSenseData As Byte() = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText()))
                     senseReportFunc(WriteSenseData)
                     If WriteSenseData.Length > 0 Then
                         ProgressReport("Write ltfslabel OK" & vbCrLf)
@@ -3102,23 +3013,34 @@ Public Class TapeUtils
                         OnError("Write ltfslabel Fail" & vbCrLf)
                         Return False
                     End If
+
                     'Write FileMark
                     ProgressReport("Write FileMark..")
                     WriteSenseData = TapeUtils.WriteFileMark(handle, 2)
                     senseReportFunc(WriteSenseData)
                     If WriteSenseData.Length > 0 Then
-                        ProgressReport("Write FileMark OK" & vbCrLf)
+                        ProgressReport("Write 2FileMark OK" & vbCrLf)
                     Else
-                        OnError("Write FileMark Fail" & vbCrLf)
+                        OnError("Write 2FileMark Fail" & vbCrLf)
                         Return False
                     End If
-                    'Write ltfsindex
-                    pindex.previousgenerationlocation = New ltfsindex.LocationDef()
-                    pindex.previousgenerationlocation.partition = pindex.location.partition
-                    pindex.previousgenerationlocation.startblock = pindex.location.startblock
-                    pindex.location.partition = ltfsindex.PartitionLabel.a
+
+                    Dim pindex As New ltfsindex
+                    pindex.volumeuuid = plabel.volumeuuid
+                    pindex.generationnumber = 1
+                    pindex.creator = plabel.creator
+                    pindex.updatetime = plabel.formattime
+                    pindex.location.partition = ltfslabel.PartitionLabel.b
                     pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
-                    block0 = pindex.location.startblock
+                    pindex.previousgenerationlocation = Nothing
+                    pindex.highestfileuid = 1
+                    Dim block1 As ULong = pindex.location.startblock
+                    pindex._directory = New List(Of ltfsindex.directory)
+                    pindex._directory.Add(New ltfsindex.directory With {.name = VolumeName, .readonly = False,
+                                                  .creationtime = plabel.formattime, .changetime = .creationtime,
+                                                  .accesstime = .creationtime, .modifytime = .creationtime, .backuptime = .creationtime, .fileuid = 1, .contents = New ltfsindex.contentsDef()})
+
+                    'Write ltfsindex
                     ProgressReport("Write ltfsindex..")
                     WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText()))
                     senseReportFunc(WriteSenseData)
@@ -3128,6 +3050,7 @@ Public Class TapeUtils
                         OnError("Write ltfsindex Fail" & vbCrLf)
                         Return False
                     End If
+
                     'Write FileMark
                     ProgressReport("Write FileMark..")
                     WriteSenseData = TapeUtils.WriteFileMark(handle)
@@ -3138,25 +3061,107 @@ Public Class TapeUtils
                         OnError("Write FileMark Fail" & vbCrLf)
                         Return False
                     End If
-                End If
-                'Set DateTime
-                Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")
-                ProgressReport($"WRITE ATTRIBUTE: Written time={CurrentTime}..")
-                If TapeUtils.SetMAMAttribute(handle, &H804, CurrentTime.PadRight(12), SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE ATTRIBUTE: 0804 OK" & vbCrLf)
-                Else
-                    OnError("WRITE ATTRIBUTE: 0804 Fail" & vbCrLf)
-                    Return False
-                End If
-                'Set VCI
-                ProgressReport($"WRITE ATTRIBUTE: VCI..")
-                If TapeUtils.WriteVCI(handle:=handle, Generation:=pindex.generationnumber, block0:=block0, block1:=block1, UUID:=pindex.volumeuuid.ToString(), ExtraPartitionCount:=ExtraPartitionCount, SenseReport:=senseReportFunc) Then
-                    ProgressReport("WRITE VCI OK" & vbCrLf)
-                Else
-                    ProgressReport("WRITE VCI Fail" & vbCrLf)
-                End If
-                OnFinish("Format finished.")
-                Return True
+                    Dim block0 As ULong
+                    If ExtraPartitionCount > 0 Then
+                        'Locate
+                        ProgressReport("Locate to index partition..")
+                        LocateAddCode = TapeUtils.Locate(handle, 0, 0)
+                        If LocateAddCode = 0 Then
+                            ProgressReport("Locate P0B0 OK" & vbCrLf)
+                        Else
+                            OnError($"Locate P0B0 Fail{vbCrLf}{ParseAdditionalSenseCode(LocateAddCode)}" & vbCrLf)
+                            Return False
+                        End If
+                        'Write VOL1Label
+                        ProgressReport("Write VOL1Label..")
+                        WriteSenseData = TapeUtils.Write(handle, New Vol1Label().GenerateRawData(Barcode))
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write VOL1Label OK" & vbCrLf)
+                        Else
+                            OnError("Write VOL1Label Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Write FileMark
+                        ProgressReport("Write FileMark..")
+                        WriteSenseData = TapeUtils.WriteFileMark(handle)
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write FileMark OK" & vbCrLf)
+                        Else
+                            OnError("Write FileMark Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Write ltfslabel
+                        plabel.location.partition = ltfslabel.PartitionLabel.a
+                        ProgressReport("Write ltfslabel..")
+                        WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(plabel.GetSerializedText()))
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write ltfslabel OK" & vbCrLf)
+                        Else
+                            OnError("Write ltfslabel Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Write FileMark
+                        ProgressReport("Write FileMark..")
+                        WriteSenseData = TapeUtils.WriteFileMark(handle, 2)
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write FileMark OK" & vbCrLf)
+                        Else
+                            OnError("Write FileMark Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Write ltfsindex
+                        pindex.previousgenerationlocation = New ltfsindex.LocationDef()
+                        pindex.previousgenerationlocation.partition = pindex.location.partition
+                        pindex.previousgenerationlocation.startblock = pindex.location.startblock
+                        pindex.location.partition = ltfsindex.PartitionLabel.a
+                        pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
+                        block0 = pindex.location.startblock
+                        ProgressReport("Write ltfsindex..")
+                        WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText()))
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write ltfsindex OK" & vbCrLf)
+                        Else
+                            OnError("Write ltfsindex Fail" & vbCrLf)
+                            Return False
+                        End If
+                        'Write FileMark
+                        ProgressReport("Write FileMark..")
+                        WriteSenseData = TapeUtils.WriteFileMark(handle)
+                        senseReportFunc(WriteSenseData)
+                        If WriteSenseData.Length > 0 Then
+                            ProgressReport("Write FileMark OK" & vbCrLf)
+                        Else
+                            OnError("Write FileMark Fail" & vbCrLf)
+                            Return False
+                        End If
+                    End If
+                    'Set DateTime
+                    Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")
+                    ProgressReport($"WRITE ATTRIBUTE: Written time={CurrentTime}..")
+                    If TapeUtils.SetMAMAttribute(handle, &H804, CurrentTime.PadRight(12), SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE ATTRIBUTE: 0804 OK" & vbCrLf)
+                    Else
+                        OnError("WRITE ATTRIBUTE: 0804 Fail" & vbCrLf)
+                        Return False
+                    End If
+                    'Set VCI
+                    ProgressReport($"WRITE ATTRIBUTE: VCI..")
+                    If TapeUtils.WriteVCI(handle:=handle, Generation:=pindex.generationnumber, block0:=block0, block1:=block1, UUID:=pindex.volumeuuid.ToString(), ExtraPartitionCount:=ExtraPartitionCount, SenseReport:=senseReportFunc) Then
+                        ProgressReport("WRITE VCI OK" & vbCrLf)
+                    Else
+                        ProgressReport("WRITE VCI Fail" & vbCrLf)
+                    End If
+                    OnFinish("Format finished.")
+                    Return True
+                Catch ex As Exception
+                    OnError(ex.ToString())
+                End Try
+
             End Function
         If ImmediateMode Then
             SyncLock SCSIOperationLock
