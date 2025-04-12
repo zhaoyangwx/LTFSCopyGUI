@@ -1070,7 +1070,6 @@ Public Class LTFSConfigurator
         If Not LoadComplete Then Exit Sub
         Dim driveHandle As IntPtr
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
-            Panel1.Enabled = False
             If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(ConfTapeDrive, driveHandle)
             TapeUtils.ReadPosition(driveHandle)
             Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
@@ -1102,6 +1101,7 @@ Public Class LTFSConfigurator
                 End Select
             End While
 
+            Panel1.Enabled = False
             TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                 Sub(Message As String)
                     'ProgressReport
