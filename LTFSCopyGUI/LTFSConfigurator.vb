@@ -1070,59 +1070,65 @@ Public Class LTFSConfigurator
         If Not LoadComplete Then Exit Sub
         Dim driveHandle As IntPtr
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
-            If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(ConfTapeDrive, driveHandle)
-            TapeUtils.ReadPosition(driveHandle)
-            Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
-            Dim MaxExtraPartitionAllowed As Byte = modedata(2)
-            If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-            Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+            Try
+                If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(ConfTapeDrive, driveHandle)
+                TapeUtils.ReadPosition(driveHandle)
+                Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
+                Dim MaxExtraPartitionAllowed As Byte = modedata(2)
+                If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
+                Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
 
-            If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
-            param.Barcode = TapeUtils.ReadBarcode(driveHandle)
-            Dim Confirm As Boolean = False
-            Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"MKLTFS"}
-            msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
-            msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
-            While Not Confirm
-                If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
-                If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
-                'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
-                'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
+                If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
+                param.Barcode = TapeUtils.ReadBarcode(driveHandle)
+                Dim Confirm As Boolean = False
+                Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"MKLTFS"}
+                msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
+                msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
+                While Not Confirm
+                    If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
+                    If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
+                    'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
+                    'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
 
-                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
-                    Case DialogResult.Yes
-                        Confirm = True
-                        Exit While
-                    Case DialogResult.No
-                        Confirm = False
-                    Case DialogResult.Cancel
-                        Panel1.Enabled = True
-                        Exit Sub
-                End Select
-            End While
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
+                        Case DialogResult.Yes
+                            Confirm = True
+                            Exit While
+                        Case DialogResult.No
+                            Confirm = False
+                        Case DialogResult.Cancel
+                            Panel1.Enabled = True
+                            Exit Sub
+                    End Select
+                End While
 
-            Panel1.Enabled = False
-            TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
-                Sub(Message As String)
+                Panel1.Enabled = False
+                TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
+                    Sub(Message As String)
                     'ProgressReport
                     Invoke(Sub() TextBoxDebugOutput.AppendText(Message & vbCrLf))
-                End Sub,
-                Sub(Message As String)
+                    End Sub,
+                    Sub(Message As String)
                     'OnFinished
                     Invoke(Sub()
-                               TextBoxDebugOutput.AppendText("Format finished.")
-                               Panel1.Enabled = True
-                           End Sub)
-                End Sub,
-                Sub(Message As String)
+                                   TextBoxDebugOutput.AppendText("Format finished.")
+                                   Panel1.Enabled = True
+                               End Sub)
+                    End Sub,
+                    Sub(Message As String)
                     'OnError
                     Invoke(Sub()
-                               TextBoxDebugOutput.AppendText(Message & vbCrLf)
-                               TextBoxDebugOutput.AppendText("Format failed.")
-                               Panel1.Enabled = True
-                           End Sub)
-                    Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+                                   TextBoxDebugOutput.AppendText(Message & vbCrLf)
+                                   TextBoxDebugOutput.AppendText("Format failed.")
+                                   Panel1.Enabled = True
+                               End Sub)
+                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
+                    End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+            Catch ex As Exception
+                TextBoxDebugOutput.AppendText(ex.ToString())
+                Panel1.Enabled = True
+            End Try
+
         End If
     End Sub
 
