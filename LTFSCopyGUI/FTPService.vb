@@ -201,7 +201,7 @@ Public Class FTPService
             AddHandler input.LogPrint, Sub(s As String)
                                            RaiseEvent LogPrint(s)
                                        End Sub
-            Dim rstream As New BufferedStream(input, 134217728)
+            Dim rstream As New BufferedStream(input, TapeUtils.GlobalBlockLimit)
             rstream.Seek(startPosition, SeekOrigin.Begin)
             Return Task.FromResult(Of Stream)(rstream)
         End Function
@@ -298,12 +298,20 @@ Public Class FTPService
             End Sub)
 
 
-            Services.Configure(
+        Services.Configure(
             Sub(opt As FtpServerOptions)
                 opt.ServerAddress = "0.0.0.0"
                 opt.Port = port
+                opt.ConnectionInactivityCheckInterval = New TimeSpan(1, 0, 0)
             End Sub)
-            With Services.BuildServiceProvider
+
+        Services.Configure(
+            Sub(opt As FtpConnectionOptions)
+                opt.DefaultEncoding = Text.Encoding.UTF8
+                opt.InactivityTimeout = New TimeSpan(6, 0, 0)
+            End Sub)
+
+        With Services.BuildServiceProvider
                 ftpServerHost = .GetRequiredService(Of IFtpServerHost)
                 ftpServerHost.StartAsync(Threading.CancellationToken.None)
             End With
