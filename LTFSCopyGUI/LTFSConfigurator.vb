@@ -1097,11 +1097,9 @@ Public Class LTFSConfigurator
                         Case DialogResult.No
                             Confirm = False
                         Case DialogResult.Cancel
-                            Panel1.Enabled = True
                             Exit Sub
                     End Select
                 End While
-
                 Panel1.Enabled = False
                 TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                     Sub(Message As String)
