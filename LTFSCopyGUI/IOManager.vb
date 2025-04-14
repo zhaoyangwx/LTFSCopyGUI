@@ -1263,10 +1263,10 @@ Public Class IOManager
             End Set
         End Property
 
-        Public Overrides ReadOnly Property CanRead As Boolean => True
-        Public Overrides ReadOnly Property CanSeek As Boolean => True
-        Public Overrides ReadOnly Property CanWrite As Boolean => False
-        Public Overrides ReadOnly Property Length As Long => baseStream.Length
+        Public Overrides ReadOnly Property CanRead As Boolean = True
+        Public Overrides ReadOnly Property CanSeek As Boolean = True
+        Public Overrides ReadOnly Property CanWrite As Boolean = False
+        Public Overrides ReadOnly Property Length As Long = baseStream.Length
 
         Public Overrides Sub Flush()
             ' 不执行任何操作
