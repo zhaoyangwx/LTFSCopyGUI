@@ -1174,6 +1174,7 @@ Public Class IOManager
         ''' </summary>
         Private Sub TryPreloadNextBlock(currentPos As Long)
             Dim nextPos = ((currentPos \ fixedReadSize) + 1) * fixedReadSize
+            If nextPos >= Length Then Exit Sub
             If FindBlock(nextPos) Is Nothing Then
                 RaiseEvent DebugLog($"[SmartStream] 预读取下一块：{nextPos}...")
                 LoadBuffer(nextPos, fixedReadSize)
@@ -1184,12 +1185,14 @@ Public Class IOManager
         ''' 确保指定位置被缓冲。
         ''' </summary>
         Private Sub EnsureBuffered(pos As Long)
+            If pos >= Length Then Exit Sub
             If FindBlock(pos) IsNot Nothing Then Return
 
             ReadLock.Wait()
             Try
                 If FindBlock(pos) Is Nothing Then
                     Dim readSize = If(OtherSeekPending(), minReadThreshold, maxSeekReadSize)
+                    readSize = CInt(Math.Min(readSize, Length - pos))
                     RaiseEvent DebugLog($"[SmartStream] 从位置 {pos} 读取 {readSize} 字节...")
                     LoadBuffer(pos, readSize)
                 End If
@@ -1211,7 +1214,11 @@ Public Class IOManager
         Private Sub LoadBuffer(position As Long, size As Integer)
             SyncLock bufferLock
                 Dim alignedPos = (position \ fixedReadSize) * fixedReadSize
+                If alignedPos >= Length Then Exit Sub
+
                 baseStream.Seek(alignedPos, SeekOrigin.Begin)
+                size = CInt(Math.Min(size, Length - alignedPos))
+
                 Dim data(size - 1) As Byte
                 Dim bytesRead = baseStream.Read(data, 0, size)
                 If bytesRead > 0 Then
@@ -1256,14 +1263,10 @@ Public Class IOManager
             End Set
         End Property
 
-        Public Overrides ReadOnly Property CanRead As Boolean = True
-        Public Overrides ReadOnly Property CanSeek As Boolean = True
-        Public Overrides ReadOnly Property CanWrite As Boolean = False
-        Public Overrides ReadOnly Property Length As Long
-            Get
-                Return baseStream.Length
-            End Get
-        End Property
+        Public Overrides ReadOnly Property CanRead As Boolean => True
+        Public Overrides ReadOnly Property CanSeek As Boolean => True
+        Public Overrides ReadOnly Property CanWrite As Boolean => False
+        Public Overrides ReadOnly Property Length As Long => baseStream.Length
 
         Public Overrides Sub Flush()
             ' 不执行任何操作
