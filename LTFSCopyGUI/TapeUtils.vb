@@ -7897,6 +7897,18 @@ Public Class TapeUtils
                         .Add(6, "Partition 3 Remaining Capacity")
                         .Add(7, "Partition 2 Maximum Capacity")
                         .Add(8, "Partition 3 Maximum Capacity")
+                        .Add(9, "Partition 4 Remaining Capacity")
+                        .Add(&HA, "Partition 5 Remaining Capacity")
+                        .Add(&HB, "Partition 4 Maximum Capacity")
+                        .Add(&HC, "Partition 5 Maximum Capacity")
+                        .Add(&HD, "Partition 6 Remaining Capacity")
+                        .Add(&HE, "Partition 7 Remaining Capacity")
+                        .Add(&HF, "Partition 6 Maximum Capacity")
+                        .Add(&H10, "Partition 7 Maximum Capacity")
+                        .Add(&H11, "Partition 8 Remaining Capacity")
+                        .Add(&H12, "Partition 9 Remaining Capacity")
+                        .Add(&H13, "Partition 8 Maximum Capacity")
+                        .Add(&H14, "Partition 9 Maximum Capacity")
                     End With
                     With pdata.Items.Last.DynamicParamType
                         .Add(1, TapeUtils.PageData.DataItem.DataType.Int32)
@@ -7907,6 +7919,18 @@ Public Class TapeUtils
                         .Add(6, TapeUtils.PageData.DataItem.DataType.Int32)
                         .Add(7, TapeUtils.PageData.DataItem.DataType.Int32)
                         .Add(8, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(9, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HA, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HB, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HC, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HD, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HE, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&HF, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&H10, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&H11, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&H12, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&H13, TapeUtils.PageData.DataItem.DataType.Int32)
+                        .Add(&H14, TapeUtils.PageData.DataItem.DataType.Int32)
                     End With
                 Case DefaultPages.HPLTO6_DataCompressionHPLogPage
                     pdata = New TapeUtils.PageData With {.Name = "Data Compression (HP-only) log page", .PageCode = &H32, .RawData = logdata}

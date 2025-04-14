@@ -745,8 +745,8 @@ Public Class LTFSWriter
             PrintMsg("Device is busy. Skip Errrate Check", LogOnly:=True)
             Return 0
         End If
-        Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
         Try
+            Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
             Dim AllResults As New List(Of Double)
             For ch As Integer = 4 To WERLData.Length - 5 Step 5
                 Dim chan As Integer = (ch - 4) \ 5
@@ -1488,8 +1488,13 @@ Public Class LTFSWriter
                 VolumeStatisticsLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdataVStat)
                 Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
                 If GenPage IsNot Nothing Then
-                    Gen = Integer.Parse(GenPage.GetString().Last)
-                    GenStr = $"L{Gen}"
+                    Dim GenStr0 As String = GenPage.GetString()
+                    Gen = Integer.Parse(GenStr0.Last)
+                    If Not GenStr0.ToUpper().Contains("T10K") Then
+                        GenStr = $"L{Gen}"
+                    Else
+                        GenStr = $"T{Gen}"
+                    End If
                     If Gen = 7 OrElse Gen = 8 Then
                         If CMOnce Is Nothing Then CMOnce = New TapeUtils.CMParser(driveHandle)
                         If CMOnce IsNot Nothing Then
