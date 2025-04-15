@@ -887,4 +887,7 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_TapeUtils_DriverType" xml:space="preserve">
     <value>驱动器指令类型</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds" xml:space="preserve">
+    <value>容量损失检测触发后等待毫秒数</value>
+  </data>
 </root>

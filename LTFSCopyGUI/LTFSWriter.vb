@@ -4155,9 +4155,18 @@ Public Class LTFSWriter
                 Try
                     If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
+                    Dim Sense0 As Byte() = {}
+                    Dim retrycount As Integer = 5
+                    While retrycount > 0 AndAlso Sense0 Is Nothing OrElse Sense0.Length < 3 OrElse Sense0(2) <> 0
+                        Sense0 = TapeUtils.TestUnitReady(driveHandle)
+                        PrintMsg(TapeUtils.ParseSenseData(Sense0), LogOnly:=True)
+                        Threading.Thread.Sleep(200)
+                        retrycount -= 1
+                    End While
                     PrintMsg($"Position = {TapeUtils.ReadPosition(driveHandle).ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
-                    ExtraPartitionCount = TapeUtils.ModeSense(driveHandle, &H11)(3)
+                    Dim PModeData As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
+                    ExtraPartitionCount = PModeData(3)
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
@@ -4765,9 +4774,12 @@ Public Class LTFSWriter
                 Return False
             ElseIf LRHistory = 0 OrElse ChanLRValue <> 0 Then
                 LRHistory = ChanLRValue
-                ForceFlush = False
                 Threading.Interlocked.Increment(CapReduceCount)
                 TapeUtils.Flush(driveHandle)
+                If Not ForceFlush Then
+                    Threading.Thread.Sleep(My.Settings.LTFSWriter_AutoFlushCooldownMilliseconds)
+                End If
+                ForceFlush = False
                 RefreshCapacity()
                 Return True
             End If
@@ -7481,6 +7493,11 @@ Public Class LTFSWriter
                      BeginInvoke(Sub() ToolTipChanErrLog.Hide(StatusStrip2))
                  End Sub)
     End Sub
+
+    Private Sub SettingToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SettingToolStripMenuItem.Click
+        Form1.Button16_Click(sender, e)
+    End Sub
+
     Private ToolTipChanErrLogShowingChanged As Boolean = False
     Private _ToolTipChanErrLogShowing As Boolean
     Public Property ToolTipChanErrLogShowing As Boolean
