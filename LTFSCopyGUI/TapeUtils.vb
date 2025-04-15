@@ -494,6 +494,17 @@ Public Class TapeUtils
     Public Shared Function ReadRemainingCapacity(TapeDrive As String, Optional ByVal Partition As Byte = 0) As UInt64
         Return MAMAttribute.FromTapeDrive(TapeDrive, &H0, Partition).AsNumeric
     End Function
+    Public Shared Function TestUnitReady(handle As IntPtr) As Byte()
+        SyncLock SCSIOperationLock
+            Dim result As Byte() = {}
+            SCSIReadParam(handle, {0, 0, 0, 0, 0, 0}, 0, Function(sense As Byte()) As Boolean
+                                                             result = sense
+                                                             Return True
+                                                         End Function)
+            Return result
+        End SyncLock
+    End Function
+
     Public Shared Function Inquiry(handle As IntPtr) As TapeDrive
         SyncLock SCSIOperationLock
             Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4)(3) + 4

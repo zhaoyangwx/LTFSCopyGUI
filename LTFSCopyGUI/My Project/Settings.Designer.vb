@@ -506,6 +506,20 @@ Namespace My
                 Me("LTFSWriter_AutoCleanErrRateLogThreashould") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("容量损失触发后等待毫秒数"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("0"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds")>
+        Public Property LTFSWriter_AutoFlushCooldownMilliseconds() As Integer
+            Get
+                Return CType(Me("LTFSWriter_AutoFlushCooldownMilliseconds"), Integer)
+            End Get
+            Set
+                Me("LTFSWriter_AutoFlushCooldownMilliseconds") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("去重"),

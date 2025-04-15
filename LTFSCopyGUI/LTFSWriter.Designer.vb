@@ -247,6 +247,7 @@ Partial Class LTFSWriter
         Me.TextBoxSelectedPath = New System.Windows.Forms.TextBox()
         Me.ContextMenuStrip4 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SettingToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -1389,7 +1390,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip4
         '
-        Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem})
+        Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem})
         Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
         resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
         '
@@ -1397,6 +1398,11 @@ Partial Class LTFSWriter
         '
         Me.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem"
         resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
+        '
+        'SettingToolStripMenuItem
+        '
+        Me.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem"
+        resources.ApplyResources(Me.SettingToolStripMenuItem, "SettingToolStripMenuItem")
         '
         'ToolTipChanErrLog
         '
@@ -1631,4 +1637,5 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripStatusLabelErrLog As ToolStripStatusLabel
     Friend WithEvents ToolTipChanErrLog As ToolTip
     Friend WithEvents ToolStripProgressBar1 As ToolStripProgressBar
+    Friend WithEvents SettingToolStripMenuItem As ToolStripMenuItem
 End Class

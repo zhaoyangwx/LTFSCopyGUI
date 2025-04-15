@@ -188,6 +188,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 容量损失检测触发后等待毫秒数 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 容量显示刷新间隔 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_CapacityRefreshInterval() As String

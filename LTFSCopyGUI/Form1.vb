@@ -794,7 +794,7 @@ Public Class Form1
 
     End Sub
 
-    Private Sub Button16_Click(sender As Object, e As EventArgs) Handles Button16.Click
+    Public Sub Button16_Click(sender As Object, e As EventArgs) Handles Button16.Click
         Dim SP1 As New SettingPanel
         SP1.PropertyGrid1.SelectedObject = My.MySettings.Default
         SP1.MenuStrip1.Visible = True
