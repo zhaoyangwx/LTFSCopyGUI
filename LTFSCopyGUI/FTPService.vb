@@ -201,9 +201,16 @@ Public Class FTPService
             AddHandler input.LogPrint, Sub(s As String)
                                            RaiseEvent LogPrint(s)
                                        End Sub
-            Dim rstream As New BufferedStream(input, TapeUtils.GlobalBlockLimit)
-            rstream.Seek(startPosition, SeekOrigin.Begin)
-            Return Task.FromResult(Of Stream)(rstream)
+            'Dim rstream As New BufferedStream(input, TapeUtils.GlobalBlockLimit)
+            'rstream.Seek(startPosition, SeekOrigin.Begin)
+            'Return Task.FromResult(Of Stream)(rstream)
+
+            Dim sstream As New IOManager.SmartStream(input, BlockSize, BlockSize * 128, BlockSize * 1024, BlockSize * 4096)
+            AddHandler sstream.DebugLog, Sub(msg As String)
+                                             RaiseEvent LogPrint(msg)
+                                         End Sub
+            sstream.Seek(startPosition, SeekOrigin.Begin)
+            Return Task.FromResult(Of Stream)(sstream)
         End Function
 
         Public Function AppendAsync(fileEntry As IUnixFileEntry, startPosition As Long?, data As Stream, cancellationToken As CancellationToken) As Task(Of IBackgroundTransfer) Implements IUnixFileSystem.AppendAsync
