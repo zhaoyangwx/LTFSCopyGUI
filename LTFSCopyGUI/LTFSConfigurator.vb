@@ -2063,15 +2063,17 @@ Public Class LTFSConfigurator
                     Dim BlkNum As Integer = Block
                     Dim player As New IOManager.StreamPcmPlayer()
                     Dim HeaderReaded As Boolean = False
+                    Dim HeaderChanged As Boolean = False
                     While True
                         Dim sense(63) As Byte
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then
-                            AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample)
-                            If Not HeaderReaded Then
+                            AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, HeaderChanged)
+                            If Not HeaderReaded Or HeaderChanged Then
                                 player.Init(sampleRate, channels, bitsPerSample)
                                 HeaderReaded = True
+                                HeaderChanged = False
                             End If
                             player.AddData(readData)
                         End If
@@ -2148,16 +2150,24 @@ Public Class LTFSConfigurator
     Public Function AnalyzeAndRemoveWavHeader(ByVal data As Byte(),
                                           ByRef sampleRate As Integer,
                                           ByRef channels As Integer,
-                                          ByRef bitsPerSample As Integer) As Byte()
+                                          ByRef bitsPerSample As Integer,
+                                          ByRef ResultChanged As Boolean) As Byte()
 
         If data.Length < 44 Then Return data
 
         ' 检查前4个字节是否为 "RIFF"，后跟 "WAVE"
         If Encoding.ASCII.GetString(data, 0, 4) = "RIFF" AndAlso Encoding.ASCII.GetString(data, 8, 4) = "WAVE" Then
             ' 解析 WAV 头
-            sampleRate = BitConverter.ToInt32(data, 24)
-            channels = BitConverter.ToInt16(data, 22)
-            bitsPerSample = BitConverter.ToInt16(data, 34)
+            ResultChanged = False
+            Dim value As Integer = BitConverter.ToInt32(data, 24)
+            If sampleRate <> value Then ResultChanged = True
+            sampleRate = value
+            value = BitConverter.ToInt16(data, 22)
+            If channels <> value Then ResultChanged = True
+            channels = value
+            value = BitConverter.ToInt16(data, 34)
+            If bitsPerSample <> value Then ResultChanged = True
+            bitsPerSample = value
 
             ' 拷贝纯 PCM 数据
             Dim pcmLength As Integer = data.Length - 44
