@@ -1180,38 +1180,6 @@ Public Class LTFSConfigurator
         My.Settings.Save()
     End Sub
 
-    Private Sub ButtonDebugDumpTape_MouseUp(sender As Object, e As MouseEventArgs) Handles ButtonDebugDumpTape.MouseUp
-        If Not e.Button = MouseButtons.Right Then Exit Sub
-        If MessageBox.Show(New Form With {.TopMost = True}, "Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
-            If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-                Dim fname As String = OpenFileDialog1.FileName
-                Dim th As New Threading.Thread(
-                    Sub()
-                        Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
-                        If fs.Length = 0 Then
-                            TapeUtils.WriteFileMark(ConfTapeDrive)
-                            Invoke(Sub()
-                                       TextBoxDebugOutput.Text = $"Filemark written."
-                                       Panel1.Enabled = True
-                                   End Sub)
-                        Else
-                            Invoke(Sub() TextBoxDebugOutput.Text = $"Writing: {fname}")
-                            Dim buffer(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1)) As Byte
-                            While fs.Read(buffer, 0, buffer.Length) > 0
-                                TapeUtils.Write(ConfTapeDrive, buffer)
-                            End While
-                            Invoke(Sub()
-                                       TextBoxDebugOutput.Text = $"Write finished: {fname}"
-                                       Panel1.Enabled = True
-                                   End Sub)
-                        End If
-                        fs.Close()
-                    End Sub)
-                Panel1.Enabled = False
-                th.Start()
-            End If
-        End If
-    End Sub
 
     Private Sub CheckBox1_MouseUp(sender As Object, e As MouseEventArgs) Handles CheckBoxDebugPanel.MouseUp
         If e.Button = MouseButtons.Right Then
@@ -2023,4 +1991,207 @@ Public Class LTFSConfigurator
         Panel2.Enabled = False
         th.Start()
     End Sub
+
+    Private Sub WriteToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WriteToolStripMenuItem.Click
+        If MessageBox.Show(New Form With {.TopMost = True}, "Write will destroy everything after current position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+                Dim fname As String = OpenFileDialog1.FileName
+                Dim th As New Threading.Thread(
+                    Sub()
+                        Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                        If fs.Length = 0 Then
+                            TapeUtils.WriteFileMark(ConfTapeDrive)
+                            Invoke(Sub()
+                                       TextBoxDebugOutput.Text = $"Filemark written."
+                                       Panel1.Enabled = True
+                                   End Sub)
+                        Else
+                            Invoke(Sub() TextBoxDebugOutput.Text = $"Writing: {fname}")
+                            Dim buffer(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1)) As Byte
+                            While fs.Read(buffer, 0, buffer.Length) > 0
+                                TapeUtils.Write(ConfTapeDrive, buffer)
+                            End While
+                            Invoke(Sub()
+                                       TextBoxDebugOutput.Text = $"Write finished: {fname}"
+                                       Panel1.Enabled = True
+                                   End Sub)
+                        End If
+                        fs.Close()
+                    End Sub)
+                Panel1.Enabled = False
+                th.Start()
+            End If
+        End If
+    End Sub
+    <DllImport("winmm.dll")> Public Shared Function sndPlaySoundA(lpszSoundName As IntPtr, uFlags As Integer) As Integer
+
+    End Function
+    Private Sub PlayPCMToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayPCMToolStripMenuItem.Click
+        Const SND_MEMORY As Integer = 4
+        Const SND_ASYNC As Integer = 1
+
+        Dim sampleRate As Integer = 44100, channels As Short = 2, bitsPerSample As Short = 16
+
+        For Each c As Control In Panel1.Controls
+            c.Enabled = False
+        Next
+        Panel2.Enabled = True
+        For Each c As Control In Panel2.Controls
+            c.Enabled = False
+        Next
+        For Each c As Control In TabControl1.Controls
+            c.Enabled = False
+        Next
+        For Each c As Control In TabPageCommand.Controls
+            c.Enabled = False
+        Next
+        TabControl1.Enabled = True
+        TabPageCommand.Enabled = True
+        ButtonStopRawDump.Enabled = True
+        TextBoxDebugOutput.Text = ""
+        Dim log As Boolean = CheckBoxEnableDumpLog.Checked
+        Dim thprog As New Threading.Thread(
+                Sub()
+                    Dim ReadLen As UInteger = NumericUpDownBlockLen.Value
+                    Dim FileNum As Integer = 0
+
+                    'Position
+                    Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
+
+                    Dim Partition As Byte = pos.PartitionNumber
+                    Dim Block As UInteger = pos.BlockNumber
+                    Dim BlkNum As Integer = Block
+                    Dim player As New IOManager.StreamPcmPlayer()
+                    Dim HeaderReaded As Boolean = False
+                    While True
+                        Dim sense(63) As Byte
+                        Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
+                        Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                        If readData.Length > 0 Then
+                            AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample)
+                            If Not HeaderReaded Then
+                                player.Init(sampleRate, channels, bitsPerSample)
+                                HeaderReaded = True
+                            End If
+                            player.AddData(readData)
+                        End If
+                        If Add_Key <> 0 Then
+                            FileNum += 1
+                            BlkNum = Block
+                        End If
+                        If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                            Exit While
+                        End If
+                        If log Then
+                            Invoke(Sub()
+                                       If TextBoxDebugOutput.Text.Length > 10000 Then TextBoxDebugOutput.Text = ""
+                                       TextBoxDebugOutput.AppendText("Processing file " & FileNum.ToString.PadRight(10) & " (Block = " & Block & ") Sense:")
+                                       TextBoxDebugOutput.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
+                                   End Sub)
+                        End If
+                        Block += 1
+                    End While
+                    While player.IsPlaying And Not Operation_Cancel_Flag
+                        Threading.Thread.Sleep(100)
+                    End While
+                    Operation_Cancel_Flag = False
+                    If HeaderReaded Then player.StopPlayback()
+
+                    Invoke(Sub()
+                               For Each c As Control In Panel1.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In Panel2.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In TabControl1.Controls
+                                   c.Enabled = True
+                               Next
+                               For Each c As Control In TabPageCommand.Controls
+                                   c.Enabled = True
+                               Next
+                           End Sub)
+
+                End Sub)
+        thprog.Start()
+    End Sub
+
+    Public Sub FixOrAddWavHeader(ByRef wavData As Byte(), ByRef sampleRate As Integer, ByRef channels As Short, ByRef bitsPerSample As Short)
+        Const HeaderSize As Integer = 44
+
+        Dim isWav As Boolean = False
+        If wavData.Length >= HeaderSize Then
+            Dim riff As String = System.Text.Encoding.ASCII.GetString(wavData, 0, 4)
+            Dim wave As String = System.Text.Encoding.ASCII.GetString(wavData, 8, 4)
+            isWav = (riff = "RIFF" AndAlso wave = "WAVE")
+        End If
+
+        If isWav Then
+            ' 提取并更新参数
+            channels = BitConverter.ToInt16(wavData, 22)
+            sampleRate = BitConverter.ToInt32(wavData, 24)
+            bitsPerSample = BitConverter.ToInt16(wavData, 34)
+
+            Dim expectedDataSize As Integer = wavData.Length - HeaderSize
+            BitConverter.GetBytes(wavData.Length - 8).CopyTo(wavData, 4)
+            BitConverter.GetBytes(expectedDataSize).CopyTo(wavData, 40)
+        Else
+            ' 生成 header 并拼接
+            Dim dataSize As Integer = wavData.Length
+            Dim header As Byte() = GenerateWavHeader(dataSize, sampleRate, channels, bitsPerSample)
+            Dim newData(dataSize + HeaderSize - 1) As Byte
+            Array.Copy(header, 0, newData, 0, HeaderSize)
+            Array.Copy(wavData, 0, newData, HeaderSize, dataSize)
+            wavData = newData
+        End If
+    End Sub
+    Public Function AnalyzeAndRemoveWavHeader(ByVal data As Byte(),
+                                          ByRef sampleRate As Integer,
+                                          ByRef channels As Integer,
+                                          ByRef bitsPerSample As Integer) As Byte()
+
+        If data.Length < 44 Then Return data
+
+        ' 检查前4个字节是否为 "RIFF"，后跟 "WAVE"
+        If Encoding.ASCII.GetString(data, 0, 4) = "RIFF" AndAlso Encoding.ASCII.GetString(data, 8, 4) = "WAVE" Then
+            ' 解析 WAV 头
+            sampleRate = BitConverter.ToInt32(data, 24)
+            channels = BitConverter.ToInt16(data, 22)
+            bitsPerSample = BitConverter.ToInt16(data, 34)
+
+            ' 拷贝纯 PCM 数据
+            Dim pcmLength As Integer = data.Length - 44
+            Dim pcmData(pcmLength - 1) As Byte
+            Buffer.BlockCopy(data, 44, pcmData, 0, pcmLength)
+
+            Return pcmData
+        End If
+
+        ' 不是有效 WAV，返回原始数据
+        Return data
+    End Function
+
+    ' 生成 WAV 文件头
+    Public Function GenerateWavHeader(dataSize As Integer, sampleRate As Integer, channels As Short, bitsPerSample As Short) As Byte()
+        Dim header(43) As Byte
+        Dim byteRate As Integer = sampleRate * channels * bitsPerSample \ 8
+        Dim blockAlign As Short = CShort(channels * bitsPerSample \ 8)
+        Dim chunkSize As Integer = 36 + dataSize
+
+        Array.Copy(System.Text.Encoding.ASCII.GetBytes("RIFF"), 0, header, 0, 4)
+        BitConverter.GetBytes(chunkSize).CopyTo(header, 4)
+        Array.Copy(System.Text.Encoding.ASCII.GetBytes("WAVE"), 0, header, 8, 4)
+        Array.Copy(System.Text.Encoding.ASCII.GetBytes("fmt "), 0, header, 12, 4)
+        BitConverter.GetBytes(16).CopyTo(header, 16)                 ' Subchunk1Size
+        BitConverter.GetBytes(CShort(1)).CopyTo(header, 20)          ' AudioFormat = 1 (PCM)
+        BitConverter.GetBytes(channels).CopyTo(header, 22)
+        BitConverter.GetBytes(sampleRate).CopyTo(header, 24)
+        BitConverter.GetBytes(byteRate).CopyTo(header, 28)
+        BitConverter.GetBytes(blockAlign).CopyTo(header, 32)
+        BitConverter.GetBytes(bitsPerSample).CopyTo(header, 34)
+        Array.Copy(System.Text.Encoding.ASCII.GetBytes("data"), 0, header, 36, 4)
+        BitConverter.GetBytes(dataSize).CopyTo(header, 40)
+
+        Return header
+    End Function
 End Class

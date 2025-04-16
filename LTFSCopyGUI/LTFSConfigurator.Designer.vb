@@ -108,6 +108,13 @@ Partial Class LTFSConfigurator
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.ButtonResetLogPage = New System.Windows.Forms.Button()
         Me.TabPageTest = New System.Windows.Forms.TabPage()
+        Me.ButtonDiagTest = New System.Windows.Forms.Button()
+        Me.NumericUpDownTestWrap = New System.Windows.Forms.NumericUpDown()
+        Me.LabelTestWrap = New System.Windows.Forms.Label()
+        Me.NumericUpDownTestStartLen = New System.Windows.Forms.NumericUpDown()
+        Me.NumericUpDownTestSpeed = New System.Windows.Forms.NumericUpDown()
+        Me.LabelTestStartLen = New System.Windows.Forms.Label()
+        Me.LabelTestSpeed = New System.Windows.Forms.Label()
         Me.ButtonRDErrRateLog = New System.Windows.Forms.Button()
         Me.ButtonTest = New System.Windows.Forms.Button()
         Me.RadioButtonTest2 = New System.Windows.Forms.RadioButton()
@@ -133,13 +140,9 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.LabelTestSpeed = New System.Windows.Forms.Label()
-        Me.LabelTestStartLen = New System.Windows.Forms.Label()
-        Me.NumericUpDownTestSpeed = New System.Windows.Forms.NumericUpDown()
-        Me.NumericUpDownTestStartLen = New System.Windows.Forms.NumericUpDown()
-        Me.NumericUpDownTestWrap = New System.Windows.Forms.NumericUpDown()
-        Me.LabelTestWrap = New System.Windows.Forms.Label()
-        Me.ButtonDiagTest = New System.Windows.Forms.Button()
+        Me.ContextMenuStripRawDump = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.WriteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.PlayPCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -158,11 +161,12 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownPCLow, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageLog.SuspendLayout()
         Me.TabPageTest.SuspendLayout()
+        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).BeginInit()
-        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStripRawDump.SuspendLayout()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -596,6 +600,7 @@ Partial Class LTFSConfigurator
         'ButtonDebugDumpTape
         '
         Me.ButtonDebugDumpTape.AllowDrop = True
+        Me.ButtonDebugDumpTape.ContextMenuStrip = Me.ContextMenuStripRawDump
         resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
@@ -775,6 +780,48 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
         '
+        'ButtonDiagTest
+        '
+        resources.ApplyResources(Me.ButtonDiagTest, "ButtonDiagTest")
+        Me.ButtonDiagTest.Name = "ButtonDiagTest"
+        Me.ButtonDiagTest.UseVisualStyleBackColor = True
+        '
+        'NumericUpDownTestWrap
+        '
+        resources.ApplyResources(Me.NumericUpDownTestWrap, "NumericUpDownTestWrap")
+        Me.NumericUpDownTestWrap.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestWrap.Name = "NumericUpDownTestWrap"
+        Me.NumericUpDownTestWrap.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'LabelTestWrap
+        '
+        resources.ApplyResources(Me.LabelTestWrap, "LabelTestWrap")
+        Me.LabelTestWrap.Name = "LabelTestWrap"
+        '
+        'NumericUpDownTestStartLen
+        '
+        resources.ApplyResources(Me.NumericUpDownTestStartLen, "NumericUpDownTestStartLen")
+        Me.NumericUpDownTestStartLen.Maximum = New Decimal(New Integer() {16777215, 0, 0, 0})
+        Me.NumericUpDownTestStartLen.Name = "NumericUpDownTestStartLen"
+        Me.NumericUpDownTestStartLen.Value = New Decimal(New Integer() {832584, 0, 0, 0})
+        '
+        'NumericUpDownTestSpeed
+        '
+        resources.ApplyResources(Me.NumericUpDownTestSpeed, "NumericUpDownTestSpeed")
+        Me.NumericUpDownTestSpeed.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestSpeed.Name = "NumericUpDownTestSpeed"
+        Me.NumericUpDownTestSpeed.Value = New Decimal(New Integer() {7120, 0, 0, 0})
+        '
+        'LabelTestStartLen
+        '
+        resources.ApplyResources(Me.LabelTestStartLen, "LabelTestStartLen")
+        Me.LabelTestStartLen.Name = "LabelTestStartLen"
+        '
+        'LabelTestSpeed
+        '
+        resources.ApplyResources(Me.LabelTestSpeed, "LabelTestSpeed")
+        Me.LabelTestSpeed.Name = "LabelTestSpeed"
+        '
         'ButtonRDErrRateLog
         '
         resources.ApplyResources(Me.ButtonRDErrRateLog, "ButtonRDErrRateLog")
@@ -907,47 +954,21 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'LabelTestSpeed
+        'ContextMenuStripRawDump
         '
-        resources.ApplyResources(Me.LabelTestSpeed, "LabelTestSpeed")
-        Me.LabelTestSpeed.Name = "LabelTestSpeed"
+        Me.ContextMenuStripRawDump.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.WriteToolStripMenuItem, Me.PlayPCMToolStripMenuItem})
+        Me.ContextMenuStripRawDump.Name = "ContextMenuStripRawDump"
+        resources.ApplyResources(Me.ContextMenuStripRawDump, "ContextMenuStripRawDump")
         '
-        'LabelTestStartLen
+        'WriteToolStripMenuItem
         '
-        resources.ApplyResources(Me.LabelTestStartLen, "LabelTestStartLen")
-        Me.LabelTestStartLen.Name = "LabelTestStartLen"
+        Me.WriteToolStripMenuItem.Name = "WriteToolStripMenuItem"
+        resources.ApplyResources(Me.WriteToolStripMenuItem, "WriteToolStripMenuItem")
         '
-        'NumericUpDownTestSpeed
+        'PlayPCMToolStripMenuItem
         '
-        resources.ApplyResources(Me.NumericUpDownTestSpeed, "NumericUpDownTestSpeed")
-        Me.NumericUpDownTestSpeed.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
-        Me.NumericUpDownTestSpeed.Name = "NumericUpDownTestSpeed"
-        Me.NumericUpDownTestSpeed.Value = New Decimal(New Integer() {7120, 0, 0, 0})
-        '
-        'NumericUpDownTestStartLen
-        '
-        resources.ApplyResources(Me.NumericUpDownTestStartLen, "NumericUpDownTestStartLen")
-        Me.NumericUpDownTestStartLen.Maximum = New Decimal(New Integer() {16777215, 0, 0, 0})
-        Me.NumericUpDownTestStartLen.Name = "NumericUpDownTestStartLen"
-        Me.NumericUpDownTestStartLen.Value = New Decimal(New Integer() {832584, 0, 0, 0})
-        '
-        'NumericUpDownTestWrap
-        '
-        resources.ApplyResources(Me.NumericUpDownTestWrap, "NumericUpDownTestWrap")
-        Me.NumericUpDownTestWrap.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
-        Me.NumericUpDownTestWrap.Name = "NumericUpDownTestWrap"
-        Me.NumericUpDownTestWrap.Value = New Decimal(New Integer() {1, 0, 0, 0})
-        '
-        'LabelTestWrap
-        '
-        resources.ApplyResources(Me.LabelTestWrap, "LabelTestWrap")
-        Me.LabelTestWrap.Name = "LabelTestWrap"
-        '
-        'ButtonDiagTest
-        '
-        resources.ApplyResources(Me.ButtonDiagTest, "ButtonDiagTest")
-        Me.ButtonDiagTest.Name = "ButtonDiagTest"
-        Me.ButtonDiagTest.UseVisualStyleBackColor = True
+        Me.PlayPCMToolStripMenuItem.Name = "PlayPCMToolStripMenuItem"
+        resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -982,11 +1003,12 @@ Partial Class LTFSConfigurator
         Me.TabPageLog.PerformLayout()
         Me.TabPageTest.ResumeLayout(False)
         Me.TabPageTest.PerformLayout()
+        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).EndInit()
-        CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStripRawDump.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -1107,4 +1129,7 @@ Partial Class LTFSConfigurator
     Friend WithEvents NumericUpDownTestSpeed As NumericUpDown
     Friend WithEvents LabelTestStartLen As Label
     Friend WithEvents LabelTestSpeed As Label
+    Friend WithEvents ContextMenuStripRawDump As ContextMenuStrip
+    Friend WithEvents WriteToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents PlayPCMToolStripMenuItem As ToolStripMenuItem
 End Class
