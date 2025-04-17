@@ -2026,11 +2026,11 @@ Public Class LTFSConfigurator
     <DllImport("winmm.dll")> Public Shared Function sndPlaySoundA(lpszSoundName As IntPtr, uFlags As Integer) As Integer
 
     End Function
+    Public sampleRate As Integer = 44100, channels As Short = 2, bitsPerSample As Short = 16, isFloat As Boolean = False
     Private Sub PlayPCMToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayPCMToolStripMenuItem.Click
         Const SND_MEMORY As Integer = 4
         Const SND_ASYNC As Integer = 1
 
-        Dim sampleRate As Integer = 44100, channels As Short = 2, bitsPerSample As Short = 16
 
         For Each c As Control In Panel1.Controls
             c.Enabled = False
@@ -2069,13 +2069,21 @@ Public Class LTFSConfigurator
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then
-                            AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, HeaderChanged)
+                            Dim len0 As Integer = readData.Length
+                            readData = AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, isFloat, HeaderChanged)
+                            If len0 <> readData.Length Then
+                                player.Flush()
+                                While player.IsPlaying
+                                    Threading.Thread.Sleep(100)
+                                End While
+                                player.StopPlayback()
+                            End If
                             If Not HeaderReaded Or HeaderChanged Then
-                                player.Init(sampleRate, channels, bitsPerSample)
+                                player.Init(sampleRate, channels, bitsPerSample, isFloat, len0 <> readData.Length)
                                 HeaderReaded = True
                                 HeaderChanged = False
                             End If
-                            player.AddData(readData)
+                            player.AddData(readData, isFloat)
                         End If
                         If Add_Key <> 0 Then
                             FileNum += 1
@@ -2151,6 +2159,7 @@ Public Class LTFSConfigurator
                                           ByRef sampleRate As Integer,
                                           ByRef channels As Integer,
                                           ByRef bitsPerSample As Integer,
+                                          ByRef isFloat As Boolean,
                                           ByRef ResultChanged As Boolean) As Byte()
 
         If data.Length < 44 Then Return data
@@ -2165,14 +2174,18 @@ Public Class LTFSConfigurator
             value = BitConverter.ToInt16(data, 22)
             If channels <> value Then ResultChanged = True
             channels = value
+            Dim subChunkSize As Integer = BitConverter.ToInt32(data, 16)
             value = BitConverter.ToInt16(data, 34)
             If bitsPerSample <> value Then ResultChanged = True
             bitsPerSample = value
-
+            Dim wFormatTag As Short = BitConverter.ToInt16(data, 20)
+            value = (wFormatTag = &H3)
+            If isFloat <> value Then ResultChanged = True
+            isFloat = value
             ' 拷贝纯 PCM 数据
-            Dim pcmLength As Integer = data.Length - 44
+            Dim pcmLength As Integer = data.Length - 28 - subChunkSize
             Dim pcmData(pcmLength - 1) As Byte
-            Buffer.BlockCopy(data, 44, pcmData, 0, pcmLength)
+            Buffer.BlockCopy(data, 28 + subChunkSize, pcmData, 0, pcmLength)
 
             Return pcmData
         End If
