@@ -1378,68 +1378,27 @@ Public Class IOManager
         ''' <param name="sampleRate">采样率（如 44100）</param>
         ''' <param name="channels">通道数（1=单声道，2=立体声）</param>
         ''' <param name="bitsPerSample">位深（如 16）</param>
-        Public Sub Init(sampleRate As Integer, channels As Integer, bitsPerSample As Integer, isFloat As Boolean, Optional ByVal ReInitialize As Boolean = False)
-            If isFloat Then
-                waveFormat = New WaveFormat(sampleRate, channels)
-            Else
-                waveFormat = New WaveFormat(sampleRate, bitsPerSample, channels)
-            End If
-            If ReInitialize Then LastExtraBytes = {}
+        Public Sub Init(sampleRate As Integer, channels As Integer, bitsPerSample As Integer)
+            waveFormat = New WaveFormat(sampleRate, bitsPerSample, channels)
             waveProvider = New BufferedWaveProvider(waveFormat)
             waveProvider.DiscardOnBufferOverflow = True ' 防止溢出
-            waveOut = New WaveOut()
+
+            waveOut = New WaveOutEvent()
             waveOut.Init(waveProvider)
-            waveOut.Volume = 1
             waveOut.Play()
             isInitialized = True
         End Sub
-        Public Shared LastExtraBytes As Byte()
 
         ''' <summary>
         ''' 追加 PCM 数据流（字节数组）
         ''' </summary>
         ''' <param name="pcmBytes">PCM 数据块</param>
-        Public Sub AddData(pcmBytes As Byte(), Optional ByVal convertFloatToInt As Boolean = False)
+        Public Sub AddData(pcmBytes As Byte())
             If isInitialized Then
-                If convertFloatToInt Then
-                    If LastExtraBytes IsNot Nothing AndAlso LastExtraBytes.Length > 0 Then
-                        pcmBytes = LastExtraBytes.Concat(pcmBytes).ToArray()
-                    End If
-
-                    If pcmBytes.Length Mod 4 <> 0 Then
-                        Dim xtra As New List(Of Byte)
-                        For i As Integer = (pcmBytes.Length \ 4) * 4 To pcmBytes.Length - 1
-                            xtra.Add(pcmBytes(i))
-                        Next
-                        LastExtraBytes = xtra.ToArray()
-                    Else
-                        LastExtraBytes = {}
-                    End If
-
-                    Dim newValues As Byte()
-                    Dim outValue As New List(Of Byte)
-                    For i As Integer = 0 To ((pcmBytes.Length \ 4) * 4 - 1) Step 4
-                        Dim fvalue As Single = BitConverter.ToSingle(pcmBytes, i)
-                        Dim intvalue As Int16 = Math.Min(32767.0, Math.Max(-32768.0, fvalue * 32767.0))
-                        outValue.AddRange(BitConverter.GetBytes(intvalue))
-                    Next
-                    pcmBytes = outValue.ToArray()
-                End If
                 While waveProvider.BufferedBytes + pcmBytes.Length > waveProvider.BufferLength
-                    Threading.Thread.Sleep(20)
-                End While
-                ' 直接添加 PCM 数据
-                waveProvider.AddSamples(pcmBytes, 0, pcmBytes.Length)
-            End If
-        End Sub
-        Public Sub Flush()
-            If Not IsPlaying Then Exit Sub
-            If LastExtraBytes Is Nothing OrElse LastExtraBytes.Length = 0 Then
-            Else
-                While waveProvider.BufferedBytes + LastExtraBytes.Length > waveProvider.BufferLength
                     Threading.Thread.Sleep(100)
                 End While
-                waveProvider.AddSamples(LastExtraBytes, 0, LastExtraBytes.Length)
+                waveProvider.AddSamples(pcmBytes, 0, pcmBytes.Length)
             End If
         End Sub
         ''' <summary>
