@@ -4179,7 +4179,7 @@ Public Class LTFSWriter
                     SetStatusLight(LWStatus.Busy)
                     Dim Sense0 As Byte() = {}
                     Dim retrycount As Integer = 5
-                    While retrycount > 0 AndAlso Sense0 Is Nothing OrElse Sense0.Length < 3 OrElse Sense0(2) <> 0
+                    While (retrycount > 0) AndAlso ((Sense0 Is Nothing) OrElse (Sense0.Length < 3) OrElse (Sense0(2) <> 0))
                         Sense0 = TapeUtils.TestUnitReady(driveHandle)
                         PrintMsg(TapeUtils.ParseSenseData(Sense0), LogOnly:=True)
                         Threading.Thread.Sleep(200)
@@ -4548,63 +4548,68 @@ Public Class LTFSWriter
                     Exit While
                 End SyncLock
             End While
-            'nop
-            If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
-            TapeUtils.ReadPosition(driveHandle)
-            Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
-            Dim MaxExtraPartitionAllowed As Byte = modedata(2)
-            If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-            Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
-            If My.Settings.LTFSWriter_DisablePartition Then param.ExtraPartitionCount = 0
-            If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
-            param.BlockLen = Math.Min(param.BlockLen, TapeUtils.GlobalBlockLimit)
-            param.Barcode = TapeUtils.ReadBarcode(driveHandle)
-            param.EncryptionKey = EncryptionKey
-            Dim Confirm As Boolean = False
-            Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
-            msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
-            msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
-            While Not Confirm
-                If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
-                If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
-                'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
-                'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
-
-                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
-                    Case DialogResult.Yes
-                        Confirm = True
-                        Exit While
-                    Case DialogResult.No
-                        Confirm = False
-                    Case DialogResult.Cancel
-                        Exit Sub
-                End Select
-            End While
             LockGUI()
-
-            SetStatusLight(LWStatus.Busy)
-            TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
-                Sub(Message As String)
-                    'ProgressReport
-                    PrintMsg(Message)
-                End Sub,
-                Sub(Message As String)
-                    'OnFinished
-                    PrintMsg(My.Resources.ResText_FmtFin)
-                    SetStatusLight(LWStatus.Succ)
-                    LockGUI(False)
-                    Me.Invoke(Sub()
-                                  MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FmtFin)
-                                  读取索引ToolStripMenuItem_Click(sender, e)
-                              End Sub)
-                End Sub,
-                Sub(Message As String)
-                    'OnError
-                    PrintMsg(Message)
-                    SetStatusLight(LWStatus.Err)
-                    LockGUI(False)
-                    Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+            Task.Run(
+                Sub()
+                    'nop
+                    If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
+                    TapeUtils.ReadPosition(driveHandle)
+                    Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
+                    Dim MaxExtraPartitionAllowed As Byte = modedata(2)
+                    If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
+                    Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+                    If My.Settings.LTFSWriter_DisablePartition Then param.ExtraPartitionCount = 0
+                    If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
+                    param.BlockLen = Math.Min(param.BlockLen, TapeUtils.GlobalBlockLimit)
+                    param.Barcode = TapeUtils.ReadBarcode(driveHandle)
+                    param.EncryptionKey = EncryptionKey
+                    Dim Confirm As Boolean = False
+                    Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
+                    msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
+                    msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
+                    Invoke(Sub()
+                               While Not Confirm
+                                   If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
+                                   If msDialog.ShowDialog() = DialogResult.Cancel Then
+                                       LockGUI(False)
+                                       Exit Sub
+                                   End If
+                                   Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
+                                       Case DialogResult.Yes
+                                           Confirm = True
+                                           Exit While
+                                       Case DialogResult.No
+                                           Confirm = False
+                                       Case DialogResult.Cancel
+                                           LockGUI(False)
+                                           Exit Sub
+                                   End Select
+                               End While
+                               SetStatusLight(LWStatus.Busy)
+                               TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
+                                        Sub(Message As String)
+                                            'ProgressReport
+                                            PrintMsg(Message)
+                                        End Sub,
+                                        Sub(Message As String)
+                                            'OnFinished
+                                            PrintMsg(My.Resources.ResText_FmtFin)
+                                            SetStatusLight(LWStatus.Succ)
+                                            LockGUI(False)
+                                            Me.Invoke(Sub()
+                                                          MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FmtFin)
+                                                          读取索引ToolStripMenuItem_Click(sender, e)
+                                                      End Sub)
+                                        End Sub,
+                                        Sub(Message As String)
+                                            'OnError
+                                            PrintMsg(Message)
+                                            SetStatusLight(LWStatus.Err)
+                                            LockGUI(False)
+                                            Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
+                                        End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+                           End Sub)
+                End Sub)
         End If
     End Sub
     Public Function ImportSHA1(schhash As ltfsindex, Overwrite As Boolean) As String
