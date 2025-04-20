@@ -907,6 +907,7 @@ Public Class IOManager
         Public ReadOnly Property XXHash3Value As String
             Get
                 SyncLock Lock
+                    If resultXxHash3 Is Nothing Then Return Nothing
                     Try
                         Return BitConverter.ToString(resultXxHash3).Replace("-", "").ToUpper()
                     Catch ex As Exception
@@ -918,6 +919,7 @@ Public Class IOManager
         Public ReadOnly Property XXHash128Value As String
             Get
                 SyncLock Lock
+                    If resultXxHash128 Is Nothing Then Return Nothing
                     Try
                         Return BitConverter.ToString(resultXxHash128).Replace("-", "").ToUpper()
                     Catch ex As Exception
