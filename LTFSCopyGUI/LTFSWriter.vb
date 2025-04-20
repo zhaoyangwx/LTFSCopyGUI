@@ -721,7 +721,10 @@ Public Class LTFSWriter
                 Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage))
                 Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
                 debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
-                WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4,
+                                                        Function(senseData As Byte()) As Boolean
+                                                            PrintMsg(TapeUtils.ParseSenseData(senseData), LogOnly:=True)
+                                                        End Function, 1)
                 If WERLHeader.Length <> 4 Then
                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                     PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
@@ -901,7 +904,13 @@ Public Class LTFSWriter
                 End If
             End If
             ToolStripStatusLabel6.ToolTipText = ToolStripStatusLabel6.Text
-            Text = GetLocInfo()
+            Task.Run(Sub()
+                         Try
+                             Dim Loc As String = GetLocInfo()
+                             Invoke(Sub() Text = Loc)
+                         Catch ex As Exception
+                         End Try
+                     End Sub)
             Static GCCollectCounter As Integer
             GCCollectCounter += 1
             If GCCollectCounter >= 60 Then
@@ -1346,8 +1355,8 @@ Public Class LTFSWriter
                 Catch ex As Exception
                     PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
                 End Try
-            Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
-        End If
+                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+            End If
             If CurrDrive IsNot Nothing Then
                     If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
                         DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
@@ -1514,6 +1523,7 @@ Public Class LTFSWriter
             End If
             Dim errRate As Double = 0
             If Gen > 0 Then errRate = ReadChanLRInfo()
+            PrintMsg($"[RefreshCapacity] ErrRateLogValue: {errRate}", LogOnly:=True)
             RefreshDriveLEDIndicator()
 
             Dim MediaDescription As String = $"{GenStr}"
@@ -1625,6 +1635,7 @@ Public Class LTFSWriter
                        End Sub)
             End If
             LastRefresh = Now
+            PrintMsg($"[RefreshCapacity] Finished {result(0)} {result(1)} {result(2)} {result(3)}", LogOnly:=True)
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RCErr, TooltipText:=ex.ToString)
             SetStatusLight(LWStatus.Err)
@@ -2083,7 +2094,11 @@ Public Class LTFSWriter
         If (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush Then
             WriteCurrentIndex(False, False)
             TotalBytesUnindexed = 0
-            Invoke(Sub() Text = GetLocInfo())
+            Try
+                Dim Loc As String = GetLocInfo()
+                Invoke(Sub() Text = Loc)
+            Catch ex As Exception
+            End Try
             Return True
         End If
         Return False
@@ -3413,7 +3428,8 @@ Public Class LTFSWriter
             p = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
             CurrentHeight = p.BlockNumber
-            Invoke(Sub() Text = GetLocInfo())
+            Dim Loc As String = GetLocInfo()
+            Invoke(Sub() Text = Loc)
         ElseIf CurrentHeight > 0 Then
             Dim p As TapeUtils.PositionData = GetPos
             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
@@ -4077,10 +4093,12 @@ Public Class LTFSWriter
                 Modified = False
                 PrintMsg(My.Resources.ResText_RollBacked)
                 SetStatusLight(LWStatus.Succ)
-                Me.Invoke(Sub()
-                              LockGUI(False)
-                              Text = GetLocInfo()
-                          End Sub)
+                Try
+                    Dim Loc As String = GetLocInfo()
+                    Invoke(Sub() Text = Loc)
+                Catch ex As Exception
+                End Try
+                Me.Invoke(Sub() LockGUI(False))
             End Sub)
         LockGUI()
         th.Start()
@@ -4139,9 +4157,13 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_RFailed)
                     SetStatusLight(LWStatus.Err)
                 End Try
+                Try
+                    Dim Loc As String = GetLocInfo()
+                    Invoke(Sub() Text = Loc)
+                Catch ex As Exception
+                End Try
                 Me.Invoke(Sub()
                               LockGUI(False)
-                              Text = GetLocInfo()
                               PrintMsg(My.Resources.ResText_RBFin)
                           End Sub)
                 SetStatusLight(LWStatus.Succ)
@@ -4307,9 +4329,13 @@ Public Class LTFSWriter
                         End SyncLock
                     End While
                     Modified = False
+                    Try
+                        Dim Loc As String = GetLocInfo()
+                        Invoke(Sub() Text = Loc)
+                    Catch ex As Exception
+                    End Try
                     Me.Invoke(Sub()
                                   MaxCapacity = 0
-                                  Text = GetLocInfo()
                                   ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
                                   ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
                               End Sub)
@@ -4769,6 +4795,7 @@ Public Class LTFSWriter
             If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             Dim ChanLRValue As Double = ReadChanLRInfo(10000)
+            PrintMsg($"ErrRateLogValue: {ChanLRValue}", LogOnly:=True)
             If Not ForceFlush AndAlso ChanLRValue < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
                 Return False
@@ -7463,13 +7490,22 @@ Public Class LTFSWriter
             Case Keys.F8
                 LockGUI(AllowOperation)
             Case Keys.F12
-                Task.Run(Sub()
-                             Dim SP1 As New SettingPanel
-                             SP1.Text = Text
-                             SP1.SelectedObject = Me
-                             SP1.ShowDialog()
-                         End Sub)
+                If Not e.Control Then
+                    Task.Run(Sub()
+                                 Dim SP1 As New SettingPanel
+                                 SP1.Text = Text
+                                 SP1.SelectedObject = Me
+                                 SP1.ShowDialog()
+                             End Sub)
 
+                Else
+                    Task.Run(Sub()
+                                 Dim SP1 As New SettingPanel
+                                 SP1.Text = Text
+                                 SP1.SelectedObject = StackTraces
+                                 SP1.ShowDialog()
+                             End Sub)
+                End If
         End Select
     End Sub
 

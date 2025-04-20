@@ -968,7 +968,7 @@ Public Class TapeUtils
     Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer) As Byte()
         Return SCSIReadParam(handle, cdbData, paramLen, Nothing)
     End Function
-    Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As Byte()
+    Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean), Optional ByVal timeout As Integer = 60000) As Byte()
         Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
         Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim paramData(paramLen - 1) As Byte
@@ -976,7 +976,7 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, timeout, senseBuffer)
         Marshal.Copy(dataBuffer, paramData, 0, paramLen)
         Marshal.Copy(senseBuffer, senseData, 0, 64)
         Marshal.FreeHGlobal(cdb)
