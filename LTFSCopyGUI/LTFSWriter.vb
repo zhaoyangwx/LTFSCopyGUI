@@ -1414,67 +1414,74 @@ Public Class LTFSWriter
     Public Sub RefreshDriveLEDIndicator()
         Dim logdataDSLP As Byte()
         Dim logdataDTD As Byte()
-        SyncLock OperationLock
-            SyncLock TapeUtils.SCSIOperationLock
-                logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
-                logdataDTD = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
-            End SyncLock
-        End SyncLock
-        Invoke(Sub()
-                   Try
-                       DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
-                       DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
-                       Dim Page1 As TapeUtils.PageData.DataItem.DynamicParamPage = DeviceStatusLogPage.TryGetPage(&H1)
-                       If Page1 Is Nothing Then Exit Sub
-                       Dim DevStatusBits As TapeUtils.PageData = Page1.GetPage
-                       Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
-                       If DevStatusBits IsNot Nothing Then
-                           For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
-                               Select Case item.Name.ToLower
-                                   Case "cleaning required flag"
-                                       CleanFlag = CleanFlag Or item.RawData(0)
-                                   Case "cleaning requested flag"
-                                       CleanFlag = CleanFlag Or item.RawData(0)
-                                   Case "device status"
-                                       DriveFlag = (item.RawData(0) > 1)
-                                   Case "medium status"
-                                       TapeFlag = (item.RawData(0) > 1)
-                               End Select
-                           Next
-                       End If
-                       Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
-                       If VHFData IsNot Nothing Then
-                           For Each item As TapeUtils.PageData.DataItem In VHFData.Items
-                               Select Case item.Name.ToLower
-                                   Case "encryption parameters present"
-                                       EncryptionFlag = (item.RawData(0) = 1)
-                               End Select
-                           Next
-                       End If
-                       If EncryptionFlag Then
-                           ToolStripStatusLabelS2.ForeColor = Color.Blue
-                       Else
-                           ToolStripStatusLabelS2.ForeColor = Color.Gray
-                       End If
-                       If CleanFlag Then
-                           ToolStripStatusLabelS3.ForeColor = Color.Orange
-                       Else
-                           ToolStripStatusLabelS3.ForeColor = Color.Gray
-                       End If
-                       If TapeFlag Then
-                           ToolStripStatusLabelS4.ForeColor = Color.Orange
-                       Else
-                           ToolStripStatusLabelS4.ForeColor = Color.Gray
-                       End If
-                       If DriveFlag Then
-                           ToolStripStatusLabelS5.ForeColor = Color.Orange
-                       Else
-                           ToolStripStatusLabelS5.ForeColor = Color.Gray
-                       End If
-                   Catch ex As Exception
-
-                   End Try
-               End Sub)
+        Task.Run(Sub()
+                     If Threading.Monitor.TryEnter(OperationLock, 500) Then
+                         Try
+                             logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
+                             logdataDTD = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
+                             Threading.Monitor.Exit(OperationLock)
+                         Catch ex As Exception
+                             Threading.Monitor.Exit(OperationLock)
+                             PrintMsg(ex.ToString(), LogOnly:=True)
+                             Exit Sub
+                         End Try
+                         Invoke(Sub()
+                                    Try
+                                        DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
+                                        DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
+                                        Dim Page1 As TapeUtils.PageData.DataItem.DynamicParamPage = DeviceStatusLogPage.TryGetPage(&H1)
+                                        If Page1 Is Nothing Then Exit Sub
+                                        Dim DevStatusBits As TapeUtils.PageData = Page1.GetPage
+                                        Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
+                                        If DevStatusBits IsNot Nothing Then
+                                            For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
+                                                Select Case item.Name.ToLower
+                                                    Case "cleaning required flag"
+                                                        CleanFlag = CleanFlag Or item.RawData(0)
+                                                    Case "cleaning requested flag"
+                                                        CleanFlag = CleanFlag Or item.RawData(0)
+                                                    Case "device status"
+                                                        DriveFlag = (item.RawData(0) > 1)
+                                                    Case "medium status"
+                                                        TapeFlag = (item.RawData(0) > 1)
+                                                End Select
+                                            Next
+                                        End If
+                                        Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
+                                        If VHFData IsNot Nothing Then
+                                            For Each item As TapeUtils.PageData.DataItem In VHFData.Items
+                                                Select Case item.Name.ToLower
+                                                    Case "encryption parameters present"
+                                                        EncryptionFlag = (item.RawData(0) = 1)
+                                                End Select
+                                            Next
+                                        End If
+                                        If EncryptionFlag Then
+                                            ToolStripStatusLabelS2.ForeColor = Color.Blue
+                                        Else
+                                            ToolStripStatusLabelS2.ForeColor = Color.Gray
+                                        End If
+                                        If CleanFlag Then
+                                            ToolStripStatusLabelS3.ForeColor = Color.Orange
+                                        Else
+                                            ToolStripStatusLabelS3.ForeColor = Color.Gray
+                                        End If
+                                        If TapeFlag Then
+                                            ToolStripStatusLabelS4.ForeColor = Color.Orange
+                                        Else
+                                            ToolStripStatusLabelS4.ForeColor = Color.Gray
+                                        End If
+                                        If DriveFlag Then
+                                            ToolStripStatusLabelS5.ForeColor = Color.Orange
+                                        Else
+                                            ToolStripStatusLabelS5.ForeColor = Color.Gray
+                                        End If
+                                    Catch ex As Exception
+                                        PrintMsg(ex.ToString(), LogOnly:=True)
+                                    End Try
+                                End Sub)
+                     End If
+                 End Sub)
     End Sub
     Public Property CapLossChannelInfo As String
     Public Sub SetCapLossChannelInfo(Text As String)
