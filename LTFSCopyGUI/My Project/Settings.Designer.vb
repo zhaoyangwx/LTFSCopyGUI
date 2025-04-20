@@ -376,7 +376,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("容量显示刷新间隔"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("1"),
+         Global.System.Configuration.DefaultSettingValueAttribute("5"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_CapacityRefreshInterval")>
         Public Property LTFSWriter_CapacityRefreshInterval() As Integer
