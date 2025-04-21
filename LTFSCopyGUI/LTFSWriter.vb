@@ -781,6 +781,7 @@ Public Class LTFSWriter
         If result < 0 Then ErrLogRateHistory = result
         debuginfo.Append($" Result={result}")
         PrintMsg(debuginfo.ToString(), LogOnly:=True)
+        If result <> 0 Then LRHistory = result
         Return result
     End Function
 
@@ -4799,8 +4800,8 @@ Public Class LTFSWriter
         SMaxNum = 3600 * 6
         Chart1.Titles(0).Text = H6ToolStripMenuItem.Text
     End Sub
+    Public LRHistory As Double
     Public Function CheckFlush() As Boolean
-        Static LRHistory As Double
         If Threading.Interlocked.Exchange(Flush, False) Then
             PrintMsg("Flush Triggered", LogOnly:=True)
             Dim Loc As TapeUtils.PositionData = GetPos
@@ -4808,11 +4809,11 @@ Public Class LTFSWriter
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             Dim ChanLRValue As Double = ReadChanLRInfo(10000)
             PrintMsg($"ErrRateLogValue: {ChanLRValue}", LogOnly:=True)
-            If Not ForceFlush AndAlso ChanLRValue < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould Then
+            If LRHistory <> 0 Then LRHistory = ChanLRValue
+            If (Not ForceFlush) AndAlso (ChanLRValue < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould) Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
                 Return False
-            ElseIf LRHistory = 0 OrElse ChanLRValue <> 0 Then
-                LRHistory = ChanLRValue
+            ElseIf (LRHistory = 0) OrElse (ChanLRValue <> 0) Then
                 Threading.Interlocked.Increment(CapReduceCount)
                 TapeUtils.Flush(driveHandle)
                 If Not ForceFlush Then
@@ -4821,6 +4822,8 @@ Public Class LTFSWriter
                 ForceFlush = False
                 RefreshCapacity()
                 Return True
+            Else
+                Return False
             End If
         Else
             Return False
