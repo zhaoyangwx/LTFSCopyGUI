@@ -449,8 +449,17 @@ Public Class LTFSWriter
                End Sub)
 
     End Sub
-    Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False, Optional ByVal TooltipText As String = "", Optional ByVal LogOnly As Boolean = False, Optional ByVal ForceLog As Boolean = False)
+    Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False,
+                        Optional ByVal TooltipText As String = "",
+                        Optional ByVal LogOnly As Boolean = False,
+                        Optional ByVal ForceLog As Boolean = False,
+                        Optional ByVal DeDupe As Boolean = False)
+        Static LastMsg As String = ""
         Me.BeginInvoke(Sub()
+                           If DeDupe Then
+                               If s = LastMsg Then Exit Sub
+                           End If
+                           LastMsg = s
                            If ForceLog OrElse My.Settings.LTFSWriter_LogEnabled Then
                                Dim logType As String = "info"
                                If Warning Then logType = "warn"
@@ -2091,12 +2100,140 @@ Public Class LTFSWriter
     Private Sub TreeView1_Click(sender As Object, e As EventArgs) Handles TreeView1.Click
         TriggerTreeView1Event()
     End Sub
+    Private Sub TreeView1_KeyDown(sender As Object, e As KeyEventArgs) Handles TreeView1.KeyDown
+        If e.Control Then
+            TreeView1.CheckBoxes = Not TreeView1.CheckBoxes
+        End If
+    End Sub
     Private Sub TreeView1_NodeMouseClick(sender As Object, e As TreeNodeMouseClickEventArgs) Handles TreeView1.NodeMouseClick
         If e.Button = MouseButtons.Right Then
             TreeView1.SelectedNode = e.Node
         End If
     End Sub
+    <Category("UI")>
+    Public ReadOnly Property SelectedNodes As List(Of TreeNode)
+        Get
+            Dim Nodes As New List(Of TreeNode)
+            If Not TreeView1.CheckBoxes Then
+                If TreeView1.SelectedNode IsNot Nothing Then Nodes.Add(TreeView1.SelectedNode)
+            Else
+                Nodes.AddRange(GetSelectedNodes(TreeView1))
+                If Nodes.Count = 0 Then
+                    If TreeView1.SelectedNode IsNot Nothing Then Nodes.Add(TreeView1.SelectedNode)
+                End If
+            End If
+            Return Nodes
+        End Get
+    End Property
 
+    Public Function GetSelectedNodes(ByVal treeView As TreeView) As List(Of TreeNode)
+        Dim resultNodes As New List(Of TreeNode)()
+        Dim processedStatus As New Dictionary(Of TreeNode, Boolean)() ' Maps node to "all descendants checked" status
+        Dim hasCheckedChildren As New Dictionary(Of TreeNode, Boolean)() ' Maps node to "has any checked children" status
+
+        ' First pass: Determine node statuses, bottom-up
+        Dim nodeStack As New Stack(Of TreeNode)()
+        Dim visitedNodes As New HashSet(Of TreeNode)()
+
+        ' Push all nodes for processing
+        For i As Integer = treeView.Nodes.Count - 1 To 0 Step -1
+            nodeStack.Push(treeView.Nodes(i))
+        Next
+
+        While nodeStack.Count > 0
+            Dim currentNode As TreeNode = nodeStack.Peek() ' Just peek to check if we've processed children
+
+            ' Check if we've processed all children first
+            Dim allChildrenProcessed As Boolean = True
+            For Each childNode As TreeNode In currentNode.Nodes
+                If Not visitedNodes.Contains(childNode) Then
+                    allChildrenProcessed = False
+                    nodeStack.Push(childNode)
+                End If
+            Next
+
+            If Not allChildrenProcessed Then
+                Continue While ' Process children first
+            End If
+
+            ' We've processed all children, now process this node
+            nodeStack.Pop()
+            visitedNodes.Add(currentNode)
+
+            ' Calculate statuses
+            If currentNode.Nodes.Count = 0 Then
+                ' Leaf node
+                processedStatus(currentNode) = currentNode.Checked
+                hasCheckedChildren(currentNode) = False ' No children at all
+            Else
+                ' Non-leaf node
+                Dim allDescendantsChecked As Boolean = True
+                Dim anyChildChecked As Boolean = False
+
+                For Each childNode As TreeNode In currentNode.Nodes
+                    If childNode.Checked Then
+                        anyChildChecked = True
+                    Else
+                        allDescendantsChecked = False
+                    End If
+
+                    ' Check descendants' status
+                    If hasCheckedChildren(childNode) Then
+                        anyChildChecked = True
+                    End If
+
+                    If Not processedStatus(childNode) Then
+                        allDescendantsChecked = False
+                    End If
+                Next
+
+                processedStatus(currentNode) = allDescendantsChecked And currentNode.Checked
+                hasCheckedChildren(currentNode) = anyChildChecked
+            End If
+        End While
+
+        ' Second pass: Apply the selection rules using the processed statuses
+        nodeStack.Clear()
+        visitedNodes.Clear()
+
+        ' Push all nodes again
+        For i As Integer = treeView.Nodes.Count - 1 To 0 Step -1
+            nodeStack.Push(treeView.Nodes(i))
+        Next
+
+        While nodeStack.Count > 0
+            Dim currentNode As TreeNode = nodeStack.Pop()
+
+            ' Add children to stack
+            For i As Integer = currentNode.Nodes.Count - 1 To 0 Step -1
+                nodeStack.Push(currentNode.Nodes(i))
+            Next
+
+            ' Skip unchecked nodes
+            If Not currentNode.Checked Then
+                Continue While
+            End If
+
+            ' For checked nodes, apply the rules
+            If currentNode.Nodes.Count = 0 Then
+                ' Leaf node - always include if checked
+                resultNodes.Add(currentNode)
+            Else
+                ' Rule 1: If all descendants are checked, include only parent
+                If processedStatus(currentNode) Then
+                    resultNodes.Add(currentNode)
+                    ' Rule 2: If parent is checked but no children are checked, include parent
+                ElseIf Not hasCheckedChildren(currentNode) Then
+                    resultNodes.Add(currentNode)
+                    ' Rule 3: If parent is checked but only some children are checked, don't include parent
+                Else
+                    ' Don't include parent - individual checked children will be included
+                End If
+            End If
+        End While
+
+        Return resultNodes
+    End Function
     Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False, Optional ByVal CheckOnly As Boolean = False) As Boolean
         If CheckOnly Then Return (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush
         If (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush Then
@@ -2701,10 +2838,12 @@ Public Class LTFSWriter
         Next
     End Sub
     Public Sub DeleteDir()
-        If TreeView1.SelectedNode IsNot Nothing Then
-            Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
-            If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{d.name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
-                Dim pd As ltfsindex.directory = TreeView1.SelectedNode.Parent.Tag
+        Dim Nodes As List(Of TreeNode) = SelectedNodes
+        If Nodes.Count = 0 Then Exit Sub
+        For Each node As TreeNode In Nodes
+            Dim d As ltfsindex.directory = node.Tag
+            If node.Parent IsNot Nothing AndAlso MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{d.name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                Dim pd As ltfsindex.directory = node.Parent.Tag
                 pd.contents._directory.Remove(d)
                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                 Dim IterAllDirectory As Action(Of ltfsindex.directory) =
@@ -2740,13 +2879,13 @@ Public Class LTFSWriter
 
                     End Sub
                 IterAllDirectory(d)
-                If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso TreeView1.SelectedNode.Parent.Tag IsNot Nothing AndAlso TypeOf (TreeView1.SelectedNode.Parent.Tag) Is ltfsindex.directory Then
+                If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Parent IsNot Nothing AndAlso TreeView1.SelectedNode.Parent.Tag IsNot Nothing AndAlso TypeOf (TreeView1.SelectedNode.Parent.Tag) Is ltfsindex.directory Then
                     TreeView1.SelectedNode = TreeView1.SelectedNode.Parent
                 End If
                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                RefreshDisplay()
             End If
-        End If
+        Next
+        RefreshDisplay()
 
     End Sub
     Public Sub RenameDir()
@@ -3121,7 +3260,7 @@ Public Class LTFSWriter
                                         If (sense(2) And &HF) = 13 Then
                                             readsucc = True
                                         Else
-                                            PrintMsg(My.Resources.ResText_EWEOM, True)
+                                            PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                             readsucc = True
                                             Exit While
                                         End If
@@ -3283,9 +3422,10 @@ Public Class LTFSWriter
         End If
     End Sub
     Private Sub 提取ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem1.Click
-        If TreeView1.SelectedNode IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+        Dim Nodes As List(Of TreeNode) = SelectedNodes
+        If Nodes.Count = 0 Then Exit Sub
+        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             Dim FileList As New List(Of FileRecord)
-            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
             Dim th As New Threading.Thread(
                     Sub()
                         PrintMsg(My.Resources.ResText_Restoring)
@@ -3297,7 +3437,6 @@ Public Class LTFSWriter
                                     For Each f As ltfsindex.file In tapeDir.contents._file
                                         f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
                                         FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
-                                        'RestoreFile(IO.Path.Combine(outputDir.FullName, f.name), f)
                                     Next
                                     For Each d As ltfsindex.directory In tapeDir.contents._directory
                                         Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
@@ -3314,10 +3453,14 @@ Public Class LTFSWriter
                                     Next
                                 End Sub
                             PrintMsg(My.Resources.ResText_PrepFile)
-                            Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
-                            If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
-                            If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                            IterDir(selectedDir, New IO.DirectoryInfo(ODir))
+                            For Each n As TreeNode In Nodes
+                                Dim selectedDir As ltfsindex.directory = n.Tag
+                                Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                                If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
+                                If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
+                                IterDir(selectedDir, New IO.DirectoryInfo(ODir))
+                            Next
+
                             FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
                                                                             If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
                                                                             If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
@@ -3673,7 +3816,7 @@ Public Class LTFSWriter
                                                         StopFlag = True
                                                         Exit For
                                                     Else
-                                                        PrintMsg(My.Resources.ResText_EWEOM, True)
+                                                        PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                                         succ = True
                                                         Exit While
                                                     End If
@@ -3827,7 +3970,7 @@ Public Class LTFSWriter
                                                                     SetStatusLight(LWStatus.Err)
                                                                     Exit Sub
                                                                 Else
-                                                                    PrintMsg(My.Resources.ResText_EWEOM, True)
+                                                                    PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                                                     succ = True
                                                                     Exit While
                                                                 End If
@@ -3913,7 +4056,7 @@ Public Class LTFSWriter
                                             CurrentFilesProcessed += 1
                                         End If
                                         p = GetPos
-                                        If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+                                        If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                         PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                                         CurrentHeight = p.BlockNumber
                                     End If
@@ -4805,11 +4948,11 @@ Public Class LTFSWriter
         If Threading.Interlocked.Exchange(Flush, False) Then
             PrintMsg("Flush Triggered", LogOnly:=True)
             Dim Loc As TapeUtils.PositionData = GetPos
-            If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+            If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             Dim ChanLRValue As Double = ReadChanLRInfo(10000)
             PrintMsg($"ErrRateLogValue: {ChanLRValue}", LogOnly:=True)
-            If LRHistory <> 0 Then LRHistory = ChanLRValue
+            If ChanLRValue <> 0 Then LRHistory = ChanLRValue
             If (Not ForceFlush) AndAlso (ChanLRValue < My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould) Then
                 PrintMsg("Error rate log OK, ignore", LogOnly:=True)
                 Return False
@@ -4835,7 +4978,7 @@ Public Class LTFSWriter
             PrintMsg("Clean Triggered", LogOnly:=True)
             Clean_last = Now
             Dim Loc As TapeUtils.PositionData = GetPos
-            If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+            If Loc.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
             PrintMsg($"Position = {Loc.ToString()}", LogOnly:=True)
             If Not Loc.EOP Then
                 TapeUtils.DoReload(driveHandle, LockVolume, EncryptionKey)
@@ -5672,22 +5815,34 @@ Public Class LTFSWriter
         th.Start()
     End Sub
     Private Sub 计算并更新ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 计算并更新ToolStripMenuItem1.Click
-        If TreeView1.SelectedNode IsNot Nothing Then
-            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
+        Dim nodes As List(Of TreeNode) = SelectedNodes
+        If nodes.Count > 0 Then
+            Dim selectedDir As New ltfsindex.directory
+            For Each n As TreeNode In nodes
+                selectedDir.contents._directory.Add(n.Tag)
+            Next
             HashSelectedDir(selectedDir, True, False)
         End If
     End Sub
 
     Private Sub 跳过已有校验ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 跳过已有校验ToolStripMenuItem.Click
-        If TreeView1.SelectedNode IsNot Nothing Then
-            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
+        Dim nodes As List(Of TreeNode) = SelectedNodes
+        If nodes.Count > 0 Then
+            Dim selectedDir As New ltfsindex.directory
+            For Each n As TreeNode In nodes
+                selectedDir.contents._directory.Add(n.Tag)
+            Next
             HashSelectedDir(selectedDir, False, False)
         End If
     End Sub
 
     Private Sub 仅验证ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 仅验证ToolStripMenuItem1.Click
-        If TreeView1.SelectedNode IsNot Nothing Then
-            Dim selectedDir As ltfsindex.directory = TreeView1.SelectedNode.Tag
+        Dim nodes As List(Of TreeNode) = SelectedNodes
+        If nodes.Count > 0 Then
+            Dim selectedDir As New ltfsindex.directory
+            For Each n As TreeNode In nodes
+                selectedDir.contents._directory.Add(n.Tag)
+            Next
             HashSelectedDir(selectedDir, False, True)
         End If
     End Sub
@@ -5710,10 +5865,15 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 统计ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 统计ToolStripMenuItem.Click
-        If TreeView1.SelectedNode IsNot Nothing Then
-            If TypeOf TreeView1.SelectedNode.Tag IsNot ltfsindex.directory Then Exit Sub
-            Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
-            Dim fnum As Long = 0, fbytes As Long = 0
+        Dim Nodes As List(Of TreeNode) = SelectedNodes
+        If Nodes.Count = 0 Then Exit Sub
+        Dim fnum As Long = 0, fbytes As Long = 0
+        Dim dirNames As String = ""
+        Dim maxlen As Integer = 40
+        For Each n As TreeNode In Nodes
+            If TypeOf n.Tag IsNot ltfsindex.directory Then Exit For
+            Dim d As ltfsindex.directory = n.Tag
+            If dirNames.Length <= maxlen Then dirNames = dirNames & d.name & "; "
             Dim q As New List(Of ltfsindex.directory)
             q.Add(d)
             While q.Count > 0
@@ -5727,8 +5887,12 @@ Public Class LTFSWriter
                 Next
                 q = q2
             End While
-            MessageBox.Show(New Form With {.TopMost = True}, $"{d.name}{vbCrLf}{My.Resources.ResText_FCountP}{fnum}{vbCrLf}{My.Resources.ResText_FSizeP}{fbytes} {My.Resources.ResText_Byte} ({IOManager.FormatSize(fbytes)})")
+        Next
+        dirNames = dirNames.Substring(0, dirNames.Length - 2)
+        If dirNames.Length > maxlen Then
+            dirNames = dirNames.Substring(0, maxlen - 3) & "..."
         End If
+        MessageBox.Show(New Form With {.TopMost = True}, $"{dirNames}{vbCrLf}{My.Resources.ResText_FCountP}{fnum}{vbCrLf}{My.Resources.ResText_FSizeP}{fbytes} {My.Resources.ResText_Byte} ({IOManager.FormatSize(fbytes)})")
     End Sub
 
     Private Sub 预读文件数5ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 预读文件数5ToolStripMenuItem.Click
@@ -6407,7 +6571,7 @@ Public Class LTFSWriter
                                              SetStatusLight(LWStatus.Err)
                                              Exit Sub
                                          Else
-                                             PrintMsg(My.Resources.ResText_EWEOM, True)
+                                             PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                              succ = True
                                              Exit While
                                          End If
@@ -6458,7 +6622,7 @@ Public Class LTFSWriter
                          Marshal.FreeHGlobal(wBufferPtr)
                          If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                          pos = GetPos
-                         If pos.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+                         If pos.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                          PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                          CurrentHeight = pos.BlockNumber
                          Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
@@ -6749,16 +6913,20 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 剪切目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 剪切目录ToolStripMenuItem.Click
-        If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Parent IsNot Nothing Then
-            Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
-            Dim dp As ltfsindex.directory = TreeView1.SelectedNode.Parent.Tag
-            MyClipBoard.Add(d)
-            dp.contents._directory.Remove(d)
-            If TreeView1.SelectedNode.Parent IsNot Nothing AndAlso TreeView1.SelectedNode.Parent.Tag IsNot Nothing AndAlso TypeOf (TreeView1.SelectedNode.Parent.Tag) Is ltfsindex.directory Then
-                TreeView1.SelectedNode = TreeView1.SelectedNode.Parent
+        Dim Nodes As List(Of TreeNode) = SelectedNodes
+        If Nodes.Count = 0 Then Exit Sub
+        For Each n As TreeNode In Nodes
+            If n IsNot Nothing AndAlso n.Parent IsNot Nothing Then
+                Dim d As ltfsindex.directory = n.Tag
+                Dim dp As ltfsindex.directory = n.Parent.Tag
+                MyClipBoard.Add(d)
+                dp.contents._directory.Remove(d)
             End If
-            RefreshDisplay()
+        Next
+        If Nodes.Count = 1 AndAlso TreeView1.SelectedNode.Parent IsNot Nothing AndAlso TreeView1.SelectedNode.Parent.Tag IsNot Nothing AndAlso TypeOf (TreeView1.SelectedNode.Parent.Tag) Is ltfsindex.directory Then
+            TreeView1.SelectedNode = TreeView1.SelectedNode.Parent
         End If
+        RefreshDisplay()
     End Sub
 
     Private Sub 粘贴选中ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 粘贴选中ToolStripMenuItem.Click
@@ -7034,7 +7202,7 @@ Public Class LTFSWriter
                                                     fr.Close()
                                                     Exit Sub
                                                 Else
-                                                    PrintMsg(My.Resources.ResText_EWEOM, True)
+                                                    PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                                     succ = True
                                                     Exit While
                                                 End If
@@ -7098,7 +7266,7 @@ Public Class LTFSWriter
                             TotalFilesProcessed += 1
                             CurrentFilesProcessed += 1
                             p = GetPos
-                            If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True)
+                            If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                             PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                             CurrentHeight = p.BlockNumber
                             'mark as written
@@ -7467,6 +7635,19 @@ Public Class LTFSWriter
     End Sub
     Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
         Select Case e.KeyCode
+            Case Keys.V
+                If Not AllowOperation Then Exit Sub
+                If e.Control Then
+                    If Clipboard.ContainsText Then
+                        Dim Paths As String() = Clipboard.GetText().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                        If Paths IsNot Nothing AndAlso Paths.Count > 0 Then
+                            Dim d As ltfsindex.directory = ListView1.Tag
+                            Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
+                            AddFileOrDir(d, Paths, overwrite)
+                        End If
+                    End If
+                    粘贴选中ToolStripMenuItem_Click(sender, e)
+                End If
             Case Keys.F
                 If Not AllowOperation Then Exit Sub
                 If Not e.Control Then Exit Select

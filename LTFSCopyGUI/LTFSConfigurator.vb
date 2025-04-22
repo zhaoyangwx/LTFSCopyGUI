@@ -1132,13 +1132,15 @@ Public Class LTFSConfigurator
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles ButtonLTFSWriter.Click
         Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {TapeDrive}"
+        Dim psexecpath As String = IO.Path.Combine(Application.StartupPath, "PsExec64.exe")
         Try
-            Process.Start(IO.Path.Combine(Application.StartupPath, "PsExec64.exe"), $"-accepteula -s -i -d {appcmd}")
+            If IO.File.Exists(psexecpath) Then
+                Process.Start(psexecpath, $"-accepteula -s -i -d {appcmd}")
+            Else
+                Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {TapeDrive}"})
+            End If
         Catch ex As Exception
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {TapeDrive}"})
         End Try
-        ' Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive}
-        ' LWF.Show()
     End Sub
 
     Private Sub ButtonDebugReleaseUnit_Click(sender As Object, e As EventArgs) Handles ButtonDebugReleaseUnit.Click
@@ -2026,7 +2028,14 @@ Public Class LTFSConfigurator
     <DllImport("winmm.dll")> Public Shared Function sndPlaySoundA(lpszSoundName As IntPtr, uFlags As Integer) As Integer
 
     End Function
-    Public sampleRate As Integer = 44100, channels As Short = 2, bitsPerSample As Short = 16, isFloat As Boolean = False
+    <Category("AudioPlayer")>
+    Public property sampleRate As Integer = 44100
+    <Category("AudioPlayer")>
+    Public Property channels As Short = 2
+    <Category("AudioPlayer")>
+    Public Property bitsPerSample As Short = 16
+    <Category("AudioPlayer")>
+    Public Property isFloat As Boolean = False
     Private Sub PlayPCMToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayPCMToolStripMenuItem.Click
         Const SND_MEMORY As Integer = 4
         Const SND_ASYNC As Integer = 1
