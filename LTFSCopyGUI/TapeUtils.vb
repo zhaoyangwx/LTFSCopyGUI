@@ -305,67 +305,116 @@ Public Class TapeUtils
     Private Shared Function _CheckTapeMedia(driveLetter As Char) As IntPtr
 
     End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _ScsiIoControl(hFile As IntPtr,
-                                           deviceNumber As UInt32,
-                                           cdb As UIntPtr,
-                                           cdbLength As Byte,
-                                           dataBuffer As UIntPtr,
-                                           bufferLength As UInt32,
-                                           dataIn As Byte,
-                                           timeoutValue As UInt32,
-                                           senseBuffer As UIntPtr) As Boolean
 
-    End Function
     Public Shared SCSIOperationLock As New Object
-    Public Shared Function _TapeSCSIIOCtlFullC(TapeDrive As String,
-                                           cdb As IntPtr,
-                                           cdbLength As Byte,
+    Public Shared Function IOCtlDirect(TapeDrive As String,
+                                           cdb As Byte(),
                                            dataBuffer As IntPtr,
                                            bufferLength As UInt32,
                                            dataIn As Byte,
                                            timeoutValue As UInt32,
-                                           senseBuffer As IntPtr) As Boolean
-        SyncLock SCSIOperationLock
-            RaiseEvent IOCtlStart()
-            Dim result As Boolean = _TapeSCSIIOCtlFull(TapeDrive, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
-            RaiseEvent IOCtlFinished()
+                                           ByRef senseBuffer As Byte()) As Boolean
+
+        Dim driveHandle As IntPtr
+        Dim result As Boolean = False
+        If OpenTapeDrive(TapeDrive, driveHandle) Then
+            SyncLock SCSIOperationLock
+                RaiseEvent IOCtlStart()
+                result = SCSIIOCtl.IOCtlDirect(driveHandle, cdb, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+                RaiseEvent IOCtlFinished()
+            End SyncLock
+            CloseTapeDrive(driveHandle)
+        End If
+        Return result
+    End Function
+
+    Public Class SCSIIOCtl
+        Public Const IOCTL_SCSI_GET_INQUIRY_DATA As Integer = &H4100C
+        Public Const IOCTL_SCSI_PASS_THROUGH_DIRECT As Integer = &H4D014
+        <StructLayout(LayoutKind.Sequential)>
+        Public Class SCSI_PASS_THROUGH_DIRECT
+            Public Const CdbBufferLength As Integer = 16
+
+            Public Length As UShort
+            Public ScsiStatus As Byte
+            Public PathId As Byte
+            Public TargetId As Byte
+            Public Lun As Byte
+            Public CdbLength As Byte
+            Public SenseInfoLength As Byte
+            Public DataIn As Byte
+            Public DataTransferLength As UInteger
+            Public TimeOutValue As UInteger
+            Public DataBuffer As IntPtr
+            Public SenseInfoOffset As UInteger
+
+            <MarshalAs(UnmanagedType.ByValArray, SizeConst:=CdbBufferLength)>
+            Public Cdb(CdbBufferLength - 1) As Byte
+
+            Public Sub New()
+                ReDim Cdb(CdbBufferLength)
+            End Sub
+        End Class
+        <StructLayout(LayoutKind.Sequential)>
+        Public Class SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER
+            Public Const SendBufferLength As Integer = 64
+            Public Spt As SCSI_PASS_THROUGH_DIRECT = New SCSI_PASS_THROUGH_DIRECT()
+            <MarshalAs(UnmanagedType.ByValArray, SizeConst:=SendBufferLength)>
+            Public Sense(SendBufferLength - 1) As Byte
+            Public Sub New()
+            End Sub
+        End Class
+        Public Shared Function BuildSCSIPassThroughStructure(cdb As Byte(),
+                                                   dataBuffer As IntPtr,
+                                                   bufferLength As UInt32,
+                                                   dataIn As Byte,
+                                                   timeoutValue As UInt32) As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER
+            Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = New SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER()
+            With scsi.Spt
+                .Length = CUShort(Marshal.SizeOf(scsi.Spt))
+                .CdbLength = CByte(cdb.Length)
+                Array.Copy(cdb, .Cdb, cdb.Length)
+                .DataIn = dataIn
+                .DataTransferLength = bufferLength
+                .DataBuffer = dataBuffer
+                .TimeOutValue = timeoutValue
+                .SenseInfoOffset = CUInt(Marshal.OffsetOf(GetType(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER), "Sense"))
+                .SenseInfoLength = CByte(scsi.Sense.Length)
+            End With
+            Return scsi
+        End Function
+        Public Shared Function IOCtlDirect(handle As IntPtr,
+                                                   cdb As Byte(),
+                                                   dataBuffer As IntPtr,
+                                                   bufferLength As UInt32,
+                                                   dataIn As Byte,
+                                                   timeoutValue As UInt32,
+                                                   ByRef sense As Byte()) As Boolean
+            Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = BuildSCSIPassThroughStructure(cdb, dataBuffer, bufferLength, dataIn, timeoutValue)
+            Dim size As UInteger = CUInt(Marshal.SizeOf(scsi))
+            Dim inBuffer As IntPtr = Marshal.AllocHGlobal(CInt(size))
+            Marshal.StructureToPtr(scsi, inBuffer, True)
+            Dim result As Boolean
+            Dim bytesReturned As UInteger
+            result = DeviceIoControl(handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, inBuffer, size, inBuffer, size, bytesReturned, IntPtr.Zero)
+            If result Then
+                Marshal.PtrToStructure(inBuffer, scsi)
+                sense = scsi.Sense
+            End If
+            Marshal.FreeHGlobal(inBuffer)
             Return result
-        End SyncLock
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeSCSIIOCtlFull(TapeDrive As String,
-                                           cdb As IntPtr,
-                                           cdbLength As Byte,
-                                           dataBuffer As IntPtr,
-                                           bufferLength As UInt32,
-                                           dataIn As Byte,
-                                           timeoutValue As UInt32,
-                                           senseBuffer As IntPtr) As Boolean
+        End Function
+    End Class
 
-    End Function
-
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeSCSIIOCtlUnmanaged(handle As IntPtr,
-                                           cdb As IntPtr,
-                                           cdbLength As Byte,
-                                           dataBuffer As IntPtr,
-                                           bufferLength As UInt32,
-                                           dataIn As Byte,
-                                           timeoutValue As UInt32,
-                                           senseBuffer As IntPtr) As Boolean
-
-    End Function
     Public Shared Function TapeSCSIIOCtlUnmanaged(handle As IntPtr,
-                                           cdb As IntPtr,
-                                           cdbLength As Byte,
+                                           cdb As Byte(),
                                            dataBuffer As IntPtr,
                                            bufferLength As UInt32,
                                            dataIn As Byte,
                                            timeoutValue As UInt32,
-                                           senseBuffer As IntPtr) As Boolean
+                                           ByRef senseBuffer As Byte()) As Boolean
         RaiseEvent IOCtlStart()
-        Dim result As Boolean = _TapeSCSIIOCtlUnmanaged(handle, cdb, cdbLength, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
+        Dim result As Boolean = SCSIIOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, dataIn, timeoutValue, senseBuffer)
         RaiseEvent IOCtlFinished()
         Return result
     End Function
@@ -462,18 +511,6 @@ Public Class TapeUtils
     Public Const OPEN_EXISTING As UInteger = 3UI
     Public Const FILE_ATTRIBUTE_NORMAL As UInteger = &H80UI
 
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeSCSIIOCtl(TapeDrive As String, SCSIOPCode As Byte) As IntPtr
-
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Public Shared Function _TapeDeviceIOCtl(TapeDrive As String, DWIOCode As UInt32) As IntPtr
-
-    End Function
-    <DllImport("LtfsCommand.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Cdecl)>
-    Private Shared Function _Test(ByVal a As Char) As IntPtr
-
-    End Function
     Public Shared AllowPartition As Boolean = True
     Public Shared Function ReadAppInfo(TapeDrive As String) As String
         'TC_MAM_APPLICATION_VENDOR = 0x0800 LEN = 8
@@ -626,16 +663,13 @@ Public Class TapeUtils
         'Get EEPROM buffer Length
         Dim cdbD0 As Byte() = {&H3C, 3, BufferID, 0, 0, 0, 0, 0, 4, 0}
         Dim lenData As Byte() = {0, 0, 0, 0}
-        Dim cdb0 As IntPtr = Marshal.AllocHGlobal(cdbD0.Length)
-        Marshal.Copy(cdbD0, 0, cdb0, cdbD0.Length)
         Dim data0 As IntPtr = Marshal.AllocHGlobal(lenData.Length)
         Marshal.Copy(lenData, 0, data0, lenData.Length)
-        Dim sense As IntPtr = Marshal.AllocHGlobal(64)
+        Dim sense(64) As Byte
         SyncLock SCSIOperationLock
             Flush(handle)
-            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb0, cdbD0.Length, data0, lenData.Length, 1, 60, sense)
+            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbD0, data0, lenData.Length, 1, 60, sense)
             Marshal.Copy(data0, lenData, 0, lenData.Length)
-            Marshal.FreeHGlobal(cdb0)
             Marshal.FreeHGlobal(data0)
             Dim BufferLen As Integer
             For i As Integer = 1 To lenData.Length - 1
@@ -645,16 +679,12 @@ Public Class TapeUtils
 
             'Dump EEPROM
             Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, 0, 0, 0, lenData(1), lenData(2), lenData(3), 0}
-            Dim cdb1 As IntPtr = Marshal.AllocHGlobal(cdbD1.Length)
-            Marshal.Copy(cdbD1, 0, cdb1, cdbD1.Length)
             Dim dumpData(BufferLen - 1) As Byte
             Dim data1 As IntPtr = Marshal.AllocHGlobal(dumpData.Length)
             Marshal.Copy(dumpData, 0, data1, dumpData.Length)
-            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb1, cdbD1.Length, data1, dumpData.Length, 1, 60, sense)
+            TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbD1, data1, dumpData.Length, 1, 60, sense)
             Marshal.Copy(data1, dumpData, 0, dumpData.Length)
-            Marshal.FreeHGlobal(cdb1)
             Marshal.FreeHGlobal(data1)
-            Marshal.FreeHGlobal(sense)
             Return dumpData
         End SyncLock
     End Function
@@ -969,19 +999,13 @@ Public Class TapeUtils
         Return SCSIReadParam(handle, cdbData, paramLen, Nothing)
     End Function
     Public Shared Function SCSIReadParam(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean), Optional ByVal timeout As Integer = 60000) As Byte()
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim paramData(paramLen - 1) As Byte
         Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(paramLen)
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
-        Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, timeout, senseBuffer)
+        TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, paramLen, 1, timeout, senseData)
         Marshal.Copy(dataBuffer, paramData, 0, paramLen)
-        Marshal.Copy(senseBuffer, senseData, 0, 64)
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBuffer)
-        Marshal.FreeHGlobal(senseBuffer)
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return paramData
     End Function
@@ -1001,16 +1025,12 @@ Public Class TapeUtils
         Return SCSIReadParamUnmanaged(handle, cdbData, paramLen, Nothing)
     End Function
     Public Shared Function SCSIReadParamUnmanaged(handle As IntPtr, cdbData As Byte(), paramLen As Integer, ByVal senseReport As Func(Of Byte(), Boolean)) As IntPtr
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
         Dim paramData(paramLen - 1) As Byte
         Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(paramLen)
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
-        Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
-        While Not TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, paramLen, 1, 60000, senseBuffer)
+        While Not TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, paramLen, 1, 60000, senseData)
             Dim ErrCode As UInteger = GetLastError()
-            Marshal.Copy(senseBuffer, senseData, 0, 64)
             Select Case MessageBox.Show($"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{Hex(ErrCode).PadLeft(8, "0")}h",
                                         My.Resources.ResText_Warning,
                                         MessageBoxButtons.AbortRetryIgnore,
@@ -1026,9 +1046,6 @@ Public Class TapeUtils
                     Exit While
             End Select
         End While
-        Marshal.Copy(senseBuffer, senseData, 0, 64)
-        Marshal.FreeHGlobal(cdb)
-        Marshal.FreeHGlobal(senseBuffer)
         If senseReport IsNot Nothing Then senseReport(senseData)
         Return dataBuffer
     End Function
@@ -1889,13 +1906,7 @@ Public Class TapeUtils
         Dim sense() As Byte = {0, 0, 0}
         If senseEnabled Then ReDim sense(63)
         Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, Data, Length, 0, 900, senseBufferPtr)
-        If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
-        Marshal.FreeHGlobal(cdb)
-        Marshal.FreeHGlobal(senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, Data, Length, 0, 900, sense)
         If Not succ Then Throw New Exception("SCSI Failure")
         Return sense
     End Function
@@ -1930,9 +1941,7 @@ Public Class TapeUtils
         End If
         Dim sense(63) As Byte
         Dim cdbData As Byte() = {}
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
         Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(BlockSize)
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         For i As Integer = 0 To Data.Length - 1 Step BlockSize
             Dim TransferLen As UInteger = Math.Min(BlockSize, Data.Length - i)
             Select Case My.Settings.TapeUtils_DriverType
@@ -1942,22 +1951,15 @@ Public Class TapeUtils
                 Case Else
                     cdbData = {&HA, 0, TransferLen >> 16 And &HFF, TransferLen >> 8 And &HFF, TransferLen And &HFF, 0}
             End Select
-            Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(Data, i, dataBuffer, TransferLen)
-            Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBuffer, TransferLen, 0, 60000, senseBufferPtr)
+            Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, TransferLen, 0, 60000, sense)
             If Not succ Then
-                Marshal.Copy(senseBufferPtr, sense, 0, 64)
-                Marshal.FreeHGlobal(cdb)
                 Marshal.FreeHGlobal(dataBuffer)
-                Marshal.FreeHGlobal(senseBufferPtr)
                 Throw New Exception("SCSI Failure")
                 Return sense
             End If
         Next
-        Marshal.Copy(senseBufferPtr, sense, 0, 64)
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBuffer)
-        Marshal.FreeHGlobal(senseBufferPtr)
         Return sense
     End Function
     Public Shared Function Write(TapeDrive As String, Data As Stream) As Byte()
@@ -1977,20 +1979,16 @@ Public Class TapeUtils
     End Function
     Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean) As Byte()
         Dim sense(63) As Byte
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
         Dim DataBuffer(BlockSize - 1) As Byte
         Dim DataPtr As IntPtr = Marshal.AllocHGlobal(BlockSize)
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
-
         Dim DataLen As Integer = Data.Read(DataBuffer, 0, BlockSize)
         Dim succ As Boolean
         While DataLen > 0
             Dim cdbData As Byte() = {&HA, 0, DataLen >> 16 And &HFF, DataLen >> 8 And &HFF, DataLen And &HFF, 0}
-            Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, DataPtr, DataLen, 0, 60000, sense)
                 If succ Then
                     Exit Do
                 Else
@@ -2005,11 +2003,8 @@ Public Class TapeUtils
             Loop
             DataLen = Data.Read(DataBuffer, 0, BlockSize)
         End While
-        If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         Data.Close()
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(DataPtr)
-        Marshal.FreeHGlobal(senseBufferPtr)
         If Not succ Then Throw New Exception("SCSI Failure")
         Return {0, 0, 0}
     End Function
@@ -2033,20 +2028,17 @@ Public Class TapeUtils
     End Function
     Public Shared Function Write(handle As IntPtr, sourceFile As String, ByVal BlockLen As Integer, ByVal senseEnabled As Boolean) As Byte()
         Dim sense(63) As Byte
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim DataBuffer(BlockLen - 1) As Byte
         Dim DataPtr As IntPtr = Marshal.AllocHGlobal(BlockLen)
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
         Dim fs As New IO.FileStream(sourceFile, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
         Dim DataLen As Integer = fs.Read(DataBuffer, 0, BlockLen)
         Dim succ As Boolean
         While DataLen > 0
             Dim cdbData As Byte() = {&HA, 0, DataLen >> 16 And &HFF, DataLen >> 8 And &HFF, DataLen And &HFF, 0}
-            Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
-                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, DataPtr, DataLen, 0, 60000, senseBufferPtr)
+                succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, DataPtr, DataLen, 0, 60000, sense)
                 If succ Then
                     Exit Do
                 Else
@@ -2061,11 +2053,8 @@ Public Class TapeUtils
             Loop
             DataLen = fs.Read(DataBuffer, 0, BlockLen)
         End While
-        If senseEnabled Then Marshal.Copy(senseBufferPtr, sense, 0, 64)
         fs.Close()
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(DataPtr)
-        Marshal.FreeHGlobal(senseBufferPtr)
         If Not succ Then Throw New Exception("SCSI Failure")
         Return {0, 0, 0}
     End Function
@@ -2104,7 +2093,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function GetMAMAttributeBytes(handle As IntPtr, PageCode_H As Byte, PageCode_L As Byte, ByVal PartitionNumber As Byte) As Byte()
         Dim DATA_LEN As Integer = 0
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(16)
+        Dim sense(63) As Byte
         Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
             PageCode_H,
             PageCode_L,
@@ -2112,20 +2101,16 @@ Public Class TapeUtils
             (DATA_LEN + 9) >> 16 And &HFF,
             (DATA_LEN + 9) >> 8 And &HFF,
             (DATA_LEN + 9) And &HFF, 0, 0}
-        Marshal.Copy(cdbData, 0, cdb, 16)
         Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(DATA_LEN + 9)
         Dim BCArray(DATA_LEN + 8) As Byte
         Marshal.Copy(BCArray, 0, dataBuffer, 9)
-        Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
         Dim Result As Byte() = {}
         Dim succ As Boolean = False
         SyncLock SCSIOperationLock
             Try
-                succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 16, dataBuffer, DATA_LEN + 9, 1, 60000, senseBuffer)
+                succ = TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, DATA_LEN + 9, 1, 60000, sense)
             Catch ex As Exception
-                Marshal.FreeHGlobal(cdb)
                 Marshal.FreeHGlobal(dataBuffer)
-                Marshal.FreeHGlobal(senseBuffer)
                 Throw New Exception("SCSIIOError")
             End Try
             Marshal.Copy(dataBuffer, BCArray, 0, DATA_LEN + 9)
@@ -2142,19 +2127,12 @@ Public Class TapeUtils
                         (DATA_LEN + 9) >> 16 And &HFF,
                         (DATA_LEN + 9) >> 8 And &HFF,
                         (DATA_LEN + 9) And &HFF, 0, 0}
-                    Dim cdb2 As IntPtr = Marshal.AllocHGlobal(16)
-                    Marshal.Copy(cdbData, 0, cdb2, 16)
                     succ = False
-                    Dim senseBuffer2 As IntPtr = Marshal.AllocHGlobal(64)
                     Try
-                        succ = TapeSCSIIOCtlUnmanaged(handle, cdb2, 16, dataBuffer2, DATA_LEN + 9, 1, 60000, senseBuffer)
+                        succ = TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer2, DATA_LEN + 9, 1, 60000, sense)
                     Catch ex As Exception
-                        Marshal.FreeHGlobal(cdb)
                         Marshal.FreeHGlobal(dataBuffer)
-                        Marshal.FreeHGlobal(senseBuffer)
                         Marshal.FreeHGlobal(dataBuffer2)
-                        Marshal.FreeHGlobal(cdb2)
-                        Marshal.FreeHGlobal(senseBuffer2)
                         Throw New Exception("SCSIIOError")
                     End Try
                     If succ Then
@@ -2162,15 +2140,11 @@ Public Class TapeUtils
                         Result = BCArray2.Skip(9).ToArray()
                     End If
                     Marshal.FreeHGlobal(dataBuffer2)
-                    Marshal.FreeHGlobal(cdb2)
-                    Marshal.FreeHGlobal(senseBuffer2)
                 End If
             End If
         End SyncLock
 
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBuffer)
-        Marshal.FreeHGlobal(senseBuffer)
         Return Result
     End Function
     Public Shared Function GetMAMAttributeBytes(TapeDrive As String, PageCode_H As Byte, PageCode_L As Byte) As Byte()
@@ -2392,9 +2366,6 @@ Public Class TapeUtils
         End Function
     End Class
     Public Shared Function SendSCSICommand(handle As IntPtr, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
-
         Dim dataBufferPtr As IntPtr
         Dim dataLen As Integer = 0
         If Data IsNot Nothing Then
@@ -2404,19 +2375,13 @@ Public Class TapeUtils
         Else
             dataBufferPtr = Marshal.AllocHGlobal(128)
         End If
-
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, dataLen, DataIn, TimeOut, senseBuffer)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
-            Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
             senseReport(senseBuffer)
         End If
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBufferPtr)
-        Marshal.FreeHGlobal(senseBufferPtr)
         Return succ
     End Function
     Public Shared Function SendSCSICommand(TapeDrive As String, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
@@ -2429,9 +2394,6 @@ Public Class TapeUtils
         End SyncLock
     End Function
     Public Shared Function SendSCSICommandUnmanaged(handle As IntPtr, cdbData As Byte(), Optional ByRef Data As Byte() = Nothing, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
-        Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-        Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
-
         Dim dataBufferPtr As IntPtr
         Dim dataLen As Integer = 0
         If Data IsNot Nothing Then
@@ -2442,18 +2404,13 @@ Public Class TapeUtils
             dataBufferPtr = Marshal.AllocHGlobal(128)
         End If
 
-        Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
-
         Dim senseBuffer(63) As Byte
-        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataLen, DataIn, TimeOut, senseBufferPtr)
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, dataLen, DataIn, TimeOut, senseBuffer)
         If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
         If senseReport IsNot Nothing Then
-            Marshal.Copy(senseBufferPtr, senseBuffer, 0, 64)
             senseReport(senseBuffer)
         End If
-        Marshal.FreeHGlobal(cdb)
         Marshal.FreeHGlobal(dataBufferPtr)
-        Marshal.FreeHGlobal(senseBufferPtr)
         Return succ
     End Function
 
@@ -3364,19 +3321,16 @@ Public Class TapeUtils
         End Function
 
         Public Shared Function SCSIReadElementStatus(Changer As String, Optional ByRef sense As Byte() = Nothing, Optional ByVal dSize As Integer = 8, Optional ByVal LUN As Byte = 0) As Byte()
-            Dim cdb As IntPtr = Marshal.AllocHGlobal(12)
             Dim cdbBytes As Byte()
             Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(dSize)
-            Dim senseBuffer As IntPtr = Marshal.AllocHGlobal(64)
             Dim succ As Boolean
             If dSize <= 8 Then
                 dSize = 8
                 cdbBytes = {&HB8, LUN << 5 Or &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
-                Marshal.Copy(cdbBytes, 0, cdb, 12)
                 SyncLock TapeUtils.SCSIOperationLock
                     Dim handle As IntPtr
                     TapeUtils.OpenTapeDrive(Changer, handle)
-                    succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, 8, 1, 60, senseBuffer)
+                    succ = TapeSCSIIOCtlUnmanaged(handle, cdbBytes, dataBuffer, 8, 1, 60, sense)
                     TapeUtils.CloseTapeDrive(handle)
                 End SyncLock
                 If succ Then
@@ -3389,9 +3343,7 @@ Public Class TapeUtils
                     dSize = dSize Or data0(7)
                     Marshal.FreeHGlobal(dataBuffer)
                 Else
-                    Marshal.FreeHGlobal(cdb)
                     Marshal.FreeHGlobal(dataBuffer)
-                    Marshal.FreeHGlobal(senseBuffer)
                     Return Nothing
                 End If
 
@@ -3399,28 +3351,20 @@ Public Class TapeUtils
             End If
 
             cdbBytes = {&HB8, &H10, 0, 0, &HFF, &HFF, 3, dSize >> 16 And &HFF, dSize >> 8 And &HFF, dSize And &HFF, 0, 0}
-            Marshal.Copy(cdbBytes, 0, cdb, 12)
             dataBuffer = Marshal.AllocHGlobal(dSize)
             SyncLock TapeUtils.SCSIOperationLock
                 Dim handle As IntPtr
                 TapeUtils.OpenTapeDrive(Changer, handle)
-                succ = TapeSCSIIOCtlUnmanaged(handle, cdb, 12, dataBuffer, dSize, 1, 60, senseBuffer)
+                succ = TapeSCSIIOCtlUnmanaged(handle, cdbBytes, dataBuffer, dSize, 1, 60, sense)
                 TapeUtils.CloseTapeDrive(handle)
             End SyncLock
             If succ Then
                 Dim data1(dSize - 1) As Byte
                 Marshal.Copy(dataBuffer, data1, 0, dSize)
-                If sense IsNot Nothing AndAlso sense.Length >= 64 Then
-                    Marshal.Copy(senseBuffer, sense, 0, 64)
-                End If
-                Marshal.FreeHGlobal(cdb)
                 Marshal.FreeHGlobal(dataBuffer)
-                Marshal.FreeHGlobal(senseBuffer)
                 Return data1
             Else
-                Marshal.FreeHGlobal(cdb)
                 Marshal.FreeHGlobal(dataBuffer)
-                Marshal.FreeHGlobal(senseBuffer)
                 Return Nothing
             End If
         End Function

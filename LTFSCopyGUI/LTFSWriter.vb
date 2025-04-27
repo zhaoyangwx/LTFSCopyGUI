@@ -4339,7 +4339,7 @@ Public Class LTFSWriter
                     PrintMsg($"Position = {TapeUtils.ReadPosition(driveHandle).ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim PModeData As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
-                    ExtraPartitionCount = PModeData(3)
+                    If PModeData.Length >= 4 Then ExtraPartitionCount = PModeData(3)
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
