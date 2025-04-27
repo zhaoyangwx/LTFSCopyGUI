@@ -366,15 +366,15 @@ Public Class LTFSConfigurator
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
+                        succ = TapeUtils.SCSIIOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length, CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer)
+                        'succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
-                    Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
+                    'Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
                                   PrintCommandResult(cdbData, dataData, senseBuffer)
                               End Sub)
-                    'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
                     Marshal.FreeHGlobal(cdb)
                     Marshal.FreeHGlobal(dataBufferPtr)
                     Marshal.FreeHGlobal(senseBufferPtr)
@@ -823,23 +823,17 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugRewind_Click(sender As Object, e As EventArgs) Handles ButtonDebugRewind.Click
         Me.Enabled = False
         Task.Run(Sub()
-                     Dim cdbData As Byte() = {1, 0, 0, 0, 0, 0}
-                     Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
-                     Marshal.Copy(cdbData, 0, cdb, 6)
+                     Dim cdb As Byte() = {1, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 60000, senseData)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
-                     Marshal.Copy(sense, senseData, 0, senseData.Length)
-                     PrintCommandResult(cdbData, Nothing, senseData)
-                     Marshal.FreeHGlobal(cdb)
+                     PrintCommandResult(cdb, Nothing, senseData)
                      Marshal.FreeHGlobal(data)
-                     Marshal.FreeHGlobal(sense)
                      Invoke(Sub() Me.Enabled = True)
                  End Sub)
 
@@ -1178,6 +1172,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub LTFSConfigurator_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        Operation_Cancel_Flag = True
         My.Settings.LTFSConf_AutoRefresh = CheckBoxAutoRefresh.Checked
         My.Settings.Save()
     End Sub
@@ -1882,21 +1877,15 @@ Public Class LTFSConfigurator
         Me.Enabled = False
         Task.Run(Sub()
                      Dim cdbData As Byte() = {4, 0, 0, 0, 0, 0}
-                     Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
-                     Marshal.Copy(cdbData, 0, cdb, 6)
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, data, 0, 1, 60000, senseData)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
-                     Marshal.Copy(sense, senseData, 0, senseData.Length)
-                     Marshal.FreeHGlobal(cdb)
                      Marshal.FreeHGlobal(data)
-                     Marshal.FreeHGlobal(sense)
                      Invoke(Sub()
                                 PrintCommandResult(cdbData, Nothing, senseData)
                                 Me.Enabled = True
@@ -1908,21 +1897,15 @@ Public Class LTFSConfigurator
         Me.Enabled = False
         Task.Run(Sub()
                      Dim cdbData As Byte() = {&H19, 0, 0, 0, 0, 0}
-                     Dim cdb As IntPtr = Marshal.AllocHGlobal(6)
-                     Marshal.Copy(cdbData, 0, cdb, 6)
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
-                     Dim sense As IntPtr = Marshal.AllocHGlobal(senseData.Length)
                      Dim handle As IntPtr
                      SyncLock TapeUtils.SCSIOperationLock
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, 6, data, 0, 1, 60000, sense)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, data, 0, 1, 60000, senseData)
                          TapeUtils.CloseTapeDrive(handle)
                      End SyncLock
-                     Marshal.Copy(sense, senseData, 0, senseData.Length)
-                     Marshal.FreeHGlobal(cdb)
                      Marshal.FreeHGlobal(data)
-                     Marshal.FreeHGlobal(sense)
                      Invoke(Sub()
                                 PrintCommandResult(cdbData, Nothing, senseData)
                                 Me.Enabled = True
@@ -1955,31 +1938,23 @@ Public Class LTFSConfigurator
                     0, 0, 0, 0, 0, 0, CByte(NumericUpDownTestSpeed.Value >> 8 And &HFF), CByte(NumericUpDownTestSpeed.Value And &HFF),
                     0, CByte(NumericUpDownTestStartLen.Value >> 16 And &HFF), CByte(NumericUpDownTestStartLen.Value >> 8 And &HFF), CByte(NumericUpDownTestStartLen.Value And &HFF), 0, 0, 0, CByte(NumericUpDownTestWrap.Value And &HFF),
                     0, 0, 0, 0}
-                    Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-                    Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
                     Dim dataBufferPtr As IntPtr
                     dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
                     Marshal.Copy(dataData, 0, dataBufferPtr, dataData.Length)
-                    Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
                     Dim senseBuffer(63) As Byte
-                    Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
                     Dim succ As Boolean
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, 0, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
+                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, dataData.Length, 0, CInt(TextBoxTimeoutValue.Text), senseBuffer)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
-                    Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
                                   PrintCommandResult(cdbData, dataData, senseBuffer)
                               End Sub)
-                    'Marshal.Copy(senseBufferPtr, senseBuffer, 0, 127)
-                    Marshal.FreeHGlobal(cdb)
                     Marshal.FreeHGlobal(dataBufferPtr)
-                    Marshal.FreeHGlobal(senseBufferPtr)
                     If succ Then
                         Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "OK")
                     Else
@@ -2057,6 +2032,7 @@ Public Class LTFSConfigurator
         TabControl1.Enabled = True
         TabPageCommand.Enabled = True
         ButtonStopRawDump.Enabled = True
+        TextBoxDebugOutput.Enabled = True
         TextBoxDebugOutput.Text = ""
         Dim log As Boolean = CheckBoxEnableDumpLog.Checked
         Dim thprog As New Threading.Thread(
@@ -2073,8 +2049,11 @@ Public Class LTFSConfigurator
                     Dim player As New IOManager.StreamPcmPlayer()
                     Dim HeaderReaded As Boolean = False
                     Dim HeaderChanged As Boolean = False
+                    Dim TotalPlayTime As New TimeSpan
+                    Invoke(Sub() TextBoxDebugOutput.AppendText($"Start playing at P{pos.PartitionNumber} B{pos.BlockNumber}{vbCrLf}"))
                     While True
                         Dim sense(63) As Byte
+                        pos = TapeUtils.ReadPosition(ConfTapeDrive)
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then
@@ -2086,19 +2065,23 @@ Public Class LTFSConfigurator
                                     Threading.Thread.Sleep(100)
                                 End While
                                 player.StopPlayback()
+                                HeaderChanged = True
                             End If
                             If Not HeaderReaded Or HeaderChanged Then
-                                player.Init(sampleRate, channels, bitsPerSample, isFloat, len0 <> readData.Length)
+                                Invoke(Sub() TextBoxDebugOutput.AppendText($"RIFF header applied: {sampleRate}Hz {channels}ch {bitsPerSample}bit {If(isFloat, "Float", "Integer")}{vbCrLf}"))
+                                player.Init(sampleRate, channels, bitsPerSample, isFloat, len0 <> readData.Length, len0 * 2)
                                 HeaderReaded = True
                                 HeaderChanged = False
                             End If
+                            Invoke(Sub() TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0")}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}"))
                             player.AddData(readData, isFloat)
+                            TotalPlayTime += New TimeSpan(CLng(readData.Length) * 8 / bitsPerSample / channels / sampleRate * 10000000)
                         End If
                         If Add_Key <> 0 Then
                             FileNum += 1
                             BlkNum = Block
                         End If
-                        If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                        If Me Is Nothing OrElse Me.Visible = False OrElse (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
                             Exit While
                         End If
                         If log Then
@@ -2110,12 +2093,13 @@ Public Class LTFSConfigurator
                         End If
                         Block += 1
                     End While
+                    If Operation_Cancel_Flag Then player.StopPlayback()
                     While player.IsPlaying And Not Operation_Cancel_Flag
                         Threading.Thread.Sleep(100)
                     End While
+                    If HeaderReaded AndAlso (Not Operation_Cancel_Flag) Then player.StopPlayback()
                     Operation_Cancel_Flag = False
-                    If HeaderReaded Then player.StopPlayback()
-
+                    Invoke(Sub() TextBoxDebugOutput.AppendText($"Stopped."))
                     Invoke(Sub()
                                For Each c As Control In Panel1.Controls
                                    c.Enabled = True
