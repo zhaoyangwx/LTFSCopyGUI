@@ -6795,8 +6795,8 @@ Public Class LTFSWriter
                                                                 If Not AllowOperation Then Continue While
                                                                 frm.Invoke(Sub() frm.Text = $"Idle")
                                                                 Dim dirListen As New IO.DirectoryInfo(txtLocation.Text)
-                                                                If dirListen.GetDirectories().Count > 0 Then
-                                                                    For i As Integer = 10 To 1 Step -1
+                                                                If dirListen.GetDirectories().Count > 0 OrElse dirListen.GetFiles().Count > 0 Then
+                                                                    For i As Integer = 2 To 1 Step -1
                                                                         Dim startsec As Integer = i
                                                                         frm.Invoke(Sub() frm.Text = $"Will start in {startsec}s")
                                                                         Threading.Thread.Sleep(1000)
@@ -6818,7 +6818,7 @@ Public Class LTFSWriter
                                                                     Dim cap1 As Long
                                                                     If cap(3) > 0 Then cap1 = cap(2) Else cap1 = cap(0)
                                                                     Invoke(Sub()
-                                                                               AddFileOrDir(schema._directory(0), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
+                                                                               AddFileOrDir(DirectCast(ListView1.Tag, ltfsindex.directory), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
                                                                            End Sub)
                                                                     While AllowOperation
                                                                         Threading.Thread.Sleep(100)
@@ -7728,6 +7728,47 @@ Public Class LTFSWriter
 
     Private Sub SettingToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SettingToolStripMenuItem.Click
         Form1.Button16_Click(sender, e)
+    End Sub
+
+    Private Sub 合并文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 合并文件ToolStripMenuItem.Click
+        If ListView1.SelectedItems IsNot Nothing AndAlso
+        ListView1.SelectedItems.Count > 0 Then
+            Dim flist As New List(Of ltfsindex.file)
+            Dim d As ltfsindex.directory = ListView1.Tag
+            For Each SI As ListViewItem In ListView1.SelectedItems
+                If TypeOf SI.Tag Is ltfsindex.file Then
+                    Dim f As ltfsindex.file = CType(SI.Tag, ltfsindex.file)
+                    If Not d.UnwrittenFiles.Contains(f) Then
+                        flist.Add(f)
+                    End If
+                End If
+            Next
+            Dim newFile As New ltfsindex.file
+            With newFile
+                .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
+                .accesstime = .backuptime
+                .changetime = .backuptime
+                .creationtime = .backuptime
+                .modifytime = .backuptime
+                .name = $"merge_{ .backuptime}"
+                For i As Integer = 0 To flist.Count - 1
+                    For j As Integer = 0 To flist(i).extentinfo.Count - 1
+                        If flist(i).extentinfo(j).fileoffset >= flist(i).length Then Continue For
+                        .extentinfo.Add(New ltfsindex.file.extent With {
+                                        .bytecount = Math.Min(flist(i).extentinfo(j).bytecount, flist(i).length - flist(i).extentinfo(j).fileoffset),
+                                        .byteoffset = flist(i).extentinfo(j).byteoffset,
+                                        .fileoffset = flist(i).extentinfo(j).fileoffset + newFile.length,
+                                        .partition = flist(i).extentinfo(j).partition,
+                                        .startblock = flist(i).extentinfo(j).startblock})
+                    Next
+                    .length += flist(i).length
+                Next
+                .fileuid = schema.highestfileuid + 1
+            End With
+            d.contents._file.Add(newFile)
+            schema.highestfileuid += 1
+            RefreshDisplay()
+        End If
     End Sub
 
     Private ToolTipChanErrLogShowingChanged As Boolean = False

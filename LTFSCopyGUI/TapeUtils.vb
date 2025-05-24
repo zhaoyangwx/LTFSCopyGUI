@@ -12,18 +12,18 @@ Public Class TapeUtils
         <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
         Public Structure SP_DEVINFO_DATA
 
-            Public cbSize As Integer
+            Public cbSize As UInteger
 
             Public ClassGuid As Guid
 
-            Public DevInst As Integer
+            Public DevInst As UInteger
 
             Public Reserved As IntPtr
         End Structure
         <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
         Public Structure SP_DEVINFO_DETAIL_DATA
 
-            Public cbSize As Integer
+            Public cbSize As UInteger
 
             <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
             Public DevicePath As String
@@ -40,6 +40,25 @@ Public Class TapeUtils
             Public Flags As UInteger
 
             Public Reserved As IntPtr
+        End Structure
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure SP_DEVICE_INTERFACE_DETAIL_DATA
+
+            Public cbSize As UInteger
+
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
+            Public DevicePath As String
+        End Structure
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure TAPE_DRIVE
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=8)>
+            Public VendorId As String
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=16)>
+            Public ProductId As String
+            <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=128)>
+            Public SerialNumber As String
+            Public DevIndex As Int32
+            Public NextTapeDrive As IntPtr
         End Structure
         <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
         Public Structure SP_DRVINFO_DATA
@@ -62,6 +81,13 @@ Public Class TapeUtils
             Public DriverDate As FILETIME
 
             Public DriverVersion As System.UInt64
+        End Structure
+
+        <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
+        Public Structure STORAGE_DEVICE_NUMBER
+            Public DeviceType As Int32
+            Dim DeviceNumber As Int32
+            Dim PartitionNumber As Int32
         End Structure
         Private Function GetVersionFromLong(ByVal version As System.UInt64) As String
             Dim baseNumber As System.UInt64 = 65535
@@ -161,28 +187,28 @@ Public Class TapeUtils
 
 
         Public Class GUID_DEVINTERFACE
-            Public Shared GUID_DEVINTERFACE_DISK As New Guid({&H53, &HF5, &H63, &H7, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_CDROM As New Guid({&H53, &HF5, &H63, &H8, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_PARTITION As New Guid({&H53, &HF5, &H63, &HA, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_TAPE As New Guid({&H53, &HF5, &H63, &HB, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_WRITEONCEDISK As New Guid({&H53, &HF5, &H63, &HC, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_VOLUME As New Guid({&H53, &HF5, &H63, &HD, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_MEDIUMCHANGER As New Guid({&H53, &HF5, &H63, &H10, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_FLOPPY As New Guid({&H53, &HF5, &H63, &H11, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_CDCHANGER As New Guid({&H53, &HF5, &H63, &H12, &HB6, &HBF, &H11, &HD0, &H94, &HF2, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_STORAGEPORT As New Guid({&H2A, &HCC, &HFE, &H60, &HC1, &H30, &H11, &HD2, &HB0, &H82, 0, &HA0, &HC9, &H1E, &HFB, &H8B})
-            Public Shared GUID_DEVINTERFACE_VMLUN As New Guid({&H6F, &H41, &H66, &H19, &H9F, &H29, &H42, &HA5, &HB2, &HB, 37, &HE2, &H19, &HCA, &H2, &HB0})
-            Public Shared GUID_DEVINTERFACE_SES As New Guid({&H17, &H90, &HC9, &HEC, &H47, &HD5, &H4D, &HF3, &HB5, &HAF, &H9A, &HDF, &H3C, &HF2, &H3E, &H48})
-            Public Shared GUID_DEVINTERFACE_SERVICE_VOLUME As New Guid({&H6E, &HAD, &H3D, &H82L, &H25, &HEC, &H46, &HBC, &HB7, &HFD, &HC1, &HF0, &HDF, &H8F, &H50, &H37})
-            Public Shared GUID_DEVINTERFACE_HIDDEN_VOLUME As New Guid({&H7F, &H10, &H8A, &H28L, &H98, &H33, &H4B, &H3B, &HB7, &H80, &H2C, &H6B, &H5F, &HA5, &HC0, &H62})
-            Public Shared GUID_DEVINTERFACE_UNIFIED_ACCESS_RPMB As New Guid({&H27, &H44, &H7C, &H21L, &HBC, &HC3, &H4D, &H7, &HA0, &H5B, &HA3, &H39, &H5B, &HB4, &HEE, &HE7})
-            Public Shared GUID_DEVINTERFACE_COMPORT As New Guid({&H86, &HE0, &HD1, &HE0L, &H80, &H89, &H11, &HD0, &H9C, &HE4, &H8, &H0, &H3E, &H30, &H1F, &H73})
-            Public Shared GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR As New Guid({&H4D, &H36, &HE9, &H78L, &HE3, &H25, &H11, &HCE, &HBF, &HC1, &H8, &H0, &H2B, &HE1, &H3, &H18})
+            Public Shared GUID_DEVINTERFACE_DISK As New Guid("53f56307-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_CDROM As New Guid("53f56308-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_PARTITION As New Guid("53f5630a-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_TAPE As New Guid("53f5630b-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_WRITEONCEDISK As New Guid("53f5630c-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_VOLUME As New Guid("53f5630d-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_MEDIUMCHANGER As New Guid("53f56310-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_FLOPPY As New Guid("53f56311-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_CDCHANGER As New Guid("53f56312-b6bf-11d0-94f2-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_STORAGEPORT As New Guid("2accfe60-c130-11d2-b082-00a0c91efb8b")
+            Public Shared GUID_DEVINTERFACE_VMLUN As New Guid("6f416619-9f29-42a5-b20b-37e219ca02b0")
+            Public Shared GUID_DEVINTERFACE_SES As New Guid("1790C9EC-47D5-4DF3-B5AF-9ADF3CF23E48")
+            Public Shared GUID_DEVINTERFACE_SERVICE_VOLUME As New Guid("6EAD3D82-25EC-46BC-B7FD-C1F0DF8F5037")
+            Public Shared GUID_DEVINTERFACE_HIDDEN_VOLUME As New Guid("7F108A28-9833-4B3B-B780-2C6B5FA5C062")
+            Public Shared GUID_DEVINTERFACE_UNIFIED_ACCESS_RPMB As New Guid("27447C21-BCC3-4D07-A05B-A3395BB4EEE7")
+            Public Shared GUID_DEVINTERFACE_COMPORT As New Guid("86E0D1E0-8089-11D0-9CE4-08003E301F73")
+            Public Shared GUID_DEVINTERFACE_SERENUM_BUS_ENUMERATOR As New Guid("4D36E978-E325-11CE-BFC1-08002BE10318")
         End Class
         <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
         Public Shared Function SetupDiGetClassDevs(
-            ByRef classGuid As Guid,
-            ByVal Enumerator As String,
+            ByRef classGuid As IntPtr,
+            ByVal Enumerator As IntPtr,
             ByVal hwndParent As IntPtr,
             ByVal Flags As UInteger) As IntPtr
         End Function
@@ -195,10 +221,10 @@ Public Class TapeUtils
         <DllImport("setupapi.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
         Public Shared Function SetupDiEnumDeviceInterfaces(
             ByVal DeviceInfoSet As IntPtr,
-            ByVal DeviceInfoData As SP_DEVINFO_DATA,
-            ByVal InterfaceClassGuid As Guid,
+            ByVal DeviceInfoData As IntPtr,
+            ByRef InterfaceClassGuid As IntPtr,
             ByVal MemberIndex As UInteger,
-            ByRef DeviceInterfaceData As SP_DEVICE_INTERFACE_DATA) As Boolean
+            ByRef DeviceInterfaceData As IntPtr) As Boolean
         End Function
         <DllImport("setupapi.dll", CharSet:=CharSet.Auto, SetLastError:=True)>
         Public Shared Function SetupDiGetDeviceInterfaceDetail(
@@ -254,6 +280,7 @@ Public Class TapeUtils
         Public Shared Function SetupDiDestroyDeviceInfoList(
             ByVal DeviceInfoSet As IntPtr) As Boolean
         End Function
+
     End Class
 
     <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
@@ -331,6 +358,17 @@ Public Class TapeUtils
     Public Class SCSIIOCtl
         Public Const IOCTL_SCSI_GET_INQUIRY_DATA As Integer = &H4100C
         Public Const IOCTL_SCSI_PASS_THROUGH_DIRECT As Integer = &H4D014
+        Public Const IOCTL_STORAGE_BASE As Integer = &H2D
+        Public Const METHOD_BUFFERED As Integer = 0
+        Public Const FILE_ANY_ACCESS As Integer = 0
+        Public Shared ReadOnly Property IOCTL_STORAGE_GET_DEVICE_NUMBER As Integer
+            Get
+                Return CTL_CODE(IOCTL_STORAGE_BASE, &H421, METHOD_BUFFERED, FILE_ANY_ACCESS)
+            End Get
+        End Property
+        Public Shared Function CTL_CODE(DeviceType As Integer, [Function] As Integer, [Method] As Integer, Access As Integer) As Integer
+            Return ((DeviceType << 16) Or (Access << 14) Or ([Function] << 2) Or [Method])
+        End Function
         <StructLayout(LayoutKind.Sequential)>
         Public Class SCSI_PASS_THROUGH_DIRECT
             Public Const CdbBufferLength As Integer = 16
@@ -2417,10 +2455,72 @@ Public Class TapeUtils
     Public Const DEFAULT_LOG_DIR As String = "C:\ProgramData\HPE\LTFS"
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
     Public Shared Function GetTapeDriveList() As List(Of TapeDrive)
+        Dim LDrive As New List(Of TapeDrive)
+        If False Then
+            Dim GUIDPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(GetType(Guid)))
+            Marshal.Copy(SetupAPI.GUID_DEVINTERFACE.GUID_DEVINTERFACE_TAPE.ToByteArray(), 0, GUIDPtr, 16)
+            'Marshal.StructureToPtr(SetupAPI.GUID_DEVINTERFACE.GUID_DEVINTERFACE_TAPE, GUIDPtr, True)
+
+            Dim devInfo As IntPtr = SetupAPI.SetupDiGetClassDevs(GUIDPtr, IntPtr.Zero, IntPtr.Zero, SetupAPI.DIGCF_DEVICEINTERFACE Or SetupAPI.DIGCF_PRESENT)
+            Dim devdata As SetupAPI.SP_DEVICE_INTERFACE_DATA
+            Dim devdataPtr As IntPtr
+            Dim listHead As IntPtr = IntPtr.Zero
+            Dim listLast As IntPtr = IntPtr.Zero
+            Dim devIndex As UInt32 = 0
+            Dim devsFound As UInt32 = 0
+            Dim lastRet As Boolean = False
+
+            Do
+                devdata.cbSize = Marshal.SizeOf(GetType(SetupAPI.SP_DEVICE_INTERFACE_DATA))
+                devdataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devdata))
+                Marshal.StructureToPtr(devdata, devdataPtr, True)
+                lastRet = SetupAPI.SetupDiEnumDeviceInterfaces(devInfo, IntPtr.Zero, GUIDPtr, devIndex, devdataPtr)
+                If lastRet Then
+                    Marshal.PtrToStructure(devdataPtr, devdata)
+                    Dim dwRequiredSize As Int32 = 0
+                    SetupAPI.SetupDiGetDeviceInterfaceDetail(devInfo, devdata, IntPtr.Zero, 0, dwRequiredSize, IntPtr.Zero)
+                    If (dwRequiredSize > 0 AndAlso GetLastError() = 122) Then 'ERROR_INSUFFICIENT_BUFFER
+                        Dim devDetail As SetupAPI.SP_DEVICE_INTERFACE_DETAIL_DATA
+                        devDetail.cbSize = Marshal.SizeOf(GetType(SetupAPI.SP_DEVICE_INTERFACE_DETAIL_DATA))
+                        Dim devDetailPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devDetail))
+                        Marshal.StructureToPtr(devDetail, devDetailPtr, True)
+                        If SetupAPI.SetupDiGetDeviceInterfaceDetail(devInfo, devdata, devDetailPtr, dwRequiredSize, dwRequiredSize, IntPtr.Zero) Then
+                            Marshal.PtrToStructure(devDetailPtr, devDetail)
+                            Dim handle As IntPtr = CreateFile(devDetail.DevicePath, 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
+                            If handle <> -1 Then
+                                Dim result As Boolean = False
+                                Dim dataBuffer(127) As Byte
+                                Dim cdb(5) As Byte
+                                Dim devNum As SetupAPI.STORAGE_DEVICE_NUMBER
+                                Dim devNumPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devNum))
+                                Marshal.StructureToPtr(devNum, devNumPtr, True)
+                                Dim SPDRP_LOCATION_PATHS As Integer = &H23
+                                Dim driveData As SetupAPI.TAPE_DRIVE
+                                Dim lpBytesReturned As Int32
+                                result = DeviceIoControl(handle, SCSIIOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPI.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
+                                Marshal.PtrToStructure(devNumPtr, devNum)
+                                Marshal.FreeHGlobal(devNumPtr)
+                                driveData.DevIndex = devNum.DeviceNumber
+                                If result Then
+                                    Dim inquiryResult As TapeDrive = Inquiry(handle)
+                                    LDrive.Add(inquiryResult)
+                                End If
+                            End If
+                        End If
+                        Marshal.FreeBSTR(devDetailPtr)
+                    End If
+                End If
+                Marshal.FreeHGlobal(devdataPtr)
+                devIndex += 1
+            Loop While lastRet
+            Marshal.FreeHGlobal(GUIDPtr)
+            SetupAPI.SetupDiDestroyDeviceInfoList(devInfo)
+        End If
+
+
         Dim p As IntPtr = _GetTapeDriveList()
         'MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
         Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-        Dim LDrive As New List(Of TapeDrive)
         For Each t As String In s
             Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
             If q.Length = 4 Then

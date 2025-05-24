@@ -23,7 +23,7 @@ Namespace My
         Shared Function AttachConsole(pid As Integer) As Boolean
 
         End Function
-        Public Sub InitConsole()
+        Public Shared Sub InitConsole()
             If Not AttachConsole(-1) Then
                 AllocConsole()
             Else

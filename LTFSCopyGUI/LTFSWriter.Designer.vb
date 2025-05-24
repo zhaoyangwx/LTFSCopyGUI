@@ -111,6 +111,7 @@ Partial Class LTFSWriter
         Me.粘贴选中ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.重命名文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.重命名目录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.合并文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator3 = New System.Windows.Forms.ToolStripSeparator()
         Me.导入文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.添加文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -458,7 +459,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.移动到索引区ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.剪切文件ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem1, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.新建压缩文件ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.文件详情ToolStripMenuItem, Me.复制信息到剪贴板ToolStripMenuItem})
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.移动到索引区ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.剪切文件ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem1, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.新建压缩文件ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.文件详情ToolStripMenuItem, Me.复制信息到剪贴板ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
@@ -522,6 +523,11 @@ Partial Class LTFSWriter
         '
         Me.重命名目录ToolStripMenuItem.Name = "重命名目录ToolStripMenuItem"
         resources.ApplyResources(Me.重命名目录ToolStripMenuItem, "重命名目录ToolStripMenuItem")
+        '
+        '合并文件ToolStripMenuItem
+        '
+        Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
+        resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
         '
         'ToolStripSeparator3
         '
@@ -1638,4 +1644,5 @@ Partial Class LTFSWriter
     Friend WithEvents ToolTipChanErrLog As ToolTip
     Friend WithEvents ToolStripProgressBar1 As ToolStripProgressBar
     Friend WithEvents SettingToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 合并文件ToolStripMenuItem As ToolStripMenuItem
 End Class
