@@ -142,7 +142,7 @@ Public Class LTFSConfigurator
                  End Sub)
     End Sub
 
-    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles ButtonRefresh.Click
+    Private Sub ButtonRefresh_Click(sender As Object, e As EventArgs) Handles ButtonRefresh.Click
         RefreshUI()
     End Sub
 
@@ -1097,19 +1097,19 @@ Public Class LTFSConfigurator
                 Panel1.Enabled = False
                 TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                     Sub(Message As String)
-                    'ProgressReport
-                    Invoke(Sub() TextBoxDebugOutput.AppendText(Message & vbCrLf))
+                        'ProgressReport
+                        Invoke(Sub() TextBoxDebugOutput.AppendText(Message & vbCrLf))
                     End Sub,
                     Sub(Message As String)
-                    'OnFinished
-                    Invoke(Sub()
+                        'OnFinished
+                        Invoke(Sub()
                                    TextBoxDebugOutput.AppendText("Format finished.")
                                    Panel1.Enabled = True
                                End Sub)
                     End Sub,
                     Sub(Message As String)
-                    'OnError
-                    Invoke(Sub()
+                        'OnError
+                        Invoke(Sub()
                                    TextBoxDebugOutput.AppendText(Message & vbCrLf)
                                    TextBoxDebugOutput.AppendText("Format failed.")
                                    Panel1.Enabled = True
@@ -2004,7 +2004,7 @@ Public Class LTFSConfigurator
 
     End Function
     <Category("AudioPlayer")>
-    Public property sampleRate As Integer = 44100
+    Public Property sampleRate As Integer = 44100
     <Category("AudioPlayer")>
     Public Property channels As Short = 2
     <Category("AudioPlayer")>
@@ -2210,4 +2210,5 @@ Public Class LTFSConfigurator
 
         Return header
     End Function
+
 End Class

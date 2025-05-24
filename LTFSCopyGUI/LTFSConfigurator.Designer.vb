@@ -85,6 +85,9 @@ Partial Class LTFSConfigurator
         Me.LabelReadBlockLim = New System.Windows.Forms.Label()
         Me.ButtonStopRawDump = New System.Windows.Forms.Button()
         Me.ButtonDebugDumpTape = New System.Windows.Forms.Button()
+        Me.ContextMenuStripRawDump = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.WriteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.PlayPCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TabPageBuffer = New System.Windows.Forms.TabPage()
         Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
         Me.ComboBoxBufferPage = New System.Windows.Forms.ComboBox()
@@ -140,9 +143,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ContextMenuStripRawDump = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.WriteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.PlayPCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -155,6 +155,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownEraseCycle, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripErase.SuspendLayout()
         CType(Me.NumericUpDownBlockLen, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStripRawDump.SuspendLayout()
         Me.TabPageBuffer.SuspendLayout()
         Me.TabPageMAM.SuspendLayout()
         CType(Me.NumericUpDownPCHigh, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -166,7 +167,6 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.ContextMenuStripRawDump.SuspendLayout()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -605,6 +605,22 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
+        'ContextMenuStripRawDump
+        '
+        Me.ContextMenuStripRawDump.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.WriteToolStripMenuItem, Me.PlayPCMToolStripMenuItem})
+        Me.ContextMenuStripRawDump.Name = "ContextMenuStripRawDump"
+        resources.ApplyResources(Me.ContextMenuStripRawDump, "ContextMenuStripRawDump")
+        '
+        'WriteToolStripMenuItem
+        '
+        Me.WriteToolStripMenuItem.Name = "WriteToolStripMenuItem"
+        resources.ApplyResources(Me.WriteToolStripMenuItem, "WriteToolStripMenuItem")
+        '
+        'PlayPCMToolStripMenuItem
+        '
+        Me.PlayPCMToolStripMenuItem.Name = "PlayPCMToolStripMenuItem"
+        resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
+        '
         'TabPageBuffer
         '
         Me.TabPageBuffer.Controls.Add(Me.ButtonDebugDumpBuffer)
@@ -954,22 +970,6 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ContextMenuStripRawDump
-        '
-        Me.ContextMenuStripRawDump.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.WriteToolStripMenuItem, Me.PlayPCMToolStripMenuItem})
-        Me.ContextMenuStripRawDump.Name = "ContextMenuStripRawDump"
-        resources.ApplyResources(Me.ContextMenuStripRawDump, "ContextMenuStripRawDump")
-        '
-        'WriteToolStripMenuItem
-        '
-        Me.WriteToolStripMenuItem.Name = "WriteToolStripMenuItem"
-        resources.ApplyResources(Me.WriteToolStripMenuItem, "WriteToolStripMenuItem")
-        '
-        'PlayPCMToolStripMenuItem
-        '
-        Me.PlayPCMToolStripMenuItem.Name = "PlayPCMToolStripMenuItem"
-        resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -993,6 +993,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownEraseCycle, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripErase.ResumeLayout(False)
         CType(Me.NumericUpDownBlockLen, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStripRawDump.ResumeLayout(False)
         Me.TabPageBuffer.ResumeLayout(False)
         Me.TabPageBuffer.PerformLayout()
         Me.TabPageMAM.ResumeLayout(False)
@@ -1008,7 +1009,6 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
-        Me.ContextMenuStripRawDump.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub

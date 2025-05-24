@@ -7,6 +7,8 @@ Imports System.IO.Hashing
 Imports LTFSCopyGUI
 Imports System.Runtime.InteropServices
 Imports NAudio.Wave
+Imports System.Text
+Imports System.Net.Sockets
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
@@ -1380,7 +1382,7 @@ Public Class IOManager
         ''' <param name="sampleRate">采样率（如 44100）</param>
         ''' <param name="channels">通道数（1=单声道，2=立体声）</param>
         ''' <param name="bitsPerSample">位深（如 16）</param>
-        Public Sub Init(sampleRate As Integer, channels As Integer, bitsPerSample As Integer, isFloat As Boolean, Optional ByVal ReInitialize As Boolean = False)
+        Public Sub Init(sampleRate As Integer, channels As Integer, bitsPerSample As Integer, isFloat As Boolean, Optional ByVal ReInitialize As Boolean = False, Optional ByVal MinBufferLen As Integer = 1048576)
             If isFloat Then
                 waveFormat = New WaveFormat(sampleRate, channels)
             Else
@@ -1389,6 +1391,7 @@ Public Class IOManager
             If ReInitialize Then LastExtraBytes = {}
             waveProvider = New BufferedWaveProvider(waveFormat)
             waveProvider.DiscardOnBufferOverflow = True ' 防止溢出
+            If waveProvider.BufferLength < MinBufferLen Then waveProvider.BufferLength = MinBufferLen
             waveOut = New WaveOut()
             waveOut.Init(waveProvider)
             waveOut.Volume = 1
@@ -1427,6 +1430,7 @@ Public Class IOManager
                     Next
                     pcmBytes = outValue.ToArray()
                 End If
+
                 While waveProvider.BufferedBytes + pcmBytes.Length > waveProvider.BufferLength
                     Threading.Thread.Sleep(20)
                 End While
