@@ -1102,6 +1102,7 @@ Public Class LTFSConfigurator
                     End Sub,
                     Sub(Message As String)
                         'OnFinished
+                        TapeUtils.CloseTapeDrive(driveHandle)
                         Invoke(Sub()
                                    TextBoxDebugOutput.AppendText("Format finished.")
                                    Panel1.Enabled = True
@@ -1109,6 +1110,7 @@ Public Class LTFSConfigurator
                     End Sub,
                     Sub(Message As String)
                         'OnError
+                        TapeUtils.CloseTapeDrive(driveHandle)
                         Invoke(Sub()
                                    TextBoxDebugOutput.AppendText(Message & vbCrLf)
                                    TextBoxDebugOutput.AppendText("Format failed.")
