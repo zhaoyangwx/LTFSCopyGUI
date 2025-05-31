@@ -1281,10 +1281,8 @@ Public Class LTFSWriter
                              End If
                              If driveHandle <> -1 AndAlso TapeDrive.Length > 0 Then
                                  If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
+                                     RefreshDriveLEDIndicator()
                                      Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
-                                     SyncLock TapeUtils.SCSIOperationLock
-                                         RefreshDriveLEDIndicator()
-                                     End SyncLock
                                  End If
                              End If
                              If ToolTipChanErrLogShowing Then
@@ -1425,13 +1423,13 @@ Public Class LTFSWriter
         Dim logdataDSLP As Byte()
         Dim logdataDTD As Byte()
         Task.Run(Sub()
-                     If Threading.Monitor.TryEnter(OperationLock, 500) Then
+                     If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 500) Then
                          Try
                              logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
                              logdataDTD = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
-                             Threading.Monitor.Exit(OperationLock)
+                             Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                          Catch ex As Exception
-                             Threading.Monitor.Exit(OperationLock)
+                             Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                              PrintMsg(ex.ToString(), LogOnly:=True)
                              Exit Sub
                          End Try
