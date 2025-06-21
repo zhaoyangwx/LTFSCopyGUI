@@ -2040,6 +2040,9 @@ Public Class LTFSWriter
                                         Catch ex As Exception
                                             s.Add(("-"))
                                         End Try
+                                    Else
+                                        s.Add("-")
+                                        s.Add("-")
                                     End If
                                 Else
                                     s.Add("-")
@@ -2391,43 +2394,61 @@ Public Class LTFSWriter
     ''' <returns>
     ''' Data start position
     ''' </returns>
-    Public Function DumpDataToIndexPartition(ByVal Data As IO.Stream, Optional ByVal RetainPosisiton As Boolean = True) As Long
+    Public Function DumpDataToIndexPartition(ByVal Data As IO.Stream, Optional ByVal RetainPosisiton As Boolean = True, Optional ByVal IsFirstFile As Boolean = True, Optional ByVal IsLastFile As Boolean = True) As Long
         Try
             If ExtraPartitionCount = 0 Then Return -1
+            Static tmpf As String = ""
             'record previous position
             Dim pPrevious As New TapeUtils.PositionData(driveHandle)
             'locate
-            TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
             Dim pFMIndex As New TapeUtils.PositionData(driveHandle)
+            If IsFirstFile Then
+                TapeUtils.Locate(driveHandle, 3UL, IndexPartition, TapeUtils.LocateDestType.FileMark)
+                pFMIndex = New TapeUtils.PositionData(driveHandle)
+            End If
             Dim pStartBlock As Long = pFMIndex.BlockNumber
-            'Dump old index
-            If Not TapeUtils.ReadFileMark(driveHandle) Then Return -1
-            Dim tmpf As String = $"{Application.StartupPath}\LIT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
+            If IsFirstFile Then
+                'Dump old index
+                If Not TapeUtils.ReadFileMark(driveHandle) Then Return -1
+                tmpf = $"{Application.StartupPath}\LIT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+                TapeUtils.ReadToFileMark(driveHandle, tmpf, plabel.blocksize)
+            End If
             'Write data
             TapeUtils.Locate(driveHandle, pFMIndex.BlockNumber, pFMIndex.PartitionNumber)
-            TapeUtils.Write(handle:=driveHandle, Data:=Data, BlockSize:=plabel.blocksize, senseEnabled:=False)
-            'Recover old index
-            TapeUtils.WriteFileMark(driveHandle)
-            TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
-            IO.File.Delete(tmpf)
-            TapeUtils.WriteFileMark(driveHandle)
-            'Recover position
-            If RetainPosisiton Then TapeUtils.Locate(driveHandle, pPrevious.BlockNumber, pPrevious.PartitionNumber)
+            CurrentBytesProcessed = 0
+            TapeUtils.Write(handle:=driveHandle, Data:=Data, BlockSize:=plabel.blocksize, senseEnabled:=False,
+                            ProgressReport:=Sub(progress As Long)
+                                                Threading.Interlocked.Add(TotalBytesProcessed, progress)
+                                                Threading.Interlocked.Add(CurrentBytesProcessed, progress)
+                                            End Sub)
+            If IsLastFile Then
+                'Recover old index
+                TapeUtils.WriteFileMark(driveHandle)
+                TapeUtils.Write(driveHandle, tmpf, plabel.blocksize, False)
+                IO.File.Delete(tmpf)
+                TapeUtils.WriteFileMark(driveHandle)
+                'Recover position
+                If RetainPosisiton Then TapeUtils.Locate(driveHandle, pPrevious.BlockNumber, pPrevious.PartitionNumber)
+            End If
             Return pStartBlock
         Catch ex As Exception
             MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
         End Try
         Return -1
     End Function
-    Public Sub MoveToIndexPartition(ByVal f As ltfsindex.file)
+    Public Sub MoveToIndexPartition(ByVal f As ltfsindex.file, Optional ByVal tmpfile As String = "")
         Try
             If ExtraPartitionCount = 0 Then Exit Sub
             If f Is Nothing Then Exit Sub
             If f.extentinfo Is Nothing OrElse f.extentinfo.Count = 0 Then Exit Sub
             If f.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Exit Sub
-            Dim tmpf As String = $"{Application.StartupPath}\LFT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-            RestoreFile(tmpf, f)
+            Dim tmpf As String
+            If tmpfile IsNot Nothing AndAlso IO.File.Exists(tmpfile) Then
+                tmpf = tmpfile
+            Else
+                tmpf = $"{Application.StartupPath}\LFT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+                RestoreFile(tmpf, f)
+            End If
             Dim fs As New IO.FileStream(tmpf, IO.FileMode.Open)
             Dim len As Long = fs.Length
             Dim startblock As Integer = DumpDataToIndexPartition(fs)
@@ -3545,7 +3566,7 @@ Public Class LTFSWriter
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
             Dim p As TapeUtils.PositionData
             While True
-                Dim add_code As UShort = TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, CByte(schema.previousgenerationlocation.partition), TapeUtils.LocateDestType.Block)
+                Dim add_code As UShort = TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, DataPartition, TapeUtils.LocateDestType.Block)
                 p = GetPos
                 If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse (p.BlockNumber <> schema.previousgenerationlocation.startblock) Then
                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
@@ -3687,6 +3708,8 @@ Public Class LTFSWriter
                         End If
 
                         Dim p As New TapeUtils.PositionData(driveHandle)
+
+                        Dim lastpos As New TapeUtils.PositionData(driveHandle)
                         TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                         For i As Integer = 0 To WriteList.Count - 1
                             If i < WriteList.Count - 1 Then
@@ -3750,12 +3773,37 @@ Public Class LTFSWriter
                                         End If
                                     End If
                                     If Not dupe Then
+                                        Dim IsIndexPartition As Boolean = False
                                         Dim fileextent As New ltfsindex.file.extent With
-                                            {.partition = ltfsindex.PartitionLabel.b,
+                                            {.partition = DataPartition,
                                             .startblock = p.BlockNumber,
                                             .bytecount = finfo.Length,
                                             .byteoffset = 0,
                                             .fileoffset = 0}
+                                        If IndexPartition <> DataPartition AndAlso fr.File.extentinfo IsNot Nothing AndAlso fr.File.extentinfo.Count > 0 AndAlso fr.File.extentinfo(0).partition = IndexPartition Then
+                                            IsIndexPartition = True
+                                            fr.File.extentinfo.Clear()
+                                            Select Case fr.Open()
+                                                Case DialogResult.Ignore
+                                                    PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                                    Continue For
+                                                Case DialogResult.Abort
+                                                    StopFlag = True
+                                                    Throw New Exception(My.Resources.ResText_FileOpenError)
+                                            End Select
+                                            fileextent.partition = IndexPartition
+                                            Dim IsFirstFile As Boolean = (i <= 0 OrElse p.PartitionNumber = DataPartition)
+                                            Dim IsLastFile As Boolean = (i >= WriteList.Count - 1 OrElse (WriteList(i + 1).File.extentinfo Is Nothing) OrElse (WriteList(i + 1).File.extentinfo.Count = 0) OrElse WriteList(i + 1).File.extentinfo(0).partition = DataPartition)
+                                            fileextent.startblock = DumpDataToIndexPartition(fr.fs, False, IsFirstFile, IsLastFile)
+                                            fr.Close()
+                                            If IsLastFile Then TapeUtils.Locate(driveHandle, lastpos.BlockNumber, lastpos.PartitionNumber)
+                                        Else
+                                                If p.PartitionNumber <> lastpos.PartitionNumber OrElse p.BlockNumber <> lastpos.BlockNumber Then
+                                                TapeUtils.Locate(driveHandle, lastpos.BlockNumber, lastpos.PartitionNumber)
+                                                p = New TapeUtils.PositionData(driveHandle)
+                                                fileextent.startblock = p.BlockNumber
+                                            End If
+                                        End If
                                         fr.File.extentinfo.Add(fileextent)
                                         PrintMsg($"{My.Resources.ResText_Writing} {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}", False,
                                              $"{My.Resources.ResText_Writing}: {fr.SourcePath}{vbCrLf}{My.Resources.ResText_Size}: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
@@ -3769,6 +3817,7 @@ Public Class LTFSWriter
                                             While True
                                                 Try
                                                     FileData = fr.ReadAllBytes()
+                                                    If IsIndexPartition Then succ = True
                                                     Exit While
                                                 Catch ex As Exception
                                                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
@@ -3785,7 +3834,7 @@ Public Class LTFSWriter
                                                 End Try
                                             End While
                                             If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
-                                            While Not succ
+                                            While Not succ AndAlso Not IsIndexPartition
                                                 Dim sense As Byte()
                                                 Try
                                                     sense = TapeUtils.Write(driveHandle, FileData)
@@ -4053,10 +4102,13 @@ Public Class LTFSWriter
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
                                         End If
-                                        p = GetPos
+                                        p = New TapeUtils.PositionData(driveHandle)
+                                        If Not IsIndexPartition Then
+                                            lastpos = New TapeUtils.PositionData(driveHandle)
+                                            CurrentHeight = p.BlockNumber
+                                        End If
                                         If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
                                         PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
-                                        CurrentHeight = p.BlockNumber
                                     End If
                                 Else
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709")
@@ -6705,8 +6757,21 @@ Public Class LTFSWriter
                             TapeUtils.ReserveUnit(driveHandle)
                             TapeUtils.PreventMediaRemoval(driveHandle)
                             RestorePosition = New TapeUtils.PositionData(driveHandle)
+
                             For Each FileIndex As ltfsindex.file In flist
-                                MoveToIndexPartition(FileIndex)
+                                Dim tmpf As String = $"{Application.StartupPath}\LFT_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
+                                If DirectCast(ListView1.Tag, ltfsindex.directory).UnwrittenFiles.Contains(FileIndex) Then
+                                    FileIndex.extentinfo.Clear()
+                                    FileIndex.extentinfo.Add(New ltfsindex.file.extent With {.partition = IndexPartition})
+                                Else
+                                    RestoreFile(tmpf, FileIndex)
+                                    FileIndex.TempObj = tmpf
+                                End If
+                            Next
+                            For Each FileIndex As ltfsindex.file In flist
+                                If Not DirectCast(ListView1.Tag, ltfsindex.directory).UnwrittenFiles.Contains(FileIndex) Then
+                                    MoveToIndexPartition(FileIndex, FileIndex.TempObj)
+                                End If
                                 If StopFlag Then
                                     PrintMsg(My.Resources.ResText_OpCancelled)
                                     SetStatusLight(LWStatus.Idle)
