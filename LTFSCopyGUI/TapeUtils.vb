@@ -2015,7 +2015,7 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-    Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean) As Byte()
+    Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean, Optional ByVal ProgressReport As Action(Of Long) = Nothing) As Byte()
         Dim sense(63) As Byte
         BlockSize = Math.Min(BlockSize, GlobalBlockLimit)
         Dim DataBuffer(BlockSize - 1) As Byte
@@ -2028,6 +2028,9 @@ Public Class TapeUtils
             Do
                 succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, DataPtr, DataLen, 0, 60000, sense)
                 If succ Then
+                    If ProgressReport IsNot Nothing Then
+                        ProgressReport(DataLen)
+                    End If
                     Exit Do
                 Else
                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)

@@ -130,13 +130,13 @@
     <value>Remount</value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="Label1.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="LabelDrive.Size" type="System.Drawing.Size, System.Drawing">
     <value>35, 12</value>
   </data>
   <data name="LabelDrive.Text" xml:space="preserve">
     <value>Drive</value>
   </data>
-  <data name="Label2.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="LabelLetter.Size" type="System.Drawing.Size, System.Drawing">
     <value>41, 12</value>
   </data>
   <data name="LabelLetter.Text" xml:space="preserve">
@@ -151,11 +151,8 @@
   <data name="LabelInfo.Text" xml:space="preserve">
     <value>Info</value>
   </data>
-  <data name="Button8.Location" type="System.Drawing.Point, System.Drawing">
-    <value>448, 627</value>
-  </data>
-  <data name="Button8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>102, 23</value>
+  <data name="ButtonLoadThreaded.Location" type="System.Drawing.Point, System.Drawing">
+    <value>473, 607</value>
   </data>
   <data name="ButtonLoadThreaded.Text" xml:space="preserve">
     <value>Load threaded</value>
@@ -169,7 +166,7 @@
   <data name="ButtonChangerTool.Text" xml:space="preserve">
     <value>Changer</value>
   </data>
-  <data name="CheckBox3.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="CheckBoxAutoRefresh.Size" type="System.Drawing.Size, System.Drawing">
     <value>96, 16</value>
   </data>
   <data name="CheckBoxAutoRefresh.Text" xml:space="preserve">
@@ -177,6 +174,12 @@
   </data>
   <data name="ButtonFileSorter.Text" xml:space="preserve">
     <value>FileSorter</value>
+  </data>
+  <data name="ContextMenuStripLTFSWriter.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 48</value>
+  </data>
+  <data name="ButtonLTFSWriter.Text" xml:space="preserve">
+    <value>LTFSWriter</value>
   </data>
   <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 22</value>
@@ -190,34 +193,28 @@
   <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Disable index autoload</value>
   </data>
-  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 48</value>
-  </data>
-  <data name="ButtonLTFSWriter.Text" xml:space="preserve">
-    <value>LTFSWriter</value>
-  </data>
   <data name="ButtonUnthread.Text" xml:space="preserve">
     <value>Unthread</value>
   </data>
-  <data name="Button13.Location" type="System.Drawing.Point, System.Drawing">
-    <value>556, 627</value>
+  <data name="ButtonLoadUnthreaded.Location" type="System.Drawing.Point, System.Drawing">
+    <value>554, 607</value>
   </data>
-  <data name="Button13.Size" type="System.Drawing.Size, System.Drawing">
-    <value>131, 23</value>
+  <data name="ButtonLoadUnthreaded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 23</value>
   </data>
   <data name="ButtonLoadUnthreaded.Text" xml:space="preserve">
     <value>Load (not threaded)</value>
   </data>
-  <data name="CheckBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>933, 10</value>
+  <data name="CheckBoxDebugPanel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>939, 10</value>
   </data>
-  <data name="CheckBox1.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="CheckBoxDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
     <value>132, 16</value>
   </data>
   <data name="CheckBoxDebugPanel.Text" xml:space="preserve">
     <value>SCSI Command Panel</value>
   </data>
-  <data name="Label6.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="LabelDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
     <value>113, 12</value>
   </data>
   <data name="LabelDebugPanel.Text" xml:space="preserve">
