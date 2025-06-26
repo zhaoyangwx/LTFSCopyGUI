@@ -882,4 +882,7 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds" xml:space="preserve">
     <value>Cool down milliseconds after capacity loss</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_IgnoreVolumeOverflow" xml:space="preserve">
+    <value>Ignore Volume Overflow</value>
+  </data>
 </root>

@@ -3834,7 +3834,7 @@ Public Class LTFSWriter
                                                 End Try
                                             End While
                                             If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
-                                            While Not succ AndAlso Not IsIndexPartition
+                                            While ((Not succ) AndAlso (Not IsIndexPartition))
                                                 Dim sense As Byte()
                                                 Try
                                                     sense = TapeUtils.Write(driveHandle, FileData)
@@ -3857,13 +3857,13 @@ Public Class LTFSWriter
                                                     Continue While
                                                 End Try
                                                 If ((sense(2) >> 6) And &H1) = 1 Then
-                                                    If (sense(2) And &HF) = 13 Then
+                                                    If ((sense(2) And &HF) = 13) AndAlso (Not My.Settings.LTFSWriter_IgnoreVolumeOverflow) Then
                                                         PrintMsg(My.Resources.ResText_VOF)
                                                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                         StopFlag = True
                                                         Exit For
                                                     Else
-                                                        PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
+                                                        PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
                                                         succ = True
                                                         Exit While
                                                     End If
@@ -4008,7 +4008,7 @@ Public Class LTFSWriter
                                                                 Continue While
                                                             End Try
                                                             If (((sense(2) >> 6) And &H1) = 1) Then
-                                                                If ((sense(2) And &HF) = 13) Then
+                                                                If ((sense(2) And &HF) = 13) AndAlso (Not My.Settings.LTFSWriter_IgnoreVolumeOverflow) Then
                                                                     PrintMsg(My.Resources.ResText_VOF)
                                                                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                                     StopFlag = True
@@ -4017,7 +4017,7 @@ Public Class LTFSWriter
                                                                     SetStatusLight(LWStatus.Err)
                                                                     Exit Sub
                                                                 Else
-                                                                    PrintMsg(My.Resources.ResText_EWEOM, True, DeDupe:=True)
+                                                                    PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
                                                                     succ = True
                                                                     Exit While
                                                                 End If
@@ -6856,7 +6856,8 @@ Public Class LTFSWriter
                                                             While isStarted
                                                                 Threading.Thread.Sleep(100)
                                                                 If Not AllowOperation Then Continue While
-                                                                frm.Invoke(Sub() frm.Text = $"Idle")
+                                                                Dim cap() As Long = RefreshCapacity()
+                                                                frm.Invoke(Sub() frm.Text = $"Idle. Capactiy remain: {cap(cap.Count - 2)}")
                                                                 Dim dirListen As New IO.DirectoryInfo(txtLocation.Text)
                                                                 If dirListen.GetDirectories().Count > 0 OrElse dirListen.GetFiles().Count > 0 Then
                                                                     For i As Integer = 2 To 1 Step -1
@@ -6877,9 +6878,9 @@ Public Class LTFSWriter
                                                                     If Not isStarted Then Exit Sub
                                                                     frm.Invoke(Sub() ButtonStart.Enabled = False)
                                                                     frm.Invoke(Sub() frm.Text = $"Writing")
-                                                                    Dim cap As Long() = RefreshCapacity()
+                                                                    Dim caps As Long() = RefreshCapacity()
                                                                     Dim cap1 As Long
-                                                                    If cap(3) > 0 Then cap1 = cap(2) Else cap1 = cap(0)
+                                                                    If caps(3) > 0 Then cap1 = caps(2) Else cap1 = caps(0)
                                                                     Invoke(Sub()
                                                                                AddFileOrDir(DirectCast(ListView1.Tag, ltfsindex.directory), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
                                                                            End Sub)
