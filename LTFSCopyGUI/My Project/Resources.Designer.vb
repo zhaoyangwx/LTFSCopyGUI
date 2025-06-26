@@ -316,6 +316,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 忽略Volume Overflow 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_IgnoreVolumeOverflow() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_IgnoreVolumeOverflow", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 索引更新间隔（字节） 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_IndexWriteInterval() As String
