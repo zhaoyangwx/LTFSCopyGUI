@@ -3983,8 +3983,8 @@ Public Class LTFSWriter
                                                             SpeedLimitLastTriggerTime = Now
                                                         End If
                                                         Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
-                                                        Dim succ As Boolean = False
-                                                        While Not succ
+                                                        Dim succ As Boolean = False Or IsIndexPartition
+                                                        While ((Not succ) AndAlso (Not IsIndexPartition))
                                                             Dim sense As Byte()
                                                             Try
                                                                 'Dim t0 As Date = Now
