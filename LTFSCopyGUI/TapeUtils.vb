@@ -2122,7 +2122,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function WriteFileMark(handle As IntPtr, ByVal Number As UInteger) As Byte()
         Dim sense(63) As Byte
-        SendSCSICommandUnmanaged(handle, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 0,
+        SendSCSICommandUnmanaged(handle, {&H10, Math.Min(Number, 1), Number >> 16 And &HFF, Number >> 8 And &HFF, Number And &HFF, 0}, {}, 1,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True

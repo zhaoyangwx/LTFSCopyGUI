@@ -2236,14 +2236,15 @@ Public Class LTFSWriter
         Return resultNodes
     End Function
     Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False, Optional ByVal CheckOnly As Boolean = False) As Boolean
-        If CheckOnly Then Return (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush
-        If (IndexWriteInterval > 0 AndAlso TotalBytesUnindexed >= IndexWriteInterval) Or ForceFlush Then
+        If CheckOnly Then Return ((IndexWriteInterval > 0) AndAlso (TotalBytesUnindexed >= IndexWriteInterval)) Or ForceFlush
+        If (((IndexWriteInterval > 0) AndAlso (TotalBytesUnindexed >= IndexWriteInterval)) Or ForceFlush) Then
             WriteCurrentIndex(False, False)
             TotalBytesUnindexed = 0
             Try
                 Dim Loc As String = GetLocInfo()
                 Invoke(Sub() Text = Loc)
             Catch ex As Exception
+                PrintMsg($"Error: CheckUnindexedDataSizeLimit {ex.ToString()}", Warning:=True, LogOnly:=True)
             End Try
             Return True
         End If
@@ -3730,6 +3731,7 @@ Public Class LTFSWriter
                                 Dim finfo As IO.FileInfo = New IO.FileInfo(fr.SourcePath)
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
+                                Dim IsIndexPartition As Boolean = False
                                 If finfo.Length > 0 Then
                                     'p = New TapeUtils.PositionData(TapeDrive)
                                     'If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM.Text, True)
@@ -3773,7 +3775,7 @@ Public Class LTFSWriter
                                         End If
                                     End If
                                     If Not dupe Then
-                                        Dim IsIndexPartition As Boolean = False
+                                        IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
                                             {.partition = DataPartition,
                                             .startblock = p.BlockNumber,
@@ -4124,8 +4126,10 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                If CheckUnindexedDataSizeLimit() Then
+                                If (Not IsIndexPartition) AndAlso CheckUnindexedDataSizeLimit() Then
                                     p = New TapeUtils.PositionData(driveHandle)
+                                    lastpos = New TapeUtils.PositionData(driveHandle)
+                                    CurrentHeight = p.BlockNumber
                                     SetStatusLight(LWStatus.Busy)
                                 End If
                                 If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
