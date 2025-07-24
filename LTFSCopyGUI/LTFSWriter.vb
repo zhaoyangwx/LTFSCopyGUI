@@ -486,6 +486,8 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property DataCompressionLogPage As TapeUtils.PageData
     <Category("UI")>
+    Public Property ShowXAttr_Barcode As Boolean
+    <Category("UI")>
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of Object), Object)))>
     Public ReadOnly Property ControlList As List(Of Object)
         Get
@@ -1874,6 +1876,9 @@ Public Class LTFSWriter
                     ListView1.Items.Clear()
                     ListView1.Tag = d
                     Dim colIndex As Integer = 3
+                    If ShowXAttr_Barcode Then
+                        If ListView1.Columns(1).Name = "Column_Barcode" Then ListView1.Columns.RemoveAt(1)
+                    End If
                     While ListView1.Columns.Count > 15
                         ListView1.Columns.RemoveAt(3)
                     End While
@@ -1897,6 +1902,9 @@ Public Class LTFSWriter
                         ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = 204, .Text = "XxHash128", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
+                    If ShowXAttr_Barcode Then
+                        ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = 60, .Text = "Barcode", .DisplayIndex = 1})
+                    End If
                     For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
                         ListView1.Columns(i).DisplayIndex = i
                     Next
@@ -1909,6 +1917,9 @@ Public Class LTFSWriter
                             li.ImageIndex = 2
                             li.StateImageIndex = 2
                             Dim s As New List(Of String)
+                            If ShowXAttr_Barcode Then
+                                s.Add(f.GetXAttr("Barcode", True))
+                            End If
                             s.Add(f.length)
                             s.Add(f.creationtime)
                             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
@@ -1966,6 +1977,9 @@ Public Class LTFSWriter
                             Next
                             li.ForeColor = f.ItemForeColor
                             Dim colID As Integer = 3
+                            If ShowXAttr_Barcode Then
+                                colID += 1
+                            End If
                             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso Not f.SHA1ForeColor.Equals(Color.Black) Then
                                 li.UseItemStyleForSubItems = False
                                 li.SubItems(colID).ForeColor = f.SHA1ForeColor
@@ -4681,6 +4695,14 @@ Public Class LTFSWriter
                 End SyncLock
             End While
             ExtraPartitionCount = schema.location.partition
+            Dim stopflag As Boolean = False
+            ShowXAttr_Barcode = False
+            ltfsindex.WSort(schema._directory, Sub(f As ltfsindex.file)
+                                                   If f.GetXAttr("Barcode", True).Length > 0 Then
+                                                       stopflag = True
+                                                       ShowXAttr_Barcode = True
+                                                   End If
+                                               End Sub, Nothing, stopflag)
             RefreshDisplay()
             Modified = False
             Dim MAM080C As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 8, 12, 0)

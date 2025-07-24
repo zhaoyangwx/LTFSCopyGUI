@@ -586,9 +586,9 @@ Public Class ltfsindex
         IO.File.Delete(tmpf)
         Return result
     End Function
-    Public Shared Sub WSort(d As List(Of directory), OnFileFound As Action(Of file), OnDirectoryFound As Action(Of directory))
+    Public Shared Sub WSort(d As List(Of directory), OnFileFound As Action(Of file), OnDirectoryFound As Action(Of directory), Optional ByRef StopFlag As Boolean = False)
         Dim q As List(Of directory) = d
-        While q.Count > 0
+        While (Not StopFlag) AndAlso q.Count > 0
             Dim q2 As New List(Of directory)
             For Each dq As directory In q
                 If OnDirectoryFound IsNot Nothing Then OnDirectoryFound(dq)
