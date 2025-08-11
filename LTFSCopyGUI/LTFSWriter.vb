@@ -1966,9 +1966,9 @@ Public Class LTFSWriter
                                 s.Add(("-"))
                                 s.Add(("-"))
                             End If
-                            s.Add(IOManager.FormatSize(f.length))
+                            s.Add(ByteFormatter.FormatBytes(f.length))
                             If f.WrittenBytes > 0 Then
-                                s.Add(IOManager.FormatSize(f.WrittenBytes))
+                                s.Add(ByteFormatter.FormatBytes(f.WrittenBytes))
                             Else
                                 s.Add("-")
                             End If
@@ -2062,9 +2062,9 @@ Public Class LTFSWriter
                                     s.Add("-")
                                     s.Add("-")
                                 End If
-                                s.Add(IOManager.FormatSize(f.length))
+                                s.Add(ByteFormatter.FormatBytes(f.length))
                                 If f.WrittenBytes > 0 Then
-                                    s.Add(IOManager.FormatSize(f.WrittenBytes))
+                                    s.Add(ByteFormatter.FormatBytes(f.WrittenBytes))
                                 Else
                                     s.Add("-")
                                 End If

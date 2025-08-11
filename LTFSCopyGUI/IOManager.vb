@@ -9,6 +9,7 @@ Imports System.Runtime.InteropServices
 Imports NAudio.Wave
 Imports System.Text
 Imports System.Net.Sockets
+Imports System.Globalization
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
@@ -1482,3 +1483,55 @@ Public Class ExplorerUtils
         Return StrCmpLogicalW(x, y)
     End Function
 End Class
+
+
+Public Module ByteFormatter
+    Public Enum Style
+        SI
+        IEC
+        JEDEC
+    End Enum
+
+    Public Function FormatBytes(bytes As Long,
+                                Optional decimals As Integer = 2,
+                                Optional style As Style = Style.JEDEC,
+                                Optional culture As CultureInfo = Nothing) As String
+        If culture Is Nothing Then culture = CultureInfo.CurrentCulture
+
+        If bytes = 0L Then
+            Return "0 B"
+        End If
+
+        Dim negative As Boolean = (bytes < 0)
+        Dim value As Double = Math.Abs(CDbl(bytes))
+
+        Dim unitBase As Double
+        Dim units As String()
+
+        Select Case style
+            Case Style.SI
+                unitBase = 1000.0
+                units = New String() {"B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
+            Case Style.IEC
+                unitBase = 1024.0
+                units = New String() {"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
+            Case Else
+                unitBase = 1024.0
+                units = New String() {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"}
+        End Select
+
+        Dim unitIndex = 0
+        While unitIndex < units.Length - 1 AndAlso value >= unitBase
+            value /= unitBase
+            unitIndex += 1
+        End While
+
+        Dim decimalsToUse As Integer = If(unitIndex = 0, 0, decimals)
+
+        If negative Then value = -value
+
+        Return String.Format(culture, "{0} {1}",
+                             value.ToString("N" & decimalsToUse, culture),
+                             units(unitIndex))
+    End Function
+End Module
