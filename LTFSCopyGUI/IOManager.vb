@@ -1494,7 +1494,7 @@ Public Module ByteFormatter
 
     Public Function FormatBytes(bytes As Long,
                                 Optional decimals As Integer = 2,
-                                Optional style As Style = Style.JEDEC,
+                                Optional style As Style = Style.IEC,
                                 Optional culture As CultureInfo = Nothing) As String
         If culture Is Nothing Then culture = CultureInfo.CurrentCulture
 
