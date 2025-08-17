@@ -399,62 +399,77 @@ Partial Class LTFSWriter
         '
         'Column_name
         '
+        Me.Column_name.Name = "Column_name"
         resources.ApplyResources(Me.Column_name, "Column_name")
         '
         'Column_length
         '
+        Me.Column_length.Name = "Column_length"
         resources.ApplyResources(Me.Column_length, "Column_length")
         '
         'Column_creationtime
         '
+        Me.Column_creationtime.Name = "Column_creationtime"
         resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
         '
         'Column_fileuid
         '
+        Me.Column_fileuid.Name = "Column_fileuid"
         resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
         '
         'Column_openforwrite
         '
+        Me.Column_openforwrite.Name = "Column_openforwrite"
         resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
         '
         'Column_readonly
         '
+        Me.Column_readonly.Name = "Column_readonly"
         resources.ApplyResources(Me.Column_readonly, "Column_readonly")
         '
         'Column_changetime
         '
+        Me.Column_changetime.Name = "Column_changetime"
         resources.ApplyResources(Me.Column_changetime, "Column_changetime")
         '
         'Column_modifytime
         '
+        Me.Column_modifytime.Name = "Column_modifytime"
         resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
         '
         'Column_accesstime
         '
+        Me.Column_accesstime.Name = "Column_accesstime"
         resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
         '
         'Column_backuptime
         '
+        Me.Column_backuptime.Name = "Column_backuptime"
         resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
         '
         'Column_tag
         '
+        Me.Column_tag.Name = "Column_tag"
         resources.ApplyResources(Me.Column_tag, "Column_tag")
         '
         'Column_StartBlock
         '
+        Me.Column_StartBlock.Name = "Column_StartBlock"
         resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
         '
         'Column_Partition
         '
+        Me.Column_Partition.Name = "Column_Partition"
         resources.ApplyResources(Me.Column_Partition, "Column_Partition")
         '
         'Column_FriendlyLen
         '
+        Me.Column_FriendlyLen.Name = "Column_FriendlyLen"
         resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
         '
         'Column_writtenBytes
         '
+        Me.Column_writtenBytes.Name = "Column_writtenBytes"
         resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
         '
         'ContextMenuStrip1

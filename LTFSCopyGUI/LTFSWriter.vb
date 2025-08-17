@@ -331,6 +331,15 @@ Public Class LTFSWriter
         CapacityRefreshInterval = CapacityRefreshInterval
     End Sub
     Public Sub Save_Settings()
+        If ColumnReordered Then
+            Dim dd As New SerializableDictionary(Of String, Integer)
+            For i As Integer = 0 To ListView1.Columns.Count - 1
+                dd.Add(ListView1.Columns(i).Name, ListView1.Columns(i).DisplayIndex)
+            Next
+            My.Settings.LTFSWriter_ColumnIndex = dd
+            My.Settings.Save()
+            ColumnReordered = False
+        End If
         My.Settings.LTFSWriter_OverwriteExist = 覆盖已有文件ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_SkipSymlink = 跳过符号链接ToolStripMenuItem.Checked
         If WA0ToolStripMenuItem.Checked Then
@@ -1873,6 +1882,15 @@ Public Class LTFSWriter
                     统计ToolStripMenuItem.Enabled = True
                     TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
                     Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
+                    If ColumnReordered Then
+                        Dim dd As New SerializableDictionary(Of String, Integer)
+                        For i As Integer = 0 To ListView1.Columns.Count - 1
+                            dd.Add(ListView1.Columns(i).Name, ListView1.Columns(i).DisplayIndex)
+                        Next
+                        My.Settings.LTFSWriter_ColumnIndex = dd
+                        My.Settings.Save()
+                        ColumnReordered = False
+                    End If
                     ListView1.Items.Clear()
                     ListView1.Tag = d
                     Dim colIndex As Integer = 3
@@ -1905,9 +1923,35 @@ Public Class LTFSWriter
                     If ShowXAttr_Barcode Then
                         ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = 60, .Text = "Barcode", .DisplayIndex = 1})
                     End If
-                    For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
-                        ListView1.Columns(i).DisplayIndex = i
-                    Next
+
+                    If My.Settings.LTFSWriter_ColumnIndex IsNot Nothing Then
+                        Try
+                            Dim cl As New List(Of KeyValuePair(Of ColumnHeader, Integer))
+                            For i As Integer = 0 To ListView1.Columns.Count - 1
+                                Dim cid As Integer = ListView1.Columns(i).DisplayIndex + ListView1.Columns.Count + 100
+                                My.Settings.LTFSWriter_ColumnIndex.TryGetValue(ListView1.Columns(i).Name, cid)
+                                cl.Add(New KeyValuePair(Of ColumnHeader, Integer)(ListView1.Columns(i), cid))
+                            Next
+                            cl.Sort(New Comparison(Of KeyValuePair(Of ColumnHeader, Integer))(Function(a As KeyValuePair(Of ColumnHeader, Integer), b As KeyValuePair(Of ColumnHeader, Integer))
+                                                                                                  Return a.Value.CompareTo(b.Value)
+                                                                                              End Function))
+                            Dim d2 As New SerializableDictionary(Of String, Integer)
+                            For i As Integer = 0 To cl.Count - 1
+                                cl(i) = New KeyValuePair(Of ColumnHeader, Integer)(cl(i).Key, i)
+                                d2.Add(cl(i).Key.Name, i)
+                            Next
+                            My.Settings.LTFSWriter_ColumnIndex = d2
+                            For i As Integer = cl.Count - 1 To 0 Step -1
+                                cl(i).Key.DisplayIndex = i
+                            Next
+                        Catch ex As Exception
+                            My.Settings.LTFSWriter_ColumnIndex = Nothing
+                        End Try
+                    Else
+                        For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
+                            ListView1.Columns(i).DisplayIndex = i
+                        Next
+                    End If
 
                     SyncLock d.contents._file
                         For Each f As ltfsindex.file In d.contents._file
@@ -7880,6 +7924,12 @@ Public Class LTFSWriter
         ToolTipChanErrLogShowing = False
     End Sub
 
+    Public Property ColumnReordered As Boolean = False
+    Private Sub ListView1_ColumnReordered(sender As Object, e As ColumnReorderedEventArgs) Handles ListView1.ColumnReordered
+        If AllowOperation Then
+            ColumnReordered = True
+        End If
+    End Sub
 End Class
 
 Public NotInheritable Class FileDropHandler
