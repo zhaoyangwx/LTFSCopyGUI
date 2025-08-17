@@ -260,6 +260,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 列表顺序 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ColumnIndex() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ColumnIndex", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 去重 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_DeDupe() As String

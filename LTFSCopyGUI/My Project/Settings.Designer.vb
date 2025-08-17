@@ -630,6 +630,24 @@ Namespace My
         End Property
 
         '''<summary>
+        '''列表顺序
+        '''</summary>
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("列表顺序"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ColumnIndex")>
+        Public Property LTFSWriter_ColumnIndex() As SerializableDictionary(Of String, Integer)
+            Get
+                Return CType(Me("LTFSWriter_ColumnIndex"), SerializableDictionary(Of String, Integer))
+            End Get
+            Set
+                Me("LTFSWriter_ColumnIndex") = Value
+            End Set
+        End Property
+
+        '''<summary>
         '''驱动器指令类型
         '''</summary>
         <Global.System.Configuration.UserScopedSettingAttribute(),

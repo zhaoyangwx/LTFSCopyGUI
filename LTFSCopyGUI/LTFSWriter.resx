@@ -233,7 +233,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAATwBDgE8AQ4BEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAUQBDgFEAQ4BEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -680,7 +680,7 @@
     <value>0, 0</value>
   </data>
   <data name="ListView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1070, 427</value>
+    <value>1074, 427</value>
   </data>
   <data name="ListView1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -788,7 +788,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="Chart1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1070, 139</value>
+    <value>1074, 139</value>
   </data>
   <data name="Chart1.TabIndex" type="System.Int32, mscorlib">
     <value>16</value>
@@ -821,7 +821,7 @@
     <value>1</value>
   </data>
   <data name="SplitContainer2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1070, 570</value>
+    <value>1074, 570</value>
   </data>
   <data name="SplitContainer2.SplitterDistance" type="System.Int32, mscorlib">
     <value>427</value>
@@ -854,7 +854,7 @@
     <value>1</value>
   </data>
   <data name="SplitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1328, 570</value>
+    <value>1332, 570</value>
   </data>
   <data name="SplitContainer1.SplitterDistance" type="System.Int32, mscorlib">
     <value>254</value>
@@ -1351,7 +1351,7 @@
     <value>0, 0</value>
   </data>
   <data name="MenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 25</value>
+    <value>1353, 25</value>
   </data>
   <data name="MenuStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1465,7 +1465,7 @@
     <value> </value>
   </data>
   <data name="ToolStripStatusLabel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1048, 21</value>
+    <value>1083, 21</value>
   </data>
   <data name="ToolStripStatusLabel4.Text" xml:space="preserve">
     <value>  </value>
@@ -1492,7 +1492,7 @@
     <value>0, 652</value>
   </data>
   <data name="StatusStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 26</value>
+    <value>1353, 26</value>
   </data>
   <data name="StatusStrip1.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1687,7 +1687,7 @@
     <value>0, 21</value>
   </data>
   <data name="ToolStripStatusLabel3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1230, 21</value>
+    <value>1234, 21</value>
   </data>
   <data name="ToolStripStatusLabel3.Text" xml:space="preserve">
     <value> </value>
@@ -1750,7 +1750,7 @@
     <value>0, 626</value>
   </data>
   <data name="StatusStrip2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 26</value>
+    <value>1353, 26</value>
   </data>
   <data name="StatusStrip2.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -1777,7 +1777,7 @@
     <value>9, 28</value>
   </data>
   <data name="TextBoxSelectedPath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1328, 21</value>
+    <value>1332, 21</value>
   </data>
   <data name="TextBoxSelectedPath.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1834,7 +1834,7 @@
     <value>6, 12</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>1349, 678</value>
+    <value>1353, 678</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
