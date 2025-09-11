@@ -552,6 +552,21 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("取消写入后保留待写列表"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_KeepUnwrittenFilesOnAbort")>
+        Public Property LTFSWriter_KeepUnwrittenFilesOnAbort() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_KeepUnwrittenFilesOnAbort"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_KeepUnwrittenFilesOnAbort") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("显示容量损失"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("False"),

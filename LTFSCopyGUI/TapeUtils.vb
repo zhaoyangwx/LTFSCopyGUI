@@ -1530,7 +1530,7 @@ Public Class TapeUtils
             Case &H4E00
                 Msg.Append("Overlapped commands")
             Case &H5000
-                Msg.Append("Write Append( error")
+                Msg.Append("Write append error")
             Case &H5200
                 Msg.Append("Cartridge fault")
             Case &H5300

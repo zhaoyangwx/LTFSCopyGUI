@@ -888,4 +888,7 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_LTFSWriter_ColumnIndex" xml:space="preserve">
     <value>Column index</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_KeepUnwrittenFilesOnAbort" xml:space="preserve">
+    <value>Keep unwritten files on cancel writing</value>
+  </data>
 </root>

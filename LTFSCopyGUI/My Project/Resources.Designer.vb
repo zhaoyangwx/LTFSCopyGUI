@@ -343,6 +343,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 取消写入后保留待写列表 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_KeepUnwrittenFilesOnAbort() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_KeepUnwrittenFilesOnAbort", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 启用日志 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_LogEnabled() As String
