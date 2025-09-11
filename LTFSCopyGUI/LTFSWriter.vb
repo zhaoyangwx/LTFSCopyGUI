@@ -837,7 +837,7 @@ Public Class LTFSWriter
                 FileRateHistory.RemoveAt(0)
             End While
 
-            If APToolStripMenuItem.Checked AndAlso fdelta = 0 Then
+            If APToolStripMenuItem.Checked AndAlso (fdelta = 0 OrElse LRHistory <> 0) Then
                 Dim AutoFlushTriggered As Boolean = True
                 For j As Integer = 1 To My.Settings.LTFSWriter_AutoCleanTimeThreashould
                     Dim n As Double = SpeedHistory(SpeedHistory.Count - j)
@@ -947,7 +947,11 @@ Public Class LTFSWriter
         Else
             TickCount = 0
         End If
+
+
     End Sub
+    <Category("LTFSWriter")>
+    Public Property FRTemplate As New FileRecord
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class FileRecord
         Public Property ParentDirectory As ltfsindex.directory
@@ -1015,8 +1019,8 @@ Public Class LTFSWriter
         '        Return (My.Settings.LTFSWriter_PreLoadNum = 0)
         '    End Get
         'End Property
-        Const PreReadBufferSize As Long = 16777216
-        Const PreReadBlockSize As Long = 8388608
+        Public Shared PreReadBufferSize As Long = 16777216
+        Public Shared PreReadBlockSize As Long = 8388608
         Public PreReadBuffer As Byte() = Nothing
         Public Sub PreReadThread()
             If PreReadBuffer Is Nothing Then ReDim PreReadBuffer(PreReadBufferSize * 2 - 1)
@@ -1201,7 +1205,7 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property UnwrittenSizeOverrideValue As ULong = 0
     <Category("LTFSWriter")>
-    Public ReadOnly Property UnwrittenSize
+    Public ReadOnly Property UnwrittenSize As ULong
         Get
             If UnwrittenSizeOverrideValue > 0 Then Return UnwrittenSizeOverrideValue
             If UnwrittenFiles Is Nothing Then Return 0
@@ -1220,7 +1224,7 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property UnwrittenCountOverwriteValue As ULong = 0
     <Category("LTFSWriter")>
-    Public ReadOnly Property UnwrittenCount
+    Public ReadOnly Property UnwrittenCount As ULong
         Get
             If UnwrittenCountOverwriteValue > 0 Then Return UnwrittenCountOverwriteValue
             Return UnwrittenFiles.Count
@@ -1232,7 +1236,8 @@ Public Class LTFSWriter
     Public Property driveHandle As IntPtr
     <Category("TapeUtils")>
     Public Property IOCtlNum As Integer
-
+    <Category("LTFSWriter")>
+    Public Property LoadComplete As Boolean = False
     Private Sub LTFSWriter_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Dim scrH As Integer = Screen.GetWorkingArea(Me).Height
         If scrH - Top - Height <= 0 Then
@@ -1240,7 +1245,10 @@ Public Class LTFSWriter
         End If
         FileDroper = New FileDropHandler(ListView1)
         Load_Settings()
-        If OfflineMode Then Exit Sub
+        If OfflineMode Then
+            LoadComplete = True
+            Exit Sub
+        End If
         Dim driveOpened As Boolean = False
         Try
             TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
@@ -1303,26 +1311,13 @@ Public Class LTFSWriter
                                  End If
                              Else
                                  ToolTipChanErrLogShown = False
-                                 'If ToolTipChanErrLogShown Then
-                                 '    If Threading.Monitor.TryEnter(ToolTipChanErrLogShownLock) Then
-                                 '        Task.Run(Sub()
-                                 '                     Threading.Thread.Sleep(1000)
-                                 '                     If Threading.Interlocked.Exchange(ToolTipChanErrLogShowingChanged, False) Then Exit Sub
-                                 '                     If Not ToolTipChanErrLogShowing Then
-                                 '                         BeginInvoke(Sub() ToolTipChanErrLog.Hide(StatusStrip2))
-                                 '                         ToolTipChanErrLogShown = False
-                                 '                     End If
-                                 '                 End Sub)
-                                 '        Threading.Monitor.Exit(ToolTipChanErrLogShownLock)
-                                 '    End If
-                                 '
-                                 'End If
                              End If
                          Catch ex As Exception
 
                          End Try
                      End While
                  End Sub)
+        LoadComplete = True
         If driveOpened Then BeginInvoke(Sub() 读取索引ToolStripMenuItem_Click(sender, e))
     End Sub
     Private Sub LTFSWriter_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
@@ -1856,8 +1851,16 @@ Public Class LTFSWriter
         Next
         Return sb.ToString()
     End Function
+    Public LastSelectedNode As TreeNode = Nothing
     Public Sub TriggerTreeView1Event()
         If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
+            If LastSelectedNode IsNot Nothing Then
+                LastSelectedNode.BackColor = Color.Transparent
+            End If
+            If TreeView1.SelectedNode IsNot Nothing Then
+                LastSelectedNode = TreeView1.SelectedNode
+                TreeView1.SelectedNode.BackColor = Color.LightSkyBlue
+            End If
             ListView1.BeginUpdate()
             Dim old_select_index As Integer, old_node As Object = ListView1.Tag
             If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
@@ -3085,7 +3088,7 @@ Public Class LTFSWriter
                     PrintMsg($"{My.Resources.ResText_Adding}{Paths.Length}{My.Resources.ResText_Items_x}")
                     Dim numi As Integer = 0
                     Dim PList As List(Of String) = Paths.ToList()
-                    PList.Sort(ExplorerComparer)
+                    'PList.Sort(ExplorerComparer)
                     ltfsindex.WSort({d}.ToList, Nothing, Sub(d1 As ltfsindex.directory)
                                                              d1.LastUnwrittenFilesCount = d1.UnwrittenFiles.Count
                                                          End Sub)
@@ -3126,6 +3129,8 @@ Public Class LTFSWriter
                                                                                               Return ExplorerComparer.Compare(a.SourcePath, b.SourcePath)
                                                                                           End Function))
                     StopFlag = False
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverwriteValue = 0
                     RefreshDisplay()
                     PrintMsg(My.Resources.ResText_AddFin)
                     SetStatusLight(LWStatus.Succ)
@@ -3858,7 +3863,7 @@ Public Class LTFSWriter
                                             fr.Close()
                                             If IsLastFile Then TapeUtils.Locate(driveHandle, lastpos.BlockNumber, lastpos.PartitionNumber)
                                         Else
-                                                If p.PartitionNumber <> lastpos.PartitionNumber OrElse p.BlockNumber <> lastpos.BlockNumber Then
+                                            If p.PartitionNumber <> lastpos.PartitionNumber OrElse p.BlockNumber <> lastpos.BlockNumber Then
                                                 TapeUtils.Locate(driveHandle, lastpos.BlockNumber, lastpos.PartitionNumber)
                                                 p = New TapeUtils.PositionData(driveHandle)
                                                 fileextent.startblock = p.BlockNumber
@@ -4225,11 +4230,11 @@ Public Class LTFSWriter
                                            End Sub)
                                 End If
                             End While
+                            UnwrittenFiles.Remove(fr)
+                            WriteList(i) = Nothing
                             If StopFlag Then
                                 Exit For
                             End If
-                            UnwrittenFiles.Remove(fr)
-                            WriteList(i) = Nothing
                         Next
                         Marshal.FreeHGlobal(wBufferPtr)
                         While HashTaskAwaitNumber > 0
@@ -4249,9 +4254,17 @@ Public Class LTFSWriter
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
                             If UFReadCount > 0 Then Continue While
-                            UnwrittenFiles.Clear()
                             UnwrittenSizeOverrideValue = 0
                             UnwrittenCountOverwriteValue = 0
+                            If Not My.Settings.LTFSWriter_KeepUnwrittenFilesOnAbort Then
+                                UnwrittenFiles.Clear()
+                                ltfsindex.WSort(schema._directory, Nothing, Sub(d As ltfsindex.directory)
+                                                                                d.UnwrittenFiles.Clear()
+                                                                            End Sub)
+                            Else
+                                UnwrittenSizeOverrideValue = UnwrittenSize
+                                UnwrittenCountOverwriteValue = UnwrittenCount
+                            End If
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             Exit While
@@ -7930,6 +7943,89 @@ Public Class LTFSWriter
             ColumnReordered = True
         End If
     End Sub
+
+    Private Sub TextBoxSelectedPath_Leave(sender As Object, e As EventArgs) Handles TextBoxSelectedPath.Leave
+        If Not LoadComplete Then Exit Sub
+        ChangeDirectory(TextBoxSelectedPath.Text)
+    End Sub
+
+    Private Sub TextBoxSelectedPath_KeyUp(sender As Object, e As KeyEventArgs) Handles TextBoxSelectedPath.KeyUp
+        If Not LoadComplete Then Exit Sub
+        If e.KeyCode = Keys.Enter Then
+            ChangeDirectory(TextBoxSelectedPath.Text)
+        End If
+    End Sub
+    Public Sub ChangeDirectory(path As String)
+        If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
+        Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
+        ReDim Preserve DIR(DIR.Length - 2)
+        Dim targetdir As TreeNode = TreeView1.TopNode
+        If DIR.Length > 1 AndAlso DIR(1) = CType(targetdir.Tag, ltfsindex.directory).name Then
+            Dim found As Boolean = False
+            For i As Integer = 2 To DIR.Length - 1
+                For j As Integer = 0 To targetdir.Nodes.Count - 1
+                    If CType(targetdir.Nodes(j).Tag, ltfsindex.directory).name = DIR(i) Then
+                        targetdir = targetdir.Nodes(j)
+                        If i = DIR.Length - 1 Then
+                            found = True
+                        End If
+                        Exit For
+                    End If
+                Next
+            Next
+            If found Then
+                TreeView1.SelectedNode = targetdir
+                targetdir.Expand()
+            End If
+        End If
+        TriggerTreeView1Event()
+    End Sub
+    Public Function DirectoryExists(path As String) As Boolean
+        If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
+        Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
+        ReDim Preserve DIR(DIR.Length - 2)
+        Dim targetdir As TreeNode = TreeView1.TopNode
+        If DIR.Length > 1 AndAlso DIR(1) = CType(targetdir.Tag, ltfsindex.directory).name Then
+            Dim found As Boolean = False
+            For i As Integer = 2 To DIR.Length - 1
+                For j As Integer = 0 To targetdir.Nodes.Count - 1
+                    If CType(targetdir.Nodes(j).Tag, ltfsindex.directory).name = DIR(i) Then
+                        targetdir = targetdir.Nodes(j)
+                        If i = DIR.Length - 1 Then
+                            Return True
+                        End If
+                        Exit For
+                    End If
+                Next
+            Next
+        End If
+        Return False
+    End Function
+    Public Function FileExists(path As String) As Boolean
+        If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
+        Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
+        ReDim Preserve DIR(DIR.Length - 2)
+        Dim targetdir As TreeNode = TreeView1.TopNode
+        If DIR.Length > 1 AndAlso DIR(1) = CType(targetdir.Tag, ltfsindex.directory).name Then
+            Dim found As Boolean = False
+            For i As Integer = 2 To DIR.Length - 1
+                For j As Integer = 0 To targetdir.Nodes.Count - 1
+                    If CType(targetdir.Nodes(j).Tag, ltfsindex.directory).name = DIR(i) Then
+                        targetdir = targetdir.Nodes(j)
+                        If i = DIR.Length - 2 Then
+                            Dim file As List(Of ltfsindex.file) = CType(targetdir.Nodes(j).Tag, ltfsindex.directory).contents._file
+                            For k As Integer = 0 To file.Count - 1
+                                If file(k).name = DIR(DIR.Length - 1) Then Return True
+                            Next
+                            Return False
+                        End If
+                        Exit For
+                    End If
+                Next
+            Next
+        End If
+        Return False
+    End Function
 End Class
 
 Public NotInheritable Class FileDropHandler
