@@ -69,5 +69,5 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 软著登字第11348107号
 
 ## 如何赞助
-    【闲鱼】https://m.tb.cn/h.gwpMFmp?tk=lxLr3mCtsUx MF6563 「我在闲鱼发布了【LTFSCopyGUI软件商用许可/技术支持/个性化冠名服务】」
-    点击链接直接打开
+    【闲鱼】https://m.tb.cn/h.SbQMPCg?tk=6c1m4s3ww08 CZ007 「我在闲鱼发布了【LTFSCopyGUI软件商用许可/技术支持/个性化冠名服务】」
+点击链接直接打开
