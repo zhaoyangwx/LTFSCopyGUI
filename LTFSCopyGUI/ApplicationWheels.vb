@@ -62,7 +62,8 @@ End Class
 ''' </summary>   
 ''' <typeparam name="TKey"></typeparam>   
 ''' <typeparam name="TValue"></typeparam>   
-<XmlRoot("SerializableDictionary")>
+<XmlRoot("SerializableDictionary"),
+    Serializable>
 Public Class SerializableDictionary(Of TKey, TValue)
     Inherits Dictionary(Of TKey, TValue)
     Implements IXmlSerializable
