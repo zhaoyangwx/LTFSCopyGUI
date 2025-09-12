@@ -2921,9 +2921,15 @@ Public Class LTFSWriter
     Public Sub DeleteDir()
         Dim Nodes As List(Of TreeNode) = SelectedNodes
         If Nodes.Count = 0 Then Exit Sub
+        If Nodes.Count > 1 Then
+            If Not MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{Nodes.Count}{My.Resources.ResText_Directories_C}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then Exit Sub
+        Else
+            If Nodes(0).Parent Is Nothing Then Exit Sub
+            If Not MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{CType(Nodes(0).Tag, ltfsindex.directory).name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then Exit Sub
+        End If
         For Each node As TreeNode In Nodes
             Dim d As ltfsindex.directory = node.Tag
-            If node.Parent IsNot Nothing AndAlso MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{d.name}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            If node.Parent IsNot Nothing Then
                 Dim pd As ltfsindex.directory = node.Parent.Tag
                 pd.contents._directory.Remove(d)
                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
@@ -3876,6 +3882,7 @@ Public Class LTFSWriter
                                              } {My.Resources.ResText_Remaining}: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
                                              } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
                                         'write to tape
+                                        Dim LastWriteTask As Task = Nothing
                                         If finfo.Length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData As Byte()
@@ -3899,6 +3906,11 @@ Public Class LTFSWriter
                                                 End Try
                                             End While
                                             If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
+                                            If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                            LastWriteTask = New Task(
+                                            Sub()
+
+                                            End Sub)
                                             While ((Not succ) AndAlso (Not IsIndexPartition))
                                                 Dim sense As Byte()
                                                 Try
@@ -4003,7 +4015,6 @@ Public Class LTFSWriter
                                             'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
                                             Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing
                                             If HashOnWrite Then sh = New IOManager.CheckSumBlockwiseCalculator
-                                            Dim LastWriteTask As Task = Nothing
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
                                             'Dim tsub As Double = 0
@@ -7785,15 +7796,37 @@ Public Class LTFSWriter
             Case Keys.V
                 If Not AllowOperation Then Exit Sub
                 If e.Control Then
+                    Dim Paths As String()
                     If Clipboard.ContainsText Then
-                        Dim Paths As String() = Clipboard.GetText().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-                        If Paths IsNot Nothing AndAlso Paths.Count > 0 Then
-                            Dim d As ltfsindex.directory = ListView1.Tag
-                            Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
-                            AddFileOrDir(d, Paths, overwrite)
-                        End If
+                        Paths = Clipboard.GetText().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                    ElseIf Clipboard.ContainsFileDropList Then
+                        Dim sc As Specialized.StringCollection = Clipboard.GetFileDropList()
+                        Dim plist As New List(Of String)
+                        For Each str As String In sc
+                            plist.Add(str)
+                        Next
+                        Paths = plist.ToArray()
+                    End If
+                    If Paths IsNot Nothing AndAlso Paths.Count > 0 Then
+                        Dim d As ltfsindex.directory = ListView1.Tag
+                        Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
+                        AddFileOrDir(d, Paths, overwrite)
                     End If
                     粘贴选中ToolStripMenuItem_Click(sender, e)
+                End If
+            Case Keys.X
+                If e.Control Then
+                    If CurrentFocus Is TreeView1 Then
+                        剪切目录ToolStripMenuItem_Click(sender, e)
+                    ElseIf CurrentFocus Is ListView1 Then
+                        剪切文件ToolStripMenuItem_Click(sender, e)
+                    End If
+                End If
+            Case Keys.Delete
+                If CurrentFocus Is TreeView1 Then
+                    删除ToolStripMenuItem_Click(sender, e)
+                ElseIf CurrentFocus Is ListView1 Then
+                    删除文件ToolStripMenuItem_Click(sender, e)
                 End If
             Case Keys.F
                 If Not AllowOperation Then Exit Sub
@@ -7826,7 +7859,6 @@ Public Class LTFSWriter
                                                         Return cmp.Compare(a.name, b.name)
                                                     End If
                                                 End Function))
-
                     End If
                 End If
                 RefreshDisplay()
@@ -7939,7 +7971,7 @@ Public Class LTFSWriter
 
     Public Property ColumnReordered As Boolean = False
     Private Sub ListView1_ColumnReordered(sender As Object, e As ColumnReorderedEventArgs) Handles ListView1.ColumnReordered
-        If AllowOperation Then
+        If LoadComplete Then
             ColumnReordered = True
         End If
     End Sub
@@ -8026,6 +8058,14 @@ Public Class LTFSWriter
         End If
         Return False
     End Function
+    Public CurrentFocus As Object
+    Private Sub TreeView1_GotFocus(sender As Object, e As EventArgs) Handles TreeView1.GotFocus
+        CurrentFocus = TreeView1
+    End Sub
+
+    Private Sub ListView1_GotFocus(sender As Object, e As EventArgs) Handles ListView1.GotFocus
+        CurrentFocus = ListView1
+    End Sub
 End Class
 
 Public NotInheritable Class FileDropHandler
