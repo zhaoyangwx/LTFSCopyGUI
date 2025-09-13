@@ -726,7 +726,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
         Select Case TapeUtils.DriverTypeSetting
-            Case My.Settings.TapeUtils_DriverType.LTO
+            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
@@ -1200,154 +1200,154 @@ Public Class LTFSConfigurator
                      Dim logdata As Byte()
                      Dim pdata As TapeUtils.PageData
 #Region "0x00"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H0, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H0, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_SupportedLogPagesPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x00.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x02"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H2, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H2, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_WriteErrorCountersLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x02.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x03"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H3, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H3, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ReadErrorCountersLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x03.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x0C"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &HC, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &HC, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_SequentialAccessDeviceLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x0C.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x0D"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &HD, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &HD, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TemperatureLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x0D.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x11"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H11, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H11, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x11.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x12"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H12, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H12, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeAlertResponseLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x12.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x13"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H13, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H13, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_RequestedRecoveryLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x13.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x14"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H14, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H14, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatisticsLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x14.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x15"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H15, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H15, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ServiceBuffersInformationLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x15.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x16"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H16, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H16, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeDiagnosticLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x16.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x17"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H17, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H17, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x17.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x18"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H18, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H18, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ProtocolSpecificPortLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x18.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x1B"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H1B, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H1B, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x1B.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x2E"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H2E, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H2E, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeAlertLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x2E.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x30"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H30, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H30, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x30.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x31"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H31, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H31, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x31.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x32"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H32, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H32, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionHPLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x32.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x33"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H33, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H33, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceWellnessLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x33.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x34"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H34, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H34, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_PerformanceDataLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x34.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x35"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H35, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H35, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DTDeviceErrorLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
                      IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "logpages\0x35.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x3E"
-                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H3E, PageControl:=1)
+                     logdata = TapeUtils.LogSense(ConfTapeDrive, &H3E, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
                      If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "logpages")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "logpages"))
@@ -1384,7 +1384,7 @@ Public Class LTFSConfigurator
             Dim pc As Integer = ComboBox5.SelectedIndex
             Panel1.Enabled = False
             Task.Run(Sub()
-                         Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=PageItem(index).PageCode, PageControl:=pc)
+                         Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=PageItem(index).PageCode, SubPageCode:=0, PageControl:=pc)
                          Invoke(Sub()
                                     PageItem(index).RawData = logdata
                                     TextBoxDebugOutput.Text = PageItem(index).GetSummary()
