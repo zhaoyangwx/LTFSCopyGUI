@@ -736,9 +736,9 @@ Public Class LTFSWriter
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
             Try
                 Dim pos As New TapeUtils.PositionData(driveHandle)
-                Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage))
+                Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, SubPageCode:=0))
                 Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
-                Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage))
+                Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, SubPageCode:=0))
                 Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
                 debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
                 WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4,
@@ -1431,8 +1431,8 @@ Public Class LTFSWriter
         Task.Run(Sub()
                      If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 500) Then
                          Try
-                             logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, PageControl:=1)
-                             logdataDTD = TapeUtils.LogSense(driveHandle, &H11, PageControl:=1)
+                             logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, 0, PageControl:=1)
+                             logdataDTD = TapeUtils.LogSense(driveHandle, &H11, 0, PageControl:=1)
                              Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                          Catch ex As Exception
                              Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
@@ -1504,8 +1504,8 @@ Public Class LTFSWriter
     Public CMOnce As TapeUtils.CMParser
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
-        Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, PageControl:=1)
-        Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, PageControl:=1)
+        Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, 0, PageControl:=1)
+        Dim logdataVStat As Byte() = TapeUtils.LogSense(driveHandle, &H17, 0, PageControl:=1)
         Try
             CapacityLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdataCap)
             Dim Gen As Integer, WORM As Boolean, WP As Boolean, GenStr As String = ""
@@ -1560,6 +1560,143 @@ Public Class LTFSWriter
             If cp1 IsNot Nothing Then cap1 = cp1.GetLong
             If mp0 IsNot Nothing Then max0 = mp0.GetLong
             If mp1 IsNot Nothing Then max1 = mp1.GetLong
+            If cp0 Is Nothing Then
+                Select Case TapeUtils.DriverTypeSetting
+                    Case TapeUtils.DriverType.IBM3592
+                        Dim mp23h As Byte() = TapeUtils.ModeSense(driveHandle, &H23, SkipHeader:=False)
+                        Select Case (CShort(mp23h(4 + 12)) << 8 Or mp23h(5 + 12))
+                            Case 0
+                            Case &H141
+                                MediaDescription = "JA"
+                            Case &H142
+                                MediaDescription = "JB"
+                            Case &H143
+                                MediaDescription = "JC"
+                            Case &H144
+                                MediaDescription = "JD"
+                            Case &H145
+                                MediaDescription = "JE"
+                            Case &H146
+                                MediaDescription = "JF"
+                            Case &H151
+                                MediaDescription = "JJ"
+                            Case &H152
+                                MediaDescription = "JK"
+                            Case &H153
+                                MediaDescription = "JL"
+                            Case &H154
+                                MediaDescription = "JM"
+                            Case &H241
+                                MediaDescription = "JW"
+                            Case &H242
+                                MediaDescription = "JX"
+                            Case &H243
+                                MediaDescription = "JY"
+                            Case &H244
+                                MediaDescription = "JZ"
+                            Case &H251
+                                MediaDescription = "JR"
+                        End Select
+                        Select Case mp23h(6 + 12)
+                            Case &H31
+                                MediaDescription &= " A1"
+                            Case &H32
+                                MediaDescription &= " A2"
+                            Case &H33
+                                MediaDescription &= " A3"
+                            Case &H34
+                                MediaDescription &= " A4"
+                            Case &H35
+                                MediaDescription &= " A5"
+                            Case &H36
+                                MediaDescription &= " B5"
+                            Case &H37
+                                MediaDescription &= " A6"
+                            Case &H39
+                                MediaDescription &= " A7"
+                            Case &H71
+                                MediaDescription &= " A1"
+                            Case &H72
+                                MediaDescription &= " A2"
+                            Case &H73
+                                MediaDescription &= " A3"
+                            Case &H74
+                                MediaDescription &= " A4"
+                            Case &H75
+                                MediaDescription &= " A5"
+                            Case &H76
+                                MediaDescription &= " B5"
+                            Case &H77
+                                MediaDescription &= " A6"
+                            Case &H79
+                                MediaDescription &= " A7"
+                        End Select
+                        If (((mp23h(10 + 12) >> 7) And 1) = 1) Then
+                            MediaDescription &= " RO(Phy)"
+                        ElseIf (((mp23h(10 + 12) >> 6) And 1) = 1) Then
+                            MediaDescription &= " RO(Asc)"
+                        ElseIf (((mp23h(10 + 12) >> 4) And 1) = 1) Then
+                            MediaDescription &= " RO(Pst)"
+                        ElseIf (((mp23h(10 + 12) >> 0) And 1) = 1) Then
+                            MediaDescription &= " RO(Pmn)"
+                        Else
+                            MediaDescription &= " RW"
+                        End If
+                        Dim mps As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H202)
+                        If mps Is Nothing Then
+                            mp0 = VolumeStatisticsLogPage.TryGetPage(&H16)
+                            cp0 = VolumeStatisticsLogPage.TryGetPage(&H17)
+                            If mp0 IsNot Nothing Then max0 = mp0.GetLong
+                            If cp0 IsNot Nothing Then cap0 = max0 - cp0.GetLong
+                        Else
+                            Dim cps As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H203)
+                            Dim cpsdata As Byte() = cps.RawData
+                            Dim mpsdata As Byte() = mps.RawData
+                            For i As Integer = 4 To cpsdata.Length - 1 Step 8
+                                If cpsdata(i + 2) = 0 Then
+                                    If cpsdata(i + 3) = 0 Then
+                                        cap0 = cpsdata(i + 4)
+                                        cap0 <<= 8
+                                        cap0 = cap0 Or cpsdata(i + 5)
+                                        cap0 <<= 8
+                                        cap0 = cap0 Or cpsdata(i + 6)
+                                        cap0 <<= 8
+                                        cap0 = cap0 Or cpsdata(i + 7)
+                                    ElseIf cpsdata(i + 3) = 1 Then
+                                        cap1 = cpsdata(i + 4)
+                                        cap1 <<= 8
+                                        cap1 = cap1 Or cpsdata(i + 5)
+                                        cap1 <<= 8
+                                        cap1 = cap1 Or cpsdata(i + 6)
+                                        cap1 <<= 8
+                                        cap1 = cap1 Or cpsdata(i + 7)
+                                    End If
+                                End If
+                            Next
+                            For i As Integer = 4 To mpsdata.Length - 1 Step 8
+                                If mpsdata(i + 2) = 0 Then
+                                    If mpsdata(i + 3) = 0 Then
+                                        max0 = mpsdata(i + 4)
+                                        max0 <<= 8
+                                        max0 = max0 Or mpsdata(i + 5)
+                                        max0 <<= 8
+                                        max0 = max0 Or mpsdata(i + 6)
+                                        max0 <<= 8
+                                        max0 = max0 Or mpsdata(i + 7)
+                                    ElseIf mpsdata(i + 3) = 1 Then
+                                        max1 = mpsdata(i + 4)
+                                        max1 <<= 8
+                                        max1 = max1 Or mpsdata(i + 5)
+                                        max1 <<= 8
+                                        max1 = max1 Or mpsdata(i + 6)
+                                        max1 <<= 8
+                                        max1 = max1 Or mpsdata(i + 7)
+                                    End If
+                                End If
+                            Next
+                        End If
+                End Select
+            End If
 
 
             'cap0 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 0).AsNumeric
@@ -1628,7 +1765,10 @@ Public Class LTFSWriter
                 result(3) = max1
             Else
                 MaxCapacity = max0
-                If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 0).AsNumeric
+                Try
+                    If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 0).AsNumeric
+                Catch ex As Exception
+                End Try
                 Invoke(Sub()
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"

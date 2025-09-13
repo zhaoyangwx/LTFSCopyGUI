@@ -1099,23 +1099,23 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-    Public Shared Function LogSense(TapeDrive As String, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
+    Public Shared Function LogSense(TapeDrive As String, PageCode As Byte, SubPageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As Byte() = LogSense(handle, PageCode, senseReport, PageControl)
+            Dim result As Byte() = LogSense(handle, PageCode, SubPageCode, senseReport, PageControl)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
     End Function
-    Public Shared Function LogSense(handle As IntPtr, PageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
+    Public Shared Function LogSense(handle As IntPtr, PageCode As Byte, SubPageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
         SyncLock SCSIOperationLock
-            Dim Header As Byte() = SCSIReadParam(handle, {&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, 0, 4, 0}, 4)
+            Dim Header As Byte() = SCSIReadParam(handle, {&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, 0, 4, 0}, 4)
             If Header.Length < 4 Then Return {0, 0, 0, 0}
             Dim PageLen As Integer = Header(2)
             PageLen <<= 8
             PageLen = PageLen Or Header(3)
-            Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, 0, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
+            Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
         End SyncLock
     End Function
     Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal SkipHeader As Boolean = True) As Byte()
@@ -1822,6 +1822,7 @@ Public Class TapeUtils
         SLR3 = 2
         T10K = 3
         SLR1 = 4
+        IBM3592 = 5
     End Enum
     Public Shared Function ReadPosition(handle As IntPtr) As PositionData
         Return ReadPosition(handle, DriverType.LTO)
@@ -2527,6 +2528,13 @@ Public Class TapeUtils
         For Each t As String In s
             Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
             If q.Length = 4 Then
+                If q(1) = "" Then
+                    Try
+                        Dim drv As TapeDrive = TapeUtils.Inquiry($"\\.\TAPE{q(0)}")
+                        q(1) = drv.SerialNumber
+                    Catch ex As Exception
+                    End Try
+                End If
                 LDrive.Add(New TapeDrive(q(0), q(1), q(2), q(3)))
             End If
         Next
@@ -5613,8 +5621,17 @@ Public Class TapeUtils
 
         End Sub
         Public Sub New(TapeDrive As String, Optional ByVal BufferID As Byte = &H10)
-            a_CMBuffer = ReadBuffer(TapeDrive, BufferID)
-            If a_CMBuffer.Length = 0 Then a_CMBuffer = ReadBuffer(TapeDrive, &H5)
+            Select Case TapeUtils.DriverTypeSetting
+                Case DriverType.LTO
+                    a_CMBuffer = ReadBuffer(TapeDrive, BufferID)
+                    If a_CMBuffer.Length = 0 Then
+                        'IBM LTO
+                        a_CMBuffer = ReadBuffer(TapeDrive, &H5)
+                    End If
+                Case DriverType.IBM3592
+                    '3592
+                    a_CMBuffer = ReadBuffer(TapeDrive, &H20)
+            End Select
             If a_CMBuffer.Length <> 0 Then
                 Try
                     RunParse()
@@ -8323,7 +8340,7 @@ Public Class TapeUtils
         Public Shared Function GetAllPagesFromDrive(handle As IntPtr) As List(Of PageData)
             Dim result As New List(Of PageData)
             For Each pagecode As Byte In [Enum].GetValues(GetType(DefaultPages))
-                Dim logdata As Byte() = LogSense(handle, pagecode)
+                Dim logdata As Byte() = LogSense(handle, pagecode, 0)
                 result.Add(PageData.CreateDefault(pagecode, logdata))
             Next
             Return result
