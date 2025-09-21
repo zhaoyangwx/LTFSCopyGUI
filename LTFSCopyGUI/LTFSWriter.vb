@@ -1318,7 +1318,10 @@ Public Class LTFSWriter
                      End While
                  End Sub)
         LoadComplete = True
-        If driveOpened Then BeginInvoke(Sub() 读取索引ToolStripMenuItem_Click(sender, e))
+        If driveOpened Then
+            TapeUtils.CheckSwitchConfig(driveHandle)
+            BeginInvoke(Sub() 读取索引ToolStripMenuItem_Click(sender, e))
+        End If
     End Sub
     Private Sub LTFSWriter_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         Static ForceCloseCount As Integer = 0
@@ -4994,7 +4997,11 @@ Public Class LTFSWriter
                     If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
                     Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
                     If My.Settings.LTFSWriter_DisablePartition Then param.ExtraPartitionCount = 0
-                    If param.MaxExtraPartitionAllowed = 0 Then param.BlockLen = 65536
+                    If param.MaxExtraPartitionAllowed = 0 Then
+                        If My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.LTO Then
+                            param.BlockLen = 65536
+                        End If
+                    End If
                     param.BlockLen = Math.Min(param.BlockLen, TapeUtils.GlobalBlockLimit)
                     param.Barcode = TapeUtils.ReadBarcode(driveHandle)
                     param.EncryptionKey = EncryptionKey
