@@ -579,7 +579,33 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-
+    Public Shared Function CheckSwitchConfig(handle As IntPtr) As Boolean
+        Return CheckSwitchConfig(Inquiry(handle))
+    End Function
+    Public Shared Function CheckSwitchConfig(Drive As TapeDrive) As Boolean
+        If Drive.ProductId.Contains("LTO") OrElse Drive.ProductId.Contains("Ultrium") Then
+            My.Settings.TapeUtils_DriverType = DriverType.LTO
+            If Drive.ProductId.Contains("Ultrium 3") OrElse Drive.ProductId.Contains("Ultrium 2") OrElse Drive.ProductId.Contains("Ultrium 1") OrElse
+            Drive.ProductId.Contains("Gen 3") OrElse Drive.ProductId.Contains("Gen 2") OrElse Drive.ProductId.Contains("Gen 1") Then
+                My.Settings.LTFSWriter_DisablePartition = True
+            Else
+                My.Settings.LTFSWriter_DisablePartition = False
+            End If
+            Return True
+        ElseIf Drive.ProductId.Contains("3592") Then
+            My.Settings.TapeUtils_DriverType = DriverType.IBM3592
+            If Drive.ProductId.Contains("E06") OrElse Drive.ProductId.Contains("E05") OrElse Drive.ProductId.Contains("J1A") Then
+                My.Settings.LTFSWriter_DisablePartition = True
+            Else
+                My.Settings.LTFSWriter_DisablePartition = False
+            End If
+            Return True
+        ElseIf Drive.ProductId.Contains("T10000") Then
+            My.Settings.TapeUtils_DriverType = DriverType.T10K
+            My.Settings.LTFSWriter_DisablePartition = False
+        End If
+        Return False
+    End Function
     Public Shared Function Inquiry(handle As IntPtr) As TapeDrive
         SyncLock SCSIOperationLock
             Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4)(3) + 4
@@ -4009,47 +4035,47 @@ Public Class TapeUtils
             Public Property TapeVendor As String
             Public Property CartridgeSN As String
             Public Property CartridgeType As Integer
-            Public Property Format As String
+            Public Property Format As String = ""
             Public ReadOnly Property IsLTO3Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-3") OrElse fmt.Contains("LTO-4") OrElse fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-3") OrElse fmt.Contains("LTO-4") OrElse fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO4Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-4") OrElse fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-4") OrElse fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO5Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-5") OrElse fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO6Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-6") OrElse fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO7Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-7") OrElse fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO8Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-8") OrElse fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property IsLTO9Plus As Boolean
                 Get
                     Dim fmt As String = Format
-                    Return fmt.Contains("LTO-9")
+                    Return fmt IsNot Nothing AndAlso fmt.Contains("LTO-9")
                 End Get
             End Property
             Public ReadOnly Property CartridgeTypeAbbr As String
@@ -4871,13 +4897,16 @@ Public Class TapeUtils
                             .MediaMfgDate = getstr(a_Buffer, 4, 8)
                             .MediaVendor = getstr(a_Buffer, 12, 8)
                             ' check the MediaMfgDate for servo band ID
-                            If CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Format.Contains("LTO-8") Then
-                                If .MediaMfgDate.StartsWith("22") Then
-                                    CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Servo_Band_ID = Cartridge_mfg.svbid.legacy_UDIM
-                                ElseIf .MediaVendor.StartsWith(">>") Then
-                                    CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Servo_Band_ID = Cartridge_mfg.svbid.non_UDIM
+                            Try
+                                If CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Format.Contains("LTO-8") Then
+                                    If .MediaMfgDate.StartsWith("22") Then
+                                        CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Servo_Band_ID = Cartridge_mfg.svbid.legacy_UDIM
+                                    ElseIf .MediaVendor.StartsWith(">>") Then
+                                        CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Servo_Band_ID = Cartridge_mfg.svbid.non_UDIM
+                                    End If
                                 End If
-                            End If
+                            Catch ex As Exception
+                            End Try
                         End With
                     End If
                 End With
@@ -5235,6 +5264,8 @@ Public Class TapeUtils
                                     }{"FilemarkCount".PadRight(14) _
                                     }{"CRC".PadRight(14)}"
                                 .Wrap = a_OutputStr
+                            Else
+                                a_HdrLength = 16
                             End If
                             PublishTapeDirectoryPage(a_Buffer)
                             a_LastID = 0

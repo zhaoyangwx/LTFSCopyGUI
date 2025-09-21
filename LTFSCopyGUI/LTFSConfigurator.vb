@@ -59,6 +59,7 @@ Public Class LTFSConfigurator
                 Exit Property
             End If
             TextBoxDevInfo.Text = CurDrive.ToString()
+            TapeUtils.CheckSwitchConfig(CurDrive)
             If CurDrive.DriveLetter <> "" Then
                 If Not ComboBoxDriveLetter.Items.Contains(CurDrive.DriveLetter) Then ComboBoxDriveLetter.Items.Add(CurDrive.DriveLetter)
                 ComboBoxDriveLetter.SelectedItem = CurDrive.DriveLetter

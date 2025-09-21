@@ -1706,7 +1706,7 @@
     <value>校验源文件</value>
   </data>
   <data name="Column_StartBlock.Text" xml:space="preserve">
-    <value>起始区块</value>
+    <value>起始块</value>
   </data>
   <data name="&gt;&gt;平衡ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
