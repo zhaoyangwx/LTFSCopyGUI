@@ -599,6 +599,7 @@ Public Class TapeUtils
             Else
                 My.Settings.LTFSWriter_DisablePartition = False
             End If
+            TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
             Return True
         ElseIf Drive.ProductId.Contains("T10000") Then
             My.Settings.TapeUtils_DriverType = DriverType.T10K
@@ -608,11 +609,11 @@ Public Class TapeUtils
     End Function
     Public Shared Function Inquiry(handle As IntPtr) As TapeDrive
         SyncLock SCSIOperationLock
-            Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4)(3) + 4
+            Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4, senseReport:=Nothing, timeout:=10)(3) + 4
             If PageLen = 4 Then Return Nothing
-            Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen)
+            Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
             Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray())
-            PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60)
+            PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60, senseReport:=Nothing, timeout:=10)
             Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).TrimEnd(" ")
             Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).TrimEnd(" ")
             Return New TapeDrive With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}

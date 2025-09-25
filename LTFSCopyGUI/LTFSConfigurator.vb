@@ -1563,20 +1563,20 @@ Public Class LTFSConfigurator
                          Dim RERLPage As Byte()
                          SyncLock TapeUtils.SCSIOperationLock
                              WERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-                             If WERLHeader.Length <> 4 Then Exit Sub
+                             If WERLHeader.Length <> 4 Then Exit Try
                              RERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
-                             If RERLHeader.Length <> 4 Then Exit Sub
+                             If RERLHeader.Length <> 4 Then Exit Try
                              Dim WERLPageLen As Integer = WERLHeader(2)
                              WERLPageLen <<= 8
                              WERLPageLen = WERLPageLen Or WERLHeader(3)
-                             If WERLPageLen = 0 Then Exit Sub
+                             If WERLPageLen = 0 Then Exit Try
                              WERLPageLen += 4
                              WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
 
                              Dim RERLPageLen As Integer = RERLHeader(2)
                              RERLPageLen <<= 8
                              RERLPageLen = RERLPageLen Or RERLHeader(3)
-                             If RERLPageLen = 0 Then Exit Sub
+                             If RERLPageLen = 0 Then Exit Try
                              RERLPageLen += 4
                              RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, paramLen:=RERLPageLen)
                          End SyncLock
