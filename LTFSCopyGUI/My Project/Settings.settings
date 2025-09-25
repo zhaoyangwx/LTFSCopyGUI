@@ -27,7 +27,7 @@
       <Value Profile="(Default)">1</Value>
     </Setting>
     <Setting Name="LTFSWriter_AutoFlush" Description="容量损失自动停顿开关" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="LTFSWriter_FileLabel" Description="文件标签设置" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

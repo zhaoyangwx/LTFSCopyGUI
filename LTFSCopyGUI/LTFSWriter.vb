@@ -1505,6 +1505,7 @@ Public Class LTFSWriter
         CapLossChannelInfo = Text
     End Sub
     Public CMOnce As TapeUtils.CMParser
+    Public GenAbbr As String = ""
     Public Function RefreshCapacity() As Long()
         Dim result(3) As Long
         Dim logdataCap As Byte() = TapeUtils.LogSense(driveHandle, &H31, 0, PageControl:=1)
@@ -1540,6 +1541,7 @@ Public Class LTFSWriter
                         GenStr = CMOnce.CartridgeMfgData.CartridgeTypeAbbr
                     End If
                 End If
+                GenAbbr = GenStr
                 Dim WORMPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H81)
                 If WORMPage IsNot Nothing Then WORM = WORMPage.LastByte
                 Dim WPPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H80)
@@ -1600,6 +1602,7 @@ Public Class LTFSWriter
                             Case &H251
                                 MediaDescription = "JR"
                         End Select
+                        GenAbbr = MediaDescription
                         Select Case mp23h(6 + 12)
                             Case &H31
                                 MediaDescription &= " A1"
@@ -4607,6 +4610,7 @@ Public Class LTFSWriter
                 Try
                     If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     SetStatusLight(LWStatus.Busy)
+                    RefreshCapacity()
                     Dim Sense0 As Byte() = {}
                     Dim retrycount As Integer = 5
                     While (retrycount > 0) AndAlso ((Sense0 Is Nothing) OrElse (Sense0.Length < 3) OrElse (Sense0(2) <> 0))
@@ -4688,6 +4692,9 @@ Public Class LTFSWriter
                     End If
 
                     Barcode = TapeUtils.ReadBarcode(driveHandle)
+                    If Barcode Is Nothing OrElse Barcode = "" Then
+                        Barcode = header.Substring(4, 6).TrimEnd(" ") & GenAbbr
+                    End If
                     PrintMsg($"Barcode = {Barcode}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
                     If ExtraPartitionCount = 0 Then
@@ -4996,7 +5003,12 @@ Public Class LTFSWriter
                     Dim MaxExtraPartitionAllowed As Byte = modedata(2)
                     If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
                     Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
-                    If My.Settings.LTFSWriter_DisablePartition Then param.ExtraPartitionCount = 0
+                    If My.Settings.LTFSWriter_DisablePartition Then
+                        param.ExtraPartitionCount = 0
+                        TapeUtils.AllowPartition = False
+                    Else
+                        TapeUtils.AllowPartition = True
+                    End If
                     If param.MaxExtraPartitionAllowed = 0 Then
                         If My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.LTO Then
                             param.BlockLen = 65536
