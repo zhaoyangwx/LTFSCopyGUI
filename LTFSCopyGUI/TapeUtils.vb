@@ -2531,7 +2531,11 @@ Public Class TapeUtils
 
         LDrive.Sort(New Comparison(Of BlockDevice)(
                         Function(A As BlockDevice, B As BlockDevice) As Integer
-                            Return A.DevIndex.CompareTo(B.DevIndex)
+                            Try
+                                Return Integer.Parse(A.DevIndex).CompareTo(Integer.Parse(B.DevIndex))
+                            Catch ex As Exception
+                                Return A.DevIndex.CompareTo(B.DevIndex)
+                            End Try
                         End Function))
         s = GetDriveMappings().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         For Each t As String In s
@@ -2626,7 +2630,11 @@ Public Class TapeUtils
         'Next
         LDrive.Sort(New Comparison(Of BlockDevice)(
                         Function(A As BlockDevice, B As BlockDevice) As Integer
-                            Return A.DevIndex.CompareTo(B.DevIndex)
+                            Try
+                                Return Integer.Parse(A.DevIndex).CompareTo(Integer.Parse(B.DevIndex))
+                            Catch ex As Exception
+                                Return A.DevIndex.CompareTo(B.DevIndex)
+                            End Try
                         End Function))
         s = GetDriveMappings().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         For Each t As String In s
@@ -2688,7 +2696,11 @@ Public Class TapeUtils
         'Next
         LChanger.Sort(New Comparison(Of MediumChanger)(
                         Function(A As MediumChanger, B As MediumChanger) As Integer
-                            Return A.DevIndex.CompareTo(B.DevIndex)
+                            Try
+                                Return Integer.Parse(A.DevIndex).CompareTo(Integer.Parse(B.DevIndex))
+                            Catch ex As Exception
+                                Return A.DevIndex.CompareTo(B.DevIndex)
+                            End Try
                         End Function))
         Return LChanger
     End Function
