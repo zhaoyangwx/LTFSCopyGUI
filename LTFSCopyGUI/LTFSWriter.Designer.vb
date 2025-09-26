@@ -24,46 +24,46 @@ Partial Class LTFSWriter
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(LTFSWriter))
-        Dim ChartArea2 As System.Windows.Forms.DataVisualization.Charting.ChartArea = New System.Windows.Forms.DataVisualization.Charting.ChartArea()
-        Dim Series4 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
-        Dim DataPoint34 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint35 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint36 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint37 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint38 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint39 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint40 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint41 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint42 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint43 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint44 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint45 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint46 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint47 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint48 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim DataPoint49 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim Series5 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
-        Dim DataPoint50 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint51 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint52 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint53 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint54 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint55 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint56 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint57 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint58 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint59 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint60 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint61 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint62 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint63 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint64 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim DataPoint65 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
-        Dim Series6 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
-        Dim DataPoint66 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
-        Dim Title4 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
-        Dim Title5 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
-        Dim Title6 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
+        Dim ChartArea1 As System.Windows.Forms.DataVisualization.Charting.ChartArea = New System.Windows.Forms.DataVisualization.Charting.ChartArea()
+        Dim Series1 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
+        Dim DataPoint1 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint2 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint3 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint4 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint5 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint6 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint7 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint8 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint9 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint10 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint11 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint12 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint13 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint14 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint15 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim DataPoint16 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim Series2 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
+        Dim DataPoint17 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint18 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint19 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint20 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint21 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint22 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint23 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint24 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint25 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint26 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint27 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint28 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint29 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint30 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint31 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim DataPoint32 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, "0,0")
+        Dim Series3 As System.Windows.Forms.DataVisualization.Charting.Series = New System.Windows.Forms.DataVisualization.Charting.Series()
+        Dim DataPoint33 As System.Windows.Forms.DataVisualization.Charting.DataPoint = New System.Windows.Forms.DataVisualization.Charting.DataPoint(0R, 0R)
+        Dim Title1 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
+        Dim Title2 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
+        Dim Title3 As System.Windows.Forms.DataVisualization.Charting.Title = New System.Windows.Forms.DataVisualization.Charting.Title()
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
         Me.TreeView1 = New System.Windows.Forms.TreeView()
         Me.ContextMenuStrip3 = New System.Windows.Forms.ContextMenuStrip(Me.components)
@@ -276,97 +276,90 @@ Partial Class LTFSWriter
         '
         'SplitContainer1.Panel1
         '
-        resources.ApplyResources(Me.SplitContainer1.Panel1, "SplitContainer1.Panel1")
         Me.SplitContainer1.Panel1.Controls.Add(Me.TreeView1)
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer1.Panel1, resources.GetString("SplitContainer1.Panel1.ToolTip"))
         '
         'SplitContainer1.Panel2
         '
-        resources.ApplyResources(Me.SplitContainer1.Panel2, "SplitContainer1.Panel2")
         Me.SplitContainer1.Panel2.Controls.Add(Me.SplitContainer2)
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer1.Panel2, resources.GetString("SplitContainer1.Panel2.ToolTip"))
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer1, resources.GetString("SplitContainer1.ToolTip"))
         '
         'TreeView1
         '
-        resources.ApplyResources(Me.TreeView1, "TreeView1")
         Me.TreeView1.ContextMenuStrip = Me.ContextMenuStrip3
+        resources.ApplyResources(Me.TreeView1, "TreeView1")
         Me.TreeView1.ImageList = Me.ImageList1
         Me.TreeView1.Name = "TreeView1"
-        Me.ToolTipChanErrLog.SetToolTip(Me.TreeView1, resources.GetString("TreeView1.ToolTip"))
         '
         'ContextMenuStrip3
         '
-        resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
         Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.剪切目录ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.详情ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
-        Me.ToolTipChanErrLog.SetToolTip(Me.ContextMenuStrip3, resources.GetString("ContextMenuStrip3.ToolTip"))
+        resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
         '
         '提取ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.提取ToolStripMenuItem1, "提取ToolStripMenuItem1")
         Me.提取ToolStripMenuItem1.Name = "提取ToolStripMenuItem1"
+        resources.ApplyResources(Me.提取ToolStripMenuItem1, "提取ToolStripMenuItem1")
         '
         '校验ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.校验ToolStripMenuItem1, "校验ToolStripMenuItem1")
         Me.校验ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem1, Me.跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem1})
         Me.校验ToolStripMenuItem1.Name = "校验ToolStripMenuItem1"
+        resources.ApplyResources(Me.校验ToolStripMenuItem1, "校验ToolStripMenuItem1")
         '
         '计算并更新ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.计算并更新ToolStripMenuItem1, "计算并更新ToolStripMenuItem1")
         Me.计算并更新ToolStripMenuItem1.Name = "计算并更新ToolStripMenuItem1"
+        resources.ApplyResources(Me.计算并更新ToolStripMenuItem1, "计算并更新ToolStripMenuItem1")
         '
         '跳过已有校验ToolStripMenuItem
         '
-        resources.ApplyResources(Me.跳过已有校验ToolStripMenuItem, "跳过已有校验ToolStripMenuItem")
         Me.跳过已有校验ToolStripMenuItem.Name = "跳过已有校验ToolStripMenuItem"
+        resources.ApplyResources(Me.跳过已有校验ToolStripMenuItem, "跳过已有校验ToolStripMenuItem")
         '
         '仅验证ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.仅验证ToolStripMenuItem1, "仅验证ToolStripMenuItem1")
         Me.仅验证ToolStripMenuItem1.Name = "仅验证ToolStripMenuItem1"
+        resources.ApplyResources(Me.仅验证ToolStripMenuItem1, "仅验证ToolStripMenuItem1")
         '
         '剪切目录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.剪切目录ToolStripMenuItem, "剪切目录ToolStripMenuItem")
         Me.剪切目录ToolStripMenuItem.Name = "剪切目录ToolStripMenuItem"
+        resources.ApplyResources(Me.剪切目录ToolStripMenuItem, "剪切目录ToolStripMenuItem")
         '
         '粘贴选中ToolStripMenuItem
         '
-        resources.ApplyResources(Me.粘贴选中ToolStripMenuItem, "粘贴选中ToolStripMenuItem")
         Me.粘贴选中ToolStripMenuItem.Name = "粘贴选中ToolStripMenuItem"
+        resources.ApplyResources(Me.粘贴选中ToolStripMenuItem, "粘贴选中ToolStripMenuItem")
         '
         '重命名ToolStripMenuItem
         '
-        resources.ApplyResources(Me.重命名ToolStripMenuItem, "重命名ToolStripMenuItem")
         Me.重命名ToolStripMenuItem.Name = "重命名ToolStripMenuItem"
+        resources.ApplyResources(Me.重命名ToolStripMenuItem, "重命名ToolStripMenuItem")
         '
         '删除ToolStripMenuItem
         '
-        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
         Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
+        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
         '
         '统计ToolStripMenuItem
         '
-        resources.ApplyResources(Me.统计ToolStripMenuItem, "统计ToolStripMenuItem")
         Me.统计ToolStripMenuItem.Name = "统计ToolStripMenuItem"
+        resources.ApplyResources(Me.统计ToolStripMenuItem, "统计ToolStripMenuItem")
         '
         '详情ToolStripMenuItem
         '
-        resources.ApplyResources(Me.详情ToolStripMenuItem, "详情ToolStripMenuItem")
         Me.详情ToolStripMenuItem.Name = "详情ToolStripMenuItem"
+        resources.ApplyResources(Me.详情ToolStripMenuItem, "详情ToolStripMenuItem")
         '
         '压缩索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.压缩索引ToolStripMenuItem, "压缩索引ToolStripMenuItem")
         Me.压缩索引ToolStripMenuItem.Name = "压缩索引ToolStripMenuItem"
+        resources.ApplyResources(Me.压缩索引ToolStripMenuItem, "压缩索引ToolStripMenuItem")
         '
         '解压索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.解压索引ToolStripMenuItem, "解压索引ToolStripMenuItem")
         Me.解压索引ToolStripMenuItem.Name = "解压索引ToolStripMenuItem"
+        resources.ApplyResources(Me.解压索引ToolStripMenuItem, "解压索引ToolStripMenuItem")
         '
         'ImageList1
         '
@@ -384,29 +377,23 @@ Partial Class LTFSWriter
         '
         'SplitContainer2.Panel1
         '
-        resources.ApplyResources(Me.SplitContainer2.Panel1, "SplitContainer2.Panel1")
         Me.SplitContainer2.Panel1.Controls.Add(Me.ListView1)
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer2.Panel1, resources.GetString("SplitContainer2.Panel1.ToolTip"))
         '
         'SplitContainer2.Panel2
         '
-        resources.ApplyResources(Me.SplitContainer2.Panel2, "SplitContainer2.Panel2")
         Me.SplitContainer2.Panel2.Controls.Add(Me.Chart1)
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer2.Panel2, resources.GetString("SplitContainer2.Panel2.ToolTip"))
-        Me.ToolTipChanErrLog.SetToolTip(Me.SplitContainer2, resources.GetString("SplitContainer2.ToolTip"))
         '
         'ListView1
         '
-        resources.ApplyResources(Me.ListView1, "ListView1")
         Me.ListView1.AllowColumnReorder = True
         Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
         Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.ListView1, "ListView1")
         Me.ListView1.HideSelection = False
         Me.ListView1.Name = "ListView1"
         Me.ListView1.ShowGroups = False
         Me.ListView1.ShowItemToolTips = True
         Me.ListView1.SmallImageList = Me.ImageList1
-        Me.ToolTipChanErrLog.SetToolTip(Me.ListView1, resources.GetString("ListView1.ToolTip"))
         Me.ListView1.UseCompatibleStateImageBehavior = False
         Me.ListView1.View = System.Windows.Forms.View.Details
         '
@@ -487,81 +474,80 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip1
         '
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.移动到索引区ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.剪切文件ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem1, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.新建压缩文件ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.文件详情ToolStripMenuItem, Me.复制信息到剪贴板ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
-        Me.ToolTipChanErrLog.SetToolTip(Me.ContextMenuStrip1, resources.GetString("ContextMenuStrip1.ToolTip"))
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
         '提取ToolStripMenuItem
         '
-        resources.ApplyResources(Me.提取ToolStripMenuItem, "提取ToolStripMenuItem")
         Me.提取ToolStripMenuItem.Name = "提取ToolStripMenuItem"
+        resources.ApplyResources(Me.提取ToolStripMenuItem, "提取ToolStripMenuItem")
         '
         '校验ToolStripMenuItem
         '
-        resources.ApplyResources(Me.校验ToolStripMenuItem, "校验ToolStripMenuItem")
         Me.校验ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.计算并更新ToolStripMenuItem, Me.计算并跳过已有校验ToolStripMenuItem, Me.仅验证ToolStripMenuItem})
         Me.校验ToolStripMenuItem.Name = "校验ToolStripMenuItem"
+        resources.ApplyResources(Me.校验ToolStripMenuItem, "校验ToolStripMenuItem")
         '
         '计算并更新ToolStripMenuItem
         '
-        resources.ApplyResources(Me.计算并更新ToolStripMenuItem, "计算并更新ToolStripMenuItem")
         Me.计算并更新ToolStripMenuItem.Name = "计算并更新ToolStripMenuItem"
+        resources.ApplyResources(Me.计算并更新ToolStripMenuItem, "计算并更新ToolStripMenuItem")
         '
         '计算并跳过已有校验ToolStripMenuItem
         '
-        resources.ApplyResources(Me.计算并跳过已有校验ToolStripMenuItem, "计算并跳过已有校验ToolStripMenuItem")
         Me.计算并跳过已有校验ToolStripMenuItem.Name = "计算并跳过已有校验ToolStripMenuItem"
+        resources.ApplyResources(Me.计算并跳过已有校验ToolStripMenuItem, "计算并跳过已有校验ToolStripMenuItem")
         '
         '仅验证ToolStripMenuItem
         '
-        resources.ApplyResources(Me.仅验证ToolStripMenuItem, "仅验证ToolStripMenuItem")
         Me.仅验证ToolStripMenuItem.Name = "仅验证ToolStripMenuItem"
+        resources.ApplyResources(Me.仅验证ToolStripMenuItem, "仅验证ToolStripMenuItem")
         '
         '移动到索引区ToolStripMenuItem
         '
-        resources.ApplyResources(Me.移动到索引区ToolStripMenuItem, "移动到索引区ToolStripMenuItem")
         Me.移动到索引区ToolStripMenuItem.Name = "移动到索引区ToolStripMenuItem"
+        resources.ApplyResources(Me.移动到索引区ToolStripMenuItem, "移动到索引区ToolStripMenuItem")
         '
         '定位到起始块ToolStripMenuItem
         '
-        resources.ApplyResources(Me.定位到起始块ToolStripMenuItem, "定位到起始块ToolStripMenuItem")
         Me.定位到起始块ToolStripMenuItem.Name = "定位到起始块ToolStripMenuItem"
+        resources.ApplyResources(Me.定位到起始块ToolStripMenuItem, "定位到起始块ToolStripMenuItem")
         '
         'ToolStripSeparator2
         '
-        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
         Me.ToolStripSeparator2.Name = "ToolStripSeparator2"
+        resources.ApplyResources(Me.ToolStripSeparator2, "ToolStripSeparator2")
         '
         '剪切文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.剪切文件ToolStripMenuItem, "剪切文件ToolStripMenuItem")
         Me.剪切文件ToolStripMenuItem.Name = "剪切文件ToolStripMenuItem"
+        resources.ApplyResources(Me.剪切文件ToolStripMenuItem, "剪切文件ToolStripMenuItem")
         '
         '粘贴选中ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.粘贴选中ToolStripMenuItem1, "粘贴选中ToolStripMenuItem1")
         Me.粘贴选中ToolStripMenuItem1.Name = "粘贴选中ToolStripMenuItem1"
+        resources.ApplyResources(Me.粘贴选中ToolStripMenuItem1, "粘贴选中ToolStripMenuItem1")
         '
         '重命名文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.重命名文件ToolStripMenuItem, "重命名文件ToolStripMenuItem")
         Me.重命名文件ToolStripMenuItem.Name = "重命名文件ToolStripMenuItem"
+        resources.ApplyResources(Me.重命名文件ToolStripMenuItem, "重命名文件ToolStripMenuItem")
         '
         '重命名目录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.重命名目录ToolStripMenuItem, "重命名目录ToolStripMenuItem")
         Me.重命名目录ToolStripMenuItem.Name = "重命名目录ToolStripMenuItem"
+        resources.ApplyResources(Me.重命名目录ToolStripMenuItem, "重命名目录ToolStripMenuItem")
         '
         '合并文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
         Me.合并文件ToolStripMenuItem.Name = "合并文件ToolStripMenuItem"
+        resources.ApplyResources(Me.合并文件ToolStripMenuItem, "合并文件ToolStripMenuItem")
         '
         'ToolStripSeparator3
         '
-        resources.ApplyResources(Me.ToolStripSeparator3, "ToolStripSeparator3")
         Me.ToolStripSeparator3.Name = "ToolStripSeparator3"
+        resources.ApplyResources(Me.ToolStripSeparator3, "ToolStripSeparator3")
         '
         '导入文件ToolStripMenuItem
         '
@@ -570,104 +556,104 @@ Partial Class LTFSWriter
         '
         '添加文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.添加文件ToolStripMenuItem, "添加文件ToolStripMenuItem")
         Me.添加文件ToolStripMenuItem.Name = "添加文件ToolStripMenuItem"
+        resources.ApplyResources(Me.添加文件ToolStripMenuItem, "添加文件ToolStripMenuItem")
         '
         '添加目录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.添加目录ToolStripMenuItem, "添加目录ToolStripMenuItem")
         Me.添加目录ToolStripMenuItem.Name = "添加目录ToolStripMenuItem"
+        resources.ApplyResources(Me.添加目录ToolStripMenuItem, "添加目录ToolStripMenuItem")
         '
         '新建目录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.新建目录ToolStripMenuItem, "新建目录ToolStripMenuItem")
         Me.新建目录ToolStripMenuItem.Name = "新建目录ToolStripMenuItem"
+        resources.ApplyResources(Me.新建目录ToolStripMenuItem, "新建目录ToolStripMenuItem")
         '
         '新建压缩文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.新建压缩文件ToolStripMenuItem, "新建压缩文件ToolStripMenuItem")
         Me.新建压缩文件ToolStripMenuItem.Name = "新建压缩文件ToolStripMenuItem"
+        resources.ApplyResources(Me.新建压缩文件ToolStripMenuItem, "新建压缩文件ToolStripMenuItem")
         '
         '选项ToolStripMenuItem
         '
-        resources.ApplyResources(Me.选项ToolStripMenuItem, "选项ToolStripMenuItem")
         Me.选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.覆盖已有文件ToolStripMenuItem, Me.跳过符号链接ToolStripMenuItem})
         Me.选项ToolStripMenuItem.Name = "选项ToolStripMenuItem"
+        resources.ApplyResources(Me.选项ToolStripMenuItem, "选项ToolStripMenuItem")
         '
         '覆盖已有文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.覆盖已有文件ToolStripMenuItem, "覆盖已有文件ToolStripMenuItem")
         Me.覆盖已有文件ToolStripMenuItem.CheckOnClick = True
         Me.覆盖已有文件ToolStripMenuItem.Name = "覆盖已有文件ToolStripMenuItem"
+        resources.ApplyResources(Me.覆盖已有文件ToolStripMenuItem, "覆盖已有文件ToolStripMenuItem")
         '
         '跳过符号链接ToolStripMenuItem
         '
-        resources.ApplyResources(Me.跳过符号链接ToolStripMenuItem, "跳过符号链接ToolStripMenuItem")
         Me.跳过符号链接ToolStripMenuItem.Checked = True
         Me.跳过符号链接ToolStripMenuItem.CheckOnClick = True
         Me.跳过符号链接ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.跳过符号链接ToolStripMenuItem.Name = "跳过符号链接ToolStripMenuItem"
+        resources.ApplyResources(Me.跳过符号链接ToolStripMenuItem, "跳过符号链接ToolStripMenuItem")
         '
         'ToolStripSeparator4
         '
-        resources.ApplyResources(Me.ToolStripSeparator4, "ToolStripSeparator4")
         Me.ToolStripSeparator4.Name = "ToolStripSeparator4"
+        resources.ApplyResources(Me.ToolStripSeparator4, "ToolStripSeparator4")
         '
         '删除文件ToolStripMenuItem
         '
-        resources.ApplyResources(Me.删除文件ToolStripMenuItem, "删除文件ToolStripMenuItem")
         Me.删除文件ToolStripMenuItem.Name = "删除文件ToolStripMenuItem"
+        resources.ApplyResources(Me.删除文件ToolStripMenuItem, "删除文件ToolStripMenuItem")
         '
         '删除目录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.删除目录ToolStripMenuItem, "删除目录ToolStripMenuItem")
         Me.删除目录ToolStripMenuItem.Name = "删除目录ToolStripMenuItem"
+        resources.ApplyResources(Me.删除目录ToolStripMenuItem, "删除目录ToolStripMenuItem")
         '
         'ToolStripSeparator8
         '
-        resources.ApplyResources(Me.ToolStripSeparator8, "ToolStripSeparator8")
         Me.ToolStripSeparator8.Name = "ToolStripSeparator8"
+        resources.ApplyResources(Me.ToolStripSeparator8, "ToolStripSeparator8")
         '
         '生成标签ToolStripMenuItem
         '
-        resources.ApplyResources(Me.生成标签ToolStripMenuItem, "生成标签ToolStripMenuItem")
         Me.生成标签ToolStripMenuItem.Name = "生成标签ToolStripMenuItem"
+        resources.ApplyResources(Me.生成标签ToolStripMenuItem, "生成标签ToolStripMenuItem")
         '
         '设置标签ToolStripMenuItem
         '
-        resources.ApplyResources(Me.设置标签ToolStripMenuItem, "设置标签ToolStripMenuItem")
         Me.设置标签ToolStripMenuItem.Name = "设置标签ToolStripMenuItem"
+        resources.ApplyResources(Me.设置标签ToolStripMenuItem, "设置标签ToolStripMenuItem")
         '
         '文件详情ToolStripMenuItem
         '
-        resources.ApplyResources(Me.文件详情ToolStripMenuItem, "文件详情ToolStripMenuItem")
         Me.文件详情ToolStripMenuItem.Name = "文件详情ToolStripMenuItem"
+        resources.ApplyResources(Me.文件详情ToolStripMenuItem, "文件详情ToolStripMenuItem")
         '
         '复制信息到剪贴板ToolStripMenuItem
         '
-        resources.ApplyResources(Me.复制信息到剪贴板ToolStripMenuItem, "复制信息到剪贴板ToolStripMenuItem")
         Me.复制信息到剪贴板ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.复制选中信息ToolStripMenuItem, Me.子目录列表ToolStripMenuItem, Me.文件详情ToolStripMenuItem1, Me.XAttrToolStripMenuItem})
         Me.复制信息到剪贴板ToolStripMenuItem.Name = "复制信息到剪贴板ToolStripMenuItem"
+        resources.ApplyResources(Me.复制信息到剪贴板ToolStripMenuItem, "复制信息到剪贴板ToolStripMenuItem")
         '
         '复制选中信息ToolStripMenuItem
         '
-        resources.ApplyResources(Me.复制选中信息ToolStripMenuItem, "复制选中信息ToolStripMenuItem")
         Me.复制选中信息ToolStripMenuItem.Name = "复制选中信息ToolStripMenuItem"
+        resources.ApplyResources(Me.复制选中信息ToolStripMenuItem, "复制选中信息ToolStripMenuItem")
         '
         '子目录列表ToolStripMenuItem
         '
-        resources.ApplyResources(Me.子目录列表ToolStripMenuItem, "子目录列表ToolStripMenuItem")
         Me.子目录列表ToolStripMenuItem.Name = "子目录列表ToolStripMenuItem"
+        resources.ApplyResources(Me.子目录列表ToolStripMenuItem, "子目录列表ToolStripMenuItem")
         '
         '文件详情ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.文件详情ToolStripMenuItem1, "文件详情ToolStripMenuItem1")
         Me.文件详情ToolStripMenuItem1.Name = "文件详情ToolStripMenuItem1"
+        resources.ApplyResources(Me.文件详情ToolStripMenuItem1, "文件详情ToolStripMenuItem1")
         '
         'XAttrToolStripMenuItem
         '
-        resources.ApplyResources(Me.XAttrToolStripMenuItem, "XAttrToolStripMenuItem")
         Me.XAttrToolStripMenuItem.Name = "XAttrToolStripMenuItem"
+        resources.ApplyResources(Me.XAttrToolStripMenuItem, "XAttrToolStripMenuItem")
         '
         'Chart1
         '
@@ -675,217 +661,214 @@ Partial Class LTFSWriter
         Me.Chart1.AntiAliasing = System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles.Graphics
         Me.Chart1.BorderlineColor = System.Drawing.Color.Silver
         Me.Chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
-        ChartArea2.AxisX.LabelStyle.Enabled = False
-        ChartArea2.AxisX.MajorGrid.Enabled = False
-        ChartArea2.AxisX2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisX2.LabelStyle.Enabled = False
-        ChartArea2.AxisX2.MajorGrid.Enabled = False
-        ChartArea2.AxisX2.MajorTickMark.Enabled = False
-        ChartArea2.AxisY.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisY.IsLabelAutoFit = False
-        ChartArea2.AxisY.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
-        ChartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash
-        ChartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis
-        ChartArea2.AxisY.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 9.1!)
-        ChartArea2.AxisY.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisY2.IsLabelAutoFit = False
-        ChartArea2.AxisY2.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
-        ChartArea2.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.AxisY2.MajorGrid.Enabled = False
-        ChartArea2.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.AxisY2.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        ChartArea2.AxisY2.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.InnerPlotPosition.Auto = False
-        ChartArea2.InnerPlotPosition.Height = 92.0!
-        ChartArea2.InnerPlotPosition.Width = 91.5!
-        ChartArea2.InnerPlotPosition.X = 4.5!
-        ChartArea2.InnerPlotPosition.Y = 7.21773!
-        ChartArea2.Name = "ChartArea1"
-        Me.Chart1.ChartAreas.Add(ChartArea2)
+        ChartArea1.AxisX.LabelStyle.Enabled = False
+        ChartArea1.AxisX.MajorGrid.Enabled = False
+        ChartArea1.AxisX2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
+        ChartArea1.AxisX2.LabelStyle.Enabled = False
+        ChartArea1.AxisX2.MajorGrid.Enabled = False
+        ChartArea1.AxisX2.MajorTickMark.Enabled = False
+        ChartArea1.AxisY.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
+        ChartArea1.AxisY.IsLabelAutoFit = False
+        ChartArea1.AxisY.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
+        ChartArea1.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        ChartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        ChartArea1.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash
+        ChartArea1.AxisY.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        ChartArea1.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis
+        ChartArea1.AxisY.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 9.1!)
+        ChartArea1.AxisY.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        ChartArea1.AxisY2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
+        ChartArea1.AxisY2.IsLabelAutoFit = False
+        ChartArea1.AxisY2.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
+        ChartArea1.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        ChartArea1.AxisY2.MajorGrid.Enabled = False
+        ChartArea1.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        ChartArea1.AxisY2.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
+        ChartArea1.AxisY2.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        ChartArea1.InnerPlotPosition.Auto = False
+        ChartArea1.InnerPlotPosition.Height = 92.0!
+        ChartArea1.InnerPlotPosition.Width = 91.5!
+        ChartArea1.InnerPlotPosition.X = 4.5!
+        ChartArea1.InnerPlotPosition.Y = 7.21773!
+        ChartArea1.Name = "ChartArea1"
+        Me.Chart1.ChartAreas.Add(ChartArea1)
         Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
         Me.Chart1.Name = "Chart1"
-        Series4.BorderWidth = 2
-        Series4.ChartArea = "ChartArea1"
-        Series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series4.Color = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Series4.Name = "Series1"
-        Series4.Points.Add(DataPoint34)
-        Series4.Points.Add(DataPoint35)
-        Series4.Points.Add(DataPoint36)
-        Series4.Points.Add(DataPoint37)
-        Series4.Points.Add(DataPoint38)
-        Series4.Points.Add(DataPoint39)
-        Series4.Points.Add(DataPoint40)
-        Series4.Points.Add(DataPoint41)
-        Series4.Points.Add(DataPoint42)
-        Series4.Points.Add(DataPoint43)
-        Series4.Points.Add(DataPoint44)
-        Series4.Points.Add(DataPoint45)
-        Series4.Points.Add(DataPoint46)
-        Series4.Points.Add(DataPoint47)
-        Series4.Points.Add(DataPoint48)
-        Series4.Points.Add(DataPoint49)
-        Series5.BorderWidth = 2
-        Series5.ChartArea = "ChartArea1"
-        Series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series5.Color = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Series5.Name = "Series2"
-        Series5.Points.Add(DataPoint50)
-        Series5.Points.Add(DataPoint51)
-        Series5.Points.Add(DataPoint52)
-        Series5.Points.Add(DataPoint53)
-        Series5.Points.Add(DataPoint54)
-        Series5.Points.Add(DataPoint55)
-        Series5.Points.Add(DataPoint56)
-        Series5.Points.Add(DataPoint57)
-        Series5.Points.Add(DataPoint58)
-        Series5.Points.Add(DataPoint59)
-        Series5.Points.Add(DataPoint60)
-        Series5.Points.Add(DataPoint61)
-        Series5.Points.Add(DataPoint62)
-        Series5.Points.Add(DataPoint63)
-        Series5.Points.Add(DataPoint64)
-        Series5.Points.Add(DataPoint65)
-        Series5.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
-        Series5.YValuesPerPoint = 2
-        Series6.BorderWidth = 2
-        Series6.ChartArea = "ChartArea1"
-        Series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series6.Color = System.Drawing.Color.Red
-        Series6.Name = "Series3"
-        Series6.Points.Add(DataPoint66)
-        Series6.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
-        Me.Chart1.Series.Add(Series4)
-        Me.Chart1.Series.Add(Series5)
-        Me.Chart1.Series.Add(Series6)
+        Series1.BorderWidth = 2
+        Series1.ChartArea = "ChartArea1"
+        Series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
+        Series1.Color = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        Series1.Name = "Series1"
+        Series1.Points.Add(DataPoint1)
+        Series1.Points.Add(DataPoint2)
+        Series1.Points.Add(DataPoint3)
+        Series1.Points.Add(DataPoint4)
+        Series1.Points.Add(DataPoint5)
+        Series1.Points.Add(DataPoint6)
+        Series1.Points.Add(DataPoint7)
+        Series1.Points.Add(DataPoint8)
+        Series1.Points.Add(DataPoint9)
+        Series1.Points.Add(DataPoint10)
+        Series1.Points.Add(DataPoint11)
+        Series1.Points.Add(DataPoint12)
+        Series1.Points.Add(DataPoint13)
+        Series1.Points.Add(DataPoint14)
+        Series1.Points.Add(DataPoint15)
+        Series1.Points.Add(DataPoint16)
+        Series2.BorderWidth = 2
+        Series2.ChartArea = "ChartArea1"
+        Series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
+        Series2.Color = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        Series2.Name = "Series2"
+        Series2.Points.Add(DataPoint17)
+        Series2.Points.Add(DataPoint18)
+        Series2.Points.Add(DataPoint19)
+        Series2.Points.Add(DataPoint20)
+        Series2.Points.Add(DataPoint21)
+        Series2.Points.Add(DataPoint22)
+        Series2.Points.Add(DataPoint23)
+        Series2.Points.Add(DataPoint24)
+        Series2.Points.Add(DataPoint25)
+        Series2.Points.Add(DataPoint26)
+        Series2.Points.Add(DataPoint27)
+        Series2.Points.Add(DataPoint28)
+        Series2.Points.Add(DataPoint29)
+        Series2.Points.Add(DataPoint30)
+        Series2.Points.Add(DataPoint31)
+        Series2.Points.Add(DataPoint32)
+        Series2.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
+        Series2.YValuesPerPoint = 2
+        Series3.BorderWidth = 2
+        Series3.ChartArea = "ChartArea1"
+        Series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
+        Series3.Color = System.Drawing.Color.Red
+        Series3.Name = "Series3"
+        Series3.Points.Add(DataPoint33)
+        Series3.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
+        Me.Chart1.Series.Add(Series1)
+        Me.Chart1.Series.Add(Series2)
+        Me.Chart1.Series.Add(Series3)
         Me.Chart1.SuppressExceptions = True
-        Title4.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
-        Title4.Name = "Title1"
-        Title4.Text = "10分钟"
-        Title5.BackColor = System.Drawing.Color.Transparent
-        Title5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Left
-        Title5.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        Title5.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Title5.Name = "Title2"
-        Title5.Position.Auto = False
-        Title5.Position.Height = 80.01128!
-        Title5.Position.Width = 2.965401!
-        Title5.Position.X = 0.5!
-        Title5.Position.Y = 3.0!
-        Title5.Text = "速度 (MiB/s)"
-        Title5.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
-        Title6.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Right
-        Title6.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        Title6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Title6.Name = "Title3"
-        Title6.Position.Auto = False
-        Title6.Position.Height = 80.01128!
-        Title6.Position.Width = 1.915178!
-        Title6.Position.X = 97.2!
-        Title6.Position.Y = 4.0!
-        Title6.Text = "每秒文件"
-        Title6.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
-        Me.Chart1.Titles.Add(Title4)
-        Me.Chart1.Titles.Add(Title5)
-        Me.Chart1.Titles.Add(Title6)
-        Me.ToolTipChanErrLog.SetToolTip(Me.Chart1, resources.GetString("Chart1.ToolTip"))
+        Title1.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
+        Title1.Name = "Title1"
+        Title1.Text = "10分钟"
+        Title2.BackColor = System.Drawing.Color.Transparent
+        Title2.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Left
+        Title2.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
+        Title2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        Title2.Name = "Title2"
+        Title2.Position.Auto = False
+        Title2.Position.Height = 80.01128!
+        Title2.Position.Width = 2.965401!
+        Title2.Position.X = 0.5!
+        Title2.Position.Y = 3.0!
+        Title2.Text = "速度 (MiB/s)"
+        Title2.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
+        Title3.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Right
+        Title3.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
+        Title3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        Title3.Name = "Title3"
+        Title3.Position.Auto = False
+        Title3.Position.Height = 80.01128!
+        Title3.Position.Width = 1.915178!
+        Title3.Position.X = 97.2!
+        Title3.Position.Y = 4.0!
+        Title3.Text = "每秒文件"
+        Title3.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
+        Me.Chart1.Titles.Add(Title1)
+        Me.Chart1.Titles.Add(Title2)
+        Me.Chart1.Titles.Add(Title3)
         '
         'ContextMenuStrip2
         '
-        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
         Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.S60ToolStripMenuItem, Me.Min5ToolStripMenuItem, Me.Min10ToolStripMenuItem, Me.Min30ToolStripMenuItem, Me.H1ToolStripMenuItem, Me.H3ToolStripMenuItem, Me.H6ToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogarithmicToolStripMenuItem})
         Me.ContextMenuStrip2.Name = "ContextMenuStrip1"
-        Me.ToolTipChanErrLog.SetToolTip(Me.ContextMenuStrip2, resources.GetString("ContextMenuStrip2.ToolTip"))
+        resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
         '
         'S60ToolStripMenuItem
         '
-        resources.ApplyResources(Me.S60ToolStripMenuItem, "S60ToolStripMenuItem")
         Me.S60ToolStripMenuItem.Name = "S60ToolStripMenuItem"
+        resources.ApplyResources(Me.S60ToolStripMenuItem, "S60ToolStripMenuItem")
         '
         'Min5ToolStripMenuItem
         '
-        resources.ApplyResources(Me.Min5ToolStripMenuItem, "Min5ToolStripMenuItem")
         Me.Min5ToolStripMenuItem.Name = "Min5ToolStripMenuItem"
+        resources.ApplyResources(Me.Min5ToolStripMenuItem, "Min5ToolStripMenuItem")
         '
         'Min10ToolStripMenuItem
         '
-        resources.ApplyResources(Me.Min10ToolStripMenuItem, "Min10ToolStripMenuItem")
         Me.Min10ToolStripMenuItem.Name = "Min10ToolStripMenuItem"
+        resources.ApplyResources(Me.Min10ToolStripMenuItem, "Min10ToolStripMenuItem")
         '
         'Min30ToolStripMenuItem
         '
-        resources.ApplyResources(Me.Min30ToolStripMenuItem, "Min30ToolStripMenuItem")
         Me.Min30ToolStripMenuItem.Name = "Min30ToolStripMenuItem"
+        resources.ApplyResources(Me.Min30ToolStripMenuItem, "Min30ToolStripMenuItem")
         '
         'H1ToolStripMenuItem
         '
-        resources.ApplyResources(Me.H1ToolStripMenuItem, "H1ToolStripMenuItem")
         Me.H1ToolStripMenuItem.Name = "H1ToolStripMenuItem"
+        resources.ApplyResources(Me.H1ToolStripMenuItem, "H1ToolStripMenuItem")
         '
         'H3ToolStripMenuItem
         '
-        resources.ApplyResources(Me.H3ToolStripMenuItem, "H3ToolStripMenuItem")
         Me.H3ToolStripMenuItem.Name = "H3ToolStripMenuItem"
+        resources.ApplyResources(Me.H3ToolStripMenuItem, "H3ToolStripMenuItem")
         '
         'H6ToolStripMenuItem
         '
-        resources.ApplyResources(Me.H6ToolStripMenuItem, "H6ToolStripMenuItem")
         Me.H6ToolStripMenuItem.Name = "H6ToolStripMenuItem"
+        resources.ApplyResources(Me.H6ToolStripMenuItem, "H6ToolStripMenuItem")
         '
         'ToolStripSeparator1
         '
-        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
         Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
         '
         'LinearToolStripMenuItem
         '
-        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
         Me.LinearToolStripMenuItem.CheckOnClick = True
         Me.LinearToolStripMenuItem.Name = "LinearToolStripMenuItem"
+        resources.ApplyResources(Me.LinearToolStripMenuItem, "LinearToolStripMenuItem")
         '
         'LogarithmicToolStripMenuItem
         '
-        resources.ApplyResources(Me.LogarithmicToolStripMenuItem, "LogarithmicToolStripMenuItem")
         Me.LogarithmicToolStripMenuItem.CheckOnClick = True
         Me.LogarithmicToolStripMenuItem.Name = "LogarithmicToolStripMenuItem"
+        resources.ApplyResources(Me.LogarithmicToolStripMenuItem, "LogarithmicToolStripMenuItem")
         '
         'MenuStrip1
         '
-        resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.磁带ToolStripMenuItem, Me.数据ToolStripMenuItem})
+        resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
         Me.MenuStrip1.Name = "MenuStrip1"
-        Me.ToolTipChanErrLog.SetToolTip(Me.MenuStrip1, resources.GetString("MenuStrip1.ToolTip"))
         '
         '磁带ToolStripMenuItem
         '
-        resources.ApplyResources(Me.磁带ToolStripMenuItem, "磁带ToolStripMenuItem")
         Me.磁带ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.索引ToolStripMenuItem, Me.数据操作ToolStripMenuItem, Me.ToolStripSeparator5, Me.自动化ToolStripMenuItem1, Me.ToolStripSeparator6, Me.回退ToolStripMenuItem})
         Me.磁带ToolStripMenuItem.Name = "磁带ToolStripMenuItem"
+        resources.ApplyResources(Me.磁带ToolStripMenuItem, "磁带ToolStripMenuItem")
         '
         '索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.索引ToolStripMenuItem, "索引ToolStripMenuItem")
         Me.索引ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.读取索引ToolStripMenuItem, Me.读取数据区索引ToolStripMenuItem, Me.加载外部索引ToolStripMenuItem, Me.备份当前索引ToolStripMenuItem})
         Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
+        resources.ApplyResources(Me.索引ToolStripMenuItem, "索引ToolStripMenuItem")
         '
         '读取索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.读取索引ToolStripMenuItem, "读取索引ToolStripMenuItem")
         Me.读取索引ToolStripMenuItem.Name = "读取索引ToolStripMenuItem"
+        resources.ApplyResources(Me.读取索引ToolStripMenuItem, "读取索引ToolStripMenuItem")
         '
         '读取数据区索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.读取数据区索引ToolStripMenuItem, "读取数据区索引ToolStripMenuItem")
         Me.读取数据区索引ToolStripMenuItem.Name = "读取数据区索引ToolStripMenuItem"
+        resources.ApplyResources(Me.读取数据区索引ToolStripMenuItem, "读取数据区索引ToolStripMenuItem")
         '
         '加载外部索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.加载外部索引ToolStripMenuItem, "加载外部索引ToolStripMenuItem")
         Me.加载外部索引ToolStripMenuItem.Name = "加载外部索引ToolStripMenuItem"
+        resources.ApplyResources(Me.加载外部索引ToolStripMenuItem, "加载外部索引ToolStripMenuItem")
         '
         '备份当前索引ToolStripMenuItem
         '
@@ -894,9 +877,9 @@ Partial Class LTFSWriter
         '
         '数据操作ToolStripMenuItem
         '
-        resources.ApplyResources(Me.数据操作ToolStripMenuItem, "数据操作ToolStripMenuItem")
         Me.数据操作ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入数据ToolStripMenuItem, Me.更新数据区索引ToolStripMenuItem, Me.更新全部索引ToolStripMenuItem})
         Me.数据操作ToolStripMenuItem.Name = "数据操作ToolStripMenuItem"
+        resources.ApplyResources(Me.数据操作ToolStripMenuItem, "数据操作ToolStripMenuItem")
         '
         '写入数据ToolStripMenuItem
         '
@@ -915,20 +898,20 @@ Partial Class LTFSWriter
         '
         'ToolStripSeparator5
         '
-        resources.ApplyResources(Me.ToolStripSeparator5, "ToolStripSeparator5")
         Me.ToolStripSeparator5.Name = "ToolStripSeparator5"
+        resources.ApplyResources(Me.ToolStripSeparator5, "ToolStripSeparator5")
         '
         '自动化ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.自动化ToolStripMenuItem1, "自动化ToolStripMenuItem1")
         Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.电源选项ToolStripMenuItem1, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重SHA1ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.右下角显示容量损失ToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.电源选项ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem, Me.显示文件数ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
+        resources.ApplyResources(Me.自动化ToolStripMenuItem1, "自动化ToolStripMenuItem1")
         '
         'ToolStripTextBox2
         '
-        resources.ApplyResources(Me.ToolStripTextBox2, "ToolStripTextBox2")
         Me.ToolStripTextBox2.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
         Me.ToolStripTextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None
+        resources.ApplyResources(Me.ToolStripTextBox2, "ToolStripTextBox2")
         Me.ToolStripTextBox2.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.ToolStripTextBox2.Name = "ToolStripTextBox2"
         Me.ToolStripTextBox2.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
@@ -936,66 +919,66 @@ Partial Class LTFSWriter
         '
         'WA0ToolStripMenuItem
         '
-        resources.ApplyResources(Me.WA0ToolStripMenuItem, "WA0ToolStripMenuItem")
         Me.WA0ToolStripMenuItem.CheckOnClick = True
         Me.WA0ToolStripMenuItem.Name = "WA0ToolStripMenuItem"
+        resources.ApplyResources(Me.WA0ToolStripMenuItem, "WA0ToolStripMenuItem")
         '
         'WA1ToolStripMenuItem
         '
-        resources.ApplyResources(Me.WA1ToolStripMenuItem, "WA1ToolStripMenuItem")
         Me.WA1ToolStripMenuItem.Checked = True
         Me.WA1ToolStripMenuItem.CheckOnClick = True
         Me.WA1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked
         Me.WA1ToolStripMenuItem.Name = "WA1ToolStripMenuItem"
+        resources.ApplyResources(Me.WA1ToolStripMenuItem, "WA1ToolStripMenuItem")
         '
         'WA2ToolStripMenuItem
         '
-        resources.ApplyResources(Me.WA2ToolStripMenuItem, "WA2ToolStripMenuItem")
         Me.WA2ToolStripMenuItem.CheckOnClick = True
         Me.WA2ToolStripMenuItem.Name = "WA2ToolStripMenuItem"
+        resources.ApplyResources(Me.WA2ToolStripMenuItem, "WA2ToolStripMenuItem")
         '
         'WA3ToolStripMenuItem
         '
-        resources.ApplyResources(Me.WA3ToolStripMenuItem, "WA3ToolStripMenuItem")
         Me.WA3ToolStripMenuItem.CheckOnClick = True
         Me.WA3ToolStripMenuItem.Name = "WA3ToolStripMenuItem"
+        resources.ApplyResources(Me.WA3ToolStripMenuItem, "WA3ToolStripMenuItem")
         '
         '电源选项ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.电源选项ToolStripMenuItem1, "电源选项ToolStripMenuItem1")
         Me.电源选项ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem1, Me.平衡ToolStripMenuItem1, Me.节能ToolStripMenuItem1, Me.高性能ToolStripMenuItem1, Me.其他ToolStripMenuItem1})
         Me.电源选项ToolStripMenuItem1.Name = "电源选项ToolStripMenuItem1"
+        resources.ApplyResources(Me.电源选项ToolStripMenuItem1, "电源选项ToolStripMenuItem1")
         '
         '无更改ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.无更改ToolStripMenuItem1, "无更改ToolStripMenuItem1")
         Me.无更改ToolStripMenuItem1.Name = "无更改ToolStripMenuItem1"
+        resources.ApplyResources(Me.无更改ToolStripMenuItem1, "无更改ToolStripMenuItem1")
         '
         '平衡ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.平衡ToolStripMenuItem1, "平衡ToolStripMenuItem1")
         Me.平衡ToolStripMenuItem1.Name = "平衡ToolStripMenuItem1"
+        resources.ApplyResources(Me.平衡ToolStripMenuItem1, "平衡ToolStripMenuItem1")
         '
         '节能ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.节能ToolStripMenuItem1, "节能ToolStripMenuItem1")
         Me.节能ToolStripMenuItem1.Name = "节能ToolStripMenuItem1"
+        resources.ApplyResources(Me.节能ToolStripMenuItem1, "节能ToolStripMenuItem1")
         '
         '高性能ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.高性能ToolStripMenuItem1, "高性能ToolStripMenuItem1")
         Me.高性能ToolStripMenuItem1.Name = "高性能ToolStripMenuItem1"
+        resources.ApplyResources(Me.高性能ToolStripMenuItem1, "高性能ToolStripMenuItem1")
         '
         '其他ToolStripMenuItem1
         '
-        resources.ApplyResources(Me.其他ToolStripMenuItem1, "其他ToolStripMenuItem1")
         Me.其他ToolStripMenuItem1.Name = "其他ToolStripMenuItem1"
+        resources.ApplyResources(Me.其他ToolStripMenuItem1, "其他ToolStripMenuItem1")
         '
         'ToolStripTextBox1
         '
-        resources.ApplyResources(Me.ToolStripTextBox1, "ToolStripTextBox1")
         Me.ToolStripTextBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
         Me.ToolStripTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
+        resources.ApplyResources(Me.ToolStripTextBox1, "ToolStripTextBox1")
         Me.ToolStripTextBox1.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.ToolStripTextBox1.Name = "ToolStripTextBox1"
         Me.ToolStripTextBox1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
@@ -1003,206 +986,206 @@ Partial Class LTFSWriter
         '
         '计算校验ToolStripMenuItem
         '
-        resources.ApplyResources(Me.计算校验ToolStripMenuItem, "计算校验ToolStripMenuItem")
         Me.计算校验ToolStripMenuItem.CheckOnClick = True
         Me.计算校验ToolStripMenuItem.Name = "计算校验ToolStripMenuItem"
+        resources.ApplyResources(Me.计算校验ToolStripMenuItem, "计算校验ToolStripMenuItem")
         '
         '异步校验CPU占用高ToolStripMenuItem
         '
-        resources.ApplyResources(Me.异步校验CPU占用高ToolStripMenuItem, "异步校验CPU占用高ToolStripMenuItem")
         Me.异步校验CPU占用高ToolStripMenuItem.CheckOnClick = True
         Me.异步校验CPU占用高ToolStripMenuItem.Name = "异步校验CPU占用高ToolStripMenuItem"
+        resources.ApplyResources(Me.异步校验CPU占用高ToolStripMenuItem, "异步校验CPU占用高ToolStripMenuItem")
         '
         '去重SHA1ToolStripMenuItem
         '
-        resources.ApplyResources(Me.去重SHA1ToolStripMenuItem, "去重SHA1ToolStripMenuItem")
         Me.去重SHA1ToolStripMenuItem.Name = "去重SHA1ToolStripMenuItem"
+        resources.ApplyResources(Me.去重SHA1ToolStripMenuItem, "去重SHA1ToolStripMenuItem")
         '
         '索引间隔36GiBToolStripMenuItem
         '
-        resources.ApplyResources(Me.索引间隔36GiBToolStripMenuItem, "索引间隔36GiBToolStripMenuItem")
         Me.索引间隔36GiBToolStripMenuItem.Name = "索引间隔36GiBToolStripMenuItem"
+        resources.ApplyResources(Me.索引间隔36GiBToolStripMenuItem, "索引间隔36GiBToolStripMenuItem")
         '
         '容量刷新间隔30sToolStripMenuItem
         '
-        resources.ApplyResources(Me.容量刷新间隔30sToolStripMenuItem, "容量刷新间隔30sToolStripMenuItem")
         Me.容量刷新间隔30sToolStripMenuItem.Name = "容量刷新间隔30sToolStripMenuItem"
+        resources.ApplyResources(Me.容量刷新间隔30sToolStripMenuItem, "容量刷新间隔30sToolStripMenuItem")
         '
         '右下角显示容量损失ToolStripMenuItem
         '
-        resources.ApplyResources(Me.右下角显示容量损失ToolStripMenuItem, "右下角显示容量损失ToolStripMenuItem")
         Me.右下角显示容量损失ToolStripMenuItem.CheckOnClick = True
         Me.右下角显示容量损失ToolStripMenuItem.Name = "右下角显示容量损失ToolStripMenuItem"
+        resources.ApplyResources(Me.右下角显示容量损失ToolStripMenuItem, "右下角显示容量损失ToolStripMenuItem")
         '
         '限速不限制ToolStripMenuItem
         '
-        resources.ApplyResources(Me.限速不限制ToolStripMenuItem, "限速不限制ToolStripMenuItem")
         Me.限速不限制ToolStripMenuItem.Name = "限速不限制ToolStripMenuItem"
+        resources.ApplyResources(Me.限速不限制ToolStripMenuItem, "限速不限制ToolStripMenuItem")
         '
         '预读文件数5ToolStripMenuItem
         '
-        resources.ApplyResources(Me.预读文件数5ToolStripMenuItem, "预读文件数5ToolStripMenuItem")
         Me.预读文件数5ToolStripMenuItem.Name = "预读文件数5ToolStripMenuItem"
+        resources.ApplyResources(Me.预读文件数5ToolStripMenuItem, "预读文件数5ToolStripMenuItem")
         '
         '文件缓存32MiBToolStripMenuItem
         '
-        resources.ApplyResources(Me.文件缓存32MiBToolStripMenuItem, "文件缓存32MiBToolStripMenuItem")
         Me.文件缓存32MiBToolStripMenuItem.Name = "文件缓存32MiBToolStripMenuItem"
+        resources.ApplyResources(Me.文件缓存32MiBToolStripMenuItem, "文件缓存32MiBToolStripMenuItem")
         '
         'APToolStripMenuItem
         '
-        resources.ApplyResources(Me.APToolStripMenuItem, "APToolStripMenuItem")
         Me.APToolStripMenuItem.CheckOnClick = True
         Me.APToolStripMenuItem.Name = "APToolStripMenuItem"
+        resources.ApplyResources(Me.APToolStripMenuItem, "APToolStripMenuItem")
         '
         '容量缺失检测参数ToolStripMenuItem
         '
-        resources.ApplyResources(Me.容量缺失检测参数ToolStripMenuItem, "容量缺失检测参数ToolStripMenuItem")
         Me.容量缺失检测参数ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.速度下限ToolStripMenuItem, Me.速度上限ToolStripMenuItem, Me.持续时间ToolStripMenuItem, Me.错误率ToolStripMenuItem})
         Me.容量缺失检测参数ToolStripMenuItem.Name = "容量缺失检测参数ToolStripMenuItem"
+        resources.ApplyResources(Me.容量缺失检测参数ToolStripMenuItem, "容量缺失检测参数ToolStripMenuItem")
         '
         '速度下限ToolStripMenuItem
         '
-        resources.ApplyResources(Me.速度下限ToolStripMenuItem, "速度下限ToolStripMenuItem")
         Me.速度下限ToolStripMenuItem.Name = "速度下限ToolStripMenuItem"
+        resources.ApplyResources(Me.速度下限ToolStripMenuItem, "速度下限ToolStripMenuItem")
         '
         '速度上限ToolStripMenuItem
         '
-        resources.ApplyResources(Me.速度上限ToolStripMenuItem, "速度上限ToolStripMenuItem")
         Me.速度上限ToolStripMenuItem.Name = "速度上限ToolStripMenuItem"
+        resources.ApplyResources(Me.速度上限ToolStripMenuItem, "速度上限ToolStripMenuItem")
         '
         '持续时间ToolStripMenuItem
         '
-        resources.ApplyResources(Me.持续时间ToolStripMenuItem, "持续时间ToolStripMenuItem")
         Me.持续时间ToolStripMenuItem.Name = "持续时间ToolStripMenuItem"
+        resources.ApplyResources(Me.持续时间ToolStripMenuItem, "持续时间ToolStripMenuItem")
         '
         '错误率ToolStripMenuItem
         '
-        resources.ApplyResources(Me.错误率ToolStripMenuItem, "错误率ToolStripMenuItem")
         Me.错误率ToolStripMenuItem.Name = "错误率ToolStripMenuItem"
+        resources.ApplyResources(Me.错误率ToolStripMenuItem, "错误率ToolStripMenuItem")
         '
         '重装带前清洁次数3ToolStripMenuItem
         '
-        resources.ApplyResources(Me.重装带前清洁次数3ToolStripMenuItem, "重装带前清洁次数3ToolStripMenuItem")
         Me.重装带前清洁次数3ToolStripMenuItem.Name = "重装带前清洁次数3ToolStripMenuItem"
+        resources.ApplyResources(Me.重装带前清洁次数3ToolStripMenuItem, "重装带前清洁次数3ToolStripMenuItem")
         '
         '电源选项ToolStripMenuItem
         '
-        resources.ApplyResources(Me.电源选项ToolStripMenuItem, "电源选项ToolStripMenuItem")
         Me.电源选项ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.无更改ToolStripMenuItem, Me.平衡ToolStripMenuItem, Me.节能ToolStripMenuItem, Me.高性能ToolStripMenuItem, Me.其他ToolStripMenuItem})
         Me.电源选项ToolStripMenuItem.Name = "电源选项ToolStripMenuItem"
+        resources.ApplyResources(Me.电源选项ToolStripMenuItem, "电源选项ToolStripMenuItem")
         '
         '无更改ToolStripMenuItem
         '
-        resources.ApplyResources(Me.无更改ToolStripMenuItem, "无更改ToolStripMenuItem")
         Me.无更改ToolStripMenuItem.Name = "无更改ToolStripMenuItem"
+        resources.ApplyResources(Me.无更改ToolStripMenuItem, "无更改ToolStripMenuItem")
         '
         '平衡ToolStripMenuItem
         '
-        resources.ApplyResources(Me.平衡ToolStripMenuItem, "平衡ToolStripMenuItem")
         Me.平衡ToolStripMenuItem.Name = "平衡ToolStripMenuItem"
+        resources.ApplyResources(Me.平衡ToolStripMenuItem, "平衡ToolStripMenuItem")
         '
         '节能ToolStripMenuItem
         '
-        resources.ApplyResources(Me.节能ToolStripMenuItem, "节能ToolStripMenuItem")
         Me.节能ToolStripMenuItem.Name = "节能ToolStripMenuItem"
+        resources.ApplyResources(Me.节能ToolStripMenuItem, "节能ToolStripMenuItem")
         '
         '高性能ToolStripMenuItem
         '
-        resources.ApplyResources(Me.高性能ToolStripMenuItem, "高性能ToolStripMenuItem")
         Me.高性能ToolStripMenuItem.Name = "高性能ToolStripMenuItem"
+        resources.ApplyResources(Me.高性能ToolStripMenuItem, "高性能ToolStripMenuItem")
         '
         '其他ToolStripMenuItem
         '
-        resources.ApplyResources(Me.其他ToolStripMenuItem, "其他ToolStripMenuItem")
         Me.其他ToolStripMenuItem.Name = "其他ToolStripMenuItem"
+        resources.ApplyResources(Me.其他ToolStripMenuItem, "其他ToolStripMenuItem")
         '
         'ToolStripSeparator7
         '
-        resources.ApplyResources(Me.ToolStripSeparator7, "ToolStripSeparator7")
         Me.ToolStripSeparator7.Name = "ToolStripSeparator7"
+        resources.ApplyResources(Me.ToolStripSeparator7, "ToolStripSeparator7")
         '
         '启用日志记录ToolStripMenuItem
         '
-        resources.ApplyResources(Me.启用日志记录ToolStripMenuItem, "启用日志记录ToolStripMenuItem")
         Me.启用日志记录ToolStripMenuItem.CheckOnClick = True
         Me.启用日志记录ToolStripMenuItem.Name = "启用日志记录ToolStripMenuItem"
+        resources.ApplyResources(Me.启用日志记录ToolStripMenuItem, "启用日志记录ToolStripMenuItem")
         '
         '总是更新数据区索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.总是更新数据区索引ToolStripMenuItem, "总是更新数据区索引ToolStripMenuItem")
         Me.总是更新数据区索引ToolStripMenuItem.CheckOnClick = True
         Me.总是更新数据区索引ToolStripMenuItem.Name = "总是更新数据区索引ToolStripMenuItem"
+        resources.ApplyResources(Me.总是更新数据区索引ToolStripMenuItem, "总是更新数据区索引ToolStripMenuItem")
         '
         '禁用分区ToolStripMenuItem
         '
-        resources.ApplyResources(Me.禁用分区ToolStripMenuItem, "禁用分区ToolStripMenuItem")
         Me.禁用分区ToolStripMenuItem.CheckOnClick = True
         Me.禁用分区ToolStripMenuItem.Name = "禁用分区ToolStripMenuItem"
+        resources.ApplyResources(Me.禁用分区ToolStripMenuItem, "禁用分区ToolStripMenuItem")
         '
         '显示文件数ToolStripMenuItem
         '
-        resources.ApplyResources(Me.显示文件数ToolStripMenuItem, "显示文件数ToolStripMenuItem")
         Me.显示文件数ToolStripMenuItem.CheckOnClick = True
         Me.显示文件数ToolStripMenuItem.Name = "显示文件数ToolStripMenuItem"
+        resources.ApplyResources(Me.显示文件数ToolStripMenuItem, "显示文件数ToolStripMenuItem")
         '
         'ToolStripSeparator6
         '
-        resources.ApplyResources(Me.ToolStripSeparator6, "ToolStripSeparator6")
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
+        resources.ApplyResources(Me.ToolStripSeparator6, "ToolStripSeparator6")
         '
         '回退ToolStripMenuItem
         '
-        resources.ApplyResources(Me.回退ToolStripMenuItem, "回退ToolStripMenuItem")
         Me.回退ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.清除当前索引后数据ToolStripMenuItem, Me.回滚ToolStripMenuItem, Me.查找指定位置前的索引ToolStripMenuItem})
         Me.回退ToolStripMenuItem.Name = "回退ToolStripMenuItem"
+        resources.ApplyResources(Me.回退ToolStripMenuItem, "回退ToolStripMenuItem")
         '
         '清除当前索引后数据ToolStripMenuItem
         '
-        resources.ApplyResources(Me.清除当前索引后数据ToolStripMenuItem, "清除当前索引后数据ToolStripMenuItem")
         Me.清除当前索引后数据ToolStripMenuItem.Name = "清除当前索引后数据ToolStripMenuItem"
+        resources.ApplyResources(Me.清除当前索引后数据ToolStripMenuItem, "清除当前索引后数据ToolStripMenuItem")
         '
         '回滚ToolStripMenuItem
         '
-        resources.ApplyResources(Me.回滚ToolStripMenuItem, "回滚ToolStripMenuItem")
         Me.回滚ToolStripMenuItem.Name = "回滚ToolStripMenuItem"
+        resources.ApplyResources(Me.回滚ToolStripMenuItem, "回滚ToolStripMenuItem")
         '
         '查找指定位置前的索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.查找指定位置前的索引ToolStripMenuItem, "查找指定位置前的索引ToolStripMenuItem")
         Me.查找指定位置前的索引ToolStripMenuItem.Name = "查找指定位置前的索引ToolStripMenuItem"
+        resources.ApplyResources(Me.查找指定位置前的索引ToolStripMenuItem, "查找指定位置前的索引ToolStripMenuItem")
         '
         '数据ToolStripMenuItem
         '
-        resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.加密ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem, Me.驱动器锁定状态ToolStripMenuItem})
         Me.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem"
+        resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         '
         '格式化ToolStripMenuItem
         '
-        resources.ApplyResources(Me.格式化ToolStripMenuItem, "格式化ToolStripMenuItem")
         Me.格式化ToolStripMenuItem.Name = "格式化ToolStripMenuItem"
+        resources.ApplyResources(Me.格式化ToolStripMenuItem, "格式化ToolStripMenuItem")
         '
         '设置高度ToolStripMenuItem
         '
-        resources.ApplyResources(Me.设置高度ToolStripMenuItem, "设置高度ToolStripMenuItem")
         Me.设置高度ToolStripMenuItem.Name = "设置高度ToolStripMenuItem"
+        resources.ApplyResources(Me.设置高度ToolStripMenuItem, "设置高度ToolStripMenuItem")
         '
         '加密ToolStripMenuItem
         '
-        resources.ApplyResources(Me.加密ToolStripMenuItem, "加密ToolStripMenuItem")
         Me.加密ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.设置密钥ToolStripMenuItem, Me.设置密码ToolStripMenuItem})
         Me.加密ToolStripMenuItem.Name = "加密ToolStripMenuItem"
+        resources.ApplyResources(Me.加密ToolStripMenuItem, "加密ToolStripMenuItem")
         '
         '设置密钥ToolStripMenuItem
         '
-        resources.ApplyResources(Me.设置密钥ToolStripMenuItem, "设置密钥ToolStripMenuItem")
         Me.设置密钥ToolStripMenuItem.Name = "设置密钥ToolStripMenuItem"
+        resources.ApplyResources(Me.设置密钥ToolStripMenuItem, "设置密钥ToolStripMenuItem")
         '
         '设置密码ToolStripMenuItem
         '
-        resources.ApplyResources(Me.设置密码ToolStripMenuItem, "设置密码ToolStripMenuItem")
         Me.设置密码ToolStripMenuItem.Name = "设置密码ToolStripMenuItem"
+        resources.ApplyResources(Me.设置密码ToolStripMenuItem, "设置密码ToolStripMenuItem")
         '
         '合并SHA1ToolStripMenuItem
         '
@@ -1216,29 +1199,29 @@ Partial Class LTFSWriter
         '
         '挂载盘符只读ToolStripMenuItem
         '
-        resources.ApplyResources(Me.挂载盘符只读ToolStripMenuItem, "挂载盘符只读ToolStripMenuItem")
         Me.挂载盘符只读ToolStripMenuItem.Name = "挂载盘符只读ToolStripMenuItem"
+        resources.ApplyResources(Me.挂载盘符只读ToolStripMenuItem, "挂载盘符只读ToolStripMenuItem")
         '
         '启动FTP服务只读ToolStripMenuItem
         '
-        resources.ApplyResources(Me.启动FTP服务只读ToolStripMenuItem, "启动FTP服务只读ToolStripMenuItem")
         Me.启动FTP服务只读ToolStripMenuItem.Name = "启动FTP服务只读ToolStripMenuItem"
+        resources.ApplyResources(Me.启动FTP服务只读ToolStripMenuItem, "启动FTP服务只读ToolStripMenuItem")
         '
         '驱动器锁定状态ToolStripMenuItem
         '
-        resources.ApplyResources(Me.驱动器锁定状态ToolStripMenuItem, "驱动器锁定状态ToolStripMenuItem")
         Me.驱动器锁定状态ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.加锁ToolStripMenuItem, Me.解锁ToolStripMenuItem})
         Me.驱动器锁定状态ToolStripMenuItem.Name = "驱动器锁定状态ToolStripMenuItem"
+        resources.ApplyResources(Me.驱动器锁定状态ToolStripMenuItem, "驱动器锁定状态ToolStripMenuItem")
         '
         '加锁ToolStripMenuItem
         '
-        resources.ApplyResources(Me.加锁ToolStripMenuItem, "加锁ToolStripMenuItem")
         Me.加锁ToolStripMenuItem.Name = "加锁ToolStripMenuItem"
+        resources.ApplyResources(Me.加锁ToolStripMenuItem, "加锁ToolStripMenuItem")
         '
         '解锁ToolStripMenuItem
         '
-        resources.ApplyResources(Me.解锁ToolStripMenuItem, "解锁ToolStripMenuItem")
         Me.解锁ToolStripMenuItem.Name = "解锁ToolStripMenuItem"
+        resources.ApplyResources(Me.解锁ToolStripMenuItem, "解锁ToolStripMenuItem")
         '
         'StatusStrip1
         '
@@ -1247,56 +1230,55 @@ Partial Class LTFSWriter
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.ShowItemToolTips = True
         Me.StatusStrip1.SizingGrip = False
-        Me.ToolTipChanErrLog.SetToolTip(Me.StatusStrip1, resources.GetString("StatusStrip1.ToolTip"))
         '
         'ToolStripDropDownButton1
         '
-        resources.ApplyResources(Me.ToolStripDropDownButton1, "ToolStripDropDownButton1")
         Me.ToolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton1.ForeColor = System.Drawing.Color.Red
+        resources.ApplyResources(Me.ToolStripDropDownButton1, "ToolStripDropDownButton1")
         Me.ToolStripDropDownButton1.Name = "ToolStripDropDownButton1"
         Me.ToolStripDropDownButton1.ShowDropDownArrow = False
         '
         'ToolStripDropDownButton2
         '
-        resources.ApplyResources(Me.ToolStripDropDownButton2, "ToolStripDropDownButton2")
         Me.ToolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton2.ForeColor = System.Drawing.Color.Blue
+        resources.ApplyResources(Me.ToolStripDropDownButton2, "ToolStripDropDownButton2")
         Me.ToolStripDropDownButton2.Name = "ToolStripDropDownButton2"
         Me.ToolStripDropDownButton2.ShowDropDownArrow = False
         '
         'ToolStripDropDownButton3
         '
-        resources.ApplyResources(Me.ToolStripDropDownButton3, "ToolStripDropDownButton3")
         Me.ToolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
         Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        resources.ApplyResources(Me.ToolStripDropDownButton3, "ToolStripDropDownButton3")
         Me.ToolStripDropDownButton3.Name = "ToolStripDropDownButton3"
         Me.ToolStripDropDownButton3.ShowDropDownArrow = False
         '
         'ToolStripStatusLabel1
         '
-        resources.ApplyResources(Me.ToolStripStatusLabel1, "ToolStripStatusLabel1")
         Me.ToolStripStatusLabel1.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.ToolStripStatusLabel1.Name = "ToolStripStatusLabel1"
+        resources.ApplyResources(Me.ToolStripStatusLabel1, "ToolStripStatusLabel1")
         '
         'ToolStripStatusLabel4
         '
-        resources.ApplyResources(Me.ToolStripStatusLabel4, "ToolStripStatusLabel4")
         Me.ToolStripStatusLabel4.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.ToolStripStatusLabel4.Name = "ToolStripStatusLabel4"
+        resources.ApplyResources(Me.ToolStripStatusLabel4, "ToolStripStatusLabel4")
         Me.ToolStripStatusLabel4.Spring = True
         '
         'ToolStripProgressBar1
         '
-        resources.ApplyResources(Me.ToolStripProgressBar1, "ToolStripProgressBar1")
         Me.ToolStripProgressBar1.AccessibleRole = System.Windows.Forms.AccessibleRole.ProgressBar
         Me.ToolStripProgressBar1.Maximum = 10000
         Me.ToolStripProgressBar1.Name = "ToolStripProgressBar1"
+        resources.ApplyResources(Me.ToolStripProgressBar1, "ToolStripProgressBar1")
         '
         'ToolStripStatusLabel5
         '
-        resources.ApplyResources(Me.ToolStripStatusLabel5, "ToolStripStatusLabel5")
         Me.ToolStripStatusLabel5.Name = "ToolStripStatusLabel5"
+        resources.ApplyResources(Me.ToolStripStatusLabel5, "ToolStripStatusLabel5")
         '
         'ToolStripStatusLabel2
         '
@@ -1310,54 +1292,48 @@ Partial Class LTFSWriter
         '
         'OpenFileDialog1
         '
-        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
         Me.OpenFileDialog1.Multiselect = True
-        '
-        'FolderBrowserDialog1
-        '
-        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
         '
         'ToolStrip1
         '
         resources.ApplyResources(Me.ToolStrip1, "ToolStrip1")
         Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton3})
         Me.ToolStrip1.Name = "ToolStrip1"
-        Me.ToolTipChanErrLog.SetToolTip(Me.ToolStrip1, resources.GetString("ToolStrip1.ToolTip"))
         '
         'ToolStripButton1
         '
-        resources.ApplyResources(Me.ToolStripButton1, "ToolStripButton1")
         Me.ToolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton1, "ToolStripButton1")
         Me.ToolStripButton1.Name = "ToolStripButton1"
         '
         'ToolStripButton2
         '
-        resources.ApplyResources(Me.ToolStripButton2, "ToolStripButton2")
         Me.ToolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton2, "ToolStripButton2")
         Me.ToolStripButton2.Name = "ToolStripButton2"
         '
         'ToolStripButton4
         '
-        resources.ApplyResources(Me.ToolStripButton4, "ToolStripButton4")
         Me.ToolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton4, "ToolStripButton4")
         Me.ToolStripButton4.Name = "ToolStripButton4"
         '
         'ToolStripButton5
         '
-        resources.ApplyResources(Me.ToolStripButton5, "ToolStripButton5")
         Me.ToolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton5, "ToolStripButton5")
         Me.ToolStripButton5.Name = "ToolStripButton5"
         '
         'ToolStripButton6
         '
-        resources.ApplyResources(Me.ToolStripButton6, "ToolStripButton6")
         Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton6, "ToolStripButton6")
         Me.ToolStripButton6.Name = "ToolStripButton6"
         '
         'ToolStripButton3
         '
-        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
         Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
         Me.ToolStripButton3.Name = "ToolStripButton3"
         '
         'Timer2
@@ -1367,90 +1343,87 @@ Partial Class LTFSWriter
         '
         'StatusStrip2
         '
-        resources.ApplyResources(Me.StatusStrip2, "StatusStrip2")
         Me.StatusStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripStatusLabel6, Me.ToolStripStatusLabel3, Me.ToolStripStatusLabelS1, Me.ToolStripStatusLabelS2, Me.ToolStripStatusLabelS3, Me.ToolStripStatusLabelS4, Me.ToolStripStatusLabelS5, Me.ToolStripStatusLabelS6, Me.ToolStripStatusLabelErrLog})
+        resources.ApplyResources(Me.StatusStrip2, "StatusStrip2")
         Me.StatusStrip2.Name = "StatusStrip2"
         Me.StatusStrip2.ShowItemToolTips = True
         Me.StatusStrip2.SizingGrip = False
-        Me.ToolTipChanErrLog.SetToolTip(Me.StatusStrip2, resources.GetString("StatusStrip2.ToolTip"))
         '
         'ToolStripStatusLabel6
         '
-        resources.ApplyResources(Me.ToolStripStatusLabel6, "ToolStripStatusLabel6")
         Me.ToolStripStatusLabel6.Name = "ToolStripStatusLabel6"
+        resources.ApplyResources(Me.ToolStripStatusLabel6, "ToolStripStatusLabel6")
         '
         'ToolStripStatusLabel3
         '
-        resources.ApplyResources(Me.ToolStripStatusLabel3, "ToolStripStatusLabel3")
         Me.ToolStripStatusLabel3.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.ToolStripStatusLabel3.Name = "ToolStripStatusLabel3"
+        resources.ApplyResources(Me.ToolStripStatusLabel3, "ToolStripStatusLabel3")
         Me.ToolStripStatusLabel3.Spring = True
         '
         'ToolStripStatusLabelS1
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS1, "ToolStripStatusLabelS1")
         Me.ToolStripStatusLabelS1.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Right
         Me.ToolStripStatusLabelS1.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS1.Name = "ToolStripStatusLabelS1"
+        resources.ApplyResources(Me.ToolStripStatusLabelS1, "ToolStripStatusLabelS1")
         '
         'ToolStripStatusLabelS2
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS2, "ToolStripStatusLabelS2")
         Me.ToolStripStatusLabelS2.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS2.Name = "ToolStripStatusLabelS2"
+        resources.ApplyResources(Me.ToolStripStatusLabelS2, "ToolStripStatusLabelS2")
         '
         'ToolStripStatusLabelS3
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS3, "ToolStripStatusLabelS3")
         Me.ToolStripStatusLabelS3.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS3.Name = "ToolStripStatusLabelS3"
+        resources.ApplyResources(Me.ToolStripStatusLabelS3, "ToolStripStatusLabelS3")
         '
         'ToolStripStatusLabelS4
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS4, "ToolStripStatusLabelS4")
         Me.ToolStripStatusLabelS4.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS4.Name = "ToolStripStatusLabelS4"
+        resources.ApplyResources(Me.ToolStripStatusLabelS4, "ToolStripStatusLabelS4")
         '
         'ToolStripStatusLabelS5
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS5, "ToolStripStatusLabelS5")
         Me.ToolStripStatusLabelS5.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS5.Name = "ToolStripStatusLabelS5"
+        resources.ApplyResources(Me.ToolStripStatusLabelS5, "ToolStripStatusLabelS5")
         '
         'ToolStripStatusLabelS6
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelS6, "ToolStripStatusLabelS6")
         Me.ToolStripStatusLabelS6.ForeColor = System.Drawing.Color.Gray
         Me.ToolStripStatusLabelS6.Name = "ToolStripStatusLabelS6"
+        resources.ApplyResources(Me.ToolStripStatusLabelS6, "ToolStripStatusLabelS6")
         '
         'ToolStripStatusLabelErrLog
         '
-        resources.ApplyResources(Me.ToolStripStatusLabelErrLog, "ToolStripStatusLabelErrLog")
         Me.ToolStripStatusLabelErrLog.BorderSides = System.Windows.Forms.ToolStripStatusLabelBorderSides.Left
         Me.ToolStripStatusLabelErrLog.Name = "ToolStripStatusLabelErrLog"
+        resources.ApplyResources(Me.ToolStripStatusLabelErrLog, "ToolStripStatusLabelErrLog")
         '
         'TextBoxSelectedPath
         '
         resources.ApplyResources(Me.TextBoxSelectedPath, "TextBoxSelectedPath")
         Me.TextBoxSelectedPath.Name = "TextBoxSelectedPath"
-        Me.ToolTipChanErrLog.SetToolTip(Me.TextBoxSelectedPath, resources.GetString("TextBoxSelectedPath.ToolTip"))
         '
         'ContextMenuStrip4
         '
-        resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
         Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem})
         Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
-        Me.ToolTipChanErrLog.SetToolTip(Me.ContextMenuStrip4, resources.GetString("ContextMenuStrip4.ToolTip"))
+        resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
         '
         'DebugToolStripMenuItem
         '
-        resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
         Me.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem"
+        resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
         '
         'SettingToolStripMenuItem
         '
-        resources.ApplyResources(Me.SettingToolStripMenuItem, "SettingToolStripMenuItem")
         Me.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem"
+        resources.ApplyResources(Me.SettingToolStripMenuItem, "SettingToolStripMenuItem")
         '
         'ToolTipChanErrLog
         '
@@ -1475,7 +1448,6 @@ Partial Class LTFSWriter
         Me.KeyPreview = True
         Me.MainMenuStrip = Me.MenuStrip1
         Me.Name = "LTFSWriter"
-        Me.ToolTipChanErrLog.SetToolTip(Me, resources.GetString("$this.ToolTip"))
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()

@@ -143,6 +143,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.ManualAddToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -178,15 +179,15 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripRefreshDeviceList
         '
-        resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
         Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem})
+        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
+        resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
         '
         'DiskToolStripMenuItem
         '
-        resources.ApplyResources(Me.DiskToolStripMenuItem, "DiskToolStripMenuItem")
         Me.DiskToolStripMenuItem.Name = "DiskToolStripMenuItem"
+        resources.ApplyResources(Me.DiskToolStripMenuItem, "DiskToolStripMenuItem")
         '
         'ListBox1
         '
@@ -277,7 +278,6 @@ Partial Class LTFSConfigurator
         '
         'Panel1
         '
-        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Controls.Add(Me.ButtonChangerTool)
         Me.Panel1.Controls.Add(Me.CheckBoxAutoRefresh)
         Me.Panel1.Controls.Add(Me.ButtonFileSorter)
@@ -302,6 +302,7 @@ Partial Class LTFSConfigurator
         Me.Panel1.Controls.Add(Me.LabelDrive)
         Me.Panel1.Controls.Add(Me.LabelLetter)
         Me.Panel1.Controls.Add(Me.TextBoxDevInfo)
+        resources.ApplyResources(Me.Panel1, "Panel1")
         Me.Panel1.Name = "Panel1"
         '
         'ButtonChangerTool
@@ -333,20 +334,20 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripLTFSWriter
         '
-        resources.ApplyResources(Me.ContextMenuStripLTFSWriter, "ContextMenuStripLTFSWriter")
         Me.ContextMenuStripLTFSWriter.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripLTFSWriter.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.在当前进程运行ToolStripMenuItem, Me.不读取索引ToolStripMenuItem})
         Me.ContextMenuStripLTFSWriter.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStripLTFSWriter, "ContextMenuStripLTFSWriter")
         '
         '在当前进程运行ToolStripMenuItem
         '
-        resources.ApplyResources(Me.在当前进程运行ToolStripMenuItem, "在当前进程运行ToolStripMenuItem")
         Me.在当前进程运行ToolStripMenuItem.Name = "在当前进程运行ToolStripMenuItem"
+        resources.ApplyResources(Me.在当前进程运行ToolStripMenuItem, "在当前进程运行ToolStripMenuItem")
         '
         '不读取索引ToolStripMenuItem
         '
-        resources.ApplyResources(Me.不读取索引ToolStripMenuItem, "不读取索引ToolStripMenuItem")
         Me.不读取索引ToolStripMenuItem.Name = "不读取索引ToolStripMenuItem"
+        resources.ApplyResources(Me.不读取索引ToolStripMenuItem, "不读取索引ToolStripMenuItem")
         '
         'ButtonUnthread
         '
@@ -399,7 +400,6 @@ Partial Class LTFSConfigurator
         '
         'TabPageCommand
         '
-        resources.ApplyResources(Me.TabPageCommand, "TabPageCommand")
         Me.TabPageCommand.Controls.Add(Me.ButtonDebugRewind)
         Me.TabPageCommand.Controls.Add(Me.LabelRead)
         Me.TabPageCommand.Controls.Add(Me.LabelPartition)
@@ -423,6 +423,7 @@ Partial Class LTFSConfigurator
         Me.TabPageCommand.Controls.Add(Me.LabelReadBlockLim)
         Me.TabPageCommand.Controls.Add(Me.ButtonStopRawDump)
         Me.TabPageCommand.Controls.Add(Me.ButtonDebugDumpTape)
+        resources.ApplyResources(Me.TabPageCommand, "TabPageCommand")
         Me.TabPageCommand.Name = "TabPageCommand"
         Me.TabPageCommand.UseVisualStyleBackColor = True
         '
@@ -481,20 +482,20 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripCMReader
         '
-        resources.ApplyResources(Me.ContextMenuStripCMReader, "ContextMenuStripCMReader")
         Me.ContextMenuStripCMReader.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripCMReader.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem, Me.ReadThroughDiagnosticCommandToolStripMenuItem})
         Me.ContextMenuStripCMReader.Name = "ContextMenuStrip2"
+        resources.ApplyResources(Me.ContextMenuStripCMReader, "ContextMenuStripCMReader")
         '
         'BrowseBinaryFileToolStripMenuItem
         '
-        resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
         Me.BrowseBinaryFileToolStripMenuItem.Name = "BrowseBinaryFileToolStripMenuItem"
+        resources.ApplyResources(Me.BrowseBinaryFileToolStripMenuItem, "BrowseBinaryFileToolStripMenuItem")
         '
         'ReadThroughDiagnosticCommandToolStripMenuItem
         '
-        resources.ApplyResources(Me.ReadThroughDiagnosticCommandToolStripMenuItem, "ReadThroughDiagnosticCommandToolStripMenuItem")
         Me.ReadThroughDiagnosticCommandToolStripMenuItem.Name = "ReadThroughDiagnosticCommandToolStripMenuItem"
+        resources.ApplyResources(Me.ReadThroughDiagnosticCommandToolStripMenuItem, "ReadThroughDiagnosticCommandToolStripMenuItem")
         '
         'ButtonDebugLocate
         '
@@ -515,10 +516,10 @@ Partial Class LTFSConfigurator
         '
         'ComboBoxLocateType
         '
-        resources.ApplyResources(Me.ComboBoxLocateType, "ComboBoxLocateType")
         Me.ComboBoxLocateType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxLocateType.FormattingEnabled = True
         Me.ComboBoxLocateType.Items.AddRange(New Object() {resources.GetString("ComboBoxLocateType.Items"), resources.GetString("ComboBoxLocateType.Items1"), resources.GetString("ComboBoxLocateType.Items2")})
+        resources.ApplyResources(Me.ComboBoxLocateType, "ComboBoxLocateType")
         Me.ComboBoxLocateType.Name = "ComboBoxLocateType"
         '
         'NumericUpDownEraseCycle
@@ -549,27 +550,27 @@ Partial Class LTFSConfigurator
         '
         'ButtonDebugErase
         '
-        resources.ApplyResources(Me.ButtonDebugErase, "ButtonDebugErase")
         Me.ButtonDebugErase.ContextMenuStrip = Me.ContextMenuStripErase
+        resources.ApplyResources(Me.ButtonDebugErase, "ButtonDebugErase")
         Me.ButtonDebugErase.Name = "ButtonDebugErase"
         Me.ButtonDebugErase.UseVisualStyleBackColor = True
         '
         'ContextMenuStripErase
         '
-        resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
         Me.ContextMenuStripErase.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripErase.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ReInitializeToolStripMenuItem, Me.QuickEraseToolStripMenuItem})
         Me.ContextMenuStripErase.Name = "ContextMenuStripErase"
+        resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
         '
         'ReInitializeToolStripMenuItem
         '
-        resources.ApplyResources(Me.ReInitializeToolStripMenuItem, "ReInitializeToolStripMenuItem")
         Me.ReInitializeToolStripMenuItem.Name = "ReInitializeToolStripMenuItem"
+        resources.ApplyResources(Me.ReInitializeToolStripMenuItem, "ReInitializeToolStripMenuItem")
         '
         'QuickEraseToolStripMenuItem
         '
-        resources.ApplyResources(Me.QuickEraseToolStripMenuItem, "QuickEraseToolStripMenuItem")
         Me.QuickEraseToolStripMenuItem.Name = "QuickEraseToolStripMenuItem"
+        resources.ApplyResources(Me.QuickEraseToolStripMenuItem, "QuickEraseToolStripMenuItem")
         '
         'NumericUpDownBlockLen
         '
@@ -592,41 +593,41 @@ Partial Class LTFSConfigurator
         '
         'ButtonStopRawDump
         '
-        resources.ApplyResources(Me.ButtonStopRawDump, "ButtonStopRawDump")
         Me.ButtonStopRawDump.ForeColor = System.Drawing.Color.Red
+        resources.ApplyResources(Me.ButtonStopRawDump, "ButtonStopRawDump")
         Me.ButtonStopRawDump.Name = "ButtonStopRawDump"
         Me.ButtonStopRawDump.UseVisualStyleBackColor = True
         '
         'ButtonDebugDumpTape
         '
-        resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.AllowDrop = True
         Me.ButtonDebugDumpTape.ContextMenuStrip = Me.ContextMenuStripRawDump
+        resources.ApplyResources(Me.ButtonDebugDumpTape, "ButtonDebugDumpTape")
         Me.ButtonDebugDumpTape.Name = "ButtonDebugDumpTape"
         Me.ButtonDebugDumpTape.UseVisualStyleBackColor = True
         '
         'ContextMenuStripRawDump
         '
-        resources.ApplyResources(Me.ContextMenuStripRawDump, "ContextMenuStripRawDump")
         Me.ContextMenuStripRawDump.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.WriteToolStripMenuItem, Me.PlayPCMToolStripMenuItem})
         Me.ContextMenuStripRawDump.Name = "ContextMenuStripRawDump"
+        resources.ApplyResources(Me.ContextMenuStripRawDump, "ContextMenuStripRawDump")
         '
         'WriteToolStripMenuItem
         '
-        resources.ApplyResources(Me.WriteToolStripMenuItem, "WriteToolStripMenuItem")
         Me.WriteToolStripMenuItem.Name = "WriteToolStripMenuItem"
+        resources.ApplyResources(Me.WriteToolStripMenuItem, "WriteToolStripMenuItem")
         '
         'PlayPCMToolStripMenuItem
         '
-        resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
         Me.PlayPCMToolStripMenuItem.Name = "PlayPCMToolStripMenuItem"
+        resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
         '
         'TabPageBuffer
         '
-        resources.ApplyResources(Me.TabPageBuffer, "TabPageBuffer")
         Me.TabPageBuffer.Controls.Add(Me.ButtonDebugDumpBuffer)
         Me.TabPageBuffer.Controls.Add(Me.ComboBoxBufferPage)
         Me.TabPageBuffer.Controls.Add(Me.LabelReadBuffer)
+        resources.ApplyResources(Me.TabPageBuffer, "TabPageBuffer")
         Me.TabPageBuffer.Name = "TabPageBuffer"
         Me.TabPageBuffer.UseVisualStyleBackColor = True
         '
@@ -651,7 +652,6 @@ Partial Class LTFSConfigurator
         '
         'TabPageMAM
         '
-        resources.ApplyResources(Me.TabPageMAM, "TabPageMAM")
         Me.TabPageMAM.Controls.Add(Me.LabelBarcode)
         Me.TabPageMAM.Controls.Add(Me.TextBoxBarcode)
         Me.TabPageMAM.Controls.Add(Me.ButtonDebugWriteBarcode)
@@ -661,6 +661,7 @@ Partial Class LTFSConfigurator
         Me.TabPageMAM.Controls.Add(Me.NumericUpDownPCLow)
         Me.TabPageMAM.Controls.Add(Me.ButtonDebugReadMAM)
         Me.TabPageMAM.Controls.Add(Me.ButtonDebugDumpMAM)
+        resources.ApplyResources(Me.TabPageMAM, "TabPageMAM")
         Me.TabPageMAM.Name = "TabPageMAM"
         Me.TabPageMAM.UseVisualStyleBackColor = True
         '
@@ -718,7 +719,6 @@ Partial Class LTFSConfigurator
         '
         'TabPageLog
         '
-        resources.ApplyResources(Me.TabPageLog, "TabPageLog")
         Me.TabPageLog.Controls.Add(Me.CheckBoxShowRawLogPageData)
         Me.TabPageLog.Controls.Add(Me.ComboBox5)
         Me.TabPageLog.Controls.Add(Me.LabelLogSensePageCtrl)
@@ -726,6 +726,7 @@ Partial Class LTFSConfigurator
         Me.TabPageLog.Controls.Add(Me.LabelLogSense)
         Me.TabPageLog.Controls.Add(Me.ComboBox4)
         Me.TabPageLog.Controls.Add(Me.ButtonResetLogPage)
+        resources.ApplyResources(Me.TabPageLog, "TabPageLog")
         Me.TabPageLog.Name = "TabPageLog"
         Me.TabPageLog.UseVisualStyleBackColor = True
         '
@@ -777,7 +778,6 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
-        resources.ApplyResources(Me.TabPageTest, "TabPageTest")
         Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestWrap)
         Me.TabPageTest.Controls.Add(Me.LabelTestWrap)
@@ -793,6 +793,7 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.Controls.Add(Me.LabelTestBlockCount)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestBlkSize)
         Me.TabPageTest.Controls.Add(Me.LabelTestBlocksize)
+        resources.ApplyResources(Me.TabPageTest, "TabPageTest")
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
         '
@@ -966,14 +967,14 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2.FileName = "CM.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
-        'FolderBrowserDialog1
-        '
-        resources.ApplyResources(Me.FolderBrowserDialog1, "FolderBrowserDialog1")
-        '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        resources.ApplyResources(Me.OpenFileDialog1, "OpenFileDialog1")
+        '
+        'ManualAddToolStripMenuItem
+        '
+        Me.ManualAddToolStripMenuItem.Name = "ManualAddToolStripMenuItem"
+        resources.ApplyResources(Me.ManualAddToolStripMenuItem, "ManualAddToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -1137,4 +1138,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents ContextMenuStripRawDump As ContextMenuStrip
     Friend WithEvents WriteToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents PlayPCMToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ManualAddToolStripMenuItem As ToolStripMenuItem
 End Class

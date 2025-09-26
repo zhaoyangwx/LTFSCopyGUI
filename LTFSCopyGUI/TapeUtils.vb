@@ -8,7 +8,7 @@ Imports LTFSCopyGUI
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class TapeUtils
 #Region "winapi"
-    Public Class SetupAPI
+    Public Class SetupAPIWheels
         <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
         Public Structure SP_DEVINFO_DATA
 
@@ -84,11 +84,11 @@ Public Class TapeUtils
         End Structure
 
         <StructLayout(LayoutKind.Sequential, Pack:=1, CharSet:=CharSet.Ansi)>
-        Public Structure STORAGE_DEVICE_NUMBER
+        Public Class STORAGE_DEVICE_NUMBER
             Public DeviceType As Int32
-            Dim DeviceNumber As Int32
-            Dim PartitionNumber As Int32
-        End Structure
+            Public DeviceNumber As Int32
+            Public PartitionNumber As Int32
+        End Class
         Private Function GetVersionFromLong(ByVal version As System.UInt64) As String
             Dim baseNumber As System.UInt64 = 65535
             Dim sb As StringBuilder = New StringBuilder
@@ -283,6 +283,7 @@ Public Class TapeUtils
 
     End Class
 
+
     <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
     Public Shared Function GetLastError() As UInteger
     End Function
@@ -363,7 +364,7 @@ Public Class TapeUtils
         Public Const FILE_ANY_ACCESS As Integer = 0
         Public Shared ReadOnly Property IOCTL_STORAGE_GET_DEVICE_NUMBER As Integer
             Get
-                Return CTL_CODE(IOCTL_STORAGE_BASE, &H421, METHOD_BUFFERED, FILE_ANY_ACCESS)
+                Return CTL_CODE(IOCTL_STORAGE_BASE, &H420, METHOD_BUFFERED, FILE_ANY_ACCESS)
             End Get
         End Property
         Public Shared Function CTL_CODE(DeviceType As Integer, [Function] As Integer, [Method] As Integer, Access As Integer) As Integer
@@ -582,7 +583,7 @@ Public Class TapeUtils
     Public Shared Function CheckSwitchConfig(handle As IntPtr) As Boolean
         Return CheckSwitchConfig(Inquiry(handle))
     End Function
-    Public Shared Function CheckSwitchConfig(Drive As TapeDrive) As Boolean
+    Public Shared Function CheckSwitchConfig(Drive As BlockDevice) As Boolean
         If Drive.ProductId.Contains("LTO") OrElse Drive.ProductId.Contains("Ultrium") Then
             My.Settings.TapeUtils_DriverType = DriverType.LTO
             If Drive.ProductId.Contains("Ultrium 3") OrElse Drive.ProductId.Contains("Ultrium 2") OrElse Drive.ProductId.Contains("Ultrium 1") OrElse
@@ -607,23 +608,33 @@ Public Class TapeUtils
         End If
         Return False
     End Function
-    Public Shared Function Inquiry(handle As IntPtr) As TapeDrive
+    Public Shared Function Inquiry(handle As IntPtr) As BlockDevice
         SyncLock SCSIOperationLock
             Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4, senseReport:=Nothing, timeout:=10)(3) + 4
-            If PageLen = 4 Then Return Nothing
-            Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
-            Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray())
-            PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60, senseReport:=Nothing, timeout:=10)
-            Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).TrimEnd(" ")
-            Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).TrimEnd(" ")
-            Return New TapeDrive With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
+            If PageLen <> 4 Then
+                Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
+                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60, senseReport:=Nothing, timeout:=10)
+                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Return New BlockDevice With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
+            Else
+                PageLen = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, 5, 0}, paramLen:=5, senseReport:=Nothing, timeout:=10)(4) + 4
+                If PageLen = 4 Then Return Nothing
+                Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
+                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(36).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Product &= " " & Encoding.ASCII.GetString(PageData.Skip(32).Take(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Return New BlockDevice With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
+            End If
         End SyncLock
     End Function
-    Public Shared Function Inquiry(TapeDrive As String) As TapeDrive
+    Public Shared Function Inquiry(TapeDrive As String) As BlockDevice
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As TapeDrive = Inquiry(handle)
+            Dim result As BlockDevice = Inquiry(handle)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
@@ -2485,124 +2496,144 @@ Public Class TapeUtils
 
     Public Const DEFAULT_LOG_DIR As String = "C:\ProgramData\HPE\LTFS"
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
-    Public Shared Function GetTapeDriveList() As List(Of TapeDrive)
-        Dim LDrive As New List(Of TapeDrive)
-        If False Then
-            Dim GUIDPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(GetType(Guid)))
-            Marshal.Copy(SetupAPI.GUID_DEVINTERFACE.GUID_DEVINTERFACE_TAPE.ToByteArray(), 0, GUIDPtr, 16)
-            'Marshal.StructureToPtr(SetupAPI.GUID_DEVINTERFACE.GUID_DEVINTERFACE_TAPE, GUIDPtr, True)
-
-            Dim devInfo As IntPtr = SetupAPI.SetupDiGetClassDevs(GUIDPtr, IntPtr.Zero, IntPtr.Zero, SetupAPI.DIGCF_DEVICEINTERFACE Or SetupAPI.DIGCF_PRESENT)
-            Dim devdata As SetupAPI.SP_DEVICE_INTERFACE_DATA
-            Dim devdataPtr As IntPtr
-            Dim listHead As IntPtr = IntPtr.Zero
-            Dim listLast As IntPtr = IntPtr.Zero
-            Dim devIndex As UInt32 = 0
-            Dim devsFound As UInt32 = 0
-            Dim lastRet As Boolean = False
-
-            Do
-                devdata.cbSize = Marshal.SizeOf(GetType(SetupAPI.SP_DEVICE_INTERFACE_DATA))
-                devdataPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devdata))
-                Marshal.StructureToPtr(devdata, devdataPtr, True)
-                lastRet = SetupAPI.SetupDiEnumDeviceInterfaces(devInfo, IntPtr.Zero, GUIDPtr, devIndex, devdataPtr)
-                If lastRet Then
-                    Marshal.PtrToStructure(devdataPtr, devdata)
-                    Dim dwRequiredSize As Int32 = 0
-                    SetupAPI.SetupDiGetDeviceInterfaceDetail(devInfo, devdata, IntPtr.Zero, 0, dwRequiredSize, IntPtr.Zero)
-                    If (dwRequiredSize > 0 AndAlso GetLastError() = 122) Then 'ERROR_INSUFFICIENT_BUFFER
-                        Dim devDetail As SetupAPI.SP_DEVICE_INTERFACE_DETAIL_DATA
-                        devDetail.cbSize = Marshal.SizeOf(GetType(SetupAPI.SP_DEVICE_INTERFACE_DETAIL_DATA))
-                        Dim devDetailPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devDetail))
-                        Marshal.StructureToPtr(devDetail, devDetailPtr, True)
-                        If SetupAPI.SetupDiGetDeviceInterfaceDetail(devInfo, devdata, devDetailPtr, dwRequiredSize, dwRequiredSize, IntPtr.Zero) Then
-                            Marshal.PtrToStructure(devDetailPtr, devDetail)
-                            Dim handle As IntPtr = CreateFile(devDetail.DevicePath, 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
-                            If handle <> -1 Then
-                                Dim result As Boolean = False
-                                Dim dataBuffer(127) As Byte
-                                Dim cdb(5) As Byte
-                                Dim devNum As SetupAPI.STORAGE_DEVICE_NUMBER
-                                Dim devNumPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devNum))
-                                Marshal.StructureToPtr(devNum, devNumPtr, True)
-                                Dim SPDRP_LOCATION_PATHS As Integer = &H23
-                                Dim driveData As SetupAPI.TAPE_DRIVE
-                                Dim lpBytesReturned As Int32
-                                result = DeviceIoControl(handle, SCSIIOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPI.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
-                                Marshal.PtrToStructure(devNumPtr, devNum)
-                                Marshal.FreeHGlobal(devNumPtr)
-                                driveData.DevIndex = devNum.DeviceNumber
-                                If result Then
-                                    Dim inquiryResult As TapeDrive = Inquiry(handle)
-                                    LDrive.Add(inquiryResult)
-                                End If
-                            End If
-                        End If
-                        Marshal.FreeBSTR(devDetailPtr)
-                    End If
+    Public Shared Function GetTapeDriveList() As List(Of BlockDevice)
+        Dim LDrive As New List(Of BlockDevice)
+        Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        Dim tapeobj As New List(Of SetupAPIHelper.Device)
+        For Each dev As SetupAPIHelper.Device In obj
+            If dev.Present Then
+                If dev.ClassName.ToLower = "tapedrive" OrElse dev.ClassName.ToLower = "unknown" Then
+                    tapeobj.Add(dev)
                 End If
-                Marshal.FreeHGlobal(devdataPtr)
-                devIndex += 1
-            Loop While lastRet
-            Marshal.FreeHGlobal(GUIDPtr)
-            SetupAPI.SetupDiDestroyDeviceInfoList(devInfo)
-        End If
-
-
-        Dim p As IntPtr = _GetTapeDriveList()
-        'MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
-        Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-        For Each t As String In s
-            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
-            If q.Length = 4 Then
-                If q(1) = "" Then
-                    Try
-                        Dim drv As TapeDrive = TapeUtils.Inquiry($"\\.\TAPE{q(0)}")
-                        q(1) = drv.SerialNumber
-                    Catch ex As Exception
-                    End Try
-                End If
-                LDrive.Add(New TapeDrive(q(0), q(1), q(2), q(3)))
             End If
         Next
-        LDrive.Sort(New Comparison(Of TapeDrive)(
-                        Function(A As TapeDrive, B As TapeDrive) As Integer
+        For Each dev As SetupAPIHelper.Device In tapeobj
+            Dim handle As IntPtr = CreateFile($"\\.\Globalroot{dev.PDOName}", 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
+            Dim result As Boolean = False
+            Dim devNum As New SetupAPIWheels.STORAGE_DEVICE_NUMBER
+
+            Dim devNumPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devNum))
+            Dim lpBytesReturned As Int32
+            Marshal.StructureToPtr(devNum, devNumPtr, True)
+            result = DeviceIoControl(handle, SCSIIOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPIWheels.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
+            If result Then Marshal.PtrToStructure(devNumPtr, devNum)
+            Marshal.FreeHGlobal(devNumPtr)
+            CloseHandle(handle)
+            Dim drv As BlockDevice = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
+            drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
+            If result Then
+                drv.DevIndex = devNum.DeviceNumber
+                drv.DevicePath = $"\\.\TAPE{drv.DevIndex}"
+            End If
+            LDrive.Add(drv)
+        Next
+        Dim s() As String
+
+        LDrive.Sort(New Comparison(Of BlockDevice)(
+                        Function(A As BlockDevice, B As BlockDevice) As Integer
                             Return A.DevIndex.CompareTo(B.DevIndex)
                         End Function))
         s = GetDriveMappings().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         For Each t As String In s
             Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
             If q.Length = 3 Then
-                For Each Drv As TapeDrive In LDrive
+                For Each Drv As BlockDevice In LDrive
                     If "TAPE" & Drv.DevIndex = q(1) And Drv.SerialNumber = q(2) Then
                         Drv.DriveLetter = q(0)
                     End If
                 Next
             End If
         Next
+
+
+        Dim devpath As String = IO.Path.Combine(Application.StartupPath, "device")
+        If IO.Directory.Exists(devpath) Then
+            For Each f As IO.FileInfo In (New IO.DirectoryInfo(devpath).GetFiles)
+                If f.Extension.ToLower() = ".xml" Then
+                    Dim fcnt As String = IO.File.ReadAllText(f.FullName)
+                    Try
+                        Dim blkdev As BlockDevice = BlockDevice.FromXML(fcnt)
+                        LDrive.Add(blkdev)
+                    Catch ex As Exception
+
+                    End Try
+                End If
+            Next
+        End If
         Return LDrive
     End Function
-    Public Shared Function GetDiskDriveList() As List(Of TapeDrive)
-        Dim p As IntPtr = _GetDiskDriveList()
-        'MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
-        Dim s() As String = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-        Dim LDrive As New List(Of TapeDrive)
-        For Each t As String In s
-            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
-            If q.Length = 4 Then
-                LDrive.Add(New TapeDrive(q(0), q(1), q(2), q(3)))
+    Public Shared Function GetDiskDriveList() As List(Of BlockDevice)
+        Dim LDrive As New List(Of BlockDevice)
+        Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        Dim diskobj As New List(Of SetupAPIHelper.Device)
+        For Each dev As SetupAPIHelper.Device In obj
+            If dev.Present Then
+                If dev.ClassName.ToLower = "diskdrive" Then
+                    diskobj.Add(dev)
+                End If
             End If
         Next
-        LDrive.Sort(New Comparison(Of TapeDrive)(
-                        Function(A As TapeDrive, B As TapeDrive) As Integer
+        obj = SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList()
+        For Each dev As SetupAPIHelper.Device In obj
+            If dev.Present Then
+                If dev.ClassName.ToLower = "diskdrive" Then
+                    diskobj.Add(dev)
+                End If
+            End If
+        Next
+        For Each dev As SetupAPIHelper.Device In diskobj
+
+            'With New SettingPanel With {.SelectedObject = dev}
+            '    .ShowDialog()
+            'End With
+            Dim handle As IntPtr = CreateFile($"\\.\Globalroot{dev.PDOName}", 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
+            Dim result As Boolean = False
+            Dim devNum As New SetupAPIWheels.STORAGE_DEVICE_NUMBER
+
+            Dim devNumPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devNum))
+            Dim lpBytesReturned As Int32
+            Marshal.StructureToPtr(devNum, devNumPtr, True)
+            result = DeviceIoControl(handle, SCSIIOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPIWheels.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
+            If result Then Marshal.PtrToStructure(devNumPtr, devNum)
+            Marshal.FreeHGlobal(devNumPtr)
+            CloseHandle(handle)
+            Dim drv As BlockDevice
+            If Not result Then
+                drv = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
+            Else
+                drv = TapeUtils.Inquiry($"\\.\PhysicalDrive{devNum.DeviceNumber}")
+            End If
+            If drv Is Nothing Then Continue For
+            drv.DeviceType = "PhysicalDrive"
+            If result Then
+                drv.DevIndex = devNum.DeviceNumber
+                drv.DevicePath = $"\\.\PhysicalDrive{drv.DevIndex}"
+            Else
+                drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
+            End If
+            LDrive.Add(drv)
+        Next
+
+        Dim s() As String
+        'Dim p As IntPtr = _GetDiskDriveList()
+        ''MessageBox.Show(New Form With {.TopMost = True}, Marshal.PtrToStringAnsi(p))
+        's = Marshal.PtrToStringAnsi(p).Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        'For Each t As String In s
+        '    Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
+        '    If q.Length = 4 Then
+        '        LDrive.Add(New BlockDevice(q(0), q(1), q(2), q(3)) With {.DeviceType = "PhysicalDrive"})
+        '    End If
+        'Next
+        LDrive.Sort(New Comparison(Of BlockDevice)(
+                        Function(A As BlockDevice, B As BlockDevice) As Integer
                             Return A.DevIndex.CompareTo(B.DevIndex)
                         End Function))
         s = GetDriveMappings().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
         For Each t As String In s
             Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
             If q.Length = 3 Then
-                For Each Drv As TapeDrive In LDrive
-                    If "TAPE" & Drv.DevIndex = q(1) And Drv.SerialNumber = q(2) Then
+                For Each Drv As BlockDevice In LDrive
+                    If "PhysicalDrive" & Drv.DevIndex = q(1) And Drv.SerialNumber = q(2) Then
                         Drv.DriveLetter = q(0)
                     End If
                 Next
@@ -2611,18 +2642,50 @@ Public Class TapeUtils
         Return LDrive
     End Function
     Public Shared Function GetMediumChangerList() As List(Of MediumChanger)
-        Dim p As IntPtr = _GetMediumChangerList()
-
-        Dim result As String = Marshal.PtrToStringAnsi(p)
-        Dim s() As String = result.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
-
         Dim LChanger As New List(Of MediumChanger)
-        For Each t As String In s
-            Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
-            If q.Length = 4 Then
-                LChanger.Add(New MediumChanger(q(0), q(1), q(2), q(3)))
+        Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        Dim tapeobj As New List(Of SetupAPIHelper.Device)
+        For Each dev As SetupAPIHelper.Device In obj
+            If dev.Present Then
+                If dev.ClassName.ToLower = "mediumchanger" Then
+                    tapeobj.Add(dev)
+                End If
             End If
         Next
+        For Each dev As SetupAPIHelper.Device In tapeobj
+            Dim handle As IntPtr = CreateFile($"\\.\Globalroot{dev.PDOName}", 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
+            Dim result As Boolean = False
+            Dim devNum As New SetupAPIWheels.STORAGE_DEVICE_NUMBER
+
+            Dim devNumPtr As IntPtr = Marshal.AllocHGlobal(Marshal.SizeOf(devNum))
+            Dim lpBytesReturned As Int32
+            Marshal.StructureToPtr(devNum, devNumPtr, True)
+            result = DeviceIoControl(handle, SCSIIOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPIWheels.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
+            If result Then Marshal.PtrToStructure(devNumPtr, devNum)
+            Marshal.FreeHGlobal(devNumPtr)
+            CloseHandle(handle)
+            Dim drv As BlockDevice = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
+            If drv Is Nothing Then Continue For
+            drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
+            If result Then
+                drv.DevIndex = devNum.DeviceNumber
+                drv.DevicePath = $"\\.\CHANGER{drv.DevIndex}"
+            End If
+
+            LChanger.Add(New MediumChanger(drv.DevIndex, drv.SerialNumber, drv.VendorId, drv.ProductId))
+        Next
+
+        'Dim p As IntPtr = _GetMediumChangerList()
+        '
+        'Dim chgresult As String = Marshal.PtrToStringAnsi(p)
+        'Dim s() As String = chgresult.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+        '
+        'For Each t As String In s
+        '    Dim q() As String = t.Split({"|"}, StringSplitOptions.None)
+        '    If q.Length = 4 Then
+        '        LChanger.Add(New MediumChanger(q(0), q(1), q(2), q(3)))
+        '    End If
+        'Next
         LChanger.Sort(New Comparison(Of MediumChanger)(
                         Function(A As MediumChanger, B As MediumChanger) As Integer
                             Return A.DevIndex.CompareTo(B.DevIndex)
@@ -3374,13 +3437,14 @@ Public Class TapeUtils
         Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
     End Function
     <Serializable>
-    Public Class TapeDrive
-        Public Property DevIndex As String
-        Public Property SerialNumber As String
-        Public Property VendorId As String
-        Public Property ProductId As String
-        Public Property DriveLetter As String
+    Public Class BlockDevice
+        Public Property DevIndex As String = ""
+        Public Property SerialNumber As String = ""
+        Public Property VendorId As String = ""
+        Public Property ProductId As String = ""
+        Public Property DriveLetter As String = ""
         Public Property DeviceType As String = "TAPE"
+        Public Property DevicePath As String = ""
         Public Sub New()
 
         End Sub
@@ -3396,6 +3460,19 @@ Public Class TapeUtils
             If DriveLetter <> "" Then o &= " (" & DriveLetter & ":)"
             o &= " [" & SerialNumber & "] " & VendorId & " " & ProductId
             Return o
+        End Function
+        Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(BlockDevice))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "1")})
+            writer.Serialize(t, Me, ns)
+            Return sb.ToString()
+        End Function
+        Public Shared Function FromXML(s As String) As BlockDevice
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(BlockDevice))
+            Dim t As IO.TextReader = New IO.StringReader(s)
+            Return CType(reader.Deserialize(t), BlockDevice)
         End Function
     End Class
     <TypeConverter(GetType(ExpandableObjectConverter))>

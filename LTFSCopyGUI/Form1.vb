@@ -689,14 +689,14 @@ Public Class Form1
         AddHandler LWF.Load, OnLWFLoad
         LWF.Show()
     End Sub
-    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.TapeDrive), TapeUtils.TapeDrive)))>
-    Dim DevList As List(Of TapeUtils.TapeDrive)
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.BlockDevice), TapeUtils.BlockDevice)))>
+    Dim DevList As List(Of TapeUtils.BlockDevice)
     Public Sub RefreshDeviceList()
         LoadComplete = False
         Dim lastIndex As Integer = ComboBox1.SelectedIndex
         ComboBox1.Items.Clear()
         DevList = TapeUtils.GetTapeDriveList()
-        For Each D As TapeUtils.TapeDrive In DevList
+        For Each D As TapeUtils.BlockDevice In DevList
             ComboBox1.Items.Add(D.ToString())
         Next
         ComboBox1.SelectedIndex = Math.Min(ComboBox1.Items.Count - 1, Math.Max(0, lastIndex))

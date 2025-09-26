@@ -118,6 +118,12 @@
     <Reference Include="Blake3.Retro">
       <HintPath>..\packages\Blake3.Retro\Blake3.Retro.dll</HintPath>
     </Reference>
+    <Reference Include="SimpleWMI">
+      <HintPath>..\packages\SimpleWMI\SimpleWMI.dll</HintPath>
+    </Reference>
+    <Reference Include="SetupAPIHelper">
+      <HintPath>..\packages\SetupAPIHelper\SetupAPIHelper.dll</HintPath>
+    </Reference>
     <Reference Include="FubarDev.FtpServer, Version=3.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FubarDev.FtpServer.3.1.2\lib\net461\FubarDev.FtpServer.dll</HintPath>
     </Reference>

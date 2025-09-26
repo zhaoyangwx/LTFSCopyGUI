@@ -2,7 +2,7 @@ Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports LTFSCopyGUI.TapeUtils
-Imports LTFSCopyGUI.TapeUtils.SetupAPI
+Imports LTFSCopyGUI.TapeUtils.SetupAPIWheels
 
 Public Class ChangerTool
     Public LoadComplete As Boolean = False
