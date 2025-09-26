@@ -1362,7 +1362,7 @@ Public Class LTFSWriter
         End If
         Save_Settings()
     End Sub
-    Dim CurrDrive As TapeUtils.TapeDrive
+    Dim CurrDrive As TapeUtils.BlockDevice
     Public Function GetLocInfo() As String
         Dim DriveInfo As String = ""
         If TapeUtils.IsOpened(driveHandle) Then

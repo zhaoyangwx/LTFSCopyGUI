@@ -5,8 +5,8 @@ Imports System.Text
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
     Private _SelectedIndex As Integer
-    Public Function GetCurDrive() As TapeUtils.TapeDrive
-        Dim dlist As List(Of TapeUtils.TapeDrive)
+    Public Function GetCurDrive() As TapeUtils.BlockDevice
+        Dim dlist As List(Of TapeUtils.BlockDevice)
         If CheckBoxAutoRefresh.Checked OrElse LastDeviceList Is Nothing Then
             dlist = DeviceList
         Else
@@ -21,8 +21,10 @@ Public Class LTFSConfigurator
     Public ReadOnly Property TapeDrive As String
         Get
             Dim result As String = ""
+            Dim curDrive As TapeUtils.BlockDevice = GetCurDrive()
+            If curDrive.DevicePath IsNot Nothing AndAlso curDrive.DevicePath.Length > 0 Then Return curDrive.DevicePath
             Try
-                result = $"\\.\{ GetCurDrive.DeviceType}{GetCurDrive.DevIndex}"
+                result = $"\\.\{ curDrive.DeviceType}{curDrive.DevIndex}"
             Catch ex As Exception
                 If TextBoxDevicePath.Text <> "" Then
                     result = TextBoxDevicePath.Text
@@ -47,7 +49,7 @@ Public Class LTFSConfigurator
         Set(value As Integer)
             _SelectedIndex = Math.Max(0, value)
             If Not LoadComplete Then Exit Property
-            Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+            Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
             If CurDrive Is Nothing Then
                 ButtonAssign.Enabled = False
                 ButtonLTFSWriter.Enabled = False
@@ -60,6 +62,7 @@ Public Class LTFSConfigurator
             End If
             TextBoxDevInfo.Text = CurDrive.ToString()
             TapeUtils.CheckSwitchConfig(CurDrive)
+            My.Settings.Save()
             If CurDrive.DriveLetter <> "" Then
                 If Not ComboBoxDriveLetter.Items.Contains(CurDrive.DriveLetter) Then ComboBoxDriveLetter.Items.Add(CurDrive.DriveLetter)
                 ComboBoxDriveLetter.SelectedItem = CurDrive.DriveLetter
@@ -78,9 +81,9 @@ Public Class LTFSConfigurator
             Return _SelectedIndex
         End Get
     End Property
-    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.TapeDrive), TapeUtils.TapeDrive)))>
-    Public Property LastDeviceList As List(Of TapeUtils.TapeDrive)
-    Public ReadOnly Property DeviceList As List(Of TapeUtils.TapeDrive)
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.BlockDevice), TapeUtils.BlockDevice)))>
+    Public Property LastDeviceList As List(Of TapeUtils.BlockDevice)
+    Public ReadOnly Property DeviceList As List(Of TapeUtils.BlockDevice)
         Get
             LastDeviceList = TapeUtils.GetTapeDriveList()
             Return LastDeviceList
@@ -109,11 +112,11 @@ Public Class LTFSConfigurator
         Task.Run(Sub()
                      LoadComplete = False
                      If Threading.Monitor.TryEnter(UILock, 100) Then
-                         Dim DevList As List(Of TapeUtils.TapeDrive)
+                         Dim DevList As List(Of TapeUtils.BlockDevice)
                          If RefreshDevList OrElse LastDeviceList Is Nothing Then DevList = DeviceList Else DevList = LastDeviceList
                          Invoke(Sub()
                                     ListBox1.Items.Clear()
-                                    For Each D As TapeUtils.TapeDrive In DevList
+                                    For Each D As TapeUtils.BlockDevice In DevList
                                         If TapeUtils.TagDictionary.ContainsKey(D.SerialNumber) Then
                                             ListBox1.Items.Add(TapeUtils.TagDictionary(D.SerialNumber))
                                         Else
@@ -188,7 +191,7 @@ Public Class LTFSConfigurator
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles ButtonAssign.Click
         If Not LoadComplete Then Exit Sub
         If MessageBox.Show(New Form With {.TopMost = True}, $"{ButtonAssign.Text} {TextBoxDevInfo.Text} <=> {ComboBoxDriveLetter.Text}", My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBoxDriveLetter.Text <> "" Then
                 Dim result As String = TapeUtils.MapTapeDrive(ComboBoxDriveLetter.Text, CurDrive.DeviceType & CurDrive.DevIndex)
@@ -202,7 +205,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles ButtonRemove.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" Then
                 Dim result As String = TapeUtils.UnMapTapeDrive(ComboBoxDriveLetter.Text)
@@ -216,7 +219,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles ButtonLoadThreaded.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -247,7 +250,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles ButtonEject.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -275,7 +278,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button10_Click(sender As Object, e As EventArgs) Handles ButtonMount.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" And ComboBoxDriveLetter.Text <> "" Then
                 Dim result As String = TapeUtils.MountTapeDrive(ComboBoxDriveLetter.Text)
@@ -396,7 +399,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button13_Click(sender As Object, e As EventArgs) Handles ButtonLoadUnthreaded.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -426,7 +429,7 @@ Public Class LTFSConfigurator
 
     Private Sub Button14_Click(sender As Object, e As EventArgs) Handles ButtonUnthread.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.TapeDrive = GetCurDrive()
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -1783,10 +1786,10 @@ Public Class LTFSConfigurator
         LoadComplete = False
         CheckBoxAutoRefresh.Checked = False
         ListBox1.Items.Clear()
-        Dim DevList As List(Of TapeUtils.TapeDrive)
+        Dim DevList As List(Of TapeUtils.BlockDevice)
         LastDeviceList = TapeUtils.GetDiskDriveList()
         DevList = LastDeviceList
-        For Each D As TapeUtils.TapeDrive In DevList
+        For Each D As TapeUtils.BlockDevice In DevList
             D.DeviceType = "PhysicalDrive"
             ListBox1.Items.Add(D.ToString())
         Next
@@ -2214,4 +2217,14 @@ Public Class LTFSConfigurator
         Return header
     End Function
 
+    Private Sub ManualAddToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ManualAddToolStripMenuItem.Click
+        Dim newdev As New TapeUtils.BlockDevice
+        Dim addfrm As New SettingPanel With {.SelectedObject = newdev}
+        If addfrm.ShowDialog = DialogResult.OK Then
+            If newdev.DevicePath = "" Then newdev.DevicePath = $"\\.\{newdev.DeviceType}{newdev.DevIndex}"
+            Dim devpath As String = IO.Path.Combine(Application.StartupPath, "device")
+            If Not IO.Directory.Exists(devpath) Then IO.Directory.CreateDirectory(devpath)
+            IO.File.WriteAllText(IO.Path.Combine(devpath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_")}.xml"), newdev.GetSerializedText())
+        End If
+    End Sub
 End Class
