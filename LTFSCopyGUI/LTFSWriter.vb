@@ -8193,6 +8193,24 @@ Public Class LTFSWriter
         End If
         TriggerTreeView1Event()
     End Sub
+
+    Private Sub 启动iSCSI服务ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动iSCSI服务ToolStripMenuItem.Click
+        Dim svc As New iSCSIService()
+        SetStatusLight(LWStatus.Busy)
+        AddHandler svc.LogPrint, Sub(s As String)
+                                     PrintMsg($"iSCSISVC> {s}")
+                                 End Sub
+        svc.port = Integer.Parse(InputBox("Port", "iSCSI Service", "3261"))
+        svc.driveHandle = driveHandle
+        svc.BlockSize = plabel.blocksize
+        svc.ExtraPartitionCount = ExtraPartitionCount
+        svc.StartService()
+        MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
+        svc.StopService()
+        MessageBox.Show(New Form With {.TopMost = True}, "Service stopped.")
+        SetStatusLight(LWStatus.Idle)
+    End Sub
+
     Public Function DirectoryExists(path As String) As Boolean
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
         Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)

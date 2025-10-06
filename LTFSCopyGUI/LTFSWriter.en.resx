@@ -126,7 +126,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAYQBAwGEAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        CwAAAk1TRnQBSQFMAgEBBAEAAYwBAwGMAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
         AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
         AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
@@ -221,174 +221,6 @@
   <data name="Column_writtenBytes.Text" xml:space="preserve">
     <value>Written bytes</value>
   </data>
-  <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Restore file</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
-    <value>SHA1 checksum</value>
-  </data>
-  <data name="移动到索引区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="移动到索引区ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Move to index partition</value>
-  </data>
-  <data name="定位到起始块ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="定位到起始块ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Locate to start block</value>
-  </data>
-  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 6</value>
-  </data>
-  <data name="剪切文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="剪切文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Cut file                                Ctrl+X</value>
-  </data>
-  <data name="粘贴选中ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="粘贴选中ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>Paste selected                   Ctrl+V</value>
-  </data>
-  <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="重命名文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Rename</value>
-  </data>
-  <data name="重命名目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="重命名目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Rename containing directory</value>
-  </data>
-  <data name="合并文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="合并文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Merge files</value>
-  </data>
-  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 6</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
-    <value>
-        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
-        NO4xjgAAAABJRU5ErkJggg==
-</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="导入文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Import files</value>
-  </data>
-  <data name="添加文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="添加文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Add file</value>
-  </data>
-  <data name="添加目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="添加目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Add directory</value>
-  </data>
-  <data name="新建目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>New directory</value>
-  </data>
-  <data name="新建压缩文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="新建压缩文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Create archive file</value>
-  </data>
-  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Write option</value>
-  </data>
-  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 6</value>
-  </data>
-  <data name="删除文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="删除文件ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Delete selected files        Delete</value>
-  </data>
-  <data name="删除目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="删除目录ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Delete containing directory</value>
-  </data>
-  <data name="ToolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
-    <value>278, 6</value>
-  </data>
-  <data name="生成标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="生成标签ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Generate label file</value>
-  </data>
-  <data name="设置标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Set label</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
-    <value>File details</value>
-  </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Copy to clipboard</value>
-  </data>
   <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
     <value>282, 490</value>
   </data>
@@ -473,6 +305,18 @@
   <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Unarchive Index</value>
   </data>
+  <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Restore file</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
+    <value>SHA1 checksum</value>
+  </data>
   <data name="计算并更新ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>212, 22</value>
   </data>
@@ -491,6 +335,120 @@
   <data name="仅验证ToolStripMenuItem.Text" xml:space="preserve">
     <value>Validate only</value>
   </data>
+  <data name="移动到索引区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="移动到索引区ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Move to index partition</value>
+  </data>
+  <data name="定位到起始块ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="定位到起始块ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Locate to start block</value>
+  </data>
+  <data name="ToolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>278, 6</value>
+  </data>
+  <data name="剪切文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="剪切文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Cut file                                Ctrl+X</value>
+  </data>
+  <data name="粘贴选中ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="粘贴选中ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>Paste selected                   Ctrl+V</value>
+  </data>
+  <data name="重命名文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="重命名文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="重命名目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="重命名目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Rename containing directory</value>
+  </data>
+  <data name="合并文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="合并文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Merge files</value>
+  </data>
+  <data name="ToolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>278, 6</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        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
+        NO4xjgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="导入文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Import files</value>
+  </data>
+  <data name="添加文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="添加文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Add file</value>
+  </data>
+  <data name="添加目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="添加目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Add directory</value>
+  </data>
+  <data name="新建目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="新建目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>New directory</value>
+  </data>
+  <data name="新建压缩文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="新建压缩文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Create archive file</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Write option</value>
+  </data>
   <data name="覆盖已有文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>297, 22</value>
   </data>
@@ -502,6 +460,48 @@
   </data>
   <data name="跳过符号链接ToolStripMenuItem.Text" xml:space="preserve">
     <value>Ignore symbolic link</value>
+  </data>
+  <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>278, 6</value>
+  </data>
+  <data name="删除文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="删除文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Delete selected files        Delete</value>
+  </data>
+  <data name="删除目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="删除目录ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Delete containing directory</value>
+  </data>
+  <data name="ToolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>278, 6</value>
+  </data>
+  <data name="生成标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="生成标签ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Generate label file</value>
+  </data>
+  <data name="设置标签ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="设置标签ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Set label</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
+    <value>File details</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Copy to clipboard</value>
   </data>
   <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>190, 22</value>
@@ -614,7 +614,7 @@
   <data name="备份当前索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAICSURBVDhPnZLdS5NRHMd31z/h
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsIAAA7CARUoSoAAAAICSURBVDhPnZLdS5NRHMd31z/h
         jdCFt5YvjNZiOnjKNRyzhiF4IUphYb5tWSkl9oJGTd1AneHMSep0Ek5U8gVCiejCqAQNq41oiUNNsUkX
         wdfzO+fR49aF4g++nPO8fD6/55zzaABojlKwJ0GNekctEoyPxUAJjmxjOLCF/r4N9LyIotOzArfrJ5zP
         wgKePsFHe/VnlN/8KDqTgMCZacDV+pddHijZVQpUyZX8V1IQGNrkgqbG3/+De1BixHMh6Hu5zgX1938d
@@ -641,7 +641,7 @@
   <data name="写入数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACbSURBVDhPvZJRDoMgEAUfXxAu
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsIAAA7CARUoSoAAAACbSURBVDhPvZJRDoMgEAUfXxAu
         4VW4BufsAbe71Kdbuhptk35MENyZGANE5CfCw9aaROScPwjF3nuIC4G8yZEU4SN4LBDjbkBBSukVkFpH
         JBo+gpEtwIgP6ScOvEjCwBxSoMOoenYrQBgppXwXMOz9LP8vcCbranfn/CfOIjkMXBG9bDd4C6wrDA7O
         mEh0vwe8rM8DP+wxkbKI4Al9KN3pTJfS/gAAAABJRU5ErkJggg==
@@ -662,7 +662,7 @@
   <data name="更新全部索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABzSURBVDhPrY7BEYAwCAT5W4IP
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsIAAA7CARUoSoAAAABzSURBVDhPrY7BEYAwCAT5W4IP
         v3ZjJVaWpuwEg+NliEGcYB774OB2IGb+hRmCZZ/5xtwLZiiosisxQ5Smgy48SRM8y1+SangrAy0RKgGW
         VlGDO/S6ykBLisA69GgEEYpgSytlazfjPpAhG7sYL4hQBHGYTpSgKEpq5pBgAAAAAElFTkSuQmCC
 </value>
@@ -976,7 +976,7 @@
   <data name="合并SHA1ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAGZSURBVDhPY/j//z9FGKsgCG/d
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsIAAA7CARUoSoAAAAGZSURBVDhPY/j//z9FGKsgCG/d
         8uP/5k0//j+4//P/3Tvf/9+48e3/tatf/l+69Ol/ee35/9FR24HK8BiwacPP/6tXfwUyMUFa6f7/Ts4T
         QUwcBjAz/4djEADSf//9A9PP3nz6H19yHCaP24Dlyz79nznjIZALBED+n39/wfSjF+/BdHDoVjCN0wAY
         XrkaaAgSP6vtMAofrAFbgC1d8hmsoLL6AZiOTDgCpt0CgYEHpL19FiMMwAgwoAQMZxetAtNJ+Q1gOjp5
@@ -995,7 +995,7 @@
   <data name="校验源文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxIAAAsSAdLdfvwAAAEMSURBVDhPldDBToNAEAbgvfcV
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxEAAAsRAX9kX5EAAAEMSURBVDhPldDBToNAEAbgvfcV
         fEMPfSR74SEaE84+AQchrSvBSpEiUlzbpvndmc0AJazEw5/ZA/+XGRQAzuphhZmoMAzV+nGt4jjuejdA
         uS+Rv+fI0gx6q5E8J4ii6Ab5E6iKioPlHUe/aGySzRBgxA+UrkwIbUPv7DUbA4xMAlw+uC2GiBSDIOje
         fqCyZUI++nOkNMwk0H61PWJD76d7xVCRF9i97ZDq1A+YxnCoKGWJnESIHzg6gNLUDW8xRih+wNhy2yN0
@@ -1020,6 +1020,12 @@
   </data>
   <data name="启动FTP服务只读ToolStripMenuItem.Text" xml:space="preserve">
     <value>Start FTP Service (ReadOnly)</value>
+  </data>
+  <data name="启动iSCSI服务ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>284, 22</value>
+  </data>
+  <data name="启动iSCSI服务ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Start iSCSI Service</value>
   </data>
   <data name="驱动器锁定状态ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>284, 22</value>
