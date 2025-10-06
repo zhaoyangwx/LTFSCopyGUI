@@ -1,0 +1,1281 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DiskAccessLibrary</name>
+    </assembly>
+    <members>
+        <member name="M:DiskAccessLibrary.Disk.ReadSectors(System.Int64,System.Int32)">
+            <summary>
+            Sector refers to physical disk sector
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.Volume.ReadSectors(System.Int64,System.Int32)">
+            <summary>
+            Sector refers to physical disk sector, we can only read complete sectors
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.DiskImage.GetDiskImage(System.String)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.DiskImage.GetDiskImage(System.String,System.Boolean)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RAMDisk.#ctor(System.Int32)">
+            <summary>
+            A single-dimensional byte array cannot contain more than 0X7FFFFFC7 bytes (2047.999 MiB).
+            https://msdn.microsoft.com/en-us/library/System.Array(v=vs.110).aspx
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.#ctor(System.String)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.#ctor(System.String,System.Boolean)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.#ctor(System.String,System.Int32)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.#ctor(System.String,System.Int32,System.Boolean)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.ExclusiveLock">
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.ReadSectors(System.Int64,System.Int32)">
+            <summary>
+            Sector refers to physical disk sector, we can only read complete sectors
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.Extend(System.Int64)">
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.Create(System.String,System.Int64)">
+            <param name="size">In bytes</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.RawDiskImage.Create(System.String,System.Int64,System.Int32)">
+            <param name="size">In bytes</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="T:DiskAccessLibrary.VHD.BlockAllocationTable">
+            <summary>
+            a.k.a. BAT
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.#ctor(System.String)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.#ctor(System.String,System.Boolean)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.ReadSectors(System.Int64,System.Int32)">
+            <summary>
+            Sector refers to physical disk sector, we can only read complete sectors
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.CreateFixedDisk(System.String,System.Int64)">
+            <param name="diskSize">In bytes</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.AllocateDynamicDiskBlock(System.UInt32)">
+            <returns>Block start sector</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualHardDisk.CreateDynamicDisk(System.String,System.Int64)">
+            <param name="diskSize">In bytes</param>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualMachineDisk.#ctor(System.String)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.VirtualMachineDisk.#ctor(System.String,System.Boolean)">
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+            <exception cref="T:System.NotImplementedException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.FileSystem.GetDirectoryPath(System.String)">
+            <summary>
+            Will append a trailing slash to a directory path if not already present
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.Abstractions.FileSystemEntry.FullName">
+            <summary>
+            Full Path. Directory path should end with a trailing slash.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.GetEntry(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.CreateFile(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.CreateDirectory(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.Move(System.String,System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.Delete(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.ListEntriesInDirectory(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.ListDataStreams(System.String)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.OpenFile(System.String,System.IO.FileMode,System.IO.FileAccess,System.IO.FileShare,System.IO.FileOptions)">
+            <exception cref="T:System.IO.DirectoryNotFoundException"></exception>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.SetAttributes(System.String,System.Nullable{System.Boolean},System.Nullable{System.Boolean},System.Nullable{System.Boolean})">
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.SetDates(System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{System.DateTime})">
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+            <exception cref="T:System.IO.IOException"></exception>
+            <exception cref="T:System.UnauthorizedAccessException"></exception>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.Size">
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.FreeSpace">
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.Abstractions.IFileSystem.SupportsNamedStreams">
+            <summary>
+            Indicates support for opening named streams (alternate data streams).
+            Named streams are opened using the filename:stream syntax.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.IExtendableFileSystem.GetMaximumSizeToExtend">
+            <returns>In bytes</returns>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSFileStream">
+            <summary>
+            A Stream wrapper for NTFSFile
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSFileSystem">
+            <summary>
+            Adapter providing FileSystem implementation for NTFS (using NTFSVolume).
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSFileSystem.GetFilePath(System.String)">
+            <summary>
+            Removes the stream name from the path
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeData">
+            <summary>
+            This class provides a unified interface to access the data of an AttributeRecord.
+            </summary>
+            <remarks>
+            The $Data attribute can be either resident or non-resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeList">
+            <remarks>
+            1. A file can only have one attribute list and the $ATTRIBUTE_LIST record must reside in the base record segment.
+            2. The attribute list's data is not necessarily resident.
+            3. An attribute list can point to both resident and non-resident attributes.
+            </remarks>
+            http://blogs.technet.com/b/askcore/archive/2009/10/16/the-four-stages-of-ntfs-file-growth.aspx
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.AttributeList.GetSegmentReferenceList(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.AttributeListEntry})">
+            <summary>
+            Return list containing the segment reference to all of the segments that are listed in this attribute list
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.BitmapData">
+            <summary>
+            This class is used to read and update the bitmap of a Bitmap attribute (e.g. the MFT bitmap where each bit represents a FileRecord).
+            Windows extends the MFT bitmap in multiple of 8 bytes, so the number of bits may be greater than the record count.
+            </summary>
+            <remarks>
+            The Bitmap attribute can be either resident or non-resident.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.BitmapData.AllocateRecord(System.UInt32)">
+            <returns>Record index</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.BitmapData.AllocateRecord(System.Int64,System.UInt32)">
+            <returns>Record index</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.BitmapData.AllocateRecord(System.Int64,System.Int64,System.UInt32)">
+            <returns>Record index</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.BitmapData.ExtendBitmap(System.Int64,System.Boolean)">
+            <param name="zeroOutExtensionInAdvance">True to zero out the extension in advance, False to rely on ValidDataLength</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.IndexData.SplitRootIndexRecord">
+            <remarks>
+            The root node can contain a limited number of entries compare to an IndexRecord,
+            so there is no point splitting it to two child nodes, a single one would be sufficient.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.IndexData.SplitIndexRecord(Utilities.KeyValuePairList{System.Int32,DiskAccessLibrary.FileSystems.NTFS.IndexRecord})">
+            <param name="path">Key is index in parent node</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.IndexData.RemovePointer(Utilities.KeyValuePairList{System.Int32,DiskAccessLibrary.FileSystems.NTFS.IndexRecord},System.Int32)">
+            <summary>
+            Will remove the pointer while preserving the entry (if present)
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.IndexData.RemovePointerFromRoot(System.Int32)">
+            <summary>
+            Will remove the pointer while preserving the entry (if present)
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.IndexData.AllocateIndexRecord">
+            <returns>Record Index</returns>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeData">
+            <summary>
+            This class is used to read and modify the data of a non-resident attribute
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeData.ReadCluster(System.Int64)">
+            <param name="clusterVCN">Cluster index</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeData.ReadClusters(System.Int64,System.Int32)">
+            <param name="count">Maximum number of clusters to read</param>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeRecord">
+            <summary>
+            ATTRIBUTE_RECORD_HEADER: https://docs.microsoft.com/en-us/windows/desktop/DevNotes/attribute-record-header
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.AttributeRecord.RecordLength">
+            <summary>
+            Each attribute record must be aligned to 8-byte boundary, so RecordLength must be a multiple of 8.
+            When reading attributes, they may contain additional padding,
+            so we should use RecordLengthOnDisk to advance the buffer position instead.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.FileNameAttributeRecord">
+            <remarks>
+            FileName attribute is always resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.IndexAllocationRecord">
+            <remarks>
+            IndexAllocation attribute is always non-resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.IndexRootRecord">
+            <remarks>
+            IndexRoot attribute is always resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeRecord">
+            <summary>
+            ATTRIBUTE_RECORD_HEADER: https://docs.microsoft.com/en-us/windows/desktop/DevNotes/attribute-record-header
+            </summary>
+            <remarks>
+            The maximum NTFS file size is 2^64 bytes, so the number of file clusters can be represented using long.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeRecord.GetClustersInUse">
+            <summary>
+            This method should only be used for informational purposes.
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.NonResidentAttributeRecord.RecordLength">
+            <summary>
+            Each attribute record must be aligned to 8-byte boundary, so RecordLength must be a multiple of 8.
+            When reading attributes, they may contain additional padding,
+            so we should use RecordLengthOnDisk to advance the buffer position instead.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.ResidentAttributeRecord">
+            <summary>
+            ATTRIBUTE_RECORD_HEADER: https://docs.microsoft.com/en-us/windows/desktop/DevNotes/attribute-record-header
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.ResidentAttributeRecord.RecordLength">
+            <summary>
+            Each attribute record must be aligned to 8-byte boundary, so RecordLength must be a multiple of 8.
+            When reading attributes, they may contain additional padding,
+            so we should use RecordLengthOnDisk to advance the buffer position instead.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.ResidentAttributeRecord.GetRecordLength(System.Int32,System.Int32)">
+            <summary>
+            Each attribute record must be aligned to 8-byte boundary, so RecordLength must be a multiple of 8.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.StandardInformationRecord">
+            <remarks>
+            StandardInformation attribute is always resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.VolumeInformationRecord">
+            <remarks>
+            VolumeInformation attribute is always resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.VolumeNameRecord">
+            <remarks>
+            VolumeName attribute is always resident.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeFlags">
+            <remarks>
+            https://docs.microsoft.com/en-us/windows/desktop/DevNotes/attribute-record-header
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeForm">
+            <remarks>
+            https://docs.microsoft.com/en-us/windows/desktop/DevNotes/attribute-record-header
+            </remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.None">
+            <summary>
+            No type specified.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.StandardInformation">
+            <summary>
+            NTFS Standard Information.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.AttributeList">
+            <summary>
+            Lists the location of all attribute records that do not fit in the MFT record.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.FileName">
+            <summary>
+            FileName information, one per hard link.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.ObjectId">
+            <summary>
+            Distributed Link Tracking object identity.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.SecurityDescriptor">
+            <summary>
+            Legacy Security Descriptor attribute.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.VolumeName">
+            <summary>
+            The name of the NTFS volume.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.VolumeInformation">
+            <summary>
+            Information about the NTFS volume.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.Data">
+            <summary>
+            File contents, a file may have multiple data attributes (default is unnamed).
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.IndexRoot">
+            <summary>
+            Root information for directories and other NTFS indexes.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.IndexAllocation">
+            <summary>
+            For 'large' directories and other NTFS indexes, the index contents.
+            </summary>
+            <remarks>Always non-resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.Bitmap">
+            <summary>
+            Bitmask of allocated clusters, records, etc - typically used in indexes.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.ReparsePoint">
+            <summary>
+            ReparsePoint information.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.ExtendedAttributesInformation">
+            <summary>
+            Extended Attributes meta-information.
+            </summary>
+            <remarks>Always resident</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.ExtendedAttributes">
+            <summary>
+            Extended Attributes data.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.PropertySet">
+            <summary>
+            Legacy attribute type from NT (not used).
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.AttributeType.LoggedUtilityStream">
+            <summary>
+            Encrypted File System (EFS) data.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.FileAttributes.Directory">
+            <remarks>
+            This flag is not in use.
+            FileRecordFlags.IsDirectory is used instead for FileRecordSegment,
+            DUP_FILE_NAME_INDEX_PRESENT is used instead for FileNameRecord.
+            </remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.FileAttributes.Normal">
+            <remarks>This flag is not in use.</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.FileAttributes.FileNameIndexPresent">
+            <remarks>This flag should only be used in FileNameRecord, and should not be used in StandardInformationRecord</remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.FileAttributes.ViewIndexPresent">
+            <summary>Indicates the presence of object ID index, quota index, security index or EFS related index</summary>
+            <remarks>NTFS 3.0+</remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.FileRecordFlags">
+            <summary>
+            FILE_RECORD_SEGMENT_HEADER: https://msdn.microsoft.com/de-de/windows/desktop/bb470124
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.IndexHeaderFlags.ParentNode">
+            <summary>
+            This node is a parent node (not a leaf)
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.FileRecord">
+            <summary>
+            A collection of base record segment and zero or more file record segments making up this file record.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecord.UpdateSegments(System.Int32,System.Byte)">
+            <remarks>
+            https://blogs.technet.microsoft.com/askcore/2009/10/16/the-four-stages-of-ntfs-file-growth/
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecord.GetFileNameRecord(DiskAccessLibrary.FileSystems.NTFS.FileNameFlags)">
+            <param name="fileNameNamespace">POSIX or Win32 or DOS, multiple flags are not supported</param>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecord.Segments">
+            <summary>
+            Used for logging purposes and must not be modified outside UpdateSegments
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecord.BaseSegment">
+            <summary>
+            Used for logging purposes and must not be modified outside UpdateSegments
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecord.DosFileNameRecord">
+            <summary>Returns FileNameRecord containing 8.3 filename</summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecord.FileName">
+            <summary>
+            Will return the long filename of the file
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecordHelper.GetAssembledAttributes(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment})">
+            <remarks>
+            Only non-resident attributes can be fragmented.
+            References:
+            https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc976808(v=technet.10)
+            https://blogs.technet.microsoft.com/askcore/2009/10/16/the-four-stages-of-ntfs-file-growth/
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecordHelper.BuildAttributeList(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment},System.Int32,System.Byte)">
+            <remarks>
+            An attribute list MUST be sorted by AttributeType with a secondary sort by AttributeName.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecordHelper.InsertSorted(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.AttributeRecord},DiskAccessLibrary.FileSystems.NTFS.AttributeRecord)">
+            <remarks>
+            FileRecordSegment attributes MUST be sorted by AttributeType with a secondary sort by Name.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment">
+            <summary>
+            FILE_RECORD_SEGMENT_HEADER: https://msdn.microsoft.com/de-de/windows/desktop/bb470124
+            </summary>
+            <remarks>
+            Attributes MUST be ordered by increasing attribute type code (with a secondary ordering by name) when written to disk.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment.AddAttributeRecord(DiskAccessLibrary.FileSystems.NTFS.AttributeRecord)">
+            <summary>
+            This method should only be used to add attributes that have already been sorted
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment.IsInUse">
+            <summary>
+            Indicates that the file / directory wasn't deleted
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment.IsBaseFileRecord">
+            <remarks>
+            If this is the base file record, the BaseFileRecordSegment value is 0.
+            https://docs.microsoft.com/en-us/windows/desktop/DevNotes/file-record-segment-header
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MultiSectorHelper.RevertUsaProtection(System.Byte[],System.Int32)">
+            <remarks>
+            The USN will be written at the end of each 512-byte stride, even if the device has more (or less) than 512 bytes per sector.
+            https://docs.microsoft.com/en-us/windows/desktop/DevNotes/multi-sector-header
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.DosFileNameHelper.IsValidDosFileName(System.String)">
+            <remarks>
+            https://en.wikipedia.org/wiki/Design_of_the_FAT_file_system#Directory_table
+            https://docs.microsoft.com/en-us/windows-hardware/drivers/ddi/content/ntifs/nf-ntifs-rtlgenerate8dot3name
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.IndexEntry">
+            <summary>
+            INDEX_ENTRY
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.IndexEntry.SubnodeVBN">
+            <summary>In units of clusters when IndexRootRecord.BytesPerIndexRecord >= Volume.BytesPerCluster, otherwise in units of 512 byte blocks.</summary>
+            <remarks>Present if ParentNodeForm flag is set</remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.IndexRecord">
+            <summary>
+            INDEX_ALLOCATION_BUFFER
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.LfsRecordPageFlags.RecordEnd">
+            <summary>Indicates that a log record ends on this page</summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.LfsRestartFlags.SinglePageIO">
+            <summary>Each log page is written in a separate IO transfer (PageCount of 1)</summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.LfsRestartFlags.CleanDismount">
+            <summary>Indicated that the volume is dismounted cleanly</summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSLogOperation">
+            <remarks>
+            The comment specifies the record type which follows the record.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.LogFile.WriteRestartPage(System.Boolean)">
+            <remarks>
+            This method should only be called after properly setting the values in a client restart record
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.LogFile.FlushRecords(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.LfsRecord},System.Boolean@)">
+            <param name="endOfTransferRecorded">True if one or more pages has been filled and the next transfer will be seen as a separate IO transfer</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.LogFile.RepairLogFile">
+            <summary>
+            This method will repair the log file by copying the tail copies back to their correct location.
+            If necessary, the restart area will be updated to reflect CurrentLsn and LastLsnDataLength.
+            </summary>
+            <remarks>This method will only repair the log file, further actions are needed to bring the volume back to a consistent state.</remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSLogClient.FindRedoLsn(System.Collections.Generic.List{DiskAccessLibrary.FileSystems.NTFS.DirtyPageEntry})">
+            <summary>
+            Analysis pass:
+            - NTFS scans forward in log file from beginning of last checkpoint
+            - Updates transaction/dirty page tables it copied in memory
+            - NTFS scans tables for oldest update record of a non-committed transactions.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSLogClient.WriteForgetTransactionRecord(System.UInt32)">
+            <summary>
+            Write ForgetTransaction record and deallocate the transactionID.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSLogClient.AddToOpenAttributeTable(DiskAccessLibrary.FileSystems.NTFS.MftSegmentReference,DiskAccessLibrary.FileSystems.NTFS.AttributeType,System.String,System.UInt64)">
+            <returns>Index in open attribute table</returns>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.NTFSLogClient.TransactionCount">
+            <summary>
+            Returns the number of transactions currently active
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeNameEntry">
+            <summary>
+            ATTRIBUTE_NAME_ENTRY
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.DirtyPageEntry">
+            <summary>
+            DIRTY_PAGE_ENTRY
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.OpenAttributeEntry">
+            <summary>
+            OPEN_ATTRIBUTE_ENTRY
+            Note: v0.0 is used in both NTFS v1.2 and NTFS 3.0+, however, some of the fields have been repurposed or made obsolete.
+            </summary>
+            <remarks>
+            NTFS v1.2:
+            Offset 0x04: PointerToAttributeName (UInt32)
+            Offset 0x18: DirtyPagesSeen (BOOLEAN)
+            Offset 0x19: AttributeNamePresent (BOOLEAN)
+            Offset 0x20: AttributeName (UNICODE_STRING, 8 bytes)
+            </remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.OpenAttributeEntry.AttributeOffset">
+            <summary>Self-reference (Offset of the attribute in the open attribute table)</summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.OpenAttributeEntry.LsnOfOpenRecord">
+            <summary>This is the LSN of the client record preceding the OpenNonResidentAttribute record</summary>
+        </member>
+        <member name="F:DiskAccessLibrary.FileSystems.NTFS.OpenAttributeEntry.DirtyPagesSeen">
+            <summary>Indicates that a DirtyPageEntry is referring to this entry</summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.RestartTableHeader">
+            <summary>
+            RESTART_TABLE
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.TransactionEntry">
+            <summary>
+            TRANSACTION_ENTRY
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.BitmapRange">
+            <summary>
+            BITMAP_RANGE
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.LfsClientRecord">
+            <summary>
+            LFS_CLIENT_RECORD
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.LfsRecordPage">
+            <remarks>
+            This record should be read according to the version number specified in LogRestartPage.
+            v1.0 use the LFS_UNPACKED_RECORD_PAGE structure, which is not being used in later versions.
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.LfsRestartArea">
+            <summary>
+            LFS_RESTART_AREA
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.LfsRestartArea.FileSizeBits">
+            <summary>
+            The number of bits chosen to represent the log file size
+            (must be greater than or equal to the number of bits needed)
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.LfsRestartArea.IsInUse">
+            <summary>
+            Windows 2000 and earlier will close the log file by setting the
+            ClientInUseList to NoClient when the volume is dismounted cleanly.
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.LfsRestartArea.IsClean">
+            <summary>
+            Windows XP and later will set the clean bit when the volume is dismounted cleanly.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.LfsRestartPage">
+            <remarks>
+            Windows NT 3.51 sets the version to 1.0
+            Windows NT 4.0 and later set the version to 1.1
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSRestartRecord">
+            <summary>
+            RESTART_AREA
+            </summary>
+            <remarks>
+            Windows NT 4.0 writes records that are 64 bytes long.
+            Windows 2000 / XP / 2003 write records that are 104 bytes long.
+            Windows Vista / 7 / 8 / 10 write records that are 112 bytes long.
+            
+            When x64 versions of Windows format the volume they set the version to 1.0 (x86 will set the version to 0.0).
+            Note that the record version will be maintained when moving disks between operating systems using the same record length.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MasterFileTable.#ctor(DiskAccessLibrary.FileSystems.NTFS.NTFSVolume,System.Boolean)">
+            <param name="useMftMirror">Strap the MFT using the MFT mirror</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MasterFileTable.#ctor(DiskAccessLibrary.FileSystems.NTFS.NTFSVolume,System.Boolean,System.Boolean)">
+            <param name="useMftMirror">Strap the MFT using the MFT mirror</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MasterFileTable.ReadMftRecordSegment(System.Int64,System.Int64)">
+            <summary>
+            This method is used to read the record segment(s) of the MFT itself.
+            Only after strapping the MFT we can use GetFileRecordSegment which relies on the MFT file record.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MasterFileTable.UpdateFileRecordSegment(DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment)">
+            <summary>
+            It's up to the caller to log the changes to the file record segment
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.MasterFileTable.DeallocateFileRecordSegment(DiskAccessLibrary.FileSystems.NTFS.FileRecordSegment,System.UInt32)">
+            <summary>
+            It's up to the caller to log the changes to the file record segment
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSBootRecord.#ctor(System.Byte[])">
+            <summary>
+            boot record is the first sector of the partition (not to be confused with the master boot record which is the first sector of the disk)
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.NTFSBootRecord.SectorsPerFileRecordSegment">
+            <summary>
+            File record segment length is a multiple of BytesPerSector
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSFile">
+            <summary>
+            This class provides an interface to access the data of an NTFS file's data attribute,
+            In the case of an unnamed data stream (i.e. the primary data stream), the file name record(s) and directory index will be updated to reflect any changes.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSFile.#ctor(DiskAccessLibrary.FileSystems.NTFS.NTFSVolume,DiskAccessLibrary.FileSystems.NTFS.FileRecord,System.String)">
+            <param name="attributeName">The name of the data attribute we wish to access</param>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.NTFSVolume">
+            <summary>
+            Implements the low level NTFS volume logic.
+            This class can be used by higher level implementation that may include
+            functions such as file copy, caching, symbolic links and etc.
+            </summary>
+            <remarks>
+            If a caller wishes to access this class from multiple threads, the underlying volume must be thread safe.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSVolume.GetFileRecordsInDirectoryFromMft(System.Int64)">
+            <summary>
+            This method is slower and should only be used for recovery purposes.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSVolume.GetFileRecordsInDirectoryFromMft(System.Int64,System.Boolean)">
+            <summary>
+            This method is slower and should only be used for recovery purposes.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSVolume.GetFileNameRecordsInDirectoryFromMft(System.Int64)">
+            <summary>
+            This method is slower and should only be used for recovery purposes.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSVolumeCreator.WriteAttributeDefinition(DiskAccessLibrary.Volume,System.Int64,System.Int32)">
+            <returns>Length of AttributeDefinition</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.NTFSVolumeCreator.WriteUpCaseFile(DiskAccessLibrary.Volume,System.Int64)">
+            <returns>Length of UpCase File</returns>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeDefinitionEntry">
+            <summary>
+            ATTRIBUTE_DEFINITION_COLUMNS
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.AttributeListEntry">
+            <summary>
+            ATTRIBUTE_LIST_ENTRY
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.DataRun">
+            <remarks>
+            The maximum NTFS file size is 2^64 bytes, so total number of file clusters can be represented using long
+            https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc938937(v=technet.10)
+            </remarks>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.DataRun.RecordLength">
+            <summary>
+            Length of the DataRun record
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.DataRunSequence">
+            <summary>
+            MappingPairs array
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.DataRunSequence.LastDataRunStartLCN">
+            <summary>
+            LCN of the first cluster in the last data run
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.DataRunSequence.DataLastLCN">
+            <summary>
+            LCN of the last cluster in the last data run
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.FileSystems.NTFS.DataRunSequence.DataClusterCount">
+            <remarks>
+            The maximum NTFS file size is 2^64 bytes, so total number of file clusters can be represented using long
+            https://docs.microsoft.com/en-us/previous-versions/windows/it-pro/windows-2000-server/cc938937(v=technet.10)
+            </remarks>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.DuplicatedInformation">
+            <summary>
+            DUPLICATED_INFORMATION
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.FileNameRecord.IsInNamespace(DiskAccessLibrary.FileSystems.NTFS.FileNameFlags)">
+            <param name="fileNameNamespace">POSIX or Win32 or DOS, multiple flags are not supported</param>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.MftSegmentReference">
+            <summary>
+            MFT_SEGMENT_REFERENCE: https://docs.microsoft.com/en-us/windows/desktop/devnotes/mft-segment-reference
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.MultiSectorHeader">
+            <summary>
+            MULTI_SECTOR_HEADER: https://docs.microsoft.com/en-us/windows/desktop/devnotes/multi-sector-header
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap">
+            <summary>
+            This class is used to read and update the volume bitmap (the $Bitmap metafile).
+            Each bit in this file represents a cluster, extra bits are always set to 1.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap.AllocateClusters(System.Int64)">
+            <summary>
+            The caller must verify that there are enough free clusters before calling this method.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap.AllocateClusters(System.Int64,System.Int64)">
+            <summary>
+            The caller must verify that there are enough free clusters before calling this method.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap.FindClustersToAllocate(System.Int64,System.Int64)">
+            <summary>
+            Return list of free cluster runs.
+            </summary>
+            <returns>key is cluster LCN, value is run length</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap.FindClustersToAllocate(System.Int64,System.Int64,System.Int64,System.Int64@)">
+            <param name="clustersToAllocate">Number of clusters to allocate</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileSystems.NTFS.VolumeBitmap.Extend(System.Int64)">
+            <param name="numberOfAdditionalClusters">
+            The number of additional clusters being added to the volume.
+            </param>
+            <remarks>
+            1TB of additional allocation will result in a bitmap of 32 MB (assuming 4KB clusters).
+            128TB of additional allocation will result in a bitmap of 512 MB (assuming 8KB clusters).
+            </remarks>
+        </member>
+        <member name="F:DiskAccessLibrary.BasicDiskHelper.MBRDiskFirstUsableSector">
+            <summary>
+            While technically a partition on an MBR disk could start on sector 1, we use sector 64 for alignment purposes.
+            Note: Windows 7 will start MBR partitions on sector 128 for disks with 512-byte sectors, and on sector 64 for disks with 1KB/2KB/4KB sectors.
+            Windows will start the dynamic data partition of a dynamic disks on sector 63 (or 1 in some cases), but the volume (extent) itself may be aligned to native sector boundaries.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.DiskExtentsHelper.GetUnallocatedExtents(DiskAccessLibrary.Disk,System.Int64,System.Int64,System.Collections.Generic.List{DiskAccessLibrary.DiskExtent})">
+            <param name="dataRegionSize">In bytes</param>
+        </member>
+        <member name="M:DiskAccessLibrary.DiskExtentsHelper.SortExtentsByFirstSector(System.Collections.Generic.List{DiskAccessLibrary.DiskExtent})">
+            <summary>
+            Sort (in-place) extents by first sector
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.ExtendHelper.GetMaximumSizeToExtendVolume(DiskAccessLibrary.Volume)">
+            <summary>
+            This refers to the raw volume and not to the filesystem
+            </summary>
+            <returns>Number of bytes (per disk extent)</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.ExtendHelper.GetMaximumSizeToExtendMBRPartition(DiskAccessLibrary.MBRPartition)">
+            <returns>Number of bytes</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.ExtendHelper.GetMaximumSizeToExtendGPTPartition(DiskAccessLibrary.GPTPartition)">
+            <returns>Number of bytes</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.ExtendHelper.GetMaximumSizeToExtendDynamicDiskExtent(DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtent)">
+            <returns>Number of bytes</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.#ctor(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecordFragment})">
+            <param name="recordFragments">Fragments must be sorted!</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.UpdateHeader">
+            <summary>
+            Update UpdateStatus field
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.UpdateFragments(System.Int32)">
+            <summary>
+            store new record fragments containing updated record data.
+            SequenceNumber and GroupNumber have to be set before writing these fragments to the database.
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.Data">
+            <summary>
+            Data stored in the record fragments
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.GetDataFromFragments(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecordFragment},System.UInt32)">
+            <param name="recordLength">Record header length + record data length</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.GetDatabaseRecord(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecordFragment})">
+            <param name="fragments">Must be sorted</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.GetUpdatedFragments(System.Int32,System.Byte[])">
+            <summary>
+            Return record fragments containing updated record data.
+            SequenceNumber and GroupNumber have to be set before writing these fragments to the database.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecord.ReadVarUInt(System.Byte[],System.Int32@)">
+            <summary>
+            DMDiag reports some variable fields as invalid if they occupy more than 4 bytes (excluding the length byte prefix)
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DatabaseRecordFragment.Clear">
+            <summary>
+            Free fragment from record data (the result can be used to overwrite this fragment)
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.DiskGroupRecord.HasNumberOfCopiesFlag">
+            <summary>
+            If this flag is not rpesent, DMDiag will report 'copies: nconfig=default nlog=default'
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.ExtentRecord.HasHiddenFlag">
+            <summary>
+            Hidden sectors?
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.ExtentRecord.HasUnknown1Flag">
+            <summary>
+            Windows Vista and newer set this flag by default, earlier versions do not
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtentHelper.GetDiskExtent(DiskAccessLibrary.LogicalDiskManager.DynamicDisk,DiskAccessLibrary.LogicalDiskManager.ExtentRecord)">
+            <summary>
+            Support null disks
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtentHelper.GetExtentStartSector(DiskAccessLibrary.LogicalDiskManager.DynamicDisk,DiskAccessLibrary.LogicalDiskManager.ExtentRecord)">
+            <summary>
+            Support null disks
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtentsHelper.SortExtentsByFirstSector(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtent})">
+            <summary>
+            Sort (in-place) extents by first sector
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskHelper.GetDiskExtents(DiskAccessLibrary.LogicalDiskManager.DynamicDisk)">
+            <summary>
+            Sorted by first sector
+            </summary>
+            <returns>null if there was a problem reading extent information from disk</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskHelper.GetMaxNewExtentLength(DiskAccessLibrary.LogicalDiskManager.DynamicDisk,System.Int64)">
+            <returns>In bytes</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskHelper.FindExtentAllocation(DiskAccessLibrary.LogicalDiskManager.DynamicDisk,System.Int64,System.Int64)">
+            <param name="allocationLength">In bytes</param>
+            <param name="alignInSectors">0 or 1 for no alignment</param>
+            <returns>Allocated DiskExtent or null if there is not enough free disk space</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicDiskHelper.IsMoveLocationValid(DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtent,DiskAccessLibrary.LogicalDiskManager.DynamicDisk,System.Int64)">
+            <param name="targetOffset">in bytes</param>
+        </member>
+        <member name="F:DiskAccessLibrary.LogicalDiskManager.PublicRegionHelper.BytesPerPublicRegionSector">
+            <summary>
+            LBA values in extent / volume / component records refer to logical 512-byte blocks within the public region of the disk, regardless of the actual block size of the disk.
+            We have to translate those values in order to support disks with 4K sectors. 
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabaseHelper.AddNewExtentToVolume(DiskAccessLibrary.LogicalDiskManager.DiskGroupDatabase,DiskAccessLibrary.LogicalDiskManager.DynamicVolume,DiskAccessLibrary.DiskExtent)">
+            <summary>
+            Update the database (add the new extent)
+            </summary>
+            <param name="volume">RAID-5 or striped volume</param>
+            <returns>new extent ID</returns>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabaseHelper.UpdateExtentLocation(DiskAccessLibrary.LogicalDiskManager.DiskGroupDatabase,DiskAccessLibrary.LogicalDiskManager.DynamicVolume,DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtent)">
+            <summary>
+            Update the database to point to the new extent location (same or different disk)
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabaseHelper.GetNextExtentName(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.ExtentRecord},System.String)">
+            <param name="extentRecords">Could be all of the database records or just the relevant records</param>
+        </member>
+        <member name="T:DiskAccessLibrary.LogicalDiskManager.KernelUpdateLogPage">
+            <summary>
+            Each KLOG page is 512 bytes.
+            Note: a sector can contain more than one KLOG page.
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.LogicalDiskManager.PrivateHeader.PublicRegionStartLBA">
+            <summary>
+            MBR: Windows XP / Server 2003 will ignore this value and will use the first sector of the second disk track (usually sector number 63, as there are usually 63 sectors per track [0-62])
+            </summary>
+        </member>
+        <member name="F:DiskAccessLibrary.LogicalDiskManager.PrivateHeader.PrimaryTocLBA">
+            <summary>
+            PrimaryTocLBA / SecondaryTocLBA: on write operation, the updated TOC will be written to a different location,
+            and then PrimaryTocLBA / SecondaryTocLBA will be updated to point to it.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.PrivateHeader.GetBytes">
+            <summary>
+            Private header may need to be padded with zeros in order to fill an entire sector
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.TOCBlock.GetBytes">
+            <summary>
+            TOC Block may need to be padded with zeros in order to fill an entire sector
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.TOCBlock.WriteToDisk(DiskAccessLibrary.Disk,DiskAccessLibrary.LogicalDiskManager.PrivateHeader,DiskAccessLibrary.LogicalDiskManager.TOCBlock)">
+            <summary>
+            This method will write privateHeader to disk as well
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.UpdateDatabase(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecord})">
+            <param name="records">New or modified records (.e.g. new volume, volume with modified size etc.)</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.MarkOldRecordsAsPendingDeletion(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecord})">
+            <summary>
+            mark old records as pending deletion and return them
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.WritePendingRecords">
+            <summary>
+            Write all pending activation / pending deletion records to disk
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.PrepareNewRecordsForWriting(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecord},System.UInt64)">
+            <summary>
+            Assign valid SequenceNumber and GroupNumber to each record fragment
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.GetAvailableFragmentSequenceNumber(System.UInt32)">
+            <param name="startFromSequenceNumber">We use startSequenceNumber to avoid using the same SequenceNumber twice</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.GetAvailableFragmentGroupNumber(System.UInt32)">
+            <param name="startFromGroupNumber">We use startFromGroupNumber to avoid using the same GroupNumber twice</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.FindExtentsByComponentID(System.UInt64)">
+            <summary>
+            Sorted by offset in column
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.GetAvailableFragmentSequenceNumber(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecord},System.UInt32,System.UInt32)">
+            <param name="startFromSequenceNumber">We use startSequenceNumber to avoid using the same SequenceNumber twice</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.GetAvailableFragmentGroupNumber(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DatabaseRecord},System.UInt32,System.UInt32)">
+            <param name="startFromGroupNumber">We use startFromGroupNumber to avoid using the same GroupNumber twice</param>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabase.ReadDatabaseRecords(System.Byte[],System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Will read all VBLK blocks and assemble the database records
+            </summary>
+            <param name="numberOfFragments">number of fragments excluding the database header</param>
+        </member>
+        <member name="T:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabaseCopy">
+            <summary>
+            A Volume Manager Database copy stored on a specific disk
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.VolumeManagerDatabaseHeader.GetBytes">
+            <summary>
+            VBLKs may reside in the same sector as the VMDB header.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.LogicalDiskManager.DynamicColumn">
+            <summary>
+            Column is a sequence of one or more (dynamic) disk extents, it's an abstraction of disk,
+            Simple Volume uses a single column that has one extent,
+            Spanned volume uses a single column to span data across multiple extents,
+            Striped / RAID-5 write the data in stripes across multiple columns in an orderly fashion. (each column can contain more than one extent)
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.DynamicColumn.BytesPerSector">
+            <summary>
+            "All disks holding extents for a given volume must have the same sector size"
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicColumn.GetBytesPerSector(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DynamicDiskExtent})">
+            <summary>
+            "All disks holding extents for a given volume must have the same sector size"
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.DynamicVolume.BytesPerSector">
+            <summary>
+            "All disks holding extents for a given volume must have the same sector size"
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.DynamicVolume.GetBytesPerSector(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DynamicColumn})">
+            <summary>
+            "All disks holding extents for a given volume must have the same sector size"
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.MirroredVolume.IsOperational">
+            <summary>
+            A mirrroed volume can operate as long as a single component is operational
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.LogicalDiskManager.Raid5Volume">
+            <summary>
+            Windows Software RAID-5 array
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.LogicalDiskManager.Raid5Volume.#ctor(System.Collections.Generic.List{DiskAccessLibrary.LogicalDiskManager.DynamicColumn},System.Int32,System.Guid,System.Guid)">
+            <param name="columns">One of the disks can be null</param>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.Raid5Volume.TotalStripes">
+            <summary>
+            The number of sectors is always a multiple of SectorsPerStripe
+            (if we modify the number of sectors manually to any other number, Windows will mark the array as "Failed" ["Too many bad RAID-5 column"])
+            </summary>
+        </member>
+        <member name="P:DiskAccessLibrary.LogicalDiskManager.Raid5Volume.IsOperational">
+            <summary>
+            RAID-5 array can operate with a single missing disk (Failed redundancy)
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.GuidPartitionTable.RebaseDisk(DiskAccessLibrary.Disk,DiskAccessLibrary.MasterBootRecord)">
+            <summary>
+            Read valid GPT (header and partition table), and write it to the correct locations at the beginning and end of the disk.
+            The protective MBR partition size will be updated as well.
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.GuidPartitionTableHeader.ReadSecondaryFromDisk(DiskAccessLibrary.Disk,DiskAccessLibrary.GuidPartitionTableHeader)">
+            <summary>
+            primaryHeader can be NULL
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.GuidPartitionTableHeader.WriteToDisk(DiskAccessLibrary.Disk,DiskAccessLibrary.GuidPartitionTableHeader)">
+            <summary>
+            GuidPartitionTableHeader.CurrentLBA Will be used as the writing location,
+            This will help preserve cases where the backup GPT scheme was written in an uncommon way.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.RemovableVolume">
+            <summary>
+            A single volume that takes up all of the disk (there is no MBR),
+            The disk has no partition table and the first sector contains the filesystem boot record.
+            
+            MSDN definition:
+            A super floppy layout is one in which there is no MBR, so there is no partition table. The entire disk (from start to end) is one giant partition.
+            </summary>
+        </member>
+        <member name="T:DiskAccessLibrary.Win32Error">
+            <summary>
+            Win32 error codes:
+            </summary>
+            <remarks>All Win32 error codes MUST be in the range 0x0000 to 0xFFFF</remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.IOExceptionHelper.ThrowIOError(System.Int32,System.String)">
+            <param name="win32ErrorCode">The Win32 error code associated with the exception to throw</param>
+        </member>
+        <member name="T:DiskAccessLibrary.FileStreamEx">
+            <summary>
+            This class was designed to offer unencumbered access to files. (Block devices such as disks, volumes and virtual disk files were specifically in mind).
+            Unlike FileStream, this class does not implement any internal read or write buffering.
+            </summary>
+            <remarks>
+            Note that it is possible to curcumvent FileStream's buffering by setting the buffer size to the sector size.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.Read(System.Byte[],System.Int32,System.Int32)">
+            <param name="offset">The byte offset in array at which the read bytes will be placed</param>
+            <param name="count">The maximum number of bytes to read</param>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.ReadOverlapped(System.Byte[],System.Int32,System.Int32,System.Int64)">
+            <remarks>
+            The caller can use this method with both synchronous and asynchronous (FILE_FLAG_OVERLAPPED) file handles.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.WriteOverlapped(System.Byte[],System.Int32,System.Int32,System.Int64)">
+            <remarks>
+            The caller can use this method with both synchronous and asynchronous (FILE_FLAG_OVERLAPPED) file handles.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.ReadByte">
+            <remarks>we are working with block devices, and we are only supposed to read sectors</remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.WriteByte(System.Byte)">
+            <remarks>we are working with block devices, and we are only supposed to write sectors</remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.Dispose(System.Boolean)">
+            <summary>
+            This will prevent the handle from being disposed
+            </summary>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamEx.SetValidLength(System.Int64)">
+            <summary>
+            On NTFS, extending a file reserves disk space but does not zero out the data.
+            Instead, NTFS keeps track of the "last byte written", technically known as the valid data length, and only zeroes out up to that point.
+            The data past the valid data length are logically zero but are not physically zero on disk.
+            When you write to a point past the current valid data length, all the bytes between the valid data length and the start of your write need to be zeroed out before the new valid data length can be set to the end of your write operation.
+            Extending the file and then calling SetValidLength() may save a considerable amount of time zeroing out the extended portion of the file.
+            </summary>
+            <remarks>
+            Calling SetFileValidData requires SeManageVolumePrivilege privileges.
+            </remarks>
+        </member>
+        <member name="M:DiskAccessLibrary.FileStreamUtils.SetValidLength(System.IO.FileStream,System.Int64)">
+            <summary>
+            On NTFS, extending a file reserves disk space but does not zero out the data.
+            Instead, NTFS keeps track of the "last byte written", technically known as the valid data length, and only zeroes out up to that point.
+            The data past the valid data length are logically zero but are not physically zero on disk.
+            When you write to a point past the current valid data length, all the bytes between the valid data length and the start of your write need to be zeroed out before the new valid data length can be set to the end of your write operation.
+            Extending the file and then calling SetValidLength() may save a considerable amount of time zeroing out the extended portion of the file.
+            </summary>
+            <remarks>
+            Calling SetFileValidData requires SeManageVolumePrivilege privileges.
+            </remarks>
+        </member>
+    </members>
+</doc>

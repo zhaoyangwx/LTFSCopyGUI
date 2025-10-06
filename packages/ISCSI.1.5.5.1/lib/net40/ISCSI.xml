@@ -1,0 +1,267 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ISCSI</name>
+    </assembly>
+    <members>
+        <member name="M:ISCSI.Client.ClientHelper.GetFirstStageLoginRequest(System.String,System.String,ISCSI.Client.ConnectionParameters)">
+            <param name="targetName">Set to null for discovery session</param>
+        </member>
+        <member name="M:ISCSI.Client.ISCSIClient.Login(System.String)">
+            <param name="targetName">Set to null for discovery session</param>
+        </member>
+        <member name="M:ISCSI.Client.ISCSIClient.Login(System.String,System.Nullable{System.UInt64},System.Nullable{System.UInt16},System.Nullable{System.UInt16})">
+            <param name="targetName">Set to null for discovery session</param>
+        </member>
+        <member name="M:ISCSI.Client.ISCSIClient.ReadCapacity(System.UInt16,System.Int32@)">
+            <returns>Capacity in bytes</returns>
+        </member>
+        <member name="T:ISCSI.Client.ISCSIDisk">
+            <summary>
+            Disk Adapter utilizing ISCSIClient
+            </summary>
+        </member>
+        <member name="M:ISCSI.Client.ISCSISession.GetNextTaskTag">
+            <summary>
+            Allocate Initiator Task Tag
+            </summary>
+        </member>
+        <member name="T:ISCSI.DefaultParameters">
+            <summary>
+            Default operational parameters for iSCSI session / connection, as specified in RFC 3720.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.MaxConnections">
+            <summary>
+            The maximum number of connections per session.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.InitialR2T">
+            <summary>
+            Allow the initiator to start sending data to a target as if it has received an initial R2T
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.MaxBurstLength">
+            <summary>
+            The total of all the DataSegmentLength of all PDUs in a sequence MUST not exceed MaxBurstLength.
+            Maximum SCSI data payload in bytes in a Data-In or a solicited Data-Out iSCSI sequence (i.e. that belongs to a single command).
+            Irrelevant to the target in general, the initiator instructs us using ExpectedDataTransferLength.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.FirstBurstLength">
+            <summary>
+            The total of all the DataSegmentLength of all PDUs in a sequence MUST not exceed FirstBurstLength for unsolicited data.
+            Maximum amount in bytes of unsolicited [SCSI] data an iSCSI initiator may send to the target during the execution of a single SCSI command.
+            Irrelevant to the target in general, irrelevant when (InitialR2T = Yes and) ImmediateData = No.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.DefaultTime2Wait">
+            <summary>
+            Minimum time, in seconds, to wait before attempting an explicit/implicit logout after connection termination / reset.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Session.DefaultTime2Retain">
+            <summary>
+            Maximum time, in seconds after an initial wait (Time2Wait), before which an active task reassignment
+            is still possible after an unexpected connection termination or a connection reset.
+            </summary>
+        </member>
+        <member name="F:ISCSI.DefaultParameters.Connection.MaxRecvDataSegmentLength">
+            <summary>
+            Maximum data segment length that the target or initator can receive in an iSCSI PDU.
+            Per direction parameter that the target or initator declares.
+            The default MaxRecvDataSegmentLength is used during Login.
+            </summary>
+        </member>
+        <member name="T:ISCSI.ISCSIConnectionReceiveBuffer">
+            <summary>
+            iSCSI Connection Receive Buffer
+            </summary>
+        </member>
+        <member name="M:ISCSI.ISCSIConnectionReceiveBuffer.#ctor(System.Int32)">
+            <param name="bufferLength">
+            bufferLength should be set to BasicHeaderSegmentLength + TotalAHSLength + HeaderDigestLength + MaxRecvDataSegmentLength + DataDigestLength.
+            (because DataSegmentLength MUST not exceed MaxRecvDataSegmentLength for the direction it is sent)
+            </param>
+        </member>
+        <member name="M:ISCSI.ISCSIConnectionReceiveBuffer.DequeuePDU">
+            <summary>
+            HasCompletePDU must be called and return true before calling DequeuePDU
+            </summary>
+            <exception cref="T:System.IO.InvalidDataException"></exception>
+        </member>
+        <member name="M:ISCSI.ISCSIConnectionReceiveBuffer.DequeuePDUBytes">
+            <summary>
+            HasCompletePDU must be called and return true before calling DequeuePDUBytes
+            </summary>
+        </member>
+        <member name="M:ISCSI.Server.ConnectionManager.SendKeepAlive">
+            <summary>
+            This method will check for dead peers (initiators).
+            Because TCP broken connections can only be detected by sending data, we send a NOP-In PDU,
+            If the connection is dead, the send failure will trigger the necessary connection termination logic.
+            See: http://blog.stephencleary.com/2009/05/detection-of-half-open-dropped.html
+            </summary>
+        </member>
+        <member name="T:ISCSI.Server.ConnectionState">
+            <summary>
+            iSCSI Connection state object
+            </summary>
+        </member>
+        <member name="T:ISCSI.Server.ISCSIServer">
+            <summary>
+            an iSCSI server that can serve multiple iSCSI targets
+            </summary>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.#ctor">
+            <summary>
+            Server needs to be started with Start()
+            </summary>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.Start">
+            <exception cref="T:System.Net.Sockets.SocketException"></exception>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.Start(System.Int32)">
+            <param name="listenerPort">The port on which the iSCSI server will listen</param>
+            <exception cref="T:System.Net.Sockets.SocketException"></exception>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.Start(System.Net.IPEndPoint)">
+            <exception cref="T:System.Net.Sockets.SocketException"></exception>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.Start(System.Net.IPEndPoint,System.Nullable{System.TimeSpan})">
+            <param name="listenerEndPoint">The endpoint on which the iSCSI server will listen</param>
+            <param name="keepAliveTime">The duration between keep-alive transmissions</param>        
+            <exception cref="T:System.Net.Sockets.SocketException"></exception>
+        </member>
+        <member name="M:ISCSI.Server.ISCSIServer.ResetTarget(System.String)">
+            <summary>
+            Will terminate all TCP connections to all initiators (all sessions will be terminated)
+            </summary>
+        </member>
+        <member name="F:ISCSI.Server.ISCSIServer.DefaultCommandQueueSize">
+            <summary>
+            - CommandQueueSize = 0 means the initiator can send one command at a time (because MaxCmdSN = ExpCmdSN + CommandQueueSize),
+              (in this case there won't be any queue following the currently processed command).
+            - Over a low-latency connection, most of the gain comes from increasing the queue size from 0 to 1
+            - CmdSN is session wide, so CommandQueueSize is a session parameter.
+            </summary>
+        </member>
+        <member name="F:ISCSI.Server.ISCSISession.m_nextTransferTag">
+            <summary>
+            Target Transfer Tag:
+            There are no protocol specific requirements with regard to the value of these tags,
+            but it is assumed that together with the LUN, they will enable the target to associate data with an R2T.
+            </summary>
+        </member>
+        <member name="M:ISCSI.Server.ISCSISession.IsFirstCmdSNPreceding(System.UInt32,System.UInt32)">
+            <summary>
+            Returns true if cmdSN1 should be executed before cmdSN2
+            </summary>
+        </member>
+        <member name="M:ISCSI.Server.TargetList.GetList">
+            <summary>
+            Caller MUST obtain a lock on TargetList.Lock before calling this method
+            </summary>
+        </member>
+        <member name="F:SCSI.DeviceIdentificationInquiryEventArgs.Page">
+            <summary>
+            Can be altered by the event subscriber
+            </summary>
+        </member>
+        <member name="F:SCSI.StandardInquiryEventArgs.Data">
+            <summary>
+            Can be altered by the event subscriber
+            </summary>
+        </member>
+        <member name="F:SCSI.UnitSerialNumberInquiryEventArgs.Page">
+            <summary>
+            Can be altered by the event subscriber
+            </summary>
+        </member>
+        <member name="M:SCSI.VirtualSCSITarget.ExecuteCommand(System.Byte[],SCSI.LUNStructure,System.Byte[],System.Byte[]@)">
+            <summary>
+            This implementation is not thread-safe.
+            </summary>
+        </member>
+        <member name="M:SCSI.VirtualSCSITarget.ExecuteCommand(SCSI.SCSICommandDescriptorBlock,SCSI.LUNStructure,System.Byte[],System.Byte[]@)">
+            <summary>
+            This implementation is not thread-safe.
+            </summary>
+        </member>
+        <member name="T:SCSI.LUNStructure">
+            <summary>
+            Eight byte logical unit number structure from SAM-2
+            </summary>
+        </member>
+        <member name="T:SCSI.SCSICommandDescriptorBlock10">
+            <summary>
+            10-byte SCSI CDB
+            </summary>
+        </member>
+        <member name="T:SCSI.SCSICommandDescriptorBlock12">
+            <summary>
+            12-byte SCSI CDB
+            </summary>
+        </member>
+        <member name="T:SCSI.SCSICommandDescriptorBlock16">
+            <summary>
+            16-byte SCSI CDB
+            </summary>
+        </member>
+        <member name="T:SCSI.SCSICommandDescriptorBlock6">
+            <summary>
+            6-byte SCSI CDB
+            </summary>
+        </member>
+        <member name="F:SCSI.ReportLUNsParameter.MinimumAllocationLength">
+            <summary>
+            Minimum allocation length defined by the REPORT LUNS command
+            </summary>
+        </member>
+        <member name="T:SCSI.SenseDataParameter">
+            <summary>
+            Fixed format sense data
+            </summary>
+        </member>
+        <member name="M:SCSI.SenseDataParameter.GetWriteFaultSenseData">
+            <summary>
+            Reported when CRC error is encountered
+            </summary>
+        </member>
+        <member name="F:SCSI.StandardInquiryData.VendorIdentification">
+            <summary>
+            8 characters
+            </summary>
+        </member>
+        <member name="F:SCSI.StandardInquiryData.ProductIdentification">
+            <summary>
+            16 characters
+            </summary>
+        </member>
+        <member name="F:SCSI.StandardInquiryData.ProductRevisionLevel">
+            <summary>
+            4 characters
+            </summary>
+        </member>
+        <member name="M:SCSI.IdentificationDescriptor.GetEUI64Identifier(System.UInt32,System.UInt32)">
+            <param name="oui">UInt24</param>
+        </member>
+        <member name="M:SCSI.IdentificationDescriptor.GetNAAExtendedIdentifier(System.UInt32,System.UInt32)">
+            <param name="oui">UInt24</param>
+        </member>
+        <member name="M:SCSI.Win32.SPTITarget.ExecuteCommand(System.Byte[],SCSI.LUNStructure,System.Byte[],System.Byte[]@)">
+            <summary>
+            This takes the iSCSI command and forwards it to a SCSI Passthrough device. It then returns the response.
+            </summary>
+        </member>
+        <member name="M:Utilities.SocketUtils.SetKeepAlive(System.Net.Sockets.Socket,System.Boolean,System.TimeSpan,System.TimeSpan)">
+            <param name="timeout">the timeout, in milliseconds, with no activity until the first keep-alive packet is sent</param>
+            <param name="interval">the interval, in milliseconds, between when successive keep-alive packets are sent if no acknowledgement is received</param>
+        </member>
+        <member name="M:Utilities.SocketUtils.ReleaseSocket(System.Net.Sockets.Socket)">
+            <summary>
+            Socket will be forcefully closed, all pending data will be ignored, and socket will be deallocated.
+            </summary>
+        </member>
+    </members>
+</doc>

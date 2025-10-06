@@ -212,6 +212,7 @@ Partial Class LTFSWriter
         Me.校验源文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.挂载盘符只读ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.启动FTP服务只读ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.启动iSCSI服务ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.驱动器锁定状态ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.加锁ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.解锁ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -1157,7 +1158,7 @@ Partial Class LTFSWriter
         '
         '数据ToolStripMenuItem
         '
-        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.加密ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem, Me.驱动器锁定状态ToolStripMenuItem})
+        Me.数据ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.格式化ToolStripMenuItem, Me.设置高度ToolStripMenuItem, Me.加密ToolStripMenuItem, Me.合并SHA1ToolStripMenuItem, Me.校验源文件ToolStripMenuItem, Me.挂载盘符只读ToolStripMenuItem, Me.启动FTP服务只读ToolStripMenuItem, Me.启动iSCSI服务ToolStripMenuItem, Me.驱动器锁定状态ToolStripMenuItem})
         Me.数据ToolStripMenuItem.Name = "数据ToolStripMenuItem"
         resources.ApplyResources(Me.数据ToolStripMenuItem, "数据ToolStripMenuItem")
         '
@@ -1206,6 +1207,11 @@ Partial Class LTFSWriter
         '
         Me.启动FTP服务只读ToolStripMenuItem.Name = "启动FTP服务只读ToolStripMenuItem"
         resources.ApplyResources(Me.启动FTP服务只读ToolStripMenuItem, "启动FTP服务只读ToolStripMenuItem")
+        '
+        '启动iSCSI服务ToolStripMenuItem
+        '
+        Me.启动iSCSI服务ToolStripMenuItem.Name = "启动iSCSI服务ToolStripMenuItem"
+        resources.ApplyResources(Me.启动iSCSI服务ToolStripMenuItem, "启动iSCSI服务ToolStripMenuItem")
         '
         '驱动器锁定状态ToolStripMenuItem
         '
@@ -1660,4 +1666,5 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripProgressBar1 As ToolStripProgressBar
     Friend WithEvents SettingToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 合并文件ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 启动iSCSI服务ToolStripMenuItem As ToolStripMenuItem
 End Class

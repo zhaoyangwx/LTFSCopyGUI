@@ -118,6 +118,12 @@
     <Reference Include="Blake3.Retro">
       <HintPath>..\packages\Blake3.Retro\Blake3.Retro.dll</HintPath>
     </Reference>
+    <Reference Include="DiskAccessLibrary, Version=1.6.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DiskAccessLibrary.1.6.3\lib\net40\DiskAccessLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="ISCSI, Version=1.5.5.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ISCSI.1.5.5.1\lib\net40\ISCSI.dll</HintPath>
+    </Reference>
     <Reference Include="SimpleWMI">
       <HintPath>..\packages\SimpleWMI\SimpleWMI.dll</HintPath>
     </Reference>
@@ -335,6 +341,7 @@
     </Compile>
     <Compile Include="IOManager.vb" />
     <Compile Include="ApplicationWheels.vb" />
+    <Compile Include="iSCSIService.vb" />
     <Compile Include="LTFSConfigurator.Designer.vb">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </Compile>
