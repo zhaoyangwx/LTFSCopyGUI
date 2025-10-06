@@ -370,7 +370,7 @@ Public Class LTFSConfigurator
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.SCSIIOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length, CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer)
+                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length, CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer)
                         'succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
@@ -864,7 +864,10 @@ Public Class LTFSConfigurator
                                         TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
                                         TextBoxDebugOutput.Text &= "Excess data is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
                                     End If
-                                    TextBoxDebugOutput.Text &= Byte2Hex(readData, True)
+                                    TextBoxDebugOutput.Text &= Byte2Hex(readData, True) & vbCrLf
+                                    TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
+                                    TextBoxDebugOutput.Text &= Byte2Hex(sense, True) & vbCrLf
+
                                 End Sub)
                      Catch ex As Exception
 
@@ -916,7 +919,9 @@ Public Class LTFSConfigurator
                      Dim result As String = ""
                      Try
                          TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
-                         result = TapeUtils.ParseAdditionalSenseCode(TapeUtils.Locate(ConfTapeDrive, blk, partition, dest))
+                         Dim sense As Byte() = {}
+                         TapeUtils.Locate(ConfTapeDrive, blk, partition, dest, sense)
+                         result = TapeUtils.ParseSenseData(sense) & vbCrLf & Byte2Hex(sense, True)
                      Catch ex As Exception
 
                      End Try
@@ -2224,7 +2229,18 @@ Public Class LTFSConfigurator
             If newdev.DevicePath = "" Then newdev.DevicePath = $"\\.\{newdev.DeviceType}{newdev.DevIndex}"
             Dim devpath As String = IO.Path.Combine(Application.StartupPath, "device")
             If Not IO.Directory.Exists(devpath) Then IO.Directory.CreateDirectory(devpath)
-            IO.File.WriteAllText(IO.Path.Combine(devpath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_")}.xml"), newdev.GetSerializedText())
+            IO.File.WriteAllText(IO.Path.Combine(devpath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
         End If
+    End Sub
+    Public Class devListBrowser
+        <TypeConverter(GetType(ListTypeDescriptor(Of List(Of SetupAPIHelper.Device), SetupAPIHelper.Device)))>
+        Public Property devList As List(Of SetupAPIHelper.Device)
+
+    End Class
+    Private Sub BrowseToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles BrowseToolStripMenuItem.Click
+        Dim obj As New devListBrowser
+        obj.devList = SetupAPIHelper.Device.EnumerateDevices().ToList()
+        Dim pf As New SettingPanel With {.SelectedObject = obj}
+        pf.Show()
     End Sub
 End Class

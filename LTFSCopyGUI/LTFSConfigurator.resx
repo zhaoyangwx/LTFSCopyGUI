@@ -137,8 +137,14 @@
   <data name="ManualAddToolStripMenuItem.Text" xml:space="preserve">
     <value>Manual add</value>
   </data>
+  <data name="BrowseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="BrowseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Browse</value>
+  </data>
   <data name="ContextMenuStripRefreshDeviceList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 70</value>
+    <value>181, 92</value>
   </data>
   <data name="&gt;&gt;ContextMenuStripRefreshDeviceList.Name" xml:space="preserve">
     <value>ContextMenuStripRefreshDeviceList</value>
@@ -3487,6 +3493,12 @@
   <data name="&gt;&gt;DiskToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;ManualAddToolStripMenuItem.Name" xml:space="preserve">
+    <value>ManualAddToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;ManualAddToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;在当前进程运行ToolStripMenuItem.Name" xml:space="preserve">
     <value>在当前进程运行ToolStripMenuItem</value>
   </data>
@@ -3559,10 +3571,10 @@
   <data name="&gt;&gt;OpenFileDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.OpenFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ManualAddToolStripMenuItem.Name" xml:space="preserve">
-    <value>ManualAddToolStripMenuItem</value>
+  <data name="&gt;&gt;BrowseToolStripMenuItem.Name" xml:space="preserve">
+    <value>BrowseToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;ManualAddToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;BrowseToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

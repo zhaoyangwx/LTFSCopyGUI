@@ -45,7 +45,24 @@
             TapeA = TextBox1.Text
             TapeB = TextBox2.Text
             Dim handleA, handleB As IntPtr
+            Dim drivertype As TapeUtils.DriverType = TapeUtils.DriverTypeSetting
+            Dim IsFileA As Boolean = CheckBox2.Checked
+            Dim IsFileB As Boolean = CheckBox3.Checked
+            If IsFileA Then
+                TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+            Else
+                TapeUtils.DriverTypeSetting = drivertype
+            End If
             TapeUtils.OpenTapeDrive(TapeA, handleA)
+
+            If IsFileB Then
+                TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                If Not IO.File.Exists(TapeB) Then
+                    IO.File.Create(TapeB).Close()
+                End If
+            Else
+                TapeUtils.DriverTypeSetting = drivertype
+            End If
             TapeUtils.OpenTapeDrive(TapeB, handleB)
             Dim BlockCount As Integer = NumericUpDown1.Value
             Dim BlockLen As UInteger = NumericUpDown2.Value
@@ -62,15 +79,34 @@
                     Do
                         i += 1
                         Try
+
                             If FlushFlag Then
+
+                                If IsFileB Then
+                                    TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                                Else
+                                    TapeUtils.DriverTypeSetting = drivertype
+                                End If
                                 TapeUtils.Flush(handleB)
                                 FlushFlag = False
+                            End If
+
+                            If IsFileA Then
+                                TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                            Else
+                                TapeUtils.DriverTypeSetting = drivertype
                             End If
                             readData = TapeUtils.ReadBlock(handleA, sense, BlockLen)
                             Add_Key = CInt(sense(12)) << 8 Or sense(13)
                             Dim succ As Boolean = False
                             While Not succ
                                 Dim sense2 As Byte() = Nothing
+
+                                If IsFileB Then
+                                    TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                                Else
+                                    TapeUtils.DriverTypeSetting = drivertype
+                                End If
                                 If readData.Length > 0 Then
                                     sense2 = TapeUtils.Write(handleB, readData)
                                     progval = i
@@ -111,9 +147,28 @@
                             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                         End Try
                     Loop While i < BlockCount OrElse BlockCount <= 0
+
+                    If IsFileB Then
+                        TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                    Else
+                        TapeUtils.DriverTypeSetting = drivertype
+                    End If
                     TapeUtils.Flush(TapeB)
+
+                    If IsFileA Then
+                        TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                    Else
+                        TapeUtils.DriverTypeSetting = drivertype
+                    End If
                     TapeUtils.CloseTapeDrive(handleA)
+
+                    If IsFileB Then
+                        TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+                    Else
+                        TapeUtils.DriverTypeSetting = drivertype
+                    End If
                     TapeUtils.CloseTapeDrive(handleB)
+                    TapeUtils.DriverTypeSetting = drivertype
                     running = False
                     Invoke(Sub() Button1.Text = "Start")
                 End Sub)

@@ -1382,7 +1382,7 @@ Public Class LTFSWriter
                     End If
                 End If
             End If
-            If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License} ({TapeUtils.DriverTypeSetting})"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}{DriveInfo}] "
         Try
@@ -1394,7 +1394,7 @@ Public Class LTFSWriter
             End SyncLock
             If CurrentHeight > 0 Then info &= $" {My.Resources.ResText_WritePointer}{CurrentHeight}"
             If Modified Then info &= "*"
-            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License} ({TapeUtils.DriverTypeSetting})"
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RPosErr)
             SetStatusLight(LWStatus.Err)
@@ -1772,7 +1772,10 @@ Public Class LTFSWriter
             Else
                 MaxCapacity = max0
                 Try
-                    If MaxCapacity = 0 Then MaxCapacity = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 0).AsNumeric
+                    If MaxCapacity = 0 Then
+                        Dim MAMCap As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 1, 0)
+                        If MAMCap IsNot Nothing Then MaxCapacity = MAMCap.AsNumeric
+                    End If
                 Catch ex As Exception
                 End Try
                 Invoke(Sub()
@@ -3449,6 +3452,7 @@ Public Class LTFSWriter
                 If FileIndex.TempObj Is Nothing OrElse TypeOf FileIndex.TempObj IsNot ltfsindex.file.refFile Then FileIndex.TempObj = New ltfsindex.file.refFile()
                 CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName = FileName
                 Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.None)
+                fs.SetLength(FileIndex.length)
                 Try
                     FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
                                                                                            If a.startblock <> b.startblock Then Return a.startblock.CompareTo(b.startblock)
@@ -4605,10 +4609,21 @@ Public Class LTFSWriter
         th.Start()
     End Sub
     Private Sub 读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 读取索引ToolStripMenuItem.Click
+        If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+            TapeUtils.CloseTapeDrive(driveHandle)
+            If Not IO.File.Exists(TapeDrive) Then
+                IO.File.Create(TapeDrive).Close()
+            End If
+        End If
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
+                    If Not TapeUtils.IsOpened(driveHandle) Then
+                        TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
+                    End If
+                    If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                        TapeStreamMapping.MappingTable(driveHandle).ReOpen()
+                    End If
                     SetStatusLight(LWStatus.Busy)
                     RefreshCapacity()
                     Dim Sense0 As Byte() = {}
@@ -4623,6 +4638,9 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_Locating)
                     Dim PModeData As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
                     If PModeData.Length >= 4 Then ExtraPartitionCount = PModeData(3)
+                    If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                        ExtraPartitionCount = TapeStreamMapping.MappingTable(driveHandle).PartitionCount - 1
+                    End If
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
                         Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
@@ -5000,9 +5018,13 @@ Public Class LTFSWriter
                     If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
                     TapeUtils.ReadPosition(driveHandle)
                     Dim modedata As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
-                    Dim MaxExtraPartitionAllowed As Byte = modedata(2)
+                    Dim MaxExtraPartitionAllowed As Byte = 0
+                    If modedata IsNot Nothing AndAlso modedata.Length >= 3 Then MaxExtraPartitionAllowed = modedata(2)
+                    If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                        MaxExtraPartitionAllowed = 1
+                    End If
                     If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-                    Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+                        Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
                     If My.Settings.LTFSWriter_DisablePartition Then
                         param.ExtraPartitionCount = 0
                         TapeUtils.AllowPartition = False

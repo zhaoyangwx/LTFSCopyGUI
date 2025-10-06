@@ -375,6 +375,7 @@
     <Compile Include="TapeCopy.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="TapeImage.vb" />
     <Compile Include="TapeUtils.vb" />
     <Compile Include="TreeViewEx.vb">
       <SubType>Component</SubType>
