@@ -317,11 +317,15 @@ Public Class TapeImage
         End If
         Dim currset As Long = Position.SetNumber
         Dim currblock As ULong = GetHeaderBlockNumber(currset)
+        While currset > 0 AndAlso currblock = 0
+            currset -= 1
+            currblock = GetHeaderBlockNumber(currset)
+        End While
         Dim nextset As Long = currset
         Dim nextblock As ULong = currblock
         Dim lastset As Long = Math.Ceiling(CurrentStream.Length / DatesetLength)
         Dim lastblock As ULong = PartitionEOD(Position.PartitionNumber)
-        While currblock >= blockIndex OrElse nextblock < blockIndex OrElse nextset - currset > 1
+        While (currblock >= blockIndex) OrElse (nextblock < blockIndex AndAlso nextset < lastset) OrElse nextset - currset > 1
             While currblock > blockIndex
                 Dim delta As Integer = currset - currset \ 2
                 If delta = 0 Then
@@ -333,17 +337,29 @@ Public Class TapeImage
                 currblock = GetHeaderBlockNumber(currset)
             End While
             While nextblock <= blockIndex
-                Dim delta As Integer = nextset - (nextset + lastset) \ 2
+                Dim delta As Integer = nextset - Math.Ceiling((nextset + lastset) / 2)
                 If delta = 0 Then
                     nextset = lastset
                     nextblock = GetHeaderBlockNumber(nextset)
                     Exit While
                 End If
-                nextset = (nextset + lastset) \ 2
+                nextset = Math.Ceiling((nextset + lastset) / 2)
                 nextblock = GetHeaderBlockNumber(nextset)
             End While
-            currset = (currset + nextset) \ 2 - 1
-            nextset = currset + 1
+            If nextset - currset < 5 Then
+                For i As Integer = nextset To currset + 1 Step -1
+                    If GetHeaderBlockNumber(i) >= blockIndex Then
+                        nextset = i
+                    End If
+                Next
+            End If
+            Dim midset As Long = (currset + nextset) \ 2
+            If GetHeaderBlockNumber(midset) < blockIndex Then
+                currset = midset
+            Else
+                nextset = midset
+            End If
+
             If currset < 0 Then
                 currset = 0
                 currblock = 0
@@ -353,13 +369,13 @@ Public Class TapeImage
             nextblock = GetHeaderBlockNumber(nextset)
         End While
         Dim iofs As Long = 0
+        Position.SetNumber = currset
         Position.FileNumber = 0
         While currblock <> blockIndex
             If iofs > DatesetLength - BlockHeaderLen Then
                 Position.SetNumber = nextset
                 Position.BlockNumber = nextblock
                 iofs = 0
-                Exit While
             End If
             Dim header As Byte() = GetHeaderBlock(Position.SetNumber, iofs)
             currblock = GetULong(header.Take(8).ToArray())
