@@ -27,6 +27,7 @@ Partial Class LTFSConfigurator
         Me.ButtonRefresh = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DiskToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ManualAddToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ListBox1 = New System.Windows.Forms.ListBox()
         Me.ButtonStartFUSESvc = New System.Windows.Forms.Button()
         Me.ButtonStopFUSESvc = New System.Windows.Forms.Button()
@@ -143,7 +144,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ManualAddToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.BrowseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -180,7 +181,7 @@ Partial Class LTFSConfigurator
         'ContextMenuStripRefreshDeviceList
         '
         Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem})
+        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.BrowseToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
         '
@@ -188,6 +189,11 @@ Partial Class LTFSConfigurator
         '
         Me.DiskToolStripMenuItem.Name = "DiskToolStripMenuItem"
         resources.ApplyResources(Me.DiskToolStripMenuItem, "DiskToolStripMenuItem")
+        '
+        'ManualAddToolStripMenuItem
+        '
+        Me.ManualAddToolStripMenuItem.Name = "ManualAddToolStripMenuItem"
+        resources.ApplyResources(Me.ManualAddToolStripMenuItem, "ManualAddToolStripMenuItem")
         '
         'ListBox1
         '
@@ -971,10 +977,10 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ManualAddToolStripMenuItem
+        'BrowseToolStripMenuItem
         '
-        Me.ManualAddToolStripMenuItem.Name = "ManualAddToolStripMenuItem"
-        resources.ApplyResources(Me.ManualAddToolStripMenuItem, "ManualAddToolStripMenuItem")
+        Me.BrowseToolStripMenuItem.Name = "BrowseToolStripMenuItem"
+        resources.ApplyResources(Me.BrowseToolStripMenuItem, "BrowseToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -1139,4 +1145,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents WriteToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents PlayPCMToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ManualAddToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents BrowseToolStripMenuItem As ToolStripMenuItem
 End Class

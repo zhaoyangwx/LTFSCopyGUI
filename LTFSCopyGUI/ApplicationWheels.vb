@@ -363,7 +363,9 @@ Public Class ListTypeDescriptor(Of TColl As IList, TItem)
         Next
         Return New PropertyDescriptorCollection(props)
     End Function
-
+    Public Overrides Function GetPropertiesSupported(context As ITypeDescriptorContext) As Boolean
+        Return True
+    End Function
 End Class
 
 Public Class ListPropertyDescriptor(Of TColl, TItem)
