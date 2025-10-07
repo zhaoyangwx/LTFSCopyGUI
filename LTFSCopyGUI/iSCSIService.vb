@@ -1,4 +1,5 @@
 ﻿Imports System.Runtime.InteropServices
+Imports System.Threading
 Imports ISCSI
 Imports ISCSI.Server
 Imports SCSI
@@ -111,39 +112,34 @@ Public Class iSCSIService
             Next
             Return 2
         End Function
-        Public QueDalay As Integer = 0
+
         Public Sub StartProcessingQueue()
+            _stopping = False
             QueueTaskProcessor = Task.Run(Sub()
-                                              Dim idleCycle As Integer = 0
-                                              While CMDQueue.Count > 0 OrElse QueueTaskProcessor IsNot Nothing
-                                                  Dim qCount As Integer = 0
-                                                  Dim t As Task = Nothing
-                                                  SyncLock CMDQueue
-                                                      qCount = CMDQueue.Count
-                                                      If qCount > 0 Then
-                                                          t = CMDQueue.Dequeue()
-                                                      Else
-                                                          idleCycle += 1
-                                                          If idleCycle > 100 Then
-                                                              QueDalay = 1
-                                                          End If
-                                                      End If
+                                              While Not _stopping OrElse _pendingTask IsNot Nothing
+                                                  If _pendingTask Is Nothing Then
+                                                      _commandLock.WaitOne()
+                                                      If _stopping AndAlso _pendingTask Is Nothing Then Exit While
+                                                  End If
+
+                                                  Dim t As Task
+                                                  SyncLock Me
+                                                      t = _pendingTask
+                                                      _pendingTask = Nothing
                                                   End SyncLock
+
                                                   If t IsNot Nothing Then
                                                       t.Start()
                                                       t.Wait()
-                                                      idleCycle = 0
-                                                      QueDalay = 0
                                                   End If
-                                                  Threading.Thread.Sleep(QueDalay)
                                               End While
                                           End Sub)
         End Sub
         Public Sub StopProcessingQueue()
             If QueueTaskProcessor Is Nothing Then Exit Sub
-            While CMDQueue.Count > 0
-                Threading.Thread.Sleep(10)
-            End While
+            _stopping = True
+            _commandLock.Set()
+
             Dim tstop As Task = QueueTaskProcessor
             QueueTaskProcessor = Nothing
             tstop.Wait()
@@ -174,7 +170,11 @@ Public Class iSCSIService
             If QueueTaskProcessor IsNot Nothing Then StopProcessingQueue()
             StartProcessingQueue()
         End Sub
-        Public CMDQueue As New Queue(Of Task)
+
+        Private _pendingTask As Task = Nothing
+        Private _stopping As Boolean = False
+        Private ReadOnly _commandLock As AutoResetEvent = New AutoResetEvent(False)
+
         Public Function GetValue(data As Byte(), startbyte As Integer, endbyte As Integer) As Long
             Dim result As Long = 0
             For i As Integer = startbyte To endbyte
@@ -184,97 +184,112 @@ Public Class iSCSIService
             Return result
         End Function
         Public Sub QueueCommand(commandBytes() As Byte, lun As LUNStructure, data() As Byte, task As Object, OnCommandCompleted As OnCommandCompleted) Implements SCSITargetInterface.QueueCommand
-            CMDQueue.Enqueue(New Threading.Tasks.Task(
-                             Sub()
-                                 Dim cmddir As Byte = GetDataDir(commandBytes)
-                                 Dim datalen As Integer = data.Length
+            Dim t = New Task(
+                              Sub()
+                                  Dim cmddir As Byte = GetDataDir(commandBytes)
+                                  Dim datalen As Integer = data.Length
 
-                                 If cmddir <> 0 Then
-                                     datalen = 0
-                                     Select Case commandBytes(0)
-                                         Case &H3
-                                             datalen = commandBytes(4)
-                                         Case &H5
-                                             datalen = 6
-                                         Case &H8
-                                             datalen = GetValue(commandBytes, 2, 4)
-                                         Case &H12
-                                             datalen = GetValue(commandBytes, 3, 4)
-                                         Case &H1A
-                                             datalen = commandBytes(4)
-                                         Case &H1C
-                                             datalen = GetValue(commandBytes, 3, 4)
-                                         Case &H25
-                                             datalen = 8
-                                         Case &H28
-                                             datalen = GetValue(commandBytes, 7, 8)
-                                         Case &H34
-                                             If commandBytes(1) = 0 Then
-                                                 datalen = 20
-                                             Else
-                                                 datalen = 32
-                                             End If
-                                         Case &H3C
-                                             datalen = GetValue(commandBytes, 6, 8)
-                                         Case &H43
-                                             datalen = Math.Max(GetValue(commandBytes, 7, 8), 20)
-                                         Case &H44
-                                             datalen = GetValue(commandBytes, 7, 8)
-                                         Case &H4D
-                                             datalen = GetValue(commandBytes, 7, 8)
-                                         Case &H5A
-                                             datalen = GetValue(commandBytes, 7, 8)
-                                         Case &H5E
-                                             datalen = GetValue(commandBytes, 7, 8)
-                                         Case &H8C
-                                             datalen = GetValue(commandBytes, 10, 13)
-                                         Case &HA0
-                                             datalen = Math.Min(32, GetValue(commandBytes, 6, 9))
-                                         Case &HA2
-                                             datalen = GetValue(commandBytes, 6, 9)
-                                         Case &HA3
-                                             Select Case commandBytes(1)
-                                                 Case &H5, &HA, &HC, &HD, &HF
-                                                     datalen = GetValue(commandBytes, 6, 9)
-                                                 Case &H1F
-                                                     Select Case commandBytes(2)
-                                                         Case &H6, &H10, &H12, &H15
-                                                             datalen = GetValue(commandBytes, 6, 9)
-                                                         Case &H7, &HA, &HB, &HD, &HE, &H18
-                                                             datalen = GetValue(commandBytes, 6, 7)
-                                                         Case &H8, &H9
-                                                             datalen = GetValue(commandBytes, 6, 8)
-                                                         Case &H14
-                                                             datalen = commandBytes(9)
-                                                     End Select
-                                             End Select
-                                         Case &HAB
-                                             datalen = GetValue(commandBytes, 6, 9)
-                                     End Select
-                                 End If
-                                 Dim databuffer As IntPtr = Marshal.AllocHGlobal(datalen)
-                                 Dim sense(63) As Byte
-                                 If cmddir <> 1 Then Marshal.Copy(data, 0, databuffer, datalen)
-                                 TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, datalen, cmddir, 24 * 3600, sense)
-                                 Dim responsedata(datalen - 1) As Byte
-                                 If cmddir <> 0 Then Marshal.Copy(databuffer, responsedata, 0, responsedata.Length)
-                                 Marshal.FreeHGlobal(databuffer)
-                                 Dim response As Byte()
-                                 Dim status As SCSIStatusCodeName
-                                 If sense(0) = 0 Then
-                                     status = SCSIStatusCodeName.Good
-                                     If cmddir <> 0 Then
-                                         response = responsedata
-                                     Else
-                                         response = {}
-                                     End If
-                                 Else
-                                     status = SCSIStatusCodeName.CheckCondition
-                                     response = {sense.Length And &HFF, (sense.Length >> 8) And &HFF}
-                                     response = response.Concat(sense).Concat(responsedata).ToArray()
-                                 End If
-                                 OnCommandCompleted(status, response, task)
-                             End Sub))
+                                  If cmddir <> 0 Then
+                                      datalen = 0
+                                      Select Case commandBytes(0)
+                                          Case &H3
+                                              datalen = commandBytes(4)
+                                          Case &H5
+                                              datalen = 6
+                                          Case &H8
+                                              datalen = GetValue(commandBytes, 2, 4)
+                                          Case &H12
+                                              datalen = GetValue(commandBytes, 3, 4)
+                                          Case &H1A
+                                              datalen = commandBytes(4)
+                                          Case &H1C
+                                              datalen = GetValue(commandBytes, 3, 4)
+                                          Case &H25
+                                              datalen = 8
+                                          Case &H28
+                                              datalen = GetValue(commandBytes, 7, 8)
+                                          Case &H34
+                                              If commandBytes(1) = 0 Then
+                                                  datalen = 20
+                                              Else
+                                                  datalen = 32
+                                              End If
+                                          Case &H3C
+                                              datalen = GetValue(commandBytes, 6, 8)
+                                          Case &H43
+                                              datalen = Math.Max(GetValue(commandBytes, 7, 8), 20)
+                                          Case &H44
+                                              datalen = GetValue(commandBytes, 7, 8)
+                                          Case &H4D
+                                              datalen = GetValue(commandBytes, 7, 8)
+                                          Case &H5A
+                                              datalen = GetValue(commandBytes, 7, 8)
+                                          Case &H5E
+                                              datalen = GetValue(commandBytes, 7, 8)
+                                          Case &H8C
+                                              datalen = GetValue(commandBytes, 10, 13)
+                                          Case &HA0
+                                              datalen = Math.Min(32, GetValue(commandBytes, 6, 9))
+                                          Case &HA2
+                                              datalen = GetValue(commandBytes, 6, 9)
+                                          Case &HA3
+                                              Select Case commandBytes(1)
+                                                  Case &H5, &HA, &HC, &HD, &HF
+                                                      datalen = GetValue(commandBytes, 6, 9)
+                                                  Case &H1F
+                                                      Select Case commandBytes(2)
+                                                          Case &H6, &H10, &H12, &H15
+                                                              datalen = GetValue(commandBytes, 6, 9)
+                                                          Case &H7, &HA, &HB, &HD, &HE, &H18
+                                                              datalen = GetValue(commandBytes, 6, 7)
+                                                          Case &H8, &H9
+                                                              datalen = GetValue(commandBytes, 6, 8)
+                                                          Case &H14
+                                                              datalen = commandBytes(9)
+                                                      End Select
+                                              End Select
+                                          Case &HAB
+                                              datalen = GetValue(commandBytes, 6, 9)
+                                      End Select
+                                  End If
+                                  Dim databuffer As IntPtr = Marshal.AllocHGlobal(datalen)
+                                  Dim sense(63) As Byte
+                                  If cmddir <> 1 Then Marshal.Copy(data, 0, databuffer, datalen)
+                                  TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, datalen, cmddir, 24 * 3600, sense)
+                                  Dim responsedata(datalen - 1) As Byte
+                                  If cmddir <> 0 Then Marshal.Copy(databuffer, responsedata, 0, responsedata.Length)
+                                  Marshal.FreeHGlobal(databuffer)
+                                  Dim response As Byte()
+                                  Dim status As SCSIStatusCodeName
+                                  If sense(0) = 0 Then
+                                      status = SCSIStatusCodeName.Good
+                                      If cmddir <> 0 Then
+                                          response = responsedata
+                                      Else
+                                          response = {}
+                                      End If
+                                  Else
+                                      status = SCSIStatusCodeName.CheckCondition
+                                      response = {sense.Length And &HFF, (sense.Length >> 8) And &HFF}
+                                      response = response.Concat(sense).Concat(responsedata).ToArray()
+                                  End If
+                                  OnCommandCompleted(status, response, task)
+                              End Sub)
+
+            Do
+                Dim placed = False
+                SyncLock Me
+                    If _pendingTask Is Nothing Then
+                        _pendingTask = t
+                        placed = True
+                    End If
+                End SyncLock
+                If placed Then
+                    _commandLock.Set()
+                    Exit Do
+                End If
+                Thread.Sleep(1)
+            Loop
         End Sub
 
         Public Function ExecuteCommand(commandBytes() As Byte, lun As LUNStructure, data() As Byte, ByRef response() As Byte) As SCSIStatusCodeName Implements SCSITargetInterface.ExecuteCommand
@@ -283,9 +298,10 @@ Public Class iSCSIService
                                                                rdata = resp
                                                                retstatus = status
                                                            End Sub)
-            While CMDQueue.Count > 0
-                Threading.Thread.Sleep(10)
+            While _pendingTask IsNot Nothing
+                Thread.Sleep(1)
             End While
+            response = rdata
             Return retstatus
         End Function
     End Class
