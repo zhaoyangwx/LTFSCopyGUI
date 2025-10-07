@@ -729,6 +729,8 @@ Public Class LTFSWriter
             Return _ErrLogRateHistory
         End Get
     End Property
+    <Category("LTFSWriter")>
+    Public Property PageValid As Boolean = True
     Public Function ReadChanLRInfo(Optional ByVal TimeOut As Integer = 200) As Double
         Dim result As Double = Double.NegativeInfinity
         Dim debuginfo As New StringBuilder
@@ -736,12 +738,14 @@ Public Class LTFSWriter
         Dim WERLPage As Byte()
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
             Try
+                If Not PageValid Then Return 0
                 Dim pos As New TapeUtils.PositionData(driveHandle)
                 Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, SubPageCode:=0))
                 Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
                 Dim TapeUsageLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, SubPageCode:=0))
                 Dim TotalDataSetW As Integer = TapeUsageLogPage.TryGetPage(2).GetLong
                 debuginfo.Append($"[ERRLOGRATE] P={pos.PartitionNumber} B={pos.BlockNumber} RemainCapacity={RemainCapacity} TotalDatasetWritten={TotalDataSetW}{vbTab}")
+
                 WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4,
                                                         Function(senseData As Byte()) As Boolean
                                                             PrintMsg(TapeUtils.ParseSenseData(senseData), LogOnly:=True)
@@ -749,6 +753,7 @@ Public Class LTFSWriter
                 If WERLHeader.Length <> 4 Then
                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                     PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
+                    PageValid = False
                     Return 0
                 End If
                 Dim WERLPageLen As Integer = WERLHeader(2)
@@ -757,6 +762,7 @@ Public Class LTFSWriter
                 If WERLPageLen = 0 Then
                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
                     PrintMsg("Page is empty. Skip Errrate Check", LogOnly:=True)
+                    PageValid = False
                     Return 0
                 End If
                 WERLPageLen += 4
@@ -6302,7 +6308,7 @@ Public Class LTFSWriter
         Dim s As String = InputBox("设置文件缓存", My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadBytes)
         If s = "" Then Exit Sub
         My.Settings.LTFSWriter_PreLoadBytes = Val(s)
-        If My.Settings.LTFSWriter_PreLoadBytes <= 16 << 20 Then My.Settings.LTFSWriter_PreLoadBytes = 16 << 20
+        If My.Settings.LTFSWriter_PreLoadBytes <= (16 << 20) Then My.Settings.LTFSWriter_PreLoadBytes = (16 << 20)
         文件缓存32MiBToolStripMenuItem.Text = $"文件缓存：{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
     End Sub
 
