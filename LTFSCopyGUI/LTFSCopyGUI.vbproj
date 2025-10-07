@@ -325,6 +325,7 @@
     <Compile Include="FileBrowser.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="FileDataProvider.vb" />
     <Compile Include="Form1.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -354,8 +355,6 @@
     <Compile Include="LTFSWriter.vb">
       <SubType>Form</SubType>
     </Compile>
-<Compile Include="FileDataProvider.vb" />
-
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
