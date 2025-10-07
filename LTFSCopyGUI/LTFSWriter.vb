@@ -1375,13 +1375,13 @@ Public Class LTFSWriter
                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
             End If
             If CurrDrive IsNot Nothing Then
-                    If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
-                        DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
-                    Else
-                        DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
-                    End If
+                If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
+                    DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
+                Else
+                    DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
                 End If
             End If
+        End If
         If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License} ({TapeUtils.DriverTypeSetting})"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}{DriveInfo}] "
@@ -3856,6 +3856,59 @@ Public Class LTFSWriter
     End Function
     Public StartTime As Date
     Public Property IsWriting As Boolean = False
+
+    Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
+                                     dest As Byte(),
+                                     count As Integer,
+                                     Optional ct As Threading.CancellationToken = Nothing) As Integer
+        Dim readTotal As Integer = 0
+        While readTotal < count
+            Dim result = reader.ReadAsync(ct).AsTask().Result
+            Dim buffer = result.Buffer
+            Dim need As Long = count - readTotal
+            Dim take As Long = Math.Min(need, buffer.Length)
+            If take = 0 Then
+                If result.IsCompleted Then Exit While
+                reader.AdvanceTo(buffer.Start, buffer.End)
+                Continue While
+            End If
+
+            Dim slice = buffer.Slice(0, take)
+            Dim copied As Integer = 0
+
+            For Each seg In slice
+                Dim segLen = CInt(seg.Length)
+                Dim arr = seg.ToArray()
+                Array.Copy(arr, 0, dest, readTotal + copied, segLen)
+                copied += segLen
+            Next
+
+            readTotal += copied
+            Dim consumed = slice.End
+            reader.AdvanceTo(consumed, consumed)
+        End While
+        Return readTotal
+    End Function
+
+    Private Sub PipeDrain(reader As System.IO.Pipelines.PipeReader,
+                          bytesToDrain As Long,
+                          Optional ct As Threading.CancellationToken = Nothing)
+        Dim remain = bytesToDrain
+        While remain > 0
+            Dim result = reader.ReadAsync(ct).AsTask().Result
+            Dim buffer = result.Buffer
+            If buffer.Length = 0 Then
+                reader.AdvanceTo(buffer.Start, buffer.End)
+                If result.IsCompleted Then Exit While
+                Continue While
+            End If
+            Dim take As Long = Math.Min(remain, buffer.Length)
+            Dim consumed = buffer.GetPosition(take)
+            reader.AdvanceTo(consumed, consumed)
+            remain -= take
+        End While
+    End Sub
+
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
@@ -3926,6 +3979,13 @@ Public Class LTFSWriter
                                 q = q2
                             End While
                         End If
+
+                        Dim provider As New FileDataProvider(WriteList,
+                                                             blockSize:=plabel.blocksize,
+                                                             smallThreshold:=16 * 1024,
+                                                             maxSmallCache:=1000,
+                                                             pipeBufferMiB:=256)
+                        provider.Start()
 
                         Dim p As New TapeUtils.PositionData(driveHandle)
 
@@ -4168,34 +4228,43 @@ Public Class LTFSWriter
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
                                             'Dim tsub As Double = 0
-                                            While Not StopFlag
+                                            Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
+                                            Dim remainingInFile As Long = finfo.Length
+                                            Dim ExitWhileFlag As Boolean = False
+                                            While Not StopFlag AndAlso remainingInFile > 0
+                                                Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
                                                 Dim buffer(plabel.blocksize - 1) As Byte
-                                                Dim BytesReaded As UInteger
-                                                While True
-                                                    Try
-                                                        BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
-                                                        Exit While
-                                                    Catch ex As Exception
-                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                                            Case DialogResult.Abort
-                                                                StopFlag = True
-                                                                fr.Close()
-                                                                Throw ex
-                                                            Case DialogResult.Retry
+                                                Dim BytesReaded As Integer = 0
 
-                                                            Case DialogResult.Ignore
-                                                                PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
-                                                                SetStatusLight(LWStatus.Err)
-                                                                Continue For
-                                                        End Select
-                                                    End Try
-                                                End While
+                                                ' 从 Pipe 读取当前文件需要的字节
+                                                Try
+                                                    BytesReaded = PipeReadExactly(reader, buffer, toRead)
+                                                    If BytesReaded = 0 Then
+                                                        ExitWhileFlag = True
+                                                        Exit While
+                                                    End If
+                                                Catch ex As Exception
+                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Case DialogResult.Abort
+                                                            StopFlag = True
+                                                            Throw
+                                                        Case DialogResult.Retry
+                                                            Continue While
+                                                        Case DialogResult.Ignore
+                                                            PipeDrain(reader, remainingInFile)
+                                                            PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                                            SetStatusLight(LWStatus.Err)
+                                                            Continue For
+                                                    End Select
+                                                End Try
 
                                                 If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                                 If ExitWhileFlag Then Exit While
+
                                                 LastWriteTask = Task.Run(
                                                 Sub()
                                                     If BytesReaded > 0 Then
+                                                        ' 限速（保留原逻辑）
                                                         CheckCount += 1
                                                         If CheckCount >= CheckCycle Then CheckCount = 0
                                                         If SpeedLimit > 0 AndAlso CheckCount = 0 Then
@@ -4206,24 +4275,22 @@ Public Class LTFSWriter
                                                             End While
                                                             SpeedLimitLastTriggerTime = Now
                                                         End If
+
+                                                        ' 写带（保留原 TapeUtils.Write + sense 处理）
                                                         Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
                                                         Dim succ As Boolean = False Or IsIndexPartition
                                                         While ((Not succ) AndAlso (Not IsIndexPartition))
                                                             Dim sense As Byte()
                                                             Try
-                                                                'Dim t0 As Date = Now
-                                                                sense = TapeUtils.Write(driveHandle, wBufferPtr, BytesReaded, True)
-                                                                'tsub += (Now - t0).TotalMilliseconds
-                                                                'Invoke(Sub() Text = tsub / (Now - tstart).TotalMilliseconds)
+                                                                sense = TapeUtils.Write(driveHandle, wBufferPtr, CUInt(BytesReaded), True)
                                                                 SyncLock p
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
                                                             Catch ex As Exception
                                                                 Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                     Case DialogResult.Abort
-                                                                        fr.Close()
                                                                         StopFlag = True
-                                                                        Throw ex
+                                                                        Throw
                                                                     Case DialogResult.Retry
                                                                         succ = False
                                                                     Case DialogResult.Ignore
@@ -4238,9 +4305,6 @@ Public Class LTFSWriter
                                                                     PrintMsg(My.Resources.ResText_VOF)
                                                                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                                     StopFlag = True
-                                                                    fr.Close()
-                                                                    ExitForFlag = True
-                                                                    SetStatusLight(LWStatus.Err)
                                                                     Exit Sub
                                                                 Else
                                                                     PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
@@ -4253,7 +4317,6 @@ Public Class LTFSWriter
                                                                 Catch ex As Exception
                                                                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                                         Case DialogResult.Abort
-                                                                            fr.Close()
                                                                             StopFlag = True
                                                                             Throw New Exception(TapeUtils.ParseSenseData(sense))
                                                                         Case DialogResult.Retry
@@ -4263,7 +4326,6 @@ Public Class LTFSWriter
                                                                             Exit While
                                                                     End Select
                                                                 End Try
-
                                                                 p = New TapeUtils.PositionData(driveHandle)
                                                             Else
                                                                 succ = True
@@ -4281,8 +4343,8 @@ Public Class LTFSWriter
                                                             If CheckFlush() Then
                                                                 If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
                                                                     Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
-                                                                                  .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
-                                                                                  .WindowStyle = ProcessWindowStyle.Hidden})
+                                                                        .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
+                                                                        .WindowStyle = ProcessWindowStyle.Hidden})
                                                                 End If
                                                             End If
                                                         End If
@@ -4295,7 +4357,10 @@ Public Class LTFSWriter
                                                         ExitWhileFlag = True
                                                     End If
                                                 End Sub)
+
+                                                remainingInFile -= BytesReaded
                                             End While
+
                                             If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
                                             If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                             fr.CloseAsync()
@@ -4462,6 +4527,11 @@ Public Class LTFSWriter
                            PrintMsg(OnWriteFinishMessage)
                            SetStatusLight(LWStatus.Succ)
                            RaiseEvent WriteFinished()
+                           Try
+                               provider.Cancel()
+                               provider.CompleteAsync().GetAwaiter().GetResult()
+                           Catch
+                           End Try
                        End Sub)
                 IsWriting = False
             End Sub)
@@ -5024,7 +5094,7 @@ Public Class LTFSWriter
                         MaxExtraPartitionAllowed = 1
                     End If
                     If MaxExtraPartitionAllowed > 1 Then MaxExtraPartitionAllowed = 1
-                        Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
+                    Dim param As New TapeUtils.MKLTFS_Param(MaxExtraPartitionAllowed)
                     If My.Settings.LTFSWriter_DisablePartition Then
                         param.ExtraPartitionCount = 0
                         TapeUtils.AllowPartition = False
@@ -8385,7 +8455,7 @@ Public NotInheritable Class FileDropHandler
             Dim sb = New StringBuilder(262)
             Dim charLength = sb.Capacity
             Dim i As UInteger = 0
-            Do While (i <fileCount)
+            Do While (i < fileCount)
                 If (DragQueryFile(handle, i, sb, charLength) > 0) Then
                     fileNames(i) = sb.ToString
                 End If
