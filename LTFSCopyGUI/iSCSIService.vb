@@ -111,18 +111,31 @@ Public Class iSCSIService
             Next
             Return 2
         End Function
+        Public QueDalay As Integer = 0
         Public Sub StartProcessingQueue()
             QueueTaskProcessor = Task.Run(Sub()
+                                              Dim idleCycle As Integer = 0
                                               While CMDQueue.Count > 0 OrElse QueueTaskProcessor IsNot Nothing
+                                                  Dim qCount As Integer = 0
+                                                  Dim t As Task = Nothing
                                                   SyncLock CMDQueue
-                                                      If CMDQueue.Count > 0 Then
-                                                          Dim t As Task = CMDQueue.Dequeue()
-                                                          t.Start()
-                                                          t.Wait()
+                                                      qCount = CMDQueue.Count
+                                                      If qCount > 0 Then
+                                                          t = CMDQueue.Dequeue()
                                                       Else
-                                                          Threading.Thread.Sleep(10)
+                                                          idleCycle += 1
+                                                          If idleCycle > 100 Then
+                                                              QueDalay = 1
+                                                          End If
                                                       End If
                                                   End SyncLock
+                                                  If t IsNot Nothing Then
+                                                      t.Start()
+                                                      t.Wait()
+                                                      idleCycle = 0
+                                                      QueDalay = 0
+                                                  End If
+                                                  Threading.Thread.Sleep(QueDalay)
                                               End While
                                           End Sub)
         End Sub
@@ -250,19 +263,15 @@ Public Class iSCSIService
                                  Dim status As SCSIStatusCodeName
                                  If sense(0) = 0 Then
                                      status = SCSIStatusCodeName.Good
-                                     response = responsedata
+                                     If cmddir <> 0 Then
+                                         response = responsedata
+                                     Else
+                                         response = {}
+                                     End If
                                  Else
                                      status = SCSIStatusCodeName.CheckCondition
                                      response = {sense.Length And &HFF, (sense.Length >> 8) And &HFF}
-                                     If cmddir = 0 Then
-                                         response = response.Concat(sense).ToArray()
-                                     Else
-                                         'This code causes 0x45D (ERROR_IO_DEVICE) at initiator side.
-                                         'response = response.Concat(sense).Concat(responsedata).ToArray()
-
-                                         'This code works, but can only return sense data, without response data.
-                                         response = response.Concat(sense).ToArray()
-                                     End If
+                                     response = response.Concat(sense).Concat(responsedata).ToArray()
                                  End If
                                  OnCommandCompleted(status, response, task)
                              End Sub))
@@ -283,9 +292,9 @@ Public Class iSCSIService
     Public Sub New()
 
     End Sub
-    Public Sub StartService()
+    Public Sub StartService(Optional ByVal TargetName As String = "iqn.2019-01.com.ltfscopygui:target1")
         svc = New ISCSIServer()
-        target = New ISCSITarget("ltfscopygui.ltfswriter.iscsitarget", New SCSIDirectInterface(driveHandle))
+        target = New ISCSITarget(TargetName, New SCSIDirectInterface(driveHandle))
         svc.AddTarget(target)
         svc.Start(port)
     End Sub

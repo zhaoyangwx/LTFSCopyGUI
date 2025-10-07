@@ -8200,13 +8200,15 @@ Public Class LTFSWriter
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"iSCSISVC> {s}")
                                  End Sub
-        svc.port = Integer.Parse(InputBox("Port", "iSCSI Service", "3261"))
+        svc.port = Integer.Parse(InputBox("Port", "iSCSI Service", "3262"))
         svc.driveHandle = driveHandle
         svc.BlockSize = plabel.blocksize
         svc.ExtraPartitionCount = ExtraPartitionCount
-        svc.StartService()
-        MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
-        svc.StopService()
+        SyncLock TapeUtils.SCSIOperationLock
+            svc.StartService($"iqn.2019-01.com.ltfscopygui:ltfswriter{If(CurrDrive IsNot Nothing, $":{CurrDrive.SerialNumber}", "")}")
+            MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
+            svc.StopService()
+        End SyncLock
         MessageBox.Show(New Form With {.TopMost = True}, "Service stopped.")
         SetStatusLight(LWStatus.Idle)
     End Sub
