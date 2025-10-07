@@ -66,7 +66,7 @@
       <Value Profile="(Default)">38654705664</Value>
     </Setting>
     <Setting Name="LTFSWriter_CapacityRefreshInterval" Description="容量显示刷新间隔" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">1</Value>
+      <Value Profile="(Default)">5</Value>
     </Setting>
     <Setting Name="LTFSWriter_PreLoadFileCount" Description="预读文件数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1000</Value>

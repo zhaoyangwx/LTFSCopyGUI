@@ -2250,7 +2250,22 @@ Public Class LTFSConfigurator
                 Dim fname As String = OpenFileDialog1.FileName
                 Dim th As New Threading.Thread(
                     Sub()
-                        Dim reader As New NAudio.Wave.AudioFileReader(fname)
+                        Dim finfo As New IO.FileInfo(fname)
+                        Dim reader As NAudio.Wave.WaveStream
+                        Select Case finfo.Extension.ToLower()
+                            Case ".mp3"
+                                reader = New NAudio.Wave.Mp3FileReader(fname)
+                            Case ".aiff"
+                                reader = New NAudio.Wave.AiffFileReader(fname)
+                            Case ".flac"
+                                reader = New NAudio.Flac.FlacReader(fname)
+                            Case Else
+                                Try
+                                    reader = New NAudio.Wave.MediaFoundationReader(fname)
+                                Catch ex As Exception
+                                    reader = New NAudio.Wave.AudioFileReader(fname)
+                                End Try
+                        End Select
                         Dim fs As NAudio.Wave.WaveStream = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(reader)
                         'Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
 
