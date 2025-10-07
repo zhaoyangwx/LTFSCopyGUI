@@ -3981,9 +3981,8 @@ Public Class LTFSWriter
                         End If
 
                         Dim provider As New FileDataProvider(WriteList,
-                                                             blockSize:=plabel.blocksize,
-                                                             smallThreshold:=16 * 1024,
-                                                             maxSmallCache:=1000,
+                                                             smallThresholdBytes:=16 * 1024,
+                                                             smallCacheCapacity:=1000,
                                                              pipeBufferMiB:=256)
                         provider.Start()
 
@@ -4230,7 +4229,6 @@ Public Class LTFSWriter
                                             'Dim tsub As Double = 0
                                             Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
                                             Dim remainingInFile As Long = finfo.Length
-                                            Dim ExitWhileFlag As Boolean = False
                                             While Not StopFlag AndAlso remainingInFile > 0
                                                 Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
                                                 Dim buffer(plabel.blocksize - 1) As Byte
@@ -4472,6 +4470,12 @@ Public Class LTFSWriter
                             Catch ex As Exception
                             End Try
                         Next
+
+                        Try
+                            provider.Cancel()
+                            provider.CompleteAsync().GetAwaiter().GetResult()
+                        Catch
+                        End Try
                     End If
                     UFReadCount.Dec()
                     Me.Invoke(Sub() Timer1_Tick(sender, e))
@@ -4527,11 +4531,6 @@ Public Class LTFSWriter
                            PrintMsg(OnWriteFinishMessage)
                            SetStatusLight(LWStatus.Succ)
                            RaiseEvent WriteFinished()
-                           Try
-                               provider.Cancel()
-                               provider.CompleteAsync().GetAwaiter().GetResult()
-                           Catch
-                           End Try
                        End Sub)
                 IsWriting = False
             End Sub)
