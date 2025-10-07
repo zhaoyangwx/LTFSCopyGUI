@@ -1077,8 +1077,7 @@ Public Class LTFSWriter
                             Return 1
                         End If
                     End SyncLock
-                    If BufferSize = 0 Then BufferSize = My.Settings.LTFSWriter_PreLoadBytes
-                    If BufferSize = 0 Then BufferSize = 524288
+                    If BufferSize = 0 Then BufferSize = 8388608
                     Exit While
                 Catch ex As Exception
                     Threading.Thread.Sleep(100)
@@ -3946,12 +3945,12 @@ Public Class LTFSWriter
                         UnwrittenSizeOverrideValue = UnwrittenSize
                         Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
-                        Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadFileCount
-                        If PNum > 0 Then
-                            For j As Integer = 0 To PNum
-                                If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
-                            Next
-                        End If
+                        'Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadFileCount
+                        'If PNum > 0 Then
+                        '    For j As Integer = 0 To PNum
+                        '        If j < WriteList.Count Then WriteList(j).BeginOpen(BlockSize:=plabel.blocksize)
+                        '    Next
+                        'End If
                         Dim HashTaskAwaitNumber As Integer = 0
                         Threading.ThreadPool.SetMaxThreads(1024, 1024)
                         Threading.ThreadPool.SetMinThreads(256, 256)
@@ -3983,8 +3982,8 @@ Public Class LTFSWriter
 
                         Dim provider As New FileDataProvider(WriteList,
                                                              smallThresholdBytes:=16 * 1024,
-                                                             smallCacheCapacity:=1000,
-                                                             pipeBufferMiB:=256)
+                                                             smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
+                                                             pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
                         provider.Start()
 
                         Dim p As New TapeUtils.PositionData(driveHandle)
@@ -3992,19 +3991,19 @@ Public Class LTFSWriter
                         Dim lastpos As New TapeUtils.PositionData(driveHandle)
                         TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                         For i As Integer = 0 To WriteList.Count - 1
-                            If i < WriteList.Count - 1 Then
-                                Dim CFNum As Integer = i
-                                Dim dl As New LTFSWriter.FileRecord.PreReadFinishedEventHandler(
-                                    Sub()
-                                        WriteList(CFNum + 1).BeginOpen()
-                                    End Sub)
-                                AddHandler WriteList(CFNum).PreReadFinished, dl
-                            End If
+                            'If i < WriteList.Count - 1 Then
+                            '    Dim CFNum As Integer = i
+                            '    Dim dl As New LTFSWriter.FileRecord.PreReadFinishedEventHandler(
+                            '        Sub()
+                            '            WriteList(CFNum + 1).BeginOpen()
+                            '        End Sub)
+                            '    AddHandler WriteList(CFNum).PreReadFinished, dl
+                            'End If
                             If ExitForFlag Then Exit For
-                            PNum = My.Settings.LTFSWriter_PreLoadFileCount
-                            If PNum > 0 AndAlso i + PNum < WriteList.Count Then
-                                WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
-                            End If
+                            'PNum = My.Settings.LTFSWriter_PreLoadFileCount
+                            'If PNum > 0 AndAlso i + PNum < WriteList.Count Then
+                            '    WriteList(i + PNum).BeginOpen(BlockSize:=plabel.blocksize)
+                            'End If
                             Dim fr As FileRecord = WriteList(i)
                             Try
                                 Dim finfo As IO.FileInfo = New IO.FileInfo(fr.SourcePath)
@@ -4117,7 +4116,7 @@ Public Class LTFSWriter
                                                     End Select
                                                 End Try
                                             End While
-                                            If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
+                                            'If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
                                             If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                             LastWriteTask = New Task(
                                             Sub()
@@ -4362,7 +4361,7 @@ Public Class LTFSWriter
                                                 remainingInFile -= BytesReaded
                                             End While
 
-                                            If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
+                                            'If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
                                             If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
                                             fr.CloseAsync()
                                             If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
@@ -6303,7 +6302,7 @@ Public Class LTFSWriter
         Dim s As String = InputBox("设置文件缓存", My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadBytes)
         If s = "" Then Exit Sub
         My.Settings.LTFSWriter_PreLoadBytes = Val(s)
-        If My.Settings.LTFSWriter_PreLoadBytes = 0 Then My.Settings.LTFSWriter_PreLoadBytes = 4096
+        If My.Settings.LTFSWriter_PreLoadBytes <= 16 << 20 Then My.Settings.LTFSWriter_PreLoadBytes = 16 << 20
         文件缓存32MiBToolStripMenuItem.Text = $"文件缓存：{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
     End Sub
 

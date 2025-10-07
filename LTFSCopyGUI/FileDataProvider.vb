@@ -69,7 +69,7 @@ Public Class FileDataProvider
     ' - smallCacheCapacity: 小文件缓存容量上限（默认 1000 个）
     ' - requireSignal: 是否需要外部通过 RequestNextFile 触发下一个文件（默认 False=积极连续缓存）
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord),
-                   Optional pipeBufferMiB As Integer = 256,
+                   Optional pipeBufferBytes As Integer = 256 << 20,
                    Optional smallThresholdBytes As Integer = 16 * 1024,
                    Optional smallCacheCapacity As Integer = 1000,
                    Optional requireSignal As Boolean = False)
@@ -78,7 +78,7 @@ Public Class FileDataProvider
         _smallCacheCapacity = Math.Max(1, smallCacheCapacity)
         _requireSignal = requireSignal
 
-        Dim pause As Long = CLng(pipeBufferMiB) * 1024L * 1024L
+        Dim pause As Long = pipeBufferBytes
         Dim resumeTh As Long = Math.Max(1L, pause \ 2)
         _pipe = New Pipe(New PipeOptions(
             pauseWriterThreshold:=pause,
