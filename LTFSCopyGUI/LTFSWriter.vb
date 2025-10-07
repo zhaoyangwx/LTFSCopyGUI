@@ -1,6 +1,7 @@
 Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports System.Threading
 Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
 
@@ -4094,10 +4095,12 @@ Public Class LTFSWriter
                                         Dim LastWriteTask As Task = Nothing
                                         If finfo.Length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
-                                            Dim FileData As Byte()
+                                            Dim FileData(finfo.Length - 1) As Byte
                                             While True
                                                 Try
-                                                    FileData = fr.ReadAllBytes()
+                                                    'FileData = fr.ReadAllBytes()
+                                                    Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
+                                                    PipeReadExactly(reader, FileData, finfo.Length)
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
                                                 Catch ex As Exception
