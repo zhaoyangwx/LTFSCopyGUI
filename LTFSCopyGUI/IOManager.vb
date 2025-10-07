@@ -675,7 +675,8 @@ Public Class IOManager
             Public block As Byte()
             Public Len As Integer
         End Structure
-
+        Public EnQSig As New AutoResetEvent(False)
+        Public DeQSig As New AutoResetEvent(False)
         Public Property q As New Queue(Of QueueBlock)
 
         Dim thHashAsync As New Task(
@@ -686,6 +687,7 @@ Public Class IOManager
                             Dim blk As QueueBlock
                             SyncLock q
                                 blk = q.Dequeue()
+                                DeQSig.Set()
                             End SyncLock
                             With blk
                                 If .Len = -1 Then .Len = .block.Length
@@ -740,7 +742,7 @@ Public Class IOManager
                             blk.block = Nothing
                         End While
                     End SyncLock
-                    Threading.Thread.Sleep(1)
+                    EnQSig.WaitOne(10)
                 End While
             End Sub)
 
@@ -764,7 +766,7 @@ Public Class IOManager
 
         Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
             While q.Count > 0
-                Threading.Thread.Sleep(1)
+                DeQSig.WaitOne(10)
             End While
             SyncLock Lock
                 If Len = -1 Then Len = block.Length
@@ -827,18 +829,19 @@ Public Class IOManager
             End SyncLock
             If Len = -1 Then Len = block.Length
             While q.Count > 1024
-                Threading.Thread.Sleep(0)
+                DeQSig.WaitOne(10)
             End While
             SyncLock Lock
                 SyncLock q
                     q.Enqueue(New QueueBlock With {.block = block, .Len = Len})
+                    EnQSig.Set()
                 End SyncLock
             End SyncLock
         End Sub
 
         Public Sub ProcessFinalBlock()
             While q.Count > 0
-                Threading.Thread.Sleep(1)
+                DeQSig.WaitOne(10)
             End While
             SyncLock Lock
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
