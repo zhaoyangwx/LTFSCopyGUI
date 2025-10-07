@@ -103,27 +103,27 @@ Public Class HashTaskWindow
                                                                    Try
                                                                        If s.StartsWith("#") Then
                                                                            If s.StartsWith("#val") Then
-                                                                               ProgressBar1.Value = Math.Min(ProgressBar1.Maximum, Val(s.Substring(4)))
+                                                                               ProgressBar1.Value = Math.Min(ProgressBar1.Maximum, Integer.Parse(s.Substring(4)))
                                                                            ElseIf s.StartsWith("#max") Then
-                                                                               ProgressBar1.Maximum = Val(s.Substring(4))
+                                                                               ProgressBar1.Maximum = Integer.Parse(s.Substring(4))
                                                                            ElseIf s.StartsWith("#text") Then
                                                                                Text = s.Substring(5)
                                                                            ElseIf s.StartsWith("#fval") Then
-                                                                               ProgressBar2.Value = Math.Min(ProgressBar2.Maximum, Val(s.Substring(5)))
+                                                                               ProgressBar2.Value = Math.Min(ProgressBar2.Maximum, Integer.Parse(s.Substring(5)))
                                                                            ElseIf s.StartsWith("#fmax") Then
-                                                                               ProgressBar2.Maximum = Val(s.Substring(5))
+                                                                               ProgressBar2.Maximum = Integer.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#tval") Then
-                                                                               tval = s.Substring(5)
+                                                                               tval = Long.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#tmax") Then
-                                                                               tmax = s.Substring(5)
+                                                                               tmax = Long.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#dval") Then
-                                                                               dval = s.Substring(5)
+                                                                               dval = Long.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#dmax") Then
-                                                                               dmax = s.Substring(5)
+                                                                               dmax = Long.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#ssum") Then
-                                                                               ssum = s.Substring(5)
+                                                                               ssum = Long.Parse(s.Substring(5))
                                                                            ElseIf s.StartsWith("#smax") Then
-                                                                               smax = s.Substring(5)
+                                                                               smax = Long.Parse(s.Substring(5))
                                                                            End If
                                                                            Dim threfresh As New Threading.Thread(
                                                                            Sub()

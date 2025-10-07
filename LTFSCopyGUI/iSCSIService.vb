@@ -122,11 +122,8 @@ Public Class iSCSIService
                                                       If _stopping AndAlso _pendingTask Is Nothing Then Exit While
                                                   End If
 
-                                                  Dim t As Task
-                                                  SyncLock Me
-                                                      t = _pendingTask
-                                                      _pendingTask = Nothing
-                                                  End SyncLock
+                                                  Dim t As Task = Nothing
+                                                  Interlocked.Exchange(t, _pendingTask)
 
                                                   If t IsNot Nothing Then
                                                       t.Start()
@@ -278,6 +275,7 @@ Public Class iSCSIService
 
             Do
                 Dim placed = False
+
                 SyncLock Me
                     If _pendingTask Is Nothing Then
                         _pendingTask = t
@@ -293,7 +291,7 @@ Public Class iSCSIService
         End Sub
 
         Public Function ExecuteCommand(commandBytes() As Byte, lun As LUNStructure, data() As Byte, ByRef response() As Byte) As SCSIStatusCodeName Implements SCSITargetInterface.ExecuteCommand
-            Dim rdata() As Byte, retstatus As SCSIStatusCodeName
+            Dim rdata() As Byte = Nothing, retstatus As SCSIStatusCodeName
             QueueCommand(commandBytes, lun, data, Nothing, Sub(status As SCSIStatusCodeName, resp() As Byte, task As Object)
                                                                rdata = resp
                                                                retstatus = status
