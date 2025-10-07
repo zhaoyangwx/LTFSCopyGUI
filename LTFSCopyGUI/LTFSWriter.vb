@@ -738,7 +738,10 @@ Public Class LTFSWriter
         Dim WERLPage As Byte()
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
             Try
-                If Not PageValid Then Return 0
+                If Not PageValid Then
+                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    Return 0
+                End If
                 Dim pos As New TapeUtils.PositionData(driveHandle)
                 Dim TapeCapLogPage As TapeUtils.PageData = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, TapeUtils.LogSense(handle:=driveHandle, PageCode:=TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, SubPageCode:=0))
                 Dim RemainCapacity As Integer = TapeCapLogPage.TryGetPage(pos.PartitionNumber + 1).GetLong
@@ -844,7 +847,7 @@ Public Class LTFSWriter
                 FileRateHistory.RemoveAt(0)
             End While
 
-            If APToolStripMenuItem.Checked AndAlso (fdelta = 0 OrElse LRHistory <> 0) Then
+            If My.Settings.LTFSConf_AutoRefresh AndAlso (fdelta = 0 OrElse LRHistory <> 0) Then
                 Dim AutoFlushTriggered As Boolean = True
                 For j As Integer = 1 To My.Settings.LTFSWriter_AutoCleanTimeThreashould
                     Dim n As Double = SpeedHistory(SpeedHistory.Count - j)
@@ -8290,6 +8293,10 @@ Public Class LTFSWriter
         SetStatusLight(LWStatus.Idle)
     End Sub
 
+    Private Sub APToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles APToolStripMenuItem.Click
+        My.Settings.LTFSConf_AutoRefresh = APToolStripMenuItem.Checked
+    End Sub
+
     Public Function DirectoryExists(path As String) As Boolean
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
         Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
@@ -8311,6 +8318,7 @@ Public Class LTFSWriter
         End If
         Return False
     End Function
+
     Public Function FileExists(path As String) As Boolean
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
         Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
@@ -8343,6 +8351,10 @@ Public Class LTFSWriter
 
     Private Sub ListView1_GotFocus(sender As Object, e As EventArgs) Handles ListView1.GotFocus
         CurrentFocus = ListView1
+    End Sub
+
+    Private Sub 自动化ToolStripMenuItem1_DropDownOpening(sender As Object, e As EventArgs) Handles 自动化ToolStripMenuItem1.DropDownOpening
+        Load_Settings()
     End Sub
 End Class
 
