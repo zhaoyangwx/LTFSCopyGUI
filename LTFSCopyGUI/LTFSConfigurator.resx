@@ -125,26 +125,8 @@
     <value>973, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="DiskToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="DiskToolStripMenuItem.Text" xml:space="preserve">
-    <value>Disk</value>
-  </data>
-  <data name="ManualAddToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="ManualAddToolStripMenuItem.Text" xml:space="preserve">
-    <value>Manual add</value>
-  </data>
-  <data name="BrowseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="BrowseToolStripMenuItem.Text" xml:space="preserve">
-    <value>Browse</value>
-  </data>
   <data name="ContextMenuStripRefreshDeviceList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 92</value>
+    <value>147, 70</value>
   </data>
   <data name="&gt;&gt;ContextMenuStripRefreshDeviceList.Name" xml:space="preserve">
     <value>ContextMenuStripRefreshDeviceList</value>
@@ -176,6 +158,24 @@
   </data>
   <data name="&gt;&gt;ButtonRefresh.ZOrder" xml:space="preserve">
     <value>10</value>
+  </data>
+  <data name="DiskToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>146, 22</value>
+  </data>
+  <data name="DiskToolStripMenuItem.Text" xml:space="preserve">
+    <value>Disk</value>
+  </data>
+  <data name="ManualAddToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>146, 22</value>
+  </data>
+  <data name="ManualAddToolStripMenuItem.Text" xml:space="preserve">
+    <value>Manual add</value>
+  </data>
+  <data name="BrowseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>146, 22</value>
+  </data>
+  <data name="BrowseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Browse</value>
   </data>
   <data name="ListBox1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left</value>
@@ -687,18 +687,6 @@
   <metadata name="ContextMenuStripLTFSWriter.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>639, 17</value>
   </metadata>
-  <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 22</value>
-  </data>
-  <data name="在当前进程运行ToolStripMenuItem.Text" xml:space="preserve">
-    <value>在当前进程运行</value>
-  </data>
-  <data name="不读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 22</value>
-  </data>
-  <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>不读取索引</value>
-  </data>
   <data name="ContextMenuStripLTFSWriter.Size" type="System.Drawing.Size, System.Drawing">
     <value>161, 48</value>
   </data>
@@ -1026,18 +1014,6 @@
   <metadata name="ContextMenuStripCMReader.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>806, 17</value>
   </metadata>
-  <data name="BrowseBinaryFileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>282, 22</value>
-  </data>
-  <data name="BrowseBinaryFileToolStripMenuItem.Text" xml:space="preserve">
-    <value>Browse binary file</value>
-  </data>
-  <data name="ReadThroughDiagnosticCommandToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>282, 22</value>
-  </data>
-  <data name="ReadThroughDiagnosticCommandToolStripMenuItem.Text" xml:space="preserve">
-    <value>Read through diagnostic command</value>
-  </data>
   <data name="ContextMenuStripCMReader.Size" type="System.Drawing.Size, System.Drawing">
     <value>283, 48</value>
   </data>
@@ -1275,18 +1251,6 @@
   <metadata name="ContextMenuStripErase.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>1236, 17</value>
   </metadata>
-  <data name="ReInitializeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>145, 22</value>
-  </data>
-  <data name="ReInitializeToolStripMenuItem.Text" xml:space="preserve">
-    <value>ReInitialize</value>
-  </data>
-  <data name="QuickEraseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>145, 22</value>
-  </data>
-  <data name="QuickEraseToolStripMenuItem.Text" xml:space="preserve">
-    <value>Quick Erase</value>
-  </data>
   <data name="ContextMenuStripErase.Size" type="System.Drawing.Size, System.Drawing">
     <value>146, 48</value>
   </data>
@@ -1429,19 +1393,25 @@
     <value>143, 55</value>
   </metadata>
   <data name="WriteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>126, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="WriteToolStripMenuItem.Text" xml:space="preserve">
     <value>Write</value>
   </data>
   <data name="PlayPCMToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>126, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="PlayPCMToolStripMenuItem.Text" xml:space="preserve">
     <value>PlayPCM</value>
   </data>
+  <data name="WritePCMToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="WritePCMToolStripMenuItem.Text" xml:space="preserve">
+    <value>WritePCM</value>
+  </data>
   <data name="ContextMenuStripRawDump.Size" type="System.Drawing.Size, System.Drawing">
-    <value>127, 48</value>
+    <value>181, 92</value>
   </data>
   <data name="&gt;&gt;ContextMenuStripRawDump.Name" xml:space="preserve">
     <value>ContextMenuStripRawDump</value>
@@ -1500,21 +1470,6 @@
   <data name="&gt;&gt;TabPageCommand.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="ButtonDebugDumpBuffer.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 6</value>
-  </data>
-  <data name="ButtonDebugDumpBuffer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonDebugDumpBuffer.TabIndex" type="System.Int32, mscorlib">
-    <value>41</value>
-  </data>
-  <data name="ButtonDebugDumpBuffer.Text" xml:space="preserve">
-    <value>RAWDump</value>
-  </data>
   <data name="&gt;&gt;ButtonDebugDumpBuffer.Name" xml:space="preserve">
     <value>ButtonDebugDumpBuffer</value>
   </data>
@@ -1527,267 +1482,6 @@
   <data name="&gt;&gt;ButtonDebugDumpBuffer.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="ComboBoxBufferPage.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items" xml:space="preserve">
-    <value>00h - Main buffer memory</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items1" xml:space="preserve">
-    <value>02h - Burst buffer</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items2" xml:space="preserve">
-    <value>05h - Cartridge memory (IBM)</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items3" xml:space="preserve">
-    <value>10h - CM EEPROM</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items4" xml:space="preserve">
-    <value>11h - Mechanical EEPROM</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items5" xml:space="preserve">
-    <value>12h - Head assembly EEPROM</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items6" xml:space="preserve">
-    <value>13h - PCA EEPROM</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items7" xml:space="preserve">
-    <value>14h - PCA2 EEPROM</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items8" xml:space="preserve">
-    <value>20h - Main buffer segments 0</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items9" xml:space="preserve">
-    <value>21h - Main buffer segments 1</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items10" xml:space="preserve">
-    <value>22h - Main buffer segments 2</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items11" xml:space="preserve">
-    <value>23h - Main buffer segments 3</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items12" xml:space="preserve">
-    <value>24h - Main buffer segments 4</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items13" xml:space="preserve">
-    <value>25h - Main buffer segments 5</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items14" xml:space="preserve">
-    <value>26h - Main buffer segments 6</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items15" xml:space="preserve">
-    <value>27h - Main buffer segments 7</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items16" xml:space="preserve">
-    <value>28h - Main buffer segments 8</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items17" xml:space="preserve">
-    <value>29h - Main buffer segments 9</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items18" xml:space="preserve">
-    <value>2Ah - Main buffer segments 10</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items19" xml:space="preserve">
-    <value>2Bh - Main buffer segments 11</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items20" xml:space="preserve">
-    <value>2Ch - Main buffer segments 12</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items21" xml:space="preserve">
-    <value>2Dh - Main buffer segments 13</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items22" xml:space="preserve">
-    <value>2Eh - Main buffer segments 14</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items23" xml:space="preserve">
-    <value>2Fh - Main buffer segments 15</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items24" xml:space="preserve">
-    <value>30h - Main buffer segments 16</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items25" xml:space="preserve">
-    <value>31h - Main buffer segments 17</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items26" xml:space="preserve">
-    <value>32h - Main buffer segments 18</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items27" xml:space="preserve">
-    <value>33h - Main buffer segments 19</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items28" xml:space="preserve">
-    <value>34h - Main buffer segments 20</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items29" xml:space="preserve">
-    <value>35h - Main buffer segments 21</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items30" xml:space="preserve">
-    <value>36h - Main buffer segments 22</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items31" xml:space="preserve">
-    <value>37h - Main buffer segments 23</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items32" xml:space="preserve">
-    <value>38h - Main buffer segments 24</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items33" xml:space="preserve">
-    <value>39h - Main buffer segments 25</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items34" xml:space="preserve">
-    <value>3Ah - Main buffer segments 26</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items35" xml:space="preserve">
-    <value>3Bh - Main buffer segments 27</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items36" xml:space="preserve">
-    <value>3Ch - Main buffer segments 28</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items37" xml:space="preserve">
-    <value>3Dh - Main buffer segments 29</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items38" xml:space="preserve">
-    <value>3Eh - Main buffer segments 30</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items39" xml:space="preserve">
-    <value>3Fh - Main buffer segments 31</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items40" xml:space="preserve">
-    <value>40h - Snapshot data buffer</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items41" xml:space="preserve">
-    <value>90h - Mech EPPROM Manufacturing Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items42" xml:space="preserve">
-    <value>91h - Mech EPPROM Drive Usage Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items43" xml:space="preserve">
-    <value>93h - Mech EPPROM Drive Usage Parameters(Shipped)</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items44" xml:space="preserve">
-    <value>94h - Mech EPPROM In-House Testing</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items45" xml:space="preserve">
-    <value>95h - Mech EPPROM Servo/Mech Use</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items46" xml:space="preserve">
-    <value>96h - Mech EPPROM Host Access Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items47" xml:space="preserve">
-    <value>97h - Mech EPPROM Partner-specific Config Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items48" xml:space="preserve">
-    <value>99h - Mech EPPROM Ethernet I/F Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items49" xml:space="preserve">
-    <value>9Ah - Mech EPPROM Certificate Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items50" xml:space="preserve">
-    <value>9Bh - Mech EPPROM Reserved</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items51" xml:space="preserve">
-    <value>9Ch - Mech EEPROM LTT Drive Health Rules</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items52" xml:space="preserve">
-    <value>9Dh - Mech EEPROM Tape Pull Usage</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items53" xml:space="preserve">
-    <value>A0h - Head EPPROM Manufacturing Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items54" xml:space="preserve">
-    <value>A1h - Head EPPROM Tuning Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items55" xml:space="preserve">
-    <value>A2h - Head EPPROM Resistance Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items56" xml:space="preserve">
-    <value>A3h - Head EPPROM Formatter Data Skew Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items57" xml:space="preserve">
-    <value>A4h - Head EPPROM In-House Testing</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items58" xml:space="preserve">
-    <value>A5h - Head EPPROM Manufacturing Use</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items59" xml:space="preserve">
-    <value>A6h - Head EPPROM Read/Write Tuning Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items60" xml:space="preserve">
-    <value>A7h - Head EPPROM Media Usage Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items61" xml:space="preserve">
-    <value>A8h - Head EPPROM Reserved</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items62" xml:space="preserve">
-    <value>A9h - Head EPPROM Jabil Production</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items63" xml:space="preserve">
-    <value>AAh - Head EPPROM Reserved</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items64" xml:space="preserve">
-    <value>ABh - Head EEPROM Vendor Information</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items65" xml:space="preserve">
-    <value>B0h - PCA EPPROM Manufacturing Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items66" xml:space="preserve">
-    <value>B1h - PCA EPPROM Tape Speed Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items67" xml:space="preserve">
-    <value>B2h - PCA EPPROM Tape Tools Area</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items68" xml:space="preserve">
-    <value>B3h - PCA EPPROM Thermal Data Parameters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items69" xml:space="preserve">
-    <value>B4h - PCA EPPROM Tape 'A' Log</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items70" xml:space="preserve">
-    <value>B5h - PCA EPPROM Tape 'B' Log</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items71" xml:space="preserve">
-    <value>B6h - PCA EPPROM Tape 'C' Log</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items72" xml:space="preserve">
-    <value>B7h - PCA EPPROM Tape 'D' Log</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items73" xml:space="preserve">
-    <value>B8h - PCA EPPROM Write ERT Logs</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items74" xml:space="preserve">
-    <value>B9h - PCA EPPROM Write Fault Counters</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items75" xml:space="preserve">
-    <value>BAh - PCA EPPROM In-House Testing</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items76" xml:space="preserve">
-    <value>BBh - PCA EPPROM Read ERT Logs</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items77" xml:space="preserve">
-    <value>BCh - PCA EPPROM Persistent Reservation Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items78" xml:space="preserve">
-    <value>BDh - PCA EPPROM Host I/F Information Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items79" xml:space="preserve">
-    <value>BEh - PCA EPPROM NV Logs</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items80" xml:space="preserve">
-    <value>BFh - PCA EEPROM Physical Calbration Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items81" xml:space="preserve">
-    <value>C0h - PCA-2 EPPROM KMA Security Table</value>
-  </data>
-  <data name="ComboBoxBufferPage.Items82" xml:space="preserve">
-    <value>C1h - PCA-2 EPPROM Reserved</value>
-  </data>
-  <data name="ComboBoxBufferPage.Location" type="System.Drawing.Point, System.Drawing">
-    <value>83, 7</value>
-  </data>
-  <data name="ComboBoxBufferPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>775, 20</value>
-  </data>
-  <data name="ComboBoxBufferPage.TabIndex" type="System.Int32, mscorlib">
-    <value>42</value>
-  </data>
   <data name="&gt;&gt;ComboBoxBufferPage.Name" xml:space="preserve">
     <value>ComboBoxBufferPage</value>
   </data>
@@ -1799,21 +1493,6 @@
   </data>
   <data name="&gt;&gt;ComboBoxBufferPage.ZOrder" xml:space="preserve">
     <value>1</value>
-  </data>
-  <data name="LabelReadBuffer.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelReadBuffer.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 11</value>
-  </data>
-  <data name="LabelReadBuffer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>71, 12</value>
-  </data>
-  <data name="LabelReadBuffer.TabIndex" type="System.Int32, mscorlib">
-    <value>38</value>
-  </data>
-  <data name="LabelReadBuffer.Text" xml:space="preserve">
-    <value>Read Buffer</value>
   </data>
   <data name="&gt;&gt;LabelReadBuffer.Name" xml:space="preserve">
     <value>LabelReadBuffer</value>
@@ -1854,24 +1533,6 @@
   <data name="&gt;&gt;TabPageBuffer.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="LabelBarcode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelBarcode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelBarcode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>28, 37</value>
-  </data>
-  <data name="LabelBarcode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 12</value>
-  </data>
-  <data name="LabelBarcode.TabIndex" type="System.Int32, mscorlib">
-    <value>37</value>
-  </data>
-  <data name="LabelBarcode.Text" xml:space="preserve">
-    <value>Barcode</value>
-  </data>
   <data name="&gt;&gt;LabelBarcode.Name" xml:space="preserve">
     <value>LabelBarcode</value>
   </data>
@@ -1883,24 +1544,6 @@
   </data>
   <data name="&gt;&gt;LabelBarcode.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="TextBoxBarcode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="TextBoxBarcode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>81, 34</value>
-  </data>
-  <data name="TextBoxBarcode.MaxLength" type="System.Int32, mscorlib">
-    <value>32</value>
-  </data>
-  <data name="TextBoxBarcode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>777, 21</value>
-  </data>
-  <data name="TextBoxBarcode.TabIndex" type="System.Int32, mscorlib">
-    <value>38</value>
-  </data>
-  <data name="TextBoxBarcode.Text" xml:space="preserve">
-    <value>TEST00L5</value>
   </data>
   <data name="&gt;&gt;TextBoxBarcode.Name" xml:space="preserve">
     <value>TextBoxBarcode</value>
@@ -1914,24 +1557,6 @@
   <data name="&gt;&gt;TextBoxBarcode.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="ButtonDebugWriteBarcode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="ButtonDebugWriteBarcode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="ButtonDebugWriteBarcode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 33</value>
-  </data>
-  <data name="ButtonDebugWriteBarcode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonDebugWriteBarcode.TabIndex" type="System.Int32, mscorlib">
-    <value>39</value>
-  </data>
-  <data name="ButtonDebugWriteBarcode.Text" xml:space="preserve">
-    <value>write</value>
-  </data>
   <data name="&gt;&gt;ButtonDebugWriteBarcode.Name" xml:space="preserve">
     <value>ButtonDebugWriteBarcode</value>
   </data>
@@ -1943,21 +1568,6 @@
   </data>
   <data name="&gt;&gt;ButtonDebugWriteBarcode.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="LabelMAMAttrib.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelMAMAttrib.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 10</value>
-  </data>
-  <data name="LabelMAMAttrib.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 12</value>
-  </data>
-  <data name="LabelMAMAttrib.TabIndex" type="System.Int32, mscorlib">
-    <value>28</value>
-  </data>
-  <data name="LabelMAMAttrib.Text" xml:space="preserve">
-    <value>MAMAttribute</value>
   </data>
   <data name="&gt;&gt;LabelMAMAttrib.Name" xml:space="preserve">
     <value>LabelMAMAttrib</value>
@@ -1971,21 +1581,6 @@
   <data name="&gt;&gt;LabelMAMAttrib.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="LabelMAMPageCode.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelMAMPageCode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>130, 10</value>
-  </data>
-  <data name="LabelMAMPageCode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 12</value>
-  </data>
-  <data name="LabelMAMPageCode.TabIndex" type="System.Int32, mscorlib">
-    <value>31</value>
-  </data>
-  <data name="LabelMAMPageCode.Text" xml:space="preserve">
-    <value>Page Code</value>
-  </data>
   <data name="&gt;&gt;LabelMAMPageCode.Name" xml:space="preserve">
     <value>LabelMAMPageCode</value>
   </data>
@@ -1997,15 +1592,6 @@
   </data>
   <data name="&gt;&gt;LabelMAMPageCode.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="NumericUpDownPCHigh.Location" type="System.Drawing.Point, System.Drawing">
-    <value>195, 8</value>
-  </data>
-  <data name="NumericUpDownPCHigh.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 21</value>
-  </data>
-  <data name="NumericUpDownPCHigh.TabIndex" type="System.Int32, mscorlib">
-    <value>32</value>
   </data>
   <data name="&gt;&gt;NumericUpDownPCHigh.Name" xml:space="preserve">
     <value>NumericUpDownPCHigh</value>
@@ -2019,15 +1605,6 @@
   <data name="&gt;&gt;NumericUpDownPCHigh.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="NumericUpDownPCLow.Location" type="System.Drawing.Point, System.Drawing">
-    <value>243, 8</value>
-  </data>
-  <data name="NumericUpDownPCLow.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 21</value>
-  </data>
-  <data name="NumericUpDownPCLow.TabIndex" type="System.Int32, mscorlib">
-    <value>33</value>
-  </data>
   <data name="&gt;&gt;NumericUpDownPCLow.Name" xml:space="preserve">
     <value>NumericUpDownPCLow</value>
   </data>
@@ -2040,18 +1617,6 @@
   <data name="&gt;&gt;NumericUpDownPCLow.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="ButtonDebugReadMAM.Location" type="System.Drawing.Point, System.Drawing">
-    <value>291, 6</value>
-  </data>
-  <data name="ButtonDebugReadMAM.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonDebugReadMAM.TabIndex" type="System.Int32, mscorlib">
-    <value>34</value>
-  </data>
-  <data name="ButtonDebugReadMAM.Text" xml:space="preserve">
-    <value>Read</value>
-  </data>
   <data name="&gt;&gt;ButtonDebugReadMAM.Name" xml:space="preserve">
     <value>ButtonDebugReadMAM</value>
   </data>
@@ -2063,18 +1628,6 @@
   </data>
   <data name="&gt;&gt;ButtonDebugReadMAM.ZOrder" xml:space="preserve">
     <value>7</value>
-  </data>
-  <data name="ButtonDebugDumpMAM.Location" type="System.Drawing.Point, System.Drawing">
-    <value>372, 6</value>
-  </data>
-  <data name="ButtonDebugDumpMAM.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 23</value>
-  </data>
-  <data name="ButtonDebugDumpMAM.TabIndex" type="System.Int32, mscorlib">
-    <value>36</value>
-  </data>
-  <data name="ButtonDebugDumpMAM.Text" xml:space="preserve">
-    <value>ReadAll</value>
   </data>
   <data name="&gt;&gt;ButtonDebugDumpMAM.Name" xml:space="preserve">
     <value>ButtonDebugDumpMAM</value>
@@ -2115,24 +1668,6 @@
   <data name="&gt;&gt;TabPageMAM.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="CheckBoxShowRawLogPageData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="CheckBoxShowRawLogPageData.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="CheckBoxShowRawLogPageData.Location" type="System.Drawing.Point, System.Drawing">
-    <value>816, 8</value>
-  </data>
-  <data name="CheckBoxShowRawLogPageData.Size" type="System.Drawing.Size, System.Drawing">
-    <value>42, 16</value>
-  </data>
-  <data name="CheckBoxShowRawLogPageData.TabIndex" type="System.Int32, mscorlib">
-    <value>68</value>
-  </data>
-  <data name="CheckBoxShowRawLogPageData.Text" xml:space="preserve">
-    <value>Raw</value>
-  </data>
   <data name="&gt;&gt;CheckBoxShowRawLogPageData.Name" xml:space="preserve">
     <value>CheckBoxShowRawLogPageData</value>
   </data>
@@ -2144,30 +1679,6 @@
   </data>
   <data name="&gt;&gt;CheckBoxShowRawLogPageData.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="ComboBox5.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="ComboBox5.Items" xml:space="preserve">
-    <value>0 - Current Threshold Values</value>
-  </data>
-  <data name="ComboBox5.Items1" xml:space="preserve">
-    <value>1 - Current Cumulative Values</value>
-  </data>
-  <data name="ComboBox5.Items2" xml:space="preserve">
-    <value>2 - Default Threshold Values</value>
-  </data>
-  <data name="ComboBox5.Items3" xml:space="preserve">
-    <value>3 - Default Cumulative Values</value>
-  </data>
-  <data name="ComboBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>740, 6</value>
-  </data>
-  <data name="ComboBox5.Size" type="System.Drawing.Size, System.Drawing">
-    <value>70, 20</value>
-  </data>
-  <data name="ComboBox5.TabIndex" type="System.Int32, mscorlib">
-    <value>67</value>
   </data>
   <data name="&gt;&gt;ComboBox5.Name" xml:space="preserve">
     <value>ComboBox5</value>
@@ -2181,27 +1692,6 @@
   <data name="&gt;&gt;ComboBox5.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="LabelLogSensePageCtrl.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>717, 9</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>17, 12</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.TabIndex" type="System.Int32, mscorlib">
-    <value>66</value>
-  </data>
-  <data name="LabelLogSensePageCtrl.Text" xml:space="preserve">
-    <value>PC</value>
-  </data>
   <data name="&gt;&gt;LabelLogSensePageCtrl.Name" xml:space="preserve">
     <value>LabelLogSensePageCtrl</value>
   </data>
@@ -2213,24 +1703,6 @@
   </data>
   <data name="&gt;&gt;LabelLogSensePageCtrl.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="ButtonRunLogSense.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="ButtonRunLogSense.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="ButtonRunLogSense.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 6</value>
-  </data>
-  <data name="ButtonRunLogSense.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonRunLogSense.TabIndex" type="System.Int32, mscorlib">
-    <value>65</value>
-  </data>
-  <data name="ButtonRunLogSense.Text" xml:space="preserve">
-    <value>Run</value>
   </data>
   <data name="&gt;&gt;ButtonRunLogSense.Name" xml:space="preserve">
     <value>ButtonRunLogSense</value>
@@ -2244,24 +1716,6 @@
   <data name="&gt;&gt;ButtonRunLogSense.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="LabelLogSense.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelLogSense.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelLogSense.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 9</value>
-  </data>
-  <data name="LabelLogSense.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 12</value>
-  </data>
-  <data name="LabelLogSense.TabIndex" type="System.Int32, mscorlib">
-    <value>64</value>
-  </data>
-  <data name="LabelLogSense.Text" xml:space="preserve">
-    <value>Log Sense</value>
-  </data>
   <data name="&gt;&gt;LabelLogSense.Name" xml:space="preserve">
     <value>LabelLogSense</value>
   </data>
@@ -2274,18 +1728,6 @@
   <data name="&gt;&gt;LabelLogSense.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="ComboBox4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="ComboBox4.Location" type="System.Drawing.Point, System.Drawing">
-    <value>73, 6</value>
-  </data>
-  <data name="ComboBox4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>638, 20</value>
-  </data>
-  <data name="ComboBox4.TabIndex" type="System.Int32, mscorlib">
-    <value>63</value>
-  </data>
   <data name="&gt;&gt;ComboBox4.Name" xml:space="preserve">
     <value>ComboBox4</value>
   </data>
@@ -2297,21 +1739,6 @@
   </data>
   <data name="&gt;&gt;ComboBox4.ZOrder" xml:space="preserve">
     <value>5</value>
-  </data>
-  <data name="ButtonResetLogPage.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="ButtonResetLogPage.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 59</value>
-  </data>
-  <data name="ButtonResetLogPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonResetLogPage.TabIndex" type="System.Int32, mscorlib">
-    <value>62</value>
-  </data>
-  <data name="ButtonResetLogPage.Text" xml:space="preserve">
-    <value>Reset</value>
   </data>
   <data name="&gt;&gt;ButtonResetLogPage.Name" xml:space="preserve">
     <value>ButtonResetLogPage</value>
@@ -2352,21 +1779,6 @@
   <data name="&gt;&gt;TabPageLog.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="ButtonDiagTest.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="ButtonDiagTest.Location" type="System.Drawing.Point, System.Drawing">
-    <value>424, 33</value>
-  </data>
-  <data name="ButtonDiagTest.Size" type="System.Drawing.Size, System.Drawing">
-    <value>115, 23</value>
-  </data>
-  <data name="ButtonDiagTest.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
-  </data>
-  <data name="ButtonDiagTest.Text" xml:space="preserve">
-    <value>Diagnostic Write</value>
-  </data>
   <data name="&gt;&gt;ButtonDiagTest.Name" xml:space="preserve">
     <value>ButtonDiagTest</value>
   </data>
@@ -2378,15 +1790,6 @@
   </data>
   <data name="&gt;&gt;ButtonDiagTest.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="NumericUpDownTestWrap.Location" type="System.Drawing.Point, System.Drawing">
-    <value>459, 6</value>
-  </data>
-  <data name="NumericUpDownTestWrap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>80, 21</value>
-  </data>
-  <data name="NumericUpDownTestWrap.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
   </data>
   <data name="&gt;&gt;NumericUpDownTestWrap.Name" xml:space="preserve">
     <value>NumericUpDownTestWrap</value>
@@ -2400,24 +1803,6 @@
   <data name="&gt;&gt;NumericUpDownTestWrap.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="LabelTestWrap.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTestWrap.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelTestWrap.Location" type="System.Drawing.Point, System.Drawing">
-    <value>424, 8</value>
-  </data>
-  <data name="LabelTestWrap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>29, 12</value>
-  </data>
-  <data name="LabelTestWrap.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
-  </data>
-  <data name="LabelTestWrap.Text" xml:space="preserve">
-    <value>Wrap</value>
-  </data>
   <data name="&gt;&gt;LabelTestWrap.Name" xml:space="preserve">
     <value>LabelTestWrap</value>
   </data>
@@ -2429,15 +1814,6 @@
   </data>
   <data name="&gt;&gt;LabelTestWrap.ZOrder" xml:space="preserve">
     <value>2</value>
-  </data>
-  <data name="NumericUpDownTestStartLen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>346, 33</value>
-  </data>
-  <data name="NumericUpDownTestStartLen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>72, 21</value>
-  </data>
-  <data name="NumericUpDownTestStartLen.TabIndex" type="System.Int32, mscorlib">
-    <value>11</value>
   </data>
   <data name="&gt;&gt;NumericUpDownTestStartLen.Name" xml:space="preserve">
     <value>NumericUpDownTestStartLen</value>
@@ -2451,15 +1827,6 @@
   <data name="&gt;&gt;NumericUpDownTestStartLen.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
-  <data name="NumericUpDownTestSpeed.Location" type="System.Drawing.Point, System.Drawing">
-    <value>346, 6</value>
-  </data>
-  <data name="NumericUpDownTestSpeed.Size" type="System.Drawing.Size, System.Drawing">
-    <value>72, 21</value>
-  </data>
-  <data name="NumericUpDownTestSpeed.TabIndex" type="System.Int32, mscorlib">
-    <value>10</value>
-  </data>
   <data name="&gt;&gt;NumericUpDownTestSpeed.Name" xml:space="preserve">
     <value>NumericUpDownTestSpeed</value>
   </data>
@@ -2471,24 +1838,6 @@
   </data>
   <data name="&gt;&gt;NumericUpDownTestSpeed.ZOrder" xml:space="preserve">
     <value>4</value>
-  </data>
-  <data name="LabelTestStartLen.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTestStartLen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelTestStartLen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>257, 36</value>
-  </data>
-  <data name="LabelTestStartLen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 12</value>
-  </data>
-  <data name="LabelTestStartLen.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
-  </data>
-  <data name="LabelTestStartLen.Text" xml:space="preserve">
-    <value>StartLen (mm)</value>
   </data>
   <data name="&gt;&gt;LabelTestStartLen.Name" xml:space="preserve">
     <value>LabelTestStartLen</value>
@@ -2502,24 +1851,6 @@
   <data name="&gt;&gt;LabelTestStartLen.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="LabelTestSpeed.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTestSpeed.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelTestSpeed.Location" type="System.Drawing.Point, System.Drawing">
-    <value>257, 8</value>
-  </data>
-  <data name="LabelTestSpeed.Size" type="System.Drawing.Size, System.Drawing">
-    <value>77, 12</value>
-  </data>
-  <data name="LabelTestSpeed.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="LabelTestSpeed.Text" xml:space="preserve">
-    <value>Speed (mm/s)</value>
-  </data>
   <data name="&gt;&gt;LabelTestSpeed.Name" xml:space="preserve">
     <value>LabelTestSpeed</value>
   </data>
@@ -2531,24 +1862,6 @@
   </data>
   <data name="&gt;&gt;LabelTestSpeed.ZOrder" xml:space="preserve">
     <value>6</value>
-  </data>
-  <data name="ButtonRDErrRateLog.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Bottom, Right</value>
-  </data>
-  <data name="ButtonRDErrRateLog.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="ButtonRDErrRateLog.Location" type="System.Drawing.Point, System.Drawing">
-    <value>872, 59</value>
-  </data>
-  <data name="ButtonRDErrRateLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>107, 23</value>
-  </data>
-  <data name="ButtonRDErrRateLog.TabIndex" type="System.Int32, mscorlib">
-    <value>7</value>
-  </data>
-  <data name="ButtonRDErrRateLog.Text" xml:space="preserve">
-    <value>Error rate log</value>
   </data>
   <data name="&gt;&gt;ButtonRDErrRateLog.Name" xml:space="preserve">
     <value>ButtonRDErrRateLog</value>
@@ -2562,18 +1875,6 @@
   <data name="&gt;&gt;ButtonRDErrRateLog.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="ButtonTest.Location" type="System.Drawing.Point, System.Drawing">
-    <value>131, 57</value>
-  </data>
-  <data name="ButtonTest.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonTest.TabIndex" type="System.Int32, mscorlib">
-    <value>6</value>
-  </data>
-  <data name="ButtonTest.Text" xml:space="preserve">
-    <value>Start</value>
-  </data>
   <data name="&gt;&gt;ButtonTest.Name" xml:space="preserve">
     <value>ButtonTest</value>
   </data>
@@ -2585,24 +1886,6 @@
   </data>
   <data name="&gt;&gt;ButtonTest.ZOrder" xml:space="preserve">
     <value>8</value>
-  </data>
-  <data name="RadioButtonTest2.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="RadioButtonTest2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="RadioButtonTest2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>72, 60</value>
-  </data>
-  <data name="RadioButtonTest2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>53, 16</value>
-  </data>
-  <data name="RadioButtonTest2.TabIndex" type="System.Int32, mscorlib">
-    <value>5</value>
-  </data>
-  <data name="RadioButtonTest2.Text" xml:space="preserve">
-    <value>Zeros</value>
   </data>
   <data name="&gt;&gt;RadioButtonTest2.Name" xml:space="preserve">
     <value>RadioButtonTest2</value>
@@ -2616,21 +1899,6 @@
   <data name="&gt;&gt;RadioButtonTest2.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
-  <data name="RadioButtonTest1.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="RadioButtonTest1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 60</value>
-  </data>
-  <data name="RadioButtonTest1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 16</value>
-  </data>
-  <data name="RadioButtonTest1.TabIndex" type="System.Int32, mscorlib">
-    <value>4</value>
-  </data>
-  <data name="RadioButtonTest1.Text" xml:space="preserve">
-    <value>Random</value>
-  </data>
   <data name="&gt;&gt;RadioButtonTest1.Name" xml:space="preserve">
     <value>RadioButtonTest1</value>
   </data>
@@ -2642,15 +1910,6 @@
   </data>
   <data name="&gt;&gt;RadioButtonTest1.ZOrder" xml:space="preserve">
     <value>10</value>
-  </data>
-  <data name="NumericUpDownTestBlkNum.Location" type="System.Drawing.Point, System.Drawing">
-    <value>70, 33</value>
-  </data>
-  <data name="NumericUpDownTestBlkNum.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 21</value>
-  </data>
-  <data name="NumericUpDownTestBlkNum.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
   </data>
   <data name="&gt;&gt;NumericUpDownTestBlkNum.Name" xml:space="preserve">
     <value>NumericUpDownTestBlkNum</value>
@@ -2664,24 +1923,6 @@
   <data name="&gt;&gt;NumericUpDownTestBlkNum.ZOrder" xml:space="preserve">
     <value>11</value>
   </data>
-  <data name="LabelTestBlockCount.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTestBlockCount.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelTestBlockCount.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 35</value>
-  </data>
-  <data name="LabelTestBlockCount.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 12</value>
-  </data>
-  <data name="LabelTestBlockCount.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="LabelTestBlockCount.Text" xml:space="preserve">
-    <value>BlockCount</value>
-  </data>
   <data name="&gt;&gt;LabelTestBlockCount.Name" xml:space="preserve">
     <value>LabelTestBlockCount</value>
   </data>
@@ -2694,15 +1935,6 @@
   <data name="&gt;&gt;LabelTestBlockCount.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
-  <data name="NumericUpDownTestBlkSize.Location" type="System.Drawing.Point, System.Drawing">
-    <value>70, 6</value>
-  </data>
-  <data name="NumericUpDownTestBlkSize.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 21</value>
-  </data>
-  <data name="NumericUpDownTestBlkSize.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
   <data name="&gt;&gt;NumericUpDownTestBlkSize.Name" xml:space="preserve">
     <value>NumericUpDownTestBlkSize</value>
   </data>
@@ -2714,21 +1946,6 @@
   </data>
   <data name="&gt;&gt;NumericUpDownTestBlkSize.ZOrder" xml:space="preserve">
     <value>13</value>
-  </data>
-  <data name="LabelTestBlocksize.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTestBlocksize.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 8</value>
-  </data>
-  <data name="LabelTestBlocksize.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 12</value>
-  </data>
-  <data name="LabelTestBlocksize.TabIndex" type="System.Int32, mscorlib">
-    <value>0</value>
-  </data>
-  <data name="LabelTestBlocksize.Text" xml:space="preserve">
-    <value>BlockSize</value>
   </data>
   <data name="&gt;&gt;LabelTestBlocksize.Name" xml:space="preserve">
     <value>LabelTestBlocksize</value>
@@ -3198,6 +2415,1203 @@
   <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>160, 22</value>
+  </data>
+  <data name="在当前进程运行ToolStripMenuItem.Text" xml:space="preserve">
+    <value>在当前进程运行</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>160, 22</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>不读取索引</value>
+  </data>
+  <data name="BrowseBinaryFileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>282, 22</value>
+  </data>
+  <data name="BrowseBinaryFileToolStripMenuItem.Text" xml:space="preserve">
+    <value>Browse binary file</value>
+  </data>
+  <data name="ReadThroughDiagnosticCommandToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>282, 22</value>
+  </data>
+  <data name="ReadThroughDiagnosticCommandToolStripMenuItem.Text" xml:space="preserve">
+    <value>Read through diagnostic command</value>
+  </data>
+  <data name="ReInitializeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 22</value>
+  </data>
+  <data name="ReInitializeToolStripMenuItem.Text" xml:space="preserve">
+    <value>ReInitialize</value>
+  </data>
+  <data name="QuickEraseToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 22</value>
+  </data>
+  <data name="QuickEraseToolStripMenuItem.Text" xml:space="preserve">
+    <value>Quick Erase</value>
+  </data>
+  <data name="ButtonDebugDumpBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="ButtonDebugDumpBuffer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>864, 6</value>
+  </data>
+  <data name="ButtonDebugDumpBuffer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonDebugDumpBuffer.TabIndex" type="System.Int32, mscorlib">
+    <value>41</value>
+  </data>
+  <data name="ButtonDebugDumpBuffer.Text" xml:space="preserve">
+    <value>RAWDump</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpBuffer.Name" xml:space="preserve">
+    <value>ButtonDebugDumpBuffer</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpBuffer.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpBuffer.Parent" xml:space="preserve">
+    <value>TabPageBuffer</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpBuffer.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="ComboBoxBufferPage.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items" xml:space="preserve">
+    <value>00h - Main buffer memory</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items1" xml:space="preserve">
+    <value>02h - Burst buffer</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items2" xml:space="preserve">
+    <value>05h - Cartridge memory (IBM)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items3" xml:space="preserve">
+    <value>10h - CM EEPROM</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items4" xml:space="preserve">
+    <value>11h - Mechanical EEPROM</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items5" xml:space="preserve">
+    <value>12h - Head assembly EEPROM</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items6" xml:space="preserve">
+    <value>13h - PCA EEPROM</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items7" xml:space="preserve">
+    <value>14h - PCA2 EEPROM</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items8" xml:space="preserve">
+    <value>20h - Main buffer segments 0</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items9" xml:space="preserve">
+    <value>21h - Main buffer segments 1</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items10" xml:space="preserve">
+    <value>22h - Main buffer segments 2</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items11" xml:space="preserve">
+    <value>23h - Main buffer segments 3</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items12" xml:space="preserve">
+    <value>24h - Main buffer segments 4</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items13" xml:space="preserve">
+    <value>25h - Main buffer segments 5</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items14" xml:space="preserve">
+    <value>26h - Main buffer segments 6</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items15" xml:space="preserve">
+    <value>27h - Main buffer segments 7</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items16" xml:space="preserve">
+    <value>28h - Main buffer segments 8</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items17" xml:space="preserve">
+    <value>29h - Main buffer segments 9</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items18" xml:space="preserve">
+    <value>2Ah - Main buffer segments 10</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items19" xml:space="preserve">
+    <value>2Bh - Main buffer segments 11</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items20" xml:space="preserve">
+    <value>2Ch - Main buffer segments 12</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items21" xml:space="preserve">
+    <value>2Dh - Main buffer segments 13</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items22" xml:space="preserve">
+    <value>2Eh - Main buffer segments 14</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items23" xml:space="preserve">
+    <value>2Fh - Main buffer segments 15</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items24" xml:space="preserve">
+    <value>30h - Main buffer segments 16</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items25" xml:space="preserve">
+    <value>31h - Main buffer segments 17</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items26" xml:space="preserve">
+    <value>32h - Main buffer segments 18</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items27" xml:space="preserve">
+    <value>33h - Main buffer segments 19</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items28" xml:space="preserve">
+    <value>34h - Main buffer segments 20</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items29" xml:space="preserve">
+    <value>35h - Main buffer segments 21</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items30" xml:space="preserve">
+    <value>36h - Main buffer segments 22</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items31" xml:space="preserve">
+    <value>37h - Main buffer segments 23</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items32" xml:space="preserve">
+    <value>38h - Main buffer segments 24</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items33" xml:space="preserve">
+    <value>39h - Main buffer segments 25</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items34" xml:space="preserve">
+    <value>3Ah - Main buffer segments 26</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items35" xml:space="preserve">
+    <value>3Bh - Main buffer segments 27</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items36" xml:space="preserve">
+    <value>3Ch - Main buffer segments 28</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items37" xml:space="preserve">
+    <value>3Dh - Main buffer segments 29</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items38" xml:space="preserve">
+    <value>3Eh - Main buffer segments 30</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items39" xml:space="preserve">
+    <value>3Fh - Main buffer segments 31</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items40" xml:space="preserve">
+    <value>40h - Snapshot data buffer</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items41" xml:space="preserve">
+    <value>90h - Mech EPPROM Manufacturing Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items42" xml:space="preserve">
+    <value>91h - Mech EPPROM Drive Usage Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items43" xml:space="preserve">
+    <value>93h - Mech EPPROM Drive Usage Parameters(Shipped)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items44" xml:space="preserve">
+    <value>94h - Mech EPPROM In-House Testing</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items45" xml:space="preserve">
+    <value>95h - Mech EPPROM Servo/Mech Use</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items46" xml:space="preserve">
+    <value>96h - Mech EPPROM Host Access Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items47" xml:space="preserve">
+    <value>97h - Mech EPPROM Partner-specific Config Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items48" xml:space="preserve">
+    <value>99h - Mech EPPROM Ethernet I/F Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items49" xml:space="preserve">
+    <value>9Ah - Mech EPPROM Certificate Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items50" xml:space="preserve">
+    <value>9Bh - Mech EPPROM Reserved</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items51" xml:space="preserve">
+    <value>9Ch - Mech EEPROM LTT Drive Health Rules</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items52" xml:space="preserve">
+    <value>9Dh - Mech EEPROM Tape Pull Usage</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items53" xml:space="preserve">
+    <value>A0h - Head EPPROM Manufacturing Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items54" xml:space="preserve">
+    <value>A1h - Head EPPROM Tuning Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items55" xml:space="preserve">
+    <value>A2h - Head EPPROM Resistance Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items56" xml:space="preserve">
+    <value>A3h - Head EPPROM Formatter Data Skew Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items57" xml:space="preserve">
+    <value>A4h - Head EPPROM In-House Testing</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items58" xml:space="preserve">
+    <value>A5h - Head EPPROM Manufacturing Use</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items59" xml:space="preserve">
+    <value>A6h - Head EPPROM Read/Write Tuning Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items60" xml:space="preserve">
+    <value>A7h - Head EPPROM Media Usage Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items61" xml:space="preserve">
+    <value>A8h - Head EPPROM Reserved</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items62" xml:space="preserve">
+    <value>A9h - Head EPPROM Jabil Production</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items63" xml:space="preserve">
+    <value>AAh - Head EPPROM Reserved</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items64" xml:space="preserve">
+    <value>ABh - Head EEPROM Vendor Information</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items65" xml:space="preserve">
+    <value>B0h - PCA EPPROM Manufacturing Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items66" xml:space="preserve">
+    <value>B1h - PCA EPPROM Tape Speed Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items67" xml:space="preserve">
+    <value>B2h - PCA EPPROM Tape Tools Area</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items68" xml:space="preserve">
+    <value>B3h - PCA EPPROM Thermal Data Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items69" xml:space="preserve">
+    <value>B4h - PCA EPPROM Tape 'A' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items70" xml:space="preserve">
+    <value>B5h - PCA EPPROM Tape 'B' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items71" xml:space="preserve">
+    <value>B6h - PCA EPPROM Tape 'C' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items72" xml:space="preserve">
+    <value>B7h - PCA EPPROM Tape 'D' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items73" xml:space="preserve">
+    <value>B8h - PCA EPPROM Write ERT Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items74" xml:space="preserve">
+    <value>B9h - PCA EPPROM Write Fault Counters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items75" xml:space="preserve">
+    <value>BAh - PCA EPPROM In-House Testing</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items76" xml:space="preserve">
+    <value>BBh - PCA EPPROM Read ERT Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items77" xml:space="preserve">
+    <value>BCh - PCA EPPROM Persistent Reservation Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items78" xml:space="preserve">
+    <value>BDh - PCA EPPROM Host I/F Information Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items79" xml:space="preserve">
+    <value>BEh - PCA EPPROM NV Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items80" xml:space="preserve">
+    <value>BFh - PCA EEPROM Physical Calbration Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items81" xml:space="preserve">
+    <value>C0h - PCA-2 EPPROM KMA Security Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items82" xml:space="preserve">
+    <value>C1h - PCA-2 EPPROM Reserved</value>
+  </data>
+  <data name="ComboBoxBufferPage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>83, 7</value>
+  </data>
+  <data name="ComboBoxBufferPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>775, 20</value>
+  </data>
+  <data name="ComboBoxBufferPage.TabIndex" type="System.Int32, mscorlib">
+    <value>42</value>
+  </data>
+  <data name="&gt;&gt;ComboBoxBufferPage.Name" xml:space="preserve">
+    <value>ComboBoxBufferPage</value>
+  </data>
+  <data name="&gt;&gt;ComboBoxBufferPage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ComboBoxBufferPage.Parent" xml:space="preserve">
+    <value>TabPageBuffer</value>
+  </data>
+  <data name="&gt;&gt;ComboBoxBufferPage.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LabelReadBuffer.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelReadBuffer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 11</value>
+  </data>
+  <data name="LabelReadBuffer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>71, 12</value>
+  </data>
+  <data name="LabelReadBuffer.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
+  </data>
+  <data name="LabelReadBuffer.Text" xml:space="preserve">
+    <value>Read Buffer</value>
+  </data>
+  <data name="&gt;&gt;LabelReadBuffer.Name" xml:space="preserve">
+    <value>LabelReadBuffer</value>
+  </data>
+  <data name="&gt;&gt;LabelReadBuffer.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelReadBuffer.Parent" xml:space="preserve">
+    <value>TabPageBuffer</value>
+  </data>
+  <data name="&gt;&gt;LabelReadBuffer.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="LabelBarcode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelBarcode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelBarcode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>28, 37</value>
+  </data>
+  <data name="LabelBarcode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 12</value>
+  </data>
+  <data name="LabelBarcode.TabIndex" type="System.Int32, mscorlib">
+    <value>37</value>
+  </data>
+  <data name="LabelBarcode.Text" xml:space="preserve">
+    <value>Barcode</value>
+  </data>
+  <data name="&gt;&gt;LabelBarcode.Name" xml:space="preserve">
+    <value>LabelBarcode</value>
+  </data>
+  <data name="&gt;&gt;LabelBarcode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelBarcode.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;LabelBarcode.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="TextBoxBarcode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="TextBoxBarcode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>81, 34</value>
+  </data>
+  <data name="TextBoxBarcode.MaxLength" type="System.Int32, mscorlib">
+    <value>32</value>
+  </data>
+  <data name="TextBoxBarcode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>777, 21</value>
+  </data>
+  <data name="TextBoxBarcode.TabIndex" type="System.Int32, mscorlib">
+    <value>38</value>
+  </data>
+  <data name="TextBoxBarcode.Text" xml:space="preserve">
+    <value>TEST00L5</value>
+  </data>
+  <data name="&gt;&gt;TextBoxBarcode.Name" xml:space="preserve">
+    <value>TextBoxBarcode</value>
+  </data>
+  <data name="&gt;&gt;TextBoxBarcode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxBarcode.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;TextBoxBarcode.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>864, 33</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.TabIndex" type="System.Int32, mscorlib">
+    <value>39</value>
+  </data>
+  <data name="ButtonDebugWriteBarcode.Text" xml:space="preserve">
+    <value>write</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugWriteBarcode.Name" xml:space="preserve">
+    <value>ButtonDebugWriteBarcode</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugWriteBarcode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugWriteBarcode.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugWriteBarcode.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="LabelMAMAttrib.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelMAMAttrib.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 10</value>
+  </data>
+  <data name="LabelMAMAttrib.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 12</value>
+  </data>
+  <data name="LabelMAMAttrib.TabIndex" type="System.Int32, mscorlib">
+    <value>28</value>
+  </data>
+  <data name="LabelMAMAttrib.Text" xml:space="preserve">
+    <value>MAMAttribute</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMAttrib.Name" xml:space="preserve">
+    <value>LabelMAMAttrib</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMAttrib.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMAttrib.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMAttrib.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LabelMAMPageCode.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelMAMPageCode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>130, 10</value>
+  </data>
+  <data name="LabelMAMPageCode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 12</value>
+  </data>
+  <data name="LabelMAMPageCode.TabIndex" type="System.Int32, mscorlib">
+    <value>31</value>
+  </data>
+  <data name="LabelMAMPageCode.Text" xml:space="preserve">
+    <value>Page Code</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMPageCode.Name" xml:space="preserve">
+    <value>LabelMAMPageCode</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMPageCode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMPageCode.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;LabelMAMPageCode.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="NumericUpDownPCHigh.Location" type="System.Drawing.Point, System.Drawing">
+    <value>195, 8</value>
+  </data>
+  <data name="NumericUpDownPCHigh.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 21</value>
+  </data>
+  <data name="NumericUpDownPCHigh.TabIndex" type="System.Int32, mscorlib">
+    <value>32</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCHigh.Name" xml:space="preserve">
+    <value>NumericUpDownPCHigh</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCHigh.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCHigh.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCHigh.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="NumericUpDownPCLow.Location" type="System.Drawing.Point, System.Drawing">
+    <value>243, 8</value>
+  </data>
+  <data name="NumericUpDownPCLow.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 21</value>
+  </data>
+  <data name="NumericUpDownPCLow.TabIndex" type="System.Int32, mscorlib">
+    <value>33</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCLow.Name" xml:space="preserve">
+    <value>NumericUpDownPCLow</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCLow.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCLow.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownPCLow.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="ButtonDebugReadMAM.Location" type="System.Drawing.Point, System.Drawing">
+    <value>291, 6</value>
+  </data>
+  <data name="ButtonDebugReadMAM.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonDebugReadMAM.TabIndex" type="System.Int32, mscorlib">
+    <value>34</value>
+  </data>
+  <data name="ButtonDebugReadMAM.Text" xml:space="preserve">
+    <value>Read</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadMAM.Name" xml:space="preserve">
+    <value>ButtonDebugReadMAM</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadMAM.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadMAM.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadMAM.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="ButtonDebugDumpMAM.Location" type="System.Drawing.Point, System.Drawing">
+    <value>372, 6</value>
+  </data>
+  <data name="ButtonDebugDumpMAM.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 23</value>
+  </data>
+  <data name="ButtonDebugDumpMAM.TabIndex" type="System.Int32, mscorlib">
+    <value>36</value>
+  </data>
+  <data name="ButtonDebugDumpMAM.Text" xml:space="preserve">
+    <value>ReadAll</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpMAM.Name" xml:space="preserve">
+    <value>ButtonDebugDumpMAM</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpMAM.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpMAM.Parent" xml:space="preserve">
+    <value>TabPageMAM</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugDumpMAM.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.Location" type="System.Drawing.Point, System.Drawing">
+    <value>816, 8</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 16</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.TabIndex" type="System.Int32, mscorlib">
+    <value>68</value>
+  </data>
+  <data name="CheckBoxShowRawLogPageData.Text" xml:space="preserve">
+    <value>Raw</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxShowRawLogPageData.Name" xml:space="preserve">
+    <value>CheckBoxShowRawLogPageData</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxShowRawLogPageData.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxShowRawLogPageData.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxShowRawLogPageData.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="ComboBox5.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="ComboBox5.Items" xml:space="preserve">
+    <value>0 - Current Threshold Values</value>
+  </data>
+  <data name="ComboBox5.Items1" xml:space="preserve">
+    <value>1 - Current Cumulative Values</value>
+  </data>
+  <data name="ComboBox5.Items2" xml:space="preserve">
+    <value>2 - Default Threshold Values</value>
+  </data>
+  <data name="ComboBox5.Items3" xml:space="preserve">
+    <value>3 - Default Cumulative Values</value>
+  </data>
+  <data name="ComboBox5.Location" type="System.Drawing.Point, System.Drawing">
+    <value>740, 6</value>
+  </data>
+  <data name="ComboBox5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>70, 20</value>
+  </data>
+  <data name="ComboBox5.TabIndex" type="System.Int32, mscorlib">
+    <value>67</value>
+  </data>
+  <data name="&gt;&gt;ComboBox5.Name" xml:space="preserve">
+    <value>ComboBox5</value>
+  </data>
+  <data name="&gt;&gt;ComboBox5.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ComboBox5.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;ComboBox5.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>717, 9</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>17, 12</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.TabIndex" type="System.Int32, mscorlib">
+    <value>66</value>
+  </data>
+  <data name="LabelLogSensePageCtrl.Text" xml:space="preserve">
+    <value>PC</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSensePageCtrl.Name" xml:space="preserve">
+    <value>LabelLogSensePageCtrl</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSensePageCtrl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSensePageCtrl.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSensePageCtrl.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="ButtonRunLogSense.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="ButtonRunLogSense.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="ButtonRunLogSense.Location" type="System.Drawing.Point, System.Drawing">
+    <value>864, 6</value>
+  </data>
+  <data name="ButtonRunLogSense.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonRunLogSense.TabIndex" type="System.Int32, mscorlib">
+    <value>65</value>
+  </data>
+  <data name="ButtonRunLogSense.Text" xml:space="preserve">
+    <value>Run</value>
+  </data>
+  <data name="&gt;&gt;ButtonRunLogSense.Name" xml:space="preserve">
+    <value>ButtonRunLogSense</value>
+  </data>
+  <data name="&gt;&gt;ButtonRunLogSense.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonRunLogSense.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;ButtonRunLogSense.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LabelLogSense.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelLogSense.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelLogSense.Location" type="System.Drawing.Point, System.Drawing">
+    <value>6, 9</value>
+  </data>
+  <data name="LabelLogSense.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 12</value>
+  </data>
+  <data name="LabelLogSense.TabIndex" type="System.Int32, mscorlib">
+    <value>64</value>
+  </data>
+  <data name="LabelLogSense.Text" xml:space="preserve">
+    <value>Log Sense</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSense.Name" xml:space="preserve">
+    <value>LabelLogSense</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSense.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSense.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;LabelLogSense.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="ComboBox4.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="ComboBox4.Location" type="System.Drawing.Point, System.Drawing">
+    <value>73, 6</value>
+  </data>
+  <data name="ComboBox4.Size" type="System.Drawing.Size, System.Drawing">
+    <value>638, 20</value>
+  </data>
+  <data name="ComboBox4.TabIndex" type="System.Int32, mscorlib">
+    <value>63</value>
+  </data>
+  <data name="&gt;&gt;ComboBox4.Name" xml:space="preserve">
+    <value>ComboBox4</value>
+  </data>
+  <data name="&gt;&gt;ComboBox4.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ComboBox4.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;ComboBox4.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="ButtonResetLogPage.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="ButtonResetLogPage.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 59</value>
+  </data>
+  <data name="ButtonResetLogPage.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonResetLogPage.TabIndex" type="System.Int32, mscorlib">
+    <value>62</value>
+  </data>
+  <data name="ButtonResetLogPage.Text" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="&gt;&gt;ButtonResetLogPage.Name" xml:space="preserve">
+    <value>ButtonResetLogPage</value>
+  </data>
+  <data name="&gt;&gt;ButtonResetLogPage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonResetLogPage.Parent" xml:space="preserve">
+    <value>TabPageLog</value>
+  </data>
+  <data name="&gt;&gt;ButtonResetLogPage.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="ButtonDiagTest.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="ButtonDiagTest.Location" type="System.Drawing.Point, System.Drawing">
+    <value>424, 33</value>
+  </data>
+  <data name="ButtonDiagTest.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 23</value>
+  </data>
+  <data name="ButtonDiagTest.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="ButtonDiagTest.Text" xml:space="preserve">
+    <value>Diagnostic Write</value>
+  </data>
+  <data name="&gt;&gt;ButtonDiagTest.Name" xml:space="preserve">
+    <value>ButtonDiagTest</value>
+  </data>
+  <data name="&gt;&gt;ButtonDiagTest.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDiagTest.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;ButtonDiagTest.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="NumericUpDownTestWrap.Location" type="System.Drawing.Point, System.Drawing">
+    <value>459, 6</value>
+  </data>
+  <data name="NumericUpDownTestWrap.Size" type="System.Drawing.Size, System.Drawing">
+    <value>80, 21</value>
+  </data>
+  <data name="NumericUpDownTestWrap.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestWrap.Name" xml:space="preserve">
+    <value>NumericUpDownTestWrap</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestWrap.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestWrap.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestWrap.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LabelTestWrap.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTestWrap.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelTestWrap.Location" type="System.Drawing.Point, System.Drawing">
+    <value>424, 8</value>
+  </data>
+  <data name="LabelTestWrap.Size" type="System.Drawing.Size, System.Drawing">
+    <value>29, 12</value>
+  </data>
+  <data name="LabelTestWrap.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="LabelTestWrap.Text" xml:space="preserve">
+    <value>Wrap</value>
+  </data>
+  <data name="&gt;&gt;LabelTestWrap.Name" xml:space="preserve">
+    <value>LabelTestWrap</value>
+  </data>
+  <data name="&gt;&gt;LabelTestWrap.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTestWrap.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;LabelTestWrap.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="NumericUpDownTestStartLen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>346, 33</value>
+  </data>
+  <data name="NumericUpDownTestStartLen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 21</value>
+  </data>
+  <data name="NumericUpDownTestStartLen.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestStartLen.Name" xml:space="preserve">
+    <value>NumericUpDownTestStartLen</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestStartLen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestStartLen.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestStartLen.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="NumericUpDownTestSpeed.Location" type="System.Drawing.Point, System.Drawing">
+    <value>346, 6</value>
+  </data>
+  <data name="NumericUpDownTestSpeed.Size" type="System.Drawing.Size, System.Drawing">
+    <value>72, 21</value>
+  </data>
+  <data name="NumericUpDownTestSpeed.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestSpeed.Name" xml:space="preserve">
+    <value>NumericUpDownTestSpeed</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestSpeed.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestSpeed.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestSpeed.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="LabelTestStartLen.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTestStartLen.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelTestStartLen.Location" type="System.Drawing.Point, System.Drawing">
+    <value>257, 36</value>
+  </data>
+  <data name="LabelTestStartLen.Size" type="System.Drawing.Size, System.Drawing">
+    <value>83, 12</value>
+  </data>
+  <data name="LabelTestStartLen.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="LabelTestStartLen.Text" xml:space="preserve">
+    <value>StartLen (mm)</value>
+  </data>
+  <data name="&gt;&gt;LabelTestStartLen.Name" xml:space="preserve">
+    <value>LabelTestStartLen</value>
+  </data>
+  <data name="&gt;&gt;LabelTestStartLen.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTestStartLen.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;LabelTestStartLen.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="LabelTestSpeed.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTestSpeed.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelTestSpeed.Location" type="System.Drawing.Point, System.Drawing">
+    <value>257, 8</value>
+  </data>
+  <data name="LabelTestSpeed.Size" type="System.Drawing.Size, System.Drawing">
+    <value>77, 12</value>
+  </data>
+  <data name="LabelTestSpeed.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="LabelTestSpeed.Text" xml:space="preserve">
+    <value>Speed (mm/s)</value>
+  </data>
+  <data name="&gt;&gt;LabelTestSpeed.Name" xml:space="preserve">
+    <value>LabelTestSpeed</value>
+  </data>
+  <data name="&gt;&gt;LabelTestSpeed.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTestSpeed.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;LabelTestSpeed.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="ButtonRDErrRateLog.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Right</value>
+  </data>
+  <data name="ButtonRDErrRateLog.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="ButtonRDErrRateLog.Location" type="System.Drawing.Point, System.Drawing">
+    <value>872, 59</value>
+  </data>
+  <data name="ButtonRDErrRateLog.Size" type="System.Drawing.Size, System.Drawing">
+    <value>107, 23</value>
+  </data>
+  <data name="ButtonRDErrRateLog.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="ButtonRDErrRateLog.Text" xml:space="preserve">
+    <value>Error rate log</value>
+  </data>
+  <data name="&gt;&gt;ButtonRDErrRateLog.Name" xml:space="preserve">
+    <value>ButtonRDErrRateLog</value>
+  </data>
+  <data name="&gt;&gt;ButtonRDErrRateLog.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonRDErrRateLog.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;ButtonRDErrRateLog.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="ButtonTest.Location" type="System.Drawing.Point, System.Drawing">
+    <value>131, 57</value>
+  </data>
+  <data name="ButtonTest.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonTest.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="ButtonTest.Text" xml:space="preserve">
+    <value>Start</value>
+  </data>
+  <data name="&gt;&gt;ButtonTest.Name" xml:space="preserve">
+    <value>ButtonTest</value>
+  </data>
+  <data name="&gt;&gt;ButtonTest.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonTest.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;ButtonTest.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="RadioButtonTest2.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="RadioButtonTest2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="RadioButtonTest2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>72, 60</value>
+  </data>
+  <data name="RadioButtonTest2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>53, 16</value>
+  </data>
+  <data name="RadioButtonTest2.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="RadioButtonTest2.Text" xml:space="preserve">
+    <value>Zeros</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest2.Name" xml:space="preserve">
+    <value>RadioButtonTest2</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest2.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest2.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="RadioButtonTest1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="RadioButtonTest1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 60</value>
+  </data>
+  <data name="RadioButtonTest1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 16</value>
+  </data>
+  <data name="RadioButtonTest1.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="RadioButtonTest1.Text" xml:space="preserve">
+    <value>Random</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest1.Name" xml:space="preserve">
+    <value>RadioButtonTest1</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.RadioButton, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest1.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;RadioButtonTest1.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="NumericUpDownTestBlkNum.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 33</value>
+  </data>
+  <data name="NumericUpDownTestBlkNum.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 21</value>
+  </data>
+  <data name="NumericUpDownTestBlkNum.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkNum.Name" xml:space="preserve">
+    <value>NumericUpDownTestBlkNum</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkNum.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkNum.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkNum.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="LabelTestBlockCount.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTestBlockCount.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelTestBlockCount.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 35</value>
+  </data>
+  <data name="LabelTestBlockCount.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 12</value>
+  </data>
+  <data name="LabelTestBlockCount.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="LabelTestBlockCount.Text" xml:space="preserve">
+    <value>BlockCount</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlockCount.Name" xml:space="preserve">
+    <value>LabelTestBlockCount</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlockCount.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlockCount.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlockCount.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="NumericUpDownTestBlkSize.Location" type="System.Drawing.Point, System.Drawing">
+    <value>70, 6</value>
+  </data>
+  <data name="NumericUpDownTestBlkSize.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 21</value>
+  </data>
+  <data name="NumericUpDownTestBlkSize.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkSize.Name" xml:space="preserve">
+    <value>NumericUpDownTestBlkSize</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkSize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkSize.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownTestBlkSize.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="LabelTestBlocksize.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTestBlocksize.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 8</value>
+  </data>
+  <data name="LabelTestBlocksize.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 12</value>
+  </data>
+  <data name="LabelTestBlocksize.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="LabelTestBlocksize.Text" xml:space="preserve">
+    <value>BlockSize</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlocksize.Name" xml:space="preserve">
+    <value>LabelTestBlocksize</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlocksize.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlocksize.Parent" xml:space="preserve">
+    <value>TabPageTest</value>
+  </data>
+  <data name="&gt;&gt;LabelTestBlocksize.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
   <metadata name="SaveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -3499,6 +3913,12 @@
   <data name="&gt;&gt;ManualAddToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;BrowseToolStripMenuItem.Name" xml:space="preserve">
+    <value>BrowseToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;BrowseToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;在当前进程运行ToolStripMenuItem.Name" xml:space="preserve">
     <value>在当前进程运行ToolStripMenuItem</value>
   </data>
@@ -3571,10 +3991,10 @@
   <data name="&gt;&gt;OpenFileDialog1.Type" xml:space="preserve">
     <value>System.Windows.Forms.OpenFileDialog, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;BrowseToolStripMenuItem.Name" xml:space="preserve">
-    <value>BrowseToolStripMenuItem</value>
+  <data name="&gt;&gt;WritePCMToolStripMenuItem.Name" xml:space="preserve">
+    <value>WritePCMToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;BrowseToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;WritePCMToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
