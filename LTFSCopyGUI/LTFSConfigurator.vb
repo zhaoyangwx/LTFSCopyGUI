@@ -1,6 +1,7 @@
 Imports System.ComponentModel
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports NAudio.Wave
 
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
@@ -2266,9 +2267,10 @@ Public Class LTFSConfigurator
                                     reader = New NAudio.Wave.AudioFileReader(fname)
                                 End Try
                         End Select
-                        Dim fs As NAudio.Wave.WaveStream = NAudio.Wave.WaveFormatConversionStream.CreatePcmStream(reader)
-                        'Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                        Dim tempfile As String = My.Computer.FileSystem.GetTempFileName()
+                        WaveFileWriter.CreateWaveFile(tempfile, reader)
 
+                        Dim fs As New IO.FileStream(tempfile, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                         If fs.Length = 0 Then
                             TapeUtils.WriteFileMark(ConfTapeDrive)
                             Invoke(Sub()
@@ -2287,6 +2289,7 @@ Public Class LTFSConfigurator
                                    End Sub)
                         End If
                         fs.Close()
+                        IO.File.Delete(tempfile)
                     End Sub)
                 Panel1.Enabled = False
                 th.Start()
