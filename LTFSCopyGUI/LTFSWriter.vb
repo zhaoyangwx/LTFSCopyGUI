@@ -4058,11 +4058,6 @@ Public Class LTFSWriter
                                                 End Try
                                             End While
                                             'If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
-                                            If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
-                                            LastWriteTask = New Task(
-                                            Sub()
-
-                                            End Sub)
                                             While ((Not succ) AndAlso (Not IsIndexPartition))
                                                 Dim sense As Byte()
                                                 Try
@@ -4246,6 +4241,12 @@ Public Class LTFSWriter
                                                                     PrintMsg(My.Resources.ResText_VOF)
                                                                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                                     StopFlag = True
+                                                                    Try
+                                                                        provider.Cancel()
+                                                                        provider.CompleteAsync().GetAwaiter().GetResult()
+                                                                    Catch
+                                                                        PrintMsg("pipe complete failed", LogOnly:=True)
+                                                                    End Try
                                                                     Exit Sub
                                                                 Else
                                                                     PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
@@ -4418,6 +4419,7 @@ Public Class LTFSWriter
                             provider.Cancel()
                             provider.CompleteAsync().GetAwaiter().GetResult()
                         Catch
+                            PrintMsg("pipe complete failed", LogOnly:=True)
                         End Try
                     End If
                     UFReadCount.Dec()
