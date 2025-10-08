@@ -1019,7 +1019,7 @@ Public Class LTFSWriter
         End Sub
         Public Property fs As IO.FileStream
         Public Property fsB As IO.BufferedStream
-        Public Property fsPreRead As IO.FileStream
+        'Public Property fsPreRead As IO.FileStream
         Public Property PreReadOffset As Long = 0
         Public Property PreReadByteCount As Long = 0
         Public PreReadOffsetLock As New Object
@@ -1032,26 +1032,12 @@ Public Class LTFSWriter
         Public Shared PreReadBufferSize As Long = 16777216
         Public Shared PreReadBlockSize As Long = 8388608
         Public PreReadBuffer As Byte() = Nothing
-        Public Sub PreReadThread()
-            If PreReadBuffer Is Nothing Then ReDim PreReadBuffer(PreReadBufferSize * 2 - 1)
-            While True
-                Dim rBytes As Long = fsPreRead.Read(PreReadBuffer, PreReadByteCount Mod PreReadBufferSize, PreReadBlockSize)
-                If rBytes = 0 Then Exit While
-                Threading.Interlocked.Add(PreReadByteCount, rBytes)
-                While PreReadByteCount - PreReadOffset >= PreReadBufferSize
-                    Threading.Thread.Sleep(1)
-                End While
-            End While
-            RaiseEvent PreReadFinished()
-        End Sub
         Public Function Open(Optional BufferSize As Integer = 16777216) As Integer
             SyncLock OperationLock
                 While True
                     Try
                         If fs IsNot Nothing Then Return 1
                         fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                        fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                        Task.Run(Sub() PreReadThread())
                         fsB = New IO.BufferedStream(fs, PreReadBufferSize)
                         Exit While
                     Catch ex As Exception
@@ -1068,54 +1054,7 @@ Public Class LTFSWriter
             End SyncLock
             Return 1
         End Function
-        Public Function BeginOpen(Optional BufferSize As Integer = 0, Optional ByVal BlockSize As UInteger = 524288) As Integer
-            Dim retryCount As Integer = 0
-            While retryCount < 3
-                Try
-                    SyncLock OperationLock
-                        If fs IsNot Nothing Then Return 1
-                        If File.length > 0 AndAlso File.length <= BlockSize Then
-                            Task.Run(Sub()
-                                         SyncLock OperationLock
-                                             If Buffer IsNot Nothing Then Buffer = IO.File.ReadAllBytes(SourcePath)
-                                         End SyncLock
-                                     End Sub)
-                            Return 1
-                        ElseIf File.length = 0 Then
-                            Buffer = {}
-                            Return 1
-                        End If
-                    End SyncLock
-                    If BufferSize = 0 Then BufferSize = 8388608
-                    Exit While
-                Catch ex As Exception
-                    Threading.Thread.Sleep(100)
-                    Threading.Interlocked.Increment(retryCount)
-                End Try
-            End While
-            Task.Run(Sub()
-                         retryCount = 0
-                         While retryCount < 3
-                             Try
-                                 SyncLock OperationLock
-                                     If fs IsNot Nothing Then Exit Sub
-                                     fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                                     'If PreReadEnabled Then
-                                     fsPreRead = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                                     Task.Run(Sub() PreReadThread())
-                                     'Else
-                                     fsB = New IO.BufferedStream(fs, PreReadBufferSize)
-                                     'End If
-                                     Exit While
-                                 End SyncLock
-                             Catch ex As Exception
-                                 Threading.Thread.Sleep(100)
-                                 Threading.Interlocked.Increment(retryCount)
-                             End Try
-                         End While
-                     End Sub)
-            Return 1
-        End Function
+
         Public Function Read(array As Byte(), offset As Integer, count As Integer) As Integer
             'If PreReadEnabled Then
             SyncLock PreReadOffsetLock
@@ -1126,6 +1065,7 @@ Public Class LTFSWriter
             Return fsB.Read(array, offset, count)
             'End If
         End Function
+        Public IsClosed As Boolean = False
         Public Sub Close()
             SyncLock OperationLock
                 Try
@@ -1142,11 +1082,7 @@ Public Class LTFSWriter
                     fs = Nothing
                 Catch ex As Exception
                 End Try
-                If fsPreRead IsNot Nothing Then
-                    fsPreRead.Close()
-                    fsPreRead.Dispose()
-                    fsPreRead = Nothing
-                End If
+                IsClosed = True
             End SyncLock
         End Sub
         Public Sub CloseAsync()
@@ -1166,11 +1102,6 @@ Public Class LTFSWriter
                                  fs = Nothing
                              Catch ex As Exception
                              End Try
-                             If fsPreRead IsNot Nothing Then
-                                 fsPreRead.Close()
-                                 fsPreRead.Dispose()
-                                 fsPreRead = Nothing
-                             End If
                          End SyncLock
                      End Sub)
         End Sub
@@ -1815,6 +1746,7 @@ Public Class LTFSWriter
             End If
             LastRefresh = Now
             PrintMsg($"[RefreshCapacity] Finished {result(0)} {result(1)} {result(2)} {result(3)}", LogOnly:=True)
+            GC.Collect()
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RCErr, TooltipText:=ex.ToString)
             SetStatusLight(LWStatus.Err)
