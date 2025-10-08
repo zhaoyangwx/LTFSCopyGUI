@@ -170,6 +170,7 @@ Public Class FileDataProvider
         Catch ex As Exception
             Try
                 _writer.Complete()
+                Reader.Complete()
             Catch
             End Try
         End Try

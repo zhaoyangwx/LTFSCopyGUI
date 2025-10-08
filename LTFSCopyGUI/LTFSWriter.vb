@@ -3804,7 +3804,11 @@ Public Class LTFSWriter
                                      Optional ct As Threading.CancellationToken = Nothing) As Integer
         Dim readTotal As Integer = 0
         While readTotal < count
-            Dim result = reader.ReadAsync(ct).AsTask().Result
+            Dim result As IO.Pipelines.ReadResult
+            Try
+                result = reader.ReadAsync(ct).AsTask().Result
+            Catch
+            End Try
             Dim buffer = result.Buffer
             Dim need As Long = count - readTotal
             Dim take As Long = Math.Min(need, buffer.Length)
