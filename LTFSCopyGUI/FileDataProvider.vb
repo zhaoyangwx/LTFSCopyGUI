@@ -115,6 +115,7 @@ Public Class FileDataProvider
         Finally
             Try
                 _writer.Complete()
+                Reader.Complete()
             Catch
             End Try
         End Try
@@ -133,6 +134,9 @@ Public Class FileDataProvider
                 If nextIdx >= _writeList.Count Then Exit While
 
                 Dim fr As LTFSWriter.FileRecord = _writeList(nextIdx)
+                If nextIdx - 1 >= 0 Then
+                    _writeList(nextIdx - 1) = Nothing
+                End If
                 _current = fr
 
                 If fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold Then
