@@ -3866,21 +3866,17 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_PrepW)
                     TapeUtils.ReserveUnit(driveHandle)
                     TapeUtils.PreventMediaRemoval(driveHandle)
-                    If Not LocateToWritePosition() Then Exit Sub
+                    Dim locateResult As Boolean = False
+                    Dim locateTask As Task = Task.Run(Sub() locateResult = LocateToWritePosition())
                     IsWriting = True
-                    Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
-                    If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
-                        Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
-                                      .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
-                                      .WindowStyle = ProcessWindowStyle.Hidden})
-                    End If
                     UFReadCount.Inc()
-                    CurrentFilesProcessed = 0
-                    CurrentBytesProcessed = 0
-                    UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverwriteValue = 0
+                    Dim WriteList As New List(Of FileRecord)
+                    Dim provider As FileDataProvider = Nothing
                     If UnwrittenFiles.Count > 0 Then
-                        Dim WriteList As New List(Of FileRecord)
+                        CurrentFilesProcessed = 0
+                        CurrentBytesProcessed = 0
+                        UnwrittenSizeOverrideValue = 0
+                        UnwrittenCountOverwriteValue = 0
                         UFReadCount.Inc()
                         For Each fr As FileRecord In UnwrittenFiles
                             WriteList.Add(fr)
@@ -3888,6 +3884,33 @@ Public Class LTFSWriter
                         UFReadCount.Dec()
                         UnwrittenCountOverwriteValue = UnwrittenCount
                         UnwrittenSizeOverrideValue = UnwrittenSize
+                        provider = New FileDataProvider(WriteList,
+                                                             smallThresholdBytes:=16 * 1024,
+                                                             smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
+                                                             pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
+                        provider.Start()
+                    End If
+                    locateTask.Wait()
+                    If Not locateResult Then
+                        UFReadCount.Dec()
+                        If provider IsNot Nothing Then
+                            Try
+                                provider.Cancel()
+                                provider.CompleteAsync().GetAwaiter().GetResult()
+                            Catch
+                                PrintMsg("pipe complete failed", LogOnly:=True)
+                            End Try
+                        End If
+                        IsWriting = False
+                        Exit Sub
+                    End If
+                    Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = True)
+                    If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
+                        Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
+                                      .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
+                                      .WindowStyle = ProcessWindowStyle.Hidden})
+                    End If
+                    If UnwrittenFiles.Count > 0 Then
                         Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
                         'Dim PNum As Integer = My.Settings.LTFSWriter_PreLoadFileCount
@@ -3924,12 +3947,6 @@ Public Class LTFSWriter
                                 q = q2
                             End While
                         End If
-
-                        Dim provider As New FileDataProvider(WriteList,
-                                                             smallThresholdBytes:=16 * 1024,
-                                                             smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
-                                                             pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
-                        provider.Start()
 
                         Dim p As New TapeUtils.PositionData(driveHandle)
 
@@ -5640,6 +5657,11 @@ Public Class LTFSWriter
             hw.CheckBox3.Visible = False
             hw.Button3.Visible = False
             hw.Button4.Visible = False
+            Dim errCount As Integer = 0
+            AddHandler hw.SHA1Changed, Sub(f As ltfsindex.file, msg As String)
+                                           PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {msg} {f.fullpath}", ForceLog:=True, LogOnly:=True)
+                                           Threading.Interlocked.Increment(errCount)
+                                       End Sub
             hw.ShowDialog()
             Dim q As New List(Of ltfsindex.directory)
             Dim hcount As Integer = 0, fcount As Integer = 0
@@ -5663,7 +5685,7 @@ Public Class LTFSWriter
                 Next
                 q = q1
             End While
-            PrintMsg($"{hcount}/{fcount}")
+            PrintMsg($"{hcount}/{fcount}{If(errCount > 0, $"({errCount} mismatch)", "")}")
             SetStatusLight(LWStatus.Idle)
             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
             RefreshDisplay()

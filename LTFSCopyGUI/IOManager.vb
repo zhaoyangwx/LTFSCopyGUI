@@ -146,6 +146,7 @@ Public Class IOManager
         Public Event TaskResumed(Message As String)
         Public Event TaskFinished(Message As String)
         Public Event ErrorOccured(Message As String)
+        Public Event SHA1Changed(f As ltfsindex.file, Message As String)
         Public Event ProgressReport(Message As String)
         Public Property BufferWrite As Integer = 4 * 1024 * 1024
         Public Property schema As ltfsindex
@@ -291,9 +292,9 @@ Public Class IOManager
                                 If TargetDirectory <> "" Then _
                                                  f_outpath = "\\?\" & IO.Path.Combine(TargetDirectory, f.fullpath)
                                 f.fullpath = "\\?\" & IO.Path.Combine(BaseDirectory, f.fullpath)
+
                                 If f.sha1 Is Nothing Then f.sha1 = ""
-                                If _
-                                                 f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or
+                                If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or
                                                  (TargetDirectory <> "" And Not IO.File.Exists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
@@ -334,13 +335,26 @@ Public Class IOManager
                                                 RaiseEvent ErrorOccured(ex.ToString)
                                             End Try
                                         End If
+                                        Dim oldvalue As String = f.sha1
                                         f.sha1 = ""
-                                        If LogFile.Count > 0 Then f.sha1 = SHA1(f.fullpath, LogFile)
-                                        If f.sha1.Length <> 40 Then
-                                            f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
+                                        If IO.File.Exists(f.fullpath) Then
+                                            If LogFile.Count > 0 Then f.sha1 = SHA1(f.fullpath, LogFile)
+                                            If oldvalue.Length = 40 AndAlso f.sha1.Length = 40 AndAlso oldvalue.ToUpper <> f.sha1.ToUpper Then
+                                                RaiseEvent SHA1Changed(f, $"{oldvalue} -> {f.sha1}")
+                                            End If
+                                            If (Not IgnoreExisting) OrElse f.sha1.Length <> 40 Then
+                                                f.sha1 = SHA1(f.fullpath, Nothing, fs, action_writefile)
+                                                If oldvalue.Length = 40 AndAlso f.sha1.Length = 40 AndAlso oldvalue.ToUpper <> f.sha1.ToUpper Then
+                                                    RaiseEvent SHA1Changed(f, $"{oldvalue} -> {f.sha1}")
+                                                End If
+                                            Else
+                                                Exit Try
+                                            End If
                                         Else
                                             Exit Try
                                         End If
+
+
                                         If fout IsNot Nothing Then
                                             Try
                                                 'fob.Flush()

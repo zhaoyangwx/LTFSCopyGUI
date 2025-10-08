@@ -9,6 +9,9 @@ Public Class HashTaskWindow
     Public LogEnabled As Boolean = True
     Public DisableSkipInfo As Boolean = False
     Public schPath As String = Form1.TextBox1.Text
+    Public Event SHA1Changed(f As ltfsindex.file, msg As String)
+    Public ProgressMsg As String = ""
+
     Public Property ErrorCount As Integer = 0
     Public StartTime As String = Now.ToString("yyyyMMdd_HHmmss")
     Public Property BaseDirectory As String
@@ -94,62 +97,50 @@ Public Class HashTaskWindow
                                                             Button3_Click(Nothing, Nothing)
                                                         End Sub)
                                           End Sub
+        AddHandler HashTask.SHA1Changed, Sub(f As ltfsindex.file, s As String)
+                                             PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {s} {f.fullpath}")
+                                             RaiseEvent SHA1Changed(f, s)
+                                         End Sub
         AddHandler HashTask.ErrorOccured, Sub(s As String)
                                               Threading.Interlocked.Increment(ErrorCount)
                                               PrintMsg(s)
                                           End Sub
         AddHandler HashTask.ProgressReport, Sub(s As String)
-                                                Me.BeginInvoke(Sub()
-                                                                   Try
-                                                                       If s.StartsWith("#") Then
-                                                                           If s.StartsWith("#val") Then
-                                                                               ProgressBar1.Value = Math.Min(ProgressBar1.Maximum, Integer.Parse(s.Substring(4)))
-                                                                           ElseIf s.StartsWith("#max") Then
-                                                                               ProgressBar1.Maximum = Integer.Parse(s.Substring(4))
-                                                                           ElseIf s.StartsWith("#text") Then
-                                                                               Text = s.Substring(5)
-                                                                           ElseIf s.StartsWith("#fval") Then
-                                                                               ProgressBar2.Value = Math.Min(ProgressBar2.Maximum, Integer.Parse(s.Substring(5)))
-                                                                           ElseIf s.StartsWith("#fmax") Then
-                                                                               ProgressBar2.Maximum = Integer.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#tval") Then
-                                                                               tval = Long.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#tmax") Then
-                                                                               tmax = Long.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#dval") Then
-                                                                               dval = Long.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#dmax") Then
-                                                                               dmax = Long.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#ssum") Then
-                                                                               ssum = Long.Parse(s.Substring(5))
-                                                                           ElseIf s.StartsWith("#smax") Then
-                                                                               smax = Long.Parse(s.Substring(5))
-                                                                           End If
-                                                                           Dim threfresh As New Threading.Thread(
-                                                                           Sub()
-                                                                               SyncLock HashTask.OperationLock
-                                                                                   Invoke(Sub()
-                                                                                              Text = "[" & tval & "/" & tmax & "] " & IOManager.FormatSize(dval) &
-                                                                                                  "/" & IOManager.FormatSize(dmax) & " (" &
-                                                                                                  IOManager.FormatSize(ddelta) & "/s) Total: " &
-                                                                                                  IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
-                                                                                              If smax <> 0 Then
-                                                                                                  ProgressBar1.Value = (ssum + dval) / smax * ProgressBar1.Maximum
-                                                                                              End If
-                                                                                          End Sub)
-                                                                               End SyncLock
-                                                                           End Sub)
-                                                                           threfresh.Start()
-                                                                       ElseIf s.StartsWith("[skip]") Then
-                                                                           If Not DisableSkipInfo Then PrintMsg(s)
-                                                                       Else
-                                                                           PrintMsg(s)
-                                                                       End If
-                                                                   Catch ex As Exception
+                                                Try
+                                                    If s.StartsWith("#") Then
+                                                        If s.StartsWith("#val") Then
+                                                            ProgressBar1.Value = Math.Min(ProgressBar1.Maximum, Integer.Parse(s.Substring(4)))
+                                                        ElseIf s.StartsWith("#max") Then
+                                                            ProgressBar1.Maximum = Integer.Parse(s.Substring(4))
+                                                        ElseIf s.StartsWith("#text") Then
+                                                            Text = s.Substring(5)
+                                                        ElseIf s.StartsWith("#fval") Then
+                                                            ProgressBar2.Value = Math.Min(ProgressBar2.Maximum, Integer.Parse(s.Substring(5)))
+                                                        ElseIf s.StartsWith("#fmax") Then
+                                                            ProgressBar2.Maximum = Integer.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#tval") Then
+                                                            tval = Long.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#tmax") Then
+                                                            tmax = Long.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#dval") Then
+                                                            dval = Long.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#dmax") Then
+                                                            dmax = Long.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#ssum") Then
+                                                            ssum = Long.Parse(s.Substring(5))
+                                                        ElseIf s.StartsWith("#smax") Then
+                                                            smax = Long.Parse(s.Substring(5))
+                                                        Else
+                                                            ProgressMsg = s
+                                                        End If
+                                                    ElseIf s.StartsWith("[skip]") Then
+                                                        If Not DisableSkipInfo Then PrintMsg(s)
+                                                    Else
+                                                        PrintMsg(s)
+                                                    End If
+                                                Catch ex As Exception
 
-                                                                   End Try
-
-                                                               End Sub)
+                                                End Try
                                             End Sub
         Try
             Chart1.Series(0).Points.Clear()
@@ -404,6 +395,20 @@ Public Class HashTaskWindow
                 TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.Length - TextBox1.MaxLength / 3 * 2)
                 TextBox1.Select(TextBox1.Text.Length, 0)
                 TextBox1.ScrollToCaret()
+            End If
+            Dim s As String = Threading.Interlocked.Exchange(ProgressMsg, "")
+            If s.Length > 0 Then
+                Try
+                    Text = "[" & tval & "/" & tmax & "] " & IOManager.FormatSize(dval) &
+                                       "/" & IOManager.FormatSize(dmax) & " (" &
+                                       IOManager.FormatSize(ddelta) & "/s) Total: " &
+                                       IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
+                    If smax <> 0 Then
+                        ProgressBar1.Value = (ssum + dval) / smax * ProgressBar1.Maximum
+                    End If
+                Catch ex As Exception
+
+                End Try
             End If
         Catch ex As Exception
             PrintMsg(ex.ToString)
