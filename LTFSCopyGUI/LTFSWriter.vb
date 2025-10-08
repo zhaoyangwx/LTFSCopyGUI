@@ -4033,6 +4033,7 @@ Public Class LTFSWriter
                                              } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
                                         'write to tape
                                         Dim LastWriteTask As Task = Nothing
+                                        If fr.File Is Nothing Then Continue For
                                         If finfo.Length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData(finfo.Length - 1) As Byte
