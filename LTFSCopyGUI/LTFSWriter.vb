@@ -8294,7 +8294,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub APToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles APToolStripMenuItem.Click
-        My.Settings.LTFSConf_AutoRefresh = APToolStripMenuItem.Checked
+        My.Settings.LTFSWriter_AutoFlush = APToolStripMenuItem.Checked
     End Sub
 
     Public Function DirectoryExists(path As String) As Boolean
@@ -8318,6 +8318,22 @@ Public Class LTFSWriter
         End If
         Return False
     End Function
+
+    Private Sub 计算校验ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 计算校验ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_HashOnWriting = 计算校验ToolStripMenuItem.Checked
+    End Sub
+
+    Private Sub 异步校验CPU占用高ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 异步校验CPU占用高ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_HashAsync = 异步校验CPU占用高ToolStripMenuItem.Checked
+    End Sub
+
+    Private Sub 启用日志记录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启用日志记录ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
+    End Sub
+
+    Private Sub 总是更新数据区索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 总是更新数据区索引ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
+    End Sub
 
     Public Function FileExists(path As String) As Boolean
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"

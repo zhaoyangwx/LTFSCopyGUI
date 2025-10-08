@@ -2835,7 +2835,12 @@ Public Class TapeUtils
     Public Const DEFAULT_WORK_DIR As String = "C:\tmp\LTFS"
     Public Shared Function GetTapeDriveList() As List(Of BlockDevice)
         Dim LDrive As New List(Of BlockDevice)
-        Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        Dim obj As List(Of SetupAPIHelper.Device)
+        Try
+            obj = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        Catch ex As Exception
+            obj = New List(Of SetupAPIHelper.Device)
+        End Try
         Dim tapeobj As New List(Of SetupAPIHelper.Device)
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
