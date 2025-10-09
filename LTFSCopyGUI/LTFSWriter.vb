@@ -813,7 +813,7 @@ Public Class LTFSWriter
                 LastNoCCPs(chan) = NoCCPs
             Next
             If DataValid AndAlso HasNullChannel Then
-
+                result = Math.Max(result, -2.98)
             End If
             If DataValid Then ChanErrLogRateHistory = AllResults
         Catch
