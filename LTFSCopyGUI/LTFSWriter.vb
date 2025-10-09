@@ -781,6 +781,8 @@ Public Class LTFSWriter
         Try
             Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
             Dim AllResults As New List(Of Double)
+            Dim DataValid As Boolean = False
+            Dim HasNullChannel As Boolean = False
             For ch As Integer = 4 To WERLData.Length - 5 Step 5
                 Dim chan As Integer = (ch - 4) \ 5
                 Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
@@ -790,6 +792,7 @@ Public Class LTFSWriter
                 Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
                 debuginfo.Append($"CH={chan} CCP={NoCCPs} C1={C1err}")
                 If NoCCPs - LastNoCCPs(chan) > 0 Then
+                    DataValid = True
                     Dim errRateLogValue As Double = 0
                     Try
                         errRateLogValue = Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920)
@@ -800,11 +803,19 @@ Public Class LTFSWriter
                         result = Math.Max(result, errRateLogValue)
                     End If
                     debuginfo.Append($" LR={errRateLogValue}{vbTab}")
+                Else
+                    HasNullChannel = True
+                    Dim errRateLogValue As Double = -2.98
+                    AllResults.Add(errRateLogValue)
+                    debuginfo.Append($" LR={errRateLogValue}{vbTab}")
                 End If
                 LastC1Err(chan) = C1err
                 LastNoCCPs(chan) = NoCCPs
             Next
-            ChanErrLogRateHistory = AllResults
+            If DataValid AndAlso HasNullChannel Then
+
+            End If
+            If DataValid Then ChanErrLogRateHistory = AllResults
         Catch
         End Try
         If result < -10 Then result = 0
@@ -847,7 +858,7 @@ Public Class LTFSWriter
                 FileRateHistory.RemoveAt(0)
             End While
 
-            If My.Settings.LTFSConf_AutoRefresh AndAlso (fdelta = 0 OrElse LRHistory <> 0) Then
+            If My.Settings.LTFSWriter_AutoFlush AndAlso (fdelta = 0 OrElse LRHistory <> 0) Then
                 Dim AutoFlushTriggered As Boolean = True
                 For j As Integer = 1 To My.Settings.LTFSWriter_AutoCleanTimeThreashould
                     Dim n As Double = SpeedHistory(SpeedHistory.Count - j)

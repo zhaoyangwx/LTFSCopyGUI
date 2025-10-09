@@ -6,6 +6,16 @@ Imports NAudio.Wave
 Public Class LTFSConfigurator
     Private LoadComplete As Boolean = False
     Private _SelectedIndex As Integer
+    Public ReadOnly Property DriveOpenCount As SerializableDictionary(Of String, Integer)
+        Get
+            Return TapeUtils.DriveOpenCount
+        End Get
+    End Property
+    Public ReadOnly Property DriveHandle As SerializableDictionary(Of String, IntPtr)
+        Get
+            Return TapeUtils.DriveHandle
+        End Get
+    End Property
     Public Function GetCurDrive() As TapeUtils.BlockDevice
         Dim dlist As List(Of TapeUtils.BlockDevice)
         If CheckBoxAutoRefresh.Checked OrElse LastDeviceList Is Nothing Then
@@ -1129,6 +1139,7 @@ Public Class LTFSConfigurator
                         Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
                     End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
             Catch ex As Exception
+                TapeUtils.CloseTapeDrive(driveHandle)
                 TextBoxDebugOutput.AppendText(ex.ToString())
                 Panel1.Enabled = True
             End Try
