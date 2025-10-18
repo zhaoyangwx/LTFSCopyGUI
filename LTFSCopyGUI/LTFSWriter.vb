@@ -3429,6 +3429,7 @@ Public Class LTFSWriter
                                 Dim CurrentBlockLen As UInteger = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
                                 Dim Data As Byte()
                                 Dim readsucc As Boolean = False
+                                Dim ignored As Boolean = False
                                 While Not readsucc
                                     Dim sense() As Byte = {}
                                     Try
@@ -3469,6 +3470,7 @@ Public Class LTFSWriter
                                                     readsucc = False
                                                 Case DialogResult.Ignore
                                                     readsucc = True
+                                                    ignored = True
                                                     Exit While
                                             End Select
                                         End Try
@@ -3480,10 +3482,29 @@ Public Class LTFSWriter
                                     RestorePosition.BlockNumber += 1
                                 End SyncLock
                                 If Data.Length <> CurrentBlockLen OrElse CurrentBlockLen = 0 Then
-                                    PrintMsg($"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {CurrentBlockLen}", LogOnly:=True, ForceLog:=True)
-                                    succ = False
-                                    SetStatusLight(LWStatus.Err)
-                                    Exit Do
+                                    Dim errmsg As String = $"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {CurrentBlockLen}"
+                                    PrintMsg(errmsg, LogOnly:=True, ForceLog:=True)
+                                    If Not ignored Then
+                                        While True
+                                            Select Case MessageBox.Show(New Form With {.TopMost = True}, errmsg, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                Case DialogResult.Abort
+                                                    fs.Close()
+                                                    StopFlag = True
+                                                    Throw New Exception($"{My.Resources.ResText_OpCancelled}")
+                                                Case DialogResult.Retry
+                                                Case DialogResult.Ignore
+                                                    ignored = True
+                                                    Exit While
+                                            End Select
+                                        End While
+                                    End If
+                                    If Not ignored Then
+                                        succ = False
+                                        SetStatusLight(LWStatus.Err)
+                                        Exit Do
+                                    Else
+                                        CurrentBlockLen = Math.Min(Data.Length, CurrentBlockLen)
+                                    End If
                                 End If
                                 ReadedSize += CurrentBlockLen - ByteOffset
                                 fs.Write(Data, ByteOffset, CurrentBlockLen - ByteOffset)
@@ -3529,9 +3550,12 @@ Public Class LTFSWriter
                     PrintMsg($"{FileIndex.name}{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                     SetStatusLight(LWStatus.Err)
                 End Try
+                Try
+                    fs.Flush()
+                    fs.Close()
+                Catch ex As Exception
 
-                fs.Flush()
-                fs.Close()
+                End Try
                 Dim finfo As New IO.FileInfo(FileName)
                 Try
                     finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
