@@ -1,5 +1,6 @@
 Imports System.ComponentModel
 Imports System.Diagnostics.Eventing
+Imports System.IO.Pipelines
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
@@ -3836,16 +3837,18 @@ Public Class LTFSWriter
     Public Property IsWriting As Boolean = False
     Public Property PipeBufferLength As Long = 0
     Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
-        Dim result As IO.Pipelines.ReadResult
-        Try
-            result = reader.ReadAsync().AsTask().Result
-        Catch
-        End Try
-        Dim buffer = result.Buffer
-        PipeGetLength = buffer.Length
-        If buffer.Length = 0 Then Return 0
-        If result.IsCompleted Then Return 0
-        reader.AdvanceTo(buffer.Start, buffer.End)
+        Dim result As ReadResult
+        If Not reader.TryRead(result) Then
+            ' 没有可读数据
+            Return 0
+        End If
+
+        ' 获取当前缓冲区的数据总长度
+        Dim length As Long = result.Buffer.Length
+
+        ' 不推进读取位置，保留数据以便后续读取
+        reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
+        Return length
     End Function
     Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
                                      dest As Byte(),
@@ -3919,7 +3922,11 @@ Public Class LTFSWriter
                     TapeUtils.ReserveUnit(driveHandle)
                     TapeUtils.PreventMediaRemoval(driveHandle)
                     Dim locateResult As Boolean = False
-                    Dim locateTask As Task = Task.Run(Sub() locateResult = LocateToWritePosition())
+                    Dim LTE As New AutoResetEvent(False)
+                    Dim locateTask As Task = Task.Run(Sub()
+                                                          locateResult = LocateToWritePosition()
+                                                          LTE.Set()
+                                                      End Sub)
                     IsWriting = True
                     UFReadCount.Inc()
                     Dim WriteList As New List(Of FileRecord)
@@ -3946,7 +3953,7 @@ Public Class LTFSWriter
 
                     Dim lcounter As Integer = 0
                     While Not (locateTask.IsCompleted OrElse locateTask.IsCanceled OrElse locateTask.IsFaulted)
-                        Threading.Thread.Sleep(10)
+                        LTE.WaitOne(10)
                         lcounter += 1
                         If lcounter >= 100 Then
                             lcounter = 0
@@ -4252,6 +4259,7 @@ Public Class LTFSWriter
                                             'Dim tsub As Double = 0
                                             Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
                                             Dim remainingInFile As Long = finfo.Length
+                                            Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
                                                 Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
                                                 Dim buffer(plabel.blocksize - 1) As Byte
@@ -4282,9 +4290,9 @@ Public Class LTFSWriter
                                                 If LastWriteTask IsNot Nothing Then
                                                     Dim lwcounter As Integer = 0
                                                     While Not (LastWriteTask.IsCompleted OrElse LastWriteTask.IsCanceled OrElse LastWriteTask.IsFaulted)
-                                                        Threading.Thread.Sleep(1)
+                                                        LWTE.WaitOne(10)
                                                         lwcounter += 1
-                                                        If lwcounter >= 1000 Then
+                                                        If lwcounter >= 100 Then
                                                             lwcounter = 0
                                                             PipeBufferLength = PipeGetLength(reader)
                                                         End If
@@ -4379,10 +4387,14 @@ Public Class LTFSWriter
                                                         End If
                                                         If Flush Then
                                                             Dim flushResult As Boolean = False
-                                                            Dim tFlush As Task = Task.Run(Sub() flushResult = CheckFlush())
+                                                            Dim tFE As New AutoResetEvent(False)
+                                                            Dim tFlush As Task = Task.Run(Sub()
+                                                                                              flushResult = CheckFlush()
+                                                                                              tFE.Set()
+                                                                                          End Sub)
                                                             Dim counter As Integer = 0
                                                             While Not (tFlush.IsCompleted OrElse tFlush.IsCanceled OrElse tFlush.IsFaulted)
-                                                                Threading.Thread.Sleep(10)
+                                                                tFE.WaitOne(10)
                                                                 counter += 1
                                                                 If counter >= 100 Then
                                                                     counter = 0
@@ -4398,10 +4410,14 @@ Public Class LTFSWriter
                                                             End If
                                                         End If
                                                         If Clean Then
-                                                            Dim tClean As Task = Task.Run(Sub() CheckClean(True))
+                                                            Dim tCE As New AutoResetEvent(False)
+                                                            Dim tClean As Task = Task.Run(Sub()
+                                                                                              CheckClean(True)
+                                                                                              tCE.Set()
+                                                                                          End Sub)
                                                             Dim counter As Integer = 0
                                                             While Not (tClean.IsCompleted OrElse tClean.IsCanceled OrElse tClean.IsFaulted)
-                                                                Threading.Thread.Sleep(10)
+                                                                tCE.WaitOne(10)
                                                                 counter += 1
                                                                 If counter >= 100 Then
                                                                     counter = 0
@@ -4416,6 +4432,7 @@ Public Class LTFSWriter
                                                     Else
                                                         ExitWhileFlag = True
                                                     End If
+                                                    LWTE.Set()
                                                 End Sub)
 
                                                 remainingInFile -= BytesReaded
@@ -4425,9 +4442,9 @@ Public Class LTFSWriter
                                             If LastWriteTask IsNot Nothing Then
                                                 Dim lwcounter As Integer = 0
                                                 While Not (LastWriteTask.IsCompleted OrElse LastWriteTask.IsCanceled OrElse LastWriteTask.IsFaulted)
-                                                    Threading.Thread.Sleep(1)
+                                                    LWTE.WaitOne(10)
                                                     lwcounter += 1
-                                                    If lwcounter >= 1000 Then
+                                                    If lwcounter >= 100 Then
                                                         lwcounter = 0
                                                         PipeBufferLength = PipeGetLength(reader)
                                                     End If
@@ -4522,7 +4539,7 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Increment(pCounter)
                                 pCounter += 1
                                 If pCounter >= 100 Then
-                                    pCounter=0
+                                    pCounter = 0
                                     PipeBufferLength = PipeGetLength(provider.Reader)
                                 End If
                                 If Not Pause Then
