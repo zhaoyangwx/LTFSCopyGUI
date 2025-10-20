@@ -3843,6 +3843,7 @@ Public Class LTFSWriter
         End Try
         Dim buffer = result.Buffer
         PipeGetLength = buffer.Length
+        If buffer.Length = 0 Then Return 0
         If result.IsCompleted Then Return 0
         reader.AdvanceTo(buffer.Start, buffer.End)
     End Function

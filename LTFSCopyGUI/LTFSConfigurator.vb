@@ -2353,7 +2353,7 @@ Public Class LTFSConfigurator
         For i As Integer = 0 To lcmd.Count - 1
             With lcmd(i)
                 If .CDB = cmd.CDB AndAlso .Param = cmd.Param AndAlso .DataDIR = cmd.DataDIR AndAlso .Timeout = cmd.Timeout Then
-                    cmd.Name = cmdName
+                    .Name = cmdName
                     CMDList = lcmd
                     My.Settings.Save()
                     cmdExist = True
