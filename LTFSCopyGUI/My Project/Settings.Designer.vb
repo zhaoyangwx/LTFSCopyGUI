@@ -241,6 +241,19 @@ Namespace My
                 Me("LTFSConf_AutoRefresh") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
+         Category("LTFSConfigurator"),
+         LocalizedDescription("PropertyDescription_LTFSConf_CMDList")>
+        Public Property LTFSConf_CMDList() As List(Of LTFSConfigurator.SCSICMD)
+            Get
+                Return CType(Me("LTFSConf_CMDList"), List(Of LTFSConfigurator.SCSICMD))
+            End Get
+            Set
+                Me("LTFSConf_CMDList") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("重装带前清洁次数"),
@@ -409,9 +422,9 @@ Namespace My
          Global.System.Configuration.DefaultSettingValueAttribute("268435456"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_PreLoadBytes")>
-        Public Property LTFSWriter_PreLoadBytes() As Integer
+        Public Property LTFSWriter_PreLoadBytes() As Long
             Get
-                Return CType(Me("LTFSWriter_PreLoadBytes"), Integer)
+                Return CType(Me("LTFSWriter_PreLoadBytes"), Long)
             End Get
             Set
                 Me("LTFSWriter_PreLoadBytes") = Value

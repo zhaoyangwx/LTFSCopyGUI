@@ -902,4 +902,16 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="ResText_Directories_C" xml:space="preserve">
     <value>个目录？</value>
   </data>
+  <data name="DefaultLicense" xml:space="preserve">
+    <value> 非商业许可</value>
+  </data>
+  <data name="LicenseInvalid" xml:space="preserve">
+    <value>许可证无效</value>
+  </data>
+  <data name="ResText_S5" xml:space="preserve">
+    <value>已缓存:</value>
+  </data>
+  <data name="PropertyDescription_LTFSConf_CMDList" xml:space="preserve">
+    <value>快捷指令</value>
+  </data>
 </root>

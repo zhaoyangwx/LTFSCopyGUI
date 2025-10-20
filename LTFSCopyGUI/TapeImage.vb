@@ -49,7 +49,7 @@ Public Class TapeImage
         End Get
     End Property
     <Xml.Serialization.XmlIgnore>
-    Public ReadOnly Property CurrentStream As IO.FileStream
+    Public ReadOnly Property CurrentStream As IO.Stream
         Get
             Return PartitionMappingStream(Position.PartitionNumber)
         End Get
@@ -62,7 +62,7 @@ Public Class TapeImage
     End Property
 
 
-    Private PartitionMappingStream As New Dictionary(Of Integer, IO.FileStream)
+    Private PartitionMappingStream As New Dictionary(Of Integer, IO.Stream)
     Private CurrentDatasetID As Integer = 0
     Private CurrentIntraSetBlockOffset As Integer = 0
     Public Const BlockHeaderLen As Integer = 16
@@ -105,7 +105,7 @@ Public Class TapeImage
             PartitionMappingFile = .PartitionMappingFile
             FilemarkBlockIndex = .FilemarkBlockIndex
             PartitionEOD = .PartitionEOD
-            PartitionMappingStream = New Dictionary(Of Integer, FileStream)
+            PartitionMappingStream = New Dictionary(Of Integer, Stream)
         End With
         For Each id As Integer In PartitionMappingFile.Keys
             PartitionMappingStream.Add(id, New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open))
@@ -116,7 +116,7 @@ Public Class TapeImage
         idxFile = New IO.FileInfo(filename)
         Dim name As String = idxfile.Name.Substring(0, idxfile.Name.Length - idxfile.Extension.Length)
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
-        PartitionMappingStream = New Dictionary(Of Integer, FileStream)
+        PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
         For i As Integer = 0 To PartitionCount - 1
@@ -134,7 +134,7 @@ Public Class TapeImage
         Close()
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
-        PartitionMappingStream = New Dictionary(Of Integer, FileStream)
+        PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
         For i As Integer = 0 To PartitionCount - 1

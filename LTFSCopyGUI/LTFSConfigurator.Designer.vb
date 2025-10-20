@@ -90,6 +90,7 @@ Partial Class LTFSConfigurator
         Me.ContextMenuStripRawDump = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.WriteToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.PlayPCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.WritePCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TabPageBuffer = New System.Windows.Forms.TabPage()
         Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
         Me.ComboBoxBufferPage = New System.Windows.Forms.ComboBox()
@@ -145,7 +146,10 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.WritePCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuStripSend = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.保存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -170,6 +174,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStripSend.SuspendLayout()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -634,6 +639,11 @@ Partial Class LTFSConfigurator
         Me.PlayPCMToolStripMenuItem.Name = "PlayPCMToolStripMenuItem"
         resources.ApplyResources(Me.PlayPCMToolStripMenuItem, "PlayPCMToolStripMenuItem")
         '
+        'WritePCMToolStripMenuItem
+        '
+        Me.WritePCMToolStripMenuItem.Name = "WritePCMToolStripMenuItem"
+        resources.ApplyResources(Me.WritePCMToolStripMenuItem, "WritePCMToolStripMenuItem")
+        '
         'TabPageBuffer
         '
         Me.TabPageBuffer.Controls.Add(Me.ButtonDebugDumpBuffer)
@@ -946,6 +956,7 @@ Partial Class LTFSConfigurator
         'ButtonDebugSendSCSICommand
         '
         resources.ApplyResources(Me.ButtonDebugSendSCSICommand, "ButtonDebugSendSCSICommand")
+        Me.ButtonDebugSendSCSICommand.ContextMenuStrip = Me.ContextMenuStripSend
         Me.ButtonDebugSendSCSICommand.Name = "ButtonDebugSendSCSICommand"
         Me.ButtonDebugSendSCSICommand.UseVisualStyleBackColor = True
         '
@@ -983,10 +994,26 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'WritePCMToolStripMenuItem
+        'ContextMenuStripSend
         '
-        Me.WritePCMToolStripMenuItem.Name = "WritePCMToolStripMenuItem"
-        resources.ApplyResources(Me.WritePCMToolStripMenuItem, "WritePCMToolStripMenuItem")
+        Me.ContextMenuStripSend.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripSeparator1, Me.保存ToolStripMenuItem, Me.删除ToolStripMenuItem})
+        Me.ContextMenuStripSend.Name = "ContextMenuStripSend"
+        resources.ApplyResources(Me.ContextMenuStripSend, "ContextMenuStripSend")
+        '
+        'ToolStripSeparator1
+        '
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
+        '
+        '保存ToolStripMenuItem
+        '
+        Me.保存ToolStripMenuItem.Name = "保存ToolStripMenuItem"
+        resources.ApplyResources(Me.保存ToolStripMenuItem, "保存ToolStripMenuItem")
+        '
+        '删除ToolStripMenuItem
+        '
+        Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
+        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
         '
         'LTFSConfigurator
         '
@@ -1027,6 +1054,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStripSend.ResumeLayout(False)
         Me.ResumeLayout(False)
 
     End Sub
@@ -1153,4 +1181,8 @@ Partial Class LTFSConfigurator
     Friend WithEvents ManualAddToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents BrowseToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents WritePCMToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents ContextMenuStripSend As ContextMenuStrip
+    Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
+    Friend WithEvents 保存ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 删除ToolStripMenuItem As ToolStripMenuItem
 End Class
