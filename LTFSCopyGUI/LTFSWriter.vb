@@ -1,4 +1,5 @@
 Imports System.ComponentModel
+Imports System.Diagnostics.Eventing
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
@@ -919,6 +920,7 @@ Public Class LTFSWriter
             If UFile > 0 AndAlso UFile >= CurrentFilesProcessed Then ToolStripStatusLabel4.Text &= $"[{UFile - CurrentFilesProcessed}/{UFile}]"
             ToolStripStatusLabel4.Text &= $"{ IOManager.FormatSize(Math.Max(0, USize - CurrentBytesProcessed))}/{IOManager.FormatSize(USize)}"
             ToolStripStatusLabel4.Text &= $"  {My.Resources.ResText_S3}{IOManager.FormatSize(TotalBytesUnindexed)}"
+            ToolStripStatusLabel4.Text &= $"  {My.Resources.ResText_S5}{IOManager.FormatSize(PipeBufferLength)}"
             ToolStripStatusLabel4.ToolTipText = ToolStripStatusLabel4.Text
             ToolStripStatusLabel6.Text = ""
             If USize > 0 AndAlso CurrentBytesProcessed >= 0 AndAlso CurrentBytesProcessed <= USize Then
@@ -3832,7 +3834,18 @@ Public Class LTFSWriter
     End Function
     Public StartTime As Date
     Public Property IsWriting As Boolean = False
-
+    Public Property PipeBufferLength As Long = 0
+    Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
+        Dim result As IO.Pipelines.ReadResult
+        Try
+            result = reader.ReadAsync().AsTask().Result
+        Catch
+        End Try
+        Dim buffer = result.Buffer
+        PipeGetLength = buffer.Length
+        If result.IsCompleted Then Return 0
+        reader.AdvanceTo(buffer.Start, buffer.End)
+    End Function
     Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
                                      dest As Byte(),
                                      count As Integer,
@@ -3845,6 +3858,7 @@ Public Class LTFSWriter
             Catch
             End Try
             Dim buffer = result.Buffer
+            PipeBufferLength = buffer.Length
             Dim need As Long = count - readTotal
             Dim take As Long = Math.Min(need, buffer.Length)
             If take = 0 Then
@@ -3867,6 +3881,7 @@ Public Class LTFSWriter
             Dim consumed = slice.End
             reader.AdvanceTo(consumed, consumed)
         End While
+
         Return readTotal
     End Function
 
@@ -3877,6 +3892,7 @@ Public Class LTFSWriter
         While remain > 0
             Dim result = reader.ReadAsync(ct).AsTask().Result
             Dim buffer = result.Buffer
+            PipeBufferLength = buffer.Length
             If buffer.Length = 0 Then
                 reader.AdvanceTo(buffer.Start, buffer.End)
                 If result.IsCompleted Then Exit While
@@ -3924,12 +3940,23 @@ Public Class LTFSWriter
                                                              smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
                                                              pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
                         provider.Start()
+
                     End If
-                    locateTask.Wait()
+
+                    Dim lcounter As Integer = 0
+                    While Not (locateTask.IsCompleted OrElse locateTask.IsCanceled OrElse locateTask.IsFaulted)
+                        Threading.Thread.Sleep(10)
+                        lcounter += 1
+                        If lcounter >= 100 Then
+                            lcounter = 0
+                            PipeBufferLength = PipeGetLength(provider.Reader)
+                        End If
+                    End While
                     If Not locateResult Then
                         UFReadCount.Dec()
                         If provider IsNot Nothing Then
                             Try
+                                PipeBufferLength = 0
                                 provider.Cancel()
                                 provider.CompleteAsync().GetAwaiter().GetResult()
                             Catch
@@ -4251,7 +4278,17 @@ Public Class LTFSWriter
                                                     End Select
                                                 End Try
 
-                                                If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                                If LastWriteTask IsNot Nothing Then
+                                                    Dim lwcounter As Integer = 0
+                                                    While Not (LastWriteTask.IsCompleted OrElse LastWriteTask.IsCanceled OrElse LastWriteTask.IsFaulted)
+                                                        Threading.Thread.Sleep(1)
+                                                        lwcounter += 1
+                                                        If lwcounter >= 1000 Then
+                                                            lwcounter = 0
+                                                            PipeBufferLength = PipeGetLength(reader)
+                                                        End If
+                                                    End While
+                                                End If
                                                 If ExitWhileFlag Then Exit While
 
                                                 LastWriteTask = Task.Run(
@@ -4299,6 +4336,7 @@ Public Class LTFSWriter
                                                                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
                                                                     StopFlag = True
                                                                     Try
+                                                                        PipeBufferLength = 0
                                                                         provider.Cancel()
                                                                         provider.CompleteAsync().GetAwaiter().GetResult()
                                                                     Catch
@@ -4339,7 +4377,18 @@ Public Class LTFSWriter
                                                             End If
                                                         End If
                                                         If Flush Then
-                                                            If CheckFlush() Then
+                                                            Dim flushResult As Boolean = False
+                                                            Dim tFlush As Task = Task.Run(Sub() flushResult = CheckFlush())
+                                                            Dim counter As Integer = 0
+                                                            While Not (tFlush.IsCompleted OrElse tFlush.IsCanceled OrElse tFlush.IsFaulted)
+                                                                Threading.Thread.Sleep(10)
+                                                                counter += 1
+                                                                If counter >= 100 Then
+                                                                    counter = 0
+                                                                    PipeBufferLength = PipeGetLength(reader)
+                                                                End If
+                                                            End While
+                                                            If flushResult Then
                                                                 If My.Settings.LTFSWriter_PowerPolicyOnWriteBegin <> Guid.Empty Then
                                                                     Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
                                                                         .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteBegin.ToString()}",
@@ -4347,7 +4396,18 @@ Public Class LTFSWriter
                                                                 End If
                                                             End If
                                                         End If
-                                                        If Clean Then CheckClean(True)
+                                                        If Clean Then
+                                                            Dim tClean As Task = Task.Run(Sub() CheckClean(True))
+                                                            Dim counter As Integer = 0
+                                                            While Not (tClean.IsCompleted OrElse tClean.IsCanceled OrElse tClean.IsFaulted)
+                                                                Threading.Thread.Sleep(10)
+                                                                counter += 1
+                                                                If counter >= 100 Then
+                                                                    counter = 0
+                                                                    PipeBufferLength = PipeGetLength(reader)
+                                                                End If
+                                                            End While
+                                                        End If
                                                         fr.File.WrittenBytes += BytesReaded
                                                         TotalBytesProcessed += BytesReaded
                                                         CurrentBytesProcessed += BytesReaded
@@ -4361,7 +4421,17 @@ Public Class LTFSWriter
                                             End While
 
                                             'If i < WriteList.Count - 1 Then WriteList(i + 1).BeginOpen()
-                                            If LastWriteTask IsNot Nothing Then LastWriteTask.Wait()
+                                            If LastWriteTask IsNot Nothing Then
+                                                Dim lwcounter As Integer = 0
+                                                While Not (LastWriteTask.IsCompleted OrElse LastWriteTask.IsCanceled OrElse LastWriteTask.IsFaulted)
+                                                    Threading.Thread.Sleep(1)
+                                                    lwcounter += 1
+                                                    If lwcounter >= 1000 Then
+                                                        lwcounter = 0
+                                                        PipeBufferLength = PipeGetLength(reader)
+                                                    End If
+                                                End While
+                                            End If
                                             fr.CloseAsync()
                                             If HashOnWrite AndAlso sh IsNot Nothing AndAlso Not StopFlag Then
                                                 Threading.Interlocked.Increment(HashTaskAwaitNumber)
@@ -4445,8 +4515,15 @@ Public Class LTFSWriter
                                            End With
                                        End Sub)
                             End If
+                            Dim pCounter As Integer = 0
                             While Pause
                                 Threading.Thread.Sleep(10)
+                                Threading.Interlocked.Increment(pCounter)
+                                pCounter += 1
+                                If pCounter >= 100 Then
+                                    pCounter=0
+                                    PipeBufferLength = PipeGetLength(provider.Reader)
+                                End If
                                 If Not Pause Then
                                     Invoke(Sub()
                                                With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
@@ -4473,6 +4550,7 @@ Public Class LTFSWriter
                         Next
 
                         Try
+                            PipeBufferLength = 0
                             provider.Cancel()
                             provider.CompleteAsync().GetAwaiter().GetResult()
                         Catch

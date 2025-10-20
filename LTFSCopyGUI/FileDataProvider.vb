@@ -161,7 +161,6 @@ Public Class FileDataProvider
                     ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
                     Await StreamFileToPipeAsync(fr, _cts.Token)
                 End If
-
                 ' 在积极模式下，自动继续下一个文件；在信号模式下，等待下一次 RequestNextFile
                 If _requireSignal = False Then
                     ' 继续循环即可

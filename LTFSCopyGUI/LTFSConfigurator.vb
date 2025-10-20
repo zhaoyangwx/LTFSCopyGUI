@@ -171,6 +171,7 @@ Public Class LTFSConfigurator
         ComboBoxBufferPage.SelectedIndex = 3
         ComboBoxLocateType.SelectedIndex = 0
         Text = $"LTFSConfigurator - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        LoadCMD()
         LoadComplete = True
         RefreshUI()
     End Sub
@@ -2307,4 +2308,89 @@ Public Class LTFSConfigurator
             End If
         End If
     End Sub
+
+    Public Property CMDList As List(Of SCSICMD)
+        Get
+            If My.Settings.LTFSConf_CMDList Is Nothing Then
+                My.Settings.LTFSConf_CMDList = New List(Of SCSICMD)
+            End If
+            Return My.Settings.LTFSConf_CMDList
+        End Get
+        Set(value As List(Of SCSICMD))
+            My.Settings.LTFSConf_CMDList = value
+        End Set
+    End Property
+
+    Public Sub LoadCMD()
+        While ContextMenuStripSend.Items.Count > 3
+            ContextMenuStripSend.Items.RemoveAt(0)
+        End While
+        Dim lcmd As List(Of SCSICMD) = CMDList
+        Dim idx As Integer = 0
+        For Each cmd As SCSICMD In lcmd
+            Dim item As New ToolStripMenuItem()
+            item.Text = cmd.Name
+            item.Tag = cmd
+            AddHandler item.Click,
+                Sub()
+                    With CType(item.Tag, SCSICMD)
+                        TextBoxCDBData.Text = .CDB
+                        TextBoxParamData.Text = .Param
+                        TextBoxDataDir.Text = .DataDIR
+                        TextBoxTimeoutValue.Text = .Timeout
+                    End With
+                End Sub
+            ContextMenuStripSend.Items.Insert(idx, item)
+            idx += 1
+        Next
+    End Sub
+    Private Sub 保存ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 保存ToolStripMenuItem.Click
+        Dim cmdName As String = InputBox($"Name", "Save command", "Command")
+        Dim cmd As New SCSICMD With {.Name = cmdName, .CDB = TextBoxCDBData.Text, .Param = TextBoxParamData.Text, .DataDIR = TextBoxDataDir.Text, .Timeout = TextBoxTimeoutValue.Text}
+
+        Dim lcmd As List(Of SCSICMD) = CMDList
+        Dim cmdExist As Boolean = False
+        For i As Integer = 0 To lcmd.Count - 1
+            With lcmd(i)
+                If .CDB = cmd.CDB AndAlso .Param = cmd.Param AndAlso .DataDIR = cmd.DataDIR AndAlso .Timeout = cmd.Timeout Then
+                    cmd.Name = cmdName
+                    CMDList = lcmd
+                    My.Settings.Save()
+                    cmdExist = True
+                    Exit For
+                End If
+            End With
+        Next
+        If Not cmdExist Then
+            lcmd.Add(cmd)
+            CMDList = lcmd
+            My.Settings.Save()
+        End If
+        LoadCMD()
+    End Sub
+
+    Private Sub 删除ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 删除ToolStripMenuItem.Click
+        Dim cmd As New SCSICMD With {.Name = "", .CDB = TextBoxCDBData.Text, .Param = TextBoxParamData.Text, .DataDIR = TextBoxDataDir.Text, .Timeout = TextBoxTimeoutValue.Text}
+        Dim lcmd As List(Of SCSICMD) = CMDList
+        Dim cmdExist As Boolean = False
+        For i As Integer = 0 To lcmd.Count - 1
+            With lcmd(i)
+                If .CDB = cmd.CDB AndAlso .Param = cmd.Param AndAlso .DataDIR = cmd.DataDIR AndAlso .Timeout = cmd.Timeout Then
+                    lcmd.RemoveAt(i)
+                    CMDList = lcmd
+                    My.Settings.Save()
+                    LoadCMD()
+                    Exit For
+                End If
+            End With
+        Next
+    End Sub
+    <Serializable>
+    Public Class SCSICMD
+        Public Property Name As String = ""
+        Public Property CDB As String = ""
+        Public Property Param As String = ""
+        Public Property DataDIR As String = ""
+        Public Property Timeout As String = ""
+    End Class
 End Class

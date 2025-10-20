@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="DefaultLicense" xml:space="preserve">
-    <value> Non-commercial License</value>
-  </data>
-  <data name="LicenseInvalid" xml:space="preserve">
-    <value>License invalid</value>
-  </data>
   <data name="StrBCSFail" xml:space="preserve">
     <value>Barcode write fail</value>
   </data>
@@ -707,9 +701,6 @@
   <data name="PropertyDescription_LTFSWriter_AutoCleanTimeThreashould" xml:space="preserve">
     <value>Auto clean time threashould (seconds)</value>
   </data>
-  <data name="PropertyDescription_LTFSWriter_AutoCleanUpperLim" xml:space="preserve">
-    <value>Auto clean speed upper limit</value>
-  </data>
   <data name="PropertyDescription_LTFSWriter_DeDupe" xml:space="preserve">
     <value>Dedupe</value>
   </data>
@@ -754,6 +745,9 @@
   </data>
   <data name="PropertyDescription_LTFSWriter_AutoCleanDownLim" xml:space="preserve">
     <value>Auto clean speed down limit</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_AutoCleanUpperLim" xml:space="preserve">
+    <value>Auto clean speed upper limit</value>
   </data>
   <data name="PropertyDescription_LTFSWriter_AutoFlush" xml:space="preserve">
     <value>Flush when capacity loss is detected</value>
@@ -893,5 +887,17 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   </data>
   <data name="ResText_Directories_C" xml:space="preserve">
     <value> directories?</value>
+  </data>
+  <data name="DefaultLicense" xml:space="preserve">
+    <value> Non-commercial License</value>
+  </data>
+  <data name="LicenseInvalid" xml:space="preserve">
+    <value>License invalid</value>
+  </data>
+  <data name="ResText_S5" xml:space="preserve">
+    <value>Buffered:</value>
+  </data>
+  <data name="PropertyDescription_LTFSConf_CMDList" xml:space="preserve">
+    <value>Send command</value>
   </data>
 </root>

@@ -22,7 +22,7 @@ Namespace My.Resources
     '''<summary>
     '''  一个强类型的资源类，用于查找本地化的字符串等。
     '''</summary>
-    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0"),  _
+    <Global.System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0"),  _
      Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
      Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
      Global.Microsoft.VisualBasic.HideModuleNameAttribute()>  _
@@ -47,8 +47,8 @@ Namespace My.Resources
         End Property
         
         '''<summary>
-        '''  使用此强类型资源类，为所有资源查找
-        '''  重写当前线程的 CurrentUICulture 属性。
+        '''  重写当前线程的 CurrentUICulture 属性，对
+        '''  使用此强类型资源类的所有资源查找执行重写。
         '''</summary>
         <Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
         Friend Property Culture() As Global.System.Globalization.CultureInfo
@@ -61,12 +61,30 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似  非商业许可 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property DefaultLicense() As String
+            Get
+                Return ResourceManager.GetString("DefaultLicense", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找 System.Drawing.Bitmap 类型的本地化资源。
         '''</summary>
         Friend ReadOnly Property dragdrop() As System.Drawing.Bitmap
             Get
                 Dim obj As Object = ResourceManager.GetObject("dragdrop", resourceCulture)
                 Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 许可证无效 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property LicenseInvalid() As String
+            Get
+                Return ResourceManager.GetString("LicenseInvalid", resourceCulture)
             End Get
         End Property
         
@@ -139,6 +157,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSConf_AutoRefresh() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSConf_AutoRefresh", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 快捷指令 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSConf_CMDList() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSConf_CMDList", resourceCulture)
             End Get
         End Property
         
@@ -1751,6 +1778,15 @@ Namespace My.Resources
         Friend ReadOnly Property ResText_S4() As String
             Get
                 Return ResourceManager.GetString("ResText_S4", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 已缓存: 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_S5() As String
+            Get
+                Return ResourceManager.GetString("ResText_S5", resourceCulture)
             End Get
         End Property
         
