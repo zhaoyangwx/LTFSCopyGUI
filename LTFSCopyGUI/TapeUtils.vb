@@ -624,7 +624,7 @@ Public Class TapeUtils
                     Dim ts As TapeImage
                     TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                     If ts IsNot Nothing Then
-                        ts.Close()
+                        ts.CloseFile()
                         TapeStreamMapping.MappingTable.Remove(handle)
                         ts = Nothing
                         result = True
@@ -3117,7 +3117,7 @@ Public Class TapeUtils
                 Else
                     Select Case LoadOption
                         Case LoadOption.Eject, LoadOption.Unthread
-                            ts.Close()
+                            ts.CloseFile()
                             sensedata = TapeImage.SenseData.NoSense
                         Case LoadOption.LoadThreaded
                             ts.ReOpen()

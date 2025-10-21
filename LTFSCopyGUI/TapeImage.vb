@@ -92,12 +92,12 @@ Public Class TapeImage
             IO.File.Delete(filename)
         End If
         If IO.File.Exists(filename) Then
-            Open(filename)
+            OpenFile(filename)
         Else
-            CreateNew(filename, PartitionCount)
+            CreateNewFile(filename, PartitionCount)
         End If
     End Sub
-    Public Sub Open(filename As String)
+    Public Sub OpenFile(filename As String)
         Dim idx As TapeImage = TapeImage.FromXML(IO.File.ReadAllText(filename))
         idxFile = New IO.FileInfo(filename)
         With idx
@@ -112,9 +112,22 @@ Public Class TapeImage
         Next
         Position = New TapeUtils.PositionData()
     End Sub
-    Public Sub CreateNew(filename As String, Optional ByVal PartitionCount As Integer = 1)
+    Public Sub OpenStream(idx As TapeImage, partitions As List(Of Stream))
+        With idx
+            DatesetLength = .DatesetLength
+            PartitionMappingFile = .PartitionMappingFile
+            FilemarkBlockIndex = .FilemarkBlockIndex
+            PartitionEOD = .PartitionEOD
+            PartitionMappingStream = New Dictionary(Of Integer, Stream)
+        End With
+        For i As Integer = 0 To partitions.Count - 1
+            PartitionMappingStream.Add(i, partitions(i))
+        Next
+        Position = New TapeUtils.PositionData()
+    End Sub
+    Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1)
         idxFile = New IO.FileInfo(filename)
-        Dim name As String = idxfile.Name.Substring(0, idxfile.Name.Length - idxfile.Extension.Length)
+        Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
@@ -131,7 +144,7 @@ Public Class TapeImage
     End Sub
 
     Public Sub ResetPartitionNumber(PartitionCount As Integer)
-        Close()
+        CloseFile()
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
@@ -147,10 +160,10 @@ Public Class TapeImage
         Next
     End Sub
     Public Sub ReOpen()
-        Close()
-        Open(idxFile.FullName)
+        CloseFile()
+        OpenFile(idxFile.FullName)
     End Sub
-    Public Sub Close()
+    Public Sub CloseFile()
         Try
             IO.File.WriteAllText(idxFile.FullName, Me.GetSerializedString())
             For i As Integer = 0 To PartitionCount - 1
@@ -514,7 +527,7 @@ Public Class TapeImage
         testimg.WriteBlock({0, 0, 0, 2})
         testimg.WriteBlock({0, 0, 0, 3})
         testimg.WriteBlock({0, 0, 0, 4})
-        testimg.Close()
+        testimg.CloseFile()
         testimg.Dispose()
         testimg = New TapeImage(path)
         Dim data As Byte()
@@ -540,6 +553,6 @@ Public Class TapeImage
         testimg.LocateByBlock(1, sense)
         testimg.LocateByFilemark(0, sense)
         testimg.LocateByFilemark(1, sense)
-        testimg.Close()
+        testimg.CloseFile()
     End Sub
 End Class
