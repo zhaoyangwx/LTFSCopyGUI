@@ -3846,23 +3846,34 @@ Public Class LTFSWriter
     End Property
     Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
         Dim result As ReadResult
-        Try
-            If Not reader.TryRead(result) Then
-                ' 没有可读数据
-                Return 0
-            End If
+        If Threading.Monitor.TryEnter(PipeLock, 0) Then
+            Try
+                If Not reader.TryRead(result) Then
+                    Threading.Monitor.Exit(PipeLock)
+                    ' 没有可读数据
+                    Return 0
+                End If
 
-            ' 获取当前缓冲区的数据总长度
-            Dim length As Long = result.Buffer.Length
+                ' 获取当前缓冲区的数据总长度
+                Dim length As Long = result.Buffer.Length
 
-            ' 不推进读取位置，保留数据以便后续读取
-            reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
-            Return length
-        Catch
+                ' 不推进读取位置，保留数据以便后续读取
+                reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
+                Threading.Monitor.Exit(PipeLock)
+                Return length
+            Catch ex As Exception
+                PrintMsg(ex.ToString, LogOnly:=True, ForceLog:=True)
+                Threading.Monitor.Exit(PipeLock)
+                Return -1
+            End Try
+            Threading.Monitor.Exit(PipeLock)
+        Else
             Return -1
-        End Try
+        End If
+
 
     End Function
+    Public Property PipeLock As New Object
     Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
                                      dest As Byte(),
                                      count As Integer,
@@ -3870,33 +3881,35 @@ Public Class LTFSWriter
         Dim readTotal As Integer = 0
         While readTotal < count
             Dim result As IO.Pipelines.ReadResult
-            Try
-                result = reader.ReadAsync(ct).AsTask().Result
-            Catch
-            End Try
-            Dim buffer = result.Buffer
-            PipeBufferLength = buffer.Length
-            Dim need As Long = count - readTotal
-            Dim take As Long = Math.Min(need, buffer.Length)
-            If take = 0 Then
-                If result.IsCompleted Then Exit While
-                reader.AdvanceTo(buffer.Start, buffer.End)
-                Continue While
-            End If
+            SyncLock PipeLock
+                Try
+                    result = reader.ReadAsync(ct).AsTask().Result
+                Catch
+                End Try
+                Dim buffer = result.Buffer
+                PipeBufferLength = buffer.Length
+                Dim need As Long = count - readTotal
+                Dim take As Long = Math.Min(need, buffer.Length)
+                If take = 0 Then
+                    If result.IsCompleted Then Exit While
+                    reader.AdvanceTo(buffer.Start, buffer.End)
+                    Continue While
+                End If
 
-            Dim slice = buffer.Slice(0, take)
-            Dim copied As Integer = 0
+                Dim slice = buffer.Slice(0, take)
+                Dim copied As Integer = 0
 
-            For Each seg In slice
-                Dim segLen = CInt(seg.Length)
-                Dim arr = seg.ToArray()
-                Array.Copy(arr, 0, dest, readTotal + copied, segLen)
-                copied += segLen
-            Next
+                For Each seg In slice
+                    Dim segLen = CInt(seg.Length)
+                    Dim arr = seg.ToArray()
+                    Array.Copy(arr, 0, dest, readTotal + copied, segLen)
+                    copied += segLen
+                Next
 
-            readTotal += copied
-            Dim consumed = slice.End
-            reader.AdvanceTo(consumed, consumed)
+                readTotal += copied
+                Dim consumed = slice.End
+                reader.AdvanceTo(consumed, consumed)
+            End SyncLock
         End While
 
         Return readTotal
@@ -3907,18 +3920,20 @@ Public Class LTFSWriter
                           Optional ct As Threading.CancellationToken = Nothing)
         Dim remain = bytesToDrain
         While remain > 0
-            Dim result = reader.ReadAsync(ct).AsTask().Result
-            Dim buffer = result.Buffer
-            PipeBufferLength = buffer.Length
-            If buffer.Length = 0 Then
-                reader.AdvanceTo(buffer.Start, buffer.End)
-                If result.IsCompleted Then Exit While
-                Continue While
-            End If
-            Dim take As Long = Math.Min(remain, buffer.Length)
-            Dim consumed = buffer.GetPosition(take)
-            reader.AdvanceTo(consumed, consumed)
-            remain -= take
+            SyncLock PipeLock
+                Dim result = reader.ReadAsync(ct).AsTask().Result
+                Dim buffer = result.Buffer
+                PipeBufferLength = buffer.Length
+                If buffer.Length = 0 Then
+                    reader.AdvanceTo(buffer.Start, buffer.End)
+                    If result.IsCompleted Then Exit While
+                    Continue While
+                End If
+                Dim take As Long = Math.Min(remain, buffer.Length)
+                Dim consumed = buffer.GetPosition(take)
+                reader.AdvanceTo(consumed, consumed)
+                remain -= take
+            End SyncLock
         End While
     End Sub
 
