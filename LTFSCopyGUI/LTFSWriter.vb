@@ -3835,20 +3835,33 @@ Public Class LTFSWriter
     End Function
     Public StartTime As Date
     Public Property IsWriting As Boolean = False
-    Public Property PipeBufferLength As Long = 0
+    Private _PipeBufferLength As Long = 0
+    Public Property PipeBufferLength As Long
+        Get
+            Return _PipeBufferLength
+        End Get
+        Set(value As Long)
+            If value >= 0 Then _PipeBufferLength = value
+        End Set
+    End Property
     Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
         Dim result As ReadResult
-        If Not reader.TryRead(result) Then
-            ' 没有可读数据
-            Return 0
-        End If
+        Try
+            If Not reader.TryRead(result) Then
+                ' 没有可读数据
+                Return 0
+            End If
 
-        ' 获取当前缓冲区的数据总长度
-        Dim length As Long = result.Buffer.Length
+            ' 获取当前缓冲区的数据总长度
+            Dim length As Long = result.Buffer.Length
 
-        ' 不推进读取位置，保留数据以便后续读取
-        reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
-        Return length
+            ' 不推进读取位置，保留数据以便后续读取
+            reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
+            Return length
+        Catch
+            Return -1
+        End Try
+
     End Function
     Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
                                      dest As Byte(),
