@@ -2101,6 +2101,7 @@ Public Class TapeUtils
         SLR3 = 2
         M2488 = 1
         TapeStream = 100
+        ZBCDevice = 101
         Debug = -1
     End Enum
     Public Shared Function ReadPosition(handle As IntPtr) As PositionData
@@ -2858,9 +2859,9 @@ Public Class TapeUtils
             Dim lpBytesReturned As Int32
             Marshal.StructureToPtr(devNum, devNumPtr, True)
             result = DeviceIoControl(handle, IOCtl.IOCTL_STORAGE_GET_DEVICE_NUMBER, IntPtr.Zero, 0, devNumPtr, Marshal.SizeOf(GetType(SetupAPIWheels.STORAGE_DEVICE_NUMBER)), lpBytesReturned, IntPtr.Zero)
+            CloseHandle(handle)
             If result Then Marshal.PtrToStructure(devNumPtr, devNum)
             Marshal.FreeHGlobal(devNumPtr)
-            CloseHandle(handle)
             Dim drv As BlockDevice = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
             If drv Is Nothing Then drv = New BlockDevice()
             drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
@@ -2915,7 +2916,7 @@ Public Class TapeUtils
         Dim diskobj As New List(Of SetupAPIHelper.Device)
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
-                If dev.ClassName.ToLower = "diskdrive" Then
+                If dev.ClassName.ToLower.Contains("disk") Then
                     diskobj.Add(dev)
                 End If
             End If
@@ -2923,7 +2924,7 @@ Public Class TapeUtils
         obj = SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList()
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
-                If dev.ClassName.ToLower = "diskdrive" Then
+                If dev.ClassName.ToLower.Contains("disk") Then
                     diskobj.Add(dev)
                 End If
             End If
@@ -5015,8 +5016,8 @@ Public Class TapeUtils
         <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Initialisation
             Public Property LP1 As Integer
-            Public Property LP2 As Integer
             Public Property LP3 As Integer
+            Public Property LP5 As Integer
         End Class
         <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class EOD
@@ -5596,8 +5597,8 @@ Public Class TapeUtils
                         End If
                         With CType(g_CM(gtype.initialisation), Initialisation)
                             .LP1 = g_GetDWord(a_Buffer, at_Offset(1))
-                            .LP2 = g_GetDWord(a_Buffer, at_Offset(2))
-                            .LP3 = g_GetDWord(a_Buffer, at_Offset(3))
+                            .LP3 = g_GetDWord(a_Buffer, at_Offset(2))
+                            .LP5 = g_GetDWord(a_Buffer, at_Offset(3))
                         End With
                     End If
                 End With

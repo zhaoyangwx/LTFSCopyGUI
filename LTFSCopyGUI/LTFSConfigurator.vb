@@ -212,7 +212,7 @@ Public Class LTFSConfigurator
                 TextBoxMsg.AppendText(result)
             End If
         End If
-        RefreshUI(CheckBoxAutoRefresh.Checked)
+        RefreshUI(False)
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles ButtonRemove.Click
@@ -226,7 +226,7 @@ Public Class LTFSConfigurator
                 TextBoxMsg.AppendText(result)
             End If
         End If
-        RefreshUI(CheckBoxAutoRefresh.Checked)
+        RefreshUI(False)
     End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles ButtonLoadThreaded.Click
@@ -251,12 +251,12 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
 
     End Sub
 
@@ -280,12 +280,12 @@ Public Class LTFSConfigurator
                                result &= vbCrLf
                                TextBoxMsg.AppendText(result)
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
     End Sub
 
     Private Sub Button10_Click(sender As Object, e As EventArgs) Handles ButtonMount.Click
@@ -299,7 +299,7 @@ Public Class LTFSConfigurator
                 TextBoxMsg.AppendText(result)
             End If
         End If
-        RefreshUI(CheckBoxAutoRefresh.Checked)
+        RefreshUI(False)
     End Sub
 
     Private Sub CheckBox1_CheckedChanged(sender As Object, e As EventArgs) Handles CheckBoxDebugPanel.CheckedChanged
@@ -431,12 +431,12 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
     End Sub
 
     Private Sub Button14_Click(sender As Object, e As EventArgs) Handles ButtonUnthread.Click
@@ -461,12 +461,12 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
             th.Start()
         End If
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
     End Sub
 
     Private Sub ButtonDebugErase_Click(sender As Object, e As EventArgs) Handles ButtonDebugErase.Click
@@ -609,11 +609,11 @@ Public Class LTFSConfigurator
                     Invoke(Sub() TextBoxDebugOutput.AppendText("Erase finished."))
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
         th.Start()
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
     End Sub
 
     Private Sub ButtonDebugWriteBarcode_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBarcode.Click
@@ -643,11 +643,11 @@ Public Class LTFSConfigurator
                            End Sub)
                     Invoke(Sub()
                                Panel1.Enabled = True
-                               RefreshUI(CheckBoxAutoRefresh.Checked)
+                               RefreshUI(False)
                            End Sub)
                 End Sub)
         th.Start()
-        If Panel1.Enabled Then RefreshUI(CheckBoxAutoRefresh.Checked)
+        If Panel1.Enabled Then RefreshUI(False)
     End Sub
 
     Private Sub Label11_Click(sender As Object, e As EventArgs)
@@ -1441,11 +1441,20 @@ Public Class LTFSConfigurator
             progmax = blkNum * blkLen
             Dim sec As Integer = -1
             Dim SenseMsg As String = ""
+            Dim zbcstartblk As Long = 0
+            Dim zbcsectorlen As Integer = 4096
+            Select Case My.Settings.TapeUtils_DriverType
+                Case TapeUtils.DriverType.ZBCDevice
+                    zbcstartblk = Long.Parse(InputBox("Start LBA", "ZBC test write param", zbcstartblk.ToString()))
+                    zbcsectorlen = Long.Parse(InputBox("Sector length", "ZBC test write param", zbcsectorlen.ToString()))
+                Case Else
+
+            End Select
             Dim th As New Threading.Thread(
             Sub()
                 Dim r As New Random()
                 Dim b(blkLen - 1) As Byte
-                If blist Is Nothing Then
+                If blist Is Nothing OrElse blist(0).Length <> blkLen Then
                     blist = New List(Of Byte())(1000)
                     For i As Integer = 0 To 999
                         If randomNum Then
@@ -1470,7 +1479,26 @@ Public Class LTFSConfigurator
                     Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
                     For i As Long = 0 To blkNum
                         If Not TestEnabled Then Exit For
-                        Dim sense As Byte() = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                        Dim sense As Byte()
+                        Dim zbcLBAWritten As Long = 0
+                        Select Case My.Settings.TapeUtils_DriverType
+                            Case TapeUtils.DriverType.ZBCDevice
+                                zbcLBAWritten = blkLen \ zbcsectorlen
+                                Dim cdb As Byte() = {&H2A, &H0,
+                                                          CByte((zbcstartblk >> 24) And &HFF),
+                                                          CByte((zbcstartblk >> 16) And &HFF),
+                                                          CByte((zbcstartblk >> 8) And &HFF),
+                                                          CByte(zbcstartblk And &HFF), &H0,
+                                                          CByte(zbcLBAWritten >> 8 And &HFF),
+                                                          CByte(zbcLBAWritten And &HFF), &H0}
+                                TapeUtils.SendSCSICommand(handle, cdb,
+                                                          blist(i Mod 1000), 0, Function(sensedata As Byte())
+                                                                                    sense = sensedata
+                                                                                    Return True
+                                                                                End Function)
+                            Case Else
+                                sense = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                        End Select
                         If ((sense(2) >> 6) And &H1) = 1 Then
                             If (sense(2) And &HF) = 13 Then
                                 Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
@@ -1491,6 +1519,9 @@ Public Class LTFSConfigurator
                             End Select
                         Else
                             SenseMsg = ""
+                        End If
+                        If My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.ZBCDevice Then
+                            Threading.Interlocked.Add(zbcstartblk, zbcLBAWritten)
                         End If
                         Try
                             If i Mod 200 = 0 Then
@@ -1953,14 +1984,30 @@ Public Class LTFSConfigurator
         If Not My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.LTO OrElse Not MessageBox.Show(New Form With {.TopMost = True}, "Diagnostic write will corrupt data near target position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Exit Sub
         End If
+        Dim Sets As UInteger = NumericUpDownTestSets.Value, Speed As Integer = NumericUpDownTestSpeed.Value, StartLen As Integer = NumericUpDownTestStartLen.Value, Wrap As Integer = NumericUpDownTestWrap.Value
         Dim th As New Threading.Thread(
             Sub()
                 Try
                     Dim cdbData() As Byte = {&H1D, &H11, 0, 0, &H24, 0}
-                    Dim dataData() As Byte = {&H96, 0, 0, &H20, 0, 0, 0, &HFA,
+                    Dim dataData() As Byte = {&H96, 0, 0, &H20,
+                    CByte(Sets >> 24 And &HFF),
+                    CByte(Sets >> 16 And &HFF),
+                    CByte(Sets >> 8 And &HFF),
+                    CByte(Sets >> 0 And &HFF),
                     0, 0, 0, 0, 0, 0, 0, 0,
-                    0, 0, 0, 0, 0, 0, CByte(NumericUpDownTestSpeed.Value >> 8 And &HFF), CByte(NumericUpDownTestSpeed.Value And &HFF),
-                    0, CByte(NumericUpDownTestStartLen.Value >> 16 And &HFF), CByte(NumericUpDownTestStartLen.Value >> 8 And &HFF), CByte(NumericUpDownTestStartLen.Value And &HFF), 0, 0, 0, CByte(NumericUpDownTestWrap.Value And &HFF),
+                    0, 0, 0, 0,
+                    CByte(Speed >> 24 And &HFF),
+                    CByte(Speed >> 16 And &HFF),
+                    CByte(Speed >> 8 And &HFF),
+                    CByte(Speed >> 0 And &HFF),
+                    CByte(StartLen >> 24 And &HFF),
+                    CByte(StartLen >> 16 And &HFF),
+                    CByte(StartLen >> 8 And &HFF),
+                    CByte(StartLen >> 0 And &HFF),
+                    CByte(Wrap >> 24 And &HFF),
+                    CByte(Wrap >> 16 And &HFF),
+                    CByte(Wrap >> 8 And &HFF),
+                    CByte(Wrap >> 0 And &HFF),
                     0, 0, 0, 0}
                     Dim dataBufferPtr As IntPtr
                     dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
@@ -2393,4 +2440,19 @@ Public Class LTFSConfigurator
         Public Property DataDIR As String = ""
         Public Property Timeout As String = ""
     End Class
+
+    Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
+        Dim drvhandle As IntPtr
+        TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
+        Dim disk As New ZBCDeviceHelper With {.handle = drvhandle}
+        disk.InitDevice()
+        Dim testdata(4095) As Byte
+        testdata(0) = &H7F
+        testdata(4095) = &HFF
+        Dim FirstSMRLBA As ULong = disk.CMREndLBA + 1
+        disk.WriteBytes(testdata, FirstSMRLBA, 0, False)
+        Dim readout As Byte() = disk.ReadBytes(FirstSMRLBA, 0, 4096)
+        MessageBox.Show("OK")
+        TapeUtils.CloseTapeDrive(drvhandle)
+    End Sub
 End Class

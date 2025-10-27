@@ -26,7 +26,7 @@ Public Class HashTaskWindow
     Private _TargetDirectory As String
     Public Property TargetDirectory As String
         Set(value As String)
-            _TargetDirectory = value.TrimEnd("\")
+            _TargetDirectory = value.TrimEnd("\") & "\"
         End Set
         Get
             Return _TargetDirectory
