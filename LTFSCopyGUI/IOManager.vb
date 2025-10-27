@@ -10,6 +10,9 @@ Imports NAudio.Wave
 Imports System.Text
 Imports System.Net.Sockets
 Imports System.Globalization
+Imports LTFSCopyGUI.IOManager
+Imports System.Xml.Serialization
+Imports SetupAPIHelper
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
@@ -157,7 +160,7 @@ Public Class IOManager
 
         Public Property TargetDirectory As String
             Set(value As String)
-                _TargetDirectory = value.TrimEnd("\")
+                _TargetDirectory = value.TrimEnd("\") & "\"
             End Set
             Get
                 Return _TargetDirectory
@@ -169,7 +172,7 @@ Public Class IOManager
 
         Public Property BaseDirectory As String
             Set(value As String)
-                _BaseDirectory = value.TrimEnd("\")
+                _BaseDirectory = value.TrimEnd("\") & "\"
             End Set
             Get
                 Return _BaseDirectory
@@ -1490,7 +1493,822 @@ Public Class IOManager
 
 
 End Class
+Public Class ZBCDeviceHelper
+    Public Property handle As IntPtr
+    Public Property MaximumLBA As ULong
+    Public Property SectorLength As UInt16 = 512
+    Public Property CommandLengthLimit As Integer = 524288
 
+    Private _CMRStartLBA As ULong
+    Public ReadOnly Property CMRStartLBA As ULong
+        Get
+            Return _CMRStartLBA
+        End Get
+    End Property
+    Private _CMRLBACount As ULong
+    Public ReadOnly Property CMRLBACount As ULong
+        Get
+            Return _CMRLBACount
+        End Get
+    End Property
+    Public ReadOnly Property CMREndLBA As ULong
+        Get
+            Return CMRStartLBA + CMRLBACount - 1
+        End Get
+    End Property
+    Public Class Zone
+        Public Enum ZoneTypeDef As Byte
+            Reserved = 0
+            Conventional = 1
+            Sequential = 2
+        End Enum
+        Public Property ZoneType As ZoneTypeDef
+        Public Enum ZoneConditionDef As Byte
+            NOT_WRITE_POINTER = 0
+            EMPTY = 1
+            IMPLICIT_OPENED = 2
+            EXPLICIT_OPENED = 3
+            CLOSED = 4
+            FULL = 5
+        End Enum
+        Public Property ZoneCondition As ZoneConditionDef
+        Public Property NON_SEQ As Boolean
+        Public Property RESET As Boolean
+        Public ReadOnly Property WRITER_POINTER_LBA_INVALID As Boolean
+            Get
+                Return ZoneCondition = ZoneConditionDef.NOT_WRITE_POINTER OrElse ZoneCondition = ZoneConditionDef.FULL
+            End Get
+        End Property
+        Public Property ZoneLength As ULong
+        Public Property ZoneStartLBA As ULong
+        Public ReadOnly Property ZoneEndLBA As ULong
+            Get
+                Return ZoneStartLBA + ZoneLength - 1
+            End Get
+        End Property
+        Public Property ZoneWritePointerLBA As ULong
+        Public Sub New()
+
+        End Sub
+        Public Sub New(RawData As Byte(), Optional ByVal StartByte As Integer = 0)
+            If RawData.Length < StartByte + 64 Then Exit Sub
+            ZoneType = RawData(StartByte + 0) And &HF
+            ZoneCondition = RawData(StartByte + 1) >> 4 And &HF
+            NON_SEQ = RawData(StartByte + 1) >> 1 And 1
+            RESET = RawData(StartByte + 1) >> 0 And 1
+            ZoneLength = BigEndianConverter.ToUInt64(RawData, StartByte + 8)
+            ZoneStartLBA = BigEndianConverter.ToUInt64(RawData, StartByte + 16)
+            ZoneWritePointerLBA = BigEndianConverter.ToUInt64(RawData, StartByte + 24)
+        End Sub
+    End Class
+    Public Property ZoneList As New List(Of Zone)
+    Private ZoneLBAMap As New Dictionary(Of ULong, Zone)
+    Public Sub InitDevice()
+        TapeUtils.LoadEject(handle, TapeUtils.LoadOption.LoadThreaded)
+        Dim MP03 As Byte() = TapeUtils.ModeSense(handle, 3)
+        SectorLength = BigEndianConverter.ToUInt16(MP03, 12)
+        ReportZones()
+        LoadData()
+    End Sub
+    Public Sub ReportZones()
+        Dim data0 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
+                                                      0, 0, 0, 0, 0, 0, 0, 0,
+                                                      0, 0, 0, &H40,
+                                                      0, 0}, 64)
+        MaximumLBA = BigEndianConverter.ToUInt64(data0, 8)
+        Dim ZoneListLen As UInteger = BigEndianConverter.ToUInt32(data0, 0)
+        Dim ZoneCount As UInteger = ZoneListLen \ 64UI
+        Dim currLBA As ULong = 0
+        ZoneList.Clear()
+        ZoneLBAMap.Clear()
+        While True
+            Dim data1 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
+                                                          CByte((currLBA >> 56) And &HFF),
+                                                          CByte((currLBA >> 48) And &HFF),
+                                                          CByte((currLBA >> 40) And &HFF),
+                                                          CByte((currLBA >> 32) And &HFF),
+                                                          CByte((currLBA >> 24) And &HFF),
+                                                          CByte((currLBA >> 16) And &HFF),
+                                                          CByte((currLBA >> 8) And &HFF),
+                                                          CByte((currLBA >> 0) And &HFF),
+                                                          CByte((CommandLengthLimit >> 24) And &HFF),
+                                                          CByte((CommandLengthLimit >> 16) And &HFF),
+                                                          CByte((CommandLengthLimit >> 8) And &HFF),
+                                                          CByte((CommandLengthLimit >> 0) And &HFF),
+                                                          &H80, 0}, CommandLengthLimit)
+            ZoneListLen = BigEndianConverter.ToUInt32(data1, 0)
+            If ZoneListLen = 0 Then Exit While
+            ZoneCount = ZoneListLen \ 64UI
+            Dim readed As Zone = Nothing
+            For i As Integer = 0 To ZoneCount - 1
+                readed = New Zone(data1, 64 + 64 * i)
+                ZoneList.Add(readed)
+                ZoneLBAMap.Add(readed.ZoneStartLBA, readed)
+            Next
+            If readed IsNot Nothing Then currLBA = readed.ZoneStartLBA + readed.ZoneLength
+            If ZoneListLen < data1.Length - 64 Then Exit While
+        End While
+        ZoneList.Sort(New Comparison(Of Zone)(Function(a As Zone, b As Zone) As Integer
+                                                  Return a.ZoneStartLBA.CompareTo(b.ZoneStartLBA)
+                                              End Function))
+        Dim ZIDC1 As Integer = -1
+        For i As Integer = 0 To ZoneList.Count - 1
+            If ZoneList(i).ZoneType = Zone.ZoneTypeDef.Conventional Then
+                _CMRStartLBA = ZoneList(i).ZoneStartLBA
+                ZIDC1 = i
+                Exit For
+            End If
+        Next
+        If ZIDC1 >= 0 Then
+            Dim idstep1 As Integer = ZoneList.Count \ 1000
+            For i As Integer = ZIDC1 To ZoneList.Count - 1 Step idstep1
+                If (i + idstep1) >= ZoneList.Count OrElse (ZoneList(i).ZoneType = Zone.ZoneTypeDef.Conventional AndAlso ZoneList(i + idstep1).ZoneType <> Zone.ZoneTypeDef.Conventional) Then
+                    Dim found As Boolean = False
+                    For j As Integer = i + 1 To Math.Min(i + idstep1 - 1, ZoneList.Count - 1)
+                        If ZoneList(j).ZoneType <> Zone.ZoneTypeDef.Conventional Then
+                            _CMRLBACount = ZoneList(j - 1).ZoneEndLBA - CMRStartLBA + 1
+                            found = True
+                            Exit For
+                        End If
+                    Next
+                    If found Then Exit For
+                End If
+            Next
+        End If
+    End Sub
+    Public Sub RefreshZoneCondition(ToRefresh As Zone)
+        Dim data1 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
+                                                          CByte((ToRefresh.ZoneStartLBA >> 56) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 48) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 40) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 32) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 24) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 16) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 8) And &HFF),
+                                                          CByte((ToRefresh.ZoneStartLBA >> 0) And &HFF),
+                                                          0, 0, 0, 128,
+                                                          &H80, 0}, CommandLengthLimit)
+        Dim readed As New Zone(data1, 64)
+        With ToRefresh
+            .NON_SEQ = readed.NON_SEQ
+            .RESET = readed.RESET
+            .ZoneCondition = readed.ZoneCondition
+            .ZoneLength = readed.ZoneLength
+            .ZoneStartLBA = readed.ZoneStartLBA
+            .ZoneType = readed.ZoneType
+            .ZoneWritePointerLBA = readed.ZoneWritePointerLBA
+        End With
+    End Sub
+    Public Function GetZoneByLBA(LBA As ULong) As Zone
+        Dim result As Zone
+        If ZoneList Is Nothing OrElse ZoneList.Count = 0 Then ReportZones()
+        If ZoneList Is Nothing OrElse ZoneList.Count = 0 Then Return Nothing
+        If ZoneLBAMap.TryGetValue(LBA, result) Then Return result
+        Dim SearchStart As Integer = 0, SearchEnd As Integer = ZoneList.Count - 1
+        Dim idx As Integer = (SearchStart + SearchEnd) \ 2
+        If LBA > ZoneList.Last.ZoneEndLBA Then Return Nothing
+        While Not (ZoneList(idx).ZoneStartLBA <= LBA AndAlso ZoneList(idx).ZoneEndLBA >= LBA)
+            If ZoneList(idx).ZoneStartLBA > LBA Then
+                SearchEnd = idx
+            ElseIf ZoneList(idx).ZoneEndLBA < LBA Then
+                SearchStart = idx
+            Else
+                Return Nothing
+            End If
+            If (SearchEnd - SearchStart) > 1 Then
+                idx = (SearchStart + SearchEnd) \ 2
+            Else
+                idx += 1
+            End If
+        End While
+        Return ZoneList(idx)
+    End Function
+    Public Function CloseAllZones(Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim senseFin As Boolean = False
+        Dim senseresult As Byte()
+        Dim result As Boolean = TapeUtils.SendSCSICommand(handle, {&H94, &H1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}, Nothing, 1,
+                                         Function(sdata As Byte())
+                                             senseresult = sdata
+                                             senseFin = True
+                                             Return True
+                                         End Function)
+        For i As Integer = 0 To 10
+            If senseFin Then Exit For
+            Threading.Thread.Sleep(1)
+        Next
+        sense = senseresult
+        Return result
+    End Function
+    Public Function ResetWritePointer(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim senseFin As Boolean = False
+        Dim senseresult As Byte()
+        Dim result As Boolean = TapeUtils.SendSCSICommand(
+            handle, {&H94, &H4,
+            CByte((LowestLBA >> 56) And &HFF),
+            CByte((LowestLBA >> 48) And &HFF),
+            CByte((LowestLBA >> 40) And &HFF),
+            CByte((LowestLBA >> 32) And &HFF),
+            CByte((LowestLBA >> 24) And &HFF),
+            CByte((LowestLBA >> 16) And &HFF),
+            CByte((LowestLBA >> 8) And &HFF),
+            CByte((LowestLBA >> 0) And &HFF),
+            0, 0, 0, 0, 0, 0}, Nothing, 1,
+                                         Function(sdata As Byte())
+                                             senseresult = sdata
+                                             senseFin = True
+                                             Return True
+                                         End Function)
+
+        For i As Integer = 0 To 10
+            If senseFin Then Exit For
+            Threading.Thread.Sleep(1)
+        Next
+        sense = senseresult
+        Return result
+    End Function
+    Public Function OpenZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim senseFin As Boolean = False
+        Dim senseresult As Byte()
+        Dim result As Boolean = TapeUtils.SendSCSICommand(
+            handle, {&H94, &H3,
+            CByte((LowestLBA >> 56) And &HFF),
+            CByte((LowestLBA >> 48) And &HFF),
+            CByte((LowestLBA >> 40) And &HFF),
+            CByte((LowestLBA >> 32) And &HFF),
+            CByte((LowestLBA >> 24) And &HFF),
+            CByte((LowestLBA >> 16) And &HFF),
+            CByte((LowestLBA >> 8) And &HFF),
+            CByte((LowestLBA >> 0) And &HFF),
+            0, 0, 0, 0, 0, 0}, Nothing, 1,
+                                         Function(sdata As Byte())
+                                             senseresult = sdata
+                                             senseFin = True
+                                             Return True
+                                         End Function)
+
+        For i As Integer = 0 To 10
+            If senseFin Then Exit For
+            Threading.Thread.Sleep(1)
+        Next
+        sense = senseresult
+        Return result
+    End Function
+    Public Function CloseZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim senseFin As Boolean = False
+        Dim senseresult As Byte()
+        Dim result As Boolean = TapeUtils.SendSCSICommand(
+            handle, {&H94, &H1,
+            CByte((LowestLBA >> 56) And &HFF),
+            CByte((LowestLBA >> 48) And &HFF),
+            CByte((LowestLBA >> 40) And &HFF),
+            CByte((LowestLBA >> 32) And &HFF),
+            CByte((LowestLBA >> 24) And &HFF),
+            CByte((LowestLBA >> 16) And &HFF),
+            CByte((LowestLBA >> 8) And &HFF),
+            CByte((LowestLBA >> 0) And &HFF),
+            0, 0, 0, 0, 0, 0}, Nothing, 1,
+                                         Function(sdata As Byte())
+                                             senseresult = sdata
+                                             senseFin = True
+                                             Return True
+                                         End Function)
+
+        For i As Integer = 0 To 10
+            If senseFin Then Exit For
+            Threading.Thread.Sleep(1)
+        Next
+        sense = senseresult
+        Return result
+    End Function
+    Public Function FinishZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
+        Dim senseFin As Boolean = False
+        Dim senseresult As Byte()
+        Dim result As Boolean = TapeUtils.SendSCSICommand(
+            handle, {&H94, &H2,
+            CByte((LowestLBA >> 56) And &HFF),
+            CByte((LowestLBA >> 48) And &HFF),
+            CByte((LowestLBA >> 40) And &HFF),
+            CByte((LowestLBA >> 32) And &HFF),
+            CByte((LowestLBA >> 24) And &HFF),
+            CByte((LowestLBA >> 16) And &HFF),
+            CByte((LowestLBA >> 8) And &HFF),
+            CByte((LowestLBA >> 0) And &HFF),
+            0, 0, 0, 0, 0, 0}, Nothing, 1,
+                                         Function(sdata As Byte())
+                                             senseresult = sdata
+                                             senseFin = True
+                                             Return True
+                                         End Function)
+
+        For i As Integer = 0 To 10
+            If senseFin Then Exit For
+            Threading.Thread.Sleep(1)
+        Next
+        sense = senseresult
+        Return result
+    End Function
+    Public Function ReadBytes(StartLBA As ULong, ByVal ByteOffset As UInt16, ReadLen As ULong) As Byte()
+        Dim result As New List(Of Byte)
+        Dim remain As ULong = ReadLen
+        Dim oncereadsectorcount As Integer = Math.Truncate(CommandLengthLimit / SectorLength)
+        Dim currentLBA As ULong = StartLBA
+        While remain > 0
+            Dim data As Byte() = TapeUtils.SCSIReadParam(handle, {
+                &H28, 0,
+                CByte((StartLBA >> 24) And &HFF),
+                CByte((StartLBA >> 16) And &HFF),
+                CByte((StartLBA >> 8) And &HFF),
+                CByte((StartLBA >> 0) And &HFF),
+                0,
+                CByte((oncereadsectorcount >> 8) And &HFF),
+                CByte((oncereadsectorcount >> 0) And &HFF),
+                 0}, oncereadsectorcount * SectorLength)
+            If currentLBA = StartLBA AndAlso ByteOffset > 0 Then
+                data = data.Skip(ByteOffset).ToArray()
+            End If
+            If data.Length > remain Then data = data.Take(remain).ToArray()
+            result.AddRange(data)
+            remain -= data.Length
+            currentLBA += oncereadsectorcount
+        End While
+        Return result.ToArray()
+    End Function
+    Public Function WriteBytes(ByVal source As Byte(), StartLBA As ULong, ByVal ByteOffset As UInt16, Optional ByVal Conventional As Boolean = True) As Boolean
+        Dim result As New List(Of Byte)
+        Dim remain As Integer = source.Length
+        Dim oncewritesectorcount As Integer = Math.Truncate(CommandLengthLimit / SectorLength)
+        Dim currentLBA As ULong = StartLBA
+        Dim totalSector As ULong = Math.Ceiling((source.Length + ByteOffset) / SectorLength)
+        Dim EndLBA As ULong = StartLBA + totalSector - 1
+        Dim tempData As New Dictionary(Of ULong, Byte())
+        Dim zone0, zone1 As Zone
+        If ByteOffset > 0 Then
+            source = ReadBytes(StartLBA, 0, ByteOffset).Concat(source).ToArray()
+        End If
+        If Not Conventional Then
+            ' check zone condition
+            zone0 = GetZoneByLBA(StartLBA)
+            zone1 = GetZoneByLBA(EndLBA)
+            If zone0.ZoneStartLBA < StartLBA Then
+                If zone0.ZoneCondition = Zone.ZoneConditionDef.EMPTY Then
+                    'empty
+                    Dim empty(SectorLength - 1) As Byte
+                    OpenZone(zone0.ZoneStartLBA)
+                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                        WriteBytes(empty, lba, 0, True)
+                    Next
+                ElseIf (Not zone0.WRITER_POINTER_LBA_INVALID) AndAlso zone0.ZoneWritePointerLBA <= StartLBA Then
+                    'data end < write position
+                    If zone0.ZoneCondition = Zone.ZoneConditionDef.CLOSED Then OpenZone(zone0.ZoneStartLBA)
+                    Dim empty(SectorLength - 1) As Byte
+                    For lba As ULong = zone0.ZoneWritePointerLBA To StartLBA - 1
+                        WriteBytes(empty, lba, 0, True)
+                    Next
+                ElseIf ((Not zone0.WRITER_POINTER_LBA_INVALID) AndAlso zone0.ZoneWritePointerLBA > StartLBA) OrElse zone0.ZoneCondition = Zone.ZoneConditionDef.FULL Then
+                    'data end >= write position
+                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                        tempData.Add(lba, ReadBytes(lba, 0, SectorLength))
+                    Next
+                    ResetWritePointer(zone0.ZoneStartLBA)
+                    OpenZone(zone0.ZoneStartLBA)
+                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                        WriteBytes(tempData(lba), lba, 0, True)
+                    Next
+                Else
+                    'cmr zone
+                End If
+            End If
+            If zone1.ZoneEndLBA > EndLBA Then
+                For lba As ULong = EndLBA + 1 To zone1.ZoneEndLBA
+                    tempData.Add(lba, ReadBytes(lba, 0, SectorLength))
+                Next
+                ResetWritePointer(zone1.ZoneStartLBA)
+            End If
+        End If
+        Dim currentZone As Zone = zone0
+        Dim currentEndZone As Zone
+        While remain > 0
+            Dim sendlen As Integer = Math.Min(oncewritesectorcount * SectorLength, remain)
+            Dim currentsendsectorcount As Integer = Math.Ceiling(sendlen / SectorLength)
+            currentEndZone = GetZoneByLBA(currentLBA + currentsendsectorcount - 1)
+            For i As Integer = ZoneList.IndexOf(currentZone) + 1 To ZoneList.IndexOf(currentEndZone)
+                OpenZone(ZoneList(i).ZoneStartLBA)
+            Next
+            Dim toSend(currentsendsectorcount * SectorLength - 1) As Byte
+            Array.Copy(source, source.Length - remain, toSend, 0, sendlen)
+            TapeUtils.SendSCSICommand(handle, {
+                &H2A, 0,
+                CByte((currentLBA >> 24) And &HFF),
+                CByte((currentLBA >> 16) And &HFF),
+                CByte((currentLBA >> 8) And &HFF),
+                CByte((currentLBA >> 0) And &HFF),
+                0,
+                CByte((currentsendsectorcount >> 8) And &HFF),
+                CByte((currentsendsectorcount >> 0) And &HFF),
+                 0}, toSend, 0)
+
+            remain -= sendlen
+            currentLBA += currentsendsectorcount
+            If Not Conventional Then
+                Dim nextZone As Zone = GetZoneByLBA(currentLBA)
+                If nextZone.ZoneStartLBA > currentEndZone.ZoneStartLBA Then
+                    For i As Integer = ZoneList.IndexOf(currentZone) To ZoneList.IndexOf(currentZone)
+                        FinishZone(ZoneList(i).ZoneStartLBA)
+                    Next
+                Else
+                    For i As Integer = ZoneList.IndexOf(currentZone) To ZoneList.IndexOf(currentEndZone) - 1
+                        FinishZone(ZoneList(i).ZoneStartLBA)
+                    Next
+                End If
+                currentZone = nextZone
+            End If
+        End While
+
+        If Not Conventional Then
+            'check zone condition
+            RefreshZoneCondition(currentEndZone)
+            If currentEndZone.ZoneCondition <> Zone.ZoneConditionDef.FULL AndAlso
+                currentEndZone.ZoneCondition <> Zone.ZoneConditionDef.CLOSED AndAlso
+                currentEndZone.ZoneCondition <> Zone.ZoneConditionDef.NOT_WRITE_POINTER Then
+                CloseZone(currentEndZone.ZoneStartLBA)
+            End If
+        End If
+        Return True
+    End Function
+    Public Property Data As ZBCDataHelper
+    Public Property DataStartLBA As ULong
+    Public Property DataEndLBA As ULong
+    Public Sub LoadData()
+        Dim vol1 As Byte() = ReadBytes(0, 0, SectorLength)
+        Dim header As String = BitConverter.ToString(vol1, &H163, 16)
+        If Not header.StartsWith("LCGZBC") Then Exit Sub
+        DataStartLBA = BigEndianConverter.ToUInt64(vol1, &H1CE + 8) And &HFFFFFF
+        Dim ZBCDataLen As ULong = (BigEndianConverter.ToUInt64(vol1, &H1CE + 12) And &HFFFFFF) * SectorLength
+        DataEndLBA = DataStartLBA + Math.Ceiling(ZBCDataLen / SectorLength) - 1
+        Data = ZBCDataHelper.FromXML(BitConverter.ToString(ReadBytes(DataStartLBA, 0, ZBCDataLen)).TrimEnd(vbNullChar))
+    End Sub
+    Public Sub SaveData()
+        Dim vol1 As Byte() = ReadBytes(0, 0, SectorLength)
+        Dim header As Byte() = Encoding.ASCII.GetBytes("LCGZBC")
+        Array.Copy(header, 0, vol1, &H163, header.Length)
+        Dim dataBinary As Byte() = Encoding.UTF8.GetBytes(Data.GetSerializedText())
+        Dim StartLBABytes As Byte() = BigEndianConverter.GetBytes(DataStartLBA)
+        Dim LenLBABytes As Byte() = BigEndianConverter.GetBytes(CULng(Math.Ceiling((dataBinary.Length) / SectorLength)))
+        Array.Copy(StartLBABytes, 0, vol1, &H1CE + 8, 8)
+        Array.Copy(LenLBABytes, 0, vol1, &H1CE + 12, 8)
+        WriteBytes(vol1, 0, 0, True)
+    End Sub
+    <Serializable>
+    Public Class ZBCDataHelper
+        <XmlIgnore>
+        Public Device As ZBCDeviceHelper
+        Public Property CMRDataStartLBA As ULong
+        Public Property CMRDataLength As ULong
+        Public Sub WriteCMRData(toWrite As Byte())
+            CMRDataLength = toWrite.Length
+            Device.WriteBytes(toWrite, CMRDataStartLBA, 0, True)
+        End Sub
+        Public Function ReadCMRData() As Byte()
+            Device.ReadBytes(CMRDataStartLBA, 0, CMRDataLength)
+        End Function
+        Public Property DataStreamList As New List(Of DataStream)
+
+        <Serializable>
+        Public Class DataStream
+            Inherits IO.Stream
+
+            Public Parent As ZBCDataHelper
+            Public Property StartLBA As ULong
+            Public Property MaxLength As ULong = ULong.MaxValue
+
+            Private _Position As ULong = 0
+            Private _Length As ULong = 0
+
+            Private writeBuffer As IO.MemoryStream = Nothing
+            Private bufferStartPos As ULong = 0
+
+            Private currentZoneStartLBA As ULong = 0
+            Private currentZoneOpen As Boolean = False
+
+            ' ------------------- Stream 基本属性 -------------------
+            Public Overrides ReadOnly Property CanRead As Boolean
+                Get
+                    Return Parent IsNot Nothing
+                End Get
+            End Property
+            Public Overrides ReadOnly Property CanSeek As Boolean
+                Get
+                    Return Parent IsNot Nothing
+                End Get
+            End Property
+            Public Overrides ReadOnly Property CanWrite As Boolean
+                Get
+                    Return Parent IsNot Nothing
+                End Get
+            End Property
+            Public Overrides ReadOnly Property Length As Long
+                Get
+                    Return CLng(_Length)
+                End Get
+            End Property
+            Public Overrides Property Position As Long
+                Get
+                    Return CLng(_Position)
+                End Get
+                Set(value As Long)
+                    Seek(value, SeekOrigin.Begin)
+                End Set
+            End Property
+            Public Overrides Sub SetLength(value As Long)
+                If value < 0 Then Throw New ArgumentOutOfRangeException("value")
+                SyncLock Me
+                    _Length = CULng(value)
+                End SyncLock
+            End Sub
+
+            ' ------------------- 工具函数 -------------------
+            Private Function BytePosToLBA(pos As ULong) As ULong
+                Return StartLBA + pos \ Parent.Device.SectorLength
+            End Function
+            Private Function BytePosToSectorOffset(pos As ULong) As Integer
+                Return CInt(pos Mod CUInt(Parent.Device.SectorLength))
+            End Function
+            Private Function GetZoneForBytePos(pos As ULong) As Zone
+                Return Parent.Device.GetZoneByLBA(BytePosToLBA(pos))
+            End Function
+
+            ' 确保 zone 处于 OPEN 状态；必要时打开并刷新
+            Private Sub EnsureZoneOpen(zoneStartLBA As ULong)
+                SyncLock Me
+                    If currentZoneOpen AndAlso currentZoneStartLBA = zoneStartLBA Then Return
+
+                    ' 切换 zone 前刷新旧 zone 状态
+                    If currentZoneOpen Then
+                        Dim oldZone As Zone = Parent.Device.GetZoneByLBA(currentZoneStartLBA)
+                        Parent.Device.RefreshZoneCondition(oldZone)
+                    End If
+
+                    ' 打开新 zone
+                    Parent.Device.OpenZone(zoneStartLBA)
+                    Dim z As Zone = Parent.Device.GetZoneByLBA(zoneStartLBA)
+                    ' 打开后刷新一次（open 状态已改变）
+                    Parent.Device.RefreshZoneCondition(z)
+
+                    currentZoneStartLBA = zoneStartLBA
+                    currentZoneOpen = True
+                End SyncLock
+            End Sub
+
+            ' 内部写出缓存
+            Private Sub FlushWriteBufferInternal(curZone As Zone)
+                If writeBuffer Is Nothing OrElse writeBuffer.Length = 0 Then Return
+                Dim data() As Byte = writeBuffer.ToArray()
+                Dim startPos As ULong = bufferStartPos
+                Dim firstLBA As ULong = BytePosToLBA(startPos)
+                Dim byteOffset As UInteger = CUInt(startPos Mod CUInt(Parent.Device.SectorLength))
+
+                ' ⚠️ WriteBytes仅执行纯数据写入，不负责zone状态。
+                Parent.Device.WriteBytes(data, firstLBA, byteOffset, True)
+
+                ' 写后刷新zone状态（因为write pointer改变）
+                Parent.Device.RefreshZoneCondition(curZone)
+
+                writeBuffer.Dispose()
+                writeBuffer = Nothing
+                bufferStartPos = 0
+            End Sub
+
+            Private Sub FlushWriteBuffer()
+                SyncLock Me
+                    Dim z As Zone = GetZoneForBytePos(_Position)
+                    FlushWriteBufferInternal(z)
+                End SyncLock
+            End Sub
+
+            ' 填充 0 扇区（用于填补 gap）
+            Private Sub WriteZeroSectors(startLBA As ULong, sectorCount As ULong, z As Zone)
+                Dim sectorLen As Integer = Parent.Device.SectorLength
+                Dim zero(sectorLen - 1) As Byte
+                For i As ULong = 0 To sectorCount - 1UL
+                    ' 纯写入，不让WriteBytes处理zone
+                    Parent.Device.WriteBytes(zero, startLBA + i, 0, True)
+                Next
+                ' 写完后刷新写指针
+                Parent.Device.RefreshZoneCondition(z)
+            End Sub
+
+            ' ------------------- Flush 重载 -------------------
+            Public Overrides Sub Flush()
+                Flush(True)
+            End Sub
+
+            ''' <summary>
+            ''' Flush(Close As Boolean)
+            '''  - Close=False: 写出缓存但保持 zone open。
+            '''  - Close=True: 写出后 finish+close zone 并刷新状态。
+            ''' </summary>
+            Public Overloads Sub Flush(Close As Boolean)
+                SyncLock Me
+                    Dim curZone As Zone = GetZoneForBytePos(_Position)
+                    FlushWriteBufferInternal(curZone)
+
+                    If currentZoneOpen Then
+                        If Close Then
+                            ' 先执行状态改变，再刷新
+                            Parent.Device.FinishZone(currentZoneStartLBA)
+                            Parent.Device.CloseZone(currentZoneStartLBA)
+                            Parent.Device.RefreshZoneCondition(curZone)
+                            currentZoneOpen = False
+                        Else
+                            Parent.Device.RefreshZoneCondition(curZone)
+                        End If
+                    End If
+                End SyncLock
+            End Sub
+
+            ' ------------------- Read -------------------
+            Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
+                If buffer Is Nothing Then Throw New ArgumentNullException("buffer")
+                SyncLock Me
+                    Dim z As Zone = GetZoneForBytePos(_Position)
+                    FlushWriteBufferInternal(z)
+                    If _Position >= _Length Then Return 0
+
+                    Dim available As ULong = _Length - _Position
+                    Dim toRead As Integer = CInt(Math.Min(available, CULng(count)))
+                    Dim sectorLen As Integer = Parent.Device.SectorLength
+                    Dim bytesRead As Integer = 0
+
+                    While bytesRead < toRead
+                        Dim curLBA As ULong = BytePosToLBA(_Position)
+                        Dim byteOffset As UInteger = CUInt(_Position Mod CUInt(sectorLen))
+                        Dim chunk As Integer = Math.Min(toRead - bytesRead, sectorLen - CInt(byteOffset))
+                        Dim data() As Byte = Parent.Device.ReadBytes(curLBA, byteOffset, CUInt(chunk))
+                        Array.Copy(data, 0, buffer, offset + bytesRead, data.Length)
+                        bytesRead += data.Length
+                        _Position += CULng(data.Length)
+                    End While
+                    Return bytesRead
+                End SyncLock
+            End Function
+
+            ' ------------------- Write -------------------
+            Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
+                If buffer Is Nothing Then Throw New ArgumentNullException("buffer")
+                SyncLock Me
+                    Dim bytesLeft As ULong = CULng(count)
+                    Dim dataOff As Integer = offset
+                    Dim sectorLen As Integer = Parent.Device.SectorLength
+
+                    While bytesLeft > 0UL
+                        Dim curZone As Zone = GetZoneForBytePos(_Position)
+                        Parent.Device.RefreshZoneCondition(curZone)
+
+                        Dim zoneStart As ULong = curZone.ZoneStartLBA
+                        Dim zoneEnd As ULong = curZone.ZoneEndLBA
+                        Dim curLBA As ULong = BytePosToLBA(_Position)
+                        Dim byteOff As Integer = BytePosToSectorOffset(_Position)
+
+                        EnsureZoneOpen(zoneStart)
+                        Parent.Device.RefreshZoneCondition(curZone)
+
+                        ' 若写入位置超过 write pointer，则填 0
+                        If curZone.ZoneWritePointerLBA < curLBA Then
+                            Dim fillCount As ULong = curLBA - curZone.ZoneWritePointerLBA
+                            If fillCount > 0UL Then WriteZeroSectors(curZone.ZoneWritePointerLBA, fillCount, curZone)
+                        End If
+
+                        Dim bytesLeftInZone As ULong = (zoneEnd - curLBA + 1UL) * CULng(sectorLen) - CULng(byteOff)
+                        Dim chunk As ULong = Math.Min(bytesLeftInZone, bytesLeft)
+
+                        If writeBuffer Is Nothing Then
+                            writeBuffer = New IO.MemoryStream()
+                            bufferStartPos = _Position
+                        ElseIf bufferStartPos + CULng(writeBuffer.Length) <> _Position Then
+                            FlushWriteBufferInternal(curZone)
+                            writeBuffer = New IO.MemoryStream()
+                            bufferStartPos = _Position
+                        End If
+
+                        writeBuffer.Write(buffer, dataOff, CInt(chunk))
+                        _Position += chunk
+                        If _Position > _Length Then _Length = _Position
+                        dataOff += CInt(chunk)
+                        bytesLeft -= chunk
+
+                        ' 跨 zone：必须 finish/close 旧 zone 后刷新状态
+                        If bytesLeft > 0UL Then
+                            FlushWriteBufferInternal(curZone)
+                            Parent.Device.FinishZone(zoneStart)
+                            Parent.Device.CloseZone(zoneStart)
+                            Parent.Device.RefreshZoneCondition(curZone)
+
+                            currentZoneOpen = False
+                            Dim nextZone As Zone = GetZoneForBytePos(_Position)
+                            EnsureZoneOpen(nextZone.ZoneStartLBA)
+                        End If
+                    End While
+                End SyncLock
+            End Sub
+
+            ' ------------------- Seek -------------------
+            Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
+                Dim newPos As Long = If(origin = SeekOrigin.Begin, offset,
+                           If(origin = SeekOrigin.Current, CLng(_Position) + offset,
+                              CLng(_Length) + offset))
+                If newPos < 0 Then Throw New ArgumentOutOfRangeException()
+
+                SyncLock Me
+                    If newPos < _Position Then
+                        ' 向前 Seek：若要覆写，必须 Reset Write Pointer
+                        Dim curZone As Zone = GetZoneForBytePos(_Position)
+                        Parent.Device.RefreshZoneCondition(curZone)
+
+                        Dim zoneStart As ULong = curZone.ZoneStartLBA
+                        Dim secLen As Integer = Parent.Device.SectorLength
+                        Dim zoneStartBytePos As ULong = (zoneStart - StartLBA) * CULng(secLen)
+                        Dim writePtrBytePos As ULong = (curZone.ZoneWritePointerLBA - StartLBA) * CULng(secLen)
+
+                        If newPos >= zoneStartBytePos AndAlso newPos < writePtrBytePos Then
+                            EnsureZoneOpen(zoneStart)
+                            Parent.Device.RefreshZoneCondition(curZone)
+
+                            ' 读出 zone 已写数据
+                            Dim preserved As New IO.MemoryStream()
+                            Dim curByte As ULong = zoneStartBytePos
+                            While curByte < writePtrBytePos
+                                Dim lba As ULong = BytePosToLBA(curByte)
+                                Dim off As UInteger = CUInt(curByte Mod CUInt(secLen))
+                                Dim chunk As Integer = Math.Min(secLen - CInt(off), CInt(writePtrBytePos - curByte))
+                                Dim data() As Byte = Parent.Device.ReadBytes(lba, off, CUInt(chunk))
+                                preserved.Write(data, 0, data.Length)
+                                curByte += CULng(data.Length)
+                            End While
+
+                            ' Reset Write Pointer -> 再刷新状态
+                            Parent.Device.ResetWritePointer(zoneStart)
+                            Parent.Device.RefreshZoneCondition(curZone)
+
+                            ' 回写前缀
+                            preserved.Seek(0, IO.SeekOrigin.Begin)
+                            Dim restoreBytes As ULong = newPos - zoneStartBytePos
+                            Dim tmp(secLen - 1) As Byte
+                            Dim written As ULong = 0
+                            While written < restoreBytes
+                                Dim r As Integer = preserved.Read(tmp, 0, CInt(Math.Min(restoreBytes - written, tmp.Length)))
+                                If r <= 0 Then Exit While
+                                Dim lba As ULong = BytePosToLBA(zoneStartBytePos + written)
+                                Dim off As UInteger = CUInt((zoneStartBytePos + written) Mod CUInt(secLen))
+                                Parent.Device.WriteBytes(tmp, lba, off, True)
+                                Parent.Device.RefreshZoneCondition(curZone)
+                                written += CULng(r)
+                            End While
+
+                            _Position = CULng(newPos)
+                            If _Position > _Length Then _Length = _Position
+                            currentZoneStartLBA = zoneStart
+                            currentZoneOpen = True
+                            Return _Position
+                        End If
+                    End If
+                    _Position = CULng(newPos)
+                    If _Position > _Length Then _Length = _Position
+                    Return _Position
+                End SyncLock
+            End Function
+        End Class
+
+        Public Sub CreateLTFSDefault(Optional ByVal SinglePartition As Boolean = False)
+            CMRDataStartLBA = Device.DataStartLBA + 1024
+            DataStreamList.Clear()
+            Dim indexpartition As New DataStream With {.StartLBA = Device.CMREndLBA + 1}
+            DataStreamList.Add(indexpartition)
+            If SinglePartition Then
+                indexpartition.MaxLength = (Device.MaximumLBA - indexpartition.StartLBA + 1) * Device.SectorLength
+            Else
+                indexpartition.MaxLength = Math.Ceiling(107374182400 / Device.SectorLength) * Device.SectorLength
+                Dim datapartition As New DataStream With {.StartLBA = Device.CMREndLBA + 1 + Math.Ceiling(107374182400 / Device.SectorLength)}
+                datapartition.MaxLength = (Device.MaximumLBA - datapartition.StartLBA + 1) * Device.SectorLength
+                DataStreamList.Add(datapartition)
+            End If
+        End Sub
+
+        Public Function GetSerializedText() As String
+            Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ZBCDataHelper))
+            Dim sb As New Text.StringBuilder
+            Dim t As New IO.StringWriter(sb)
+            writer.Serialize(t, Me)
+            Return sb.ToString()
+        End Function
+
+        Public Shared Function FromXML(s As String) As ZBCDataHelper
+            Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ZBCDataHelper))
+            Dim t As IO.TextReader = New IO.StringReader(s)
+            Return CType(reader.Deserialize(t), ZBCDataHelper)
+        End Function
+
+    End Class
+End Class
 Public Class ExplorerUtils
     Implements IComparer(Of String)
     Declare Unicode Function StrCmpLogicalW Lib "shlwapi.dll" (ByVal s1 As String, ByVal s2 As String) As Int32
@@ -1552,3 +2370,54 @@ Public Module ByteFormatter
                              units(unitIndex))
     End Function
 End Module
+
+Public Class BigEndianConverter
+    Public Shared Function ToUInt16(data As Byte(), Optional ByVal StartIndex As Integer = 0) As UInt32
+        Dim result As UInt32
+        For i As Integer = StartIndex To StartIndex + 1
+            result <<= 8
+            If i < data.Length Then result = result Or data(i)
+        Next
+        Return result
+    End Function
+    Public Shared Function ToUInt32(data As Byte(), Optional ByVal StartIndex As Integer = 0) As UInt32
+        Dim result As UInt32
+        For i As Integer = StartIndex To StartIndex + 3
+            result <<= 8
+            If i < data.Length Then result = result Or data(i)
+        Next
+        Return result
+    End Function
+    Public Shared Function ToUInt64(data As Byte(), Optional ByVal StartIndex As Integer = 0) As UInt32
+        Dim result As UInt32
+        For i As Integer = StartIndex To StartIndex + 7
+            result <<= 8
+            If i < data.Length Then result = result Or data(i)
+        Next
+        Return result
+    End Function
+    Public Shared Function GetBytes(ByVal input As UInt64) As Byte()
+        Dim result(7) As Byte
+        For i As Integer = result.Length - 1 To 0 Step -1
+            result(i) = CByte(input And &HFF)
+            input >>= 8
+        Next
+        Return result
+    End Function
+    Public Shared Function GetBytes(ByVal input As UInt32) As Byte()
+        Dim result(3) As Byte
+        For i As Integer = result.Length - 1 To 0 Step -1
+            result(i) = CByte(input And &HFF)
+            input >>= 8
+        Next
+        Return result
+    End Function
+    Public Shared Function GetBytes(ByVal input As UInt16) As Byte()
+        Dim result(1) As Byte
+        For i As Integer = result.Length - 1 To 0 Step -1
+            result(i) = CByte(input And &HFF)
+            input >>= 8
+        Next
+        Return result
+    End Function
+End Class

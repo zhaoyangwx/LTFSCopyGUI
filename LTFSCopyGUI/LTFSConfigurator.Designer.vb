@@ -138,6 +138,11 @@ Partial Class LTFSConfigurator
         Me.TextBoxDebugOutput = New System.Windows.Forms.TextBox()
         Me.TextBoxParamData = New System.Windows.Forms.TextBox()
         Me.ButtonDebugSendSCSICommand = New System.Windows.Forms.Button()
+        Me.ContextMenuStripSend = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
+        Me.保存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TextBoxCDBData = New System.Windows.Forms.TextBox()
         Me.TextBoxDevicePath = New System.Windows.Forms.TextBox()
         Me.LabelSCSIIOCtl = New System.Windows.Forms.Label()
@@ -146,10 +151,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ContextMenuStripSend = New System.Windows.Forms.ContextMenuStrip(Me.components)
-        Me.ToolStripSeparator1 = New System.Windows.Forms.ToolStripSeparator()
-        Me.保存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.删除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.LabelTestSets = New System.Windows.Forms.Label()
+        Me.NumericUpDownTestSets = New System.Windows.Forms.NumericUpDown()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -175,6 +178,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
+        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -800,6 +804,8 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
+        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSets)
+        Me.TabPageTest.Controls.Add(Me.LabelTestSets)
         Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestWrap)
         Me.TabPageTest.Controls.Add(Me.LabelTestWrap)
@@ -828,7 +834,7 @@ Partial Class LTFSConfigurator
         'NumericUpDownTestWrap
         '
         resources.ApplyResources(Me.NumericUpDownTestWrap, "NumericUpDownTestWrap")
-        Me.NumericUpDownTestWrap.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestWrap.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
         Me.NumericUpDownTestWrap.Name = "NumericUpDownTestWrap"
         Me.NumericUpDownTestWrap.Value = New Decimal(New Integer() {1, 0, 0, 0})
         '
@@ -840,14 +846,14 @@ Partial Class LTFSConfigurator
         'NumericUpDownTestStartLen
         '
         resources.ApplyResources(Me.NumericUpDownTestStartLen, "NumericUpDownTestStartLen")
-        Me.NumericUpDownTestStartLen.Maximum = New Decimal(New Integer() {16777215, 0, 0, 0})
+        Me.NumericUpDownTestStartLen.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
         Me.NumericUpDownTestStartLen.Name = "NumericUpDownTestStartLen"
         Me.NumericUpDownTestStartLen.Value = New Decimal(New Integer() {832584, 0, 0, 0})
         '
         'NumericUpDownTestSpeed
         '
         resources.ApplyResources(Me.NumericUpDownTestSpeed, "NumericUpDownTestSpeed")
-        Me.NumericUpDownTestSpeed.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownTestSpeed.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
         Me.NumericUpDownTestSpeed.Name = "NumericUpDownTestSpeed"
         Me.NumericUpDownTestSpeed.Value = New Decimal(New Integer() {7120, 0, 0, 0})
         '
@@ -960,6 +966,32 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugSendSCSICommand.Name = "ButtonDebugSendSCSICommand"
         Me.ButtonDebugSendSCSICommand.UseVisualStyleBackColor = True
         '
+        'ContextMenuStripSend
+        '
+        Me.ContextMenuStripSend.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripSeparator1, Me.保存ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.DebugToolStripMenuItem})
+        Me.ContextMenuStripSend.Name = "ContextMenuStripSend"
+        resources.ApplyResources(Me.ContextMenuStripSend, "ContextMenuStripSend")
+        '
+        'ToolStripSeparator1
+        '
+        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
+        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
+        '
+        '保存ToolStripMenuItem
+        '
+        Me.保存ToolStripMenuItem.Name = "保存ToolStripMenuItem"
+        resources.ApplyResources(Me.保存ToolStripMenuItem, "保存ToolStripMenuItem")
+        '
+        '删除ToolStripMenuItem
+        '
+        Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
+        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
+        '
+        'DebugToolStripMenuItem
+        '
+        Me.DebugToolStripMenuItem.Name = "DebugToolStripMenuItem"
+        resources.ApplyResources(Me.DebugToolStripMenuItem, "DebugToolStripMenuItem")
+        '
         'TextBoxCDBData
         '
         resources.ApplyResources(Me.TextBoxCDBData, "TextBoxCDBData")
@@ -994,26 +1026,17 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ContextMenuStripSend
+        'LabelTestSets
         '
-        Me.ContextMenuStripSend.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripSeparator1, Me.保存ToolStripMenuItem, Me.删除ToolStripMenuItem})
-        Me.ContextMenuStripSend.Name = "ContextMenuStripSend"
-        resources.ApplyResources(Me.ContextMenuStripSend, "ContextMenuStripSend")
+        resources.ApplyResources(Me.LabelTestSets, "LabelTestSets")
+        Me.LabelTestSets.Name = "LabelTestSets"
         '
-        'ToolStripSeparator1
+        'NumericUpDownTestSets
         '
-        Me.ToolStripSeparator1.Name = "ToolStripSeparator1"
-        resources.ApplyResources(Me.ToolStripSeparator1, "ToolStripSeparator1")
-        '
-        '保存ToolStripMenuItem
-        '
-        Me.保存ToolStripMenuItem.Name = "保存ToolStripMenuItem"
-        resources.ApplyResources(Me.保存ToolStripMenuItem, "保存ToolStripMenuItem")
-        '
-        '删除ToolStripMenuItem
-        '
-        Me.删除ToolStripMenuItem.Name = "删除ToolStripMenuItem"
-        resources.ApplyResources(Me.删除ToolStripMenuItem, "删除ToolStripMenuItem")
+        resources.ApplyResources(Me.NumericUpDownTestSets, "NumericUpDownTestSets")
+        Me.NumericUpDownTestSets.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
+        Me.NumericUpDownTestSets.Name = "NumericUpDownTestSets"
+        Me.NumericUpDownTestSets.Value = New Decimal(New Integer() {250, 0, 0, 0})
         '
         'LTFSConfigurator
         '
@@ -1055,6 +1078,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
+        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1185,4 +1209,7 @@ Partial Class LTFSConfigurator
     Friend WithEvents ToolStripSeparator1 As ToolStripSeparator
     Friend WithEvents 保存ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 删除ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents DebugToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents NumericUpDownTestSets As NumericUpDown
+    Friend WithEvents LabelTestSets As Label
 End Class
