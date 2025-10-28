@@ -13,9 +13,11 @@ Imports System.Globalization
 Imports LTFSCopyGUI.IOManager
 Imports System.Xml.Serialization
 Imports SetupAPIHelper
+Imports System.Buffers
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
+    Public Shared PublicArrayPool As ArrayPool(Of Byte) = ArrayPool(Of Byte).Create(16777216, 2048)
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class fsReport
         Public fs As IO.BufferedStream
@@ -80,7 +82,7 @@ Public Class IOManager
                     '
                     'End While
                     fsin.Close()
-                    Dim result As New Text.StringBuilder()
+                    Dim result As New System.Text.StringBuilder()
                     For i As Integer = 0 To hashValue.Length - 1
                         result.Append(String.Format("{0:X2}", hashValue(i)))
                     Next
@@ -108,7 +110,7 @@ Public Class IOManager
                             '
                             'End While
                             fsin.Close()
-                            Dim result As New Text.StringBuilder()
+                            Dim result As New System.Text.StringBuilder()
                             For i As Integer = 0 To hashValue.Length - 1
                                 result.Append(String.Format("{0:X2}", hashValue(i)))
                             Next
@@ -691,6 +693,7 @@ Public Class IOManager
         Structure QueueBlock
             Public block As Byte()
             Public Len As Integer
+            Public OnFinished As Action(Of Byte())
         End Structure
         Public EnQSig As New AutoResetEvent(False)
         Public DeQSig As New AutoResetEvent(False)
@@ -756,6 +759,7 @@ Public Class IOManager
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task.Wait()
                             End With
+                            If blk.OnFinished IsNot Nothing Then blk.OnFinished(blk.block)
                             blk.block = Nothing
                         End While
                     End SyncLock
@@ -781,7 +785,7 @@ Public Class IOManager
             End Try
         End Sub
 
-        Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1)
+        Public Sub Propagate(block As Byte(), Optional ByVal Len As Integer = -1, Optional ByVal OnFinished As Action(Of Byte()) = Nothing)
             While q.Count > 0
                 DeQSig.WaitOne(10)
             End While
@@ -835,9 +839,10 @@ Public Class IOManager
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task.Wait()
             End SyncLock
+            If OnFinished IsNot Nothing Then OnFinished(block)
         End Sub
 
-        Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = -1)
+        Public Sub PropagateAsync(block As Byte(), Optional ByVal Len As Integer = -1, Optional ByVal OnFinished As Action(Of Byte()) = Nothing)
             SyncLock Lock
                 If Not thStarted Then
                     thHashAsync.Start()
@@ -850,7 +855,7 @@ Public Class IOManager
             End While
             SyncLock Lock
                 SyncLock q
-                    q.Enqueue(New QueueBlock With {.block = block, .Len = Len})
+                    q.Enqueue(New QueueBlock With {.block = block, .Len = Len, .OnFinished = OnFinished})
                     EnQSig.Set()
                 End SyncLock
             End SyncLock
@@ -1349,7 +1354,7 @@ Public Class IOManager
 
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(NetworkCommand))
-            Dim sb As New Text.StringBuilder
+            Dim sb As New System.Text.StringBuilder
             Dim t As New IO.StringWriter(sb)
             writer.Serialize(t, Me)
             Return sb.ToString()
@@ -1362,7 +1367,7 @@ Public Class IOManager
         End Function
 
         Public Function SendTo(target As Net.IPAddress, port As Integer) As NetworkCommand
-            Dim rawdata() As Byte = Text.Encoding.UTF8.GetBytes(Me.GetSerializedText())
+            Dim rawdata() As Byte = System.Text.Encoding.UTF8.GetBytes(Me.GetSerializedText())
             Dim senddata As New List(Of Byte)
             senddata.AddRange(BitConverter.GetBytes(rawdata.Length))
             senddata.AddRange(rawdata)
@@ -1381,7 +1386,7 @@ Public Class IOManager
                          Dim length As Integer = BitConverter.ToInt32(header, 0)
                          Dim data(length - 1) As Byte
                          Dim dLength As Integer = sck.Receive(data, length, Net.Sockets.SocketFlags.None)
-                         Dim msg As String = Text.Encoding.UTF8.GetString(data)
+                         Dim msg As String = System.Text.Encoding.UTF8.GetString(data)
                          sck.Close()
                          result = NetworkCommand.FromXML(msg)
                          TaskFinished = True
@@ -2295,7 +2300,7 @@ Public Class ZBCDeviceHelper
 
         Public Function GetSerializedText() As String
             Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ZBCDataHelper))
-            Dim sb As New Text.StringBuilder
+            Dim sb As New System.Text.StringBuilder
             Dim t As New IO.StringWriter(sb)
             writer.Serialize(t, Me)
             Return sb.ToString()

@@ -5,6 +5,7 @@ Imports System.IO.Pipelines
 Imports System.Threading
 Imports System.Threading.Tasks
 Imports System.Buffers
+Imports System.Runtime.InteropServices
 
 ' 高性能文件数据提供器：
 ' - 仅暴露一个 PipeReader（单读者），内部 Pipe 使用 256MiB 背压阈值（可配），避免过量内存占用
@@ -167,6 +168,7 @@ Public Class FileDataProvider
                 End If
             End While
         Catch ex As Exception
+            MessageBox.Show(ex.ToString())
             Try
                 _writer.Complete()
                 Reader.Complete()
@@ -186,16 +188,15 @@ Public Class FileDataProvider
             End Try
         End Try
     End Function
-
     Private Async Function StreamFileToPipeAsync(fr As LTFSWriter.FileRecord, ct As CancellationToken) As Task
         Dim fs As FileStream = Nothing
         Try
             ' 1MiB 缓冲，异步顺序读取
-            fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
         Catch
             ' 备用：尝试使用现有 FileRecord 打开
             Try
-                Select Case fr.Open(BufferSize:=1024 * 1024)
+                Select Case fr.Open(BufferSize:=64 * 1024)
                     Case DialogResult.Ignore
                         Exit Function
                     Case DialogResult.Abort
@@ -208,22 +209,24 @@ Public Class FileDataProvider
         End Try
 
         Using fs
-            Dim remaining As Long = If(fr.File IsNot Nothing, fr.File.length, Math.Max(0, fs.Length))
-            Dim chunk As Integer = 1024 * 1024 ' 1MiB
-            Dim rented As Byte() = ArrayPool(Of Byte).Shared.Rent(chunk)
-            Try
-                While remaining > 0 AndAlso Not ct.IsCancellationRequested
-                    Dim toRead As Integer = CInt(Math.Min(chunk, remaining))
-                    Dim n As Integer = Await fs.ReadAsync(rented, 0, toRead)
-                    If n <= 0 Then Exit While
-                    _writer.Write(rented.AsSpan(0, n))
-                    remaining -= n
-                    Dim res = Await _writer.FlushAsync(ct)
-                    If res.IsCanceled OrElse res.IsCompleted Then Exit While
+            If fr.File IsNot Nothing Then
+                Dim minSize As Integer = 64 * 1024
+                While Not ct.IsCancellationRequested
+                    Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
+                    Dim seg As ArraySegment(Of Byte)
+                    If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
+                        Throw New Exception("TryGetArray failed")
+                    End If
+                    Dim cap As Integer = Math.Min(minSize, seg.Count)
+                    Dim n = Await fs.ReadAsync(seg.Array, seg.Offset, cap, ct).ConfigureAwait(False)
+
+                    If n = 0 Then Exit While
+                    _writer.Advance(n)
+
+                    Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
+                    If result.IsCanceled OrElse result.IsCompleted Then Exit While
                 End While
-            Finally
-                ArrayPool(Of Byte).Shared.Return(rented)
-            End Try
+            End If
         End Using
     End Function
 

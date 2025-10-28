@@ -1,11 +1,15 @@
+Imports System.Buffers
 Imports System.ComponentModel
 Imports System.Diagnostics.Eventing
 Imports System.IO.Pipelines
+Imports System.Runtime
 Imports System.Runtime.InteropServices
+Imports System.Runtime.Remoting.Messaging
 Imports System.Text
 Imports System.Threading
 Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
+Imports Microsoft.WindowsAPICodePack.Shell
 
 Public Class LTFSWriter
     <Category("LTFSWriter")>
@@ -958,8 +962,8 @@ Public Class LTFSWriter
                      End Sub)
             Static GCCollectCounter As Integer
             GCCollectCounter += 1
-            If GCCollectCounter >= 60 Then
-                GC.Collect()
+            If GCCollectCounter >= 30 Then
+                'If IsWriting Then GC.Collect()
                 GCCollectCounter = 0
             End If
         Catch ex As Exception
@@ -3873,46 +3877,58 @@ Public Class LTFSWriter
 
 
     End Function
+    Private Function CopySequenceToArray(seq As ReadOnlySequence(Of Byte),
+                                         dest As Byte(),
+                                         destOffset As Integer,
+                                         maxBytes As Integer) As Integer
+        Dim copied As Integer = 0
+        Dim e = seq.GetEnumerator()
+        While e.MoveNext() AndAlso copied < maxBytes
+            Dim rom As ReadOnlyMemory(Of Byte) = e.Current
+            Dim segLen As Integer = Math.Min(rom.Length, maxBytes - copied)
+            If segLen <= 0 Then Continue While
+
+            Dim seg As ArraySegment(Of Byte)
+            If MemoryMarshal.TryGetArray(rom, seg) AndAlso seg.Array IsNot Nothing Then
+                Buffer.BlockCopy(seg.Array, seg.Offset, dest, destOffset + copied, segLen)
+                copied += segLen
+            Else
+                Exit While
+            End If
+        End While
+        Return copied
+    End Function
     Public Property PipeLock As New Object
     Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
                                      dest As Byte(),
                                      count As Integer,
                                      Optional ct As Threading.CancellationToken = Nothing) As Integer
-        Dim readTotal As Integer = 0
-        While readTotal < count
-            Dim result As IO.Pipelines.ReadResult
-            SyncLock PipeLock
-                Try
-                    result = reader.ReadAsync(ct).AsTask().Result
-                Catch
-                End Try
-                Dim buffer = result.Buffer
-                PipeBufferLength = buffer.Length
-                Dim need As Long = count - readTotal
-                Dim take As Long = Math.Min(need, buffer.Length)
-                If take = 0 Then
-                    If result.IsCompleted Then Exit While
-                    reader.AdvanceTo(buffer.Start, buffer.End)
-                    Continue While
-                End If
+        If dest Is Nothing Then Throw New ArgumentNullException(NameOf(dest))
+        If count < 0 OrElse count > dest.Length Then Throw New ArgumentOutOfRangeException(NameOf(count))
+        Dim filled As Long = 0
 
-                Dim slice = buffer.Slice(0, take)
-                Dim copied As Integer = 0
+        While filled < count
+            Dim rr As ReadResult = reader.ReadAsync(ct).AsTask().GetAwaiter().GetResult()
+            Dim buf As ReadOnlySequence(Of Byte) = rr.Buffer
 
-                For Each seg In slice
-                    Dim segLen = CInt(seg.Length)
-                    Dim arr = seg.ToArray()
-                    Array.Copy(arr, 0, dest, readTotal + copied, segLen)
-                    copied += segLen
-                Next
+            If buf.Length = 0 AndAlso rr.IsCompleted Then
+                Exit While
+            End If
+            PipeBufferLength = buf.Length
+            Dim need As Long = count - filled
+            Dim toCopy As Long = Math.Min(need, CLng(buf.Length))
 
-                readTotal += copied
-                Dim consumed = slice.End
-                reader.AdvanceTo(consumed, consumed)
-            End SyncLock
+            Dim copied As Long = 0
+            If toCopy > 0 Then
+                copied = CopySequenceToArray(buf, dest, filled, toCopy)
+                filled += copied
+            End If
+
+            Dim consumed As SequencePosition = buf.GetPosition(copied)
+            reader.AdvanceTo(consumed, consumed)
         End While
 
-        Return readTotal
+        Return filled
     End Function
 
     Private Sub PipeDrain(reader As System.IO.Pipelines.PipeReader,
@@ -3925,7 +3941,7 @@ Public Class LTFSWriter
                 Dim buffer = result.Buffer
                 PipeBufferLength = buffer.Length
                 If buffer.Length = 0 Then
-                    reader.AdvanceTo(buffer.Start, buffer.End)
+                    reader.AdvanceTo(buffer.Start, buffer.Start)
                     If result.IsCompleted Then Exit While
                     Continue While
                 End If
@@ -3975,6 +3991,7 @@ Public Class LTFSWriter
                                                              smallThresholdBytes:=16 * 1024,
                                                              smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
                                                              pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
+                        GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency
                         provider.Start()
 
                     End If
@@ -3985,7 +4002,7 @@ Public Class LTFSWriter
                         lcounter += 1
                         If lcounter >= 100 Then
                             lcounter = 0
-                            PipeBufferLength = PipeGetLength(provider.Reader)
+                            If provider IsNot Nothing Then PipeBufferLength = PipeGetLength(provider.Reader)
                         End If
                     End While
                     If Not locateResult Then
@@ -4290,7 +4307,7 @@ Public Class LTFSWriter
                                             Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
                                                 Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
-                                                Dim buffer(plabel.blocksize - 1) As Byte
+                                                Dim buffer As Byte() = IOManager.PublicArrayPool.Rent(plabel.blocksize)
                                                 Dim BytesReaded As Integer = 0
 
                                                 ' 从 Pipe 读取当前文件需要的字节
@@ -4328,8 +4345,9 @@ Public Class LTFSWriter
                                                 End If
                                                 If ExitWhileFlag Then Exit While
 
-                                                LastWriteTask = Task.Run(
-                                                Sub()
+                                                LastWriteTask = Task.Factory.StartNew(
+                                                Sub(state)
+                                                    Dim buf As Byte() = DirectCast(state, Byte())
                                                     If BytesReaded > 0 Then
                                                         ' 限速（保留原逻辑）
                                                         CheckCount += 1
@@ -4344,7 +4362,7 @@ Public Class LTFSWriter
                                                         End If
 
                                                         ' 写带（保留原 TapeUtils.Write + sense 处理）
-                                                        Marshal.Copy(buffer, 0, wBufferPtr, BytesReaded)
+                                                        Marshal.Copy(buf, 0, wBufferPtr, BytesReaded)
                                                         Dim succ As Boolean = False Or IsIndexPartition
                                                         While ((Not succ) AndAlso (Not IsIndexPartition))
                                                             Dim sense As Byte()
@@ -4408,10 +4426,16 @@ Public Class LTFSWriter
                                                         End While
                                                         If sh IsNot Nothing AndAlso succ Then
                                                             If 异步校验CPU占用高ToolStripMenuItem.Checked Then
-                                                                sh.PropagateAsync(buffer, BytesReaded)
+                                                                sh.PropagateAsync(buf, BytesReaded, Sub(qb As Byte())
+                                                                                                        IOManager.PublicArrayPool.Return(qb)
+                                                                                                    End Sub)
                                                             Else
-                                                                sh.Propagate(buffer, BytesReaded)
+                                                                sh.Propagate(buf, BytesReaded, Sub(qb As Byte())
+                                                                                                   IOManager.PublicArrayPool.Return(qb)
+                                                                                               End Sub)
                                                             End If
+                                                        Else
+                                                            IOManager.PublicArrayPool.Return(buf)
                                                         End If
                                                         If Flush Then
                                                             Dim flushResult As Boolean = False
@@ -4461,8 +4485,7 @@ Public Class LTFSWriter
                                                         ExitWhileFlag = True
                                                     End If
                                                     LWTE.Set()
-                                                End Sub)
-
+                                                End Sub, buffer)
                                                 remainingInFile -= BytesReaded
                                             End While
 
