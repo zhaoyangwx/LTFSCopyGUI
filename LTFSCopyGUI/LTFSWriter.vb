@@ -4566,9 +4566,19 @@ Public Class LTFSWriter
                                     Dim p2 As New TapeUtils.PositionData(driveHandle)
                                     If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                         Invoke(Sub()
-                                                   If MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then
-                                                       StopFlag = True
-                                                   End If
+                                                   While True
+                                                       Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Position changed! {p.BlockNumber} -> {p2.BlockNumber}", "Warning", MessageBoxButtons.AbortRetryIgnore)
+                                                           Case DialogResult.Abort
+                                                               StopFlag = True
+                                                           Case DialogResult.Retry
+                                                               TapeUtils.Locate(driveHandle, p.BlockNumber, p.PartitionNumber)
+                                                               p2 = New TapeUtils.PositionData(driveHandle)
+                                                               If p2.BlockNumber = p.BlockNumber AndAlso p2.PartitionNumber = p.PartitionNumber Then Exit While
+                                                           Case DialogResult.Ignore
+                                                               Exit While
+                                                       End Select
+                                                   End While
+
                                                End Sub)
                                     End If
                                 End If
