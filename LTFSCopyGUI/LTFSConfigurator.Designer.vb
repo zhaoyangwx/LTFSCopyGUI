@@ -114,6 +114,8 @@ Partial Class LTFSConfigurator
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.ButtonResetLogPage = New System.Windows.Forms.Button()
         Me.TabPageTest = New System.Windows.Forms.TabPage()
+        Me.NumericUpDownTestSets = New System.Windows.Forms.NumericUpDown()
+        Me.LabelTestSets = New System.Windows.Forms.Label()
         Me.ButtonDiagTest = New System.Windows.Forms.Button()
         Me.NumericUpDownTestWrap = New System.Windows.Forms.NumericUpDown()
         Me.LabelTestWrap = New System.Windows.Forms.Label()
@@ -151,8 +153,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.LabelTestSets = New System.Windows.Forms.Label()
-        Me.NumericUpDownTestSets = New System.Windows.Forms.NumericUpDown()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -172,13 +172,13 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownPCLow, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageLog.SuspendLayout()
         Me.TabPageTest.SuspendLayout()
+        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
-        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -825,6 +825,18 @@ Partial Class LTFSConfigurator
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
         '
+        'NumericUpDownTestSets
+        '
+        resources.ApplyResources(Me.NumericUpDownTestSets, "NumericUpDownTestSets")
+        Me.NumericUpDownTestSets.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
+        Me.NumericUpDownTestSets.Name = "NumericUpDownTestSets"
+        Me.NumericUpDownTestSets.Value = New Decimal(New Integer() {250, 0, 0, 0})
+        '
+        'LabelTestSets
+        '
+        resources.ApplyResources(Me.LabelTestSets, "LabelTestSets")
+        Me.LabelTestSets.Name = "LabelTestSets"
+        '
         'ButtonDiagTest
         '
         resources.ApplyResources(Me.ButtonDiagTest, "ButtonDiagTest")
@@ -1026,18 +1038,6 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'LabelTestSets
-        '
-        resources.ApplyResources(Me.LabelTestSets, "LabelTestSets")
-        Me.LabelTestSets.Name = "LabelTestSets"
-        '
-        'NumericUpDownTestSets
-        '
-        resources.ApplyResources(Me.NumericUpDownTestSets, "NumericUpDownTestSets")
-        Me.NumericUpDownTestSets.Maximum = New Decimal(New Integer() {-1, 0, 0, 0})
-        Me.NumericUpDownTestSets.Name = "NumericUpDownTestSets"
-        Me.NumericUpDownTestSets.Value = New Decimal(New Integer() {250, 0, 0, 0})
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1072,13 +1072,13 @@ Partial Class LTFSConfigurator
         Me.TabPageLog.PerformLayout()
         Me.TabPageTest.ResumeLayout(False)
         Me.TabPageTest.PerformLayout()
+        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
-        CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub

@@ -2851,6 +2851,7 @@ Public Class TapeUtils
             End If
         Next
         For Each dev As SetupAPIHelper.Device In tapeobj
+            If dev.PDOName = "" Then Continue For
             Dim handle As IntPtr = CreateFile($"\\.\Globalroot{dev.PDOName}", 3221225472UL, 7UL, IntPtr.Zero, 3, 0, IntPtr.Zero)
             Dim result As Boolean = False
             Dim devNum As New SetupAPIWheels.STORAGE_DEVICE_NUMBER

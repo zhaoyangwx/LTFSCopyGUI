@@ -80,7 +80,7 @@ Public Class FileDataProvider
         _requireSignal = requireSignal
 
         Dim pause As Long = pipeBufferBytes
-        Dim resumeTh As Long = Math.Max(1L, pause \ 2)
+        Dim resumeTh As Long = Math.Max(1L, pause \ 4 * 3)
         _pipe = New Pipe(New PipeOptions(
             pauseWriterThreshold:=pause,
             resumeWriterThreshold:=resumeTh,

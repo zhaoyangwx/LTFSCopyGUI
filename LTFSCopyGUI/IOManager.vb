@@ -1988,14 +1988,8 @@ Public Class ZBCDeviceHelper
 
             Private _Position As ULong = 0
             Private _Length As ULong = 0
+            Private SectorResidue As Byte()
 
-            Private writeBuffer As IO.MemoryStream = Nothing
-            Private bufferStartPos As ULong = 0
-
-            Private currentZoneStartLBA As ULong = 0
-            Private currentZoneOpen As Boolean = False
-
-            ' ------------------- Stream 基本属性 -------------------
             Public Overrides ReadOnly Property CanRead As Boolean
                 Get
                     Return Parent IsNot Nothing
@@ -2024,14 +2018,23 @@ Public Class ZBCDeviceHelper
                     Seek(value, SeekOrigin.Begin)
                 End Set
             End Property
+            Public ReadOnly Property CurrentLBA As ULong
+                Get
+                    Return BytePosToLBA(Position)
+                End Get
+            End Property
+            Public ReadOnly Property CurrentZone As Zone
+                Get
+                    Return Parent.Device.GetZoneByLBA(CurrentLBA)
+                End Get
+            End Property
+
             Public Overrides Sub SetLength(value As Long)
-                If value < 0 Then Throw New ArgumentOutOfRangeException("value")
                 SyncLock Me
                     _Length = CULng(value)
                 End SyncLock
             End Sub
 
-            ' ------------------- 工具函数 -------------------
             Private Function BytePosToLBA(pos As ULong) As ULong
                 Return StartLBA + pos \ Parent.Device.SectorLength
             End Function
@@ -2042,244 +2045,57 @@ Public Class ZBCDeviceHelper
                 Return Parent.Device.GetZoneByLBA(BytePosToLBA(pos))
             End Function
 
-            ' 确保 zone 处于 OPEN 状态；必要时打开并刷新
-            Private Sub EnsureZoneOpen(zoneStartLBA As ULong)
-                SyncLock Me
-                    If currentZoneOpen AndAlso currentZoneStartLBA = zoneStartLBA Then Return
-
-                    ' 切换 zone 前刷新旧 zone 状态
-                    If currentZoneOpen Then
-                        Dim oldZone As Zone = Parent.Device.GetZoneByLBA(currentZoneStartLBA)
-                        Parent.Device.RefreshZoneCondition(oldZone)
-                    End If
-
-                    ' 打开新 zone
-                    Parent.Device.OpenZone(zoneStartLBA)
-                    Dim z As Zone = Parent.Device.GetZoneByLBA(zoneStartLBA)
-                    ' 打开后刷新一次（open 状态已改变）
-                    Parent.Device.RefreshZoneCondition(z)
-
-                    currentZoneStartLBA = zoneStartLBA
-                    currentZoneOpen = True
-                End SyncLock
-            End Sub
-
-            ' 内部写出缓存
-            Private Sub FlushWriteBufferInternal(curZone As Zone)
-                If writeBuffer Is Nothing OrElse writeBuffer.Length = 0 Then Return
-                Dim data() As Byte = writeBuffer.ToArray()
-                Dim startPos As ULong = bufferStartPos
-                Dim firstLBA As ULong = BytePosToLBA(startPos)
-                Dim byteOffset As UInteger = CUInt(startPos Mod CUInt(Parent.Device.SectorLength))
-
-                ' ⚠️ WriteBytes仅执行纯数据写入，不负责zone状态。
-                Parent.Device.WriteBytes(data, firstLBA, byteOffset, True)
-
-                ' 写后刷新zone状态（因为write pointer改变）
-                Parent.Device.RefreshZoneCondition(curZone)
-
-                writeBuffer.Dispose()
-                writeBuffer = Nothing
-                bufferStartPos = 0
-            End Sub
-
-            Private Sub FlushWriteBuffer()
-                SyncLock Me
-                    Dim z As Zone = GetZoneForBytePos(_Position)
-                    FlushWriteBufferInternal(z)
-                End SyncLock
-            End Sub
-
-            ' 填充 0 扇区（用于填补 gap）
-            Private Sub WriteZeroSectors(startLBA As ULong, sectorCount As ULong, z As Zone)
-                Dim sectorLen As Integer = Parent.Device.SectorLength
-                Dim zero(sectorLen - 1) As Byte
-                For i As ULong = 0 To sectorCount - 1UL
-                    ' 纯写入，不让WriteBytes处理zone
-                    Parent.Device.WriteBytes(zero, startLBA + i, 0, True)
-                Next
-                ' 写完后刷新写指针
-                Parent.Device.RefreshZoneCondition(z)
-            End Sub
-
-            ' ------------------- Flush 重载 -------------------
             Public Overrides Sub Flush()
-                Flush(True)
+
+            End Sub
+            Private Sub Load()
+                Dim currZone As Zone = CurrentZone
+                Dim currLBA As ULong = CurrentLBA
+                Dim currWP As ULong = currZone.ZoneWritePointerLBA
+                Dim residueBytes As Integer = BytePosToSectorOffset(Position)
+                If currWP <> currLBA + 1 Then
+                    Dim ZoneRewriteBuffer(Parent.Device.SectorLength * (currLBA - currZone.ZoneStartLBA) - 1) As Byte
+                    ZoneRewriteBuffer = Parent.Device.ReadBytes(currZone.ZoneStartLBA, 0, ZoneRewriteBuffer.Length)
+                End If
+
             End Sub
 
-            ''' <summary>
-            ''' Flush(Close As Boolean)
-            '''  - Close=False: 写出缓存但保持 zone open。
-            '''  - Close=True: 写出后 finish+close zone 并刷新状态。
-            ''' </summary>
-            Public Overloads Sub Flush(Close As Boolean)
-                SyncLock Me
-                    Dim curZone As Zone = GetZoneForBytePos(_Position)
-                    FlushWriteBufferInternal(curZone)
-
-                    If currentZoneOpen Then
-                        If Close Then
-                            ' 先执行状态改变，再刷新
-                            Parent.Device.FinishZone(currentZoneStartLBA)
-                            Parent.Device.CloseZone(currentZoneStartLBA)
-                            Parent.Device.RefreshZoneCondition(curZone)
-                            currentZoneOpen = False
-                        Else
-                            Parent.Device.RefreshZoneCondition(curZone)
-                        End If
-                    End If
-                End SyncLock
-            End Sub
-
-            ' ------------------- Read -------------------
             Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
-                If buffer Is Nothing Then Throw New ArgumentNullException("buffer")
-                SyncLock Me
-                    Dim z As Zone = GetZoneForBytePos(_Position)
-                    FlushWriteBufferInternal(z)
-                    If _Position >= _Length Then Return 0
-
-                    Dim available As ULong = _Length - _Position
-                    Dim toRead As Integer = CInt(Math.Min(available, CULng(count)))
-                    Dim sectorLen As Integer = Parent.Device.SectorLength
-                    Dim bytesRead As Integer = 0
-
-                    While bytesRead < toRead
-                        Dim curLBA As ULong = BytePosToLBA(_Position)
-                        Dim byteOffset As UInteger = CUInt(_Position Mod CUInt(sectorLen))
-                        Dim chunk As Integer = Math.Min(toRead - bytesRead, sectorLen - CInt(byteOffset))
-                        Dim data() As Byte = Parent.Device.ReadBytes(curLBA, byteOffset, CUInt(chunk))
-                        Array.Copy(data, 0, buffer, offset + bytesRead, data.Length)
-                        bytesRead += data.Length
-                        _Position += CULng(data.Length)
-                    End While
-                    Return bytesRead
-                End SyncLock
+                count = Math.Min(count, Length - Position)
+                If count > 0 Then
+                    Dim result As Byte() = Parent.Device.ReadBytes(BytePosToLBA(Position), BytePosToSectorOffset(Position), count)
+                    Array.Copy(result, 0, buffer, offset, count)
+                End If
+                Return count
             End Function
 
-            ' ------------------- Write -------------------
             Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
-                If buffer Is Nothing Then Throw New ArgumentNullException("buffer")
-                SyncLock Me
-                    Dim bytesLeft As ULong = CULng(count)
-                    Dim dataOff As Integer = offset
-                    Dim sectorLen As Integer = Parent.Device.SectorLength
+                '拼数据
 
-                    While bytesLeft > 0UL
-                        Dim curZone As Zone = GetZoneForBytePos(_Position)
-                        Parent.Device.RefreshZoneCondition(curZone)
+                '写整LBA
 
-                        Dim zoneStart As ULong = curZone.ZoneStartLBA
-                        Dim zoneEnd As ULong = curZone.ZoneEndLBA
-                        Dim curLBA As ULong = BytePosToLBA(_Position)
-                        Dim byteOff As Integer = BytePosToSectorOffset(_Position)
+                '多余丢缓存
 
-                        EnsureZoneOpen(zoneStart)
-                        Parent.Device.RefreshZoneCondition(curZone)
-
-                        ' 若写入位置超过 write pointer，则填 0
-                        If curZone.ZoneWritePointerLBA < curLBA Then
-                            Dim fillCount As ULong = curLBA - curZone.ZoneWritePointerLBA
-                            If fillCount > 0UL Then WriteZeroSectors(curZone.ZoneWritePointerLBA, fillCount, curZone)
-                        End If
-
-                        Dim bytesLeftInZone As ULong = (zoneEnd - curLBA + 1UL) * CULng(sectorLen) - CULng(byteOff)
-                        Dim chunk As ULong = Math.Min(bytesLeftInZone, bytesLeft)
-
-                        If writeBuffer Is Nothing Then
-                            writeBuffer = New IO.MemoryStream()
-                            bufferStartPos = _Position
-                        ElseIf bufferStartPos + CULng(writeBuffer.Length) <> _Position Then
-                            FlushWriteBufferInternal(curZone)
-                            writeBuffer = New IO.MemoryStream()
-                            bufferStartPos = _Position
-                        End If
-
-                        writeBuffer.Write(buffer, dataOff, CInt(chunk))
-                        _Position += chunk
-                        If _Position > _Length Then _Length = _Position
-                        dataOff += CInt(chunk)
-                        bytesLeft -= chunk
-
-                        ' 跨 zone：必须 finish/close 旧 zone 后刷新状态
-                        If bytesLeft > 0UL Then
-                            FlushWriteBufferInternal(curZone)
-                            Parent.Device.FinishZone(zoneStart)
-                            Parent.Device.CloseZone(zoneStart)
-                            Parent.Device.RefreshZoneCondition(curZone)
-
-                            currentZoneOpen = False
-                            Dim nextZone As Zone = GetZoneForBytePos(_Position)
-                            EnsureZoneOpen(nextZone.ZoneStartLBA)
-                        End If
-                    End While
-                End SyncLock
             End Sub
 
-            ' ------------------- Seek -------------------
             Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
-                Dim newPos As Long = If(origin = SeekOrigin.Begin, offset,
-                           If(origin = SeekOrigin.Current, CLng(_Position) + offset,
-                              CLng(_Length) + offset))
-                If newPos < 0 Then Throw New ArgumentOutOfRangeException()
+                Dim target As Long
+                Select Case origin
+                    Case SeekOrigin.Begin
+                        target = offset
+                    Case SeekOrigin.Current
+                        target = Position + offset
+                    Case SeekOrigin.End
+                        target = Length + offset
+                End Select
+                If target > Position Then
+                    '写零
+                Else
+                    Flush()
+                    _Position = target
+                    '重建缓存
 
-                SyncLock Me
-                    If newPos < _Position Then
-                        ' 向前 Seek：若要覆写，必须 Reset Write Pointer
-                        Dim curZone As Zone = GetZoneForBytePos(_Position)
-                        Parent.Device.RefreshZoneCondition(curZone)
-
-                        Dim zoneStart As ULong = curZone.ZoneStartLBA
-                        Dim secLen As Integer = Parent.Device.SectorLength
-                        Dim zoneStartBytePos As ULong = (zoneStart - StartLBA) * CULng(secLen)
-                        Dim writePtrBytePos As ULong = (curZone.ZoneWritePointerLBA - StartLBA) * CULng(secLen)
-
-                        If newPos >= zoneStartBytePos AndAlso newPos < writePtrBytePos Then
-                            EnsureZoneOpen(zoneStart)
-                            Parent.Device.RefreshZoneCondition(curZone)
-
-                            ' 读出 zone 已写数据
-                            Dim preserved As New IO.MemoryStream()
-                            Dim curByte As ULong = zoneStartBytePos
-                            While curByte < writePtrBytePos
-                                Dim lba As ULong = BytePosToLBA(curByte)
-                                Dim off As UInteger = CUInt(curByte Mod CUInt(secLen))
-                                Dim chunk As Integer = Math.Min(secLen - CInt(off), CInt(writePtrBytePos - curByte))
-                                Dim data() As Byte = Parent.Device.ReadBytes(lba, off, CUInt(chunk))
-                                preserved.Write(data, 0, data.Length)
-                                curByte += CULng(data.Length)
-                            End While
-
-                            ' Reset Write Pointer -> 再刷新状态
-                            Parent.Device.ResetWritePointer(zoneStart)
-                            Parent.Device.RefreshZoneCondition(curZone)
-
-                            ' 回写前缀
-                            preserved.Seek(0, IO.SeekOrigin.Begin)
-                            Dim restoreBytes As ULong = newPos - zoneStartBytePos
-                            Dim tmp(secLen - 1) As Byte
-                            Dim written As ULong = 0
-                            While written < restoreBytes
-                                Dim r As Integer = preserved.Read(tmp, 0, CInt(Math.Min(restoreBytes - written, tmp.Length)))
-                                If r <= 0 Then Exit While
-                                Dim lba As ULong = BytePosToLBA(zoneStartBytePos + written)
-                                Dim off As UInteger = CUInt((zoneStartBytePos + written) Mod CUInt(secLen))
-                                Parent.Device.WriteBytes(tmp, lba, off, True)
-                                Parent.Device.RefreshZoneCondition(curZone)
-                                written += CULng(r)
-                            End While
-
-                            _Position = CULng(newPos)
-                            If _Position > _Length Then _Length = _Position
-                            currentZoneStartLBA = zoneStart
-                            currentZoneOpen = True
-                            Return _Position
-                        End If
-                    End If
-                    _Position = CULng(newPos)
-                    If _Position > _Length Then _Length = _Position
-                    Return _Position
-                End SyncLock
+                End If
             End Function
         End Class
 
