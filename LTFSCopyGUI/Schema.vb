@@ -131,6 +131,7 @@ Public Class ltfsindex
             <Category("LTFSIndex")>
             Public Property value As String
             <TypeConverter(GetType(ExpandableObjectConverter))>
+            <Serializable>
             Public Class HashType
                 Public Shared ReadOnly Property CRC32 As String = "ltfs.hash.crc32sum"
                 Public Shared ReadOnly Property MD5 As String = "ltfs.hash.md5sum"
@@ -140,6 +141,13 @@ Public Class ltfsindex
                 Public Shared ReadOnly Property BLAKE3 As String = "ltfs.hash.blake3sum"
                 Public Shared ReadOnly Property XxHash3 As String = "ltfs.hash.xxhash3sum"
                 Public Shared ReadOnly Property XxHash128 As String = "ltfs.hash.xxhash128sum"
+                Public Enum Available
+                    SHA1
+                    MD5
+                    BLAKE3
+                    XxHash3
+                    XxHash128
+                End Enum
             End Class
             Public Shared Function FromXMLList(s As String) As List(Of xattr)
                 Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))

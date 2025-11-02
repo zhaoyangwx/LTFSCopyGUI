@@ -122,6 +122,49 @@ Public Class IOManager
             Return ""
         End If
     End Function
+    Public Shared Function GetMD5(filename As String) As String
+        Dim hashValue() As Byte
+        Dim hasher As MD5 = MD5.Create()
+        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+            hashValue = hasher.ComputeHash(fshash)
+        End Using
+        hasher.Dispose()
+        Return BitConverter.ToString(hashValue).Replace("-", "").ToUpper()
+    End Function
+    Public Shared Function GetBlake3(filename As String) As String
+        Dim hasher As Blake3.Hasher = Blake3.Hasher.NewInstance()
+        Dim block(8388607) As Byte
+        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+            While fshash.Read(block, 0, block.Length) > 0
+                hasher.UpdateWithJoin(block)
+            End While
+            Dim resultb3 As Blake3.Hash = hasher.Finalize()
+            hasher.Dispose()
+            Return resultb3.ToString().ToUpper()
+        End Using
+    End Function
+    Public Shared Function GetXxHash3(filename As String) As String
+        Dim hasher As New IO.Hashing.XxHash3
+        Dim block(8388607) As Byte
+        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+            While fshash.Read(block, 0, block.Length) > 0
+                hasher.Append(block)
+            End While
+            Dim resultXxHash3 As Byte() = hasher.GetHashAndReset()
+            Return BitConverter.ToString(resultXxHash3).Replace("-", "").ToUpper()
+        End Using
+    End Function
+    Public Shared Function GetXxHash128(filename As String) As String
+        Dim hasher As New IO.Hashing.XxHash128
+        Dim block(8388607) As Byte
+        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+            While fshash.Read(block, 0, block.Length) > 0
+                hasher.Append(block)
+            End While
+            Dim resultXxHash128 As Byte() = hasher.GetHashAndReset()
+            Return BitConverter.ToString(resultXxHash128).Replace("-", "").ToUpper()
+        End Using
+    End Function
 
     Public Shared Function FitImage(input As Bitmap, outputsize As Size) As Bitmap
         Dim result As New Bitmap(outputsize.Width, outputsize.Height, Imaging.PixelFormat.Format24bppRgb)

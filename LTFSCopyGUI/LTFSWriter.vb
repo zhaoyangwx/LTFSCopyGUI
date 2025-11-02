@@ -5,8 +5,10 @@ Imports System.IO.Pipelines
 Imports System.Runtime
 Imports System.Runtime.InteropServices
 Imports System.Runtime.Remoting.Messaging
+Imports System.Security.Cryptography
 Imports System.Text
 Imports System.Threading
+Imports Blake3
 Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
 Imports Microsoft.WindowsAPICodePack.Shell
@@ -4093,12 +4095,40 @@ Public Class LTFSWriter
                                     Dim dupe As Boolean = False
                                     If My.Settings.LTFSWriter_DeDupe Then
                                         Dim dupeFile As ltfsindex.file = Nothing
-                                        Dim sha1value As String = ""
+                                        Dim checksumvalue As String = ""
                                         For Each fref As ltfsindex.file In AllFile
-                                            If fref.length = finfo.Length AndAlso fref.sha1 <> "" Then
-                                                PrintMsg($"{My.Resources.ResText_CHashing}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
-                                                If sha1value = "" Then sha1value = IOManager.SHA1(fr.SourcePath)
-                                                If fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True).Equals(sha1value) Then
+                                            If fref.length <> finfo.Length Then Continue For
+                                            Dim frefchecksum As String = ""
+                                            Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+                                                Case ltfsindex.file.xattr.HashType.Available.MD5
+                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
+                                                Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)
+                                                Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)
+                                                Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)
+                                                Case Else
+                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
+                                            End Select
+                                            If frefchecksum <> "" Then
+                                                PrintMsg($"{My.Resources.ResText_CHashing} {My.Settings.LTFSWriter_DedupeAlgorithm.ToString()}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
+                                                If checksumvalue = "" Then
+                                                    Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+                                                        Case ltfsindex.file.xattr.HashType.Available.MD5
+                                                            checksumvalue = IOManager.GetMD5(fr.SourcePath)
+                                                        Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                                                            checksumvalue = IOManager.GetBlake3(fr.SourcePath)
+                                                        Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                                                            checksumvalue = IOManager.GetXxHash3(fr.SourcePath)
+                                                        Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                                                            checksumvalue = IOManager.GetXxHash128(fr.SourcePath)
+                                                        Case Else
+                                                            checksumvalue = IOManager.SHA1(fr.SourcePath)
+                                                    End Select
+                                                End If
+
+                                                If frefchecksum.Equals(checksumvalue) Then
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True), True)
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True), True)
                                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
@@ -5328,15 +5358,30 @@ Public Class LTFSWriter
                     Try
                         For Each flookup As ltfsindex.file In d.LHash_Dir.contents._file
                             If flookup.name = f.name And flookup.length = f.length Then
+                                Dim crc32value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.CRC32)
                                 Dim sha1value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)
+                                Dim sha256value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA256)
+                                Dim sha512value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.SHA512)
                                 Dim md5value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.MD5)
                                 Dim blake3value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)
                                 Dim xxhash3value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)
                                 Dim xxhash128value0 As String = f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)
                                 If Not Overwrite Then
+                                    If Not (crc32value0 IsNot Nothing AndAlso crc32value0 <> "" AndAlso crc32value0.Length = 8) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {crc32value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.CRC32, flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32))
+                                    End If
                                     If Not (sha1value0 IsNot Nothing AndAlso sha1value0 <> "" AndAlso sha1value0.Length = 40) Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.SHA1, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1))
+                                    End If
+                                    If Not (sha256value0 IsNot Nothing AndAlso sha256value0 <> "" AndAlso sha256value0.Length = 64) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha256value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA256, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256))
+                                    End If
+                                    If Not (sha512value0 IsNot Nothing AndAlso sha512value0 <> "" AndAlso sha512value0.Length = 128) Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha512value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA512, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512))
                                     End If
                                     If Not (md5value0 IsNot Nothing AndAlso md5value0 <> "" AndAlso md5value0.Length = 32) Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
@@ -5354,10 +5399,29 @@ Public Class LTFSWriter
                                         PrintMsg($"{f.name}", False, $"{f.name}    {xxhash128value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128))
                                     End If
+                                    For Each xt As ltfsindex.file.xattr In flookup.extendedattributes
+                                        If xt.key.StartsWith("ltfs.hash.") Then Continue For
+                                        Dim value As String = f.GetXAttr(xt.key)
+                                        If value IsNot Nothing OrElse value = "" Then
+                                            f.SetXattr(xt.key, xt.value)
+                                        End If
+                                    Next
                                 Else
                                     If flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1).Length = 40 Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {sha1value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.SHA1, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA1))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256).Length = 64 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha256value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA256, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA256))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512).Length = 128 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {sha512value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.SHA512, flookup.GetXAttr(ltfsindex.file.xattr.HashType.SHA512))
+                                    End If
+                                    If flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32).Length = 8 Then
+                                        PrintMsg($"{f.name}", False, $"{f.name}    {crc32value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32)}")
+                                        f.SetXattr(ltfsindex.file.xattr.HashType.CRC32, flookup.GetXAttr(ltfsindex.file.xattr.HashType.CRC32))
                                     End If
                                     If flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) IsNot Nothing AndAlso flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5) <> "" And flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5).Length = 32 Then
                                         PrintMsg($"{f.name}", False, $"{f.name}    {md5value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.MD5)}")
@@ -5375,6 +5439,10 @@ Public Class LTFSWriter
                                         PrintMsg($"{f.name}", False, $"{f.name}    {xxhash128value0} -> { flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)}")
                                         f.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, flookup.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128))
                                     End If
+                                    For Each xt As ltfsindex.file.xattr In flookup.extendedattributes
+                                        If xt.key.StartsWith("ltfs.hash.") Then Continue For
+                                        f.SetXattr(xt.key, xt.value)
+                                    Next
                                 End If
 
                                 Exit For
