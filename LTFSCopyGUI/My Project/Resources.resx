@@ -914,4 +914,7 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSConf_CMDList" xml:space="preserve">
     <value>快捷指令</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_DedupeAlgorithm" xml:space="preserve">
+    <value>去重算法</value>
+  </data>
 </root>

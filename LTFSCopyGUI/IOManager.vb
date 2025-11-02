@@ -125,7 +125,7 @@ Public Class IOManager
     Public Shared Function GetMD5(filename As String) As String
         Dim hashValue() As Byte
         Dim hasher As MD5 = MD5.Create()
-        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             hashValue = hasher.ComputeHash(fshash)
         End Using
         hasher.Dispose()
@@ -134,7 +134,7 @@ Public Class IOManager
     Public Shared Function GetBlake3(filename As String) As String
         Dim hasher As Blake3.Hasher = Blake3.Hasher.NewInstance()
         Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             While fshash.Read(block, 0, block.Length) > 0
                 hasher.UpdateWithJoin(block)
             End While
@@ -146,7 +146,7 @@ Public Class IOManager
     Public Shared Function GetXxHash3(filename As String) As String
         Dim hasher As New IO.Hashing.XxHash3
         Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             While fshash.Read(block, 0, block.Length) > 0
                 hasher.Append(block)
             End While
@@ -157,7 +157,7 @@ Public Class IOManager
     Public Shared Function GetXxHash128(filename As String) As String
         Dim hasher As New IO.Hashing.XxHash128
         Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, IO.FileMode.Open)
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             While fshash.Read(block, 0, block.Length) > 0
                 hasher.Append(block)
             End While

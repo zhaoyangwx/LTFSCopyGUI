@@ -305,6 +305,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 去重算法 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_DedupeAlgorithm() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_DedupeAlgorithm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 禁用分区 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_DisablePartition() As String
