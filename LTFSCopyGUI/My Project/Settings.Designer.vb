@@ -370,6 +370,20 @@ Namespace My
                 Me("LTFSWriter_ChecksumEnabled_XxHash128") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("去重算法"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("SHA1"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_DedupeAlgorithm")>
+        Public Property LTFSWriter_DedupeAlgorithm() As ltfsindex.file.xattr.HashType.Available
+            Get
+                Return CType(Me("LTFSWriter_DedupeAlgorithm"), ltfsindex.file.xattr.HashType.Available)
+            End Get
+            Set
+                Me("LTFSWriter_DedupeAlgorithm") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("索引更新间隔（字节）"),
