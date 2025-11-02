@@ -2187,6 +2187,9 @@ Public Class LTFSWriter
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
                                     s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
                                 End If
+                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True))
+                                End If
                                 s.Add(f.fileuid)
                                 s.Add(f.openforwrite)
                                 s.Add(f.readonly)
