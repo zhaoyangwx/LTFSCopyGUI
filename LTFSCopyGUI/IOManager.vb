@@ -133,37 +133,73 @@ Public Class IOManager
     End Function
     Public Shared Function GetBlake3(filename As String) As String
         Dim hasher As Blake3.Hasher = Blake3.Hasher.NewInstance()
-        Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
-            While fshash.Read(block, 0, block.Length) > 0
-                hasher.UpdateWithJoin(block)
-            End While
-            Dim resultb3 As Blake3.Hash = hasher.Finalize()
-            hasher.Dispose()
-            Return resultb3.ToString().ToUpper()
-        End Using
+        Dim pool As ArrayPool(Of Byte) = ArrayPool(Of Byte).Create(16, 16)
+        Dim block() As Byte = pool.Rent(8388608)
+        Try
+            Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+                Dim readed As Integer = Integer.MaxValue
+                While readed > 0
+                    readed = fshash.Read(block, 0, block.Length)
+                    If readed = block.Length Then
+                        hasher.UpdateWithJoin(block)
+                    Else
+                        Dim seg As New ArraySegment(Of Byte)(block, 0, readed)
+                        hasher.UpdateWithJoin(seg)
+                    End If
+                End While
+                Dim resultb3 As Blake3.Hash = hasher.Finalize()
+                hasher.Dispose()
+                Return resultb3.ToString().ToUpper()
+            End Using
+        Finally
+            pool.Return(block)
+        End Try
     End Function
     Public Shared Function GetXxHash3(filename As String) As String
         Dim hasher As New IO.Hashing.XxHash3
-        Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
-            While fshash.Read(block, 0, block.Length) > 0
-                hasher.Append(block)
-            End While
-            Dim resultXxHash3 As Byte() = hasher.GetHashAndReset()
-            Return BitConverter.ToString(resultXxHash3).Replace("-", "").ToUpper()
-        End Using
+        Dim pool As ArrayPool(Of Byte) = ArrayPool(Of Byte).Create(16, 16)
+        Dim block() As Byte = pool.Rent(8388608)
+        Try
+            Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+                Dim readed As Integer = Integer.MaxValue
+                While readed > 0
+                    readed = fshash.Read(block, 0, block.Length)
+                    If readed = block.Length Then
+                        hasher.Append(block)
+                    Else
+                        Dim seg As New ArraySegment(Of Byte)(block, 0, readed)
+                        hasher.Append(seg)
+                    End If
+                End While
+                Dim resultXxHash As Byte() = hasher.GetHashAndReset()
+                Return BitConverter.ToString(resultXxHash).Replace("-", "").ToUpper()
+            End Using
+        Finally
+            pool.Return(block)
+        End Try
     End Function
     Public Shared Function GetXxHash128(filename As String) As String
         Dim hasher As New IO.Hashing.XxHash128
-        Dim block(8388607) As Byte
-        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
-            While fshash.Read(block, 0, block.Length) > 0
-                hasher.Append(block)
-            End While
-            Dim resultXxHash128 As Byte() = hasher.GetHashAndReset()
-            Return BitConverter.ToString(resultXxHash128).Replace("-", "").ToUpper()
-        End Using
+        Dim pool As ArrayPool(Of Byte) = ArrayPool(Of Byte).Create(16, 16)
+        Dim block() As Byte = pool.Rent(8388608)
+        Try
+            Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+                Dim readed As Integer = Integer.MaxValue
+                While readed > 0
+                    readed = fshash.Read(block, 0, block.Length)
+                    If readed = block.Length Then
+                        hasher.Append(block)
+                    Else
+                        Dim seg As New ArraySegment(Of Byte)(block, 0, readed)
+                        hasher.Append(seg)
+                    End If
+                End While
+                Dim resultXxHash As Byte() = hasher.GetHashAndReset()
+                Return BitConverter.ToString(resultXxHash).Replace("-", "").ToUpper()
+            End Using
+        Finally
+            pool.Return(block)
+        End Try
     End Function
 
     Public Shared Function FitImage(input As Bitmap, outputsize As Size) As Bitmap
