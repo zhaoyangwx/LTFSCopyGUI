@@ -458,13 +458,13 @@ Public Class IOManager
                         For Each f As ltfsindex.file In flist
                             Dim SkipCurrent As Boolean = False
                             Try
-                                If TargetDirectory <> "" Then _
+                                If TargetDirectory <> "" AndAlso TargetDirectory <> "\" Then _
                                                  f_outpath = "\\?\" & IO.Path.Combine(TargetDirectory, f.fullpath)
                                 f.fullpath = "\\?\" & IO.Path.Combine(BaseDirectory, f.fullpath)
 
                                 If f.sha1 Is Nothing Then f.sha1 = ""
                                 If f.sha1 = "" Or Not IgnoreExisting Or f.sha1.Length <> 40 Or
-                                                 (TargetDirectory <> "" And Not IO.File.Exists(f_outpath)) Then
+                                                 ((TargetDirectory <> "" AndAlso TargetDirectory <> "\") And Not IO.File.Exists(f_outpath)) Then
                                     RaiseEvent ProgressReport("[hash] " & f.fullpath)
                                     Try
                                         Dim action_writefile _
@@ -472,7 +472,7 @@ Public Class IOManager
                                                 Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
                                                 End Sub
 
-                                        If TargetDirectory <> "" Then
+                                        If (TargetDirectory <> "" AndAlso TargetDirectory <> "\") Then
                                             If Not IO.Directory.Exists(TargetDirectory) Then
                                                 Try
                                                     IO.Directory.CreateDirectory(TargetDirectory)
