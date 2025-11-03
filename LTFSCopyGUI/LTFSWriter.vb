@@ -3244,7 +3244,7 @@ Public Class LTFSWriter
         End If
     End Sub
     Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False,
-                            Optional ByVal exceptExtention As String() = Nothing)
+                            Optional ByVal exceptExtension As String() = Nothing)
         SetStatusLight(LWStatus.Busy)
         Dim th As New Threading.Thread(
                 Sub()
@@ -3264,8 +3264,8 @@ Public Class LTFSWriter
                             If IO.File.Exists(path) Then
                                 Dim f As IO.FileInfo = New IO.FileInfo(path)
                                 Dim skip As Boolean = False
-                                If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
-                                    For Each ext As String In exceptExtention
+                                If exceptExtension IsNot Nothing AndAlso exceptExtension.Count > 0 Then
+                                    For Each ext As String In exceptExtension
                                         If path.ToLower().EndsWith(ext.ToLower()) Then
                                             skip = True
                                             Exit For
@@ -3281,7 +3281,7 @@ Public Class LTFSWriter
                             ElseIf IO.Directory.Exists(path) Then
                                 Dim f As IO.DirectoryInfo = New IO.DirectoryInfo(path)
                                 PrintMsg($"{My.Resources.ResText_Adding} [{i}/{Paths.Length}] {f.Name}")
-                                AddDirectry(f, d, overwrite, exceptExtention)
+                                AddDirectry(f, d, overwrite, exceptExtension)
                             End If
                         Catch ex As Exception
                             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
@@ -4640,7 +4640,10 @@ Public Class LTFSWriter
                                         PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                                     End If
                                 Else
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.CRC32, "00000000")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA256, "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855")
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA512, "CF83E1357EEFB8BDF1542850D66D8007D620E4050B5715DC83F4A921D36CE9CE47D0D13C5D85F2B0FF8318D2877EEC2F63B931BD47417A81A538327AF927DA3E")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, "D41D8CD98F00B204E9800998ECF8427E")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, "AF1349B9F5F9A1A6A0404DEA36DCC9499BCB25C9ADC112B7CC9A93CAE41F3262")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, "2D06800538D394C2")
