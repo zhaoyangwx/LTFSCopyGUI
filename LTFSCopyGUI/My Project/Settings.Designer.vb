@@ -626,6 +626,23 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("匹配规则"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
+         Editor("System.ComponentModel.Design.MultilineStringEditor, System.Design, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a",
+                GetType(Drawing.Design.UITypeEditor)),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_MatchPattern")>
+        Public Property LTFSWriter_MatchPattern() As String
+            Get
+                Return CType(Me("LTFSWriter_MatchPattern"), String)
+            End Get
+            Set
+                Me("LTFSWriter_MatchPattern") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("显示文件数"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("False"),
