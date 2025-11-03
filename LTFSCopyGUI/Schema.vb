@@ -152,11 +152,24 @@ Public Class ltfsindex
                 Public Shared ReadOnly Property XxHash128 As String = "ltfs.hash.xxhash128sum"
                 Public Enum Available
                     SHA1
+                    SHA256
+                    SHA512
+                    CRC32
                     MD5
                     BLAKE3
                     XxHash3
                     XxHash128
                 End Enum
+            End Class
+            Public Class HashLengthBytes
+                Public Const CRC32 As Integer = 4
+                Public Const MD5 As Integer = 16
+                Public Const SHA1 As Integer = 20
+                Public Const SHA256 As Integer = 32
+                Public Const SHA512 As Integer = 64
+                Public Const BLAKE3 As Integer = 32
+                Public Const XxHash3 As Integer = 8
+                Public Const XxHash128 As Integer = 16
             End Class
             Public Shared Function FromXMLList(s As String) As List(Of xattr)
                 Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(List(Of xattr)))
