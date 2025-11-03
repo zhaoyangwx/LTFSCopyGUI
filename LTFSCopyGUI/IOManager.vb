@@ -122,6 +122,24 @@ Public Class IOManager
             Return ""
         End If
     End Function
+    Public Shared Function GetSHA256(filename As String) As String
+        Dim hashValue() As Byte
+        Dim hasher As SHA256 = SHA256.Create()
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            hashValue = hasher.ComputeHash(fshash)
+        End Using
+        hasher.Dispose()
+        Return BitConverter.ToString(hashValue).Replace("-", "").ToUpper()
+    End Function
+    Public Shared Function GetSHA512(filename As String) As String
+        Dim hashValue() As Byte
+        Dim hasher As SHA512 = SHA512.Create()
+        Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            hashValue = hasher.ComputeHash(fshash)
+        End Using
+        hasher.Dispose()
+        Return BitConverter.ToString(hashValue).Replace("-", "").ToUpper()
+    End Function
     Public Shared Function GetMD5(filename As String) As String
         Dim hashValue() As Byte
         Dim hasher As MD5 = MD5.Create()
@@ -150,6 +168,29 @@ Public Class IOManager
                 Dim resultb3 As Blake3.Hash = hasher.Finalize()
                 hasher.Dispose()
                 Return resultb3.ToString().ToUpper()
+            End Using
+        Finally
+            pool.Return(block)
+        End Try
+    End Function
+    Public Shared Function GetCRC32(filename As String) As String
+        Dim hasher As New IO.Hashing.Crc32
+        Dim pool As ArrayPool(Of Byte) = ArrayPool(Of Byte).Create(16, 16)
+        Dim block() As Byte = pool.Rent(8388608)
+        Try
+            Using fshash As New IO.FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+                Dim readed As Integer = Integer.MaxValue
+                While readed > 0
+                    readed = fshash.Read(block, 0, block.Length)
+                    If readed = block.Length Then
+                        hasher.Append(block)
+                    Else
+                        Dim seg As New ArraySegment(Of Byte)(block, 0, readed)
+                        hasher.Append(seg)
+                    End If
+                End While
+                Dim resultXxHash As Byte() = hasher.GetHashAndReset()
+                Return BitConverter.ToString(resultXxHash).Replace("-", "").ToUpper()
             End Using
         Finally
             pool.Return(block)
@@ -200,6 +241,50 @@ Public Class IOManager
         Finally
             pool.Return(block)
         End Try
+    End Function
+
+    Public Shared Function ChecksumEquals(a As ltfsindex.file, b As ltfsindex.file, checksumtype As ltfsindex.file.xattr.HashType.Available) As Boolean
+        Dim csa As String = Nothing, csb As String = Nothing
+        Dim len As Integer
+        Select Case checksumtype
+            Case ltfsindex.file.xattr.HashType.Available.SHA1
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.SHA1)
+                len = ltfsindex.file.xattr.HashLengthBytes.SHA1 * 2
+            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.SHA256)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.SHA256)
+                len = ltfsindex.file.xattr.HashLengthBytes.SHA256 * 2
+            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.SHA512)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.SHA512)
+                len = ltfsindex.file.xattr.HashLengthBytes.SHA512 * 2
+            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.CRC32)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.CRC32)
+                len = ltfsindex.file.xattr.HashLengthBytes.CRC32 * 2
+            Case ltfsindex.file.xattr.HashType.Available.MD5
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.MD5)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.MD5)
+                len = ltfsindex.file.xattr.HashLengthBytes.MD5 * 2
+            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3)
+                len = ltfsindex.file.xattr.HashLengthBytes.BLAKE3 * 2
+            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3)
+                len = ltfsindex.file.xattr.HashLengthBytes.XxHash3 * 2
+            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                csa = a.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)
+                csb = b.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128)
+                len = ltfsindex.file.xattr.HashLengthBytes.XxHash128 * 2
+        End Select
+        If csa Is Nothing Then Return False
+        If csb Is Nothing Then Return False
+        If csa.Length <> len Then Return False
+        If csb.Length <> len Then Return False
+        Return csa.Equals(csb)
     End Function
 
     Public Shared Function FitImage(input As Bitmap, outputsize As Size) As Bitmap
@@ -807,12 +892,12 @@ Public Class IOManager
                                     sha1.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
                                 Dim sha256task As Task
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha1task = Task.Run(
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task = Task.Run(
                                 Sub()
                                     sha256.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
                                 Dim sha512task As Task
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha1task = Task.Run(
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task = Task.Run(
                                 Sub()
                                     sha512.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
@@ -1006,11 +1091,11 @@ Public Class IOManager
                 End If
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
                     sha256.TransformFinalBlock({}, 0, 0)
-                    resultBytesSHA256 = sha1.Hash
+                    resultBytesSHA256 = sha256.Hash
                 End If
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
                     sha512.TransformFinalBlock({}, 0, 0)
-                    resultBytesSHA512 = sha1.Hash
+                    resultBytesSHA512 = sha512.Hash
                 End If
                 Try
                     If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
