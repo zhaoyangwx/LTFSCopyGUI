@@ -211,10 +211,12 @@ Public Class Form1
     End Sub
     Public LoadComplete As Boolean = False
     Public Sub LoadSetting()
+        Static ResText_version As String = ""
+        If ResText_version = "" Then ResText_version = Label6.Text
         TextBox1.Text = My.Settings.IndexAnalyzer_LastFile
         TextBox3.Text = My.Settings.IndexAnalyzer_Src
         TextBox4.Text = My.Settings.IndexAnalyzer_Dest
-        Label6.Text &= $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
+        Label6.Text = ResText_version & $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
         CheckBox1.Checked = My.Settings.IndexAnalyzer_GenCMD
         Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
     End Sub
