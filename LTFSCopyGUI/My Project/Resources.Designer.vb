@@ -242,6 +242,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 校验开关 - CRC32 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 校验开关 - MD5 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_MD5() As String
@@ -256,6 +265,24 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA1", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验开关 - SHA256 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 校验开关 - SHA512 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512", resourceCulture)
             End Get
         End Property
         

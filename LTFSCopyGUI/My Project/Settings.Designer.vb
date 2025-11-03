@@ -13,52 +13,12 @@ Option Explicit On
 Imports System.ComponentModel
 
 Namespace My
-
-    <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),
-     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.7.0.0"),
-     Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>
     Partial Friend NotInheritable Class MySettings
-        Inherits Global.System.Configuration.ApplicationSettingsBase
-
-        Private Shared defaultInstance As MySettings = CType(Global.System.Configuration.ApplicationSettingsBase.Synchronized(New MySettings()), MySettings)
-
-#Region "My.Settings 自动保存功能"
-#If _MyType = "WindowsForms" Then
-        Private Shared addedHandler As Boolean
-
-        Private Shared addedHandlerLockObject As New Object
-
-        <Global.System.Diagnostics.DebuggerNonUserCodeAttribute(), Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>
-        Private Shared Sub AutoSaveSettings(sender As Global.System.Object, e As Global.System.EventArgs)
-            If My.Application.SaveMySettingsOnExit Then
-                My.Settings.Save()
-            End If
-        End Sub
-#End If
-#End Region
-
-        Public Shared ReadOnly Property [Default]() As MySettings
-            Get
-
-#If _MyType = "WindowsForms" Then
-                If Not addedHandler Then
-                    SyncLock addedHandlerLockObject
-                        If Not addedHandler Then
-                            AddHandler My.Application.Shutdown, AddressOf AutoSaveSettings
-                            addedHandler = True
-                        End If
-                    End SyncLock
-                End If
-#End If
-                Return defaultInstance
-            End Get
-        End Property
-
         <Global.System.Configuration.UserScopedSettingAttribute(),
-         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("C:\tmp\ltfs\LT0007.schema"),
-         Category("IndexAnalyzer"),
-         LocalizedDescription("PropertyDescription_IndexAnalyzer_LastFile")>
+                 Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+                 Global.System.Configuration.DefaultSettingValueAttribute("C:\tmp\ltfs\LT0007.schema"),
+                 Category("IndexAnalyzer"),
+                 LocalizedDescription("PropertyDescription_IndexAnalyzer_LastFile")>
         Public Property IndexAnalyzer_LastFile() As String
             Get
                 Return CType(Me("IndexAnalyzer_LastFile"), String)
@@ -311,6 +271,48 @@ Namespace My
             End Get
             Set
                 Me("LTFSWriter_ChecksumEnabled_SHA1") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - SHA256"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256")>
+        Public Property LTFSWriter_ChecksumEnabled_SHA256() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_SHA256"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_SHA256") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - SHA512"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512")>
+        Public Property LTFSWriter_ChecksumEnabled_SHA512() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_SHA512"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_SHA512") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - CRC32"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32")>
+        Public Property LTFSWriter_ChecksumEnabled_CRC32() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ChecksumEnabled_CRC32"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ChecksumEnabled_CRC32") = Value
             End Set
         End Property
 
@@ -707,6 +709,49 @@ Namespace My
                 TapeUtils.DriverTypeSetting = Value
             End Set
         End Property
+    End Class
+
+    <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),
+     Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.7.0.0"),
+     Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>
+    Partial Friend NotInheritable Class MySettings
+        Inherits Global.System.Configuration.ApplicationSettingsBase
+
+        Private Shared defaultInstance As MySettings = CType(Global.System.Configuration.ApplicationSettingsBase.Synchronized(New MySettings()), MySettings)
+
+#Region "My.Settings 自动保存功能"
+#If _MyType = "WindowsForms" Then
+        Private Shared addedHandler As Boolean
+
+        Private Shared addedHandlerLockObject As New Object
+
+        <Global.System.Diagnostics.DebuggerNonUserCodeAttribute(), Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>
+        Private Shared Sub AutoSaveSettings(sender As Global.System.Object, e As Global.System.EventArgs)
+            If My.Application.SaveMySettingsOnExit Then
+                My.Settings.Save()
+            End If
+        End Sub
+#End If
+#End Region
+
+        Public Shared ReadOnly Property [Default]() As MySettings
+            Get
+
+#If _MyType = "WindowsForms" Then
+                If Not addedHandler Then
+                    SyncLock addedHandlerLockObject
+                        If Not addedHandler Then
+                            AddHandler My.Application.Shutdown, AddressOf AutoSaveSettings
+                            addedHandler = True
+                        End If
+                    End SyncLock
+                End If
+#End If
+                Return defaultInstance
+            End Get
+        End Property
+
+
     End Class
 End Namespace
 

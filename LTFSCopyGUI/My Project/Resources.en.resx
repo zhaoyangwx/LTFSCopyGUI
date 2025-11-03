@@ -906,4 +906,13 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_LTFSWriter_DedupeAlgorithm" xml:space="preserve">
     <value>Dedupe algorithm</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256" xml:space="preserve">
+    <value>Checksum switch - SHA256</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512" xml:space="preserve">
+    <value>Checksum switch - SHA512</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32" xml:space="preserve">
+    <value>Checksum switch - CRC32</value>
+  </data>
 </root>

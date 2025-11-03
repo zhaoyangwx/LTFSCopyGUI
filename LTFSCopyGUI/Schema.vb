@@ -110,6 +110,15 @@ Public Class ltfsindex
         Public Property SHA1ForeColor As Color = Color.Black
         <Category("Internal")>
         <Xml.Serialization.XmlIgnore>
+        Public Property SHA256ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property SHA512ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
+        Public Property CRC32ForeColor As Color = Color.Black
+        <Category("Internal")>
+        <Xml.Serialization.XmlIgnore>
         Public Property MD5ForeColor As Color = Color.Black
         <Category("Internal")>
         <Xml.Serialization.XmlIgnore>

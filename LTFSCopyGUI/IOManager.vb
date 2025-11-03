@@ -754,11 +754,17 @@ Public Class IOManager
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class CheckSumBlockwiseCalculator
         Private Property sha1 As SHA1
+        Private Property sha256 As SHA256
+        Private Property sha512 As SHA512
+        Private Property CRC32 As Crc32
         Private Property md5 As MD5
         Private Property Blake As Hasher
         Private Property XxHash3 As XxHash3
         Private Property XxHash128 As XxHash128
         Private Property resultBytesSHA1 As Byte()
+        Private Property resultBytesSHA256 As Byte()
+        Private Property resultBytesSHA512 As Byte()
+        Private Property resultBytesCRC32 As Byte()
         Private Property resultBytesMD5 As Byte()
         Private Property resultBytesBlake As Hash
         Private Property resultXxHash3 As Byte()
@@ -800,6 +806,16 @@ Public Class IOManager
                                 Sub()
                                     sha1.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
+                                Dim sha256task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha1task = Task.Run(
+                                Sub()
+                                    sha256.TransformBlock(.block, 0, .Len, .block, 0)
+                                End Sub)
+                                Dim sha512task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha1task = Task.Run(
+                                Sub()
+                                    sha512.TransformBlock(.block, 0, .Len, .block, 0)
+                                End Sub)
                                 Dim blaketask As Task
                                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                                 Sub()
@@ -808,6 +824,16 @@ Public Class IOManager
                                     Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
                                     Try
                                         Blake.UpdateWithJoin(segment)
+                                    Catch ex As Exception
+
+                                    End Try
+                                End Sub)
+                                Dim crc32task As Task
+                                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task = Task.Run(
+                                Sub()
+                                    Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
+                                    Try
+                                        CRC32.Append(segment)
                                     Catch ex As Exception
 
                                     End Try
@@ -833,6 +859,9 @@ Public Class IOManager
                                     End Try
                                 End Sub)
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task.Wait()
+                                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
@@ -849,18 +878,23 @@ Public Class IOManager
         Public Sub New()
             Try
                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then Blake = Hasher.NewInstance()
-            Catch ex As Exception
-
+            Catch
             End Try
             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1 = SHA1.Create()
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256 = SHA256.Create()
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512 = SHA512.Create()
             If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5 = MD5.Create()
             Try
+                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then CRC32 = New IO.Hashing.Crc32()
+            Catch
+            End Try
+            Try
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then XxHash3 = New IO.Hashing.XxHash3()
-            Catch ex As Exception
+            Catch
             End Try
             Try
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then XxHash128 = New IO.Hashing.XxHash128()
-            Catch ex As Exception
+            Catch
             End Try
         End Sub
 
@@ -875,6 +909,16 @@ Public Class IOManager
                     Sub()
                         sha1.TransformBlock(block, 0, Len, block, 0)
                     End Sub)
+                Dim sha256task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task = Task.Run(
+                    Sub()
+                        sha256.TransformBlock(block, 0, Len, block, 0)
+                    End Sub)
+                Dim sha512task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task = Task.Run(
+                    Sub()
+                        sha512.TransformBlock(block, 0, Len, block, 0)
+                    End Sub)
                 Dim md5task As Task
                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task = Task.Run(
                     Sub()
@@ -883,11 +927,19 @@ Public Class IOManager
                 Dim blaketask As Task
                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                     Sub()
-                        'BlakeStream.Write(block, WrittenBlakeBlock2, Len)
-                        'WrittenBlakeBlock2 += Len
                         Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
                         Try
                             Blake.UpdateWithJoin(segment)
+                        Catch ex As Exception
+
+                        End Try
+                    End Sub)
+                Dim crc32task As Task
+                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task = Task.Run(
+                    Sub()
+                        Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
+                        Try
+                            CRC32.Append(segment)
                         Catch ex As Exception
 
                         End Try
@@ -914,6 +966,9 @@ Public Class IOManager
                     End Sub)
                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task.Wait()
+                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task.Wait()
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task.Wait()
@@ -949,6 +1004,21 @@ Public Class IOManager
                     sha1.TransformFinalBlock({}, 0, 0)
                     resultBytesSHA1 = sha1.Hash
                 End If
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
+                    sha256.TransformFinalBlock({}, 0, 0)
+                    resultBytesSHA256 = sha1.Hash
+                End If
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
+                    sha512.TransformFinalBlock({}, 0, 0)
+                    resultBytesSHA512 = sha1.Hash
+                End If
+                Try
+                    If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
+                        resultBytesCRC32 = CRC32.GetHashAndReset()
+                    End If
+                Catch ex As Exception
+                    resultBytesCRC32 = Nothing
+                End Try
                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
                     md5.TransformFinalBlock({}, 0, 0)
                     resultBytesMD5 = md5.Hash
@@ -981,6 +1051,39 @@ Public Class IOManager
                 SyncLock Lock
                     Try
                         Return BitConverter.ToString(resultBytesSHA1).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property SHA256Value As String
+            Get
+                SyncLock Lock
+                    Try
+                        Return BitConverter.ToString(resultBytesSHA256).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property SHA512Value As String
+            Get
+                SyncLock Lock
+                    Try
+                        Return BitConverter.ToString(resultBytesSHA512).Replace("-", "").ToUpper()
+                    Catch ex As Exception
+                        Return Nothing
+                    End Try
+                End SyncLock
+            End Get
+        End Property
+        Public ReadOnly Property CRC32Value As String
+            Get
+                SyncLock Lock
+                    Try
+                        Return BitConverter.ToString(resultBytesCRC32).Replace("-", "").ToUpper()
                     Catch ex As Exception
                         Return Nothing
                     End Try

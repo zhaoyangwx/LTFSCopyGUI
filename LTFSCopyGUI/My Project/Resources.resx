@@ -917,4 +917,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_DedupeAlgorithm" xml:space="preserve">
     <value>去重算法</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256" xml:space="preserve">
+    <value>校验开关 - SHA256</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512" xml:space="preserve">
+    <value>校验开关 - SHA512</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32" xml:space="preserve">
+    <value>校验开关 - CRC32</value>
+  </data>
 </root>
