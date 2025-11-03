@@ -53,6 +53,15 @@
     <Setting Name="LTFSWriter_ChecksumEnabled_SHA1" Description="校验开关 - SHA1" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="LTFSWriter_ChecksumEnabled_SHA256" Description="校验开关 - SHA256" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_ChecksumEnabled_SHA512" Description="校验开关 - SHA512" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_ChecksumEnabled_CRC32" Description="校验开关 - CRC32" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="LTFSWriter_ChecksumEnabled_MD5" Description="校验开关 - MD5" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
