@@ -128,6 +128,9 @@
     <Reference Include="ISCSI, Version=1.5.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ISCSI.1.5.5.1\lib\net40\ISCSI.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Extensions.FileSystemGlobbing, Version=9.0.0.10, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.FileSystemGlobbing.9.0.10\lib\net462\Microsoft.Extensions.FileSystemGlobbing.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack.Core, Version=7.0.3.0, Culture=neutral, PublicKeyToken=8afb38e9204fc0a9, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAPICodePack.7.0.3\lib\net48\Microsoft.WindowsAPICodePack.Core.dll</HintPath>
     </Reference>
