@@ -10,6 +10,7 @@ Imports System.Text
 Imports System.Threading
 Imports Blake3
 Imports Fsp.Interop
+Imports Microsoft.Extensions.FileSystemGlobbing
 Imports Microsoft.WindowsAPICodePack.Dialogs
 Imports Microsoft.WindowsAPICodePack.Shell
 
@@ -3229,7 +3230,11 @@ Public Class LTFSWriter
         If ListView1.Tag IsNot Nothing AndAlso OpenFileDialog1.ShowDialog = DialogResult.OK Then
             Dim d As ltfsindex.directory = ListView1.Tag
             Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
-            AddFileOrDir(d, OpenFileDialog1.FileNames, overwrite)
+            If My.Settings.LTFSWriter_MatchPattern IsNot Nothing AndAlso My.Settings.LTFSWriter_MatchPattern.Length > 0 Then
+                AddFileOrDir(d, OpenFileDialog1.FileNames, My.Settings.LTFSWriter_MatchPattern, overwrite)
+            Else
+                AddFileOrDir(d, OpenFileDialog1.FileNames, overwrite)
+            End If
             'For Each fpath As String In OpenFileDialog1.FileNames
             '    Dim f As IO.FileInfo = New IO.FileInfo(fpath)
             '    Try
@@ -3242,6 +3247,108 @@ Public Class LTFSWriter
             'Next
             'RefreshDisplay()
         End If
+    End Sub
+    Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), ByVal match As String, Optional ByVal overwrite As Boolean = False)
+        Dim helper As New GlobHelper() With {.schema = schema, .OnStopFlagInquiry = Function() As Boolean
+                                                                                        Return StopFlag
+                                                                                    End Function}
+        Dim matcher = helper.GlobCollector.BuildMatcherFromString(match)
+        Dim results = helper.GlobCollector.PlanAdd_ByFullPathInputs(Paths, matcher)
+
+        Dim skipRoots As New List(Of String)()
+        If My.Settings.LTFSWriter_SkipSymlink Then
+            For Each dir As String In results.Dirs
+                Try
+                    Dim info = New IO.DirectoryInfo(dir)
+                    If info.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then
+                        skipRoots.Add(helper.NormalizePath(dir))
+                    End If
+                Catch
+                End Try
+            Next
+            If skipRoots.Count > 1 Then
+                skipRoots = skipRoots.
+                    Distinct(StringComparer.OrdinalIgnoreCase).
+                    OrderBy(Function(s) s.Length).
+                    Aggregate(New List(Of String)(), Function(acc, cur)
+                                                         If Not acc.Any(Function(root) helper.PathIsUnder(cur, root)) Then
+                                                             acc.Add(cur)
+                                                         End If
+                                                         Return acc
+                                                     End Function)
+            End If
+        End If
+
+        Dim candidateRoots As New List(Of String)()
+        If Paths IsNot Nothing Then
+            For Each p In Paths
+                If String.IsNullOrWhiteSpace(p) Then Continue For
+                Dim full As String
+                Try
+                    full = helper.NormalizePath(System.IO.Path.GetFullPath(p))
+                Catch
+                    Continue For
+                End Try
+                If IO.Directory.Exists(full) Then
+                    candidateRoots.Add(full)
+                ElseIf IO.File.Exists(full) Then
+                    Dim parent = System.IO.Path.GetDirectoryName(full)
+                    If Not String.IsNullOrEmpty(parent) Then candidateRoots.Add(helper.NormalizePath(parent))
+                End If
+            Next
+            candidateRoots = candidateRoots.Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+        End If
+
+        Dim dirSeq As IEnumerable(Of String) = results.Dirs
+        If skipRoots.Count > 0 Then
+            dirSeq = dirSeq.Where(Function(p) Not skipRoots.Any(Function(r) helper.PathIsUnder(p, r)))
+        End If
+
+        For Each absDir In dirSeq
+            If StopFlag Then Exit Sub
+
+            Dim root = helper.FindBestRoot(absDir, candidateRoots)
+            If root Is Nothing Then
+                Continue For
+            End If
+
+            Dim relDir = helper.GetRelativePathWin(root, absDir)
+            Dim targetParent = helper.EnsureDirectoryChain(d, root, relDir)
+        Next
+
+        Dim fileSeq As IEnumerable(Of String) = results.Files
+        If skipRoots.Count > 0 Then
+            fileSeq = fileSeq.Where(Function(p) Not skipRoots.Any(Function(r) helper.PathIsUnder(p, r)))
+        End If
+        If My.Settings.LTFSWriter_SkipSymlink Then
+            fileSeq = fileSeq.Where(Function(p)
+                                        Try
+                                            Dim fi As New IO.FileInfo(p)
+                                            Return Not fi.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
+                                        Catch
+                                            Return False
+                                        End Try
+                                    End Function)
+        End If
+
+        For Each absFile In fileSeq
+            If StopFlag Then Exit Sub
+
+            Dim root = helper.FindBestRoot(absFile, candidateRoots)
+            If root Is Nothing Then Continue For
+
+            Dim relFile = helper.GetRelativePathWin(root, absFile)
+            If String.IsNullOrEmpty(relFile) Then Continue For
+
+            Dim parentRel = System.IO.Path.GetDirectoryName(relFile)
+            Dim targetDir = helper.EnsureDirectoryChain(d, root, If(parentRel, String.Empty))
+
+            Try
+                Dim fi As New IO.FileInfo(absFile)
+                AddFile(fi, targetDir, overwrite)
+            Catch
+            End Try
+        Next
     End Sub
     Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False,
                             Optional ByVal exceptExtension As String() = Nothing)
@@ -3312,7 +3419,11 @@ Public Class LTFSWriter
             Dim Paths As String() = e.Data.GetData(GetType(String()))
             Dim d As ltfsindex.directory = ListView1.Tag
             Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
-            AddFileOrDir(d, Paths, overwrite)
+            If My.Settings.LTFSWriter_MatchPattern IsNot Nothing AndAlso My.Settings.LTFSWriter_MatchPattern.Length > 0 Then
+                AddFileOrDir(d, Paths, My.Settings.LTFSWriter_MatchPattern, overwrite)
+            Else
+                AddFileOrDir(d, Paths, overwrite)
+            End If
         End If
     End Sub
     Private Sub 导入文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 导入文件ToolStripMenuItem.Click
@@ -3326,7 +3437,11 @@ Public Class LTFSWriter
                 Paths.Add(f.FullName)
             Next
             Dim d As ltfsindex.directory = ListView1.Tag
-            AddFileOrDir(d, Paths.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
+            If My.Settings.LTFSWriter_MatchPattern IsNot Nothing AndAlso My.Settings.LTFSWriter_MatchPattern.Length > 0 Then
+                AddFileOrDir(d, Paths.ToArray(), My.Settings.LTFSWriter_MatchPattern, 覆盖已有文件ToolStripMenuItem.Checked)
+            Else
+                AddFileOrDir(d, Paths.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
+            End If
             'Try
             '    ConcatDirectory(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
             '    PrintMsg("导入成功")
@@ -3348,18 +3463,12 @@ Public Class LTFSWriter
                 For Each fn As String In COFD.FileNames
                     dirs.Add(fn)
                 Next
-                AddFileOrDir(ListView1.Tag, dirs.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
-                'For Each dirSelected As String In COFD.FileNames
-                '    Dim dnew As IO.DirectoryInfo = New IO.DirectoryInfo(dirSelected)
-                '    Try
-                '        AddDirectry(dnew, d, 覆盖已有文件ToolStripMenuItem.Checked)
-                '        PrintMsg("目录添加成功")
-                '    Catch ex As Exception
-                '        PrintMsg("目录添加失败")
-                '        MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
-                '    End Try
-                'Next
-                'RefreshDisplay()
+                If My.Settings.LTFSWriter_MatchPattern IsNot Nothing AndAlso My.Settings.LTFSWriter_MatchPattern.Length > 0 Then
+                    AddFileOrDir(ListView1.Tag, dirs.ToArray(), My.Settings.LTFSWriter_MatchPattern, 覆盖已有文件ToolStripMenuItem.Checked)
+                Else
+                    AddFileOrDir(ListView1.Tag, dirs.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked)
+                End If
+
             End If
         End If
     End Sub
@@ -8577,7 +8686,11 @@ Public Class LTFSWriter
                     If Paths IsNot Nothing AndAlso Paths.Count > 0 Then
                         Dim d As ltfsindex.directory = ListView1.Tag
                         Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
-                        AddFileOrDir(d, Paths, overwrite)
+                        If My.Settings.LTFSWriter_MatchPattern IsNot Nothing AndAlso My.Settings.LTFSWriter_MatchPattern.Length > 0 Then
+                            AddFileOrDir(d, Paths, My.Settings.LTFSWriter_MatchPattern, overwrite)
+                        Else
+                            AddFileOrDir(d, Paths, overwrite)
+                        End If
                     End If
                     粘贴选中ToolStripMenuItem_Click(sender, e)
                 End If
