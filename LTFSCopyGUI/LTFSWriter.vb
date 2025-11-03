@@ -4222,7 +4222,9 @@ Public Class LTFSWriter
                                             AllFile.Add(fr.File)
                                         End If
                                     End If
-                                    If Not dupe Then
+                                    If dupe Then
+                                        PipeDrain(provider.Reader, finfo.Length)
+                                    Else
                                         IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
                                             {.partition = DataPartition,
@@ -4421,7 +4423,6 @@ Public Class LTFSWriter
                                                         Case DialogResult.Retry
                                                             Continue While
                                                         Case DialogResult.Ignore
-                                                            PipeDrain(reader, remainingInFile)
                                                             PrintMsg($"Cannot read file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
                                                             SetStatusLight(LWStatus.Err)
                                                             Continue For
