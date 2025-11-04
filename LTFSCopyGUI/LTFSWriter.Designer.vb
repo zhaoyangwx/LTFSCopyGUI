@@ -234,7 +234,7 @@ Partial Class LTFSWriter
         Me.ToolStripButton4 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton5 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton6 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
+        Me.ToolStripButton11 = New System.Windows.Forms.ToolStripButton()
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel6 = New System.Windows.Forms.ToolStripStatusLabel()
@@ -1303,44 +1303,45 @@ Partial Class LTFSWriter
         'ToolStrip1
         '
         resources.ApplyResources(Me.ToolStrip1, "ToolStrip1")
-        Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton3})
+        Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton11})
         Me.ToolStrip1.Name = "ToolStrip1"
+        Me.ToolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional
         '
         'ToolStripButton1
         '
-        Me.ToolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         resources.ApplyResources(Me.ToolStripButton1, "ToolStripButton1")
+        Me.ToolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton1.Name = "ToolStripButton1"
         '
         'ToolStripButton2
         '
-        Me.ToolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         resources.ApplyResources(Me.ToolStripButton2, "ToolStripButton2")
+        Me.ToolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton2.Name = "ToolStripButton2"
         '
         'ToolStripButton4
         '
-        Me.ToolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         resources.ApplyResources(Me.ToolStripButton4, "ToolStripButton4")
+        Me.ToolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton4.Name = "ToolStripButton4"
         '
         'ToolStripButton5
         '
-        Me.ToolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         resources.ApplyResources(Me.ToolStripButton5, "ToolStripButton5")
+        Me.ToolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton5.Name = "ToolStripButton5"
         '
         'ToolStripButton6
         '
-        Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         resources.ApplyResources(Me.ToolStripButton6, "ToolStripButton6")
+        Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton6.Name = "ToolStripButton6"
         '
-        'ToolStripButton3
+        'ToolStripButton11
         '
-        Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
-        Me.ToolStripButton3.Name = "ToolStripButton3"
+        resources.ApplyResources(Me.ToolStripButton11, "ToolStripButton11")
+        Me.ToolStripButton11.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.ToolStripButton11.Name = "ToolStripButton11"
         '
         'Timer2
         '
@@ -1578,7 +1579,6 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStrip1 As ToolStrip
     Friend WithEvents ToolStripButton1 As ToolStripButton
     Friend WithEvents ToolStripButton2 As ToolStripButton
-    Friend WithEvents ToolStripButton3 As ToolStripButton
     Friend WithEvents ToolStripButton4 As ToolStripButton
     Friend WithEvents ImageList1 As ImageList
     Friend WithEvents ToolStripButton5 As ToolStripButton
@@ -1669,14 +1669,24 @@ Partial Class LTFSWriter
     Friend WithEvents 启动iSCSI服务ToolStripMenuItem As ToolStripMenuItem
 
     Public Sub New()
+        Me.SuspendLayout()
         Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         ' 此调用是设计器所必需的。
         InitializeComponent()
 
         ' 在 InitializeComponent() 调用之后添加任何初始化。
+        Me.PerformAutoScale()
         Me.Font = DisplayHelper.DisplayFont
         For Each col As ColumnHeader In Me.ListView1.Columns
             col.Width *= DisplayHelper.ScreenScale
         Next
+        ToolStrip1.ImageScalingSize = New Size(16 * DisplayHelper.ScreenScale, 16 * DisplayHelper.ScreenScale)
+        For Each tb As ToolStripButton In ToolStrip1.Items
+            tb.Width *= DisplayHelper.ScreenScale
+            tb.Height *= DisplayHelper.ScreenScale
+        Next
+        Me.ResumeLayout()
     End Sub
+
+    Friend WithEvents ToolStripButton11 As ToolStripButton
 End Class

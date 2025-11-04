@@ -142,11 +142,15 @@ Partial Class ChangerTool
     Friend WithEvents Button4 As Button
 
     Public Sub New()
-        Me.Font = DisplayHelper.DisplayFont
+        Me.SuspendLayout()
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
         ' 此调用是设计器所必需的。
         InitializeComponent()
 
         ' 在 InitializeComponent() 调用之后添加任何初始化。
 
+        Me.PerformAutoScale()
+        Me.Font = DisplayHelper.DisplayFont
+        Me.ResumeLayout()
     End Sub
 End Class
