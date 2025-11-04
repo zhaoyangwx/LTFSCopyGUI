@@ -16,9 +16,9 @@ Public Class LTFSConfigurator
             Return TapeUtils.DriveHandle
         End Get
     End Property
-    Public Function GetCurDrive() As TapeUtils.BlockDevice
+    Public Function GetCurDrive(Optional ByVal ForceDisableRefresh As Boolean = False) As TapeUtils.BlockDevice
         Dim dlist As List(Of TapeUtils.BlockDevice)
-        If CheckBoxAutoRefresh.Checked OrElse LastDeviceList Is Nothing Then
+        If (Not ForceDisableRefresh) AndAlso (CheckBoxAutoRefresh.Checked OrElse LastDeviceList Is Nothing) Then
             dlist = DeviceList
         Else
             dlist = LastDeviceList
@@ -231,7 +231,8 @@ Public Class LTFSConfigurator
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles ButtonLoadThreaded.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
+        Dim path As String = TapeDrive
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -239,7 +240,7 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadThreaded)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadThreaded)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -262,7 +263,8 @@ Public Class LTFSConfigurator
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles ButtonEject.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
+        Dim path As String = TapeDrive
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -270,7 +272,7 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Eject)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Eject)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -411,7 +413,8 @@ Public Class LTFSConfigurator
 
     Private Sub Button13_Click(sender As Object, e As EventArgs) Handles ButtonLoadUnthreaded.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
+        Dim path As String = TapeDrive
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -419,7 +422,7 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.LoadUnthreaded)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadUnthreaded)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -441,7 +444,8 @@ Public Class LTFSConfigurator
 
     Private Sub Button14_Click(sender As Object, e As EventArgs) Handles ButtonUnthread.Click
         If Not LoadComplete Then Exit Sub
-        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
+        Dim path As String = TapeDrive
+        Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
             Dim dL As Char = ComboBoxDriveLetter.Text
@@ -449,7 +453,7 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(TapeDrive, TapeUtils.LoadOption.Unthread)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Unthread)
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -747,7 +751,7 @@ Public Class LTFSConfigurator
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
                              Try
-                                 CMInfo = New TapeUtils.CMParser(TapeDrive)
+                                 CMInfo = New TapeUtils.CMParser(ConfTapeDrive)
                              Catch ex As Exception
                                  Invoke(Sub() TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf))
                              End Try
@@ -1149,13 +1153,13 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles ButtonLTFSWriter.Click
-        Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {TapeDrive}"
+        Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {ConfTapeDrive}"
         Dim psexecpath As String = IO.Path.Combine(Application.StartupPath, "PsExec64.exe")
         Try
             If IO.File.Exists(psexecpath) Then
                 Process.Start(psexecpath, $"-accepteula -s -i -d {appcmd}")
             Else
-                Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {TapeDrive}"})
+                Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {ConfTapeDrive}"})
             End If
         Catch ex As Exception
         End Try
@@ -1748,7 +1752,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub 不读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 不读取索引ToolStripMenuItem.Click
-        Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = True}
+        Dim LWF As New LTFSWriter With {.TapeDrive = ConfTapeDrive, .OfflineMode = True}
         LWF.Show()
     End Sub
 
@@ -1789,7 +1793,7 @@ Public Class LTFSConfigurator
                      Dim CMInfo As TapeUtils.CMParser = Nothing
                      Try
                          Dim errormsg As Exception = Nothing
-                         CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(TapeDrive), errormsg)
+                         CMInfo = New TapeUtils.CMParser(TapeUtils.ReceiveDiagCM(ConfTapeDrive), errormsg)
                          If errormsg IsNot Nothing Then Throw errormsg
                      Catch ex As Exception
                          Invoke(Sub() TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf & ex.ToString & vbCrLf))
