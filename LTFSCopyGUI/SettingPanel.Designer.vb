@@ -114,4 +114,13 @@ Partial Class SettingPanel
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
     Friend WithEvents Button1 As Button
     Friend WithEvents Button2 As Button
+
+    Public Sub New()
+        ' 此调用是设计器所必需的。
+        InitializeComponent()
+
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+        Me.Font = DisplayHelper.DisplayFont
+
+    End Sub
 End Class

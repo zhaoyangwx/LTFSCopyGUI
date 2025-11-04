@@ -656,6 +656,39 @@ Namespace My
                 Me("LTFSWriter_ShowFileCount") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("空目录显示背景图标"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ShowDragIcon")>
+        Public Property LTFSWriter_ShowDragIcon() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ShowDragIcon"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ShowDragIcon") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("字体"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_BaseFont")>
+        Public Property LTFSWriter_BaseFont() As Font
+            Get
+                Dim result As Font = CType(Me("LTFSWriter_BaseFont"), Font)
+                If result IsNot Nothing Then
+                    Return result
+                Else
+                    Return New Font("SimSun", 12, GraphicsUnit.Pixel)
+                End If
+            End Get
+            Set
+                Me("LTFSWriter_BaseFont") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("写入开始时切换电源策略"),

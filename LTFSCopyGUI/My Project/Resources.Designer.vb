@@ -224,6 +224,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 字体 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_BaseFont() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_BaseFont", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 容量显示刷新间隔 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_CapacityRefreshInterval() As String
@@ -424,6 +433,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 文件匹配规则 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_MatchPattern() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_MatchPattern", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 写入完成后：
         '''  0 - 什么都不做
         '''  1 - 更新数据区索引
@@ -478,6 +496,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_PreLoadFileCount() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_PreLoadFileCount", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 空目录显示拖动图标 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ShowDragIcon() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ShowDragIcon", resourceCulture)
             End Get
         End Property
         

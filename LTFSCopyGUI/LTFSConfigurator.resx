@@ -600,6 +600,126 @@
   <data name="&gt;&gt;TextBoxMsg.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
+  <data name="&gt;&gt;ButtonChangerTool.Name" xml:space="preserve">
+    <value>ButtonChangerTool</value>
+  </data>
+  <data name="&gt;&gt;ButtonChangerTool.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonChangerTool.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;ButtonChangerTool.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxAutoRefresh.Name" xml:space="preserve">
+    <value>CheckBoxAutoRefresh</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxAutoRefresh.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxAutoRefresh.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxAutoRefresh.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;ButtonFileSorter.Name" xml:space="preserve">
+    <value>ButtonFileSorter</value>
+  </data>
+  <data name="&gt;&gt;ButtonFileSorter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonFileSorter.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;ButtonFileSorter.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;ButtonLTFSWriter.Name" xml:space="preserve">
+    <value>ButtonLTFSWriter</value>
+  </data>
+  <data name="&gt;&gt;ButtonLTFSWriter.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonLTFSWriter.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;ButtonLTFSWriter.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;ButtonUnthread.Name" xml:space="preserve">
+    <value>ButtonUnthread</value>
+  </data>
+  <data name="&gt;&gt;ButtonUnthread.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonUnthread.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;ButtonUnthread.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;ButtonLoadUnthreaded.Name" xml:space="preserve">
+    <value>ButtonLoadUnthreaded</value>
+  </data>
+  <data name="&gt;&gt;ButtonLoadUnthreaded.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonLoadUnthreaded.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;ButtonLoadUnthreaded.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxDebugPanel.Name" xml:space="preserve">
+    <value>CheckBoxDebugPanel</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxDebugPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxDebugPanel.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;CheckBoxDebugPanel.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="Panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1230, 642</value>
+  </data>
+  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
   <data name="ButtonChangerTool.Location" type="System.Drawing.Point, System.Drawing">
     <value>12, 6</value>
   </data>
@@ -720,6 +840,18 @@
   <data name="&gt;&gt;ButtonLTFSWriter.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>160, 22</value>
+  </data>
+  <data name="在当前进程运行ToolStripMenuItem.Text" xml:space="preserve">
+    <value>在当前进程运行</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>160, 22</value>
+  </data>
+  <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>不读取索引</value>
+  </data>
   <data name="ButtonUnthread.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom</value>
   </data>
@@ -807,6 +939,198 @@
   <data name="Panel2.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
+  <data name="&gt;&gt;TabControl1.Name" xml:space="preserve">
+    <value>TabControl1</value>
+  </data>
+  <data name="&gt;&gt;TabControl1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TabControl1.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TabControl1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Name" xml:space="preserve">
+    <value>LabelTimeout</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Name" xml:space="preserve">
+    <value>TextBoxTimeoutValue</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Name" xml:space="preserve">
+    <value>TextBoxDataDir</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Name" xml:space="preserve">
+    <value>LabelDataDir</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Name" xml:space="preserve">
+    <value>LabelParam</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Name" xml:space="preserve">
+    <value>LabelCDB</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Name" xml:space="preserve">
+    <value>TextBoxDebugOutput</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Name" xml:space="preserve">
+    <value>TextBoxParamData</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Name" xml:space="preserve">
+    <value>ButtonDebugSendSCSICommand</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Name" xml:space="preserve">
+    <value>TextBoxCDBData</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Name" xml:space="preserve">
+    <value>TextBoxDevicePath</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Name" xml:space="preserve">
+    <value>LabelSCSIIOCtl</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Name" xml:space="preserve">
+    <value>LabelDebugPanel</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>35, 62</value>
+  </data>
+  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1144, 527</value>
+  </data>
+  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="Panel2.Visible" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
+    <value>Panel1</value>
+  </data>
+  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
   <data name="TabControl1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Bottom, Left, Right</value>
   </data>
@@ -871,10 +1195,10 @@
     <value>4</value>
   </data>
   <data name="TabControl1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 411</value>
+    <value>0, 407</value>
   </data>
   <data name="TabControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1142, 114</value>
+    <value>1138, 114</value>
   </data>
   <data name="TabControl1.TabIndex" type="System.Int32, mscorlib">
     <value>63</value>
@@ -890,459 +1214,6 @@
   </data>
   <data name="&gt;&gt;TabControl1.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="LabelTimeout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="LabelTimeout.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelTimeout.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
-  <data name="LabelTimeout.Location" type="System.Drawing.Point, System.Drawing">
-    <value>930, 32</value>
-  </data>
-  <data name="LabelTimeout.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 12</value>
-  </data>
-  <data name="LabelTimeout.TabIndex" type="System.Int32, mscorlib">
-    <value>61</value>
-  </data>
-  <data name="LabelTimeout.Text" xml:space="preserve">
-    <value>timeout</value>
-  </data>
-  <data name="&gt;&gt;LabelTimeout.Name" xml:space="preserve">
-    <value>LabelTimeout</value>
-  </data>
-  <data name="&gt;&gt;LabelTimeout.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelTimeout.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelTimeout.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="TextBoxTimeoutValue.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <data name="TextBoxTimeoutValue.Location" type="System.Drawing.Point, System.Drawing">
-    <value>983, 29</value>
-  </data>
-  <data name="TextBoxTimeoutValue.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 21</value>
-  </data>
-  <data name="TextBoxTimeoutValue.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
-  </data>
-  <data name="TextBoxTimeoutValue.Text" xml:space="preserve">
-    <value>600</value>
-  </data>
-  <data name="&gt;&gt;TextBoxTimeoutValue.Name" xml:space="preserve">
-    <value>TextBoxTimeoutValue</value>
-  </data>
-  <data name="&gt;&gt;TextBoxTimeoutValue.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxTimeoutValue.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxTimeoutValue.ZOrder" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="TextBoxDataDir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 56</value>
-  </data>
-  <data name="TextBoxDataDir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 21</value>
-  </data>
-  <data name="TextBoxDataDir.TabIndex" type="System.Int32, mscorlib">
-    <value>15</value>
-  </data>
-  <data name="TextBoxDataDir.Text" xml:space="preserve">
-    <value>2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDataDir.Name" xml:space="preserve">
-    <value>TextBoxDataDir</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDataDir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDataDir.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDataDir.ZOrder" xml:space="preserve">
-    <value>3</value>
-  </data>
-  <data name="LabelDataDir.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelDataDir.Location" type="System.Drawing.Point, System.Drawing">
-    <value>75, 59</value>
-  </data>
-  <data name="LabelDataDir.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 12</value>
-  </data>
-  <data name="LabelDataDir.TabIndex" type="System.Int32, mscorlib">
-    <value>26</value>
-  </data>
-  <data name="LabelDataDir.Text" xml:space="preserve">
-    <value>datadir</value>
-  </data>
-  <data name="&gt;&gt;LabelDataDir.Name" xml:space="preserve">
-    <value>LabelDataDir</value>
-  </data>
-  <data name="&gt;&gt;LabelDataDir.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelDataDir.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelDataDir.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="LabelParam.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelParam.Font" type="System.Drawing.Font, System.Drawing">
-    <value>宋体, 9pt, style=Underline</value>
-  </data>
-  <data name="LabelParam.Location" type="System.Drawing.Point, System.Drawing">
-    <value>199, 59</value>
-  </data>
-  <data name="LabelParam.Size" type="System.Drawing.Size, System.Drawing">
-    <value>29, 12</value>
-  </data>
-  <data name="LabelParam.TabIndex" type="System.Int32, mscorlib">
-    <value>21</value>
-  </data>
-  <data name="LabelParam.Text" xml:space="preserve">
-    <value>data</value>
-  </data>
-  <data name="&gt;&gt;LabelParam.Name" xml:space="preserve">
-    <value>LabelParam</value>
-  </data>
-  <data name="&gt;&gt;LabelParam.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelParam.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelParam.ZOrder" xml:space="preserve">
-    <value>5</value>
-  </data>
-  <data name="LabelCDB.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelCDB.Location" type="System.Drawing.Point, System.Drawing">
-    <value>199, 34</value>
-  </data>
-  <data name="LabelCDB.Size" type="System.Drawing.Size, System.Drawing">
-    <value>23, 12</value>
-  </data>
-  <data name="LabelCDB.TabIndex" type="System.Int32, mscorlib">
-    <value>20</value>
-  </data>
-  <data name="LabelCDB.Text" xml:space="preserve">
-    <value>cdb</value>
-  </data>
-  <data name="&gt;&gt;LabelCDB.Name" xml:space="preserve">
-    <value>LabelCDB</value>
-  </data>
-  <data name="&gt;&gt;LabelCDB.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelCDB.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelCDB.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="TextBoxDebugOutput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="TextBoxDebugOutput.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 83</value>
-  </data>
-  <data name="TextBoxDebugOutput.MaxLength" type="System.Int32, mscorlib">
-    <value>2147483647</value>
-  </data>
-  <data name="TextBoxDebugOutput.Multiline" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="TextBoxDebugOutput.ScrollBars" type="System.Windows.Forms.ScrollBars, System.Windows.Forms">
-    <value>Vertical</value>
-  </data>
-  <data name="TextBoxDebugOutput.Size" type="System.Drawing.Size, System.Drawing">
-    <value>920, 322</value>
-  </data>
-  <data name="TextBoxDebugOutput.TabIndex" type="System.Int32, mscorlib">
-    <value>19</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDebugOutput.Name" xml:space="preserve">
-    <value>TextBoxDebugOutput</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDebugOutput.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDebugOutput.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDebugOutput.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="TextBoxParamData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="TextBoxParamData.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 56</value>
-  </data>
-  <data name="TextBoxParamData.MaxLength" type="System.Int32, mscorlib">
-    <value>2147483647</value>
-  </data>
-  <data name="TextBoxParamData.Size" type="System.Drawing.Size, System.Drawing">
-    <value>820, 21</value>
-  </data>
-  <data name="TextBoxParamData.TabIndex" type="System.Int32, mscorlib">
-    <value>16</value>
-  </data>
-  <data name="&gt;&gt;TextBoxParamData.Name" xml:space="preserve">
-    <value>TextBoxParamData</value>
-  </data>
-  <data name="&gt;&gt;TextBoxParamData.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxParamData.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxParamData.ZOrder" xml:space="preserve">
-    <value>8</value>
-  </data>
-  <data name="ButtonDebugSendSCSICommand.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Right</value>
-  </data>
-  <metadata name="ContextMenuStripSend.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>361, 55</value>
-  </metadata>
-  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
-  </data>
-  <data name="保存ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="保存ToolStripMenuItem.Text" xml:space="preserve">
-    <value>保存</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
-    <value>删除</value>
-  </data>
-  <data name="DebugToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
-  </data>
-  <data name="DebugToolStripMenuItem.Text" xml:space="preserve">
-    <value>Debug</value>
-  </data>
-  <data name="ContextMenuStripSend.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 98</value>
-  </data>
-  <data name="&gt;&gt;ContextMenuStripSend.Name" xml:space="preserve">
-    <value>ContextMenuStripSend</value>
-  </data>
-  <data name="&gt;&gt;ContextMenuStripSend.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="ButtonDebugSendSCSICommand.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1055, 29</value>
-  </data>
-  <data name="ButtonDebugSendSCSICommand.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
-  </data>
-  <data name="ButtonDebugSendSCSICommand.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
-  </data>
-  <data name="ButtonDebugSendSCSICommand.Text" xml:space="preserve">
-    <value>send</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Name" xml:space="preserve">
-    <value>ButtonDebugSendSCSICommand</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;ButtonDebugSendSCSICommand.ZOrder" xml:space="preserve">
-    <value>9</value>
-  </data>
-  <data name="TextBoxCDBData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
-  </data>
-  <data name="TextBoxCDBData.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 29</value>
-  </data>
-  <data name="TextBoxCDBData.Size" type="System.Drawing.Size, System.Drawing">
-    <value>696, 21</value>
-  </data>
-  <data name="TextBoxCDBData.TabIndex" type="System.Int32, mscorlib">
-    <value>14</value>
-  </data>
-  <data name="TextBoxCDBData.Text" xml:space="preserve">
-    <value>1B 00 00 00 00 00</value>
-  </data>
-  <data name="&gt;&gt;TextBoxCDBData.Name" xml:space="preserve">
-    <value>TextBoxCDBData</value>
-  </data>
-  <data name="&gt;&gt;TextBoxCDBData.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxCDBData.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxCDBData.ZOrder" xml:space="preserve">
-    <value>10</value>
-  </data>
-  <data name="TextBoxDevicePath.Location" type="System.Drawing.Point, System.Drawing">
-    <value>128, 29</value>
-  </data>
-  <data name="TextBoxDevicePath.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 21</value>
-  </data>
-  <data name="TextBoxDevicePath.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="TextBoxDevicePath.Text" xml:space="preserve">
-    <value>\\.\TAPE0</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDevicePath.Name" xml:space="preserve">
-    <value>TextBoxDevicePath</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDevicePath.Type" xml:space="preserve">
-    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDevicePath.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;TextBoxDevicePath.ZOrder" xml:space="preserve">
-    <value>11</value>
-  </data>
-  <data name="LabelSCSIIOCtl.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelSCSIIOCtl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 34</value>
-  </data>
-  <data name="LabelSCSIIOCtl.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 12</value>
-  </data>
-  <data name="LabelSCSIIOCtl.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
-  </data>
-  <data name="LabelSCSIIOCtl.Text" xml:space="preserve">
-    <value>_TapeSCSIIOCtlFull</value>
-  </data>
-  <data name="&gt;&gt;LabelSCSIIOCtl.Name" xml:space="preserve">
-    <value>LabelSCSIIOCtl</value>
-  </data>
-  <data name="&gt;&gt;LabelSCSIIOCtl.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelSCSIIOCtl.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelSCSIIOCtl.ZOrder" xml:space="preserve">
-    <value>12</value>
-  </data>
-  <data name="LabelDebugPanel.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="LabelDebugPanel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 5</value>
-  </data>
-  <data name="LabelDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>65, 12</value>
-  </data>
-  <data name="LabelDebugPanel.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="LabelDebugPanel.Text" xml:space="preserve">
-    <value>奇怪的功能</value>
-  </data>
-  <data name="&gt;&gt;LabelDebugPanel.Name" xml:space="preserve">
-    <value>LabelDebugPanel</value>
-  </data>
-  <data name="&gt;&gt;LabelDebugPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;LabelDebugPanel.Parent" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;LabelDebugPanel.ZOrder" xml:space="preserve">
-    <value>13</value>
-  </data>
-  <data name="Panel2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>35, 62</value>
-  </data>
-  <data name="Panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1144, 527</value>
-  </data>
-  <data name="Panel2.TabIndex" type="System.Int32, mscorlib">
-    <value>18</value>
-  </data>
-  <data name="Panel2.Visible" type="System.Boolean, mscorlib">
-    <value>False</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Name" xml:space="preserve">
-    <value>Panel2</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel2.Parent" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel2.ZOrder" xml:space="preserve">
-    <value>7</value>
-  </data>
-  <data name="Panel1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="Panel1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="Panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1230, 642</value>
-  </data>
-  <data name="Panel1.TabIndex" type="System.Int32, mscorlib">
-    <value>17</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Name" xml:space="preserve">
-    <value>Panel1</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;Panel1.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;Panel1.ZOrder" xml:space="preserve">
-    <value>6</value>
-  </data>
-  <data name="在当前进程运行ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 22</value>
-  </data>
-  <data name="在当前进程运行ToolStripMenuItem.Text" xml:space="preserve">
-    <value>在当前进程运行</value>
-  </data>
-  <data name="不读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 22</value>
-  </data>
-  <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>不读取索引</value>
   </data>
   <data name="&gt;&gt;ButtonDebugRewind.Name" xml:space="preserve">
     <value>ButtonDebugRewind</value>
@@ -1627,7 +1498,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="TabPageCommand.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1134, 88</value>
+    <value>1130, 88</value>
   </data>
   <data name="TabPageCommand.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1753,7 +1624,7 @@
     <value>True</value>
   </data>
   <data name="CheckBoxParseCMData.Location" type="System.Drawing.Point, System.Drawing">
-    <value>995, 63</value>
+    <value>991, 63</value>
   </data>
   <data name="CheckBoxParseCMData.Size" type="System.Drawing.Size, System.Drawing">
     <value>54, 16</value>
@@ -1861,7 +1732,7 @@
     <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="ButtonDebugReadInfo.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1053, 59</value>
+    <value>1049, 59</value>
   </data>
   <data name="ButtonDebugReadInfo.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -2026,7 +1897,7 @@
     <value>Top, Right</value>
   </data>
   <data name="ButtonDebugReadBlock.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1053, 6</value>
+    <value>1049, 6</value>
   </data>
   <data name="ButtonDebugReadBlock.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -2149,7 +2020,7 @@
     <value>Top, Right</value>
   </data>
   <data name="NumericUpDownBlockLen.Location" type="System.Drawing.Point, System.Drawing">
-    <value>987, 6</value>
+    <value>983, 6</value>
   </data>
   <data name="NumericUpDownBlockLen.Size" type="System.Drawing.Size, System.Drawing">
     <value>62, 21</value>
@@ -2203,7 +2074,7 @@
     <value>True</value>
   </data>
   <data name="LabelReadBlockLim.Location" type="System.Drawing.Point, System.Drawing">
-    <value>910, 11</value>
+    <value>906, 11</value>
   </data>
   <data name="LabelReadBlockLim.Size" type="System.Drawing.Size, System.Drawing">
     <value>71, 12</value>
@@ -2347,7 +2218,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="TabPageBuffer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1134, 88</value>
+    <value>1130, 88</value>
   </data>
   <data name="TabPageBuffer.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -2371,7 +2242,7 @@
     <value>Top, Right</value>
   </data>
   <data name="ButtonDebugDumpBuffer.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 6</value>
+    <value>862, 6</value>
   </data>
   <data name="ButtonDebugDumpBuffer.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -2650,7 +2521,7 @@
     <value>83, 7</value>
   </data>
   <data name="ComboBoxBufferPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>775, 20</value>
+    <value>773, 20</value>
   </data>
   <data name="ComboBoxBufferPage.TabIndex" type="System.Int32, mscorlib">
     <value>42</value>
@@ -2809,7 +2680,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="TabPageMAM.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1134, 88</value>
+    <value>1130, 88</value>
   </data>
   <data name="TabPageMAM.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -2869,7 +2740,7 @@
     <value>32</value>
   </data>
   <data name="TextBoxBarcode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>777, 21</value>
+    <value>775, 21</value>
   </data>
   <data name="TextBoxBarcode.TabIndex" type="System.Int32, mscorlib">
     <value>38</value>
@@ -2896,7 +2767,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonDebugWriteBarcode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 33</value>
+    <value>862, 33</value>
   </data>
   <data name="ButtonDebugWriteBarcode.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -3154,7 +3025,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="TabPageLog.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1134, 88</value>
+    <value>1130, 88</value>
   </data>
   <data name="TabPageLog.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -3181,7 +3052,7 @@
     <value>True</value>
   </data>
   <data name="CheckBoxShowRawLogPageData.Location" type="System.Drawing.Point, System.Drawing">
-    <value>816, 8</value>
+    <value>814, 8</value>
   </data>
   <data name="CheckBoxShowRawLogPageData.Size" type="System.Drawing.Size, System.Drawing">
     <value>42, 16</value>
@@ -3220,7 +3091,7 @@
     <value>3 - Default Cumulative Values</value>
   </data>
   <data name="ComboBox5.Location" type="System.Drawing.Point, System.Drawing">
-    <value>740, 6</value>
+    <value>738, 6</value>
   </data>
   <data name="ComboBox5.Size" type="System.Drawing.Size, System.Drawing">
     <value>70, 20</value>
@@ -3250,7 +3121,7 @@
     <value>NoControl</value>
   </data>
   <data name="LabelLogSensePageCtrl.Location" type="System.Drawing.Point, System.Drawing">
-    <value>717, 9</value>
+    <value>715, 9</value>
   </data>
   <data name="LabelLogSensePageCtrl.Size" type="System.Drawing.Size, System.Drawing">
     <value>17, 12</value>
@@ -3280,7 +3151,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonRunLogSense.Location" type="System.Drawing.Point, System.Drawing">
-    <value>864, 6</value>
+    <value>862, 6</value>
   </data>
   <data name="ButtonRunLogSense.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -3340,7 +3211,7 @@
     <value>73, 6</value>
   </data>
   <data name="ComboBox4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>638, 20</value>
+    <value>636, 20</value>
   </data>
   <data name="ComboBox4.TabIndex" type="System.Int32, mscorlib">
     <value>63</value>
@@ -3595,7 +3466,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="TabPageTest.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1134, 88</value>
+    <value>1130, 88</value>
   </data>
   <data name="TabPageTest.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -3853,7 +3724,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonRDErrRateLog.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1019, 59</value>
+    <value>1017, 59</value>
   </data>
   <data name="ButtonRDErrRateLog.Size" type="System.Drawing.Size, System.Drawing">
     <value>107, 23</value>
@@ -4056,6 +3927,399 @@
   <data name="&gt;&gt;LabelTestBlocksize.ZOrder" xml:space="preserve">
     <value>16</value>
   </data>
+  <data name="LabelTimeout.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="LabelTimeout.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelTimeout.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="LabelTimeout.Location" type="System.Drawing.Point, System.Drawing">
+    <value>926, 32</value>
+  </data>
+  <data name="LabelTimeout.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 12</value>
+  </data>
+  <data name="LabelTimeout.TabIndex" type="System.Int32, mscorlib">
+    <value>61</value>
+  </data>
+  <data name="LabelTimeout.Text" xml:space="preserve">
+    <value>timeout</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Name" xml:space="preserve">
+    <value>LabelTimeout</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelTimeout.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="TextBoxTimeoutValue.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="TextBoxTimeoutValue.Location" type="System.Drawing.Point, System.Drawing">
+    <value>979, 29</value>
+  </data>
+  <data name="TextBoxTimeoutValue.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 21</value>
+  </data>
+  <data name="TextBoxTimeoutValue.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="TextBoxTimeoutValue.Text" xml:space="preserve">
+    <value>600</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Name" xml:space="preserve">
+    <value>TextBoxTimeoutValue</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxTimeoutValue.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="TextBoxDataDir.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 56</value>
+  </data>
+  <data name="TextBoxDataDir.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 21</value>
+  </data>
+  <data name="TextBoxDataDir.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="TextBoxDataDir.Text" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Name" xml:space="preserve">
+    <value>TextBoxDataDir</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDataDir.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="LabelDataDir.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelDataDir.Location" type="System.Drawing.Point, System.Drawing">
+    <value>75, 59</value>
+  </data>
+  <data name="LabelDataDir.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 12</value>
+  </data>
+  <data name="LabelDataDir.TabIndex" type="System.Int32, mscorlib">
+    <value>26</value>
+  </data>
+  <data name="LabelDataDir.Text" xml:space="preserve">
+    <value>datadir</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Name" xml:space="preserve">
+    <value>LabelDataDir</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelDataDir.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="LabelParam.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelParam.Font" type="System.Drawing.Font, System.Drawing">
+    <value>宋体, 12px, style=Underline</value>
+  </data>
+  <data name="LabelParam.Location" type="System.Drawing.Point, System.Drawing">
+    <value>199, 59</value>
+  </data>
+  <data name="LabelParam.Size" type="System.Drawing.Size, System.Drawing">
+    <value>29, 12</value>
+  </data>
+  <data name="LabelParam.TabIndex" type="System.Int32, mscorlib">
+    <value>21</value>
+  </data>
+  <data name="LabelParam.Text" xml:space="preserve">
+    <value>data</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Name" xml:space="preserve">
+    <value>LabelParam</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelParam.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="LabelCDB.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelCDB.Location" type="System.Drawing.Point, System.Drawing">
+    <value>199, 34</value>
+  </data>
+  <data name="LabelCDB.Size" type="System.Drawing.Size, System.Drawing">
+    <value>23, 12</value>
+  </data>
+  <data name="LabelCDB.TabIndex" type="System.Int32, mscorlib">
+    <value>20</value>
+  </data>
+  <data name="LabelCDB.Text" xml:space="preserve">
+    <value>cdb</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Name" xml:space="preserve">
+    <value>LabelCDB</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelCDB.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="TextBoxDebugOutput.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="TextBoxDebugOutput.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 83</value>
+  </data>
+  <data name="TextBoxDebugOutput.MaxLength" type="System.Int32, mscorlib">
+    <value>2147483647</value>
+  </data>
+  <data name="TextBoxDebugOutput.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="TextBoxDebugOutput.ScrollBars" type="System.Windows.Forms.ScrollBars, System.Windows.Forms">
+    <value>Vertical</value>
+  </data>
+  <data name="TextBoxDebugOutput.Size" type="System.Drawing.Size, System.Drawing">
+    <value>916, 318</value>
+  </data>
+  <data name="TextBoxDebugOutput.TabIndex" type="System.Int32, mscorlib">
+    <value>19</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Name" xml:space="preserve">
+    <value>TextBoxDebugOutput</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDebugOutput.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="TextBoxParamData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="TextBoxParamData.Location" type="System.Drawing.Point, System.Drawing">
+    <value>228, 56</value>
+  </data>
+  <data name="TextBoxParamData.MaxLength" type="System.Int32, mscorlib">
+    <value>2147483647</value>
+  </data>
+  <data name="TextBoxParamData.Size" type="System.Drawing.Size, System.Drawing">
+    <value>816, 21</value>
+  </data>
+  <data name="TextBoxParamData.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Name" xml:space="preserve">
+    <value>TextBoxParamData</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxParamData.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="ButtonDebugSendSCSICommand.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <metadata name="ContextMenuStripSend.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>361, 55</value>
+  </metadata>
+  <data name="ContextMenuStripSend.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 76</value>
+  </data>
+  <data name="&gt;&gt;ContextMenuStripSend.Name" xml:space="preserve">
+    <value>ContextMenuStripSend</value>
+  </data>
+  <data name="&gt;&gt;ContextMenuStripSend.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ButtonDebugSendSCSICommand.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1051, 29</value>
+  </data>
+  <data name="ButtonDebugSendSCSICommand.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonDebugSendSCSICommand.TabIndex" type="System.Int32, mscorlib">
+    <value>18</value>
+  </data>
+  <data name="ButtonDebugSendSCSICommand.Text" xml:space="preserve">
+    <value>send</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Name" xml:space="preserve">
+    <value>ButtonDebugSendSCSICommand</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugSendSCSICommand.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="ToolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>112, 6</value>
+  </data>
+  <data name="保存ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 22</value>
+  </data>
+  <data name="保存ToolStripMenuItem.Text" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 22</value>
+  </data>
+  <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="DebugToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>115, 22</value>
+  </data>
+  <data name="DebugToolStripMenuItem.Text" xml:space="preserve">
+    <value>Debug</value>
+  </data>
+  <data name="TextBoxCDBData.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="TextBoxCDBData.Location" type="System.Drawing.Point, System.Drawing">
+    <value>228, 29</value>
+  </data>
+  <data name="TextBoxCDBData.Size" type="System.Drawing.Size, System.Drawing">
+    <value>692, 21</value>
+  </data>
+  <data name="TextBoxCDBData.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="TextBoxCDBData.Text" xml:space="preserve">
+    <value>1B 00 00 00 00 00</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Name" xml:space="preserve">
+    <value>TextBoxCDBData</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxCDBData.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="TextBoxDevicePath.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 29</value>
+  </data>
+  <data name="TextBoxDevicePath.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 21</value>
+  </data>
+  <data name="TextBoxDevicePath.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="TextBoxDevicePath.Text" xml:space="preserve">
+    <value>\\.\TAPE0</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Name" xml:space="preserve">
+    <value>TextBoxDevicePath</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;TextBoxDevicePath.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="LabelSCSIIOCtl.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelSCSIIOCtl.Location" type="System.Drawing.Point, System.Drawing">
+    <value>9, 34</value>
+  </data>
+  <data name="LabelSCSIIOCtl.Size" type="System.Drawing.Size, System.Drawing">
+    <value>113, 12</value>
+  </data>
+  <data name="LabelSCSIIOCtl.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="LabelSCSIIOCtl.Text" xml:space="preserve">
+    <value>_TapeSCSIIOCtlFull</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Name" xml:space="preserve">
+    <value>LabelSCSIIOCtl</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelSCSIIOCtl.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="LabelDebugPanel.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="LabelDebugPanel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 5</value>
+  </data>
+  <data name="LabelDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>65, 12</value>
+  </data>
+  <data name="LabelDebugPanel.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="LabelDebugPanel.Text" xml:space="preserve">
+    <value>奇怪的功能</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Name" xml:space="preserve">
+    <value>LabelDebugPanel</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.Parent" xml:space="preserve">
+    <value>Panel2</value>
+  </data>
+  <data name="&gt;&gt;LabelDebugPanel.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
   <metadata name="SaveFileDialog1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -4085,6 +4349,9 @@
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>1230, 642</value>
+  </data>
+  <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
+    <value>宋体, 12px</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

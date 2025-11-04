@@ -56,24 +56,24 @@ Partial Class FileBrowser
         '
         'ContextMenuStrip1
         '
-        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.全选ToolStripMenuItem, Me.按大小ToolStripMenuItem, Me.匹配文件名ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
         '
         '全选ToolStripMenuItem
         '
-        resources.ApplyResources(Me.全选ToolStripMenuItem, "全选ToolStripMenuItem")
         Me.全选ToolStripMenuItem.Name = "全选ToolStripMenuItem"
+        resources.ApplyResources(Me.全选ToolStripMenuItem, "全选ToolStripMenuItem")
         '
         '按大小ToolStripMenuItem
         '
-        resources.ApplyResources(Me.按大小ToolStripMenuItem, "按大小ToolStripMenuItem")
         Me.按大小ToolStripMenuItem.Name = "按大小ToolStripMenuItem"
+        resources.ApplyResources(Me.按大小ToolStripMenuItem, "按大小ToolStripMenuItem")
         '
         '匹配文件名ToolStripMenuItem
         '
-        resources.ApplyResources(Me.匹配文件名ToolStripMenuItem, "匹配文件名ToolStripMenuItem")
         Me.匹配文件名ToolStripMenuItem.Name = "匹配文件名ToolStripMenuItem"
+        resources.ApplyResources(Me.匹配文件名ToolStripMenuItem, "匹配文件名ToolStripMenuItem")
         '
         'CheckBox1
         '
@@ -115,4 +115,13 @@ Partial Class FileBrowser
     Friend WithEvents 按大小ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 匹配文件名ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents CheckBox1 As CheckBox
+
+    Public Sub New()
+        ' 此调用是设计器所必需的。
+        InitializeComponent()
+
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+        Me.Font = DisplayHelper.DisplayFont
+
+    End Sub
 End Class

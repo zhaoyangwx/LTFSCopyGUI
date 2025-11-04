@@ -1,9 +1,12 @@
 ﻿Imports System.ComponentModel
 Imports System.IO
+Imports System.Runtime.InteropServices
 Imports System.Runtime.Serialization
 Imports System.Text
 Imports System.Xml.Serialization
+Imports Microsoft.Diagnostics.Runtime
 Imports Microsoft.Extensions.FileSystemGlobbing
+Imports stdole
 Public Class SerializationHelper
     Public Shared Function GetSerializeString(ByVal c As Object) As String
         Dim s As New IO.MemoryStream
@@ -26,6 +29,7 @@ Public Class LocalizedDescriptionAttribute
         MyBase.New(LocalizedDescriptionAttribute.Localize(key))
     End Sub
 End Class
+
 <Serializable>
 Public Class SettingImportExport
     Public Property MySettings As SerializableDictionary(Of String, String)
@@ -60,6 +64,7 @@ Public Class SettingImportExport
         Return CType(reader.Deserialize(t), SettingImportExport)
     End Function
 End Class
+
 ''' <summary>   
 ''' 支持XML序列化的泛型   
 ''' </summary>   
@@ -156,6 +161,7 @@ Public Class SerializableDictionary(Of TKey, TValue)
     End Sub
 #End Region
 End Class
+
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class NamedObject
     Public Property Name As String
@@ -551,16 +557,15 @@ Public Class GlobHelper
 
         Return found
     End Function
-End Class
+    Public Class AddFile
+        Public Property SourceFullPath As String
+        Public Property RelativePath As String
+    End Class
 
-Public Class AddFile
-    Public Property SourceFullPath As String
-    Public Property RelativePath As String
-End Class
-
-Public Class AddPlan
-    Public ReadOnly Dirs As New List(Of String)()
-    Public ReadOnly Files As New List(Of AddFile)()
+    Public Class AddPlan
+        Public ReadOnly Dirs As New List(Of String)()
+        Public ReadOnly Files As New List(Of AddFile)()
+    End Class
 End Class
 
 Public Module GlobCollector
@@ -657,11 +662,11 @@ Public Module GlobCollector
     End Function
 
     Public Function PlanAdd_ByFullPathInputs(inputs As IEnumerable(Of String),
-                                             matcher As Matcher) As AddPlan
+                                             matcher As Matcher) As GlobHelper.AddPlan
         If inputs Is Nothing Then Throw New ArgumentNullException(NameOf(inputs))
         If matcher Is Nothing Then Throw New ArgumentNullException(NameOf(matcher))
 
-        Dim plan As New AddPlan()
+        Dim plan As New GlobHelper.AddPlan()
 
         Dim seenSource As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim seenRelative As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
@@ -693,7 +698,7 @@ Public Module GlobCollector
                     If Not seenRelative.Add(rel) Then Continue For
                     If Not seenSource.Add(fileFull) Then Continue For
 
-                    plan.Files.Add(New AddFile With {
+                    plan.Files.Add(New GlobHelper.AddFile With {
                         .SourceFullPath = fileFull,
                         .RelativePath = rel
                     })
@@ -715,7 +720,7 @@ Public Module GlobCollector
                     If Not seenRelative.Add(relDisplay) Then Continue For
                     If Not seenSource.Add(inputPath) Then Continue For
 
-                    plan.Files.Add(New AddFile With {
+                    plan.Files.Add(New GlobHelper.AddFile With {
                         .SourceFullPath = inputPath,
                         .RelativePath = relDisplay
                     })
@@ -790,3 +795,23 @@ Public Module GlobCollector
         Next
     End Sub
 End Module
+
+Public Class DisplayHelper
+    Public Shared Function GetScreenScale() As Single
+        Using graphics As Graphics = Graphics.FromHwnd(IntPtr.Zero)
+            Return graphics.DpiX / 96
+        End Using
+    End Function
+    Public Shared Property ScreenScale As Single = 1
+    Private Shared _font As System.Drawing.Font
+    Public Shared Property DisplayFont As System.Drawing.Font
+        Get
+            If _font Is Nothing Then Return New Drawing.Font("SimSun", 12 * ScreenScale, GraphicsUnit.Pixel)
+            Return _font
+        End Get
+        Set(value As System.Drawing.Font)
+            _font = value
+        End Set
+    End Property
+
+End Class

@@ -804,6 +804,10 @@ dataDir:{dataDir}
                     End Select
                 Next
             End If
+            'DisplayHelper.ScreenScale = DisplayHelper.GetScreenScale()
+            With My.Settings.LTFSWriter_BaseFont
+                DisplayHelper.DisplayFont = New Font(.FontFamily, .Size * DisplayHelper.ScreenScale, .Unit)
+            End With
         End Sub
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
