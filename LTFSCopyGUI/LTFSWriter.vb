@@ -1404,61 +1404,65 @@ Public Class LTFSWriter
                              PrintMsg(ex.ToString(), LogOnly:=True)
                              Exit Sub
                          End Try
-                         Invoke(Sub()
-                                    Try
-                                        DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
-                                        DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
-                                        Dim Page1 As TapeUtils.PageData.DataItem.DynamicParamPage = DeviceStatusLogPage.TryGetPage(&H1)
-                                        If Page1 Is Nothing Then Exit Sub
-                                        Dim DevStatusBits As TapeUtils.PageData = Page1.GetPage
-                                        Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
-                                        If DevStatusBits IsNot Nothing Then
-                                            For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
-                                                Select Case item.Name.ToLower
-                                                    Case "cleaning required flag"
-                                                        CleanFlag = CleanFlag Or item.RawData(0)
-                                                    Case "cleaning requested flag"
-                                                        CleanFlag = CleanFlag Or item.RawData(0)
-                                                    Case "device status"
-                                                        DriveFlag = (item.RawData(0) > 1)
-                                                    Case "medium status"
-                                                        TapeFlag = (item.RawData(0) > 1)
-                                                End Select
-                                            Next
-                                        End If
-                                        Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
-                                        If VHFData IsNot Nothing Then
-                                            For Each item As TapeUtils.PageData.DataItem In VHFData.Items
-                                                Select Case item.Name.ToLower
-                                                    Case "encryption parameters present"
-                                                        EncryptionFlag = (item.RawData(0) = 1)
-                                                End Select
-                                            Next
-                                        End If
-                                        If EncryptionFlag Then
-                                            ToolStripStatusLabelS2.ForeColor = Color.Blue
-                                        Else
-                                            ToolStripStatusLabelS2.ForeColor = Color.Gray
-                                        End If
-                                        If CleanFlag Then
-                                            ToolStripStatusLabelS3.ForeColor = Color.Orange
-                                        Else
-                                            ToolStripStatusLabelS3.ForeColor = Color.Gray
-                                        End If
-                                        If TapeFlag Then
-                                            ToolStripStatusLabelS4.ForeColor = Color.Orange
-                                        Else
-                                            ToolStripStatusLabelS4.ForeColor = Color.Gray
-                                        End If
-                                        If DriveFlag Then
-                                            ToolStripStatusLabelS5.ForeColor = Color.Orange
-                                        Else
-                                            ToolStripStatusLabelS5.ForeColor = Color.Gray
-                                        End If
-                                    Catch ex As Exception
-                                        PrintMsg(ex.ToString(), LogOnly:=True)
-                                    End Try
-                                End Sub)
+                         Try
+                             Invoke(Sub()
+                                        Try
+                                            DeviceStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdataDSLP)
+                                            DTDStatusLogPage = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdataDTD)
+                                            Dim Page1 As TapeUtils.PageData.DataItem.DynamicParamPage = DeviceStatusLogPage.TryGetPage(&H1)
+                                            If Page1 Is Nothing Then Exit Sub
+                                            Dim DevStatusBits As TapeUtils.PageData = Page1.GetPage
+                                            Dim TapeFlag, DriveFlag, CleanFlag, EncryptionFlag As Boolean
+                                            If DevStatusBits IsNot Nothing Then
+                                                For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
+                                                    Select Case item.Name.ToLower
+                                                        Case "cleaning required flag"
+                                                            CleanFlag = CleanFlag Or item.RawData(0)
+                                                        Case "cleaning requested flag"
+                                                            CleanFlag = CleanFlag Or item.RawData(0)
+                                                        Case "device status"
+                                                            DriveFlag = (item.RawData(0) > 1)
+                                                        Case "medium status"
+                                                            TapeFlag = (item.RawData(0) > 1)
+                                                    End Select
+                                                Next
+                                            End If
+                                            Dim VHFData As TapeUtils.PageData = DTDStatusLogPage.TryGetPage(0).GetPage
+                                            If VHFData IsNot Nothing Then
+                                                For Each item As TapeUtils.PageData.DataItem In VHFData.Items
+                                                    Select Case item.Name.ToLower
+                                                        Case "encryption parameters present"
+                                                            EncryptionFlag = (item.RawData(0) = 1)
+                                                    End Select
+                                                Next
+                                            End If
+                                            If EncryptionFlag Then
+                                                ToolStripStatusLabelS2.ForeColor = Color.Blue
+                                            Else
+                                                ToolStripStatusLabelS2.ForeColor = Color.Gray
+                                            End If
+                                            If CleanFlag Then
+                                                ToolStripStatusLabelS3.ForeColor = Color.Orange
+                                            Else
+                                                ToolStripStatusLabelS3.ForeColor = Color.Gray
+                                            End If
+                                            If TapeFlag Then
+                                                ToolStripStatusLabelS4.ForeColor = Color.Orange
+                                            Else
+                                                ToolStripStatusLabelS4.ForeColor = Color.Gray
+                                            End If
+                                            If DriveFlag Then
+                                                ToolStripStatusLabelS5.ForeColor = Color.Orange
+                                            Else
+                                                ToolStripStatusLabelS5.ForeColor = Color.Gray
+                                            End If
+                                        Catch ex As Exception
+                                            PrintMsg(ex.ToString(), LogOnly:=True)
+                                        End Try
+                                    End Sub)
+                         Catch
+                         End Try
+
                      End If
                  End Sub)
     End Sub
@@ -2016,35 +2020,35 @@ Public Class LTFSWriter
                         ListView1.Columns.RemoveAt(3)
                     End While
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1), .Text = "SHA1", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1), .Text = "SHA1", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1), .Text = "SHA256", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1), .Text = "SHA256", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1), .Text = "SHA512", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1), .Text = "SHA512", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1), .Text = "CRC32", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1), .Text = "CRC32", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1), .Text = "MD5", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1), .Text = "MD5", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1), .Text = "BLAKE3", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1), .Text = "BLAKE3", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1), .Text = "XxHash3", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1), .Text = "XxHash3", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1), .Text = "XxHash128", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1), .Text = "XxHash128", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If ShowXAttr_Barcode Then
@@ -6071,7 +6075,6 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub ToolStripButton2_Click(sender As Object, e As EventArgs) Handles ToolStripButton2.Click
-
         写入数据ToolStripMenuItem_Click(sender, e)
     End Sub
 
@@ -6079,7 +6082,7 @@ Public Class LTFSWriter
         备份当前索引ToolStripMenuItem_Click(sender, e)
     End Sub
 
-    Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton3.Click
+    Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton11.Click
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UIE, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim th As New Threading.Thread(
                 Sub()
