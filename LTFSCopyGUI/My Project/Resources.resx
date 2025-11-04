@@ -926,4 +926,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32" xml:space="preserve">
     <value>校验开关 - CRC32</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_MatchPattern" xml:space="preserve">
+    <value>文件匹配规则</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ShowDragIcon" xml:space="preserve">
+    <value>空目录显示拖动图标</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_BaseFont" xml:space="preserve">
+    <value>字体</value>
+  </data>
 </root>

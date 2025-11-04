@@ -1212,4 +1212,16 @@ Partial Class LTFSConfigurator
     Friend WithEvents DebugToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents NumericUpDownTestSets As NumericUpDown
     Friend WithEvents LabelTestSets As Label
+
+    Public Sub New()
+        'Me.SuspendLayout()
+        ' 此调用是设计器所必需的。
+        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        InitializeComponent()
+
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+
+        Me.Font = DisplayHelper.DisplayFont
+        Me.LabelParam.Font = New Font(Me.LabelParam.Font.FontFamily, Me.LabelParam.Font.Size * DisplayHelper.ScreenScale, GraphicsUnit.Pixel)
+    End Sub
 End Class

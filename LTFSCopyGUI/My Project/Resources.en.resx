@@ -915,4 +915,13 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32" xml:space="preserve">
     <value>Checksum switch - CRC32</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_MatchPattern" xml:space="preserve">
+    <value>Match pattern</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_ShowDragIcon" xml:space="preserve">
+    <value>Show drag icon</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_BaseFont" xml:space="preserve">
+    <value>Font</value>
+  </data>
 </root>

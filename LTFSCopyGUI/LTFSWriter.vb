@@ -426,6 +426,7 @@ Public Class LTFSWriter
             End If
         End If
         If schema IsNot Nothing AndAlso
+            My.Settings.LTFSWriter_ShowDragIcon AndAlso
             schema._directory IsNot Nothing AndAlso
             schema._directory.Count > 0 AndAlso
             schema._directory(0) IsNot Nothing AndAlso (
@@ -3263,7 +3264,7 @@ Public Class LTFSWriter
                 Dim matcher = GlobCollector.BuildMatcherFromString(match)
                 Dim results = GlobCollector.PlanAdd_ByFullPathInputs(Paths, matcher)
 
-                Dim fileSeq As IEnumerable(Of AddFile) = results.Files
+                Dim fileSeq As IEnumerable(Of GlobHelper.AddFile) = results.Files
 
                 If My.Settings.LTFSWriter_SkipSymlink Then
                     fileSeq = fileSeq.Where(

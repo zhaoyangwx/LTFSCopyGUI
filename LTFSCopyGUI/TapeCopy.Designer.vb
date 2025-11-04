@@ -216,6 +216,7 @@ Partial Class TapeCopy
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.Label1)
         Me.DoubleBuffered = True
+        Me.Font = New System.Drawing.Font("宋体", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Pixel)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "TapeCopy"
         Me.Text = "TapeCopy"
@@ -242,4 +243,13 @@ Partial Class TapeCopy
     Friend WithEvents CheckBox1 As CheckBox
     Friend WithEvents CheckBox2 As CheckBox
     Friend WithEvents CheckBox3 As CheckBox
+
+    Public Sub New()
+        ' 此调用是设计器所必需的。
+        InitializeComponent()
+
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+        Me.Font = DisplayHelper.DisplayFont
+
+    End Sub
 End Class

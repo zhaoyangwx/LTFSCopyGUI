@@ -438,4 +438,13 @@ Partial Class HashTaskWindow
     Friend WithEvents NumericUpDown1 As NumericUpDown
     Friend WithEvents CheckBox3 As CheckBox
     Friend WithEvents Chart1 As DataVisualization.Charting.Chart
+
+    Public Sub New()
+        ' 此调用是设计器所必需的。
+        InitializeComponent()
+
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+        Me.Font = DisplayHelper.DisplayFont
+
+    End Sub
 End Class
