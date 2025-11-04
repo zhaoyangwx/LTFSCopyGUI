@@ -1,0 +1,59 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Id="LTFSCopyGUI.LTFSCopyGUI"
+        Name="LTFSCopyGUI"
+        Manufacturer="LTFSCopyGUI Devs"
+        Version="3.5.4.25110401">
+        <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+        <StandardDirectory Id="CommonAppDataFolder">
+            <Directory Id="INSTALLFOLDER" Name="LTFSCopyGUI">
+                <Directory Id="LogDir" Name="log" />
+                <Directory Id="SchemaDir" Name="schema" />
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="LTFSCopyGUI" />
+        </StandardDirectory>
+
+        <ComponentGroup Id="LTFSCopyGUI" Directory="INSTALLFOLDER">
+            <Files Include="LTFSCopyGUI\**\*">
+                <Exclude Files="LTFSCopyGUI\log\**\*" />
+                <Exclude Files="LTFSCopyGUI\schema\**\*" />
+                <Exclude Files="LTFSCopyGUI\driver.txt" />
+            </Files>
+        </ComponentGroup>
+
+
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="StartMenuShortcut" Guid="206b47f8-b73e-4ae6-8249-dabe837c5861">
+                <Shortcut Id="ApplicationStartMenuShortcut" Name="LTFSCopyGUI"
+                    Description="LTFSCopyGUI" Target="[INSTALLFOLDER]LTFSCopyGUI.exe"
+                    WorkingDirectory="INSTALLFOLDER" />
+                <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder"
+                    On="uninstall" />
+                <RegistryValue Root="HKCU" Key="Software\LTFSCopyGUI\Installer" Name="installed"
+                    Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <Component Id="CreateLogDir" Directory="LogDir" Guid="da7f0430-a08c-4924-aa29-9d2d9d189f54"
+            Permanent="yes">
+            <CreateFolder />
+        </Component>
+
+        <Component Id="CreateSchemaDir" Directory="SchemaDir"
+            Guid="baf4df35-10e1-49d0-8fd2-ec08313ca399" Permanent="yes">
+            <CreateFolder />
+        </Component>
+
+        <Feature Id="MainFeature" Title="LTFSCopyGUI" Level="1">
+            <ComponentGroupRef Id="LTFSCopyGUI" />
+            <ComponentRef Id="StartMenuShortcut" />
+            <ComponentRef Id="CreateLogDir" />
+            <ComponentRef Id="CreateSchemaDir" />
+        </Feature>
+
+        <MajorUpgrade DowngradeErrorMessage="A newer version of this software is already installed." />
+    </Package>
+</Wix>
