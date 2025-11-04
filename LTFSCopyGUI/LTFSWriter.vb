@@ -3251,121 +3251,89 @@ Public Class LTFSWriter
     Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), ByVal match As String, Optional ByVal overwrite As Boolean = False)
         SetStatusLight(LWStatus.Busy)
         Dim th As New Threading.Thread(
-                Sub()
-                    StopFlag = False
-                    PrintMsg($"{My.Resources.ResText_Adding}{Paths.Length}{My.Resources.ResText_Items_x}")
-                    Dim helper As New GlobHelper() With {.schema = schema, .OnStopFlagInquiry = Function() As Boolean
-                                                                                                    Return StopFlag
-                                                                                                End Function}
-                    Dim matcher = helper.GlobCollector.BuildMatcherFromString(match)
-                    Dim results = helper.GlobCollector.PlanAdd_ByFullPathInputs(Paths, matcher)
+            Sub()
+                StopFlag = False
+                PrintMsg($"{My.Resources.ResText_Adding}{Paths.Length}{My.Resources.ResText_Items_x}")
+                Dim helper As New GlobHelper() With {
+                    .schema = schema,
+                    .OnStopFlagInquiry = Function() As Boolean
+                                             Return StopFlag
+                                         End Function
+                }
+                Dim matcher = GlobCollector.BuildMatcherFromString(match)
+                Dim results = GlobCollector.PlanAdd_ByFullPathInputs(Paths, matcher)
 
-                    Dim skipRoots As New List(Of String)()
-                    If My.Settings.LTFSWriter_SkipSymlink Then
-                        For Each dir As String In results.Dirs
+                Dim fileSeq As IEnumerable(Of AddFile) = results.Files
+
+                If My.Settings.LTFSWriter_SkipSymlink Then
+                    fileSeq = fileSeq.Where(
+                        Function(f)
                             Try
-                                Dim info = New IO.DirectoryInfo(dir)
-                                If info.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then
-                                    skipRoots.Add(helper.NormalizePath(dir))
-                                End If
+                                Dim fi As New IO.FileInfo(f.SourceFullPath)
+                                If fi.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then Return False
+
+                                Dim dir As IO.DirectoryInfo = fi.Directory
+                                While dir IsNot Nothing
+                                    If dir.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then Return False
+                                    dir = dir.Parent
+                                End While
+
+                                Return True
                             Catch
+                                Return False
                             End Try
-                        Next
-                        If skipRoots.Count > 1 Then
-                            skipRoots = skipRoots.
-                    Distinct(StringComparer.OrdinalIgnoreCase).
-                    OrderBy(Function(s) s.Length).
-                    Aggregate(New List(Of String)(), Function(acc, cur)
-                                                         If Not acc.Any(Function(root) helper.PathIsUnder(cur, root)) Then
-                                                             acc.Add(cur)
-                                                         End If
-                                                         Return acc
-                                                     End Function)
-                        End If
-                    End If
+                        End Function)
+                End If
 
-                    Dim candidateRoots As New List(Of String)()
-                    If Paths IsNot Nothing Then
-                        For Each p In Paths
-                            If String.IsNullOrWhiteSpace(p) Then Continue For
-                            Dim full As String
-                            Try
-                                full = helper.NormalizePath(System.IO.Path.GetFullPath(p))
-                            Catch
-                                Continue For
-                            End Try
-                            If IO.Directory.Exists(full) Then
-                                candidateRoots.Add(full)
-                            ElseIf IO.File.Exists(full) Then
-                                Dim parent = System.IO.Path.GetDirectoryName(full)
-                                If Not String.IsNullOrEmpty(parent) Then candidateRoots.Add(helper.NormalizePath(parent))
-                            End If
-                        Next
-                        candidateRoots = candidateRoots.Distinct(StringComparer.OrdinalIgnoreCase).ToList()
-                    End If
+                Dim relDirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
 
-                    Dim dirSeq As IEnumerable(Of String) = results.Dirs
-                    If skipRoots.Count > 0 Then
-                        dirSeq = dirSeq.Where(Function(p) Not skipRoots.Any(Function(r) helper.PathIsUnder(p, r)))
-                    End If
+                For Each f In fileSeq
+                    Dim parentRel As String = IO.Path.GetDirectoryName(f.RelativePath)
+                    If String.IsNullOrEmpty(parentRel) Then Continue For
 
-                    For Each absDir In dirSeq
-                        If StopFlag Then Exit Sub
+                    Dim parts = parentRel.Split(New Char() {IO.Path.DirectorySeparatorChar, IO.Path.AltDirectorySeparatorChar},
+                                                StringSplitOptions.RemoveEmptyEntries)
+                    If parts.Length = 0 Then Continue For
 
-                        Dim root = helper.FindBestRoot(absDir, candidateRoots)
-                        If root Is Nothing Then
-                            Continue For
-                        End If
-
-                        Dim relDir = helper.GetRelativePathWin(root, absDir)
-                        Dim targetParent = helper.EnsureDirectoryChain(d, root, relDir)
+                    Dim cur As String = parts(0)
+                    If Not relDirSet.Contains(cur) Then relDirSet.Add(cur)
+                    For i = 1 To parts.Length - 1
+                        cur = cur & IO.Path.DirectorySeparatorChar & parts(i)
+                        If Not relDirSet.Contains(cur) Then relDirSet.Add(cur)
                     Next
+                Next
 
-                    Dim fileSeq As IEnumerable(Of String) = results.Files
-                    If skipRoots.Count > 0 Then
-                        fileSeq = fileSeq.Where(Function(p) Not skipRoots.Any(Function(r) helper.PathIsUnder(p, r)))
-                    End If
-                    If My.Settings.LTFSWriter_SkipSymlink Then
-                        fileSeq = fileSeq.Where(Function(p)
-                                                    Try
-                                                        Dim fi As New IO.FileInfo(p)
-                                                        Return Not fi.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
-                                                    Catch
-                                                        Return False
-                                                    End Try
-                                                End Function)
-                    End If
+                Dim dirSeq As IEnumerable(Of String) = relDirSet.OrderBy(Function(s) s, StringComparer.OrdinalIgnoreCase)
 
-                    For Each absFile In fileSeq
-                        If StopFlag Then Exit Sub
+                For Each relDir In dirSeq
+                    If StopFlag Then Exit Sub
 
-                        Dim root = helper.FindBestRoot(absFile, candidateRoots)
-                        If root Is Nothing Then Continue For
+                    Dim targetParent = helper.EnsureDirectoryChain(d, "", relDir)
+                Next
 
-                        Dim relFile = helper.GetRelativePathWin(root, absFile)
-                        If String.IsNullOrEmpty(relFile) Then Continue For
+                For Each af In fileSeq
+                    If StopFlag Then Exit Sub
 
-                        Dim parentRel = System.IO.Path.GetDirectoryName(relFile)
-                        Dim targetDir = helper.EnsureDirectoryChain(d, root, If(parentRel, String.Empty))
+                    Dim parentRel = IO.Path.GetDirectoryName(af.RelativePath)
+                    Dim targetDir = helper.EnsureDirectoryChain(d, "", If(parentRel, String.Empty))
 
-                        Try
-                            Dim fi As New IO.FileInfo(absFile)
-                            AddFile(fi, targetDir, overwrite)
-                        Catch
-                        End Try
-                    Next
-                    StopFlag = False
-                    UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverwriteValue = 0
-                    RefreshDisplay()
-                    PrintMsg(My.Resources.ResText_AddFin)
-                    SetStatusLight(LWStatus.Succ)
-                    LockGUI(False)
-                End Sub)
+                    Try
+                        Dim fi As New IO.FileInfo(af.SourceFullPath)
+                        AddFile(fi, targetDir, overwrite)
+                    Catch
+                    End Try
+                Next
+
+                StopFlag = False
+                UnwrittenSizeOverrideValue = 0
+                UnwrittenCountOverwriteValue = 0
+                RefreshDisplay()
+                PrintMsg(My.Resources.ResText_AddFin)
+                SetStatusLight(LWStatus.Succ)
+                LockGUI(False)
+            End Sub)
         LockGUI()
         th.Start()
-
-
     End Sub
     Public Sub AddFileOrDir(d As ltfsindex.directory, Paths As String(), Optional ByVal overwrite As Boolean = False,
                             Optional ByVal exceptExtension As String() = Nothing)

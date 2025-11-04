@@ -435,7 +435,7 @@ Public Class GlobHelper
             End If
         End Get
     End Property
-    Public Function NormalizePath(p As String) As String
+    Public Shared Function NormalizePath(p As String) As String
         If String.IsNullOrWhiteSpace(p) Then Return p
         Dim s = p.Replace("/"c, "\"c)
         If s.Length > 3 AndAlso s.EndsWith("\", StringComparison.Ordinal) Then
@@ -444,7 +444,7 @@ Public Class GlobHelper
         Return s
     End Function
 
-    Public Function PathIsUnder(p As String, root As String) As Boolean
+    Public Shared Function PathIsUnder(p As String, root As String) As Boolean
         If String.IsNullOrEmpty(p) OrElse String.IsNullOrEmpty(root) Then Return False
         Dim pn = NormalizePath(p)
         Dim rn = NormalizePath(root)
@@ -472,7 +472,7 @@ Public Class GlobHelper
         Return best
     End Function
 
-    Public Function GetRelativePathWin(basePath As String, fullPath As String) As String
+    Public Shared Function GetRelativePathWin(basePath As String, fullPath As String) As String
         If String.IsNullOrWhiteSpace(basePath) OrElse String.IsNullOrWhiteSpace(fullPath) Then Return Nothing
         Dim b As String
         Dim f As String
@@ -551,254 +551,242 @@ Public Class GlobHelper
 
         Return found
     End Function
-
-    Public Class AddPlan
-        Public ReadOnly Dirs As New List(Of String)()
-        Public ReadOnly Files As New List(Of String)()
-    End Class
-
-    Public Class GlobCollector
-        Public Shared Function BuildMatcherFromMatchFile(patterns As IEnumerable(Of String),
-                                                  Optional caseSensitive As Boolean = False) As Matcher
-            If patterns Is Nothing Then
-                Throw New ArgumentNullException(NameOf(patterns))
-            End If
-
-            Dim comparison = If(caseSensitive,
-                               StringComparison.Ordinal,
-                               StringComparison.OrdinalIgnoreCase)
-            Dim matcher = New Matcher(comparison)
-
-            Dim lineNumber = 0
-            Dim hasIncludeRules = False
-
-            For Each rawLine As String In patterns
-                lineNumber += 1
-
-                ' 处理 null 输入
-                If rawLine Is Nothing Then Continue For
-
-                ' 去除首尾空白字符
-                Dim line = rawLine.Trim()
-
-                ' 跳过空行
-                If line.Length = 0 Then Continue For
-
-                ' 跳过注释行
-                If line.StartsWith("#") Then Continue For
-
-                Try
-                    Dim isExclude = False
-                    Dim pattern = line
-
-                    ' 处理转义字符
-                    If line.StartsWith("\") AndAlso line.Length > 1 Then
-                        Dim nextChar = line(1)
-
-                        ' 转义特殊字符: \!, \#, \\
-                        If nextChar = "!"c OrElse nextChar = "#"c OrElse nextChar = "\"c Then
-                            pattern = line.Substring(1)
-
-                            ' 如果是其他字符,保持原样(\ 不是转义符)
-                        End If
-
-                    ElseIf line.StartsWith("!") Then
-                        ' 排除规则
-                        isExclude = True
-                        pattern = line.Substring(1).TrimStart()
-
-                        ' 检查排除规则是否为空
-                        If pattern.Length = 0 Then
-                            ' 忽略空的排除规则
-                            Continue For
-                        End If
-                    End If
-
-                    ' 验证模式有效性
-                    If Not IsValidPattern(pattern) Then
-                        ' 可选:记录警告或跳过无效模式
-                        Continue For
-                    End If
-
-                    ' 添加到 Matcher
-                    If isExclude Then
-                        matcher.AddExclude(pattern)
-                    Else
-                        matcher.AddInclude(pattern)
-                        hasIncludeRules = True
-                    End If
-
-                Catch ex As Exception
-                    Continue For
-                End Try
-            Next
-
-            ' 如果没有任何包含规则,添加默认的 "匹配所有" 规则
-            ' 这样单独的排除规则才有意义
-            If Not hasIncludeRules Then
-                matcher.AddInclude("**/*")
-            End If
-
-            Return matcher
-        End Function
-
-        ''' <summary>
-        ''' 验证 glob 模式是否有效
-        ''' </summary>
-        Private Shared Function IsValidPattern(pattern As String) As Boolean
-            If String.IsNullOrEmpty(pattern) Then Return False
-
-            ' 检查是否包含非法字符(Windows路径)
-            Dim invalidChars = {"<"c, ">"c, "|"c, """"c, vbNullChar}
-            For Each ch In invalidChars
-                If pattern.Contains(ch) Then Return False
-            Next
-
-            ' 检查是否有不匹配的方括号
-            Dim openBrackets = pattern.Count(Function(c) c = "["c)
-            Dim closeBrackets = pattern.Count(Function(c) c = "]"c)
-            If openBrackets <> closeBrackets Then Return False
-
-            ' 检查是否有连续的星号(超过2个)
-            If pattern.Contains("***") Then Return False
-
-            Return True
-        End Function
-
-        ''' <summary>
-        ''' 从文件读取并构建 Matcher
-        ''' </summary>
-        ''' <param name="filePath">规则文件路径</param>
-        ''' <param name="encoding">文件编码(默认 UTF-8)</param>
-        ''' <param name="caseSensitive">是否区分大小写</param>
-        Public Shared Function BuildMatcherFromFile(filePath As String,
-                                             Optional encoding As Encoding = Nothing,
-                                             Optional caseSensitive As Boolean = False) As Matcher
-            If String.IsNullOrEmpty(filePath) Then
-                Throw New ArgumentNullException(NameOf(filePath))
-            End If
-
-            If Not File.Exists(filePath) Then
-                Throw New FileNotFoundException("Pattern file not found", filePath)
-            End If
-
-            Dim enc = If(encoding, Encoding.UTF8)
-            Dim lines = File.ReadAllLines(filePath, enc)
-
-            Return BuildMatcherFromMatchFile(lines, caseSensitive)
-        End Function
-
-        Public Shared Function BuildMatcherFromString(patternText As String,
-                                               Optional caseSensitive As Boolean = False) As Matcher
-            If String.IsNullOrEmpty(patternText) Then
-                Throw New ArgumentNullException(NameOf(patternText))
-            End If
-
-            Dim lines = patternText.Split({vbCrLf, vbLf, vbCr}, StringSplitOptions.None)
-            Return BuildMatcherFromMatchFile(lines, caseSensitive)
-        End Function
-
-        ''' <summary>
-        ''' 从输入路径收集匹配的文件和目录。目录链只收集到输入根,不会延伸到文件系统根目录。
-        ''' </summary>
-        Public Shared Function PlanAdd_ByFullPathInputs(inputs As IEnumerable(Of String),
-                                                 matcher As Matcher) As AddPlan
-            Dim plan As New AddPlan()
-            Dim fileSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
-            Dim dirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
-
-            Dim normalized = inputs.
-                Where(Function(p) Not String.IsNullOrWhiteSpace(p)).
-                Select(Function(p) EnsureLongPathPrefix(Path.GetFullPath(p))).
-                ToList()
-
-            For Each inputRoot In normalized
-                If Directory.Exists(inputRoot) Then
-                    ' 处理目录输入
-                    Dim results = matcher.GetResultsInFullPath(inputRoot)
-
-                    For Each f In results
-                        Dim ff = EnsureLongPathPrefix(f)
-                        If fileSet.Add(ff) Then
-                            ' 添加从文件到输入根的目录链
-                            AddDirChainToRoot(Path.GetDirectoryName(ff), inputRoot, dirSet)
-                        End If
-                    Next
-
-                ElseIf File.Exists(inputRoot) Then
-                    ' 处理单个文件输入
-                    Dim parentDir = Path.GetDirectoryName(inputRoot)
-                    If parentDir IsNot Nothing Then
-                        Dim results = matcher.GetResultsInFullPath(parentDir)
-                        Dim inputNormal = StripLongPrefix(inputRoot)
-
-                        ' 检查文件是否在匹配结果中
-                        Dim matched = results.Any(Function(r)
-                                                      Return r.Equals(inputNormal, StringComparison.OrdinalIgnoreCase)
-                                                  End Function)
-
-                        If matched Then
-                            If fileSet.Add(inputRoot) Then
-                                ' 添加从文件到父目录的目录链(这里父目录就是根)
-                                AddDirChainToRoot(parentDir, parentDir, dirSet)
-                            End If
-                        End If
-                    End If
-                End If
-            Next
-
-            plan.Files.AddRange(fileSet)
-            plan.Dirs.AddRange(dirSet)
-            plan.Files.Sort(StringComparer.OrdinalIgnoreCase)
-            plan.Dirs.Sort(StringComparer.OrdinalIgnoreCase)
-
-            Return plan
-        End Function
-
-        ''' <summary>
-        ''' 添加从 dir 到 rootDir 的目录链(不包含 rootDir 的父目录)
-        ''' </summary>
-        Private Shared Sub AddDirChainToRoot(dir As String, rootDir As String,
-                                       dirSet As HashSet(Of String))
-            If String.IsNullOrEmpty(dir) Then Exit Sub
-
-            Dim cur = EnsureLongPathPrefix(dir)
-            Dim root = EnsureLongPathPrefix(rootDir)
-
-            Dim rootNormal = StripLongPrefix(root).TrimEnd("\"c, "/"c).ToLower()
-
-            Do
-                If Not dirSet.Add(cur) Then Exit Do
-
-                Dim curNormal = StripLongPrefix(cur).TrimEnd("\"c, "/"c).ToLower()
-                If curNormal = rootNormal Then Exit Do
-                If curNormal.Length <= rootNormal.Length Then Exit Do
-
-                Dim parent = Path.GetDirectoryName(cur)
-                If String.IsNullOrEmpty(parent) Then Exit Do
-                If parent.Equals(cur, StringComparison.OrdinalIgnoreCase) Then Exit Do
-
-                cur = parent
-            Loop
-        End Sub
-
-        Private Shared Function EnsureLongPathPrefix(p As String) As String
-            If String.IsNullOrEmpty(p) Then Return p
-            If p.StartsWith("\\?\") Then Return p
-            If p.StartsWith("\\") Then
-                Return "\\?\UNC\" & p.Substring(2)
-            End If
-            Return "\\?\" & p
-        End Function
-
-        Private Shared Function StripLongPrefix(p As String) As String
-            If String.IsNullOrEmpty(p) Then Return p
-            If p.StartsWith("\\?\UNC\", StringComparison.OrdinalIgnoreCase) Then
-                Return "\\" & p.Substring(8)
-            ElseIf p.StartsWith("\\?\", StringComparison.OrdinalIgnoreCase) Then
-                Return p.Substring(4)
-            End If
-            Return p
-        End Function
-    End Class
 End Class
+
+Public Class AddFile
+    Public Property SourceFullPath As String
+    Public Property RelativePath As String
+End Class
+
+Public Class AddPlan
+    Public ReadOnly Dirs As New List(Of String)()
+    Public ReadOnly Files As New List(Of AddFile)()
+End Class
+
+Public Module GlobCollector
+    Public Function BuildMatcherFromStrings(patterns As IEnumerable(Of String),
+                                              Optional caseSensitive As Boolean = False) As Matcher
+        If patterns Is Nothing Then Throw New ArgumentNullException(NameOf(patterns))
+
+        Dim comparison = If(caseSensitive, StringComparison.Ordinal, StringComparison.OrdinalIgnoreCase)
+        Dim matcher = New Matcher(comparison)
+
+        Dim hasIncludeRules As Boolean = False
+        Dim lineNumber As Integer = 0
+
+        For Each rawLine In patterns
+            lineNumber += 1
+            If rawLine Is Nothing Then Continue For
+
+            Dim line = rawLine.Trim()
+            If line.Length = 0 Then Continue For
+            If line.StartsWith("#"c) Then Continue For
+
+            Try
+                Dim isExclude As Boolean = False
+                Dim pattern As String = line
+
+                ' 处理转义：\!, \#, \\ 前缀
+                If line.StartsWith("\"c) AndAlso line.Length > 1 Then
+                    Dim nextChar = line(1)
+                    If nextChar = "!"c OrElse nextChar = "#"c OrElse nextChar = "\"c Then
+                        pattern = line.Substring(1)
+                    End If
+                ElseIf line.StartsWith("!"c) Then
+                    isExclude = True
+                    pattern = line.Substring(1).TrimStart()
+                    If pattern.Length = 0 Then Continue For
+                End If
+
+                If Not IsValidPattern(pattern) Then Continue For
+
+                If isExclude Then
+                    matcher.AddExclude(pattern)
+                Else
+                    matcher.AddInclude(pattern)
+                    hasIncludeRules = True
+                End If
+
+            Catch
+                Continue For
+            End Try
+        Next
+
+        If Not hasIncludeRules Then
+            matcher.AddInclude("**/*")
+        End If
+
+        Return matcher
+    End Function
+
+    Public Function BuildMatcherFromFile(filePath As String,
+                                         Optional encoding As Encoding = Nothing,
+                                         Optional caseSensitive As Boolean = False) As Matcher
+        If String.IsNullOrWhiteSpace(filePath) Then Throw New ArgumentNullException(NameOf(filePath))
+        If Not File.Exists(filePath) Then Throw New FileNotFoundException("Pattern file not found.", filePath)
+
+        Dim enc = If(encoding, Encoding.UTF8)
+        Dim lines = File.ReadAllLines(filePath, enc)
+        Return BuildMatcherFromStrings(lines, caseSensitive)
+    End Function
+
+    Public Function BuildMatcherFromString(patternText As String,
+                                           Optional caseSensitive As Boolean = False) As Matcher
+        If String.IsNullOrWhiteSpace(patternText) Then Throw New ArgumentNullException(NameOf(patternText))
+        Dim lines = patternText.Split({vbCrLf, vbLf, vbCr}, StringSplitOptions.None)
+        Return BuildMatcherFromStrings(lines, caseSensitive)
+    End Function
+
+    Private Function IsValidPattern(pattern As String) As Boolean
+        If String.IsNullOrEmpty(pattern) Then Return False
+
+        Dim invalidChars = {"<"c, ">"c, "|"c, """"c, vbNullChar}
+        For Each ch In invalidChars
+            If pattern.Contains(ch) Then Return False
+        Next
+
+        ' 方括号匹配
+        Dim openBrackets = pattern.Count(Function(c) c = "["c)
+        Dim closeBrackets = pattern.Count(Function(c) c = "]"c)
+        If openBrackets <> closeBrackets Then Return False
+
+        ' 连续 * 超过 2
+        If pattern.Contains("***") Then Return False
+
+        Return True
+    End Function
+
+    Public Function PlanAdd_ByFullPathInputs(inputs As IEnumerable(Of String),
+                                             matcher As Matcher) As AddPlan
+        If inputs Is Nothing Then Throw New ArgumentNullException(NameOf(inputs))
+        If matcher Is Nothing Then Throw New ArgumentNullException(NameOf(matcher))
+
+        Dim plan As New AddPlan()
+
+        Dim seenSource As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        Dim seenRelative As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        Dim dirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+
+        Dim normalized = inputs.
+            Where(Function(p) Not String.IsNullOrWhiteSpace(p)).
+            Select(Function(p) NormalizeFullPath(p)).
+            ToList()
+
+        For Each inputPath In normalized
+            If Directory.Exists(inputPath) Then
+                Dim baseDirForRel = Path.GetDirectoryName(TrailingTrimSeparators(inputPath))
+                If String.IsNullOrEmpty(baseDirForRel) Then
+                    Continue For
+                End If
+
+                Dim matched = matcher.GetResultsInFullPath(inputPath)
+                For Each fileFull In matched
+                    If Not File.Exists(fileFull) Then Continue For
+                    Dim rel = GetRelativePathWin(baseDirForRel, fileFull)
+                    rel = NormalizeRelativeSeparators(rel)
+
+                    If rel.StartsWith(Path.DirectorySeparatorChar) OrElse rel.StartsWith(Path.AltDirectorySeparatorChar) Then
+                        rel = rel.Substring(1)
+                    End If
+                    If String.IsNullOrEmpty(rel) Then Continue For
+
+                    If Not seenRelative.Add(rel) Then Continue For
+                    If Not seenSource.Add(fileFull) Then Continue For
+
+                    plan.Files.Add(New AddFile With {
+                        .SourceFullPath = fileFull,
+                        .RelativePath = rel
+                    })
+
+                    AddParentDirsOfRelativePath(rel, dirSet)
+                Next
+
+            ElseIf File.Exists(inputPath) Then
+                Dim parentDir = Path.GetDirectoryName(inputPath)
+                If String.IsNullOrEmpty(parentDir) Then Continue For
+
+                Dim relForMatch = GetRelativePathWin(parentDir, inputPath)
+                relForMatch = NormalizeRelativeSeparators(relForMatch)
+
+                If matcher.Match(relForMatch).HasMatches Then
+                    Dim relDisplay = Path.GetFileName(inputPath)
+                    If String.IsNullOrEmpty(relDisplay) Then Continue For
+
+                    If Not seenRelative.Add(relDisplay) Then Continue For
+                    If Not seenSource.Add(inputPath) Then Continue For
+
+                    plan.Files.Add(New AddFile With {
+                        .SourceFullPath = inputPath,
+                        .RelativePath = relDisplay
+                    })
+                End If
+            Else
+                Continue For
+            End If
+        Next
+
+        plan.Dirs.AddRange(dirSet.OrderBy(Function(s) s, StringComparer.OrdinalIgnoreCase))
+        plan.Files.Sort(Function(a, b) StringComparer.OrdinalIgnoreCase.Compare(a.RelativePath, b.RelativePath))
+
+        Return plan
+    End Function
+
+    Private Function NormalizeFullPath(p As String) As String
+        Dim full = Path.GetFullPath(p)
+        Return TrailingTrimSeparators(full)
+    End Function
+
+    Private Function TrailingTrimSeparators(p As String) As String
+        If String.IsNullOrEmpty(p) Then Return p
+        If Path.GetPathRoot(p).Equals(p, StringComparison.OrdinalIgnoreCase) Then
+            Return p
+        End If
+        Return p.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+    End Function
+
+    Public Function GetRelativePathWin(baseDir As String, targetPath As String) As String
+        If String.IsNullOrEmpty(baseDir) Then Throw New ArgumentNullException(NameOf(baseDir))
+        If String.IsNullOrEmpty(targetPath) Then Throw New ArgumentNullException(NameOf(targetPath))
+
+        Dim baseFixed = baseDir
+        If Not baseFixed.EndsWith(Path.DirectorySeparatorChar) AndAlso Not baseFixed.EndsWith(Path.AltDirectorySeparatorChar) Then
+            baseFixed &= Path.DirectorySeparatorChar
+        End If
+
+        Dim baseUri As New Uri(PathToUri(baseFixed))
+        Dim targetUri As New Uri(PathToUri(targetPath))
+
+        Dim relUri = baseUri.MakeRelativeUri(targetUri)
+        Dim rel = Uri.UnescapeDataString(relUri.ToString())
+
+        rel = rel.Replace("/"c, Path.DirectorySeparatorChar)
+        Return rel
+    End Function
+
+    Private Function PathToUri(p As String) As String
+        Dim u = New Uri(p, UriKind.Absolute)
+        Return u.AbsoluteUri
+    End Function
+
+    Private Function NormalizeRelativeSeparators(rel As String) As String
+        If String.IsNullOrEmpty(rel) Then Return rel
+        Return rel.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+    End Function
+
+    Private Sub AddParentDirsOfRelativePath(relativePath As String, dirSet As HashSet(Of String))
+        Dim dir = Path.GetDirectoryName(relativePath)
+        If String.IsNullOrEmpty(dir) Then Exit Sub
+
+        Dim parts = dir.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).
+                         Where(Function(s) Not String.IsNullOrEmpty(s)).
+                         ToArray()
+        If parts.Length = 0 Then Exit Sub
+
+        Dim cur As String = parts(0)
+        dirSet.Add(cur)
+        For i = 1 To parts.Length - 1
+            cur = cur & Path.DirectorySeparatorChar & parts(i)
+            dirSet.Add(cur)
+        Next
+    End Sub
+End Module
