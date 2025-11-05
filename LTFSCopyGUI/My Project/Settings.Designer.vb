@@ -276,7 +276,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - SHA256"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA256")>
         Public Property LTFSWriter_ChecksumEnabled_SHA256() As Boolean
@@ -290,7 +290,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - SHA512"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_SHA512")>
         Public Property LTFSWriter_ChecksumEnabled_SHA512() As Boolean
@@ -304,7 +304,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("校验开关 - CRC32"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_ChecksumEnabled_CRC32")>
         Public Property LTFSWriter_ChecksumEnabled_CRC32() As Boolean
