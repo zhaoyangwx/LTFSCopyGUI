@@ -157,6 +157,9 @@
   <data name="ButtonLoadThreaded.Text" xml:space="preserve">
     <value>Load threaded</value>
   </data>
+  <data name="ButtonEject.Location" type="System.Drawing.Point, System.Drawing">
+    <value>777, 607</value>
+  </data>
   <data name="ButtonEject.Text" xml:space="preserve">
     <value>Eject</value>
   </data>
@@ -193,6 +196,9 @@
   <data name="不读取索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Disable index autoload</value>
   </data>
+  <data name="ButtonUnthread.Location" type="System.Drawing.Point, System.Drawing">
+    <value>696, 607</value>
+  </data>
   <data name="ButtonUnthread.Text" xml:space="preserve">
     <value>Unthread</value>
   </data>
@@ -206,18 +212,12 @@
     <value>Load (not threaded)</value>
   </data>
   <data name="CheckBoxDebugPanel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>939, 10</value>
+    <value>1086, 12</value>
   </data>
   <data name="CheckBoxDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
     <value>132, 16</value>
   </data>
   <data name="CheckBoxDebugPanel.Text" xml:space="preserve">
-    <value>SCSI Command Panel</value>
-  </data>
-  <data name="LabelDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>113, 12</value>
-  </data>
-  <data name="LabelDebugPanel.Text" xml:space="preserve">
     <value>SCSI Command Panel</value>
   </data>
   <data name="保存ToolStripMenuItem.Text" xml:space="preserve">
@@ -226,8 +226,11 @@
   <data name="删除ToolStripMenuItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
-  <data name="ContextMenuStripSend.Size" type="System.Drawing.Size, System.Drawing">
-    <value>114, 54</value>
+  <data name="LabelDebugPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>113, 12</value>
+  </data>
+  <data name="LabelDebugPanel.Text" xml:space="preserve">
+    <value>SCSI Command Panel</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
