@@ -298,8 +298,8 @@ Partial Class LTFSWriter
         '
         '提取ToolStripMenuItem1
         '
-        Me.提取ToolStripMenuItem1.Name = "提取ToolStripMenuItem1"
         resources.ApplyResources(Me.提取ToolStripMenuItem1, "提取ToolStripMenuItem1")
+        Me.提取ToolStripMenuItem1.Name = "提取ToolStripMenuItem1"
         '
         '校验ToolStripMenuItem1
         '
@@ -788,8 +788,8 @@ Partial Class LTFSWriter
         '
         'S60ToolStripMenuItem
         '
-        Me.S60ToolStripMenuItem.Name = "S60ToolStripMenuItem"
         resources.ApplyResources(Me.S60ToolStripMenuItem, "S60ToolStripMenuItem")
+        Me.S60ToolStripMenuItem.Name = "S60ToolStripMenuItem"
         '
         'Min5ToolStripMenuItem
         '
@@ -952,8 +952,8 @@ Partial Class LTFSWriter
         '
         '无更改ToolStripMenuItem1
         '
-        Me.无更改ToolStripMenuItem1.Name = "无更改ToolStripMenuItem1"
         resources.ApplyResources(Me.无更改ToolStripMenuItem1, "无更改ToolStripMenuItem1")
+        Me.无更改ToolStripMenuItem1.Name = "无更改ToolStripMenuItem1"
         '
         '平衡ToolStripMenuItem1
         '
@@ -1047,8 +1047,8 @@ Partial Class LTFSWriter
         '
         '速度下限ToolStripMenuItem
         '
-        Me.速度下限ToolStripMenuItem.Name = "速度下限ToolStripMenuItem"
         resources.ApplyResources(Me.速度下限ToolStripMenuItem, "速度下限ToolStripMenuItem")
+        Me.速度下限ToolStripMenuItem.Name = "速度下限ToolStripMenuItem"
         '
         '速度上限ToolStripMenuItem
         '
@@ -1078,8 +1078,8 @@ Partial Class LTFSWriter
         '
         '无更改ToolStripMenuItem
         '
-        Me.无更改ToolStripMenuItem.Name = "无更改ToolStripMenuItem"
         resources.ApplyResources(Me.无更改ToolStripMenuItem, "无更改ToolStripMenuItem")
+        Me.无更改ToolStripMenuItem.Name = "无更改ToolStripMenuItem"
         '
         '平衡ToolStripMenuItem
         '
@@ -1337,11 +1337,11 @@ Partial Class LTFSWriter
         Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
         Me.ToolStripButton6.Name = "ToolStripButton6"
         '
-        'ToolStripButton11
+        'ToolStripButton3
         '
-        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton11")
+        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
         Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton3.Name = "ToolStripButton11"
+        Me.ToolStripButton3.Name = "ToolStripButton3"
         '
         'Timer2
         '
