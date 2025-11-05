@@ -234,7 +234,7 @@ Partial Class LTFSWriter
         Me.ToolStripButton4 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton5 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton6 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton11 = New System.Windows.Forms.ToolStripButton()
+        Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel6 = New System.Windows.Forms.ToolStripStatusLabel()
@@ -853,13 +853,13 @@ Partial Class LTFSWriter
         '索引ToolStripMenuItem
         '
         Me.索引ToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.读取索引ToolStripMenuItem, Me.读取数据区索引ToolStripMenuItem, Me.加载外部索引ToolStripMenuItem, Me.备份当前索引ToolStripMenuItem})
-        Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
         resources.ApplyResources(Me.索引ToolStripMenuItem, "索引ToolStripMenuItem")
+        Me.索引ToolStripMenuItem.Name = "索引ToolStripMenuItem"
         '
         '读取索引ToolStripMenuItem
         '
-        Me.读取索引ToolStripMenuItem.Name = "读取索引ToolStripMenuItem"
         resources.ApplyResources(Me.读取索引ToolStripMenuItem, "读取索引ToolStripMenuItem")
+        Me.读取索引ToolStripMenuItem.Name = "读取索引ToolStripMenuItem"
         '
         '读取数据区索引ToolStripMenuItem
         '
@@ -921,8 +921,8 @@ Partial Class LTFSWriter
         'WA0ToolStripMenuItem
         '
         Me.WA0ToolStripMenuItem.CheckOnClick = True
-        Me.WA0ToolStripMenuItem.Name = "WA0ToolStripMenuItem"
         resources.ApplyResources(Me.WA0ToolStripMenuItem, "WA0ToolStripMenuItem")
+        Me.WA0ToolStripMenuItem.Name = "WA0ToolStripMenuItem"
         '
         'WA1ToolStripMenuItem
         '
@@ -1143,18 +1143,18 @@ Partial Class LTFSWriter
         '
         '清除当前索引后数据ToolStripMenuItem
         '
-        Me.清除当前索引后数据ToolStripMenuItem.Name = "清除当前索引后数据ToolStripMenuItem"
         resources.ApplyResources(Me.清除当前索引后数据ToolStripMenuItem, "清除当前索引后数据ToolStripMenuItem")
+        Me.清除当前索引后数据ToolStripMenuItem.Name = "清除当前索引后数据ToolStripMenuItem"
         '
         '回滚ToolStripMenuItem
         '
-        Me.回滚ToolStripMenuItem.Name = "回滚ToolStripMenuItem"
         resources.ApplyResources(Me.回滚ToolStripMenuItem, "回滚ToolStripMenuItem")
+        Me.回滚ToolStripMenuItem.Name = "回滚ToolStripMenuItem"
         '
         '查找指定位置前的索引ToolStripMenuItem
         '
-        Me.查找指定位置前的索引ToolStripMenuItem.Name = "查找指定位置前的索引ToolStripMenuItem"
         resources.ApplyResources(Me.查找指定位置前的索引ToolStripMenuItem, "查找指定位置前的索引ToolStripMenuItem")
+        Me.查找指定位置前的索引ToolStripMenuItem.Name = "查找指定位置前的索引ToolStripMenuItem"
         '
         '数据ToolStripMenuItem
         '
@@ -1180,8 +1180,8 @@ Partial Class LTFSWriter
         '
         '设置密钥ToolStripMenuItem
         '
-        Me.设置密钥ToolStripMenuItem.Name = "设置密钥ToolStripMenuItem"
         resources.ApplyResources(Me.设置密钥ToolStripMenuItem, "设置密钥ToolStripMenuItem")
+        Me.设置密钥ToolStripMenuItem.Name = "设置密钥ToolStripMenuItem"
         '
         '设置密码ToolStripMenuItem
         '
@@ -1221,8 +1221,8 @@ Partial Class LTFSWriter
         '
         '加锁ToolStripMenuItem
         '
-        Me.加锁ToolStripMenuItem.Name = "加锁ToolStripMenuItem"
         resources.ApplyResources(Me.加锁ToolStripMenuItem, "加锁ToolStripMenuItem")
+        Me.加锁ToolStripMenuItem.Name = "加锁ToolStripMenuItem"
         '
         '解锁ToolStripMenuItem
         '
@@ -1303,7 +1303,7 @@ Partial Class LTFSWriter
         'ToolStrip1
         '
         resources.ApplyResources(Me.ToolStrip1, "ToolStrip1")
-        Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton11})
+        Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton3})
         Me.ToolStrip1.Name = "ToolStrip1"
         Me.ToolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional
         '
@@ -1339,9 +1339,9 @@ Partial Class LTFSWriter
         '
         'ToolStripButton11
         '
-        resources.ApplyResources(Me.ToolStripButton11, "ToolStripButton11")
-        Me.ToolStripButton11.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton11.Name = "ToolStripButton11"
+        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton11")
+        Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
+        Me.ToolStripButton3.Name = "ToolStripButton11"
         '
         'Timer2
         '
@@ -1579,6 +1579,7 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStrip1 As ToolStrip
     Friend WithEvents ToolStripButton1 As ToolStripButton
     Friend WithEvents ToolStripButton2 As ToolStripButton
+    Friend WithEvents ToolStripButton3 As ToolStripButton
     Friend WithEvents ToolStripButton4 As ToolStripButton
     Friend WithEvents ImageList1 As ImageList
     Friend WithEvents ToolStripButton5 As ToolStripButton
@@ -1669,24 +1670,10 @@ Partial Class LTFSWriter
     Friend WithEvents 启动iSCSI服务ToolStripMenuItem As ToolStripMenuItem
 
     Public Sub New()
-        Me.SuspendLayout()
-        Me.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+        DisplayHelper.BeforeInitializeComponent(Me)
         ' 此调用是设计器所必需的。
         InitializeComponent()
-
         ' 在 InitializeComponent() 调用之后添加任何初始化。
-        Me.PerformAutoScale()
-        Me.Font = DisplayHelper.DisplayFont
-        For Each col As ColumnHeader In Me.ListView1.Columns
-            col.Width *= DisplayHelper.ScreenScale
-        Next
-        ToolStrip1.ImageScalingSize = New Size(16 * DisplayHelper.ScreenScale, 16 * DisplayHelper.ScreenScale)
-        For Each tb As ToolStripButton In ToolStrip1.Items
-            tb.Width *= DisplayHelper.ScreenScale
-            tb.Height *= DisplayHelper.ScreenScale
-        Next
-        Me.ResumeLayout()
+        DisplayHelper.AfterInitializeComponent(Me)
     End Sub
-
-    Friend WithEvents ToolStripButton11 As ToolStripButton
 End Class
