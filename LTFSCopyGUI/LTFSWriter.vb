@@ -1493,6 +1493,7 @@ Public Class LTFSWriter
                     If Not GenStr0.ToUpper().Contains("T10K") Then
                         GenStr = $"L{Gen}"
                     Else
+                        Gen = Integer.Parse(GenStr0.Last)
                         GenStr = $"T{Gen}"
                     End If
                     If Gen = 7 OrElse Gen = 8 Then
