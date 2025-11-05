@@ -6082,7 +6082,7 @@ Public Class LTFSWriter
         备份当前索引ToolStripMenuItem_Click(sender, e)
     End Sub
 
-    Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton11.Click
+    Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton3.Click
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UIE, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim th As New Threading.Thread(
                 Sub()

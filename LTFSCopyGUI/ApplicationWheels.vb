@@ -1,5 +1,6 @@
 ﻿Imports System.ComponentModel
 Imports System.IO
+Imports System.Reflection
 Imports System.Runtime.InteropServices
 Imports System.Runtime.Serialization
 Imports System.Text
@@ -813,5 +814,95 @@ Public Class DisplayHelper
             _font = value
         End Set
     End Property
+    Public Shared Sub BeforeInitializeComponent(frm As Form)
+        frm.SuspendLayout()
+        frm.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
+    End Sub
+    Public Shared Sub AfterInitializeComponent(frm As Form)
+        frm.PerformAutoScale()
+        frm.Font = DisplayFont
 
+        Dim cchk As New List(Of Control)
+        For Each c As Control In frm.Controls
+            cchk.Add(c)
+        Next
+        Dim clist As New List(Of Control)
+        While cchk.Count > 0
+            Dim cchk2 As New List(Of Control)
+            For Each c As Control In cchk
+                For Each c2 As Control In c.Controls
+                    cchk2.Add(c2)
+                Next
+            Next
+            clist.AddRange(cchk)
+            cchk = cchk2
+        End While
+
+        For Each f As Reflection.FieldInfo In frm.GetType().GetFields(
+                Reflection.BindingFlags.Public Or
+                Reflection.BindingFlags.NonPublic Or
+                Reflection.BindingFlags.Instance Or
+                Reflection.BindingFlags.Static)
+            Dim o As Object = f.GetValue(frm)
+            If TypeOf o Is ContextMenuStrip Then clist.Add(o)
+        Next
+
+        For Each c As Control In clist
+            If TypeOf c Is ListView Then
+                For Each col As ColumnHeader In DirectCast(c, ListView).Columns
+                    col.Width *= ScreenScale
+                Next
+            ElseIf TypeOf c Is ToolStrip Then
+                DirectCast(c, ToolStrip).ImageScalingSize = New Size(16 * ScreenScale, 16 * ScreenScale)
+                Dim items As New List(Of ToolStripMenuItem)
+                Dim icd As New List(Of ToolStripMenuItem)
+                For Each itm As ToolStripItem In DirectCast(c, ToolStrip).Items
+                    If TypeOf itm Is ToolStripMenuItem Then
+                        icd.Add(itm)
+                    ElseIf TypeOf itm Is ToolStripButton Then
+                        itm.Width *= DisplayHelper.ScreenScale
+                        itm.Height *= DisplayHelper.ScreenScale
+                    End If
+                Next
+                While icd.Count > 0
+                    Dim icd2 As New List(Of ToolStripMenuItem)
+                    For Each itm As ToolStripMenuItem In icd
+                        For Each ditm As ToolStripItem In itm.DropDownItems
+                            If TypeOf ditm Is ToolStripMenuItem Then
+                                icd2.Add(ditm)
+                            ElseIf TypeOf ditm Is ToolStripButton Then
+                                ditm.Width *= DisplayHelper.ScreenScale
+                                ditm.Height *= DisplayHelper.ScreenScale
+                            End If
+                        Next
+                    Next
+                    items.AddRange(icd)
+                    icd = icd2
+                End While
+                For Each itm As ToolStripMenuItem In items
+                    If itm.DropDown IsNot Nothing Then
+                        itm.DropDown.ImageScalingSize = New Size(16 * ScreenScale, 16 * ScreenScale)
+                    End If
+                Next
+            End If
+        Next
+
+        frm.ResumeLayout(True)
+    End Sub
+End Class
+Public Class RichMenuStrip
+    Inherits System.Windows.Forms.MenuStrip
+    Private Overloads Sub RescaleConstantsForDpi(deviceDpiOld As Integer, deviceDpiNew As Integer)
+        ' Use reflection to invoke the internal ResetScaling method
+        Dim resetScalingMethod = GetType(System.Windows.Forms.MenuStrip).GetMethod("ResetScaling", BindingFlags.NonPublic Or BindingFlags.Instance)
+        If (resetScalingMethod IsNot Nothing) Then
+            resetScalingMethod.Invoke(Me, {deviceDpiNew})
+        End If
+    End Sub
+    Public Sub New(container As IContainer)
+        RescaleConstantsForDpi(96, DeviceDpi)
+    End Sub
+    Public Sub New()
+        RescaleConstantsForDpi(96, DeviceDpi)
+    End Sub
 End Class
