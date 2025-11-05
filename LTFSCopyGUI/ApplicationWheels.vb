@@ -853,6 +853,7 @@ Public Class DisplayHelper
                     col.Width *= ScreenScale
                 Next
             ElseIf TypeOf c Is ToolStrip Then
+                If ScreenScale <> 1 AndAlso TypeOf c Is MenuStrip OrElse TypeOf c Is ContextMenuStrip Then DirectCast(c, ToolStrip).Renderer = New RichMenuStrip.HiDPIRenderer()
                 DirectCast(c, ToolStrip).ImageScalingSize = New Size(16 * ScreenScale, 16 * ScreenScale)
                 Dim items As New List(Of ToolStripMenuItem)
                 Dim icd As New List(Of ToolStripMenuItem)
@@ -905,4 +906,26 @@ Public Class RichMenuStrip
     Public Sub New()
         RescaleConstantsForDpi(96, DeviceDpi)
     End Sub
+    Public Class HiDPIRenderer
+        Inherits ToolStripProfessionalRenderer
+
+        Protected Overrides Sub OnRenderItemCheck(e As ToolStripItemImageRenderEventArgs)
+            Dim g = e.Graphics
+            g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
+
+            Dim size = CInt(16 * DisplayHelper.ScreenScale)
+
+            Dim rect = New Rectangle(e.ImageRectangle.X, e.ImageRectangle.Y, size, size)
+            Dim rect2 As New Rectangle(rect.X + rect.Width / 8, rect.Y + rect.Height / 8, rect.Width * 0.75, rect.Height * 0.75)
+            Using pen As New Pen(Color.Black, 1.5 * DisplayHelper.ScreenScale)
+                g.FillRectangle(New SolidBrush(Color.FromArgb(181, 215, 243)), rect)
+                g.DrawRectangle(New Pen(Color.FromArgb(36, 138, 220)), rect)
+                g.DrawLines(pen, {
+                    New Point(rect2.Left + size * 0.75 * 0.2, rect2.Top + size * 0.75 * 0.55),
+                    New Point(rect2.Left + size * 0.75 * 0.45, rect2.Top + size * 0.75 * 0.8),
+                    New Point(rect2.Left + size * 0.75 * 0.85, rect2.Top + size * 0.75 * 0.2)
+                })
+            End Using
+        End Sub
+    End Class
 End Class
