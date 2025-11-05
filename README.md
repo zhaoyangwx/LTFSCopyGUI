@@ -4,6 +4,8 @@
 
 ## LTFS文件排序复制工具
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/zhaoyangwx/LTFSCopyGUI)
+
 ### 主要功能
 
 #### LTFSCopyGUI.exe：索引排序生成复制脚本
@@ -73,4 +75,3 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 点击链接直接打开
 
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/zhaoyangwx/LTFSCopyGUI)
