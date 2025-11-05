@@ -71,3 +71,6 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 ## 如何赞助
     【闲鱼】https://m.tb.cn/h.SbQMPCg?tk=6c1m4s3ww08 CZ007 「我在闲鱼发布了【LTFSCopyGUI软件商用许可/技术支持/个性化冠名服务】」
 点击链接直接打开
+
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/zhaoyangwx/LTFSCopyGUI)
