@@ -1489,7 +1489,7 @@ Public Class LTFSWriter
                 Dim GenPage As TapeUtils.PageData.DataItem.DynamicParamPage = VolumeStatisticsLogPage.TryGetPage(&H45)
                 If GenPage IsNot Nothing Then
                     Dim GenStr0 As String = GenPage.GetString()
-                    Gen = Integer.Parse(GenStr0.Last)
+                    Integer.TryParse(IOManager.ExtractNumericString(GenStr0), Gen)
                     If Not GenStr0.ToUpper().Contains("T10K") Then
                         GenStr = $"L{Gen}"
                     Else

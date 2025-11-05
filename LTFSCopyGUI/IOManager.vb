@@ -14,6 +14,7 @@ Imports LTFSCopyGUI.IOManager
 Imports System.Xml.Serialization
 Imports SetupAPIHelper
 Imports System.Buffers
+Imports System.Text.RegularExpressions
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
 Public Class IOManager
@@ -47,7 +48,17 @@ Public Class IOManager
             Return (l / 1024 ^ 5).ToString("F2") & " PiB"
         End If
     End Function
+    Public Shared Function ExtractNumericString(input As String) As String
+        If String.IsNullOrEmpty(input) Then Return String.Empty
 
+        Dim m As Match = Regex.Match(input, "\d*\.?\d+")
+
+        If m.Success Then
+            Return m.Value
+        Else
+            Return String.Empty
+        End If
+    End Function
     Public Shared Function SHA1(filename As String, LogFile As String()) As String
         If LogFile.Contains("[hash] " & filename) Then
 
