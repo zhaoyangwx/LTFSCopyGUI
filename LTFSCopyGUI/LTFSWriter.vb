@@ -719,7 +719,10 @@ Public Class LTFSWriter
     Public Property ErrLogRateHistory As Double
         Set(value As Double)
             _ErrLogRateHistory = value
-            BeginInvoke(Sub() ToolStripStatusLabelErrLog.Text = $"{value.ToString("f2")}")
+            BeginInvoke(Sub()
+                            ToolStripStatusLabelErrLog.Text = $"{value.ToString("f2")}"
+                            ToolStripStatusLabelErrLog.ForeColor = ErrRateHelper.GetColor(ToolStripStatusLabelErrLog.Text, 0.6)
+                        End Sub)
             BeginInvoke(Sub()
                             Dim result As New StringBuilder
                             result.Append($"Max Error Rate Log: {value.ToString("f2")}")

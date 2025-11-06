@@ -1618,12 +1618,7 @@ Public Class LTFSConfigurator
         End If
 
     End Sub
-    Public Function MixColor(col1 As Color, col2 As Color, val As Double, min As Double, max As Double) As Color
-        If val <= min Then Return col1
-        If val >= max Then Return col2
-        Dim ratio As Double = (val - min) / (max - min)
-        Return Color.FromArgb(col1.R * (1 - ratio) + col2.R * ratio, col1.G * (1 - ratio) + col2.G * ratio, col1.B * (1 - ratio) + col2.B * ratio)
-    End Function
+
     Public Sub FormatLogRateColor(textbox As RichTextBox, StartIndex As Integer, infostr As String)
         Dim seglen As Integer = 7
         Dim lineStart As Integer = textbox.GetFirstCharIndexFromLine(textbox.Lines.Length - 2) + StartIndex
@@ -1634,28 +1629,10 @@ Public Class LTFSConfigurator
         Static col4 As Color = Color.FromArgb(255, 71, 73)
 
         For i As Integer = 0 To infostr.Length \ seglen - 1
-            Dim segvalue As String = infostr.Substring(i * seglen, seglen).Replace(" ", "")
             Dim textcol As Color = Color.Black
             Dim bkgcol As Color = Color.Transparent
-            If segvalue.Length > 0 Then
-                Dim errratelog As Double = 0
-                If segvalue.Length = 5 Then
-                    Double.TryParse(segvalue, errratelog)
-                End If
-
-                If segvalue = "-Inf" OrElse errratelog <= -6 Then
-                    bkgcol = col1
-                ElseIf errratelog <= -5 Then
-                    bkgcol = MixColor(col1, col2, errratelog, -6, -5)
-                ElseIf errratelog <= -4 Then
-                    bkgcol = MixColor(col2, col3, errratelog, -5, -4)
-                ElseIf errratelog <= -3.5 Then
-                    bkgcol = MixColor(col3, col4, errratelog, -4, -3.5)
-                ElseIf errratelog > -3.5 Then
-                    bkgcol = col4
-                End If
-            Else
-            End If
+            Dim segvalue As String = infostr.Substring(i * seglen, seglen).Replace(" ", "")
+            bkgcol = ErrRateHelper.GetColor(segvalue)
             Dim chid As Integer = i
             textbox.Invoke(Sub()
                                textbox.SelectionStart = lineStart + chid * seglen
