@@ -13,6 +13,7 @@ Imports Fsp.Interop
 Imports Microsoft.Extensions.FileSystemGlobbing
 Imports Microsoft.WindowsAPICodePack.Dialogs
 Imports Microsoft.WindowsAPICodePack.Shell
+Imports ZstdSharp
 
 Public Class LTFSWriter
     <Category("LTFSWriter")>
@@ -5189,20 +5190,36 @@ Public Class LTFSWriter
                         CurrentHeight = -1
                     End If
                     PrintMsg(My.Resources.ResText_SvBak)
-                    Dim FileName As String = ""
+                    Dim baseBarcode As String = If(String.IsNullOrWhiteSpace(Barcode), "Unknown", Barcode.Trim())
+                    Dim targetDir As String = IO.Path.Combine(Application.StartupPath, "schema", baseBarcode, "Load")
+                    If Not IO.Directory.Exists(targetDir) Then IO.Directory.CreateDirectory(targetDir)
+                    Dim fileName As String = ""
                     If Barcode <> "" Then
-                        FileName = Barcode
-                    Else
-                        If schema IsNot Nothing Then
-                            FileName = schema.volumeuuid.ToString()
-                        End If
+                        fileName = Barcode
+                    ElseIf schema IsNot Nothing Then
+                        fileName = schema.volumeuuid.ToString()
                     End If
-                    Dim outputfile As String = $"schema\LTFSIndex_Load_{FileName}_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
-                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
-                    End If
-                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-                    IO.File.Move(tmpf, outputfile)
+                    Dim latestSchemaPath As String = IO.Path.Combine(targetDir, $"LTFSIndex_Load_{fileName}_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
+                    IO.File.Move(tmpf, latestSchemaPath)
+                    Try
+                        For Each oldSchema In IO.Directory.GetFiles(targetDir, "*.schema", IO.SearchOption.TopDirectoryOnly)
+                            If String.Equals(oldSchema, latestSchemaPath, StringComparison.OrdinalIgnoreCase) Then Continue For
+
+                            Dim zstPath As String = oldSchema & ".zst"
+
+                            Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                                Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
+                                    Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                        inFs.CopyTo(zs)
+                                    End Using
+                                End Using
+                            End Using
+
+                            IO.File.Delete(oldSchema)
+                        Next
+                    Catch
+                        PrintMsg("ZSTD compress error", LogOnly:=True)
+                    End Try
                     While True
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
@@ -5276,15 +5293,42 @@ Public Class LTFSWriter
 
                     TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
-                    Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
-                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
-                    End If
-                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
+                    If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
+                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(My.Resources.ResText_AISucc)
+
+                    Try
+                        Dim targetDir As String = outDir
+                        Dim allSchemas = IO.Directory.GetFiles(targetDir, "*.schema", IO.SearchOption.TopDirectoryOnly)
+                        If allSchemas IsNot Nothing AndAlso allSchemas.Length > 0 Then
+                            Dim latestSchemaPath As String =
+                                    allSchemas.OrderByDescending(Function(p) IO.File.GetLastWriteTimeUtc(p)).First()
+
+                            For Each oldSchema In allSchemas
+                                If String.Equals(oldSchema, latestSchemaPath, StringComparison.OrdinalIgnoreCase) Then Continue For
+
+                                Dim zstPath As String = oldSchema & ".zst"
+
+                                If Not IO.File.Exists(zstPath) Then
+                                    Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                                        Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
+                                            Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                                inFs.CopyTo(zs)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End If
+
+                                Try : IO.File.Delete(oldSchema) : Catch : End Try
+                            Next
+                        End If
+                    Catch
+                    End Try
+
                     While True
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
@@ -5388,32 +5432,116 @@ Public Class LTFSWriter
             LoadIndexFile(OpenFileDialog1.FileName)
         End If
     End Sub
+    'Public Function AutoDump() As String
+    '    SetStatusLight(LWStatus.Busy)
+    '    Dim FileName As String = Barcode
+    '    If FileName = "" Then FileName = schema.volumeuuid.ToString()
+    '    Dim outputfile As String = $"schema\LTFSIndex_Autosave_{FileName _
+    '        }_GEN{schema.generationnumber _
+    '        }_P{schema.location.partition _
+    '        }_B{schema.location.startblock _
+    '        }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
+    '    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
+    '        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
+    '    End If
+    '    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+    '    PrintMsg(My.Resources.ResText_Exporting)
+    '    schema.SaveFile(outputfile)
+    '    Try
+    '        Dim cmData As New TapeUtils.CMParser(driveHandle)
+    '        Dim CMReport As String = cmData.GetReport()
+    '        If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
+    '    Catch ex As Exception
+    '        SetStatusLight(LWStatus.Err)
+    '    End Try
+    '    PrintMsg(My.Resources.ResText_IndexBaked, False, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}")
+    '    SetStatusLight(LWStatus.Succ)
+    '    Return outputfile
+    'End Function
+
     Public Function AutoDump() As String
         SetStatusLight(LWStatus.Busy)
-        Dim FileName As String = Barcode
-        If FileName = "" Then FileName = schema.volumeuuid.ToString()
-        Dim outputfile As String = $"schema\LTFSIndex_Autosave_{FileName _
-            }_GEN{schema.generationnumber _
-            }_P{schema.location.partition _
-            }_B{schema.location.startblock _
-            }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-        If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
-            IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
+        Dim id As String = If(String.IsNullOrWhiteSpace(Barcode), schema.volumeuuid.ToString(), Barcode)
+
+        Dim invalid = IO.Path.GetInvalidFileNameChars()
+        Dim sbName As New StringBuilder(id.Length)
+        For Each ch In id
+            If Array.IndexOf(invalid, ch) >= 0 Then
+                sbName.Append("_"c)
+            Else
+                sbName.Append(ch)
+            End If
+        Next
+        Dim safeId As String = sbName.ToString()
+
+        Dim baseDir As String = IO.Path.Combine(Application.StartupPath, "schema")
+        Dim subDir As String = IO.Path.Combine(baseDir, safeId)
+        If Not IO.Directory.Exists(subDir) Then
+            IO.Directory.CreateDirectory(subDir)
         End If
-        outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+
+        Dim stamp As String = Now.ToString("yyyyMMdd_HHmmss.fffffff")
+        Dim stem As String = $"LTFSIndex_Autosave_{safeId}_GEN{schema.generationnumber}_P{schema.location.partition}_B{schema.location.startblock}_{stamp}"
+
+        Dim schemaTxtPath As String = IO.Path.Combine(subDir, stem & ".schema")
+        Dim cmPath As String = IO.Path.Combine(subDir, stem & ".cm")
+
         PrintMsg(My.Resources.ResText_Exporting)
-        schema.SaveFile(outputfile)
+        schema.SaveFile(schemaTxtPath)
+
         Try
             Dim cmData As New TapeUtils.CMParser(driveHandle)
             Dim CMReport As String = cmData.GetReport()
-            If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
+            If CMReport.Length > 0 Then
+                IO.File.WriteAllText(cmPath, CMReport, New UTF8Encoding(False))
+            End If
         Catch ex As Exception
             SetStatusLight(LWStatus.Err)
         End Try
-        PrintMsg(My.Resources.ResText_IndexBaked, False, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}")
+
+        Try
+            Dim allSchemas = IO.Directory.EnumerateFiles(subDir, "*.schema", IO.SearchOption.TopDirectoryOnly) _
+                                          .OrderByDescending(Function(p) New IO.FileInfo(p).LastWriteTimeUtc) _
+                                          .ToList()
+
+            Dim newest As String = Nothing
+            If allSchemas.Count > 0 Then
+                newest = allSchemas(0)
+            End If
+
+            Const zstdLevel As Integer = 6
+            Const copyBuf As Integer = 1 << 20
+
+            For Each oldSchema In allSchemas
+                If String.Equals(oldSchema, newest, StringComparison.OrdinalIgnoreCase) Then
+                    Continue For
+                End If
+
+                Dim zstPath As String = oldSchema & ".zst" ' *.schema.zst
+                Using fin As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, copyBuf, IO.FileOptions.SequentialScan)
+                    Using fout As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None, copyBuf, IO.FileOptions.SequentialScan)
+                        Using zs As New CompressionStream(fout, zstdLevel)
+                            fin.CopyTo(zs, copyBuf)
+                        End Using
+                    End Using
+                End Using
+
+                Try
+                    IO.File.Delete(oldSchema)
+                Catch
+                End Try
+            Next
+        Catch ex As Exception
+            SetStatusLight(LWStatus.Err)
+            PrintMsg(My.Resources.ResText_Error, True, "ZSTD compress error")
+        End Try
+
+        PrintMsg(My.Resources.ResText_IndexBaked, False, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{schemaTxtPath}")
         SetStatusLight(LWStatus.Succ)
-        Return outputfile
+
+        Return schemaTxtPath
     End Function
+
     Private Sub 备份当前索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 备份当前索引ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
             Sub()
@@ -8030,15 +8158,43 @@ Public Class LTFSWriter
 
                     TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
-                    Dim outputfile As String = "schema\LTFSIndex_LoadDPIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
-                        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
-                    End If
-                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
+                    If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
+                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
                     PrintMsg(My.Resources.ResText_AISucc)
+
+                    Try
+                        Dim targetDir As String = outDir
+                        Dim allSchemas = IO.Directory.GetFiles(targetDir, "*.schema", IO.SearchOption.TopDirectoryOnly)
+
+                        If allSchemas IsNot Nothing AndAlso allSchemas.Length > 0 Then
+                            Dim latestSchemaPath As String =
+                                    allSchemas.OrderByDescending(Function(p) IO.File.GetLastWriteTimeUtc(p)).First()
+
+                            For Each oldSchema In allSchemas
+                                If String.Equals(oldSchema, latestSchemaPath, StringComparison.OrdinalIgnoreCase) Then Continue For
+
+                                Dim zstPath As String = oldSchema & ".zst"
+
+                                If Not IO.File.Exists(zstPath) Then
+                                    Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                                        Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
+                                            Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                                inFs.CopyTo(zs)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End If
+
+                                Try : IO.File.Delete(oldSchema) : Catch : End Try
+                            Next
+                        End If
+                    Catch
+                    End Try
+
                     While True
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount

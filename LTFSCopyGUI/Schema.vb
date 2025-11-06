@@ -489,81 +489,139 @@ Public Class ltfsindex
             q = qn
         End While
     End Sub
-    Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
-        Searializing = True
-        Me.Standarize()
-        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-        Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
-        Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
-        Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
-        writer.Serialize(t, Me, ns)
-        ms.Close()
-        Searializing = False
-        Dim soutp As New IO.StreamReader(tmpf)
-        Dim sout As New System.Text.StringBuilder
-        Dim sline As String = soutp.ReadLine()
-        If sline.StartsWith("<?xml") Then
-            sline = sline.Replace("utf-8", "UTF-8")
-        End If
-        If ReduceSize Then sline = sline.Replace("xmlns:v", "version")
-        If sline.Length > 0 Then sout.AppendLine(sline)
-        While Not soutp.EndOfStream
-            sline = soutp.ReadLine()
-            If ReduceSize Then
-                sline = sline.Replace("xmlns:v", "version")
-                sline = sline.Replace("<_file />", "")
-                sline = sline.Replace("<_directory />", "")
-                sline = sline.Replace("<_file>", "")
-                sline = sline.Replace("</_file>", "")
-                sline = sline.Replace("<_directory>", "")
-                sline = sline.Replace("</_directory>", "")
-                sline = sline.TrimEnd(" ").TrimStart(" ")
-            End If
-            If sline.Length > 0 Then sout.AppendLine(sline)
-        End While
-        soutp.Close()
-        IO.File.Delete(tmpf)
-        Return sout.ToString()
-    End Function
-    Public Function SaveFile(FileName As String) As Boolean
-        Searializing = True
-        Me.Standarize()
-        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-        Dim tmpf As String = $"{Application.StartupPath}\LCG_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
-        Dim ms As New IO.FileStream(tmpf, IO.FileMode.Create)
-        Dim t As IO.TextWriter = New IO.StreamWriter(ms, New System.Text.UTF8Encoding(False))
-        Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
-        writer.Serialize(t, Me, ns)
-        t.Close()
-        ms.Close()
-        Searializing = False
-        Dim soutp As New IO.StreamReader(tmpf)
 
-        Dim sout As New IO.StreamWriter(FileName, False, New Text.UTF8Encoding(False))
-        Dim sline As String = soutp.ReadLine()
-        If sline.StartsWith("<?xml") Then
-            sline = sline.Replace("utf-8", "UTF-8")
-        End If
-        sline = sline.Replace("xmlns:v", "version")
-        If sline.Length > 0 Then sout.WriteLine(sline)
-        While Not soutp.EndOfStream
-            sline = soutp.ReadLine()
-            sline = sline.Replace("xmlns:v", "version")
-            sline = sline.Replace("<_file />", "")
-            sline = sline.Replace("<_directory />", "")
-            sline = sline.Replace("<_file>", "")
-            sline = sline.Replace("</_file>", "")
-            sline = sline.Replace("<_directory>", "")
-            sline = sline.Replace("</_directory>", "")
-            sline = sline.TrimEnd(" ").TrimStart(" ")
-            If sline.Length > 0 Then sout.WriteLine(sline)
-        End While
-        soutp.Close()
-        sout.Close()
-        IO.File.Delete(tmpf)
-        Return True
+    Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
+        Dim sb As New Text.StringBuilder(40960)
+        Using sw As New IO.StringWriter(sb)
+            WriteSerializedText(sw, ReduceSize)
+        End Using
+        Return sb.ToString()
     End Function
+
+    Public Sub WriteSerializedText(output As IO.TextWriter, Optional ByVal reduceSize As Boolean = True)
+        Searializing = True
+        Me.Standarize()
+
+        Const buf As Integer = 1 << 16
+        Dim serializer As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+        Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
+
+        Try
+            Dim tempFile As String = $"{Application.StartupPath}\LCG_{Now:yyyyMMdd_HHmmss.fffffff}.tmp"
+            Using sw As New IO.StreamWriter(tempFile, append:=False, encoding:=New System.Text.UTF8Encoding(False), bufferSize:=buf)
+                serializer.Serialize(sw, Me, ns)
+            End Using
+
+            Using r As New IO.StreamReader(tempFile, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks:=True, bufferSize:=buf)
+                Dim line As String = r.ReadLine()
+
+                If line IsNot Nothing Then
+                    If line.StartsWith("<?xml", StringComparison.Ordinal) AndAlso line.IndexOf("utf-8", StringComparison.Ordinal) >= 0 Then
+                        line = line.Replace("utf-8", "UTF-8")
+                    End If
+                    If reduceSize AndAlso line.IndexOf("xmlns:v", StringComparison.Ordinal) >= 0 Then
+                        line = line.Replace("xmlns:v", "version")
+                    End If
+                    If reduceSize Then line = line.Trim(" "c)
+                    If line.Length > 0 Then output.WriteLine(line)
+                End If
+
+                Do
+                    line = r.ReadLine()
+                    If line Is Nothing Then Exit Do
+
+                    If reduceSize Then
+                        If line.IndexOf("xmlns:v", StringComparison.Ordinal) >= 0 Then
+                            line = line.Replace("xmlns:v", "version")
+                        End If
+                        If line.IndexOf("_file", StringComparison.Ordinal) >= 0 Then
+                            line = line.Replace("<_file />", "").Replace("<_file>", "").Replace("</_file>", "")
+                        End If
+                        If line.IndexOf("_directory", StringComparison.Ordinal) >= 0 Then
+                            line = line.Replace("<_directory />", "").Replace("<_directory>", "").Replace("</_directory>", "")
+                        End If
+                        line = line.Trim(" "c)
+                    End If
+
+                    If line.Length > 0 Then output.WriteLine(line)
+                Loop
+            End Using
+            Try
+                IO.File.Delete(tempFile)
+            Catch
+            End Try
+
+        Finally
+            Searializing = False
+        End Try
+    End Sub
+
+    Public Function SaveFile(fileName As String) As Boolean
+        Searializing = True
+        Me.Standarize()
+
+        Dim tempFile As String = $"{Application.StartupPath}\LCG_{Now:yyyyMMdd_HHmmss.fffffff}.tmp"
+        Const buf As Integer = 1 << 16
+
+        Try
+            Using writer As New IO.StreamWriter(tempFile, append:=False, encoding:=New Text.UTF8Encoding(False), bufferSize:=buf)
+                Dim serializer As New Xml.Serialization.XmlSerializer(GetType(ltfsindex))
+                Dim ns As New Xml.Serialization.XmlSerializerNamespaces({New Xml.XmlQualifiedName("v", "2.4.0")})
+                serializer.Serialize(writer, Me, ns)
+            End Using
+
+            Using r As New IO.StreamReader(tempFile, Text.Encoding.UTF8, detectEncodingFromByteOrderMarks:=True, bufferSize:=buf)
+                Using w As New IO.StreamWriter(fileName, append:=False, encoding:=New Text.UTF8Encoding(False), bufferSize:=buf)
+                    Dim sline As String = r.ReadLine()
+                    If sline IsNot Nothing Then
+                        If sline.StartsWith("<?xml", StringComparison.Ordinal) Then
+                            If sline.IndexOf("utf-8", StringComparison.Ordinal) >= 0 Then
+                                sline = sline.Replace("utf-8", "UTF-8")
+                            End If
+                        End If
+                        If sline.IndexOf("xmlns:v", StringComparison.Ordinal) >= 0 Then
+                            sline = sline.Replace("xmlns:v", "version")
+                        End If
+                        sline = sline.Trim(" "c)
+                        If sline.Length > 0 Then w.WriteLine(sline)
+                    End If
+
+                    Do
+                        sline = r.ReadLine()
+                        If sline Is Nothing Then Exit Do
+                        If sline.IndexOf("xmlns:v", StringComparison.Ordinal) >= 0 Then
+                            sline = sline.Replace("xmlns:v", "version")
+                        End If
+                        If sline.IndexOf("_file", StringComparison.Ordinal) >= 0 Then
+                            sline = sline.Replace("<_file />", "") _
+                                         .Replace("<_file>", "") _
+                                         .Replace("</_file>", "")
+                        End If
+                        If sline.IndexOf("_directory", StringComparison.Ordinal) >= 0 Then
+                            sline = sline.Replace("<_directory />", "") _
+                                         .Replace("<_directory>", "") _
+                                         .Replace("</_directory>", "")
+                        End If
+                        sline = sline.Trim(" "c)
+                        If sline.Length > 0 Then w.WriteLine(sline)
+                    Loop
+                End Using
+            End Using
+
+            Return True
+
+        Catch
+            Return False
+
+        Finally
+            Searializing = False
+            Try
+                If IO.File.Exists(tempFile) Then IO.File.Delete(tempFile)
+            Catch
+            End Try
+        End Try
+    End Function
+
     Public Shared Function FromXML(s As String) As ltfsindex
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
         Dim t As IO.TextReader = New IO.StringReader(s)
@@ -582,33 +640,63 @@ Public Class ltfsindex
         Return result
     End Function
     Public Shared Function FromSchFile(FileName As String) As ltfsindex
-        Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}_{ Guid.NewGuid().ToString()}.tmp"
-        Dim sin As New IO.StreamReader(FileName)
-        Dim soutx As New IO.StreamWriter(tmpf, False, New Text.UTF8Encoding(False))
-        Dim result As ltfsindex
+        Const BUF As Integer = 1 << 16 ' 64 KiB
+        Dim tmpf As String = $"{Application.StartupPath}\LCX_{Now:yyyyMMdd_HHmmss.fffffff}_{Guid.NewGuid()}.tmp"
+        Dim result As ltfsindex = Nothing
+
         Try
-            While Not sin.EndOfStream
-                Dim s As String = sin.ReadLine()
-                s = s.Replace("<directory>", "<_directory><directory>")
-                s = s.Replace("</directory>", "</directory></_directory>")
-                s = s.Replace("<file>", "<_file><file>")
-                s = s.Replace("</file>", "</file></_file>")
-                s = s.Replace("%25", "%")
-                If s.Length > 0 Then soutx.WriteLine(s)
-            End While
-            sin.Close()
-            soutx.Close()
+            Using sin As New IO.StreamReader(FileName, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks:=True, bufferSize:=BUF)
+                Using soutx As New IO.StreamWriter(tmpf, append:=False, encoding:=New System.Text.UTF8Encoding(False), bufferSize:=BUF)
+                    Do
+                        Dim s As String = sin.ReadLine()
+                        If s Is Nothing Then Exit Do
+
+                        If s.Length = 0 Then
+                            Continue Do
+                        End If
+
+                        If s.IndexOf("<directory>", StringComparison.Ordinal) >= 0 Then
+                            s = s.Replace("<directory>", "<_directory><directory>")
+                        End If
+                        If s.IndexOf("</directory>", StringComparison.Ordinal) >= 0 Then
+                            s = s.Replace("</directory>", "</directory></_directory>")
+                        End If
+                        If s.IndexOf("<file>", StringComparison.Ordinal) >= 0 Then
+                            s = s.Replace("<file>", "<_file><file>")
+                        End If
+                        If s.IndexOf("</file>", StringComparison.Ordinal) >= 0 Then
+                            s = s.Replace("</file>", "</file></_file>")
+                        End If
+                        If s.IndexOf("%25", StringComparison.Ordinal) >= 0 Then
+                            s = s.Replace("%25", "%")
+                        End If
+
+                        soutx.WriteLine(s)
+                    Loop
+                End Using
+            End Using
+
             Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(ltfsindex))
-            Dim t As IO.StreamReader = New IO.StreamReader(tmpf)
-            result = CType(reader.Deserialize(t), ltfsindex)
-            t.Close()
-            result.Standarize()
+            Using t As New IO.StreamReader(tmpf, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks:=True, bufferSize:=BUF)
+                result = CType(reader.Deserialize(t), ltfsindex)
+            End Using
+
+            If result IsNot Nothing Then
+                result.Standarize()
+            End If
+
         Catch ex As Exception
             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+        Finally
+            Try
+                If IO.File.Exists(tmpf) Then IO.File.Delete(tmpf)
+            Catch
+            End Try
         End Try
-        IO.File.Delete(tmpf)
+
         Return result
     End Function
+
     Public Function Clone() As ltfsindex
         Dim tmpf As String = $"{Application.StartupPath}\LWI_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.tmp"
         Me.SaveFile(tmpf)
@@ -625,9 +713,7 @@ Public Class ltfsindex
                 For Each fi As file In dq.contents._file
                     If OnFileFound IsNot Nothing Then OnFileFound(fi)
                 Next
-                For Each di As directory In dq.contents._directory
-                    q2.Add(di)
-                Next
+                q2.AddRange(dq.contents._directory)
             Next
             q = q2
         End While
