@@ -1,4 +1,5 @@
 Imports System.ComponentModel
+Imports System.Drawing.Imaging
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports NAudio.Wave
@@ -1552,7 +1553,9 @@ Public Class LTFSConfigurator
                                         Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
 
                                         If NoCCPs - LastNoCCPs(chan) > 0 Then
-                                            result.Append(Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2").PadLeft(6).PadRight(7))
+                                            Dim resulttxt As String = (Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2"))
+                                            resulttxt = resulttxt.Replace("∞", "Inf")
+                                            result.Append(resulttxt.PadLeft(6).PadRight(7))
                                             LastC1Err(chan) = C1err
                                             LastNoCCPs(chan) = NoCCPs
                                         Else
@@ -1589,13 +1592,21 @@ Public Class LTFSConfigurator
                     Threading.Thread.Sleep(1000)
                     Dim prognow As Long = progval
                     Invoke(Sub()
-                               TextBoxDebugOutput.AppendText($"{sec.ToString().PadLeft(4)}: {prognow.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
+                               Dim texta As String = ($"{sec.ToString().PadLeft(4)}: {prognow.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)})")
+                               Dim infostart As Integer = texta.Length
+                               TextBoxDebugOutput.AppendText($"{texta}{info} {SenseMsg}{vbCrLf}")
+                               If info.Length > 0 Then FormatLogRateColor(TextBoxDebugOutput, infostart, info)
+                               TextBoxDebugOutput.SelectionStart = TextBoxDebugOutput.Text.Length - 1
+                               TextBoxDebugOutput.ScrollToCaret()
                            End Sub)
                     If sec >= 0 Then sec += 1
                     lastval = prognow
                 End While
                 Invoke(Sub()
-                           TextBoxDebugOutput.AppendText($"{sec.ToString().PadLeft(4)}: {progval.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)}){info} {SenseMsg}{vbCrLf}")
+                           Dim texta As String = ($"{sec.ToString().PadLeft(4)}: {progval.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)})")
+                           Dim infostart As Integer = texta.Length
+                           TextBoxDebugOutput.AppendText($"{texta}{info} {SenseMsg}{vbCrLf}")
+                           If info.Length > 0 Then FormatLogRateColor(TextBoxDebugOutput, infostart, info)
                            TextBoxDebugOutput.AppendText($"End")
                        End Sub)
             End Sub)
@@ -1606,6 +1617,53 @@ Public Class LTFSConfigurator
             th.Start()
         End If
 
+    End Sub
+    Public Function MixColor(col1 As Color, col2 As Color, val As Double, min As Double, max As Double) As Color
+        If val <= min Then Return col1
+        If val >= max Then Return col2
+        Dim ratio As Double = (val - min) / (max - min)
+        Return Color.FromArgb(col1.R * (1 - ratio) + col2.R * ratio, col1.G * (1 - ratio) + col2.G * ratio, col1.B * (1 - ratio) + col2.B * ratio)
+    End Function
+    Public Sub FormatLogRateColor(textbox As RichTextBox, StartIndex As Integer, infostr As String)
+        Dim seglen As Integer = 7
+        Dim lineStart As Integer = textbox.GetFirstCharIndexFromLine(textbox.Lines.Length - 2) + StartIndex
+
+        Static col1 As Color = Color.FromArgb(101, 225, 111)
+        Static col2 As Color = Color.FromArgb(237, 208, 120)
+        Static col3 As Color = Color.FromArgb(251, 145, 85)
+        Static col4 As Color = Color.FromArgb(255, 71, 73)
+
+        For i As Integer = 0 To infostr.Length \ seglen - 1
+            Dim segvalue As String = infostr.Substring(i * seglen, seglen).Replace(" ", "")
+            Dim textcol As Color = Color.Black
+            Dim bkgcol As Color = Color.Transparent
+            If segvalue.Length > 0 Then
+                Dim errratelog As Double = 0
+                If segvalue.Length = 5 Then
+                    Double.TryParse(segvalue, errratelog)
+                End If
+
+                If segvalue = "-Inf" OrElse errratelog <= -6 Then
+                    bkgcol = col1
+                ElseIf errratelog <= -5 Then
+                    bkgcol = MixColor(col1, col2, errratelog, -6, -5)
+                ElseIf errratelog <= -4 Then
+                    bkgcol = MixColor(col2, col3, errratelog, -5, -4)
+                ElseIf errratelog <= -3.5 Then
+                    bkgcol = MixColor(col3, col4, errratelog, -4, -3.5)
+                ElseIf errratelog > -3.5 Then
+                    bkgcol = col4
+                End If
+            Else
+            End If
+            Dim chid As Integer = i
+            textbox.Invoke(Sub()
+                               textbox.SelectionStart = lineStart + chid * seglen
+                               textbox.SelectionLength = seglen
+                               textbox.SelectionBackColor = bkgcol
+                           End Sub)
+
+        Next
     End Sub
 
     Private Sub Button15_Click(sender As Object, e As EventArgs) Handles ButtonRDErrRateLog.Click
