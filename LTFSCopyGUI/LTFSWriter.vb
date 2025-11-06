@@ -5209,7 +5209,7 @@ Public Class LTFSWriter
 
                             Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                                 Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
-                                    Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                    Using zs As New ZstdSharp.CompressionStream(outFs, 9)
                                         inFs.CopyTo(zs)
                                     End Using
                                 End Using
@@ -5293,9 +5293,10 @@ Public Class LTFSWriter
 
                     TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
+                    currentPos = GetPos
                     Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
                     If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
-                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
+                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_p{currentPos.PartitionNumber}_b{currentPos.BlockNumber}_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
@@ -5316,7 +5317,7 @@ Public Class LTFSWriter
                                 If Not IO.File.Exists(zstPath) Then
                                     Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                                         Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
-                                            Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                            Using zs As New ZstdSharp.CompressionStream(outFs, 9)
                                                 inFs.CopyTo(zs)
                                             End Using
                                         End Using
@@ -8157,10 +8158,11 @@ Public Class LTFSWriter
                     End If
 
                     TapeUtils.ReadFileMark(driveHandle)
+                    currentPos = GetPos
                     PrintMsg(My.Resources.ResText_RI)
                     Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
                     If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
-                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
+                    Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_p{currentPos.PartitionNumber}_b{currentPos.BlockNumber}_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile)
                     PrintMsg(My.Resources.ResText_AI)
                     schema = ltfsindex.FromSchFile(outputfile)
@@ -8182,7 +8184,7 @@ Public Class LTFSWriter
                                 If Not IO.File.Exists(zstPath) Then
                                     Using inFs As New IO.FileStream(oldSchema, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
                                         Using outFs As New IO.FileStream(zstPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None)
-                                            Using zs As New ZstdSharp.CompressionStream(outFs, 6)
+                                            Using zs As New ZstdSharp.CompressionStream(outFs, 9)
                                                 inFs.CopyTo(zs)
                                             End Using
                                         End Using
