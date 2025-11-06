@@ -929,3 +929,38 @@ Public Class RichMenuStrip
         End Sub
     End Class
 End Class
+
+Public Class ErrRateHelper
+    Public Shared Function MixColor(col1 As Color, col2 As Color, val As Double, min As Double, max As Double) As Color
+        If val <= min Then Return col1
+        If val >= max Then Return col2
+        Dim ratio As Double = (val - min) / (max - min)
+        Return Color.FromArgb(col1.R * (1 - ratio) + col2.R * ratio, col1.G * (1 - ratio) + col2.G * ratio, col1.B * (1 - ratio) + col2.B * ratio)
+    End Function
+    Public Shared Function GetColor(segvalue As String, Optional ByVal colorCoeff As Double = 1) As Color
+        Static col1 As Color = Color.FromArgb(101 * colorCoeff, 225 * colorCoeff, 111 * colorCoeff)
+        Static col2 As Color = Color.FromArgb(237 * colorCoeff, 208 * colorCoeff, 120 * colorCoeff)
+        Static col3 As Color = Color.FromArgb(251 * colorCoeff, 145 * colorCoeff, 85 * colorCoeff)
+        Static col4 As Color = Color.FromArgb(255 * colorCoeff, 71 * colorCoeff, 73 * colorCoeff)
+
+        If segvalue.Length > 0 Then
+            Dim errratelog As Double = 0
+            If segvalue.Length = 5 Then
+                Double.TryParse(segvalue, errratelog)
+            End If
+
+            If segvalue = "-Inf" OrElse errratelog <= -6 Then
+                Return col1
+            ElseIf errratelog <= -5 Then
+                Return MixColor(col1, col2, errratelog, -6, -5)
+            ElseIf errratelog <= -4 Then
+                Return MixColor(col2, col3, errratelog, -5, -4)
+            ElseIf errratelog <= -3.5 Then
+                Return MixColor(col3, col4, errratelog, -4, -3.5)
+            ElseIf errratelog > -3.5 Then
+                Return col4
+            End If
+        Else
+        End If
+    End Function
+End Class
