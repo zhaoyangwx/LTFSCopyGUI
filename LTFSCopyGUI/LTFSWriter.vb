@@ -6223,7 +6223,7 @@ Public Class LTFSWriter
                         SetStatusLight(LWStatus.Busy)
                         If (My.Settings.LTFSWriter_ForceIndex OrElse TotalBytesUnindexed <> 0) AndAlso schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.b Then
                             PrintMsg(My.Resources.ResText_UDI)
-                            WriteCurrentIndex(False)
+                            If LocateToWritePosition() Then WriteCurrentIndex(False)
                             TapeUtils.Flush(driveHandle)
                         End If
                         AutoDump()
@@ -6342,6 +6342,17 @@ Public Class LTFSWriter
                             CurrentFilesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
                             UnwrittenCountOverwriteValue = flist.Count
+                            flist.Sort(New Comparison(Of ltfsindex.file)(Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
+                                                                             If a.extentinfo.Count = 0 And b.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
+                                                                             If b.extentinfo.Count = 0 And a.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
+                                                                             If a.extentinfo.Count = 0 And b.extentinfo.Count = 0 Then Return a.fileuid.CompareTo(b.fileuid)
+                                                                             If a.extentinfo(0).startblock = 0 OrElse b.extentinfo(0).startblock = 0 Then
+                                                                                 Return a.fileuid.CompareTo(b.fileuid)
+                                                                             End If
+                                                                             If a.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
+                                                                             If a.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
+                                                                             Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
+                                                                         End Function))
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
                             Next
@@ -6678,9 +6689,17 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_Hashing)
                     Dim c As Integer = 0
                     RestorePosition = New TapeUtils.PositionData(driveHandle)
+                    Dim lastfr As FileRecord = Nothing
+                    Dim lastResult As Dictionary(Of String, String) = Nothing
                     For Each fr As FileRecord In FileList
                         c += 1
-                        PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
+                        Dim dupe As Boolean = False
+                        If lastfr IsNot Nothing Then
+                            If ltfsindex.file.extent.AllEquals(fr.File.extentinfo, lastfr.File.extentinfo) Then
+                                dupe = True
+                            End If
+                        End If
+                            PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
                         If ValidateOnly Then
                             If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
                                ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA256) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "" OrElse (Not (fr.File.SHA256ForeColor.Equals(Color.Black) OrElse fr.File.SHA256ForeColor.Equals(Color.Red)))) AndAlso
@@ -6708,7 +6727,13 @@ Public Class LTFSWriter
                                     fr.File.extentinfo.Clear()
                                     fr.File.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = fr.File.length, .startblock = p.BlockNumber - 1, .partition = ltfsindex.PartitionLabel.b})
                                 End If
-                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File, blk0)
+                                Dim result As Dictionary(Of String, String)
+                                If dupe AndAlso lastResult IsNot Nothing Then
+                                    result = lastResult
+                                Else
+                                    result = CalculateChecksum(fr.File, blk0)
+                                End If
+                                lastResult = result
                                 If result IsNot Nothing Then
                                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
                                         If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
@@ -6786,7 +6811,13 @@ Public Class LTFSWriter
                                 End If
                             End If
                         ElseIf Overwrite Then
-                            Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                            Dim result As Dictionary(Of String, String)
+                            If dupe AndAlso lastResult IsNot Nothing Then
+                                result = lastResult
+                            Else
+                                result = CalculateChecksum(fr.File)
+                            End If
+                            lastResult = result
                             If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
                                 If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
@@ -6862,7 +6893,13 @@ Public Class LTFSWriter
                             (My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "") OrElse
                             (My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "") OrElse
                             (My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "") Then
-                                Dim result As Dictionary(Of String, String) = CalculateChecksum(fr.File)
+                                Dim result As Dictionary(Of String, String)
+                                If dupe AndAlso lastResult IsNot Nothing Then
+                                    result = lastResult
+                                Else
+                                    result = CalculateChecksum(fr.File)
+                                End If
+                                lastResult = result
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
                                     If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
                                         fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
@@ -6935,6 +6972,7 @@ Public Class LTFSWriter
                                 Threading.Interlocked.Increment(CurrentFilesProcessed)
                             End If
                         End If
+                        lastfr = fr
                         Threading.Interlocked.Increment(fc)
                         If StopFlag Then
                             PrintMsg(My.Resources.ResText_OpCancelled)

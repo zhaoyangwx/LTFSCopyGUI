@@ -237,6 +237,17 @@ Public Class ltfsindex
             <Xml.Serialization.XmlIgnore>
             <Category("Internal")>
             Public Property TempInfo As Object
+            Public Shared Function AllEquals(a As List(Of extent), b As List(Of extent)) As Boolean
+                If a Is Nothing OrElse b Is Nothing Then Return False
+                If a.Count <> b.Count Then Return False
+                For i As Integer = 0 To a.Count - 1
+                    If a(i).startblock <> b(i).startblock Then Return False
+                    If a(i).bytecount <> b(i).bytecount Then Return False
+                    If a(i).byteoffset <> b(i).byteoffset Then Return False
+                    If a(i).fileoffset <> b(i).fileoffset Then Return False
+                Next
+                Return True
+            End Function
         End Class
 
         <Category("LTFSIndex")>
