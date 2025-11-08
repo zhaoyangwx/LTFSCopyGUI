@@ -51,7 +51,7 @@ LtfsCommand from **[inaxeon/ltfscmd](https://github.com/inaxeon/ltfscmd)**
 
 ### 关于加密
 
-如需启用加密可在加载磁带后使用 **[VulpesSARL/LTOEnc](https://github.com/VulpesSARL/LTOEnc)** 或者直接发送SECURITY PROTOCOL相关SCSI指令设置驱动器密钥
+已集成至LTFSWriter，通过“设置密钥”或者“设置密码”向驱动器发送加密参数。
 
 对于开启加密的磁带，请不要启用自动重装带（重装带前清洁次数改成0禁用），否则重新装带会重置驱动器加密密钥导致写入失败。
 
