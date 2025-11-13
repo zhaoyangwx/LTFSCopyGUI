@@ -3251,6 +3251,9 @@ Public Class TapeUtils
         <LocalizedDescription("PropertyDescription_mkltfs_ImmediateMode")>
         Public Property ImmediateMode As Boolean = True
         <Category("Expert")>
+        <LocalizedDescription("PropertyDescription_mkltfs_WORMMode")>
+        Public Property WORMMode As Boolean = False
+        <Category("Expert")>
         <LocalizedDescription("PropertyDescription_mkltfs_Capacity")>
         Public Property Capacity As UInt16 = &HFFFF
         Private _P0Size As UInt16 = 1
@@ -3341,7 +3344,8 @@ Public Class TapeUtils
                                   Optional ByVal Capacity As UInt16 = &HFFFF,
                                   Optional ByVal P0Size As UInt16 = 1,
                                   Optional ByVal P1Size As UInt16 = &HFFFF,
-                                  Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+                                  Optional ByVal EncryptionKey As Byte() = Nothing,
+                                  Optional ByVal WORM As Boolean = False) As Boolean
         GlobalBlockLimit = TapeUtils.ReadBlockLimits(handle).MaximumBlockLength
         If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
             Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
@@ -3382,26 +3386,29 @@ Public Class TapeUtils
                     If Not AllowPartition Then ExtraPartitionCount = 0
                     If ExtraPartitionCount > 1 Then ExtraPartitionCount = 1
 
-                    'Set Capacity
-                    ProgressReport("Set Capacity..")
-                    If SetCapacity(handle:=handle, Capacity:=Capacity, senseReport:=senseReportFunc) Then
-                        ProgressReport("Set Capacity OK" & vbCrLf)
-                    Else
-                        OnError("Set Capacity Fail" & vbCrLf)
-                        Return False
+                    If Not WORM Then
+                        'Set Capacity
+                        ProgressReport("Set Capacity..")
+                        If SetCapacity(handle:=handle, Capacity:=Capacity, senseReport:=senseReportFunc) Then
+                            ProgressReport("Set Capacity OK" & vbCrLf)
+                        Else
+                            OnError("Set Capacity Fail" & vbCrLf)
+                            Return False
+                        End If
                     End If
+
 
                     'Format
                     ProgressReport("Initializing tape..")
                     Dim DisableFormat As Boolean = False
                     Try
                         Dim cmdata As New CMParser(handle)
-                        DisableFormat = cmdata.CartridgeMfgData.IsLTO9Plus OrElse (Not cmdata.CartridgeMfgData.IsLTO3Plus)
+                        DisableFormat = cmdata.CartridgeMfgData.IsLTO9Plus OrElse (Not cmdata.CartridgeMfgData.IsLTO3Plus) OrElse WORM
                     Catch ex As Exception
                         ProgressReport("CMData parse failed")
                     End Try
                     If DisableFormat Then
-                        ProgressReport("LTO9 detected, skip initialization" & vbCrLf)
+                        ProgressReport("Format disabled, skip initialization" & vbCrLf)
                     ElseIf DriverTypeSetting = DriverType.TapeStream Then
                         ProgressReport("Incompatible drive detected, skip initialization" & vbCrLf)
                     Else
@@ -3654,7 +3661,7 @@ Public Class TapeUtils
                         End If
                         'Write FileMark
                         ProgressReport("Write FileMark..")
-                        WriteSenseData = TapeUtils.WriteFileMark(handle, 2)
+                        WriteSenseData = TapeUtils.WriteFileMark(handle, 1)
                         senseReportFunc(WriteSenseData)
                         If WriteSenseData.Length > 0 Then
                             ProgressReport("Write FileMark OK" & vbCrLf)
@@ -3662,32 +3669,45 @@ Public Class TapeUtils
                             OnError("Write FileMark Fail" & vbCrLf)
                             Return False
                         End If
-                        'Write ltfsindex
-                        pindex.previousgenerationlocation = New ltfsindex.LocationDef()
-                        pindex.previousgenerationlocation.partition = pindex.location.partition
-                        pindex.previousgenerationlocation.startblock = pindex.location.startblock
-                        pindex.location.partition = ltfsindex.PartitionLabel.a
-                        pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
-                        block0 = pindex.location.startblock
-                        ProgressReport("Write ltfsindex..")
-                        WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText()))
-                        senseReportFunc(WriteSenseData)
-                        If WriteSenseData.Length > 0 Then
-                            ProgressReport("Write ltfsindex OK" & vbCrLf)
-                        Else
-                            OnError("Write ltfsindex Fail" & vbCrLf)
-                            Return False
+                        If Not WORM Then
+                            'Write FileMark
+                            ProgressReport("Write FileMark..")
+                            WriteSenseData = TapeUtils.WriteFileMark(handle, 1)
+                            senseReportFunc(WriteSenseData)
+                            If WriteSenseData.Length > 0 Then
+                                ProgressReport("Write FileMark OK" & vbCrLf)
+                            Else
+                                OnError("Write FileMark Fail" & vbCrLf)
+                                Return False
+                            End If
+                            'Write ltfsindex
+                            pindex.previousgenerationlocation = New ltfsindex.LocationDef()
+                            pindex.previousgenerationlocation.partition = pindex.location.partition
+                            pindex.previousgenerationlocation.startblock = pindex.location.startblock
+                            pindex.location.partition = ltfsindex.PartitionLabel.a
+                            pindex.location.startblock = TapeUtils.ReadPosition(handle).BlockNumber
+                            block0 = pindex.location.startblock
+                            ProgressReport("Write ltfsindex..")
+                            WriteSenseData = TapeUtils.Write(handle, Encoding.UTF8.GetBytes(pindex.GetSerializedText()))
+                            senseReportFunc(WriteSenseData)
+                            If WriteSenseData.Length > 0 Then
+                                ProgressReport("Write ltfsindex OK" & vbCrLf)
+                            Else
+                                OnError("Write ltfsindex Fail" & vbCrLf)
+                                Return False
+                            End If
+                            'Write FileMark
+                            ProgressReport("Write FileMark..")
+                            WriteSenseData = TapeUtils.WriteFileMark(handle)
+                            senseReportFunc(WriteSenseData)
+                            If WriteSenseData.Length > 0 Then
+                                ProgressReport("Write FileMark OK" & vbCrLf)
+                            Else
+                                OnError("Write FileMark Fail" & vbCrLf)
+                                Return False
+                            End If
                         End If
-                        'Write FileMark
-                        ProgressReport("Write FileMark..")
-                        WriteSenseData = TapeUtils.WriteFileMark(handle)
-                        senseReportFunc(WriteSenseData)
-                        If WriteSenseData.Length > 0 Then
-                            ProgressReport("Write FileMark OK" & vbCrLf)
-                        Else
-                            OnError("Write FileMark Fail" & vbCrLf)
-                            Return False
-                        End If
+
                     End If
                     'Set DateTime
                     Dim CurrentTime As String = Now.ToUniversalTime.ToString("yyyyMMddhhmm")

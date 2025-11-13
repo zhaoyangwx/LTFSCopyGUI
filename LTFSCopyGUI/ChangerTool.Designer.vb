@@ -22,6 +22,7 @@ Partial Class ChangerTool
     '不要使用代码编辑器修改它。
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
+        Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(ChangerTool))
         Me.Button1 = New System.Windows.Forms.Button()
         Me.ListBox1 = New System.Windows.Forms.ListBox()
@@ -34,6 +35,10 @@ Partial Class ChangerTool
         Me.Button3 = New System.Windows.Forms.Button()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.Button4 = New System.Windows.Forms.Button()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.排序ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.批量擦除ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'Button1
@@ -103,8 +108,25 @@ Partial Class ChangerTool
         'Button4
         '
         resources.ApplyResources(Me.Button4, "Button4")
+        Me.Button4.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Button4.Name = "Button4"
         Me.Button4.UseVisualStyleBackColor = True
+        '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.排序ToolStripMenuItem, Me.批量擦除ToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
+        '
+        '排序ToolStripMenuItem
+        '
+        Me.排序ToolStripMenuItem.Name = "排序ToolStripMenuItem"
+        resources.ApplyResources(Me.排序ToolStripMenuItem, "排序ToolStripMenuItem")
+        '
+        '批量擦除ToolStripMenuItem
+        '
+        Me.批量擦除ToolStripMenuItem.Name = "批量擦除ToolStripMenuItem"
+        resources.ApplyResources(Me.批量擦除ToolStripMenuItem, "批量擦除ToolStripMenuItem")
         '
         'ChangerTool
         '
@@ -124,6 +146,7 @@ Partial Class ChangerTool
         Me.DoubleBuffered = True
         Me.KeyPreview = True
         Me.Name = "ChangerTool"
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -148,4 +171,8 @@ Partial Class ChangerTool
         ' 在 InitializeComponent() 调用之后添加任何初始化。
         DisplayHelper.AfterInitializeComponent(Me)
     End Sub
+
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents 排序ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 批量擦除ToolStripMenuItem As ToolStripMenuItem
 End Class

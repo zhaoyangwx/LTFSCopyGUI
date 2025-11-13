@@ -674,11 +674,11 @@ Namespace My
          Global.System.Configuration.SettingsDescriptionAttribute("字体"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
-         Category("LTFSWriter"),
-         LocalizedDescription("PropertyDescription_LTFSWriter_BaseFont")>
-        Public Property LTFSWriter_BaseFont() As Font
+         Category("Application"),
+         LocalizedDescription("PropertyDescription_Application_BaseFont")>
+        Public Property Application_BaseFont() As Font
             Get
-                Dim result As Font = CType(Me("LTFSWriter_BaseFont"), Font)
+                Dim result As Font = CType(Me("Application_BaseFont"), Font)
                 If result IsNot Nothing Then
                     Return result
                 Else
@@ -686,7 +686,7 @@ Namespace My
                 End If
             End Get
             Set
-                Me("LTFSWriter_BaseFont") = Value
+                Me("Application_BaseFont") = Value
             End Set
         End Property
 

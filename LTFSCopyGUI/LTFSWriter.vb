@@ -2481,7 +2481,7 @@ Public Class LTFSWriter
         Return False
     End Function
 
-    Public Function TryExecute(ByVal command As Func(Of Byte()))
+    Public Function TryExecute(ByVal command As Func(Of Byte())) As Boolean
         Dim succ As Boolean = False
         While Not succ
             Dim sense() As Byte
@@ -4751,7 +4751,7 @@ Public Class LTFSWriter
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, "D41D8CD98F00B204E9800998ECF8427E")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, "AF1349B9F5F9A1A6A0404DEA36DCC9499BCB25C9ADC112B7CC9A93CAE41F3262")
                                     fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, "2D06800538D394C2")
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, LTFSConfigurator.Byte2Hex(IO.Hashing.XxHash128.Hash({})).Replace(" ", "").Replace("|", "").ToUpper())
+                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, IOManager.Byte2Hex(IO.Hashing.XxHash128.Hash({})).Replace(" ", "").Replace("|", "").ToUpper())
                                     TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
@@ -5083,7 +5083,7 @@ Public Class LTFSWriter
                     End If
                     If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "encryption.key")) Then
                         Dim key As String = (IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "encryption.key")))
-                        Dim newkey As Byte() = LTFSConfigurator.HexStringToByteArray(key)
+                        Dim newkey As Byte() = IOManager.HexStringToByteArray(key)
                         If newkey.Length <> 32 Then
                             EncryptionKey = Nothing
                         Else
@@ -5646,7 +5646,7 @@ Public Class LTFSWriter
                                             SetStatusLight(LWStatus.Err)
                                             LockGUI(False)
                                             Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                                        End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+                                        End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey, param.WORMMode)
                            End Sub)
                 End Sub)
         End If
@@ -6699,7 +6699,7 @@ Public Class LTFSWriter
                                 dupe = True
                             End If
                         End If
-                            PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
+                        PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
                         If ValidateOnly Then
                             If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
                                ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA256) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "" OrElse (Not (fr.File.SHA256ForeColor.Equals(Color.Black) OrElse fr.File.SHA256ForeColor.Equals(Color.Red)))) AndAlso
@@ -7946,7 +7946,7 @@ Public Class LTFSWriter
             key = BitConverter.ToString(EncryptionKey).Replace("-", "").ToUpper
         End If
         key = InputBox(设置密钥ToolStripMenuItem.Text, "LTFSWriter", key)
-        Dim newkey As Byte() = LTFSConfigurator.HexStringToByteArray(key)
+        Dim newkey As Byte() = IOManager.HexStringToByteArray(key)
         If newkey.Length <> 32 Then
             EncryptionKey = Nothing
             If key = "test" Then
@@ -8950,6 +8950,10 @@ Public Class LTFSWriter
                                  SP1.ShowDialog()
                              End Sub)
                 End If
+            Case Keys.T
+                If e.Control Then
+                    TestToolStripMenuItem.Visible = True
+                End If
         End Select
     End Sub
 
@@ -9143,6 +9147,16 @@ Public Class LTFSWriter
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
     End Sub
 
+    Private Sub 选中二级目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 选中二级目录ToolStripMenuItem.Click
+        AllowOperation = False
+        For Each n As TreeNode In TreeView1.TopNode.Nodes
+            For Each n2 As TreeNode In n.Nodes
+                n2.Checked = True
+            Next
+        Next
+        AllowOperation = True
+    End Sub
+
     Public Function FileExists(path As String) As Boolean
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
         Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
@@ -9182,149 +9196,3 @@ Public Class LTFSWriter
     End Sub
 End Class
 
-Public NotInheritable Class FileDropHandler
-    Implements IMessageFilter, IDisposable
-    <DllImport("user32.dll", SetLastError:=True, CallingConvention:=CallingConvention.Winapi)>
-    Private Shared Function ChangeWindowMessageFilterEx(ByVal hWnd As IntPtr, ByVal message As UInteger, ByVal action As ChangeFilterAction, pChangeFilterStruct As ChangeFilterStruct) As <MarshalAs(UnmanagedType.Bool)> Boolean
-
-    End Function
-
-    <DllImport("shell32.dll", SetLastError:=False, CallingConvention:=CallingConvention.Winapi)>
-    Private Shared Sub DragAcceptFiles(ByVal hWnd As IntPtr, ByVal fAccept As Boolean)
-    End Sub
-
-    <DllImport("shell32.dll", SetLastError:=False, CharSet:=CharSet.Unicode, CallingConvention:=CallingConvention.Winapi)>
-    Private Shared Function DragQueryFile(ByVal hWnd As IntPtr, ByVal iFile As UInteger, ByVal lpszFile As StringBuilder, ByVal cch As Integer) As UInteger
-
-    End Function
-
-    <DllImport("shell32.dll", SetLastError:=False, CallingConvention:=CallingConvention.Winapi)>
-    Private Shared Sub DragFinish(ByVal hDrop As IntPtr)
-
-    End Sub
-
-    <StructLayout(LayoutKind.Sequential)>
-    Private Structure ChangeFilterStruct
-
-        Public CbSize As UInteger
-
-        Public ExtStatus As ChangeFilterStatus
-    End Structure
-
-    Private Enum ChangeFilterAction As UInteger
-
-        MSGFLT_RESET
-
-        MSGFLT_ALLOW
-
-        MSGFLT_DISALLOW
-    End Enum
-
-    Private Enum ChangeFilterStatus As UInteger
-
-        MSGFLTINFO_NONE
-
-        MSGFLTINFO_ALREADYALLOWED_FORWND
-
-        MSGFLTINFO_ALREADYDISALLOWED_FORWND
-
-        MSGFLTINFO_ALLOWED_HIGHER
-    End Enum
-
-    Private Const WM_COPYGLOBALDATA As UInteger = 73
-
-    Private Const WM_COPYDATA As UInteger = 74
-
-    Private Const WM_DROPFILES As UInteger = 563
-
-    Private Const GetIndexCount As UInteger = 4294967295
-
-    Private _ContainerControl As Control
-
-    Private _DisposeControl As Boolean
-
-    Public ReadOnly Property ContainerControl As Control
-        Get
-            Return _ContainerControl
-        End Get
-    End Property
-
-    Public Sub New(ByVal containerControl As Control)
-        Me.New(containerControl, False)
-
-    End Sub
-
-    Public Sub New(ByVal containerControl As Control, ByVal releaseControl As Boolean)
-        Try
-            _ContainerControl = containerControl
-        Catch ex As Exception
-            Throw New ArgumentNullException("control", "control is null.")
-        End Try
-        If containerControl.IsDisposed Then
-            Throw New ObjectDisposedException("control")
-        End If
-
-        Me._DisposeControl = releaseControl
-        Dim status = New ChangeFilterStruct With {.CbSize = 8}
-        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_DROPFILES, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
-            Throw New Win32Exception(Marshal.GetLastWin32Error)
-        End If
-
-        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_COPYGLOBALDATA, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
-            Throw New Win32Exception(Marshal.GetLastWin32Error)
-        End If
-
-        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_COPYDATA, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
-            Throw New Win32Exception(Marshal.GetLastWin32Error)
-        End If
-
-        DragAcceptFiles(containerControl.Handle, True)
-        Application.AddMessageFilter(Me)
-    End Sub
-
-    Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage
-        If ((Me._ContainerControl Is Nothing) OrElse Me._ContainerControl.IsDisposed) Then
-            Return False
-        End If
-
-        If Me._ContainerControl.AllowDrop Then
-            _ContainerControl.AllowDrop = False
-            Return False
-        End If
-        If (m.Msg = WM_DROPFILES) Then
-            Dim handle = m.WParam
-            Dim fileCount = DragQueryFile(handle, GetIndexCount, Nothing, 0)
-            Dim fileNames((fileCount) - 1) As String
-            Dim sb = New StringBuilder(262)
-            Dim charLength = sb.Capacity
-            Dim i As UInteger = 0
-            Do While (i < fileCount)
-                If (DragQueryFile(handle, i, sb, charLength) > 0) Then
-                    fileNames(i) = sb.ToString
-                End If
-
-                i = (i + 1)
-            Loop
-
-            DragFinish(handle)
-            Me._ContainerControl.AllowDrop = True
-            Me._ContainerControl.DoDragDrop(fileNames, DragDropEffects.All)
-            Me._ContainerControl.AllowDrop = False
-            Return True
-        End If
-
-        Return False
-    End Function
-
-    Public Sub Dispose() Implements IDisposable.Dispose
-        If (Me._ContainerControl Is Nothing) Then
-            If (Me._DisposeControl AndAlso Not Me._ContainerControl.IsDisposed) Then
-                Me._ContainerControl.Dispose()
-            End If
-
-            Application.RemoveMessageFilter(Me)
-            Me._ContainerControl = Nothing
-        End If
-
-    End Sub
-End Class

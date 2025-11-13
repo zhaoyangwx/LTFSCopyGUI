@@ -310,68 +310,18 @@ Public Class LTFSConfigurator
         ButtonLTFSWriter.Enabled = True
     End Sub
 
-    Public Function HexStringToByteArray(s As String) As Byte()
-        s = s.ToUpper
-        Dim dataList As New List(Of Byte)
-        Dim charbuffer As String = ""
-        Dim allowedChar() As String = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"}
-        For i As Integer = 0 To s.Length - 1
-            If allowedChar.Contains(s(i)) Then
-                charbuffer &= s(i)
-            End If
-            If charbuffer.Length = 2 Or (charbuffer.Length = 1 And s(i) = " ") Then
-                dataList.Add(Convert.ToByte(charbuffer, 16))
-                charbuffer = ""
-            End If
-        Next
-        Return dataList.ToArray()
-    End Function
-    Public Shared Function Byte2Hex(bytes As Byte(), Optional ByVal TextShow As Boolean = False) As String
-        Const HalfWidthChars As String = "~!@#$%^&*()_+-=|\ <>?,./:;""''{}[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-        If bytes Is Nothing Then Return ""
-        If bytes.Length = 0 Then Return ""
-        Dim sb As New StringBuilder
-        Dim tb As String = ""
-        Dim ln As New StringBuilder
-        For i As Integer = 0 To bytes.Length - 1
-            If i Mod 16 = 0 And TextShow Then
-                ln.Append("|" & Hex(i).PadLeft(5) & "h: ")
-            End If
-            ln.Append(Convert.ToString((bytes(i) And &HFF) + &H100, 16).Substring(1).ToUpper)
-            ln.Append(" ")
-            Dim c As Char = Chr(bytes(i))
-            If Not HalfWidthChars.Contains(c) Then
-                tb &= "."
-            Else
-                tb &= c
-            End If
-            If i Mod 16 = 15 Then
-                If TextShow Then
-                    ln.Append(tb)
-                End If
-                sb.Append(ln.ToString().PadRight(74) & "|")
-                sb.Append(vbCrLf)
-                ln = New StringBuilder()
-                tb = ""
-            End If
-        Next
-        If TextShow And tb <> "" Then
-            ln.Append(tb)
-        End If
-        If ln.Length > 0 Then sb.Append(ln.ToString().PadRight(74) & "|")
-        Return sb.ToString()
-    End Function
+
     Private Sub ButtonDebugSendSCSICommand_Click(sender As Object, e As EventArgs) Handles ButtonDebugSendSCSICommand.Click
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    Dim cdbData() As Byte = HexStringToByteArray(TextBoxCDBData.Text)
+                    Dim cdbData() As Byte = IOManager.HexStringToByteArray(TextBoxCDBData.Text)
                     Dim dataData() As Byte = {}
                     Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
                     Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
                     Dim dataBufferPtr As IntPtr
                     If TextBoxParamData.Text.Length >= 2 Then
-                        dataData = HexStringToByteArray(TextBoxParamData.Text)
+                        dataData = IOManager.HexStringToByteArray(TextBoxParamData.Text)
                         dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
                         Marshal.Copy(dataData, 0, dataBufferPtr, dataData.Length)
                     Else
@@ -499,7 +449,7 @@ Public Class LTFSConfigurator
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SENSE"))
                                 Dim ModeData As Byte()
                                 ModeData = TapeUtils.ModeSense(TapeDrive, &H11)
-                                Invoke(Sub() TextBoxDebugOutput.AppendText($"     Mode Data: {Byte2Hex(ModeData)}{vbCrLf}"))
+                                Invoke(Sub() TextBoxDebugOutput.AppendText($"     Mode Data: {IOManager.Byte2Hex(ModeData)}{vbCrLf}"))
                                 ReDim Preserve ModeData(11)
                                 'Mode Select:1st Partition to Minimum 
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("MODE SELECT - Partition mode page.."))
@@ -642,7 +592,7 @@ Public Class LTFSConfigurator
                     Invoke(Sub()
                                If result = "" Then result = ConfTapeDrive & " Barcode = " & barcode
                                result &= vbCrLf & vbCrLf & "SenseBuffer" & vbCrLf
-                               result &= Byte2Hex(sense) & vbCrLf
+                               result &= IOManager.Byte2Hex(sense) & vbCrLf
                                result &= TapeUtils.ParseSenseData(sense) & vbCrLf
                                TextBoxDebugOutput.Text = result
                            End Sub)
@@ -675,7 +625,7 @@ Public Class LTFSConfigurator
 
                      Invoke(Sub()
                                 If Result <> "" Then TextBoxDebugOutput.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
-                                TextBoxDebugOutput.AppendText(Byte2Hex(ResultB))
+                                TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(ResultB))
                                 Panel1.Enabled = True
                             End Sub)
                  End Sub)
@@ -813,17 +763,17 @@ Public Class LTFSConfigurator
                             Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, i, CByte(NumericUpDownPartitionNum.Value))
                             If Attr IsNot Nothing Then
                                 Me.Invoke(Sub()
-                                              TextBoxDebugOutput.Text = Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
+                                              TextBoxDebugOutput.Text = IOManager.Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
                                               TextBoxDebugOutput.AppendText(Attr.AsNumeric & vbCrLf & vbCrLf)
                                               TextBoxDebugOutput.AppendText(Attr.AsString & vbCrLf & vbCrLf)
-                                              TextBoxDebugOutput.AppendText(Byte2Hex(Attr.RawData) & vbCrLf)
+                                              TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(Attr.RawData) & vbCrLf)
                                           End Sub)
                                 MAMData.Content.Add(Attr)
                             Else
                                 If (i And &H7F) = 0 Then
                                     Dim i2 As UInt16 = i
                                     Me.Invoke(Sub()
-                                                  TextBoxDebugOutput.Text = Byte2Hex({i2 >> 8 And &HFF, i2 And &HFF}) & " LEN=0"
+                                                  TextBoxDebugOutput.Text = IOManager.Byte2Hex({i2 >> 8 And &HFF, i2 And &HFF}) & " LEN=0"
                                               End Sub)
                                 End If
 
@@ -881,9 +831,9 @@ Public Class LTFSConfigurator
                                         TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
                                         TextBoxDebugOutput.Text &= "Excess data is discarded. Block length should be " & readData.Length - DiffBytes & vbCrLf & vbCrLf
                                     End If
-                                    TextBoxDebugOutput.Text &= Byte2Hex(readData, True) & vbCrLf
+                                    TextBoxDebugOutput.Text &= IOManager.Byte2Hex(readData, True) & vbCrLf
                                     TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense) & vbCrLf
-                                    TextBoxDebugOutput.Text &= Byte2Hex(sense, True) & vbCrLf
+                                    TextBoxDebugOutput.Text &= IOManager.Byte2Hex(sense, True) & vbCrLf
 
                                 End Sub)
                      Catch ex As Exception
@@ -907,7 +857,7 @@ Public Class LTFSConfigurator
                                 If SaveFileDialog2.ShowDialog = DialogResult.OK Then
                                     IO.File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
                                 End If
-                                TextBoxDebugOutput.Text &= Byte2Hex(DumpData, True)
+                                TextBoxDebugOutput.Text &= IOManager.Byte2Hex(DumpData, True)
                                 Me.Enabled = True
                             End Sub)
                  End Sub)
@@ -938,7 +888,7 @@ Public Class LTFSConfigurator
                          TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
                          Dim sense As Byte() = {}
                          TapeUtils.Locate(ConfTapeDrive, blk, partition, dest, sense)
-                         result = TapeUtils.ParseSenseData(sense) & vbCrLf & Byte2Hex(sense, True)
+                         result = TapeUtils.ParseSenseData(sense) & vbCrLf & IOManager.Byte2Hex(sense, True)
                      Catch ex As Exception
 
                      End Try
@@ -1143,7 +1093,7 @@ Public Class LTFSConfigurator
                                    Panel1.Enabled = True
                                End Sub)
                         Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
-                    End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey)
+                    End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey, param.WORMMode)
             Catch ex As Exception
                 TapeUtils.CloseTapeDrive(driveHandle)
                 TextBoxDebugOutput.AppendText(ex.ToString())
@@ -1418,7 +1368,7 @@ Public Class LTFSConfigurator
                                     If CheckBoxShowRawLogPageData.Checked Then
                                         TextBoxDebugOutput.AppendText("Raw Data".PadLeft(41, "=").PadRight(75, "="))
                                         TextBoxDebugOutput.AppendText(vbCrLf)
-                                        TextBoxDebugOutput.AppendText(Byte2Hex(PageItem(index).RawData, True))
+                                        TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(PageItem(index).RawData, True))
                                     End If
                                     Panel1.Enabled = True
                                 End Sub)
@@ -2010,11 +1960,11 @@ Public Class LTFSConfigurator
 
         Invoke(Sub()
                    TextBoxDebugOutput.Text = "CDB" & vbCrLf
-                   TextBoxDebugOutput.Text &= Byte2Hex(cdb, True)
+                   TextBoxDebugOutput.Text &= IOManager.Byte2Hex(cdb, True)
                    TextBoxDebugOutput.Text &= vbCrLf & vbCrLf & "Param" & vbCrLf
-                   If param IsNot Nothing AndAlso param.Length > 0 Then TextBoxDebugOutput.Text &= Byte2Hex(param, True) & vbCrLf
+                   If param IsNot Nothing AndAlso param.Length > 0 Then TextBoxDebugOutput.Text &= IOManager.Byte2Hex(param, True) & vbCrLf
                    TextBoxDebugOutput.Text &= vbCrLf & vbCrLf & "Sense" & vbCrLf
-                   If sense IsNot Nothing AndAlso sense.Length > 0 Then TextBoxDebugOutput.Text &= Byte2Hex(sense, True) & vbCrLf
+                   If sense IsNot Nothing AndAlso sense.Length > 0 Then TextBoxDebugOutput.Text &= IOManager.Byte2Hex(sense, True) & vbCrLf
                    TextBoxDebugOutput.Text &= TapeUtils.ParseSenseData(sense)
                End Sub)
     End Sub
@@ -2168,7 +2118,7 @@ Public Class LTFSConfigurator
                         Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
                         If readData.Length > 0 Then
                             Dim len0 As Integer = readData.Length
-                            readData = AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, isFloat, HeaderChanged)
+                            readData = IOManager.WaveFileHelper.AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, isFloat, HeaderChanged)
                             If len0 <> readData.Length Then
                                 player.Flush()
                                 While player.IsPlaying
@@ -2228,98 +2178,6 @@ Public Class LTFSConfigurator
                 End Sub)
         thprog.Start()
     End Sub
-
-    Public Sub FixOrAddWavHeader(ByRef wavData As Byte(), ByRef sampleRate As Integer, ByRef channels As Short, ByRef bitsPerSample As Short)
-        Const HeaderSize As Integer = 44
-
-        Dim isWav As Boolean = False
-        If wavData.Length >= HeaderSize Then
-            Dim riff As String = System.Text.Encoding.ASCII.GetString(wavData, 0, 4)
-            Dim wave As String = System.Text.Encoding.ASCII.GetString(wavData, 8, 4)
-            isWav = (riff = "RIFF" AndAlso wave = "WAVE")
-        End If
-
-        If isWav Then
-            ' 提取并更新参数
-            channels = BitConverter.ToInt16(wavData, 22)
-            sampleRate = BitConverter.ToInt32(wavData, 24)
-            bitsPerSample = BitConverter.ToInt16(wavData, 34)
-
-            Dim expectedDataSize As Integer = wavData.Length - HeaderSize
-            BitConverter.GetBytes(wavData.Length - 8).CopyTo(wavData, 4)
-            BitConverter.GetBytes(expectedDataSize).CopyTo(wavData, 40)
-        Else
-            ' 生成 header 并拼接
-            Dim dataSize As Integer = wavData.Length
-            Dim header As Byte() = GenerateWavHeader(dataSize, sampleRate, channels, bitsPerSample)
-            Dim newData(dataSize + HeaderSize - 1) As Byte
-            Array.Copy(header, 0, newData, 0, HeaderSize)
-            Array.Copy(wavData, 0, newData, HeaderSize, dataSize)
-            wavData = newData
-        End If
-    End Sub
-    Public Function AnalyzeAndRemoveWavHeader(ByVal data As Byte(),
-                                          ByRef sampleRate As Integer,
-                                          ByRef channels As Integer,
-                                          ByRef bitsPerSample As Integer,
-                                          ByRef isFloat As Boolean,
-                                          ByRef ResultChanged As Boolean) As Byte()
-
-        If data.Length < 44 Then Return data
-
-        ' 检查前4个字节是否为 "RIFF"，后跟 "WAVE"
-        If Encoding.ASCII.GetString(data, 0, 4) = "RIFF" AndAlso Encoding.ASCII.GetString(data, 8, 4) = "WAVE" Then
-            ' 解析 WAV 头
-            ResultChanged = False
-            Dim value As Integer = BitConverter.ToInt32(data, 24)
-            If sampleRate <> value Then ResultChanged = True
-            sampleRate = value
-            value = BitConverter.ToInt16(data, 22)
-            If channels <> value Then ResultChanged = True
-            channels = value
-            Dim subChunkSize As Integer = BitConverter.ToInt32(data, 16)
-            value = BitConverter.ToInt16(data, 34)
-            If bitsPerSample <> value Then ResultChanged = True
-            bitsPerSample = value
-            Dim wFormatTag As Short = BitConverter.ToInt16(data, 20)
-            value = (wFormatTag = &H3)
-            If isFloat <> value Then ResultChanged = True
-            isFloat = value
-            ' 拷贝纯 PCM 数据
-            Dim pcmLength As Integer = data.Length - 28 - subChunkSize
-            Dim pcmData(pcmLength - 1) As Byte
-            Buffer.BlockCopy(data, 28 + subChunkSize, pcmData, 0, pcmLength)
-
-            Return pcmData
-        End If
-
-        ' 不是有效 WAV，返回原始数据
-        Return data
-    End Function
-
-    ' 生成 WAV 文件头
-    Public Function GenerateWavHeader(dataSize As Integer, sampleRate As Integer, channels As Short, bitsPerSample As Short) As Byte()
-        Dim header(43) As Byte
-        Dim byteRate As Integer = sampleRate * channels * bitsPerSample \ 8
-        Dim blockAlign As Short = CShort(channels * bitsPerSample \ 8)
-        Dim chunkSize As Integer = 36 + dataSize
-
-        Array.Copy(System.Text.Encoding.ASCII.GetBytes("RIFF"), 0, header, 0, 4)
-        BitConverter.GetBytes(chunkSize).CopyTo(header, 4)
-        Array.Copy(System.Text.Encoding.ASCII.GetBytes("WAVE"), 0, header, 8, 4)
-        Array.Copy(System.Text.Encoding.ASCII.GetBytes("fmt "), 0, header, 12, 4)
-        BitConverter.GetBytes(16).CopyTo(header, 16)                 ' Subchunk1Size
-        BitConverter.GetBytes(CShort(1)).CopyTo(header, 20)          ' AudioFormat = 1 (PCM)
-        BitConverter.GetBytes(channels).CopyTo(header, 22)
-        BitConverter.GetBytes(sampleRate).CopyTo(header, 24)
-        BitConverter.GetBytes(byteRate).CopyTo(header, 28)
-        BitConverter.GetBytes(blockAlign).CopyTo(header, 32)
-        BitConverter.GetBytes(bitsPerSample).CopyTo(header, 34)
-        Array.Copy(System.Text.Encoding.ASCII.GetBytes("data"), 0, header, 36, 4)
-        BitConverter.GetBytes(dataSize).CopyTo(header, 40)
-
-        Return header
-    End Function
 
     Private Sub ManualAddToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ManualAddToolStripMenuItem.Click
         Dim newdev As New TapeUtils.BlockDevice
