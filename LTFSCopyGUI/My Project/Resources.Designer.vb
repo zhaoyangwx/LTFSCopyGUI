@@ -89,6 +89,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 字体 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_Application_BaseFont() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_Application_BaseFont", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 许可证文本显示 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_Application_License() As String
@@ -220,15 +229,6 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_AutoFlushCooldownMilliseconds", resourceCulture)
-            End Get
-        End Property
-        
-        '''<summary>
-        '''  查找类似 字体 的本地化字符串。
-        '''</summary>
-        Friend ReadOnly Property PropertyDescription_LTFSWriter_BaseFont() As String
-            Get
-                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_BaseFont", resourceCulture)
             End Get
         End Property
         
@@ -626,6 +626,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_mkltfs_VolumeLabel() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_mkltfs_VolumeLabel", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 WORM模式 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_mkltfs_WORMMode() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_mkltfs_WORMMode", resourceCulture)
             End Get
         End Property
         

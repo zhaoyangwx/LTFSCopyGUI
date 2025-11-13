@@ -1,8 +1,12 @@
 Imports System.ComponentModel
+Imports System.ComponentModel.DataAnnotations
 Imports System.Runtime.InteropServices
+Imports System.Security.Cryptography
 Imports System.Text
+Imports System.Threading
 Imports LTFSCopyGUI.TapeUtils
 Imports LTFSCopyGUI.TapeUtils.SetupAPIWheels
+Imports NAudio.MediaFoundation
 
 Public Class ChangerTool
     Public LoadComplete As Boolean = False
@@ -199,7 +203,26 @@ Public Class ChangerTool
             End Sub)
     End Sub
 
-    Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
+    Public Sub SetUILock(Lock As Boolean)
+        Me.Invoke(Sub()
+                      For Each c As Control In Me.Controls
+                          c.Enabled = Not Lock
+                      Next
+                  End Sub)
+    End Sub
+
+    Private Sub ChangerTool_SizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
+        If Not LoadComplete Then Exit Sub
+        SuspendLayout()
+        Dim sample As New ChangerTool
+        ComboBox1.Width = (Width - sample.Width) / 2 + sample.ComboBox1.Width
+        ComboBox2.Width = (Width - sample.Width) / 2 + sample.ComboBox2.Width
+        ComboBox2.Left = (Width - sample.Width) / 2 + sample.ComboBox2.Left
+        Label1.Left = (Width - sample.Width) / 2 + sample.Label1.Left
+        ResumeLayout()
+    End Sub
+
+    Private Sub ≈≈–ÚToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ≈≈–ÚToolStripMenuItem.Click
         SetUILock(True)
         Threading.Tasks.Task.Run(
             Sub()
@@ -316,26 +339,6 @@ Public Class ChangerTool
                               SetUILock(False)
                           End Sub)
             End Sub)
-
-    End Sub
-
-    Public Sub SetUILock(Lock As Boolean)
-        Me.Invoke(Sub()
-                      For Each c As Control In Me.Controls
-                          c.Enabled = Not Lock
-                      Next
-                  End Sub)
-    End Sub
-
-    Private Sub ChangerTool_SizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
-        If Not LoadComplete Then Exit Sub
-        SuspendLayout()
-        Dim sample As New ChangerTool
-        ComboBox1.Width = (Width - sample.Width) / 2 + sample.ComboBox1.Width
-        ComboBox2.Width = (Width - sample.Width) / 2 + sample.ComboBox2.Width
-        ComboBox2.Left = (Width - sample.Width) / 2 + sample.ComboBox2.Left
-        Label1.Left = (Width - sample.Width) / 2 + sample.Label1.Left
-        ResumeLayout()
     End Sub
 
     Private Sub ChangerTool_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
@@ -346,5 +349,132 @@ Public Class ChangerTool
                 SP1.SelectedObject = Me
                 SP1.Show()
         End Select
+    End Sub
+
+    Private Sub ≈˙¡ø≤¡≥˝ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ≈˙¡ø≤¡≥˝ToolStripMenuItem.Click
+        If Not (MessageBox.Show(My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK) Then Exit Sub
+        SetUILock(True)
+        Task.Run(Sub()
+                     Invoke(Sub() TextBox1.Text = $"Loading elements{vbCrLf}")
+                     RefreshCurrentChanger()
+                     If FullElement Is Nothing OrElse EmptyElement Is Nothing Then
+                         SetUILock(False)
+                         Exit Sub
+                     End If
+                     Dim changerPath As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+                     Dim sense As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=changerPath, cdbData:={3, 0, 0, 0, &H12, 0}, paramLen:=18)
+                     Dim ToErase As New List(Of MediumChanger.Element)
+                     For Each fe As MediumChanger.Element In FullElement
+                         If fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.StorageElement OrElse fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.ImportExportElement Then
+                             If fe.Full Then ToErase.Add(fe)
+                         End If
+                     Next
+                     Dim AllDrivers As New List(Of MediumChanger.Element)
+                     For Each fe As MediumChanger.Element In EmptyElement
+                         If fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.DataTransferElement Then
+                             fe.Identifier = fe.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
+                             AllDrivers.Add(fe)
+                         End If
+                     Next
+                     Dim drvList As List(Of BlockDevice) = GetTapeDriveList()
+                     Dim drvMapping As New Dictionary(Of MediumChanger.Element, BlockDevice)
+                     For Each drv As MediumChanger.Element In AllDrivers
+                         Dim found As Boolean = False
+                         For Each d As BlockDevice In drvList
+                             If drv.Identifier.EndsWith(d.SerialNumber) Then
+                                 found = True
+                                 Invoke(Sub() TextBox1.AppendText($"Find driver [0x{Hex(drv.ElementAddress).PadLeft(4, "0")}]{drv.Identifier} <=> {d.SerialNumber} {d.DevicePath}{vbCrLf}"))
+                                 drvMapping.Add(drv, d)
+                                 Exit For
+                             End If
+                         Next
+                     Next
+                     Try
+                         While ToErase.Count > 0
+                             Dim eraseTaskCount As Integer = 0
+                             Dim eraseFinEvent As New AutoResetEvent(False)
+
+                             Dim eraseMapping As New Dictionary(Of MediumChanger.Element, MediumChanger.Element) 'Drive <=> Slot
+                             For i As Integer = 0 To drvMapping.Keys.Count - 1
+                                 If ToErase.Count = 0 Then Exit For
+
+                                 Invoke(Sub() TextBox1.AppendText($"Assign driver [0x{Hex(drvMapping.Keys(i).ElementAddress).PadLeft(4, "0"c)}]{drvMapping.Keys(i).Identifier} <=> [0x{Hex(ToErase(0).ElementAddress).PadLeft(4, "0"c)}]Element {ToErase(0).PrimaryVolumeTagInformation}{vbCrLf}"))
+                                 eraseMapping.Add(drvMapping.Keys(i), ToErase(0))
+                                 ToErase.RemoveAt(0)
+                             Next
+                             Dim finList As New List(Of MediumChanger.Element)
+                             For i As Integer = 0 To eraseMapping.Keys.Count - 1
+                                 Dim drv As MediumChanger.Element = eraseMapping.Keys(i)
+                                 Dim slot As MediumChanger.Element = eraseMapping(drv)
+                                 Invoke(Sub() TextBox1.AppendText($"Move [0x{Hex(slot.ElementAddress).PadLeft(4, "0"c)}]{slot.PrimaryVolumeTagInformation} -> [0x{Hex(drv.ElementAddress).PadLeft(4, "0"c)}]{drv.Identifier}{vbCrLf}"))
+                                 ApplicationWheels.TryExecute(Function() As Byte()
+                                                                  Dim senseReturn(63) As Byte
+                                                                  MediumChanger.MoveMedium(changerPath, slot.ElementAddress, drv.ElementAddress, senseReturn, slot.LUN)
+                                                                  Return senseReturn
+                                                              End Function)
+                                 Threading.Interlocked.Increment(eraseTaskCount)
+                                 Task.Run(Sub()
+                                              Invoke(Sub() TextBox1.AppendText($"Erase {drvMapping(drv).DevicePath}{vbCrLf}"))
+                                              ApplicationWheels.TryExecute(Function() As Byte()
+                                                                               Dim senseReturn(63) As Byte
+                                                                               SCSIReadParam(TapeDrive:=drvMapping(drv).DevicePath, {&HB, 0, 0, &HFF, &HFF, 0}, 0, Function(s As Byte())
+                                                                                                                                                                       senseReturn = s
+                                                                                                                                                                       Return True
+                                                                                                                                                                   End Function)
+                                                                               Return senseReturn
+                                                                           End Function)
+                                              ApplicationWheels.TryExecute(Function() As Byte()
+                                                                               Dim senseReturn(63) As Byte
+                                                                               SCSIReadParam(TapeDrive:=drvMapping(drv).DevicePath, {4, 0, 1, 0, 0, 0}, 0, Function(s As Byte())
+                                                                                                                                                               senseReturn = s
+                                                                                                                                                               Return True
+                                                                                                                                                           End Function)
+                                                                               Return senseReturn
+                                                                           End Function)
+                                              SyncLock finList
+                                                  finList.Add(drv)
+                                              End SyncLock
+                                              Threading.Interlocked.Decrement(eraseTaskCount)
+                                              eraseFinEvent.Set()
+                                          End Sub)
+                             Next
+                             While eraseTaskCount > 0
+                                 SyncLock finList
+                                     For Each drv As MediumChanger.Element In finList
+                                         Dim slot As MediumChanger.Element = eraseMapping(drv)
+                                         Invoke(Sub() TextBox1.AppendText($"Move [0x{Hex(drv.ElementAddress).PadLeft(4, "0"c)}]{drv.Identifier}_{slot.PrimaryVolumeTagInformation} -> [0x{Hex(slot.ElementAddress).PadLeft(4, "0"c)}]{vbCrLf}"))
+                                         MediumChanger.MoveMedium(changerPath, drv.ElementAddress, slot.ElementAddress, sense, drv.LUN)
+                                         ApplicationWheels.TryExecute(Function() As Byte()
+                                                                          Dim senseReturn(63) As Byte
+                                                                          MediumChanger.MoveMedium(changerPath, drv.ElementAddress, slot.ElementAddress, senseReturn, drv.LUN)
+                                                                          Return senseReturn
+                                                                      End Function)
+                                     Next
+                                     finList.Clear()
+                                 End SyncLock
+                                 eraseFinEvent.WaitOne(1000)
+                             End While
+                             For Each drv As MediumChanger.Element In finList
+                                 Dim slot As MediumChanger.Element = eraseMapping(drv)
+                                 Invoke(Sub() TextBox1.AppendText($"Move [0x{Hex(drv.ElementAddress).PadLeft(4, "0"c)}]{drv.Identifier}_{slot.PrimaryVolumeTagInformation} -> [0x{Hex(slot.ElementAddress).PadLeft(4, "0"c)}]{vbCrLf}"))
+                                 ApplicationWheels.TryExecute(Function() As Byte()
+                                                                  Dim senseReturn(63) As Byte
+                                                                  MediumChanger.MoveMedium(changerPath, drv.ElementAddress, slot.ElementAddress, senseReturn, drv.LUN)
+                                                                  Return senseReturn
+                                                              End Function)
+                             Next
+                         End While
+                         Invoke(Sub() TextBox1.AppendText("Finished"))
+                     Catch ex As Exception
+                         MessageBox.Show(ex.ToString())
+                     End Try
+
+                     SetUILock(False)
+                 End Sub)
+
+    End Sub
+
+    Private Sub Button4_MouseUp(sender As Object, e As MouseEventArgs) Handles Button4.MouseUp
+        ContextMenuStrip1.Show(Button4, e.X, e.Y)
     End Sub
 End Class

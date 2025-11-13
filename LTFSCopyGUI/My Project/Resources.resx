@@ -932,7 +932,10 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_ShowDragIcon" xml:space="preserve">
     <value>空目录显示拖动图标</value>
   </data>
-  <data name="PropertyDescription_LTFSWriter_BaseFont" xml:space="preserve">
+  <data name="PropertyDescription_mkltfs_WORMMode" xml:space="preserve">
+    <value>WORM模式</value>
+  </data>
+  <data name="PropertyDescription_Application_BaseFont" xml:space="preserve">
     <value>字体</value>
   </data>
 </root>

@@ -250,6 +250,8 @@ Partial Class LTFSWriter
         Me.ContextMenuStrip4 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SettingToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.TestToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.选中二级目录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
@@ -1418,7 +1420,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip4
         '
-        Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem})
+        Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem, Me.TestToolStripMenuItem})
         Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
         resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
         '
@@ -1431,6 +1433,17 @@ Partial Class LTFSWriter
         '
         Me.SettingToolStripMenuItem.Name = "SettingToolStripMenuItem"
         resources.ApplyResources(Me.SettingToolStripMenuItem, "SettingToolStripMenuItem")
+        '
+        'TestToolStripMenuItem
+        '
+        Me.TestToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.选中二级目录ToolStripMenuItem})
+        Me.TestToolStripMenuItem.Name = "TestToolStripMenuItem"
+        resources.ApplyResources(Me.TestToolStripMenuItem, "TestToolStripMenuItem")
+        '
+        '选中二级目录ToolStripMenuItem
+        '
+        Me.选中二级目录ToolStripMenuItem.Name = "选中二级目录ToolStripMenuItem"
+        resources.ApplyResources(Me.选中二级目录ToolStripMenuItem, "选中二级目录ToolStripMenuItem")
         '
         'ToolTipChanErrLog
         '
@@ -1676,4 +1689,7 @@ Partial Class LTFSWriter
         ' 在 InitializeComponent() 调用之后添加任何初始化。
         DisplayHelper.AfterInitializeComponent(Me)
     End Sub
+
+    Friend WithEvents TestToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 选中二级目录ToolStripMenuItem As ToolStripMenuItem
 End Class

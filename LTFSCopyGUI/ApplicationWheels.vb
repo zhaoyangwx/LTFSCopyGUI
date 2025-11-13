@@ -964,3 +964,198 @@ Public Class ErrRateHelper
         End If
     End Function
 End Class
+
+Public Class ApplicationWheels
+    Public Shared Function TryExecute(ByVal command As Func(Of Byte())) As Boolean
+        Dim succ As Boolean = False
+        While Not succ
+            Dim sense() As Byte
+            Try
+                sense = command()
+            Catch ex As Exception
+                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Case DialogResult.Abort
+                        Throw ex
+                    Case DialogResult.Retry
+                        succ = False
+                    Case DialogResult.Ignore
+                        succ = True
+                        Exit While
+                End Select
+                Continue While
+            End Try
+            If ((sense(2) >> 6) And &H1) = 1 Then
+                If (sense(2) And &HF) = 13 Then
+                    succ = True
+                Else
+                    succ = True
+                    Exit While
+                End If
+            ElseIf sense(2) And &HF <> 0 Then
+                Try
+                    Throw New Exception("SCSI sense error")
+                Catch ex As Exception
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Case DialogResult.Abort
+                            Throw New Exception(TapeUtils.ParseSenseData(sense))
+                        Case DialogResult.Retry
+                            succ = False
+                        Case DialogResult.Ignore
+                            succ = True
+                            Exit While
+                    End Select
+                End Try
+            Else
+                succ = True
+            End If
+        End While
+        Return succ
+    End Function
+End Class
+
+Public NotInheritable Class FileDropHandler
+    Implements IMessageFilter, IDisposable
+    <DllImport("user32.dll", SetLastError:=True, CallingConvention:=CallingConvention.Winapi)>
+    Private Shared Function ChangeWindowMessageFilterEx(ByVal hWnd As IntPtr, ByVal message As UInteger, ByVal action As ChangeFilterAction, pChangeFilterStruct As ChangeFilterStruct) As <MarshalAs(UnmanagedType.Bool)> Boolean
+
+    End Function
+
+    <DllImport("shell32.dll", SetLastError:=False, CallingConvention:=CallingConvention.Winapi)>
+    Private Shared Sub DragAcceptFiles(ByVal hWnd As IntPtr, ByVal fAccept As Boolean)
+    End Sub
+
+    <DllImport("shell32.dll", SetLastError:=False, CharSet:=CharSet.Unicode, CallingConvention:=CallingConvention.Winapi)>
+    Private Shared Function DragQueryFile(ByVal hWnd As IntPtr, ByVal iFile As UInteger, ByVal lpszFile As StringBuilder, ByVal cch As Integer) As UInteger
+
+    End Function
+
+    <DllImport("shell32.dll", SetLastError:=False, CallingConvention:=CallingConvention.Winapi)>
+    Private Shared Sub DragFinish(ByVal hDrop As IntPtr)
+
+    End Sub
+
+    <StructLayout(LayoutKind.Sequential)>
+    Private Structure ChangeFilterStruct
+
+        Public CbSize As UInteger
+
+        Public ExtStatus As ChangeFilterStatus
+    End Structure
+
+    Private Enum ChangeFilterAction As UInteger
+
+        MSGFLT_RESET
+
+        MSGFLT_ALLOW
+
+        MSGFLT_DISALLOW
+    End Enum
+
+    Private Enum ChangeFilterStatus As UInteger
+
+        MSGFLTINFO_NONE
+
+        MSGFLTINFO_ALREADYALLOWED_FORWND
+
+        MSGFLTINFO_ALREADYDISALLOWED_FORWND
+
+        MSGFLTINFO_ALLOWED_HIGHER
+    End Enum
+
+    Private Const WM_COPYGLOBALDATA As UInteger = 73
+
+    Private Const WM_COPYDATA As UInteger = 74
+
+    Private Const WM_DROPFILES As UInteger = 563
+
+    Private Const GetIndexCount As UInteger = 4294967295
+
+    Private _ContainerControl As Control
+
+    Private _DisposeControl As Boolean
+
+    Public ReadOnly Property ContainerControl As Control
+        Get
+            Return _ContainerControl
+        End Get
+    End Property
+
+    Public Sub New(ByVal containerControl As Control)
+        Me.New(containerControl, False)
+
+    End Sub
+
+    Public Sub New(ByVal containerControl As Control, ByVal releaseControl As Boolean)
+        Try
+            _ContainerControl = containerControl
+        Catch ex As Exception
+            Throw New ArgumentNullException("control", "control is null.")
+        End Try
+        If containerControl.IsDisposed Then
+            Throw New ObjectDisposedException("control")
+        End If
+
+        Me._DisposeControl = releaseControl
+        Dim status = New ChangeFilterStruct With {.CbSize = 8}
+        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_DROPFILES, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
+            Throw New Win32Exception(Marshal.GetLastWin32Error)
+        End If
+
+        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_COPYGLOBALDATA, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
+            Throw New Win32Exception(Marshal.GetLastWin32Error)
+        End If
+
+        If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_COPYDATA, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
+            Throw New Win32Exception(Marshal.GetLastWin32Error)
+        End If
+
+        DragAcceptFiles(containerControl.Handle, True)
+        Application.AddMessageFilter(Me)
+    End Sub
+
+    Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage
+        If ((Me._ContainerControl Is Nothing) OrElse Me._ContainerControl.IsDisposed) Then
+            Return False
+        End If
+
+        If Me._ContainerControl.AllowDrop Then
+            _ContainerControl.AllowDrop = False
+            Return False
+        End If
+        If (m.Msg = WM_DROPFILES) Then
+            Dim handle = m.WParam
+            Dim fileCount = DragQueryFile(handle, GetIndexCount, Nothing, 0)
+            Dim fileNames((fileCount) - 1) As String
+            Dim sb = New StringBuilder(262)
+            Dim charLength = sb.Capacity
+            Dim i As UInteger = 0
+            Do While (i < fileCount)
+                If (DragQueryFile(handle, i, sb, charLength) > 0) Then
+                    fileNames(i) = sb.ToString
+                End If
+
+                i = (i + 1)
+            Loop
+
+            DragFinish(handle)
+            Me._ContainerControl.AllowDrop = True
+            Me._ContainerControl.DoDragDrop(fileNames, DragDropEffects.All)
+            Me._ContainerControl.AllowDrop = False
+            Return True
+        End If
+
+        Return False
+    End Function
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        If (Me._ContainerControl Is Nothing) Then
+            If (Me._DisposeControl AndAlso Not Me._ContainerControl.IsDisposed) Then
+                Me._ContainerControl.Dispose()
+            End If
+
+            Application.RemoveMessageFilter(Me)
+            Me._ContainerControl = Nothing
+        End If
+
+    End Sub
+End Class

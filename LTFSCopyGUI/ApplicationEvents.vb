@@ -102,7 +102,7 @@ Namespace My
                 End Try
             End If
             DisplayHelper.ScreenScale = DisplayHelper.GetScreenScale()
-            With My.Settings.LTFSWriter_BaseFont
+            With My.Settings.Application_BaseFont
                 DisplayHelper.DisplayFont = New Font(.FontFamily, .Size * DisplayHelper.ScreenScale, .Unit)
             End With
             If e.CommandLine.Count = 0 Then
@@ -221,8 +221,8 @@ Namespace My
                                 Else
 
                                 End If
-                                Dim cdb As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 2))
-                                Dim data As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 3))
+                                Dim cdb As Byte() = IOManager.HexStringToByteArray(param(i + 2))
+                                Dim data As Byte() = IOManager.HexStringToByteArray(param(i + 3))
                                 Dim dataDir As Byte = Val(param(i + 4))
                                 Dim TimeOut As Integer = 60000
                                 If i + 5 <= param.Length - 1 Then
@@ -343,7 +343,7 @@ dataDir:{dataDir}
                             End If
                         Case "-crc"
                             If i < param.Count - 1 Then
-                                Dim Num1 As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 1))
+                                Dim Num1 As Byte() = IOManager.HexStringToByteArray(param(i + 1))
                                 InitConsole()
                                 Console.WriteLine($"{TapeUtils.Byte2Hex(TapeUtils.GX256.CalcCRC(Num1))}")
                                 CloseConsole()
@@ -745,8 +745,8 @@ dataDir:{dataDir}
                                 Else
 
                                 End If
-                                Dim cdb As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 4))
-                                Dim data As Byte() = LTFSConfigurator.HexStringToByteArray(param(i + 5))
+                                Dim cdb As Byte() = IOManager.HexStringToByteArray(param(i + 4))
+                                Dim data As Byte() = IOManager.HexStringToByteArray(param(i + 5))
                                 Dim dataDir As Byte = Val(param(i + 6))
                                 Dim TimeOut As Integer = 60000
                                 If i + 7 <= param.Length - 1 Then
