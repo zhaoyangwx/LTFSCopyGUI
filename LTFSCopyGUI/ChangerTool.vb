@@ -383,13 +383,16 @@ Public Class ChangerTool
                          For Each d As BlockDevice In drvList
                              If drv.Identifier.EndsWith(d.SerialNumber) Then
                                  found = True
-                                 Invoke(Sub() TextBox1.AppendText($"Find driver [0x{Hex(drv.ElementAddress).PadLeft(4, "0")}]{drv.Identifier} <=> {d.SerialNumber} {d.DevicePath}{vbCrLf}"))
+                                 Invoke(Sub() TextBox1.AppendText($"Find drive [0x{Hex(drv.ElementAddress).PadLeft(4, "0")}]{drv.Identifier} <=> {d.SerialNumber} {d.DevicePath}{vbCrLf}"))
                                  drvMapping.Add(drv, d)
                                  Exit For
                              End If
                          Next
                      Next
                      Try
+                         If drvMapping.Keys.Count = 0 Then
+                             Throw New Exception("No drive found.")
+                         End If
                          While ToErase.Count > 0
                              Dim eraseTaskCount As Integer = 0
                              Dim eraseFinEvent As New AutoResetEvent(False)
@@ -398,7 +401,7 @@ Public Class ChangerTool
                              For i As Integer = 0 To drvMapping.Keys.Count - 1
                                  If ToErase.Count = 0 Then Exit For
 
-                                 Invoke(Sub() TextBox1.AppendText($"Assign driver [0x{Hex(drvMapping.Keys(i).ElementAddress).PadLeft(4, "0"c)}]{drvMapping.Keys(i).Identifier} <=> [0x{Hex(ToErase(0).ElementAddress).PadLeft(4, "0"c)}]Element {ToErase(0).PrimaryVolumeTagInformation}{vbCrLf}"))
+                                 Invoke(Sub() TextBox1.AppendText($"Assign drive [0x{Hex(drvMapping.Keys(i).ElementAddress).PadLeft(4, "0"c)}]{drvMapping.Keys(i).Identifier} <=> [0x{Hex(ToErase(0).ElementAddress).PadLeft(4, "0"c)}]Element {ToErase(0).PrimaryVolumeTagInformation}{vbCrLf}"))
                                  eraseMapping.Add(drvMapping.Keys(i), ToErase(0))
                                  ToErase.RemoveAt(0)
                              Next
