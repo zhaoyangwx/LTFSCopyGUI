@@ -81,7 +81,7 @@ Public Class ChangerTool
         Try
             CurrentChanger.RefreshElementStatus(Not CheckBox2.Checked)
         Catch ex As Exception
-
+            MessageBox.Show(ex.ToString())
         End Try
     End Sub
     Public Sub SwitchChanger()
@@ -139,6 +139,7 @@ Public Class ChangerTool
         If ComboBox2.SelectedIndex > EmptyElement.Count - 1 Then Exit Sub
         If MessageBox.Show(New Form With {.TopMost = True}, $"{ComboBox1.SelectedItem} -> {ComboBox2.SelectedItem}", "", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+            If CurrentChanger.device IsNot Nothing Then drv = CurrentChanger.device.DevicePath
             Dim LUN As Byte = FullElement(ComboBox1.SelectedIndex).LUN
             Dim srcElementIndex = ComboBox1.SelectedIndex
             Dim destElementIndex = ComboBox2.SelectedIndex
@@ -228,6 +229,7 @@ Public Class ChangerTool
             Sub()
                 RefreshCurrentChanger()
                 Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+                If CurrentChanger.device IsNot Nothing Then drv = CurrentChanger.device.DevicePath
                 Invoke(Sub() TextBox1.Clear())
                 Dim srcList As New List(Of MediumChanger.Element)
                 Dim TLList As New List(Of String)
@@ -362,6 +364,7 @@ Public Class ChangerTool
                          Exit Sub
                      End If
                      Dim changerPath As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
+                     If CurrentChanger.device IsNot Nothing Then changerPath = CurrentChanger.device.DevicePath
                      Dim sense As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=changerPath, cdbData:={3, 0, 0, 0, &H12, 0}, paramLen:=18)
                      Dim ToErase As New List(Of MediumChanger.Element)
                      For Each fe As MediumChanger.Element In FullElement

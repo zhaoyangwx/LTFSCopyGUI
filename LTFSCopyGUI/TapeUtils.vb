@@ -611,6 +611,7 @@ Public Class TapeUtils
                             Return True
                         ElseIf DriveOpenCount(key) = 1 Then
                             DriveOpenCount(key) -= 1
+                            DriveHandle(key) = IntPtr.Zero
                             Exit For
                         Else
                             Return True
@@ -3007,14 +3008,16 @@ Public Class TapeUtils
             Marshal.FreeHGlobal(devNumPtr)
             CloseHandle(handle)
             Dim drv As BlockDevice = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
+            drv.DeviceType = "CHANGER"
             If drv Is Nothing Then Continue For
             drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
             If result Then
                 drv.DevIndex = devNum.DeviceNumber
                 drv.DevicePath = $"\\.\CHANGER{drv.DevIndex}"
             End If
-
-            LChanger.Add(New MediumChanger(drv.DevIndex, drv.SerialNumber, drv.VendorId, drv.ProductId))
+            Dim nc As New MediumChanger(drv.DevIndex, drv.SerialNumber, drv.VendorId, drv.ProductId)
+            nc.device = drv
+            LChanger.Add(nc)
         Next
 
         LChanger.Sort(New Comparison(Of MediumChanger)(
@@ -3878,6 +3881,7 @@ Public Class TapeUtils
     <TypeConverter(GetType(ExpandableObjectConverter))>
     <Serializable>
     Public Class MediumChanger
+        Public Property device As BlockDevice
         Public Property DevIndex As String
         Public Property SerialNumber As String
         Public Property VendorId As String
@@ -3993,16 +3997,18 @@ Public Class TapeUtils
                              End Function)
         End Sub
         Public Sub RefreshElementStatus(Optional ByVal IgnoreLUN0 As Boolean = True)
-            Dim LUNList As List(Of Byte) = SCSIReportLUNs($"\\.\CHANGER{DevIndex}")
+            Dim devicePath As String = $"\\.\CHANGER{DevIndex}"
+            If device IsNot Nothing Then devicePath = device.DevicePath
+            Dim LUNList As List(Of Byte) = SCSIReportLUNs(devicePath)
+            If LUNList.Count = 0 Then LUNList.Add(1)
             If LUNList IsNot Nothing AndAlso LUNList.Count > 0 Then
                 Elements = New List(Of Element)
                 For Each LUN As Byte In LUNList
                     If IgnoreLUN0 AndAlso LUN = 0 Then Continue For
                     If RawElementData IsNot Nothing AndAlso RawElementData.Length > 8 Then
-
-                        RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", dSize:=RawElementData.Length, LUN:=LUN)
+                        RawElementData = SCSIReadElementStatus(devicePath, dSize:=RawElementData.Length, LUN:=LUN)
                     Else
-                        RawElementData = SCSIReadElementStatus($"\\.\CHANGER{DevIndex}", LUN:=LUN)
+                        RawElementData = SCSIReadElementStatus(devicePath, LUN:=LUN)
                     End If
                     FirstElementAddressReported = CInt(RawElementData(0)) << 8 Or RawElementData(1)
                     NumberofElementsAvailable = CInt(RawElementData(2)) << 8 Or RawElementData(3)
