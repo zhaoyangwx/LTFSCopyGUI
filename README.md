@@ -1,6 +1,6 @@
 # LTFSCopyGUI
 
-![LTFSCopyGUIIcon](https://user-images.githubusercontent.com/32697586/177280874-14110415-bd43-4e54-94fa-e8a16673d755.png)
+![LTFSCopyGUIIcon](./logo.png)
 
 ## LTFS文件排序复制工具
 
