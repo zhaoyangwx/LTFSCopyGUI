@@ -428,7 +428,7 @@ Public Class ChangerTool
                                                                                                                                                                        Return True
                                                                                                                                                                    End Function)
                                                                                Return senseReturn
-                                                                           End Function)
+                                                                           End Function, 1)
                                               ApplicationWheels.TryExecute(Function() As Byte()
                                                                                Dim senseReturn(63) As Byte
                                                                                SCSIReadParam(TapeDrive:=drvMapping(drv).DevicePath, {4, 0, 1, 0, 0, 0}, 0, Function(s As Byte())
@@ -436,7 +436,7 @@ Public Class ChangerTool
                                                                                                                                                                Return True
                                                                                                                                                            End Function)
                                                                                Return senseReturn
-                                                                           End Function)
+                                                                           End Function, 1)
                                               SyncLock finList
                                                   finList.Add(drv)
                                               End SyncLock

@@ -966,14 +966,14 @@ Public Class ErrRateHelper
 End Class
 
 Public Class ApplicationWheels
-    Public Shared Function TryExecute(ByVal command As Func(Of Byte())) As Boolean
+    Public Shared Function TryExecute(ByVal command As Func(Of Byte()), Optional ByVal AutoRetryCount As Integer = 0) As Boolean
         Dim succ As Boolean = False
         While Not succ
             Dim sense() As Byte
             Try
                 sense = command()
             Catch ex As Exception
-                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Error}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                     Case DialogResult.Abort
                         Throw ex
                     Case DialogResult.Retry
@@ -995,15 +995,20 @@ Public Class ApplicationWheels
                 Try
                     Throw New Exception("SCSI sense error")
                 Catch ex As Exception
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                        Case DialogResult.Abort
-                            Throw New Exception(TapeUtils.ParseSenseData(sense))
-                        Case DialogResult.Retry
-                            succ = False
-                        Case DialogResult.Ignore
-                            succ = True
-                            Exit While
-                    End Select
+                    If AutoRetryCount > 0 Then
+                        AutoRetryCount -= 1
+                        succ = False
+                    Else
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                            Case DialogResult.Abort
+                                Throw New Exception(TapeUtils.ParseSenseData(sense))
+                            Case DialogResult.Retry
+                                succ = False
+                            Case DialogResult.Ignore
+                                succ = True
+                                Exit While
+                        End Select
+                    End If
                 End Try
             Else
                 succ = True
