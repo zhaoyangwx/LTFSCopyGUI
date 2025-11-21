@@ -10,6 +10,7 @@ Imports System.Text
 Imports System.Threading
 Imports Blake3
 Imports Fsp.Interop
+Imports FubarDev.FtpServer.CommandExtensions
 Imports Microsoft.Extensions.FileSystemGlobbing
 Imports Microsoft.WindowsAPICodePack.Dialogs
 Imports Microsoft.WindowsAPICodePack.Shell
@@ -121,20 +122,19 @@ Public Class LTFSWriter
             End If
         End Set
     End Property
-    Private _SpeedLimit As Integer = 0
     <Category("LTFSWriter")>
     Public Property SpeedLimit As Integer
         Set(value As Integer)
             value = Math.Max(0, value)
-            _SpeedLimit = value
-            If _SpeedLimit = 0 Then
+            My.Settings.LTFSWriter_SpeedLimit = value
+            If My.Settings.LTFSWriter_SpeedLimit = 0 Then
                 限速不限制ToolStripMenuItem.Text = My.Resources.ResText_NoSLim
             Else
-                限速不限制ToolStripMenuItem.Text = $"{My.Resources.ResText_SLim}{_SpeedLimit} MiB/s"
+                限速不限制ToolStripMenuItem.Text = $"{My.Resources.ResText_SLim}{My.Settings.LTFSWriter_SpeedLimit} MiB/s"
             End If
         End Set
         Get
-            Return _SpeedLimit
+            Return My.Settings.LTFSWriter_SpeedLimit
         End Get
     End Property
     <Category("LTFSWriter")>
@@ -144,8 +144,8 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property CheckCycle As Integer = 10
     <Category("LTFSWriter")>
-    Public Property CleanCycle
-        Set(value)
+    Public Property CleanCycle As Integer
+        Set(value As Integer)
             value = Math.Max(0, value)
             If value = 0 Then
                 重装带前清洁次数3ToolStripMenuItem.Text = My.Resources.ResText_RBCoff
@@ -336,6 +336,7 @@ Public Class LTFSWriter
         End Select
         Chart1.Titles(1).Text = My.Resources.ResText_SpeedBT
         Chart1.Titles(2).Text = My.Resources.ResText_FileRateBT
+        Chart1.Titles(0).Text = Min10ToolStripMenuItem.Text
         TapeUtils.AllowPartition = Not DisablePartition
         CleanCycle = CleanCycle
         IndexWriteInterval = IndexWriteInterval
@@ -970,8 +971,8 @@ Public Class LTFSWriter
                      End Sub)
             Static GCCollectCounter As Integer
             GCCollectCounter += 1
-            If GCCollectCounter >= 30 Then
-                'If IsWriting Then GC.Collect()
+            If GCCollectCounter >= My.Settings.LTFSWriter_GCInterval Then
+                If My.Settings.LTFSWriter_GCInterval > 0 AndAlso IsWriting Then GC.Collect()
                 GCCollectCounter = 0
             End If
         Catch ex As Exception
@@ -1055,10 +1056,10 @@ Public Class LTFSWriter
         '        Return (My.Settings.LTFSWriter_PreLoadNum = 0)
         '    End Get
         'End Property
-        Public Shared PreReadBufferSize As Long = 16777216
-        Public Shared PreReadBlockSize As Long = 8388608
+        Public Shared PreReadBufferSize As Long = 65536
+        Public Shared PreReadBlockSize As Long = 4096
         Public PreReadBuffer As Byte() = Nothing
-        Public Function Open(Optional BufferSize As Integer = 16777216) As Integer
+        Public Function Open(Optional BufferSize As Integer = 65536) As Integer
             SyncLock OperationLock
                 While True
                     Try
@@ -1103,9 +1104,11 @@ Public Class LTFSWriter
                 Catch ex As Exception
                 End Try
                 Try
-                    fs.Close()
-                    fs.Dispose()
-                    fs = Nothing
+                    If fs IsNot Nothing Then
+                        fs.Close()
+                        fs.Dispose()
+                        fs = Nothing
+                    End If
                 Catch ex As Exception
                 End Try
                 IsClosed = True
@@ -3147,7 +3150,8 @@ Public Class LTFSWriter
     Public Sub RenameDir()
         If TreeView1.SelectedNode IsNot Nothing Then
             Dim d As ltfsindex.directory = TreeView1.SelectedNode.Tag
-            Dim s As String = InputBox(My.Resources.ResText_DirName, My.Resources.ResText_RenameDir, d.name)
+            Dim s As String = d.name
+            If DisplayHelper.ShowInputDialog(My.Resources.ResText_DirName, My.Resources.ResText_RenameDir, s) <> DialogResult.OK Then Exit Sub
             If s <> "" Then
                 If s = d.name Then Exit Sub
                 If (s.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
@@ -3180,7 +3184,8 @@ Public Class LTFSWriter
         TypeOf (ListView1.SelectedItems.Item(0).Tag) Is ltfsindex.file Then
             Dim f As ltfsindex.file = ListView1.SelectedItems.Item(0).Tag
             Dim d As ltfsindex.directory = ListView1.Tag
-            Dim newname As String = InputBox(My.Resources.ResText_NFName, My.Resources.ResText_Rename, f.name)
+            Dim newname As String = f.name
+            If (DisplayHelper.ShowInputDialog(My.Resources.ResText_NFName, My.Resources.ResText_Rename, newname) <> DialogResult.OK) Then Exit Sub
             If newname = f.name Then Exit Sub
             If newname = "" Then Exit Sub
             If (newname.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
@@ -3469,7 +3474,8 @@ Public Class LTFSWriter
     End Sub
     Private Sub 新建目录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 新建目录ToolStripMenuItem.Click
         If ListView1.Tag IsNot Nothing Then
-            Dim s As String = InputBox(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, "")
+            Dim s As String = ""
+            If (DisplayHelper.ShowInputDialog(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, s) <> DialogResult.OK) Then Exit Sub
             If s <> "" Then
                 If (s.Replace("\", "").Replace("/", "").IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
                     MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
@@ -4490,14 +4496,14 @@ Public Class LTFSWriter
                                             CurrentFilesProcessed += 1
                                             TotalBytesUnindexed += finfo.Length
                                         Else
-                                            Select Case fr.Open()
-                                                Case DialogResult.Ignore
-                                                    PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
-                                                    Continue For
-                                                Case DialogResult.Abort
-                                                    StopFlag = True
-                                                    Throw New Exception(My.Resources.ResText_FileOpenError)
-                                            End Select
+                                            'Select Case fr.Open()
+                                            '    Case DialogResult.Ignore
+                                            '        PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+                                            '        Continue For
+                                            '    Case DialogResult.Abort
+                                            '        StopFlag = True
+                                            '        Throw New Exception(My.Resources.ResText_FileOpenError)
+                                            'End Select
                                             'PrintMsg($"File Opened:{fr.SourcePath}", LogOnly:=True)
                                             Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing
                                             If HashOnWrite Then sh = New IOManager.CheckSumBlockwiseCalculator
@@ -6199,7 +6205,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 设置标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置标签ToolStripMenuItem.Click
-        My.Settings.LTFSWriter_FileLabel = InputBox(My.Resources.ResText_DLS, My.Resources.ResText_DLT, My.Settings.LTFSWriter_FileLabel)
+        If (DisplayHelper.ShowInputDialog(My.Resources.ResText_DLS, My.Resources.ResText_DLT, My.Settings.LTFSWriter_FileLabel) <> DialogResult.OK) Then Exit Sub
         PrintMsg($"{My.Resources.ResText_DLFin} .{My.Settings.LTFSWriter_FileLabel}")
     End Sub
 
@@ -6311,13 +6317,11 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 限速不限制ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 限速不限制ToolStripMenuItem.Click
-        Dim sin As String = InputBox(My.Resources.ResText_WLimS, My.Resources.ResText_Setting, SpeedLimit)
-        If sin = "" Then Exit Sub
-        SpeedLimit = Val(sin)
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_WLimS, My.Resources.ResText_Setting, SpeedLimit) <> DialogResult.OK Then Exit Sub
     End Sub
 
     Private Sub 重装带前清洁次数3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 重装带前清洁次数3ToolStripMenuItem.Click
-        CleanCycle = Val(InputBox(My.Resources.ResText_CLNCS, My.Resources.ResText_Setting, CleanCycle))
+        DisplayHelper.ShowInputDialog(My.Resources.ResText_CLNCS, My.Resources.ResText_Setting, CleanCycle)
     End Sub
     Public Sub HashSelectedFiles(Overwrite As Boolean, ValidOnly As Boolean)
         Dim fc As Long = 0, ec As Long = 0
@@ -7076,16 +7080,12 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 预读文件数5ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 预读文件数5ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SPreR, My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadFileCount)
-        If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_PreLoadFileCount = Val(s)
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SPreR, My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadFileCount) <> DialogResult.OK Then Exit Sub
         预读文件数5ToolStripMenuItem.Text = $"{My.Resources.ResText_PFC}{My.Settings.LTFSWriter_PreLoadFileCount}"
     End Sub
 
     Private Sub 文件缓存32MiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 文件缓存32MiBToolStripMenuItem.Click
-        Dim s As String = InputBox("设置文件缓存", My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadBytes)
-        If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_PreLoadBytes = Val(s)
+        If DisplayHelper.ShowInputDialog("设置文件缓存", My.Resources.ResText_Setting, My.Settings.LTFSWriter_PreLoadBytes) <> DialogResult.OK Then Exit Sub
         If My.Settings.LTFSWriter_PreLoadBytes <= (16 << 20) Then My.Settings.LTFSWriter_PreLoadBytes = (16 << 20)
         文件缓存32MiBToolStripMenuItem.Text = $"文件缓存：{IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}"
     End Sub
@@ -7121,27 +7121,29 @@ Public Class LTFSWriter
     Private Sub 禁用分区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 禁用分区ToolStripMenuItem.Click
         DisablePartition = 禁用分区ToolStripMenuItem.Checked
     End Sub
-
     Private Sub 速度下限ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 速度下限ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SSMin, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanDownLim)
+        Dim s As String = My.Settings.LTFSWriter_AutoCleanDownLim.ToString
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SSMin, My.Resources.ResText_Setting, s) <> DialogResult.OK Then Exit Sub
         If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_AutoCleanDownLim = Val(s)
+        If Not Double.TryParse(s, My.Settings.LTFSWriter_AutoCleanDownLim) Then Exit Sub
         My.Settings.Save()
         速度下限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMin}{My.Settings.LTFSWriter_AutoCleanDownLim} MiB/s"
     End Sub
 
     Private Sub 速度上限ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 速度上限ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SSMax, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanUpperLim)
+        Dim s As String = My.Settings.LTFSWriter_AutoCleanUpperLim.ToString()
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SSMax, My.Resources.ResText_Setting, s) <> DialogResult.OK Then Exit Sub
         If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_AutoCleanUpperLim = Val(s)
+        If Not Double.TryParse(s, My.Settings.LTFSWriter_AutoCleanUpperLim) Then Exit Sub
         My.Settings.Save()
         速度上限ToolStripMenuItem.Text = $"{My.Resources.ResText_SMax}{My.Settings.LTFSWriter_AutoCleanUpperLim} MiB/s"
     End Sub
 
     Private Sub 持续时间ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 持续时间ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SSTime, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanTimeThreashould)
+        Dim s As String = My.Settings.LTFSWriter_AutoCleanTimeThreashould.ToString()
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SSTime, My.Resources.ResText_Setting, s) <> DialogResult.OK Then Exit Sub
         If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_AutoCleanTimeThreashould = Val(s)
+        If Not Integer.TryParse(s, My.Settings.LTFSWriter_AutoCleanTimeThreashould) Then Exit Sub
         My.Settings.Save()
         持续时间ToolStripMenuItem.Text = $"{My.Resources.ResText_STime}{My.Settings.LTFSWriter_AutoCleanTimeThreashould}s"
     End Sub
@@ -7644,7 +7646,7 @@ Public Class LTFSWriter
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"FTPSVC> {s}")
                                  End Sub
-        svc.port = Integer.Parse(InputBox("Port", "FTP Service", "8021"))
+        If DisplayHelper.ShowInputDialog("Port", "FTP Service", svc.port) <> DialogResult.OK Then Exit Sub
         svc.schema = schema
         svc.TapeDrive = TapeDrive
         svc.BlockSize = plabel.blocksize
@@ -7931,9 +7933,7 @@ Public Class LTFSWriter
 
 
     Private Sub 索引间隔36GiBToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 索引间隔36GiBToolStripMenuItem.Click
-        Dim result As String = InputBox(My.Resources.ResText_SIIntv, My.Resources.ResText_Setting, IndexWriteInterval)
-        If result = "" Then Exit Sub
-        IndexWriteInterval = Val(result)
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SIIntv, My.Resources.ResText_Setting, IndexWriteInterval) <> DialogResult.OK Then Exit Sub
     End Sub
 
     Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
@@ -7945,7 +7945,7 @@ Public Class LTFSWriter
         If EncryptionKey IsNot Nothing AndAlso EncryptionKey.Length = 32 Then
             key = BitConverter.ToString(EncryptionKey).Replace("-", "").ToUpper
         End If
-        key = InputBox(设置密钥ToolStripMenuItem.Text, "LTFSWriter", key)
+        If DisplayHelper.ShowInputDialog(设置密钥ToolStripMenuItem.Text, "LTFSWriter", key) <> DialogResult.OK Then Exit Sub
         Dim newkey As Byte() = IOManager.HexStringToByteArray(key)
         If newkey.Length <> 32 Then
             EncryptionKey = Nothing
@@ -8072,7 +8072,7 @@ Public Class LTFSWriter
 
     Private Sub 设置密码ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置密码ToolStripMenuItem.Click
         Dim key As String = ""
-        key = InputBox(设置密码ToolStripMenuItem.Text, "LTFSWriter", key)
+        If DisplayHelper.ShowInputDialog(设置密码ToolStripMenuItem.Text, "LTFSWriter", key) <> DialogResult.OK Then Exit Sub
         If key.Length = 0 Then
             EncryptionKey = Nothing
         Else
@@ -8160,12 +8160,8 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 查找指定位置前的索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找指定位置前的索引ToolStripMenuItem.Click
-        Dim blocknum As ULong
-        Try
-            blocknum = CULng(InputBox("Block number", "Index search", "0"))
-        Catch ex As Exception
-
-        End Try
+        Dim blocknum As ULong = 0
+        If DisplayHelper.ShowInputDialog("Block number", "Index search", blocknum) <> DialogResult.OK Then Exit Sub
         If blocknum <= 0 Then Exit Sub
         Dim th As New Threading.Thread(
             Sub()
@@ -8623,7 +8619,8 @@ Public Class LTFSWriter
 
     Private Sub 其他ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 其他ToolStripMenuItem.Click
         Try
-            Dim s As String = InputBox("Power policy GUID", "Power policy on write begin", "")
+            Dim s As String = ""
+            If DisplayHelper.ShowInputDialog("Power policy GUID", "Power policy on write begin", s) <> DialogResult.OK Then Exit Sub
             My.Settings.LTFSWriter_PowerPolicyOnWriteBegin = New Guid(s)
             ResetPowerPolicyUI0()
             其他ToolStripMenuItem.Checked = True
@@ -8659,7 +8656,8 @@ Public Class LTFSWriter
 
     Private Sub 其他ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 其他ToolStripMenuItem1.Click
         Try
-            Dim s As String = InputBox("Power policy GUID", "Power policy on write end", "")
+            Dim s As String = ""
+            If DisplayHelper.ShowInputDialog("Power policy GUID", "Power policy on write end", s) <> DialogResult.OK Then Exit Sub
             My.Settings.LTFSWriter_PowerPolicyOnWriteEnd = New Guid(s)
             ResetPowerPolicyUI1()
             其他ToolStripMenuItem1.Checked = True
@@ -8689,17 +8687,13 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 错误率ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 错误率ToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_ErrRateLog, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould)
-        If s = "" Then Exit Sub
-        My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould = Val(s)
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_ErrRateLog, My.Resources.ResText_Setting, My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould) <> DialogResult.OK Then Exit Sub
         My.Settings.Save()
         错误率ToolStripMenuItem.Text = $"{My.Resources.ResText_ErrRateLog}{My.Settings.LTFSWriter_AutoCleanErrRateLogThreashould}s"
     End Sub
 
     Private Sub 容量刷新间隔30sToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 容量刷新间隔30sToolStripMenuItem.Click
-        Dim s As String = InputBox(My.Resources.ResText_SCIntv, My.Resources.ResText_Setting, CapacityRefreshInterval)
-        If s = "" Then Exit Sub
-        CapacityRefreshInterval = Val(s)
+        If DisplayHelper.ShowInputDialog(My.Resources.ResText_SCIntv, My.Resources.ResText_Setting, CapacityRefreshInterval) <> DialogResult.OK Then Exit Sub
     End Sub
 
 
@@ -8713,7 +8707,7 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property LastSearchKW As String = ""
     Public Function GetSearchInput() As String
-        LastSearchKW = InputBox("Keyword", "Search", LastSearchKW)
+        DisplayHelper.ShowInputDialog("Keyword", "Search", LastSearchKW)
         Return LastSearchKW
     End Function
     Public Sub Search(Optional ByVal KW As String = Nothing)
@@ -9092,7 +9086,7 @@ Public Class LTFSWriter
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"iSCSISVC> {s}")
                                  End Sub
-        svc.port = Integer.Parse(InputBox("Port", "iSCSI Service", "3262"))
+        If DisplayHelper.ShowInputDialog("Port", "iSCSI Service", svc.port) <> DialogResult.OK Then Exit Sub
         svc.driveHandle = driveHandle
         svc.BlockSize = plabel.blocksize
         svc.ExtraPartitionCount = ExtraPartitionCount

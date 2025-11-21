@@ -938,4 +938,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_Application_BaseFont" xml:space="preserve">
     <value>字体</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_SpeedLimit" xml:space="preserve">
+    <value>速度限制（MiB/s）
+  0 - 禁用</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_GCInterval" xml:space="preserve">
+    <value>内存主动回收间隔
+  0 - 禁用
+除非内存占用过高，否则不应启用</value>
+  </data>
 </root>

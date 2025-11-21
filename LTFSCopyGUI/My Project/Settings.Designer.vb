@@ -418,6 +418,21 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("内存主动回收间隔"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("0"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_GCInterval")>
+        Public Property LTFSWriter_GCInterval() As Integer
+            Get
+                Return CType(Me("LTFSWriter_GCInterval"), Integer)
+            End Get
+            Set
+                Me("LTFSWriter_GCInterval") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("预读文件数"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("1000"),
@@ -562,6 +577,20 @@ Namespace My
             End Get
             Set
                 Me("LTFSWriter_AutoFlushCooldownMilliseconds") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("速度限制"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("0"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_SpeedLimit")>
+        Public Property LTFSWriter_SpeedLimit() As Integer
+            Get
+                Return CType(Me("LTFSWriter_SpeedLimit"), Integer)
+            End Get
+            Set
+                Me("LTFSWriter_SpeedLimit") = Value
             End Set
         End Property
 

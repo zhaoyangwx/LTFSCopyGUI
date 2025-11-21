@@ -890,6 +890,78 @@ Public Class DisplayHelper
 
         frm.ResumeLayout(True)
     End Sub
+
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As UShort) As DialogResult
+        Dim resp As String = Response.ToString()
+        Dim result As DialogResult = ShowInputDialog(Prompt, Title, resp)
+        If Not UShort.TryParse(resp, Response) Then Return DialogResult.Cancel
+        Return result
+    End Function
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As Integer) As DialogResult
+        Dim resp As String = Response.ToString()
+        Dim result As DialogResult = ShowInputDialog(Prompt, Title, resp)
+        If Not Integer.TryParse(resp, Response) Then Return DialogResult.Cancel
+        Return result
+    End Function
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As Long) As DialogResult
+        Dim resp As String = Response.ToString()
+        Dim result As DialogResult = ShowInputDialog(Prompt, Title, resp)
+        If Not Long.TryParse(resp, Response) Then Return DialogResult.Cancel
+        Return result
+    End Function
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As ULong) As DialogResult
+        Dim resp As String = Response.ToString()
+        Dim result As DialogResult = ShowInputDialog(Prompt, Title, resp)
+        If Not ULong.TryParse(resp, Response) Then Return DialogResult.Cancel
+        Return result
+    End Function
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As Double) As DialogResult
+        Dim resp As String = Response.ToString()
+        Dim result As DialogResult = ShowInputDialog(Prompt, Title, resp)
+        If Not Double.TryParse(resp, Response) Then Return DialogResult.Cancel
+        Return result
+    End Function
+    Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As String) As DialogResult
+        Dim size As System.Drawing.Size = New System.Drawing.Size(200, 90)
+        Dim inputDialog As Form = New Form()
+        inputDialog.StartPosition = FormStartPosition.CenterParent
+        inputDialog.Font = DisplayFont
+        inputDialog.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        inputDialog.MinimizeBox = False
+        inputDialog.MaximizeBox = False
+        inputDialog.ClientSize = New Size(size.Width * ScreenScale, size.Height * ScreenScale)
+        inputDialog.AutoScaleMode = AutoScaleMode.Font
+        inputDialog.Text = Title
+        Dim promptLabel As Label = New Label()
+        promptLabel.Location = New Point(5 * ScreenScale, 5 * ScreenScale)
+        promptLabel.Text = Prompt
+        inputDialog.Controls.Add(promptLabel)
+        Dim textBox As System.Windows.Forms.TextBox = New TextBox()
+        textBox.Size = New System.Drawing.Size((size.Width - 10) * ScreenScale, 23 * ScreenScale)
+        textBox.Location = New System.Drawing.Point(5 * ScreenScale, 25 * ScreenScale)
+        textBox.Text = Response
+        inputDialog.Controls.Add(textBox)
+        Dim okButton As Button = New Button()
+        okButton.DialogResult = System.Windows.Forms.DialogResult.OK
+        okButton.Name = "okButton"
+        okButton.Size = New System.Drawing.Size(75 * ScreenScale, 23 * ScreenScale)
+        okButton.Text = $"&OK"
+        okButton.Location = New System.Drawing.Point((size.Width - 80 - 80) * ScreenScale, 59 * ScreenScale)
+        inputDialog.Controls.Add(okButton)
+        Dim cancelButton As Button = New Button()
+        cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
+        cancelButton.Name = "cancelButton"
+        cancelButton.Size = New System.Drawing.Size(75 * ScreenScale, 23 * ScreenScale)
+        cancelButton.Text = $"&Cancel"
+        cancelButton.Location = New System.Drawing.Point((size.Width - 80) * ScreenScale, 59 * ScreenScale)
+        inputDialog.Controls.Add(cancelButton)
+        inputDialog.AcceptButton = okButton
+        inputDialog.CancelButton = cancelButton
+        inputDialog.PerformAutoScale()
+        Dim result As DialogResult = inputDialog.ShowDialog()
+        If result = DialogResult.OK Then Response = textBox.Text
+        Return result
+    End Function
 End Class
 Public Class RichMenuStrip
     Inherits System.Windows.Forms.MenuStrip
@@ -1164,3 +1236,5 @@ Public NotInheritable Class FileDropHandler
 
     End Sub
 End Class
+
+

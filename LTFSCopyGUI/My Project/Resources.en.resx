@@ -927,4 +927,13 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   <data name="PropertyDescription_Application_BaseFont" xml:space="preserve">
     <value>Font</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_SpeedLimit" xml:space="preserve">
+    <value>Speed limit (MiB/s)
+  0 - Disabled</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_GCInterval" xml:space="preserve">
+    <value>GC Interval
+  0 - Disabled
+Enable only when memory usage is abnormally high</value>
+  </data>
 </root>

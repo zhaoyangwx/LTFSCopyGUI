@@ -377,6 +377,17 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 内存主动回收间隔
+        '''  0 - 禁用
+        '''除非内存占用过高，否则不应启用 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_GCInterval() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_GCInterval", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 异步校验
         '''性能更好，但CPU使用率更高
         '''仅当计算校验开启有效 的本地化字符串。
@@ -532,6 +543,16 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_SkipSymlink() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_SkipSymlink", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度限制（MiB/s）
+        '''  0 - 禁用 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_SpeedLimit() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_SpeedLimit", resourceCulture)
             End Get
         End Property
         

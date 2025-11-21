@@ -7,7 +7,7 @@ Public Class iSCSIService
     Public driveHandle As IntPtr
     Public BlockSize As Integer = 524288
     Public ExtraPartitionCount As Integer = 1
-    Public port As Integer = 3261
+    Public port As UShort = 3261
     Public Event LogPrint(s As String)
     Public svc As ISCSI.Server.ISCSIServer
     Public target As ISCSITarget

@@ -391,7 +391,8 @@ Public Class Form1
     End Sub
 
     Private Sub 查找ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找ToolStripMenuItem.Click
-        Dim patt As String = InputBox("Search kw", "Search", "")
+        Dim patt As String = ""
+        If DisplayHelper.ShowInputDialog("Search kw", "Search", patt) <> DialogResult.OK Then Exit Sub
         If patt <> "" Then
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
@@ -505,7 +506,8 @@ Public Class Form1
     End Sub
 
     Private Sub 合并文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 合并文件ToolStripMenuItem.Click
-        Dim patt As String = InputBox("Search kw", "Search", "")
+        Dim patt As String = ""
+        If DisplayHelper.ShowInputDialog("Search kw", "Search", patt) <> DialogResult.OK Then Exit Sub
         If patt <> "" Then
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
@@ -609,7 +611,8 @@ Public Class Form1
     End Sub
 
     Private Sub 未校验检查ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 未校验检查ToolStripMenuItem.Click
-        Dim patt As String = InputBox("Search kw", "Search", "")
+        Dim patt As String = ""
+        If DisplayHelper.ShowInputDialog("Search kw", "Search", patt) <> DialogResult.OK Then Exit Sub
         If patt <> "" Then
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
