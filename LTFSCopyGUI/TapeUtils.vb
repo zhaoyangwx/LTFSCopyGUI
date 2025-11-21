@@ -3837,7 +3837,11 @@ Public Class TapeUtils
     Public Shared Function ParseTimeStamp(t As String) As Date
         If t Is Nothing OrElse t = "" Then Return Nothing
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z
-        Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
+        Try
+            Return Date.ParseExact(t, "yyyy-MM-ddTHH:mm:ss.fffffff00Z", Globalization.CultureInfo.InvariantCulture)
+        Catch ex As Exception
+            Return Nothing
+        End Try
     End Function
     <Serializable>
     Public Class BlockDevice

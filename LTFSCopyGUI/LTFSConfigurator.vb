@@ -864,16 +864,15 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub Label9_Click(sender As Object, e As EventArgs) Handles LabelParam.Click
-        Dim n As String = InputBox("Byte count?", "cdb SetBytes", "")
-        If n <> "" Then
-            If Val(n) > 0 Then
-                TextBoxParamData.Text = ""
-                Dim sb As New StringBuilder
-                For i As Integer = 1 To Val(n)
-                    sb.Append("00 ")
-                Next
-                TextBoxParamData.Text = sb.ToString()
-            End If
+        Dim bNum As Integer = 0
+        If DisplayHelper.ShowInputDialog("Byte count?", "cdb SetBytes", bNum) <> DialogResult.OK Then Exit Sub
+        If bNum > 0 Then
+            TextBoxParamData.Text = ""
+            Dim sb As New StringBuilder
+            For i As Integer = 1 To bNum
+                sb.Append("00 ")
+            Next
+            TextBoxParamData.Text = sb.ToString()
         End If
     End Sub
 
@@ -1057,8 +1056,6 @@ Public Class LTFSConfigurator
                 While Not Confirm
                     If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
                     If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
-                    'param.Barcode = InputBox(My.Resources.ResText_SetBarcode, My.Resources.ResText_Barcode, param.Barcode)
-                    'param.VolumeLabel = InputBox(My.Resources.ResText_SetVolumeN, My.Resources.ResText_LTFSVolumeN, param.VolumeLabel)
 
                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Barcode2}{param.Barcode}{vbCrLf}{My.Resources.ResText_LTFSVolumeN2}{param.VolumeLabel}", My.Resources.ResText_Confirm, MessageBoxButtons.YesNoCancel)
                         Case DialogResult.Yes
@@ -1400,8 +1397,8 @@ Public Class LTFSConfigurator
             Dim zbcsectorlen As Integer = 4096
             Select Case My.Settings.TapeUtils_DriverType
                 Case TapeUtils.DriverType.ZBCDevice
-                    zbcstartblk = Long.Parse(InputBox("Start LBA", "ZBC test write param", zbcstartblk.ToString()))
-                    zbcsectorlen = Long.Parse(InputBox("Sector length", "ZBC test write param", zbcsectorlen.ToString()))
+                    DisplayHelper.ShowInputDialog("Start LBA", "ZBC test write param", zbcstartblk)
+                    DisplayHelper.ShowInputDialog("Sector length", "ZBC test write param", zbcsectorlen)
                 Case Else
 
             End Select
@@ -2289,7 +2286,8 @@ Public Class LTFSConfigurator
         Next
     End Sub
     Private Sub 保存ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 保存ToolStripMenuItem.Click
-        Dim cmdName As String = InputBox($"Name", "Save command", "Command")
+        Dim cmdName As String = "Command"
+        If DisplayHelper.ShowInputDialog($"Name", "Save command", cmdName) <> DialogResult.OK Then Exit Sub
         Dim cmd As New SCSICMD With {.Name = cmdName, .CDB = TextBoxCDBData.Text, .Param = TextBoxParamData.Text, .DataDIR = TextBoxDataDir.Text, .Timeout = TextBoxTimeoutValue.Text}
 
         Dim lcmd As List(Of SCSICMD) = CMDList

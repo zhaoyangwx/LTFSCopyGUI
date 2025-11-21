@@ -201,8 +201,9 @@ Public Class FileBrowser
         For Each n As TreeNode In TreeView1.Nodes
             n.Checked = False
         Next
-        Dim sMin As Long = InputBox("Minimum Bytes", "By Size", 0)
-        Dim sMax As Long = InputBox("Maximum Bytes", "By Size", Long.MaxValue)
+        Dim sMin As Long = 0, sMax As Long = Long.MaxValue
+        DisplayHelper.ShowInputDialog("Minimum Bytes", "By Size", sMin)
+        DisplayHelper.ShowInputDialog("Maximum Bytes", "By Size", sMax)
         If sMax < sMin Then Exit Sub
         Dim NList As New List(Of TreeNode)
         Dim DirQ As New List(Of TreeNode)
@@ -240,7 +241,8 @@ Public Class FileBrowser
 
     Private Sub 匹配文件名ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 匹配文件名ToolStripMenuItem.Click
         SuspendLayout()
-        Dim pattern As String = InputBox("Regex", "By regex", "*")
+        Dim pattern As String = "*"
+        DisplayHelper.ShowInputDialog("Regex", "By regex", pattern)
         For Each n As TreeNode In TreeView1.Nodes
             n.Checked = False
         Next
