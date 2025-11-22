@@ -49,7 +49,7 @@ Public Class ChangerTool
             Me.Close()
             Exit Sub
         End If
-        Text = $"ChangerTool - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        Text = $"ChangerTool - {ApplicationWheels.ApplicationInfo}"
         RefreshMCList()
         SetUILock(True)
         Threading.Tasks.Task.Run(Sub()

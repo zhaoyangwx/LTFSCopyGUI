@@ -391,10 +391,19 @@ Public Class LTFSWriter
     Private Text3 As String = "", Text5 As String = ""
     Private TextT3 As String = "", TextT5 As String = ""
     Private Sub Timer2_Tick(sender As Object, e As EventArgs) Handles Timer2.Tick
-        Static blinkcycle As Integer
+        Static blinkcycle As Integer = 0
         Const blinkticks As Integer = 1
         blinkcycle += 1
         blinkcycle = blinkcycle Mod (2 * blinkticks)
+
+        Static logcycle As Integer = 0
+        Const logticks As Integer = 5
+        logcycle += 1
+        logcycle = logcycle Mod logticks
+        If logcycle = 0 Then
+            logFlush = True
+        End If
+
         ToolStripStatusLabel3.Text = Text3
         ToolStripStatusLabel3.ToolTipText = TextT3
         ToolStripStatusLabel5.Text = Text5
@@ -471,6 +480,8 @@ Public Class LTFSWriter
                End Sub)
 
     End Sub
+    Public Property logFlush As Boolean = False
+    Public logBuffer As New StringBuilder
     Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False,
                         Optional ByVal TooltipText As String = "",
                         Optional ByVal LogOnly As Boolean = False,
@@ -489,10 +500,17 @@ Public Class LTFSWriter
                                If TooltipText IsNot Nothing AndAlso TooltipText <> "" Then
                                    ExtraMsg = $"({TooltipText})"
                                End If
-                               If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
-                                   IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
+                               logBuffer.Append($"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
+                               If logFlush Then
+                                   logFlush = False
+                                   If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
+                                       IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
+                                   End If
+                                   SyncLock logBuffer
+                                       IO.File.AppendAllText(logFile, logBuffer.ToString())
+                                       logBuffer.Clear()
+                                   End SyncLock
                                End If
-                               IO.File.AppendAllText(logFile, $"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
                            End If
                            If LogOnly Then Exit Sub
                            If TooltipText IsNot Nothing AndAlso TooltipText = "" Then TooltipText = s
@@ -1351,7 +1369,7 @@ Public Class LTFSWriter
                 End If
             End If
         End If
-        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License} ({TapeUtils.DriverTypeSetting})"
+        If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {ApplicationWheels.ApplicationInfo} ({TapeUtils.DriverTypeSetting})"
         Dim info As String = $"{Barcode.TrimEnd()} ".TrimStart()
         If TapeDrive <> "" Then info &= $"[{TapeDrive}{DriveInfo}] "
         Try
@@ -1363,7 +1381,7 @@ Public Class LTFSWriter
             End SyncLock
             If CurrentHeight > 0 Then info &= $" {My.Resources.ResText_WritePointer}{CurrentHeight}"
             If Modified Then info &= "*"
-            info &= $" - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License} ({TapeUtils.DriverTypeSetting})"
+            info &= $" - {ApplicationWheels.ApplicationInfo} ({TapeUtils.DriverTypeSetting})"
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_RPosErr)
             SetStatusLight(LWStatus.Err)
@@ -7646,6 +7664,7 @@ Public Class LTFSWriter
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"FTPSVC> {s}")
                                  End Sub
+        svc.port = 8021
         If DisplayHelper.ShowInputDialog("Port", "FTP Service", svc.port) <> DialogResult.OK Then Exit Sub
         svc.schema = schema
         svc.TapeDrive = TapeDrive
@@ -9086,6 +9105,7 @@ Public Class LTFSWriter
         AddHandler svc.LogPrint, Sub(s As String)
                                      PrintMsg($"iSCSISVC> {s}")
                                  End Sub
+        svc.port = 3262
         If DisplayHelper.ShowInputDialog("Port", "iSCSI Service", svc.port) <> DialogResult.OK Then Exit Sub
         svc.driveHandle = driveHandle
         svc.BlockSize = plabel.blocksize

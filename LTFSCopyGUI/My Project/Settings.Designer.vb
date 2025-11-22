@@ -435,7 +435,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("预读文件数"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("1000"),
+         Global.System.Configuration.DefaultSettingValueAttribute("0"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_PreLoadFileCount")>
         Public Property LTFSWriter_PreLoadFileCount() As Integer
