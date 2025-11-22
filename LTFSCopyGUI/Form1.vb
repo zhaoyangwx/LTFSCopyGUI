@@ -218,7 +218,7 @@ Public Class Form1
         TextBox4.Text = My.Settings.IndexAnalyzer_Dest
         Label6.Text = ResText_version & $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
         CheckBox1.Checked = My.Settings.IndexAnalyzer_GenCMD
-        Text = $"{FormTitle.Text} - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        Text = $"{FormTitle.Text} - {ApplicationWheels.ApplicationInfo}"
     End Sub
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         LoadSetting()
@@ -556,6 +556,13 @@ Public Class Form1
                         Dim q2 As New List(Of ltfsindex.directory)
                         For Each d As ltfsindex.directory In q
                             With d.contents._directory
+                                For i As Integer = .Count - 1 To 0 Step -1
+                                    If d.contents._directory(i) Is Nothing Then
+                                        d.contents._directory.RemoveAt(i)
+                                    Else
+                                        If d.contents._directory(i).name Is Nothing Then d.contents._directory(i).name = ""
+                                    End If
+                                Next
                                 For i As Integer = .Count - 1 To 1 Step -1
                                     For j As Integer = 0 To i - 1
                                         If .ElementAt(i).name.Equals(.ElementAt(j).name) Then
@@ -564,6 +571,7 @@ Public Class Form1
                                             .RemoveAt(i)
                                             Exit For
                                         End If
+
                                     Next
                                 Next
                             End With

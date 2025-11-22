@@ -795,7 +795,7 @@ dataDir:{dataDir}
                         Case Else
                             Try
                                 InitConsole()
-                                Console.WriteLine($"LTFSCopyGUI v{My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}
+                                Console.WriteLine($"{ApplicationWheels.ApplicationInfo}
 {Resources.StrCMDHelpText}")
 
                                 CloseConsole()

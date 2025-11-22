@@ -935,6 +935,7 @@ Public Class DisplayHelper
         Dim promptLabel As Label = New Label()
         promptLabel.Location = New Point(5 * ScreenScale, 5 * ScreenScale)
         promptLabel.Text = Prompt
+        promptLabel.AutoSize = True
         inputDialog.Controls.Add(promptLabel)
         Dim textBox As System.Windows.Forms.TextBox = New TextBox()
         textBox.Size = New System.Drawing.Size((size.Width - 10) * ScreenScale, 23 * ScreenScale)
@@ -1037,7 +1038,12 @@ Public Class ErrRateHelper
     End Function
 End Class
 
-Public Class ApplicationWheels
+Partial Public Class ApplicationWheels
+    Public Shared ReadOnly Property ApplicationInfo As String
+        Get
+            Return $"{My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)} Build {Build}{My.Settings.Application_License}"
+        End Get
+    End Property
     Public Shared Function TryExecute(ByVal command As Func(Of Byte()), Optional ByVal AutoRetryCount As Integer = 0) As Boolean
         Dim succ As Boolean = False
         While Not succ

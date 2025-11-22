@@ -341,6 +341,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
+    <Compile Include="Build.vb" />
     <Compile Include="ChangerTool.Designer.vb">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </Compile>
@@ -520,4 +521,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>"$(ProjectDir)\BuildVersionPropagator.exe" "$(ProjectDir)\Build.vb"</PreBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -171,7 +171,7 @@ Public Class LTFSConfigurator
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBoxBufferPage.SelectedIndex = 3
         ComboBoxLocateType.SelectedIndex = 0
-        Text = $"LTFSConfigurator - {My.Application.Info.ProductName} {My.Application.Info.Version.ToString(3)}{My.Settings.Application_License}"
+        Text = $"LTFSConfigurator - {ApplicationWheels.ApplicationInfo}"
         LoadCMD()
         LoadComplete = True
         RefreshUI()
