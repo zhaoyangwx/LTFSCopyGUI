@@ -223,7 +223,7 @@ Public Class ChangerTool
         ResumeLayout()
     End Sub
 
-    Private Sub ÅÅĞòToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ÅÅĞòToolStripMenuItem.Click
+    Private Sub æ’åºToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles æ’åºToolStripMenuItem.Click
         SetUILock(True)
         Threading.Tasks.Task.Run(
             Sub()
@@ -353,7 +353,7 @@ Public Class ChangerTool
         End Select
     End Sub
 
-    Private Sub ÅúÁ¿²Á³ıToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ÅúÁ¿²Á³ıToolStripMenuItem.Click
+    Private Sub æ‰¹é‡æ“¦é™¤ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles æ‰¹é‡æ“¦é™¤ToolStripMenuItem.Click
         If Not (MessageBox.Show(My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK) Then Exit Sub
         SetUILock(True)
         Task.Run(Sub()
