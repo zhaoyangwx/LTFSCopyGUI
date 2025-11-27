@@ -153,6 +153,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.AddImageToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -191,7 +192,7 @@ Partial Class LTFSConfigurator
         'ContextMenuStripRefreshDeviceList
         '
         Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.BrowseToolStripMenuItem})
+        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.AddImageToolStripMenuItem, Me.BrowseToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
         '
@@ -1039,6 +1040,11 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'AddImageToolStripMenuItem
+        '
+        Me.AddImageToolStripMenuItem.Name = "AddImageToolStripMenuItem"
+        resources.ApplyResources(Me.AddImageToolStripMenuItem, "AddImageToolStripMenuItem")
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1222,4 +1228,6 @@ Partial Class LTFSConfigurator
         Me.LabelParam.Font = New Font(Me.LabelParam.Font.FontFamily, Me.LabelParam.Font.Size * DisplayHelper.ScreenScale, GraphicsUnit.Pixel)
         DisplayHelper.AfterInitializeComponent(Me)
     End Sub
+
+    Friend WithEvents AddImageToolStripMenuItem As ToolStripMenuItem
 End Class

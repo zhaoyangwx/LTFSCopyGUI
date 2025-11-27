@@ -184,6 +184,7 @@ Public Class FileDataProvider
             Try
                 Return File.ReadAllBytes(fr.SourcePath)
             Catch
+                fr.File = Nothing
                 Return Array.Empty(Of Byte)()
             End Try
         End Try
@@ -204,6 +205,7 @@ Public Class FileDataProvider
                 End Select
                 fs = fr.fs
             Catch
+                fr.File = Nothing
                 Exit Function
             End Try
         End Try

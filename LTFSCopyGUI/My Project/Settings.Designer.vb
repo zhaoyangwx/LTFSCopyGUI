@@ -11,6 +11,9 @@ Option Explicit On
 '------------------------------------------------------------------------------
 
 Imports System.ComponentModel
+Imports System.Configuration
+Imports System.Xml.Serialization
+Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
     Partial Friend NotInheritable Class MySettings
@@ -788,6 +791,83 @@ Namespace My
                 TapeUtils.DriverTypeSetting = Value
             End Set
         End Property
+        <XmlIgnore>
+        Public ReadOnly Property cfgPath As String
+            Get
+                Return IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "config")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property customDevicePath As String
+            Get
+                Return IO.Path.Combine(cfgPath, "device")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property schemaPath As String
+            Get
+                Return IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "schema")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property logPagesPath As String
+            Get
+                Return IO.Path.Combine(cfgPath, "logpages")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property cfgFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "config.xml")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property langcfgFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "lang.ini")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property licenseFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "license.key")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property licKeyFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "privkey.xml")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property encKeyFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "encryption.key")
+            End Get
+        End Property
+        <XmlIgnore>
+        Public ReadOnly Property driveSettingFile As String
+            Get
+                Return IO.Path.Combine(cfgPath, "drivers.xml")
+            End Get
+        End Property
+
+        Private Sub MySettings_SettingsSaving(sender As Object, e As CancelEventArgs) Handles Me.SettingsSaving
+            If Not IO.Directory.Exists(cfgPath) Then
+                IO.Directory.CreateDirectory(cfgPath)
+            End If
+            IO.File.WriteAllText(cfgFile, SettingImportExport.GetSerializedText())
+        End Sub
+
+        Private Sub MySettings_SettingsLoaded(sender As Object, e As SettingsLoadedEventArgs) Handles Me.SettingsLoaded
+            If IO.File.Exists(cfgFile) Then
+                Try
+                    SettingImportExport.LoadFromFile(cfgFile)
+                Catch ex As Exception
+
+                End Try
+            End If
+        End Sub
     End Class
 
     <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),
