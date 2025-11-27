@@ -6,9 +6,11 @@ Imports System.ComponentModel
 Imports LTFSCopyGUI
 Imports System.Drawing.Drawing2D
 Imports System.Web.Management
+Imports System.Xml.Serialization
 'Imports System.Web.UI.WebControls
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
+<Serializable>
 Public Class TapeUtils
 #Region "winapi"
     Public Class SetupAPIWheels
@@ -571,8 +573,10 @@ Public Class TapeUtils
 
     Public Shared Event IOCtlStart()
     Public Shared Event IOCtlFinished()
-
+    <XmlIgnore>
     Public Shared Property DriveOpenCount As New SerializableDictionary(Of String, Integer)
+
+    <XmlIgnore>
     Public Shared Property DriveHandle As New SerializableDictionary(Of String, IntPtr)
     Public Shared Function OpenTapeDrive(TapeDrive As String, ByRef handle As IntPtr) As Boolean
         SyncLock DriveHandle
@@ -2896,9 +2900,8 @@ Public Class TapeUtils
         Next
 
 
-        Dim devpath As String = IO.Path.Combine(Application.StartupPath, "device")
-        If IO.Directory.Exists(devpath) Then
-            For Each f As IO.FileInfo In (New IO.DirectoryInfo(devpath).GetFiles)
+        If IO.Directory.Exists(My.Settings.customDevicePath) Then
+            For Each f As IO.FileInfo In (New IO.DirectoryInfo(My.Settings.customDevicePath).GetFiles)
                 If f.Extension.ToLower() = ".xml" Then
                     Dim fcnt As String = IO.File.ReadAllText(f.FullName)
                     Try
@@ -3350,10 +3353,7 @@ Public Class TapeUtils
                                   Optional ByVal EncryptionKey As Byte() = Nothing,
                                   Optional ByVal WORM As Boolean = False) As Boolean
         GlobalBlockLimit = TapeUtils.ReadBlockLimits(handle).MaximumBlockLength
-        If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
-            Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
-            If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
-        End If
+        TapeUtils.FromFile(My.Settings.driveSettingFile)
         BlockLen = Math.Min(BlockLen, GlobalBlockLimit)
         Dim mkltfs_op As Func(Of Boolean) =
             Function()
@@ -8893,5 +8893,39 @@ Public Class TapeUtils
         End Select
     End Function
 
-    Public Shared Property TagDictionary As Dictionary(Of String, String) = New Dictionary(Of String, String)
+    Public Shared Property TagDictionary As SerializableDictionary(Of String, String) = New SerializableDictionary(Of String, String)
+    Public Property BlockLenLimit As Integer
+        Get
+            Return GlobalBlockLimit
+        End Get
+        Set(value As Integer)
+            GlobalBlockLimit = value
+        End Set
+    End Property
+    Public Property DriveAlias As SerializableDictionary(Of String, String)
+        Get
+            Return TagDictionary
+        End Get
+        Set(value As SerializableDictionary(Of String, String))
+            TagDictionary = value
+        End Set
+    End Property
+    Public Function GetSerializedText() As String
+        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(TapeUtils))
+        Dim sb As New Text.StringBuilder
+        Dim t As New IO.StringWriter(sb)
+        writer.Serialize(t, Me)
+        Return sb.ToString()
+    End Function
+    Public Shared Function FromFile(fileName As String) As TapeUtils
+        If Not IO.File.Exists(fileName) Then Return Nothing
+        Return FromXML(IO.File.ReadAllText(fileName))
+    End Function
+    Public Shared Function FromXML(s As String) As TapeUtils
+        If Not IO.File.Exists(s) Then Return Nothing
+        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(TapeUtils))
+        Dim t As IO.TextReader = New IO.StringReader(s)
+        Return CType(reader.Deserialize(t), TapeUtils)
+    End Function
+
 End Class

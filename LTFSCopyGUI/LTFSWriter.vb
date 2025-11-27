@@ -40,10 +40,10 @@ Public Class LTFSWriter
         Set(value As Byte())
             _EncryptionKey = value
             If value IsNot Nothing AndAlso value.Length = 32 Then
-                IO.File.WriteAllText(IO.Path.Combine(Application.StartupPath, "encryption.key"), BitConverter.ToString(value).Replace("-", "").ToUpper)
+                IO.File.WriteAllText(My.Settings.encKeyFile, BitConverter.ToString(value).Replace("-", "").ToUpper)
             Else
-                If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "encryption.key")) Then
-                    IO.File.Delete(IO.Path.Combine(Application.StartupPath, "encryption.key"))
+                If IO.File.Exists(My.Settings.encKeyFile) Then
+                    IO.File.Delete(My.Settings.encKeyFile)
                 End If
             End If
         End Set
@@ -4942,8 +4942,8 @@ Public Class LTFSWriter
                     TapeUtils.Locate(handle:=driveHandle, BlockAddress:=schema.location.startblock, Partition:=schema.location.partition, DestType:=TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
-                    Dim outputfile As String = "schema\LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    Dim outputfile As String = "LTFSIndex_SetEOD_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    outputfile = IO.Path.Combine(My.Settings.schemaPath, outputfile)
                     TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     Dim CurrentPos As TapeUtils.PositionData = GetPos
                     PrintMsg($"Position = {CurrentPos.ToString()}", LogOnly:=True)
@@ -5023,8 +5023,8 @@ Public Class LTFSWriter
                     TapeUtils.Locate(handle:=driveHandle, BlockAddress:=schema.previousgenerationlocation.startblock, Partition:=schema.previousgenerationlocation.partition, DestType:=TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_RI)
-                    Dim outputfile As String = "schema\LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
+                    Dim outputfile As String = "LTFSIndex_RollBack_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
+                    outputfile = IO.Path.Combine(My.Settings.schemaPath, outputfile)
                     TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_AI)
@@ -5101,12 +5101,9 @@ Public Class LTFSWriter
                         ExtraPartitionCount = TapeStreamMapping.MappingTable(driveHandle).PartitionCount - 1
                     End If
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
-                    If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "blocklen.ini")) Then
-                        Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "blocklen.ini")))
-                        If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
-                    End If
-                    If IO.File.Exists(IO.Path.Combine(Application.StartupPath, "encryption.key")) Then
-                        Dim key As String = (IO.File.ReadAllText(IO.Path.Combine(Application.StartupPath, "encryption.key")))
+                    TapeUtils.FromFile(My.Settings.driveSettingFile)
+                    If IO.File.Exists(My.Settings.encKeyFile) Then
+                        Dim key As String = (IO.File.ReadAllText(My.Settings.encKeyFile))
                         Dim newkey As Byte() = IOManager.HexStringToByteArray(key)
                         If newkey.Length <> 32 Then
                             EncryptionKey = Nothing
@@ -5218,7 +5215,7 @@ Public Class LTFSWriter
                     End If
                     PrintMsg(My.Resources.ResText_SvBak)
                     Dim baseBarcode As String = If(String.IsNullOrWhiteSpace(Barcode), "Unknown", Barcode.Trim())
-                    Dim targetDir As String = IO.Path.Combine(Application.StartupPath, "schema", baseBarcode, "Load")
+                    Dim targetDir As String = IO.Path.Combine(My.Settings.schemaPath, baseBarcode, "Load")
                     If Not IO.Directory.Exists(targetDir) Then IO.Directory.CreateDirectory(targetDir)
                     Dim fileName As String = ""
                     If Barcode <> "" Then
@@ -5321,7 +5318,7 @@ Public Class LTFSWriter
                     TapeUtils.ReadFileMark(driveHandle)
                     PrintMsg(My.Resources.ResText_RI)
                     currentPos = GetPos
-                    Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
+                    Dim outDir As String = IO.Path.Combine(My.Settings.schemaPath, "LoadDP")
                     If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
                     Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_p{currentPos.PartitionNumber}_b{currentPos.BlockNumber}_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile, plabel.blocksize)
@@ -5460,32 +5457,6 @@ Public Class LTFSWriter
             LoadIndexFile(OpenFileDialog1.FileName)
         End If
     End Sub
-    'Public Function AutoDump() As String
-    '    SetStatusLight(LWStatus.Busy)
-    '    Dim FileName As String = Barcode
-    '    If FileName = "" Then FileName = schema.volumeuuid.ToString()
-    '    Dim outputfile As String = $"schema\LTFSIndex_Autosave_{FileName _
-    '        }_GEN{schema.generationnumber _
-    '        }_P{schema.location.partition _
-    '        }_B{schema.location.startblock _
-    '        }_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.schema"
-    '    If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "schema")) Then
-    '        IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "schema"))
-    '    End If
-    '    outputfile = IO.Path.Combine(Application.StartupPath, outputfile)
-    '    PrintMsg(My.Resources.ResText_Exporting)
-    '    schema.SaveFile(outputfile)
-    '    Try
-    '        Dim cmData As New TapeUtils.CMParser(driveHandle)
-    '        Dim CMReport As String = cmData.GetReport()
-    '        If CMReport.Length > 0 Then IO.File.WriteAllText(outputfile.Substring(0, outputfile.Length - 7) & ".cm", CMReport)
-    '    Catch ex As Exception
-    '        SetStatusLight(LWStatus.Err)
-    '    End Try
-    '    PrintMsg(My.Resources.ResText_IndexBaked, False, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}")
-    '    SetStatusLight(LWStatus.Succ)
-    '    Return outputfile
-    'End Function
 
     Public Function AutoDump() As String
         SetStatusLight(LWStatus.Busy)
@@ -5502,8 +5473,7 @@ Public Class LTFSWriter
         Next
         Dim safeId As String = sbName.ToString()
 
-        Dim baseDir As String = IO.Path.Combine(Application.StartupPath, "schema")
-        Dim subDir As String = IO.Path.Combine(baseDir, safeId)
+        Dim subDir As String = IO.Path.Combine(My.Settings.schemaPath, safeId)
         If Not IO.Directory.Exists(subDir) Then
             IO.Directory.CreateDirectory(subDir)
         End If
@@ -8216,7 +8186,7 @@ Public Class LTFSWriter
                     TapeUtils.ReadFileMark(driveHandle)
                     currentPos = GetPos
                     PrintMsg(My.Resources.ResText_RI)
-                    Dim outDir As String = IO.Path.Combine(Application.StartupPath, "schema", "LoadDP")
+                    Dim outDir As String = IO.Path.Combine(My.Settings.schemaPath, "LoadDP")
                     If Not IO.Directory.Exists(outDir) Then IO.Directory.CreateDirectory(outDir)
                     Dim outputfile As String = IO.Path.Combine(outDir, $"LTFSIndex_LoadDPIndex_p{currentPos.PartitionNumber}_b{currentPos.BlockNumber}_{Now:yyyyMMdd_HHmmss.fffffff}.schema")
                     TapeUtils.ReadToFileMark(driveHandle, outputfile)

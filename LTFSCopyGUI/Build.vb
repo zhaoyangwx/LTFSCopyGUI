@@ -1,3 +1,3 @@
-﻿Partial Public Class ApplicationWheels
-    Const Build As String = "25112101"
+Partial Public Class ApplicationWheels
+    Const Build As String = "25112701"
 End Class

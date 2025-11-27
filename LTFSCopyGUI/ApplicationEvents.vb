@@ -1,4 +1,5 @@
 Imports System.ComponentModel
+Imports System.IO
 Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.ApplicationServices
 
@@ -44,15 +45,15 @@ Namespace My
             End If
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            If Not IO.Directory.Exists(My.Settings.cfgPath) Then IO.Directory.CreateDirectory(My.Settings.cfgPath)
+            '旧设定迁移
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
-                Try
-                    Dim lang As String = IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"))
-                    Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
-                    Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
-                Catch ex As Exception
-
-                End Try
+                IO.File.Move(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"), My.Settings.langcfgFile)
             End If
+            If IO.File.Exists(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
+                IO.File.Move(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key"), My.Settings.licenseFile)
+            End If
+            Dim drvSettingUpdated As Boolean = False
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt")) Then
                 Try
                     Dim driverTags As String() = IO.File.ReadAllLines(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
@@ -60,21 +61,48 @@ Namespace My
                         Dim result = line.Split({";", ",", vbTab}, StringSplitOptions.None)
                         TapeUtils.TagDictionary.Add(result(0), result(1))
                     Next
+                    drvSettingUpdated = True
+                    IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
+                Catch ex As Exception
+
+                End Try
+            End If
+            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini")) Then
+                Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini")))
+                If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
+                drvSettingUpdated = True
+                IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini"))
+            End If
+            If drvSettingUpdated Then IO.File.WriteAllText(My.Settings.driveSettingFile, (New TapeUtils()).GetSerializedText())
+            TapeUtils.FromFile(My.Settings.driveSettingFile)
+            '读取独立配置文件
+            If IO.File.Exists(My.Settings.langcfgFile) Then
+                Try
+                    Dim lang As String = IO.File.ReadAllText(My.Settings.langcfgFile)
+                    Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
+                    Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
+                Catch ex As Exception
+
+                End Try
+            End If
+            If IO.File.Exists(My.Settings.driveSettingFile) Then
+                Try
+                    TapeUtils.FromXML(My.Settings.driveSettingFile)
                 Catch ex As Exception
 
                 End Try
             End If
             TapeUtils.DriverTypeSetting = My.Settings.TapeUtils_DriverType
             My.Settings.Application_License = Resources.StrDefaultLicense
-            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
+            If IO.File.Exists(My.Settings.licenseFile) Then
                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
 
-                If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
-                    rsa.FromXmlString(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                If IO.File.Exists(My.Settings.licKeyFile) Then
+                    rsa.FromXmlString(IO.File.ReadAllText(My.Settings.licKeyFile))
                 Else
                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                 End If
-                Dim lic_string = IO.File.ReadAllText(IO.Path.Combine(Windows.Forms.Application.StartupPath, "license.key"))
+                Dim lic_string = IO.File.ReadAllText(My.Settings.licenseFile)
 
                 Try
                     Dim LicStr As String() = lic_string.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
@@ -97,7 +125,7 @@ Namespace My
                         Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                         Dim strBody As String = Convert.ToBase64String(bLicStr)
                         Dim strSign As String = Convert.ToBase64String(bSign)
-                        IO.File.WriteAllText(IO.Path.Combine(Windows.Forms.Application.StartupPath, "license.key"), $"{strBody}{vbCrLf}{strSign}")
+                        IO.File.WriteAllText(My.Settings.licenseFile, $"{strBody}{vbCrLf}{strSign}")
                     End If
                 End Try
             End If
@@ -358,8 +386,8 @@ dataDir:{dataDir}
                                 InitConsole()
                                 Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
 
-                                If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")) Then
-                                    rsa.FromXmlString(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "privkey.xml")))
+                                If IO.File.Exists(My.Settings.licKeyFile) Then
+                                    rsa.FromXmlString(IO.File.ReadAllText(My.Settings.licKeyFile))
                                 Else
                                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                                 End If

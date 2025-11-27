@@ -37,7 +37,7 @@ Public Class SettingImportExport
         Get
             Dim result As New SerializableDictionary(Of String, String)
             For Each setting As System.Configuration.SettingsPropertyValue In My.Settings.PropertyValues
-                result.Add(setting.Name, SerializationHelper.GetSerializeString(setting.PropertyValue))
+                If setting.PropertyValue IsNot Nothing Then result.Add(setting.Name, SerializationHelper.GetSerializeString(setting.PropertyValue))
             Next
             Return result
         End Get
