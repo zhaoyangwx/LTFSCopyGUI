@@ -1013,6 +1013,7 @@ Public Class LTFSWriter
         Public Property SourcePath As String
         Public Property File As ltfsindex.file
         Public Property Buffer As Byte() = Nothing
+        Public Property IsOpened As Boolean = False
         Private OperationLock As New Object
         Public Sub RemoveUnwritten()
             ParentDirectory.UnwrittenFiles.Remove(File)
@@ -1081,17 +1082,22 @@ Public Class LTFSWriter
             SyncLock OperationLock
                 While True
                     Try
-                        If fs IsNot Nothing Then Return 1
+                        If fs IsNot Nothing Then
+                            IsOpened = True
+                            Return 1
+                        End If
                         fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
-                        fsB = New IO.BufferedStream(fs, PreReadBufferSize)
+                        IsOpened = True
                         Exit While
                     Catch ex As Exception
                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                             Case DialogResult.Abort
+                                IsOpened = False
                                 Return 3
                             Case DialogResult.Retry
 
                             Case DialogResult.Ignore
+                                IsOpened = False
                                 Return 5
                         End Select
                     End Try
@@ -4393,6 +4399,10 @@ Public Class LTFSWriter
                                         'write to tape
                                         Dim LastWriteTask As Task = Nothing
                                         If fr.File Is Nothing Then Continue For
+                                        While Not fr.IsOpened
+                                            If fr.File Is Nothing Then Continue For
+                                            Threading.Thread.Sleep(1)
+                                        End While
                                         If finfo.Length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData(finfo.Length - 1) As Byte

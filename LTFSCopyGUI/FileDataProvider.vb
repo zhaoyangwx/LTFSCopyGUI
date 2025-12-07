@@ -179,11 +179,16 @@ Public Class FileDataProvider
 
     Private Function ReadAllBytesSafe(fr As LTFSWriter.FileRecord) As Byte()
         Try
-            Return fr.ReadAllBytes()
+            Dim result As Byte() = fr.ReadAllBytes()
+            fr.IsOpened = True
+            Return result
         Catch
             Try
-                Return File.ReadAllBytes(fr.SourcePath)
+                Dim result As Byte() = File.ReadAllBytes(fr.SourcePath)
+                fr.IsOpened = True
+                Return result
             Catch
+                fr.IsOpened = False
                 fr.File = Nothing
                 Return Array.Empty(Of Byte)()
             End Try
@@ -194,6 +199,7 @@ Public Class FileDataProvider
         Try
             ' 1MiB 缓冲，异步顺序读取
             fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            fr.IsOpened = True
         Catch
             ' 备用：尝试使用现有 FileRecord 打开
             Try
@@ -205,6 +211,7 @@ Public Class FileDataProvider
                 End Select
                 fs = fr.fs
             Catch
+                fr.IsOpened = False
                 fr.File = Nothing
                 Exit Function
             End Try
