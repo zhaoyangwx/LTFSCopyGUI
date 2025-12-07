@@ -7,6 +7,7 @@ Imports LTFSCopyGUI
 Imports System.Drawing.Drawing2D
 Imports System.Web.Management
 Imports System.Xml.Serialization
+Imports System.Diagnostics.Eventing.Reader
 'Imports System.Web.UI.WebControls
 
 <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -2926,7 +2927,11 @@ Public Class TapeUtils
                 End If
             End If
         Next
-        obj = SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList()
+        Try
+            obj = SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList()
+        Catch ex As Exception
+            obj = New List(Of SetupAPIHelper.Device)
+        End Try
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
                 If dev.ClassName.ToLower.Contains("disk") Then
@@ -3011,8 +3016,8 @@ Public Class TapeUtils
             Marshal.FreeHGlobal(devNumPtr)
             CloseHandle(handle)
             Dim drv As BlockDevice = TapeUtils.Inquiry($"\\.\Globalroot{dev.PDOName}")
-            drv.DeviceType = "CHANGER"
             If drv Is Nothing Then Continue For
+            drv.DeviceType = "CHANGER"
             drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
             If result Then
                 drv.DevIndex = devNum.DeviceNumber
@@ -4592,6 +4597,31 @@ Public Class TapeUtils
                             Return "L8"
                         Case 129
                             Return "L9"
+                        Case Else
+                            Select Case CartridgeType
+                                Case 5126
+                                    Return "JA"
+                                Case 13
+                                    Return "JB"
+                                Case 15
+                                    Return "JC"
+                                Case 17
+                                    Return "JD"
+                                Case 19
+                                    Return "JE"
+                                Case 21
+                                    Return "JF"
+                                Case 13318
+                                    Return "JJ"
+                                Case 8207
+                                    Return "JK"
+                                Case 8209
+                                    Return "JL"
+                                Case 8211
+                                    Return "JM"
+                                Case 8213
+                                    Return "JN"
+                            End Select
                     End Select
                     Return ""
                 End Get
@@ -5022,6 +5052,7 @@ Public Class TapeUtils
         End Class
         <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class Media_mfg
+            Public Property Version As Byte
             Public Property MediaMfgDate As String
             Public Property MediaVendor As String
             Public ReadOnly Property MediaVendor_Code As Integer
@@ -5068,6 +5099,7 @@ Public Class TapeUtils
         End Class
         <TypeConverter(GetType(ExpandableObjectConverter))>
         <Serializable> Public Class TapeDirectory
+            Public Property Version As Byte
             Public Property FID_Tape_Write_Pass_Partition_0 As Integer
             Public Property FID_Tape_Write_Pass_Partition_1 As Integer
             Public Property FID_Tape_Write_Pass_Partition_2 As Integer
@@ -5365,6 +5397,32 @@ Public Class TapeUtils
                                         a_NWraps = 280
                                         a_SetsPerWrap = 6770
                                         a_TapeDirLength = 32
+                                    Case Else
+                                        Select Case .CartridgeType
+                                            Case 5126
+                                                .Format = "3592JA"
+                                            Case 13
+                                                .Format = "3592JB"
+                                            Case 15
+                                                .Format = "3592JC"
+                                            Case 17
+                                                .Format = "3592JD"
+                                            Case 19
+                                                .Format = "3592JE"
+                                            Case 21
+                                                .Format = "3592JF"
+                                            Case 13318
+                                                .Format = "3592JJ"
+                                            Case 8207
+                                                .Format = "3592JK"
+                                            Case 8209
+                                                .Format = "3592JL"
+                                            Case 8211
+                                                .Format = "3592JM"
+                                            Case 8213
+                                                .Format = "3592JN"
+
+                                        End Select
                                 End Select
                                 If (.CartridgeType >> 13 And 1) = 1 Then
                                     .Format &= " WORM"
@@ -5382,8 +5440,11 @@ Public Class TapeUtils
                     If .Offset >= 0 AndAlso .Length >= 0 Then
                         a_Buffer = substr(a_CMBuffer, .Offset, .Length)
                         With CType(g_CM(gtype.media_mfg), Media_mfg)
-                            .MediaMfgDate = getstr(a_Buffer, 4, 8)
-                            .MediaVendor = getstr(a_Buffer, 12, 8)
+                            .Version = a_Buffer(0) >> 4
+                            Dim suboffset As Integer = 0
+                            If .Version >= 8 Then suboffset = 2 'For 3592 CM
+                            .MediaMfgDate = getstr(a_Buffer, 4 + suboffset, 8)
+                            .MediaVendor = getstr(a_Buffer, 12 + suboffset, 8)
                             ' check the MediaMfgDate for servo band ID
                             Try
                                 If CType(g_CM(gtype.cartridge_mfg), Cartridge_mfg).Format.Contains("LTO-8") Then
@@ -5689,6 +5750,7 @@ Public Class TapeUtils
                     If .Offset >= 0 AndAlso .Length >= 0 AndAlso CType(g_CM(gtype.EOD, 0, False), EOD).Validity Then
                         a_Buffer = substr(a_CMBuffer, .Offset, .Length)
                         With CType(g_CM(gtype.tape_directory, createNew:=True), TapeDirectory)
+                            .Version = (a_Buffer(0) >> 4) And &HF
                             If CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).IsLTO6Plus Then
                                 a_HdrLength = 48
                                 a_TapeWritePassPartition = g_GetDWord(a_Buffer, 4)
@@ -5751,6 +5813,20 @@ Public Class TapeUtils
                                     }{"RecordCount".PadRight(14) _
                                     }{"FilemarkCount".PadRight(14) _
                                     }{"CRC".PadRight(14)}"
+                                .Wrap = a_OutputStr
+                            ElseIf .Version = 9 Then
+                                a_HdrLength = 16
+                                a_TapeWritePassPartition = g_GetDWord(a_Buffer, 4)
+                                .FID_Tape_Write_Pass_Partition_0 = a_TapeWritePassPartition
+                                a_TapeWritePassPartition = g_GetDWord(a_Buffer, 8)
+                                .FID_Tape_Write_Pass_Partition_1 = a_TapeWritePassPartition
+                                a_OutputStr = $"{"WritePass".PadRight(12) _
+                                    }{"DatasetID".PadRight(14) _
+                                    }{"HOW RecCnt".PadRight(14) _
+                                    }{"EOW RecCnt".PadRight(14) _
+                                    }{"HOW FMCnt".PadRight(14) _
+                                    }{"EOW FMCnt".PadRight(14) _
+                                    }{"FM Map".PadRight(14)}"
                                 .Wrap = a_OutputStr
                             Else
                                 a_HdrLength = 16
@@ -5997,6 +6073,10 @@ Public Class TapeUtils
                 ElseIf .Format.Contains("LTO-9") Then
                     a_WrapsInDrive = 280
                     a_HdrLength = 48
+                ElseIf .Format.Contains("J") Then
+                    a_HdrLength = 16
+                    a_WrapsInDrive = ((Buffer.Length - a_HdrLength) \ (24 * 8 + 4)) * 8
+                    a_NWraps = a_WrapsInDrive
                 End If
 
                 If .Format.Contains("LTO-2") Then
@@ -6101,6 +6181,41 @@ Public Class TapeUtils
                             .RawData = {a_EvenDataSetID, a_EvenRecordCount, a_EvenFileMarkCount, a_EvenCRC, a_OddDataSetID, a_OddRecordCount, a_OddFileMarkCount, a_OddCRC}
                             .RecCount = a_EvenRecordCount + a_OddRecordCount
                             .FileMarkCount = a_EvenFileMarkCount + a_OddFileMarkCount
+                        End With
+                    Next
+                ElseIf .Format.Contains("J") Then
+                    For a_WrapIndex = 0 To a_WrapsInDrive - 1
+                        a_WritePass = g_GetDWord(Buffer, a_HdrLength)
+                        a_HdrLength += 4
+                        a_DataSetID = g_GetDWord(Buffer, a_HdrLength)
+                        a_HdrLength += 4
+                        'a_HOW_RecCnt = g_GetDWord(Buffer, a_HdrLength)
+                        'a_HdrLength += 4
+                        a_EOW_RecCnt = g_GetDWord(Buffer, a_HdrLength)
+                        a_HdrLength += 4
+                        'a_HOW_FMCnt = g_GetDWord(Buffer, a_HdrLength)
+                        'a_HdrLength += 4
+                        a_EOW_FMCnt = g_GetDWord(Buffer, a_HdrLength)
+                        a_HdrLength += 4
+                        a_FM_MAP = g_GetDWord(Buffer, a_HdrLength)
+                        a_HdrLength += 8
+                        If a_WrapIndex Mod 8 = 7 Then
+                            a_CRC = g_GetDWord(Buffer, a_HdrLength)
+                            a_HdrLength += 4
+                        End If
+                        a_OutputStr = $"{a_WritePass.ToString().PadRight(12) _
+                            }{a_DataSetID.ToString().PadRight(12) _
+                            }{a_HOW_RecCnt.ToString().PadRight(12) _
+                            }{a_EOW_RecCnt.ToString().PadRight(12) _
+                            }{a_HOW_FMCnt.ToString().PadRight(12) _
+                            }{a_EOW_FMCnt.ToString().PadRight(12) _
+                            }{a_FM_MAP.ToString().PadRight(12) _
+                            }"
+                        With CType(g_CM(gtype.tape_directory), TapeDirectory).WrapEntry(a_WrapIndex)
+                            .Content = a_OutputStr
+                            .RawData = {a_DataSetID, a_HOW_RecCnt, a_EOW_RecCnt, a_HOW_FMCnt, a_EOW_FMCnt, a_FM_MAP, a_CRC}
+                            .RecCount = a_HOW_RecCnt + a_EOW_RecCnt
+                            .FileMarkCount = a_HOW_FMCnt + a_EOW_FMCnt
                         End With
                     Next
                 End If
@@ -6233,7 +6348,11 @@ Public Class TapeUtils
                     Dim TotalWriteMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
                     TotalWriteMBytes *= Me.UsageData(0).LifeSetsWritten
                     TotalWriteMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
-                    Output.Append(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteMBytes)).PadRight(74) & "|" & vbCrLf)
+                    If CartridgeMfgData.KB_PER_DATASET > 0 Then
+                        Output.Append(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteMBytes)).PadRight(74) & "|" & vbCrLf)
+                    Else
+                        Output.Append(("| Total write: ".PadRight(28) & $"{UsageData(0).LifeSetsWritten} Sets").PadRight(74) & "|" & vbCrLf)
+                    End If
                 Catch ex As Exception
                     Output.Append(("| Total write: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
                 End Try
@@ -6241,13 +6360,21 @@ Public Class TapeUtils
                     Dim TotalReadMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
                     TotalReadMBytes *= Me.UsageData(0).LifeSetsRead
                     TotalReadMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
-                    Output.Append(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadMBytes)).PadRight(74) & "|" & vbCrLf)
+                    If CartridgeMfgData.KB_PER_DATASET > 0 Then
+                        Output.Append(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadMBytes)).PadRight(74) & "|" & vbCrLf)
+                    Else
+                        Output.Append(("| Total read: ".PadRight(28) & $"{UsageData(0).LifeSetsRead} Sets").PadRight(74) & "|" & vbCrLf)
+                    End If
                 Catch ex As Exception
                     Output.Append(("| Total read: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
                 End Try
                 Try
                     Dim fve As Double = (Me.UsageData(0).LifeSetsRead + Me.UsageData(0).LifeSetsWritten) / (Me.a_SetsPerWrap * Me.a_NWraps)
-                    Output.Append(("| Full volume equivalents: ".PadRight(28) & fve.ToString("f2") & $" FVE ({(fve / Me.CartridgeMfgData.TAPE_LIFE_IN_VOLS * 100).ToString("f2")}%)").PadRight(74) & "|" & vbCrLf)
+                    If a_SetsPerWrap > 0 Then
+                        Output.Append(("| Full volume equivalents: ".PadRight(28) & fve.ToString("f2") & $" FVE ({(fve / Me.CartridgeMfgData.TAPE_LIFE_IN_VOLS * 100).ToString("f2")}%)").PadRight(74) & "|" & vbCrLf)
+                    Else
+                        Output.Append(("| Full volume equivalents: ".PadRight(28) & $"Unknown").PadRight(74) & "|" & vbCrLf)
+                    End If
                 Catch ex As Exception
                     Output.Append(("| Full volume equivalents: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
                 End Try
