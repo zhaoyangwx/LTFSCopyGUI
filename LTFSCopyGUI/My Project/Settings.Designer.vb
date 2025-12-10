@@ -434,6 +434,34 @@ Namespace My
                 Me("LTFSWriter_GCInterval") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("内存单元最小分配大小"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("65536"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_MinimumSegmentSize")>
+        Public Property LTFSWriter_MinimumSegmentSize() As Integer
+            Get
+                Return CType(Me("LTFSWriter_MinimumSegmentSize"), Integer)
+            End Get
+            Set
+                Me("LTFSWriter_MinimumSegmentSize") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("文件流缓冲区大小"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("65536"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_FileStreamBufferSize")>
+        Public Property LTFSWriter_FileStreamBufferSize() As Integer
+            Get
+                Return CType(Me("LTFSWriter_FileStreamBufferSize"), Integer)
+            End Get
+            Set
+                Me("LTFSWriter_FileStreamBufferSize") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("预读文件数"),
@@ -719,6 +747,20 @@ Namespace My
             End Get
             Set
                 Me("Application_BaseFont") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("使用十进制容量单位"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("Application"),
+         LocalizedDescription("PropertyDescription_Application_UseDecimalUnit")>
+        Public Property Application_UseDecimalUnit() As Boolean
+            Get
+                Return CType(Me("Application_UseDecimalUnit"), Boolean)
+            End Get
+            Set
+                Me("Application_UseDecimalUnit") = Value
             End Set
         End Property
 

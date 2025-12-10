@@ -74,6 +74,7 @@ Public Class FileDataProvider
                    Optional smallThresholdBytes As Integer = 16 * 1024,
                    Optional smallCacheCapacity As Integer = 1000,
                    Optional requireSignal As Boolean = False)
+
         _writeList = writeList.ToList()
         _smallThreshold = Math.Max(1, smallThresholdBytes)
         _smallCacheCapacity = Math.Max(1, smallCacheCapacity)
@@ -84,7 +85,7 @@ Public Class FileDataProvider
         _pipe = New Pipe(New PipeOptions(
             pauseWriterThreshold:=pause,
             resumeWriterThreshold:=resumeTh,
-            minimumSegmentSize:=64 * 1024,
+            minimumSegmentSize:=My.Settings.LTFSWriter_MinimumSegmentSize,
             useSynchronizationContext:=False
         ))
         Reader = _pipe.Reader
@@ -198,7 +199,7 @@ Public Class FileDataProvider
         Dim fs As FileStream = Nothing
         Try
             ' 1MiB 缓冲，异步顺序读取
-            fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, 64 * 1024, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, My.Settings.LTFSWriter_FileStreamBufferSize, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             fr.IsOpened = True
         Catch
             ' 备用：尝试使用现有 FileRecord 打开

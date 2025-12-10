@@ -936,4 +936,13 @@ If no Partition Size field is set to 65535, the sum of the specified partition s
   0 - Disabled
 Enable only when memory usage is abnormally high</value>
   </data>
+  <data name="PropertyDescription_Application_UseDecimalUnit" xml:space="preserve">
+    <value>Use decimal unit (KB/MB/GB) instead of binary unit (KiB/MiB/GiB)</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_MinimumSegmentSize" xml:space="preserve">
+    <value>Minimum segment size for memory allocation</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_FileStreamBufferSize" xml:space="preserve">
+    <value>Filestream buffer size</value>
+  </data>
 </root>

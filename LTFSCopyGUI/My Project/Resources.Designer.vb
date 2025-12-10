@@ -107,6 +107,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 使用十进制单位（KB/MB/GB）而不是二进制单位（KiB/MiB/GiB） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_Application_UseDecimalUnit() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_Application_UseDecimalUnit", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 复制文件信息到剪贴板 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_FileBrowser_CopyInfo() As String
@@ -368,6 +377,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 文件流缓冲区大小 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_FileStreamBufferSize() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_FileStreamBufferSize", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 总是更新数据区索引 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_ForceIndex() As String
@@ -449,6 +467,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_MatchPattern() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_MatchPattern", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 内存单元最小分配大小 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_MinimumSegmentSize() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_MinimumSegmentSize", resourceCulture)
             End Get
         End Property
         
