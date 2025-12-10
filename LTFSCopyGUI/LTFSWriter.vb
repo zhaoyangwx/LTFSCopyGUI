@@ -2182,9 +2182,9 @@ Public Class LTFSWriter
                                 s.Add(("-"))
                                 s.Add(("-"))
                             End If
-                            s.Add(ByteFormatter.FormatBytes(f.length))
+                            s.Add(ByteFormatter.FormatBytes(f.length, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
                             If f.WrittenBytes > 0 Then
-                                s.Add(ByteFormatter.FormatBytes(f.WrittenBytes))
+                                s.Add(ByteFormatter.FormatBytes(f.WrittenBytes, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
                             Else
                                 s.Add("-")
                             End If
@@ -2305,9 +2305,9 @@ Public Class LTFSWriter
                                     s.Add("-")
                                     s.Add("-")
                                 End If
-                                s.Add(ByteFormatter.FormatBytes(f.length))
+                                s.Add(ByteFormatter.FormatBytes(f.length, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
                                 If f.WrittenBytes > 0 Then
-                                    s.Add(ByteFormatter.FormatBytes(f.WrittenBytes))
+                                    s.Add(ByteFormatter.FormatBytes(f.WrittenBytes, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
                                 Else
                                     s.Add("-")
                                 End If

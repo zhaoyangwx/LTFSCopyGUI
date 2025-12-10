@@ -438,9 +438,11 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="HashTaskWindow.resx">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="LTFSConfigurator.en.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
@@ -473,6 +475,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TapeCopy.resx">
       <DependentUpon>TapeCopy.vb</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
