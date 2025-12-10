@@ -674,29 +674,56 @@ Public Class LTFSConfigurator
     Public Function ReduceDataUnit(MBytes As Int64) As String
         Dim Result As Decimal = MBytes
         Dim ResultUnit As Integer = 0
-        While Result >= 1000
-            Result /= 1024
-            ResultUnit += 3
-        End While
-        Dim ResultString As String = Math.Round(Result, 2)
-        Select Case ResultUnit
-            Case 0
-                Return ResultString & " MiB"
-            Case 3
-                Return ResultString & " GiB"
-            Case 6
-                Return ResultString & " TiB"
-            Case 9
-                Return ResultString & " PiB"
-            Case 12
-                Return ResultString & " EiB"
-            Case 15
-                Return ResultString & " ZiB"
-            Case 18
-                Return ResultString & " YiB"
-            Case Else
-                Return ResultString & " << " & ResultUnit & "MiB"
-        End Select
+        If My.Settings.Application_UseDecimalUnit Then
+            While Result >= 1000
+                Result /= 1000
+                ResultUnit += 3
+            End While
+            Dim ResultString As String = Math.Round(Result, 2)
+            Select Case ResultUnit
+                Case 0
+                    Return ResultString & " MB"
+                Case 3
+                    Return ResultString & " GB"
+                Case 6
+                    Return ResultString & " TB"
+                Case 9
+                    Return ResultString & " PB"
+                Case 12
+                    Return ResultString & " EB"
+                Case 15
+                    Return ResultString & " ZB"
+                Case 18
+                    Return ResultString & " YB"
+                Case Else
+                    Return ResultString & " << " & ResultUnit & "MB"
+            End Select
+        Else
+            While Result >= 1000
+                Result /= 1024
+                ResultUnit += 3
+            End While
+            Dim ResultString As String = Math.Round(Result, 2)
+            Select Case ResultUnit
+                Case 0
+                    Return ResultString & " MiB"
+                Case 3
+                    Return ResultString & " GiB"
+                Case 6
+                    Return ResultString & " TiB"
+                Case 9
+                    Return ResultString & " PiB"
+                Case 12
+                    Return ResultString & " EiB"
+                Case 15
+                    Return ResultString & " ZiB"
+                Case 18
+                    Return ResultString & " YiB"
+                Case Else
+                    Return ResultString & " << " & ResultUnit & "MiB"
+            End Select
+        End If
+
     End Function
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False

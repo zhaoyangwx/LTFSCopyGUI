@@ -34,23 +34,40 @@ Public Class IOManager
     Public Event ErrorOccured(s As String)
 
     Public Shared Function FormatSize(l As Long, Optional ByVal More As Boolean = False) As String
-        If l < 1024 Then
-            Return l & " Bytes"
-        ElseIf l < 1024 ^ 2 Then
-            Return (l / 1024).ToString("F2") & " KiB"
-        ElseIf l < 1024 ^ 3 Then
-            Return (l / 1024 ^ 2).ToString("F2") & " MiB"
-        ElseIf Not More OrElse l < 1024 ^ 4 Then
-            Return (l / 1024 ^ 3).ToString("F2") & " GiB"
-        ElseIf l < 1024 ^ 5 Then
-            Return (l / 1024 ^ 4).ToString("F2") & " TiB"
+        If My.Settings.Application_UseDecimalUnit Then
+            If l < 1000 Then
+                Return l & " Bytes"
+            ElseIf l < 1000 ^ 2 Then
+                Return (l / 1000).ToString("F2") & " KB"
+            ElseIf l < 1000 ^ 3 Then
+                Return (l / 1000 ^ 2).ToString("F2") & " MB"
+            ElseIf Not More OrElse l < 1000 ^ 4 Then
+                Return (l / 1000 ^ 3).ToString("F2") & " GB"
+            ElseIf l < 1000 ^ 5 Then
+                Return (l / 1000 ^ 4).ToString("F2") & " TB"
+            Else
+                Return (l / 1000 ^ 5).ToString("F2") & " PB"
+            End If
         Else
-            Return (l / 1024 ^ 5).ToString("F2") & " PiB"
+            If l < 1024 Then
+                Return l & " Bytes"
+            ElseIf l < 1024 ^ 2 Then
+                Return (l / 1024).ToString("F2") & " KiB"
+            ElseIf l < 1024 ^ 3 Then
+                Return (l / 1024 ^ 2).ToString("F2") & " MiB"
+            ElseIf Not More OrElse l < 1024 ^ 4 Then
+                Return (l / 1024 ^ 3).ToString("F2") & " GiB"
+            ElseIf l < 1024 ^ 5 Then
+                Return (l / 1024 ^ 4).ToString("F2") & " TiB"
+            Else
+                Return (l / 1024 ^ 5).ToString("F2") & " PiB"
+            End If
         End If
+
+
     End Function
     Public Shared Function ExtractNumericString(input As String) As String
         If String.IsNullOrEmpty(input) Then Return String.Empty
-
         Dim m As Match = Regex.Match(input, "\d*\.?\d+")
 
         If m.Success Then
