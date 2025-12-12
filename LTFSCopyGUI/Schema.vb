@@ -864,7 +864,7 @@ Public Class Vol1Label
     Public Property label_standard_version As Char = "4"
 
     Public Function GenerateRawData(Optional ByVal Barcode As String = "") As Byte()
-        If Barcode <> "" Then volume_identifier = Barcode.Substring(0, Math.Min(6, Barcode.Length))
+        If Barcode <> "" Then volume_identifier = Barcode.ToUpper().Substring(0, Math.Min(6, Barcode.Length))
         Dim RawData(79) As Byte
         For i As Integer = 0 To 79
             RawData(i) = &H20
