@@ -8729,7 +8729,7 @@ Public Class LTFSWriter
         If SearchStart = "" Then SearchStart = "\"
         Dim dirIndexStack As New List(Of Integer)
         Dim dirStack As New List(Of ltfsindex.directory)
-        Dim fileindex As Integer = 0
+        Dim fileindex As Integer = -1
         Dim pathSeg() As String = SearchStart.Split({"\"}, StringSplitOptions.None)
         dirIndexStack.Add(0)
         dirStack.Add(schema._directory(0))
@@ -8743,7 +8743,7 @@ Public Class LTFSWriter
             Next
         Next
         If pathSeg.Last = "" Then
-            fileindex = 0
+            fileindex = -1
             While dirStack.Last.contents._directory.Count > 0
                 dirStack.Add(dirStack.Last.contents._directory(0))
                 dirIndexStack.Add(0)
@@ -8773,7 +8773,7 @@ Public Class LTFSWriter
                          If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
                              Do
                                  If fileindex > dirStack.Last.contents._file.Count - 1 Then Exit Do
-                                 If (FIDMode AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID) OrElse dirStack.Last.contents._file(fileindex).name.Contains(KW) Then
+                                 If (FIDMode AndAlso ((fileindex = -1 AndAlso dirStack.Last.fileuid = FID) OrElse (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID))) OrElse (fileindex = -1 AndAlso dirStack.Last.name.Contains(KW)) OrElse (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).name.Contains(KW)) Then
                                      Invoke(Sub()
                                                 Dim nd As TreeNode = TreeView1.Nodes(0)
                                                 Try
@@ -8791,14 +8791,25 @@ Public Class LTFSWriter
                                                 For Each it As ListViewItem In ListView1.Items
                                                     it.Selected = False
                                                 Next
-                                                Try
-                                                    ListView1.Items(fileindex).Focused = True
-                                                    ListView1.Items(fileindex).Selected = True
-                                                    ListView1.EnsureVisible(fileindex)
-                                                    PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
-                                                Catch ex As Exception
+                                                If fileindex <> -1 Then
+                                                    Try
+                                                        ListView1.Items(fileindex).Focused = True
+                                                        ListView1.Items(fileindex).Selected = True
+                                                        ListView1.EnsureVisible(fileindex)
+                                                        PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
+                                                    Catch ex As Exception
 
-                                                End Try
+                                                    End Try
+                                                Else
+                                                    PrintMsg($"{currpath}")
+                                                    Try
+                                                        ListView1.Items(0).Focused = True
+                                                        ListView1.Items(0).Selected = True
+                                                        ListView1.EnsureVisible(0)
+                                                    Catch ex As Exception
+
+                                                    End Try
+                                                End If
                                                 LockGUI(False)
                                             End Sub)
                                      Exit Sub
@@ -8812,7 +8823,7 @@ Public Class LTFSWriter
                              While dirIndexStack.Last > dirStack(dirStack.Count - 2).contents._directory.Count - 1
                                  dirStack.RemoveAt(dirStack.Count - 1)
                                  dirIndexStack.RemoveAt(dirIndexStack.Count - 1)
-                                 fileindex = 0
+                                 fileindex = -1
                                  returned = True
                                  If dirStack.Count <= 1 Then Exit While
                              End While
@@ -8831,15 +8842,15 @@ Public Class LTFSWriter
                              If dirStack(dirStack.Count - 1).contents._directory.Count > 0 Then
                                  dirStack.Add(dirStack.Last.contents._directory(0))
                                  dirIndexStack.Add(0)
-                                 fileindex = 0
+                                 fileindex = -1
                              Else
                                  If dirStack.Count <= 1 Then Exit While
                                  dirIndexStack(dirIndexStack.Count - 1) += 1
                                  If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
                                      dirStack.RemoveAt(dirStack.Count - 1)
                                      dirStack.Add(dirStack(dirStack.Count - 1).contents._directory(dirIndexStack.Last))
+                                     fileindex = -1
                                  End If
-
                              End If
                          End If
                          If dirStack.Count <= 1 Then Exit While
