@@ -408,7 +408,7 @@ Public Class Form1
                         Sub(fl As IO.FileInfo)
                             Try
                                 Dim sch As String = IO.File.ReadAllText(fl.FullName)
-                                If sch.Contains(patt) Then
+                                If If(My.Settings.Application_CaseSensitiveSearch, sch.Contains(patt), sch.ToLower().Contains(patt.ToLower)) Then
                                     SyncLock result
                                         result.AppendLine(fl.Name)
                                     End SyncLock
@@ -525,7 +525,7 @@ Public Class Form1
                         Sub(fl As IO.FileInfo)
                             Try
                                 Dim sch As String = IO.File.ReadAllText(fl.FullName)
-                                If sch.Contains(patt) Then
+                                If If(My.Settings.Application_CaseSensitiveSearch, sch.Contains(patt), sch.ToLower().Contains(patt.ToLower)) Then
                                     SyncLock infoText
                                         infoText.AppendLine(fl.Name)
                                     End SyncLock
@@ -635,7 +635,7 @@ Public Class Form1
                         Sub(fl As IO.FileInfo)
                             Try
                                 Dim sch As String = IO.File.ReadAllText(fl.FullName)
-                                If sch.Contains(patt) Then
+                                If If(My.Settings.Application_CaseSensitiveSearch, sch.Contains(patt), sch.ToLower().Contains(patt.ToLower)) Then
                                     Dim UNum As Integer = 0
                                     Dim result As New Text.StringBuilder
                                     result.AppendLine(fl.Name)

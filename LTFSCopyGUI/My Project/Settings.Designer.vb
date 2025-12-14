@@ -763,6 +763,20 @@ Namespace My
                 Me("Application_UseDecimalUnit") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("搜索时大小写敏感"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("Application"),
+         LocalizedDescription("PropertyDescription_Application_CaseSensitiveSearch")>
+        Public Property Application_CaseSensitiveSearch() As Boolean
+            Get
+                Return CType(Me("Application_CaseSensitiveSearch"), Boolean)
+            End Get
+            Set
+                Me("Application_CaseSensitiveSearch") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("写入开始时切换电源策略"),

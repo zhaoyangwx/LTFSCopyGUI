@@ -98,6 +98,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 搜索时大小写敏感 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_Application_CaseSensitiveSearch() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_Application_CaseSensitiveSearch", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 许可证文本显示 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_Application_License() As String
