@@ -945,4 +945,7 @@ Enable only when memory usage is abnormally high</value>
   <data name="PropertyDescription_LTFSWriter_FileStreamBufferSize" xml:space="preserve">
     <value>Filestream buffer size</value>
   </data>
+  <data name="PropertyDescription_Application_CaseSensitiveSearch" xml:space="preserve">
+    <value>Case sensitive in search</value>
+  </data>
 </root>

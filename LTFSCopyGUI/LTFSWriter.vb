@@ -8773,7 +8773,14 @@ Public Class LTFSWriter
                          If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
                              Do
                                  If fileindex > dirStack.Last.contents._file.Count - 1 Then Exit Do
-                                 If (FIDMode AndAlso ((fileindex = -1 AndAlso dirStack.Last.fileuid = FID) OrElse (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID))) OrElse (fileindex = -1 AndAlso dirStack.Last.name.Contains(KW)) OrElse (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).name.Contains(KW)) Then
+                                 If (FIDMode AndAlso ((fileindex = -1 AndAlso dirStack.Last.fileuid = FID) OrElse
+                                                      (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID))) OrElse
+                                    (fileindex = -1 AndAlso If(My.Settings.Application_CaseSensitiveSearch,
+                                                               dirStack.Last.name.Contains(KW),
+                                                               dirStack.Last.name.ToLower().Contains(KW.ToLower()))) OrElse
+                                    (fileindex <> -1 AndAlso If(My.Settings.Application_CaseSensitiveSearch,
+                                                                dirStack.Last.contents._file(fileindex).name.Contains(KW),
+                                                                dirStack.Last.contents._file(fileindex).name.ToLower().Contains(KW.ToLower))) Then
                                      Invoke(Sub()
                                                 Dim nd As TreeNode = TreeView1.Nodes(0)
                                                 Try

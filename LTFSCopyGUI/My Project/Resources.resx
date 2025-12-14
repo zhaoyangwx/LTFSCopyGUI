@@ -956,4 +956,7 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_FileStreamBufferSize" xml:space="preserve">
     <value>文件流缓冲区大小</value>
   </data>
+  <data name="PropertyDescription_Application_CaseSensitiveSearch" xml:space="preserve">
+    <value>搜索时大小写敏感</value>
+  </data>
 </root>
