@@ -291,7 +291,7 @@ Public Class TapeUtils
 
 
     <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
-    Public Shared Function GetLastError() As UInteger
+    Public Shared Function GetLastError() As Integer
     End Function
 
     <DllImport("kernel32.dll", CharSet:=CharSet.Ansi, CallingConvention:=CallingConvention.Winapi)>
@@ -1304,8 +1304,9 @@ Public Class TapeUtils
         Marshal.Copy(paramData, 0, dataBuffer, paramLen)
         Dim senseData(63) As Byte
         While Not TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, paramLen, 1, 60000, senseData)
-            Dim ErrCode As UInteger = GetLastError()
-            Select Case MessageBox.Show($"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{Hex(ErrCode).PadLeft(8, "0")}h",
+            Dim ErrCode As Integer = GetLastError()
+            Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+            Select Case MessageBox.Show($"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}",
                                         My.Resources.ResText_Warning,
                                         MessageBoxButtons.AbortRetryIgnore,
                                         Nothing,
