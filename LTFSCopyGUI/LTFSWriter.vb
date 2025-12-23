@@ -4026,6 +4026,35 @@ Public Class LTFSWriter
             If value >= 0 Then _PipeBufferLength = value
         End Set
     End Property
+    Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
+        Dim result As ReadResult
+        If Threading.Monitor.TryEnter(PipeLock, 0) Then
+            Try
+                If Not reader.TryRead(result) Then
+                    Threading.Monitor.Exit(PipeLock)
+                    ' 没有可读数据
+                    Return 0
+                End If
+
+                ' 获取当前缓冲区的数据总长度
+                Dim length As Long = result.Buffer.Length
+
+                ' 不推进读取位置，保留数据以便后续读取
+                reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
+                Threading.Monitor.Exit(PipeLock)
+                Return length
+            Catch ex As Exception
+                PrintMsg(ex.ToString, LogOnly:=True, ForceLog:=True)
+                Threading.Monitor.Exit(PipeLock)
+                Return -1
+            End Try
+            Threading.Monitor.Exit(PipeLock)
+        Else
+            Return -1
+        End If
+
+    End Function
+
     Private Function PipeGetLength(rb As SpscRingBuffer) As Long
         If rb Is Nothing Then Return -1
         Try
@@ -4058,6 +4087,35 @@ Public Class LTFSWriter
         Return copied
     End Function
     Public Property PipeLock As New Object
+    Public Property RingBufferEnabled As Boolean
+    Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
+                                     dest As Byte(),
+                                     count As Integer,
+                                     Optional ct As Threading.CancellationToken = Nothing) As Integer
+        If dest Is Nothing Then Throw New ArgumentNullException(NameOf(dest))
+        If count < 0 OrElse count > dest.Length Then Throw New ArgumentOutOfRangeException(NameOf(count))
+        Dim filled As Long = 0
+        While filled < count
+            Dim rr As ReadResult = reader.ReadAsync(ct).AsTask().GetAwaiter().GetResult()
+            Dim buf As ReadOnlySequence(Of Byte) = rr.Buffer
+            If buf.Length = 0 AndAlso rr.IsCompleted Then
+                Exit While
+            End If
+            PipeBufferLength = buf.Length
+            Dim need As Long = count - filled
+            Dim toCopy As Long = Math.Min(need, CLng(buf.Length))
+
+            Dim copied As Long = 0
+            If toCopy > 0 Then
+                copied = CopySequenceToArray(buf, dest, filled, toCopy)
+                filled += copied
+            End If
+            Dim consumed As SequencePosition = buf.GetPosition(copied)
+            reader.AdvanceTo(consumed, consumed)
+        End While
+        Return filled
+    End Function
+
     Private Function PipeReadExactly(rb As SpscRingBuffer,
                                      dest As Byte(),
                                      count As Integer,
@@ -4086,6 +4144,27 @@ Public Class LTFSWriter
 
         Return filled
     End Function
+    Private Sub PipeDrain(reader As System.IO.Pipelines.PipeReader,
+       bytesToDrain As Long,
+                          Optional ct As Threading.CancellationToken = Nothing)
+        Dim remain = bytesToDrain
+        While remain > 0
+            SyncLock PipeLock
+                Dim result = reader.ReadAsync(ct).AsTask().Result
+                Dim buffer = result.Buffer
+                PipeBufferLength = buffer.Length
+                If buffer.Length = 0 Then
+                    reader.AdvanceTo(buffer.Start, buffer.Start)
+                    If result.IsCompleted Then Exit While
+                    Continue While
+                End If
+                Dim take As Long = Math.Min(remain, buffer.Length)
+                Dim consumed = buffer.GetPosition(take)
+                reader.AdvanceTo(consumed, consumed)
+                remain -= take
+            End SyncLock
+        End While
+    End Sub
 
     Private Sub PipeDrain(rb As SpscRingBuffer,
                           bytesToDrain As Long,
@@ -4133,6 +4212,7 @@ Public Class LTFSWriter
                                                           LTE.Set()
                                                       End Sub)
                     IsWriting = True
+                    RingBufferEnabled = My.Settings.LTFSWriter_RingBufferEnabled
                     UFReadCount.Inc()
                     Dim WriteList As New List(Of FileRecord)
                     Dim provider As FileDataProvider = Nothing
@@ -4163,7 +4243,7 @@ Public Class LTFSWriter
                         lcounter += 1
                         If lcounter >= 100 Then
                             lcounter = 0
-                            If provider IsNot Nothing Then PipeBufferLength = PipeGetLength(provider.RingBuffer)
+                            If provider IsNot Nothing Then PipeBufferLength = If(RingBufferEnabled, PipeGetLength(provider.RingBuffer), PipeGetLength(provider.Reader))
                         End If
                     End While
                     If Not locateResult Then
@@ -4335,7 +4415,11 @@ Public Class LTFSWriter
                                         End If
                                     End If
                                     If dupe Then
-                                        PipeDrain(provider.RingBuffer, finfo.Length)
+                                        If RingBufferEnabled Then
+                                            PipeDrain(provider.RingBuffer, finfo.Length)
+                                        Else
+                                            PipeDrain(provider.Reader, finfo.Length)
+                                        End If
                                     Else
                                         IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
@@ -4387,8 +4471,15 @@ Public Class LTFSWriter
                                             While True
                                                 Try
                                                     'FileData = fr.ReadAllBytes()
-                                                    Dim reader = provider.RingBuffer
-                                                    PipeReadExactly(reader, FileData, finfo.Length)
+                                                    Dim PipeReader As System.IO.Pipelines.PipeReader
+                                                    Dim RingBufferReader As SpscRingBuffer
+                                                    If RingBufferEnabled Then
+                                                        RingBufferReader = provider.RingBuffer
+                                                        PipeReadExactly(RingBufferReader, FileData, finfo.Length)
+                                                    Else
+                                                        PipeReader = provider.Reader
+                                                        PipeReadExactly(PipeReader, FileData, finfo.Length)
+                                                    End If
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
                                                 Catch ex As Exception
@@ -4516,7 +4607,13 @@ Public Class LTFSWriter
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
                                             'Dim tsub As Double = 0
-                                            Dim reader = provider.RingBuffer
+                                            Dim RingBufferReader As SpscRingBuffer
+                                            Dim PipeReader As System.IO.Pipelines.PipeReader
+                                            If RingBufferEnabled Then
+                                                RingBufferReader = provider.RingBuffer
+                                            Else
+                                                PipeReader = provider.Reader
+                                            End If
                                             Dim remainingInFile As Long = finfo.Length
                                             Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
@@ -4526,7 +4623,12 @@ Public Class LTFSWriter
 
                                                 ' 从 Pipe 读取当前文件需要的字节
                                                 Try
-                                                    BytesReaded = PipeReadExactly(reader, buffer, toRead)
+                                                    If RingBufferEnabled Then
+                                                        BytesReaded = PipeReadExactly(RingBufferReader, buffer, toRead)
+                                                    Else
+                                                        BytesReaded = PipeReadExactly(PipeReader, buffer, toRead)
+
+                                                    End If
                                                     If BytesReaded = 0 Then
                                                         ExitWhileFlag = True
                                                         Exit While
@@ -4552,7 +4654,11 @@ Public Class LTFSWriter
                                                         lwcounter += 1
                                                         If lwcounter >= 100 Then
                                                             lwcounter = 0
-                                                            PipeBufferLength = PipeGetLength(reader)
+                                                            If RingBufferEnabled Then
+                                                                PipeBufferLength = PipeGetLength(RingBufferReader)
+                                                            Else
+                                                                PipeBufferLength = PipeGetLength(PipeReader)
+                                                            End If
                                                         End If
                                                     End While
                                                 End If
@@ -4663,7 +4769,11 @@ Public Class LTFSWriter
                                                                 counter += 1
                                                                 If counter >= 100 Then
                                                                     counter = 0
-                                                                    PipeBufferLength = PipeGetLength(reader)
+                                                                    If RingBufferEnabled Then
+                                                                        PipeBufferLength = PipeGetLength(RingBufferReader)
+                                                                    Else
+                                                                        PipeBufferLength = PipeGetLength(PipeReader)
+                                                                    End If
                                                                 End If
                                                             End While
                                                             If flushResult Then
@@ -4686,7 +4796,11 @@ Public Class LTFSWriter
                                                                 counter += 1
                                                                 If counter >= 100 Then
                                                                     counter = 0
-                                                                    PipeBufferLength = PipeGetLength(reader)
+                                                                    If RingBufferEnabled Then
+                                                                        PipeBufferLength = PipeGetLength(RingBufferReader)
+                                                                    Else
+                                                                        PipeBufferLength = PipeGetLength(PipeReader)
+                                                                    End If
                                                                 End If
                                                             End While
                                                         End If
@@ -4710,7 +4824,11 @@ Public Class LTFSWriter
                                                     lwcounter += 1
                                                     If lwcounter >= 100 Then
                                                         lwcounter = 0
-                                                        PipeBufferLength = PipeGetLength(reader)
+                                                        If RingBufferEnabled Then
+                                                            PipeBufferLength = PipeGetLength(RingBufferReader)
+                                                        Else
+                                                            PipeBufferLength = PipeGetLength(PipeReader)
+                                                        End If
                                                     End If
                                                 End While
                                             End If
@@ -4820,7 +4938,11 @@ Public Class LTFSWriter
                                 pCounter += 1
                                 If pCounter >= 100 Then
                                     pCounter = 0
-                                    PipeBufferLength = PipeGetLength(provider.RingBuffer)
+                                    If RingBufferEnabled Then
+                                        PipeBufferLength = PipeGetLength(provider.RingBuffer)
+                                    Else
+                                        PipeBufferLength = PipeGetLength(provider.Reader)
+                                    End If
                                 End If
                                 If Not Pause Then
                                     Invoke(Sub()

@@ -547,6 +547,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 Ring buffer模式 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_RingBufferEnabled() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_RingBufferEnabled", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 空目录显示拖动图标 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_ShowDragIcon() As String

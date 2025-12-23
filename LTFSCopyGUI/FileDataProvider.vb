@@ -39,10 +39,14 @@ Imports System.Runtime.InteropServices
 '       ' 同上消费逻辑...
 
 Public Class FileDataProvider
+    Private ReadOnly _pipe As Pipe
+    Private ReadOnly _writer As PipeWriter
+    Public ReadOnly Property Reader As PipeReader
     Public ReadOnly RingBuffer As SpscRingBuffer
+    Private _ringBufferEnabled As Boolean
 
     Private ReadOnly _writeList As List(Of LTFSWriter.FileRecord)
-    Private ReadOnly _smallThreshold As Integer
+    Private ReadOnly _smallThreshold As Long
     Private ReadOnly _smallCacheCapacity As Integer
     Private ReadOnly _requireSignal As Boolean
 
@@ -68,8 +72,8 @@ Public Class FileDataProvider
     ' - smallCacheCapacity: 小文件缓存容量上限（默认 1000 个）
     ' - requireSignal: 是否需要外部通过 RequestNextFile 触发下一个文件（默认 False=积极连续缓存）
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord),
-                   Optional pipeBufferBytes As Integer = 256 << 20,
-                   Optional smallThresholdBytes As Integer = 16 * 1024,
+                   Optional pipeBufferBytes As Long = 256 << 20,
+                   Optional smallThresholdBytes As Long = 16 * 1024,
                    Optional smallCacheCapacity As Integer = 1000,
                    Optional requireSignal As Boolean = False)
 
@@ -77,8 +81,21 @@ Public Class FileDataProvider
         _smallThreshold = Math.Max(1, smallThresholdBytes)
         _smallCacheCapacity = Math.Max(1, smallCacheCapacity)
         _requireSignal = requireSignal
-
-        RingBuffer = New SpscRingBuffer(pipeBufferBytes)
+        _ringBufferEnabled = My.Settings.LTFSWriter_RingBufferEnabled
+        If _ringBufferEnabled Then
+            RingBuffer = New SpscRingBuffer(pipeBufferBytes)
+        Else
+            Dim pause As Long = pipeBufferBytes
+            Dim resumeTh As Long = Math.Max(1L, (pause \ 4) * 3)
+            _pipe = New Pipe(New PipeOptions(
+                pauseWriterThreshold:=pause,
+                resumeWriterThreshold:=resumeTh,
+                minimumSegmentSize:=My.Settings.LTFSWriter_MinimumSegmentSize,
+                useSynchronizationContext:=False
+            ))
+            Reader = _pipe.Reader
+            _writer = _pipe.Writer
+        End If
     End Sub
 
     Public Sub Start()
@@ -105,7 +122,12 @@ Public Class FileDataProvider
             _nextFileSignal.Set()
         Finally
             Try
-                RingBuffer.Complete()
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
             Catch
             End Try
         End Try
@@ -141,9 +163,15 @@ Public Class FileDataProvider
                     End If
 
                     If data IsNot Nothing AndAlso data.Length > 0 Then
-                        WriteAllToRing(data, _cts.Token)
+                        If _ringBufferEnabled Then
+                            WriteAllToRing(data, _cts.Token)
+                        Else
+                            _writer.Write(data.AsSpan())
+                            Dim res = Await _writer.FlushAsync(_cts.Token)
+                            If res.IsCanceled OrElse res.IsCompleted Then Exit While
+                        End If
                     End If
-                Else
+                    Else
                     ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
                     Await StreamFileToPipeAsync(fr, _cts.Token)
                 End If
@@ -155,7 +183,12 @@ Public Class FileDataProvider
         Catch ex As Exception
             MessageBox.Show(ex.ToString())
             Try
-                RingBuffer.Complete()
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
             Catch
             End Try
         End Try
@@ -223,20 +256,36 @@ Public Class FileDataProvider
         End Try
 
         Using fs
-            Dim minChunk As Integer = 1024 * 1024
+            If _ringBufferEnabled Then
+                Dim minChunk As Integer = 1024 * 1024
+                While Not ct.IsCancellationRequested
+                    Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
+                    If seg.Count = 0 Then
+                        ' 理论上不会（除非 completed/disposed/canceled）
+                        Exit While
+                    End If
 
-            While Not ct.IsCancellationRequested
-                Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
-                If seg.Count = 0 Then
-                    ' 理论上不会（除非 completed/disposed/canceled）
-                    Exit While
-                End If
+                    Dim n As Integer = Await fs.ReadAsync(seg.Array, seg.Offset, seg.Count, ct).ConfigureAwait(False)
+                    If n = 0 Then Exit While
 
-                Dim n As Integer = Await fs.ReadAsync(seg.Array, seg.Offset, seg.Count, ct).ConfigureAwait(False)
-                If n = 0 Then Exit While
-
-                RingBuffer.AdvanceWrite(n)
-            End While
+                    RingBuffer.AdvanceWrite(n)
+                End While
+            Else
+                Dim minSize As Integer = 64 * 1024
+                While Not ct.IsCancellationRequested
+                    Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
+                    Dim seg As ArraySegment(Of Byte)
+                    If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
+                        Throw New Exception("TryGetArray failed")
+                    End If
+                    Dim cap As Integer = Math.Min(minSize, seg.Count)
+                    Dim n = Await fs.ReadAsync(seg.Array, seg.Offset, cap, ct).ConfigureAwait(False)
+                    If n = 0 Then Exit While
+                    _writer.Advance(n)
+                    Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
+                    If result.IsCanceled OrElse result.IsCompleted Then Exit While
+                End While
+            End If
         End Using
     End Function
 

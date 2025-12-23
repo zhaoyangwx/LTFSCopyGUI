@@ -6,7 +6,7 @@ Public NotInheritable Class SpscRingBuffer
     Implements IDisposable
 
     Private ReadOnly _buffer As Byte()
-    Private ReadOnly _capacity As Integer
+    Private ReadOnly _capacity As Long
     Private ReadOnly _mask As Integer ' only valid when power-of-two
 
     Private _headPos As Long
@@ -18,7 +18,7 @@ Public NotInheritable Class SpscRingBuffer
     Private _completed As Integer
     Private _disposed As Integer
 
-    Public Sub New(capacityBytes As Integer)
+    Public Sub New(capacityBytes As Long)
         If capacityBytes <= 0 Then Throw New ArgumentOutOfRangeException(NameOf(capacityBytes))
         If Not IsPowerOfTwo(capacityBytes) Then
             Throw New ArgumentException("capacityBytes must be a power of two for fast masking.", NameOf(capacityBytes))
@@ -29,7 +29,7 @@ Public NotInheritable Class SpscRingBuffer
         _buffer = New Byte(capacityBytes - 1) {}
     End Sub
 
-    Public ReadOnly Property Capacity As Integer
+    Public ReadOnly Property Capacity As Long
         Get
             Return _capacity
         End Get
@@ -203,7 +203,7 @@ Public NotInheritable Class SpscRingBuffer
         End If
     End Sub
 
-    Private Shared Function IsPowerOfTwo(x As Integer) As Boolean
+    Public Shared Function IsPowerOfTwo(x As Long) As Boolean
         Return x > 0 AndAlso (x And (x - 1)) = 0
     End Function
 End Class
