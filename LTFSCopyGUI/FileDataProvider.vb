@@ -184,15 +184,26 @@ Public Class FileDataProvider
             fr.IsOpened = True
             Return result
         Catch
-            Try
-                Dim result As Byte() = File.ReadAllBytes(fr.SourcePath)
-                fr.IsOpened = True
-                Return result
-            Catch
-                fr.IsOpened = False
-                fr.File = Nothing
-                Return Array.Empty(Of Byte)()
-            End Try
+            While True
+                Try
+                    Dim result As Byte() = File.ReadAllBytes(fr.SourcePath)
+                    fr.IsOpened = True
+                    Return result
+                Catch ex As Exception
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Case DialogResult.Abort
+                            fr.IsOpened = False
+                            fr.File = Nothing
+                            Throw ex
+                        Case DialogResult.Retry
+                            Continue While
+                        Case DialogResult.Ignore
+                            fr.IsOpened = False
+                            fr.File = Nothing
+                            Return Array.Empty(Of Byte)()
+                    End Select
+                End Try
+            End While
         End Try
     End Function
     Private Async Function StreamFileToPipeAsync(fr As LTFSWriter.FileRecord, ct As CancellationToken) As Task

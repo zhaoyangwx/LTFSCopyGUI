@@ -354,15 +354,7 @@ Public Class LTFSWriter
         End If
         My.Settings.LTFSWriter_OverwriteExist = 覆盖已有文件ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_SkipSymlink = 跳过符号链接ToolStripMenuItem.Checked
-        If WA0ToolStripMenuItem.Checked Then
-            My.Settings.LTFSWriter_OnWriteFinished = 0
-        ElseIf WA1ToolStripMenuItem.Checked Then
-            My.Settings.LTFSWriter_OnWriteFinished = 1
-        ElseIf WA2ToolStripMenuItem.Checked Then
-            My.Settings.LTFSWriter_OnWriteFinished = 2
-        ElseIf WA3ToolStripMenuItem.Checked Then
-            My.Settings.LTFSWriter_OnWriteFinished = 3
-        End If
+        ApplyWAStatus()
         My.Settings.LTFSWriter_AutoFlush = APToolStripMenuItem.Checked
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
@@ -983,6 +975,7 @@ Public Class LTFSWriter
             Task.Run(Sub()
                          Try
                              Dim Loc As String = GetLocInfo()
+                             PrintMsg(Loc, LogOnly:=True, DeDupe:=True)
                              Invoke(Sub() Text = Loc)
                          Catch ex As Exception
                          End Try
@@ -1777,6 +1770,7 @@ Public Class LTFSWriter
                 Catch ex As Exception
                 End Try
                 Invoke(Sub()
+                           If cap0 < 0 Then Exit Sub
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
                            If cap0 >= 4096 Then
@@ -4268,6 +4262,7 @@ Public Class LTFSWriter
                             Dim fr As FileRecord = WriteList(i)
                             Try
                                 Dim finfo As IO.FileInfo = New IO.FileInfo(fr.SourcePath)
+                                If fr.File Is Nothing Then Continue For
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
                                 Dim IsIndexPartition As Boolean = False
@@ -6013,18 +6008,40 @@ Public Class LTFSWriter
         WA1ToolStripMenuItem.Checked = False
         WA2ToolStripMenuItem.Checked = False
         WA3ToolStripMenuItem.Checked = False
+        ApplyWAStatus()
     End Sub
     Private Sub WA1ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA1ToolStripMenuItem.Click
         WA0ToolStripMenuItem.Checked = False
         WA1ToolStripMenuItem.Checked = True
         WA2ToolStripMenuItem.Checked = False
         WA3ToolStripMenuItem.Checked = False
+        ApplyWAStatus()
     End Sub
     Private Sub WA2ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA2ToolStripMenuItem.Click
         WA0ToolStripMenuItem.Checked = False
         WA1ToolStripMenuItem.Checked = False
         WA2ToolStripMenuItem.Checked = True
         WA3ToolStripMenuItem.Checked = False
+        ApplyWAStatus()
+    End Sub
+    Private Sub WA3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA3ToolStripMenuItem.Click
+        WA0ToolStripMenuItem.Checked = False
+        WA1ToolStripMenuItem.Checked = False
+        WA2ToolStripMenuItem.Checked = False
+        WA3ToolStripMenuItem.Checked = True
+        ApplyWAStatus()
+    End Sub
+    Public Sub ApplyWAStatus()
+        If WA0ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_OnWriteFinished = 0
+        ElseIf WA1ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_OnWriteFinished = 1
+        ElseIf WA2ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_OnWriteFinished = 2
+        ElseIf WA3ToolStripMenuItem.Checked Then
+            My.Settings.LTFSWriter_OnWriteFinished = 3
+        End If
+
     End Sub
     Public Function CalculateChecksum(FileIndex As ltfsindex.file, Optional ByVal blk0 As Byte() = Nothing) As Dictionary(Of String, String)
         Dim HT As New IOManager.CheckSumBlockwiseCalculator
@@ -8696,12 +8713,6 @@ Public Class LTFSWriter
     End Sub
 
 
-    Private Sub WA3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles WA3ToolStripMenuItem.Click
-        WA0ToolStripMenuItem.Checked = False
-        WA1ToolStripMenuItem.Checked = False
-        WA2ToolStripMenuItem.Checked = False
-        WA3ToolStripMenuItem.Checked = True
-    End Sub
 
     <Category("LTFSWriter")>
     Public Property LastSearchKW As String = ""
