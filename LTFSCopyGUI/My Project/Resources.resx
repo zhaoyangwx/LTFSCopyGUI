@@ -959,4 +959,7 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_Application_CaseSensitiveSearch" xml:space="preserve">
     <value>搜索时大小写敏感</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_RingBufferEnabled" xml:space="preserve">
+    <value>Ring buffer模式</value>
+  </data>
 </root>

@@ -42,9 +42,11 @@ Public Class FileDataProvider
     Private ReadOnly _pipe As Pipe
     Private ReadOnly _writer As PipeWriter
     Public ReadOnly Property Reader As PipeReader
+    Public ReadOnly RingBuffer As SpscRingBuffer
+    Private _ringBufferEnabled As Boolean
 
     Private ReadOnly _writeList As List(Of LTFSWriter.FileRecord)
-    Private ReadOnly _smallThreshold As Integer
+    Private ReadOnly _smallThreshold As Long
     Private ReadOnly _smallCacheCapacity As Integer
     Private ReadOnly _requireSignal As Boolean
 
@@ -71,7 +73,7 @@ Public Class FileDataProvider
     ' - requireSignal: 是否需要外部通过 RequestNextFile 触发下一个文件（默认 False=积极连续缓存）
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord),
                    Optional pipeBufferBytes As Long = 256 << 20,
-                   Optional smallThresholdBytes As Integer = 16 * 1024,
+                   Optional smallThresholdBytes As Long = 16 * 1024,
                    Optional smallCacheCapacity As Integer = 1000,
                    Optional requireSignal As Boolean = False)
 
@@ -79,17 +81,21 @@ Public Class FileDataProvider
         _smallThreshold = Math.Max(1, smallThresholdBytes)
         _smallCacheCapacity = Math.Max(1, smallCacheCapacity)
         _requireSignal = requireSignal
-
-        Dim pause As Long = pipeBufferBytes
-        Dim resumeTh As Long = Math.Max(1L, (pause \ 4) * 3)
-        _pipe = New Pipe(New PipeOptions(
-            pauseWriterThreshold:=pause,
-            resumeWriterThreshold:=resumeTh,
-            minimumSegmentSize:=My.Settings.LTFSWriter_MinimumSegmentSize,
-            useSynchronizationContext:=False
-        ))
-        Reader = _pipe.Reader
-        _writer = _pipe.Writer
+        _ringBufferEnabled = My.Settings.LTFSWriter_RingBufferEnabled
+        If _ringBufferEnabled Then
+            RingBuffer = New SpscRingBuffer(pipeBufferBytes)
+        Else
+            Dim pause As Long = pipeBufferBytes
+            Dim resumeTh As Long = Math.Max(1L, (pause \ 4) * 3)
+            _pipe = New Pipe(New PipeOptions(
+                pauseWriterThreshold:=pause,
+                resumeWriterThreshold:=resumeTh,
+                minimumSegmentSize:=My.Settings.LTFSWriter_MinimumSegmentSize,
+                useSynchronizationContext:=False
+            ))
+            Reader = _pipe.Reader
+            _writer = _pipe.Writer
+        End If
     End Sub
 
     Public Sub Start()
@@ -116,8 +122,12 @@ Public Class FileDataProvider
             _nextFileSignal.Set()
         Finally
             Try
-                _writer.Complete()
-                Reader.Complete()
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
             Catch
             End Try
         End Try
@@ -142,12 +152,10 @@ Public Class FileDataProvider
                 _current = fr
 
                 If fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold Then
-                    ' 小文件：优先从缓存获取，否则即时读取
                     Dim data As Byte() = Nothing
                     If Not _smallCacheMap.TryRemove(fr, data) Then
                         data = ReadAllBytesSafe(fr)
                     Else
-                        ' 从队列中移除同一个条目（可选，防止长时间积压）
                         Dim tmp As Tuple(Of LTFSWriter.FileRecord, Byte()) = Nothing
                         While _smallCacheQueue.TryDequeue(tmp)
                             If tmp IsNot Nothing AndAlso tmp.Item1 Is fr Then Exit While
@@ -155,11 +163,15 @@ Public Class FileDataProvider
                     End If
 
                     If data IsNot Nothing AndAlso data.Length > 0 Then
-                        _writer.Write(data.AsSpan())
-                        Dim res = Await _writer.FlushAsync(_cts.Token)
-                        If res.IsCanceled OrElse res.IsCompleted Then Exit While
+                        If _ringBufferEnabled Then
+                            WriteAllToRing(data, _cts.Token)
+                        Else
+                            _writer.Write(data.AsSpan())
+                            Dim res = Await _writer.FlushAsync(_cts.Token)
+                            If res.IsCanceled OrElse res.IsCompleted Then Exit While
+                        End If
                     End If
-                Else
+                    Else
                     ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
                     Await StreamFileToPipeAsync(fr, _cts.Token)
                 End If
@@ -171,12 +183,27 @@ Public Class FileDataProvider
         Catch ex As Exception
             MessageBox.Show(ex.ToString())
             Try
-                _writer.Complete()
-                Reader.Complete()
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
             Catch
             End Try
         End Try
     End Function
+
+    Private Sub WriteAllToRing(data As Byte(), ct As CancellationToken)
+        Dim offset As Integer = 0
+        While offset < data.Length
+            Dim seg = RingBuffer.GetWriteSegment(1, ct)
+            Dim n As Integer = Math.Min(seg.Count, data.Length - offset)
+            Buffer.BlockCopy(data, offset, seg.Array, seg.Offset, n)
+            RingBuffer.AdvanceWrite(n)
+            offset += n
+        End While
+    End Sub
 
     Private Function ReadAllBytesSafe(fr As LTFSWriter.FileRecord) As Byte()
         Try
@@ -209,7 +236,6 @@ Public Class FileDataProvider
     Private Async Function StreamFileToPipeAsync(fr As LTFSWriter.FileRecord, ct As CancellationToken) As Task
         Dim fs As FileStream = Nothing
         Try
-            ' 1MiB 缓冲，异步顺序读取
             fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, My.Settings.LTFSWriter_FileStreamBufferSize, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             fr.IsOpened = True
         Catch
@@ -230,7 +256,21 @@ Public Class FileDataProvider
         End Try
 
         Using fs
-            If fr.File IsNot Nothing Then
+            If _ringBufferEnabled Then
+                Dim minChunk As Integer = 1024 * 1024
+                While Not ct.IsCancellationRequested
+                    Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
+                    If seg.Count = 0 Then
+                        ' 理论上不会（除非 completed/disposed/canceled）
+                        Exit While
+                    End If
+
+                    Dim n As Integer = Await fs.ReadAsync(seg.Array, seg.Offset, seg.Count, ct).ConfigureAwait(False)
+                    If n = 0 Then Exit While
+
+                    RingBuffer.AdvanceWrite(n)
+                End While
+            Else
                 Dim minSize As Integer = 64 * 1024
                 While Not ct.IsCancellationRequested
                     Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
@@ -240,10 +280,8 @@ Public Class FileDataProvider
                     End If
                     Dim cap As Integer = Math.Min(minSize, seg.Count)
                     Dim n = Await fs.ReadAsync(seg.Array, seg.Offset, cap, ct).ConfigureAwait(False)
-
                     If n = 0 Then Exit While
                     _writer.Advance(n)
-
                     Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
                     If result.IsCanceled OrElse result.IsCompleted Then Exit While
                 End While
