@@ -451,7 +451,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("文件流缓冲区大小"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("65536"),
+         Global.System.Configuration.DefaultSettingValueAttribute("1048576"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_FileStreamBufferSize")>
         Public Property LTFSWriter_FileStreamBufferSize() As Integer
