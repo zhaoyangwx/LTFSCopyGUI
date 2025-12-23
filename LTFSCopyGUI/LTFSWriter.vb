@@ -4026,34 +4026,15 @@ Public Class LTFSWriter
             If value >= 0 Then _PipeBufferLength = value
         End Set
     End Property
-    Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
-        Dim result As ReadResult
-        If Threading.Monitor.TryEnter(PipeLock, 0) Then
-            Try
-                If Not reader.TryRead(result) Then
-                    Threading.Monitor.Exit(PipeLock)
-                    ' 没有可读数据
-                    Return 0
-                End If
-
-                ' 获取当前缓冲区的数据总长度
-                Dim length As Long = result.Buffer.Length
-
-                ' 不推进读取位置，保留数据以便后续读取
-                reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
-                Threading.Monitor.Exit(PipeLock)
-                Return length
-            Catch ex As Exception
-                PrintMsg(ex.ToString, LogOnly:=True, ForceLog:=True)
-                Threading.Monitor.Exit(PipeLock)
-                Return -1
-            End Try
-            Threading.Monitor.Exit(PipeLock)
-        Else
+    Private Function PipeGetLength(rb As SpscRingBuffer) As Long
+        If rb Is Nothing Then Return -1
+        Try
+            Dim n As Integer = rb.AvailableToRead()
+            Return CLng(n)
+        Catch ex As Exception
+            PrintMsg(ex.ToString, LogOnly:=True, ForceLog:=True)
             Return -1
-        End If
-
-
+        End Try
     End Function
     Private Function CopySequenceToArray(seq As ReadOnlySequence(Of Byte),
                                          dest As Byte(),
@@ -4077,59 +4058,61 @@ Public Class LTFSWriter
         Return copied
     End Function
     Public Property PipeLock As New Object
-    Private Function PipeReadExactly(reader As System.IO.Pipelines.PipeReader,
+    Private Function PipeReadExactly(rb As SpscRingBuffer,
                                      dest As Byte(),
                                      count As Integer,
                                      Optional ct As Threading.CancellationToken = Nothing) As Integer
+        If rb Is Nothing Then Throw New ArgumentNullException(NameOf(rb))
         If dest Is Nothing Then Throw New ArgumentNullException(NameOf(dest))
         If count < 0 OrElse count > dest.Length Then Throw New ArgumentOutOfRangeException(NameOf(count))
-        Dim filled As Long = 0
+
+        Dim filled As Integer = 0
 
         While filled < count
-            Dim rr As ReadResult = reader.ReadAsync(ct).AsTask().GetAwaiter().GetResult()
-            Dim buf As ReadOnlySequence(Of Byte) = rr.Buffer
+            ct.ThrowIfCancellationRequested()
+            Dim seg As ArraySegment(Of Byte) = rb.GetReadSegment(1, ct)
 
-            If buf.Length = 0 AndAlso rr.IsCompleted Then
-                Exit While
-            End If
-            PipeBufferLength = buf.Length
-            Dim need As Long = count - filled
-            Dim toCopy As Long = Math.Min(need, CLng(buf.Length))
+            If seg.Count = 0 Then Exit While
+            PipeBufferLength = rb.AvailableToRead()
 
-            Dim copied As Long = 0
-            If toCopy > 0 Then
-                copied = CopySequenceToArray(buf, dest, filled, toCopy)
-                filled += copied
-            End If
+            Dim need As Integer = count - filled
+            Dim toCopy As Integer = Math.Min(need, seg.Count)
 
-            Dim consumed As SequencePosition = buf.GetPosition(copied)
-            reader.AdvanceTo(consumed, consumed)
+            Buffer.BlockCopy(seg.Array, seg.Offset, dest, filled, toCopy)
+            filled += toCopy
+
+            rb.AdvanceRead(toCopy)
         End While
 
         Return filled
     End Function
 
-    Private Sub PipeDrain(reader As System.IO.Pipelines.PipeReader,
+    Private Sub PipeDrain(rb As SpscRingBuffer,
                           bytesToDrain As Long,
                           Optional ct As Threading.CancellationToken = Nothing)
-        Dim remain = bytesToDrain
+
+        If rb Is Nothing Then Throw New ArgumentNullException(NameOf(rb))
+        If bytesToDrain <= 0 Then Return
+
+        Dim remain As Long = bytesToDrain
+
         While remain > 0
-            SyncLock PipeLock
-                Dim result = reader.ReadAsync(ct).AsTask().Result
-                Dim buffer = result.Buffer
-                PipeBufferLength = buffer.Length
-                If buffer.Length = 0 Then
-                    reader.AdvanceTo(buffer.Start, buffer.Start)
-                    If result.IsCompleted Then Exit While
-                    Continue While
-                End If
-                Dim take As Long = Math.Min(remain, buffer.Length)
-                Dim consumed = buffer.GetPosition(take)
-                reader.AdvanceTo(consumed, consumed)
-                remain -= take
-            End SyncLock
+            ct.ThrowIfCancellationRequested()
+
+            Dim seg As ArraySegment(Of Byte) = rb.GetReadSegment(1, ct)
+
+            If seg.Count = 0 Then
+                Exit While
+            End If
+
+            PipeBufferLength = rb.AvailableToRead()
+
+            Dim take As Integer = CInt(Math.Min(remain, CLng(seg.Count)))
+            rb.AdvanceRead(take)
+            remain -= take
         End While
     End Sub
+
 
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
@@ -4180,7 +4163,7 @@ Public Class LTFSWriter
                         lcounter += 1
                         If lcounter >= 100 Then
                             lcounter = 0
-                            If provider IsNot Nothing Then PipeBufferLength = PipeGetLength(provider.Reader)
+                            If provider IsNot Nothing Then PipeBufferLength = PipeGetLength(provider.RingBuffer)
                         End If
                     End While
                     If Not locateResult Then
@@ -4352,7 +4335,7 @@ Public Class LTFSWriter
                                         End If
                                     End If
                                     If dupe Then
-                                        PipeDrain(provider.Reader, finfo.Length)
+                                        PipeDrain(provider.RingBuffer, finfo.Length)
                                     Else
                                         IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
@@ -4404,7 +4387,7 @@ Public Class LTFSWriter
                                             While True
                                                 Try
                                                     'FileData = fr.ReadAllBytes()
-                                                    Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
+                                                    Dim reader = provider.RingBuffer
                                                     PipeReadExactly(reader, FileData, finfo.Length)
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
@@ -4533,7 +4516,7 @@ Public Class LTFSWriter
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
                                             'Dim tsub As Double = 0
-                                            Dim reader As System.IO.Pipelines.PipeReader = provider.Reader
+                                            Dim reader = provider.RingBuffer
                                             Dim remainingInFile As Long = finfo.Length
                                             Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
@@ -4837,7 +4820,7 @@ Public Class LTFSWriter
                                 pCounter += 1
                                 If pCounter >= 100 Then
                                     pCounter = 0
-                                    PipeBufferLength = PipeGetLength(provider.Reader)
+                                    PipeBufferLength = PipeGetLength(provider.RingBuffer)
                                 End If
                                 If Not Pause Then
                                     Invoke(Sub()
