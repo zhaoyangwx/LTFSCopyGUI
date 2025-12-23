@@ -489,7 +489,32 @@ Namespace My
                 Return CType(Me("LTFSWriter_PreLoadBytes"), Long)
             End Get
             Set
+                If Value > 1073741824 OrElse Not SpscRingBuffer.IsPowerOfTwo(Value) Then LTFSWriter_RingBufferEnabled = False
                 Me("LTFSWriter_PreLoadBytes") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("Ring buffer模式"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_RingBufferEnabled")>
+        Public Property LTFSWriter_RingBufferEnabled() As Boolean
+            Get
+                Dim bytes As Long = LTFSWriter_PreLoadBytes
+                If Not SpscRingBuffer.IsPowerOfTwo(bytes) Then LTFSWriter_RingBufferEnabled = False
+                Return CType(Me("LTFSWriter_RingBufferEnabled"), Boolean)
+            End Get
+            Set(Value As Boolean)
+                If Value Then
+                    Dim newvalue As Long = Math.Min(1073741824, LTFSWriter_PreLoadBytes)
+                    Dim v As Integer = 1073741824
+                    While v > newvalue
+                        v >>= 1
+                    End While
+                    LTFSWriter_PreLoadBytes = v
+                End If
+                Me("LTFSWriter_RingBufferEnabled") = Value
             End Set
         End Property
 
