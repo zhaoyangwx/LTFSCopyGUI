@@ -214,6 +214,7 @@ Public Class FileDataProvider
             While True
                 Try
                     Dim result As Byte() = File.ReadAllBytes(fr.SourcePath)
+                    fr.File.length = result.Length
                     fr.IsOpened = True
                     Return result
                 Catch ex As Exception
@@ -237,6 +238,7 @@ Public Class FileDataProvider
         Dim fs As FileStream = Nothing
         Try
             fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, My.Settings.LTFSWriter_FileStreamBufferSize, FileOptions.Asynchronous Or FileOptions.SequentialScan)
+            fr.File.length = fs.Length
             fr.IsOpened = True
         Catch
             ' 备用：尝试使用现有 FileRecord 打开
