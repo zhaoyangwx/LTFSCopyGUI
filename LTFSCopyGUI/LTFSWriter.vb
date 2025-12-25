@@ -4324,12 +4324,11 @@ Public Class LTFSWriter
                             'End If
                             Dim fr As FileRecord = WriteList(i)
                             Try
-                                Dim finfo As IO.FileInfo = New IO.FileInfo(fr.SourcePath)
                                 If fr.File Is Nothing Then Continue For
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
                                 Dim IsIndexPartition As Boolean = False
-                                If finfo.Length > 0 Then
+                                If fr.File.length > 0 Then
                                     'p = New TapeUtils.PositionData(TapeDrive)
                                     'If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM.Text, True)
                                     Dim dupe As Boolean = False
@@ -4337,7 +4336,7 @@ Public Class LTFSWriter
                                         Dim dupeFile As ltfsindex.file = Nothing
                                         Dim checksumvalue As String = ""
                                         For Each fref As ltfsindex.file In AllFile
-                                            If fref.length <> finfo.Length Then Continue For
+                                            If fref.length <> fr.File.length Then Continue For
                                             Dim frefchecksum As String = ""
                                             Select Case My.Settings.LTFSWriter_DedupeAlgorithm
                                                 Case ltfsindex.file.xattr.HashType.Available.SHA256
@@ -4405,27 +4404,26 @@ Public Class LTFSWriter
                                                  }{My.Resources.ResText_WrittenTotal}: {IOManager.FormatSize(TotalBytesProcessed) _
                                                  } {My.Resources.ResText_Remaining}: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
                                                  } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
-                                            TotalBytesProcessed += finfo.Length
-                                            CurrentBytesProcessed += finfo.Length
+                                            TotalBytesProcessed += fr.File.length
+                                            CurrentBytesProcessed += fr.File.length
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
-                                            'TotalBytesUnindexed += finfo.Length
                                         Else
                                             AllFile.Add(fr.File)
                                         End If
                                     End If
                                     If dupe Then
                                         If RingBufferEnabled Then
-                                            PipeDrain(provider.RingBuffer, finfo.Length)
+                                            PipeDrain(provider.RingBuffer, fr.File.length)
                                         Else
-                                            PipeDrain(provider.Reader, finfo.Length)
+                                            PipeDrain(provider.Reader, fr.File.length)
                                         End If
                                     Else
                                         IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
                                             {.partition = DataPartition,
                                             .startblock = p.BlockNumber,
-                                            .bytecount = finfo.Length,
+                                            .bytecount = fr.File.length,
                                             .byteoffset = 0,
                                             .fileoffset = 0}
                                         If IndexPartition <> DataPartition AndAlso fr.File.extentinfo IsNot Nothing AndAlso fr.File.extentinfo.Count > 0 AndAlso fr.File.extentinfo(0).partition = IndexPartition Then
@@ -4465,9 +4463,9 @@ Public Class LTFSWriter
                                             If fr.File Is Nothing Then Continue For
                                             Threading.Thread.Sleep(1)
                                         End While
-                                        If finfo.Length <= plabel.blocksize Then
+                                        If fr.File.length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
-                                            Dim FileData(finfo.Length - 1) As Byte
+                                            Dim FileData(fr.File.length - 1) As Byte
                                             While True
                                                 Try
                                                     'FileData = fr.ReadAllBytes()
@@ -4475,10 +4473,10 @@ Public Class LTFSWriter
                                                     Dim RingBufferReader As SpscRingBuffer
                                                     If RingBufferEnabled Then
                                                         RingBufferReader = provider.RingBuffer
-                                                        PipeReadExactly(RingBufferReader, FileData, finfo.Length)
+                                                        PipeReadExactly(RingBufferReader, FileData, fr.File.length)
                                                     Else
                                                         PipeReader = provider.Reader
-                                                        PipeReadExactly(PipeReader, FileData, finfo.Length)
+                                                        PipeReadExactly(PipeReader, FileData, fr.File.length)
                                                     End If
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
@@ -4586,12 +4584,12 @@ Public Class LTFSWriter
                                                     End If
                                                 End If
                                             End If
-                                            fr.File.WrittenBytes += finfo.Length
-                                            TotalBytesProcessed += finfo.Length
-                                            CurrentBytesProcessed += finfo.Length
+                                            fr.File.WrittenBytes += fr.File.length
+                                            TotalBytesProcessed += fr.File.length
+                                            CurrentBytesProcessed += fr.File.length
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
-                                            TotalBytesUnindexed += finfo.Length
+                                            TotalBytesUnindexed += fr.File.length
                                         Else
                                             'Select Case fr.Open()
                                             '    Case DialogResult.Ignore
@@ -4614,7 +4612,7 @@ Public Class LTFSWriter
                                             Else
                                                 PipeReader = provider.Reader
                                             End If
-                                            Dim remainingInFile As Long = finfo.Length
+                                            Dim remainingInFile As Long = fr.File.length
                                             Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
                                                 Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
@@ -4923,6 +4921,8 @@ Public Class LTFSWriter
                                 MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                                 SetStatusLight(LWStatus.Err)
+                                StopFlag = True
+                                Exit For
                             End Try
                             If Pause Then
                                 Invoke(Sub()
@@ -9283,6 +9283,20 @@ Public Class LTFSWriter
             Next
         Next
         AllowOperation = True
+    End Sub
+
+    Private Sub 导出待写列表ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 导出待写列表ToolStripMenuItem.Click
+        If UnwrittenFiles.Count > 0 Then
+            Dim sfd1 As New SaveFileDialog With {.Filter = "txt|*.txt"}
+            If sfd1.ShowDialog = DialogResult.OK Then
+                Dim sb As New StringBuilder
+                For i As Integer = 0 To UnwrittenFiles.Count - 1
+                    sb.AppendLine(UnwrittenFiles(i).SourcePath)
+                Next
+                IO.File.WriteAllText(sfd1.FileName, sb.ToString())
+                MessageBox.Show(My.Resources.ResText_Succ)
+            End If
+        End If
     End Sub
 
     Public Function FileExists(path As String) As Boolean
