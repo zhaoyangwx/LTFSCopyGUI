@@ -1,7 +1,6 @@
 Imports System.ComponentModel
 Imports System.IO
 Imports System.Runtime.InteropServices
-Imports DiskAccessLibrary.FileSystems.NTFS
 Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
