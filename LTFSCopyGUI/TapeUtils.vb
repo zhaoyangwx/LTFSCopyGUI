@@ -2846,6 +2846,7 @@ Public Class TapeUtils
         Dim obj As List(Of SetupAPIHelper.Device)
         Try
             obj = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+            obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("USBSTOR").ToList())
         Catch ex As Exception
             obj = New List(Of SetupAPIHelper.Device)
         End Try

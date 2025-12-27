@@ -4212,6 +4212,7 @@ Public Class LTFSWriter
                                                           LTE.Set()
                                                       End Sub)
                     IsWriting = True
+                    My.Settings.LTFSWriter_PreLoadBytes = My.Settings.LTFSWriter_PreLoadBytes
                     RingBufferEnabled = My.Settings.LTFSWriter_RingBufferEnabled
                     UFReadCount.Inc()
                     Dim WriteList As New List(Of FileRecord)

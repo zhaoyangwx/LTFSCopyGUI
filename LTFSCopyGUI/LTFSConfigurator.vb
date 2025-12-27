@@ -1102,7 +1102,9 @@ Public Class LTFSConfigurator
                 TapeUtils.mkltfs(driveHandle, param.Barcode, param.VolumeLabel, param.ExtraPartitionCount, param.BlockLen, False,
                     Sub(Message As String)
                         'ProgressReport
-                        Invoke(Sub() TextBoxDebugOutput.AppendText(Message & vbCrLf))
+                        Invoke(Sub()
+                                   TextBoxDebugOutput.AppendText(Message & vbCrLf)
+                               End Sub)
                     End Sub,
                     Sub(Message As String)
                         'OnFinished
@@ -1574,8 +1576,6 @@ Public Class LTFSConfigurator
                                Dim infostart As Integer = texta.Length
                                TextBoxDebugOutput.AppendText($"{texta}{info} {SenseMsg}{vbCrLf}")
                                If info.Length > 0 Then FormatLogRateColor(TextBoxDebugOutput, infostart, info)
-                               TextBoxDebugOutput.SelectionStart = TextBoxDebugOutput.Text.Length - 2
-                               TextBoxDebugOutput.ScrollToCaret()
                            End Sub)
                     If sec >= 0 Then sec += 1
                     lastval = prognow
@@ -1616,6 +1616,7 @@ Public Class LTFSConfigurator
                                textbox.SelectionStart = lineStart + chid * seglen
                                textbox.SelectionLength = seglen
                                textbox.SelectionBackColor = bkgcol
+                               textbox.SelectionStart = textbox.TextLength
                            End Sub)
 
         Next
@@ -2138,7 +2139,9 @@ Public Class LTFSConfigurator
                     Dim HeaderReaded As Boolean = False
                     Dim HeaderChanged As Boolean = False
                     Dim TotalPlayTime As New TimeSpan
-                    Invoke(Sub() TextBoxDebugOutput.AppendText($"Start playing at P{pos.PartitionNumber} B{pos.BlockNumber}{vbCrLf}"))
+                    Invoke(Sub()
+                               TextBoxDebugOutput.AppendText($"Start playing at P{pos.PartitionNumber} B{pos.BlockNumber}{vbCrLf}")
+                           End Sub)
                     While True
                         Dim sense(63) As Byte
                         pos = TapeUtils.ReadPosition(ConfTapeDrive)
@@ -2156,12 +2159,16 @@ Public Class LTFSConfigurator
                                 HeaderChanged = True
                             End If
                             If Not HeaderReaded Or HeaderChanged Then
-                                Invoke(Sub() TextBoxDebugOutput.AppendText($"RIFF header applied: {sampleRate}Hz {channels}ch {bitsPerSample}bit {If(isFloat, "Float", "Integer")}{vbCrLf}"))
+                                Invoke(Sub()
+                                           TextBoxDebugOutput.AppendText($"RIFF header applied: {sampleRate}Hz {channels}ch {bitsPerSample}bit {If(isFloat, "Float", "Integer")}{vbCrLf}")
+                                       End Sub)
                                 player.Init(sampleRate, channels, bitsPerSample, isFloat, len0 <> readData.Length, len0 * 2)
                                 HeaderReaded = True
                                 HeaderChanged = False
                             End If
-                            Invoke(Sub() TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0")}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}"))
+                            Invoke(Sub()
+                                       TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0")}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}")
+                                   End Sub)
                             player.AddData(readData, isFloat)
                             TotalPlayTime += New TimeSpan(CLng(readData.Length) * 8 / bitsPerSample / channels / sampleRate * 10000000)
                         End If
@@ -2187,7 +2194,9 @@ Public Class LTFSConfigurator
                     End While
                     If HeaderReaded AndAlso (Not Operation_Cancel_Flag) Then player.StopPlayback()
                     Operation_Cancel_Flag = False
-                    Invoke(Sub() TextBoxDebugOutput.AppendText($"Stopped."))
+                    Invoke(Sub()
+                               TextBoxDebugOutput.AppendText($"Stopped.")
+                           End Sub)
                     Invoke(Sub()
                                For Each c As Control In Panel1.Controls
                                    c.Enabled = True

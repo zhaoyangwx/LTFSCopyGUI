@@ -1,6 +1,7 @@
 Imports System.ComponentModel
 Imports System.IO
 Imports System.Runtime.InteropServices
+Imports DiskAccessLibrary.FileSystems.NTFS
 Imports Microsoft.VisualBasic.ApplicationServices
 
 Namespace My
@@ -841,6 +842,15 @@ dataDir:{dataDir}
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
 
+        End Sub
+
+        Private Sub MyApplication_UnhandledException(sender As Object, e As UnhandledExceptionEventArgs) Handles Me.UnhandledException
+            If Not IO.Directory.Exists(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log")) Then
+                IO.Directory.CreateDirectory(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"))
+            End If
+            Dim logFile As String = IO.Path.Combine(Windows.Forms.Application.StartupPath, $"log\LTFSWriter_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+            IO.File.AppendAllText(logFile, e.Exception.ToString())
+            MessageBox.Show(e.Exception.ToString())
         End Sub
     End Class
 End Namespace

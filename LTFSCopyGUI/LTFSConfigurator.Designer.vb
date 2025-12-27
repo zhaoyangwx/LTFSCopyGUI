@@ -28,6 +28,7 @@ Partial Class LTFSConfigurator
         Me.ContextMenuStripRefreshDeviceList = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DiskToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ManualAddToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.AddImageToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.BrowseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ListBox1 = New System.Windows.Forms.ListBox()
         Me.ButtonStartFUSESvc = New System.Windows.Forms.Button()
@@ -153,7 +154,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.AddImageToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -205,6 +205,11 @@ Partial Class LTFSConfigurator
         '
         Me.ManualAddToolStripMenuItem.Name = "ManualAddToolStripMenuItem"
         resources.ApplyResources(Me.ManualAddToolStripMenuItem, "ManualAddToolStripMenuItem")
+        '
+        'AddImageToolStripMenuItem
+        '
+        Me.AddImageToolStripMenuItem.Name = "AddImageToolStripMenuItem"
+        resources.ApplyResources(Me.AddImageToolStripMenuItem, "AddImageToolStripMenuItem")
         '
         'BrowseToolStripMenuItem
         '
@@ -966,6 +971,7 @@ Partial Class LTFSConfigurator
         '
         resources.ApplyResources(Me.TextBoxDebugOutput, "TextBoxDebugOutput")
         Me.TextBoxDebugOutput.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.TextBoxDebugOutput.HideSelection = False
         Me.TextBoxDebugOutput.Name = "TextBoxDebugOutput"
         '
         'TextBoxParamData
@@ -1039,11 +1045,6 @@ Partial Class LTFSConfigurator
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        '
-        'AddImageToolStripMenuItem
-        '
-        Me.AddImageToolStripMenuItem.Name = "AddImageToolStripMenuItem"
-        resources.ApplyResources(Me.AddImageToolStripMenuItem, "AddImageToolStripMenuItem")
         '
         'LTFSConfigurator
         '
