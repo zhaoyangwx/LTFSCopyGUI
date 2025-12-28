@@ -3597,6 +3597,8 @@ Public Class LTFSWriter
                                                                                        End Function))
                     For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
                         Dim succ As Boolean = False
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        PrintMsg($"Extent {FileIndex.extentinfo.IndexOf(fe)}:P={GetPartitionNumber(fe.partition)} B={fe.startblock} BO={fe.byteoffset} BC={fe.bytecount} FO={fe.fileoffset}", LogOnly:=True)
                         Do
                             Dim BlockAddress As ULong = fe.startblock
                             Dim ByteOffset As Long = fe.byteoffset
@@ -3605,9 +3607,11 @@ Public Class LTFSWriter
                             Dim TotalBytes As Long = fe.bytecount
                             'Dim p As New TapeUtils.PositionData(TapeDrive)
                             If RestorePosition Is Nothing OrElse RestorePosition.BlockNumber <> BlockAddress OrElse RestorePosition.PartitionNumber <> Partition Then
+                                PrintMsg($"LOCATE to P{GetPartitionNumber(Partition)} B{BlockAddress}", LogOnly:=True)
                                 TapeUtils.Locate(driveHandle, BlockAddress, GetPartitionNumber(Partition), TapeUtils.LocateDestType.Block)
                                 RestorePosition = New TapeUtils.PositionData(driveHandle)
                             End If
+                            PrintMsg($"Position: P{RestorePosition.PartitionNumber} B{RestorePosition.BlockNumber}", LogOnly:=True)
                             fs.Seek(FileOffset, IO.SeekOrigin.Begin)
                             Dim ReadedSize As Long = 0
                             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
@@ -4026,6 +4030,7 @@ Public Class LTFSWriter
             If value >= 0 Then _PipeBufferLength = value
         End Set
     End Property
+    Private Property PipePause As Boolean = False
     Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
         Dim result As ReadResult
         If Threading.Monitor.TryEnter(PipeLock, 0) Then
@@ -4042,6 +4047,7 @@ Public Class LTFSWriter
                 ' 不推进读取位置，保留数据以便后续读取
                 reader.AdvanceTo(result.Buffer.Start, result.Buffer.Start)
                 Threading.Monitor.Exit(PipeLock)
+                If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso length <= My.Settings.LTFSWriter_MinimumSegmentSize * 2 Then PipePause = True
                 Return length
             Catch ex As Exception
                 PrintMsg(ex.ToString, LogOnly:=True, ForceLog:=True)
@@ -4095,6 +4101,7 @@ Public Class LTFSWriter
         If dest Is Nothing Then Throw New ArgumentNullException(NameOf(dest))
         If count < 0 OrElse count > dest.Length Then Throw New ArgumentOutOfRangeException(NameOf(count))
         Dim filled As Long = 0
+
         While filled < count
             Dim rr As ReadResult = reader.ReadAsync(ct).AsTask().GetAwaiter().GetResult()
             Dim buf As ReadOnlySequence(Of Byte) = rr.Buffer
@@ -4102,6 +4109,7 @@ Public Class LTFSWriter
                 Exit While
             End If
             PipeBufferLength = buf.Length
+            If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso buf.Length <= My.Settings.LTFSWriter_MinimumSegmentSize * 2 Then PipePause = True
             Dim need As Long = count - filled
             Dim toCopy As Long = Math.Min(need, CLng(buf.Length))
 
@@ -4625,6 +4633,30 @@ Public Class LTFSWriter
                                                     If RingBufferEnabled Then
                                                         BytesReaded = PipeReadExactly(RingBufferReader, buffer, toRead)
                                                     Else
+                                                        Dim pCounter1 As Integer = 0
+                                                        Dim pCounter2 As Integer = 0
+                                                        Dim lastlen As Long = PipeBufferLength
+                                                        While PipePause
+                                                            Threading.Thread.Sleep(10)
+                                                            Threading.Interlocked.Increment(pCounter1)
+                                                            pCounter1 += 1
+                                                            pCounter2 += 1
+                                                            If pCounter1 >= 100 Then
+                                                                pCounter1 = 0
+                                                                If RingBufferEnabled Then
+                                                                    PipeBufferLength = PipeGetLength(provider.RingBuffer)
+                                                                Else
+                                                                    PipeBufferLength = PipeGetLength(provider.Reader)
+                                                                End If
+                                                                If pCounter2 >= 1000 Then
+                                                                    If PipeBufferLength = lastlen OrElse PipeBufferLength >= My.Settings.LTFSWriter_PreLoadBytes * 0.75 Then
+                                                                        PipePause = False
+                                                                    End If
+                                                                    lastlen = PipeBufferLength
+                                                                    pCounter2 = 0
+                                                                End If
+                                                            End If
+                                                        End While
                                                         BytesReaded = PipeReadExactly(PipeReader, buffer, toRead)
 
                                                     End If
@@ -4945,7 +4977,7 @@ Public Class LTFSWriter
                                         PipeBufferLength = PipeGetLength(provider.Reader)
                                     End If
                                 End If
-                                If Not Pause Then
+                                    If Not Pause Then
                                     Invoke(Sub()
                                                With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
                                                    .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)

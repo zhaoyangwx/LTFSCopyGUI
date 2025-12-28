@@ -517,6 +517,20 @@ Namespace My
                 Me("LTFSWriter_RingBufferEnabled") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("缓存清空后等待"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_WaitOnBufferEmpty")>
+        Public Property LTFSWriter_WaitOnBufferEmpty() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_WaitOnBufferEmpty"), Boolean)
+            End Get
+            Set(Value As Boolean)
+                Me("LTFSWriter_WaitOnBufferEmpty") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("禁用分区"),
