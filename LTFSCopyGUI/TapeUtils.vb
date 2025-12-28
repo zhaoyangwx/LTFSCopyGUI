@@ -6560,7 +6560,7 @@ Public Class TapeUtils
             Catch ex As Exception
                 Output.Append("| CM data parsing failed.".PadRight(74) & "|" & vbCrLf & ex.ToString & vbCrLf)
             End Try
-            Return Output.ToString()
+            Return Output.ToString().Replace(vbNullChar, " ")
         End Function
     End Class
 
