@@ -962,4 +962,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="PropertyDescription_LTFSWriter_RingBufferEnabled" xml:space="preserve">
     <value>Ring buffer模式</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_WaitOnBufferEmpty" xml:space="preserve">
+    <value>缓存清空后，暂停写入，直到缓存填充至75%，或者连续10秒缓存无变化。Ring buffer模式下不支持。</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_IndexWriteIntervalSeconds" xml:space="preserve">
+    <value>索引更新间隔（秒）</value>
+  </data>
+  <data name="ResText_SpeedBTD" xml:space="preserve">
+    <value>速度 (MB/s)</value>
+  </data>
 </root>

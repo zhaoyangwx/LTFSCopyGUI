@@ -951,4 +951,13 @@ Enable only when memory usage is abnormally high</value>
   <data name="PropertyDescription_LTFSWriter_RingBufferEnabled" xml:space="preserve">
     <value>Ring buffered mode</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_WaitOnBufferEmpty" xml:space="preserve">
+    <value>Pause when buffer is empty, and resume until buffer is filled by 75%, or unchanged for 10 seconds. Unsupported under ring-buffered mode.</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_IndexWriteIntervalSeconds" xml:space="preserve">
+    <value>Index update intervel (seconds)</value>
+  </data>
+  <data name="ResText_SpeedBTD" xml:space="preserve">
+    <value>Speed (MB/s)</value>
+  </data>
 </root>

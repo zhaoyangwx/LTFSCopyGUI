@@ -406,6 +406,21 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("索引更新间隔（秒）"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("0"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_IndexWriteIntervalSeconds")>
+        Public Property LTFSWriter_IndexWriteIntervalSeconds() As Long
+            Get
+                Return CType(Me("LTFSWriter_IndexWriteIntervalSeconds"), Long)
+            End Get
+            Set
+                Me("LTFSWriter_IndexWriteIntervalSeconds") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("容量显示刷新间隔"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("5"),
@@ -520,7 +535,7 @@ Namespace My
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("缓存清空后等待"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSWriter"),
          LocalizedDescription("PropertyDescription_LTFSWriter_WaitOnBufferEmpty")>
         Public Property LTFSWriter_WaitOnBufferEmpty() As Boolean
