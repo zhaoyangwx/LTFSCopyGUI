@@ -4352,30 +4352,14 @@ Public Class TapeUtils
             Else
                 Return 0
             End If
-            'Dim result As Byte = 0
-            'Dim num1 As Byte = a
-            'For i As Integer = 0 To 7
-            '    Dim num2 As Byte = b
-            '    For j As Integer = 0 To 7
-            '        If (num1 Mod 2) = 1 AndAlso (num2 Mod 2) = 1 Then result = result Xor ExpTable(i + j)
-            '        num2 >>= 1
-            '    Next
-            '    num1 >>= 1
-            'Next
-            'Return result
         End Function
         Public Shared Function CalcCRC(Data As Byte()) As Byte()
             If ExpTable(0) = 0 Then
                 Initialization()
-                'Console.WriteLine(Byte2Hex(ExpTable))
-                'Console.WriteLine(Byte2Hex(LogTable))
-                'Console.WriteLine($"{ExpTable(201)} {ExpTable(246)}")
             End If
-            'Console.WriteLine(Byte2Hex(Data))
             Dim R0 As Byte = 0, R1 As Byte = 0, R2 As Byte = 0, R3 As Byte = 0
             Dim TmpVal As Byte = 0
             For i As Integer = 0 To Data.Length - 1
-                'Console.WriteLine(Byte2Hex({R3, R2, R1, R0}))
                 TmpVal = R3 Xor Data(i)
                 R3 = R2 Xor Times(ExpTable(201), TmpVal)
                 R2 = R1 Xor Times(ExpTable(246), TmpVal)

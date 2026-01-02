@@ -76,6 +76,8 @@ Public Class LTFSWriter
 
     Private _TotalBytesUnindexed As Long
     <Category("LTFSWriter")>
+    Public Property IndexLastUpdateTime As Date
+    <Category("LTFSWriter")>
     Public Property TotalBytesUnindexed As Long
         Set(value As Long)
             _TotalBytesUnindexed = value
@@ -334,7 +336,7 @@ Public Class LTFSWriter
                 其他ToolStripMenuItem1.Checked = True
                 其他ToolStripMenuItem1.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}"
         End Select
-        Chart1.Titles(1).Text = My.Resources.ResText_SpeedBT
+        Chart1.Titles(1).Text = If(My.Settings.Application_UseDecimalUnit, My.Resources.ResText_SpeedBTD, My.Resources.ResText_SpeedBT)
         Chart1.Titles(2).Text = My.Resources.ResText_FileRateBT
         Chart1.Titles(0).Text = Min10ToolStripMenuItem.Text
         TapeUtils.AllowPartition = Not DisablePartition
@@ -2486,10 +2488,11 @@ Public Class LTFSWriter
 
         Return resultNodes
     End Function
-    Public Function CheckUnindexedDataSizeLimit(Optional ByVal ForceFlush As Boolean = False, Optional ByVal CheckOnly As Boolean = False) As Boolean
+    Public Function CheckUnindexedDataLimit(Optional ByVal ForceFlush As Boolean = False, Optional ByVal CheckOnly As Boolean = False) As Boolean
         If CheckOnly Then Return ((IndexWriteInterval > 0) AndAlso (TotalBytesUnindexed >= IndexWriteInterval)) Or ForceFlush
-        If (((IndexWriteInterval > 0) AndAlso (TotalBytesUnindexed >= IndexWriteInterval)) Or ForceFlush) Then
+        If (((IndexWriteInterval > 0) AndAlso (TotalBytesUnindexed >= IndexWriteInterval)) OrElse (My.Settings.LTFSWriter_IndexWriteIntervalSeconds > 0 AndAlso (Now - IndexLastUpdateTime).TotalSeconds >= My.Settings.LTFSWriter_IndexWriteIntervalSeconds) OrElse ForceFlush) Then
             WriteCurrentIndex(False, False)
+            IndexLastUpdateTime = Now
             TotalBytesUnindexed = 0
             Try
                 Dim Loc As String = GetLocInfo()
@@ -4030,7 +4033,7 @@ Public Class LTFSWriter
             If value >= 0 Then _PipeBufferLength = value
         End Set
     End Property
-    Private Property PipePause As Boolean = False
+    Public Property PipePause As Boolean = False
     Private Function PipeGetLength(reader As System.IO.Pipelines.PipeReader) As Long
         Dim result As ReadResult
         If Threading.Monitor.TryEnter(PipeLock, 0) Then
@@ -4312,7 +4315,7 @@ Public Class LTFSWriter
                                 q = q2
                             End While
                         End If
-
+                        IndexLastUpdateTime = Now
                         Dim p As New TapeUtils.PositionData(driveHandle)
 
                         Dim lastpos As New TapeUtils.PositionData(driveHandle)
@@ -4886,7 +4889,7 @@ Public Class LTFSWriter
                                                              sh.StopFlag = True
                                                              Threading.Interlocked.Decrement(HashTaskAwaitNumber)
                                                          End Sub)
-                                                If CheckUnindexedDataSizeLimit(CheckOnly:=True) Then
+                                                If CheckUnindexedDataLimit(CheckOnly:=True) Then
                                                     HashTask.Wait()
                                                     SetStatusLight(LWStatus.Busy)
                                                 End If
@@ -4921,7 +4924,7 @@ Public Class LTFSWriter
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                If (Not IsIndexPartition) AndAlso CheckUnindexedDataSizeLimit() Then
+                                If (Not IsIndexPartition) AndAlso CheckUnindexedDataLimit() Then
                                     p = New TapeUtils.PositionData(driveHandle)
                                     lastpos = New TapeUtils.PositionData(driveHandle)
                                     CurrentHeight = p.BlockNumber
@@ -4977,7 +4980,7 @@ Public Class LTFSWriter
                                         PipeBufferLength = PipeGetLength(provider.Reader)
                                     End If
                                 End If
-                                    If Not Pause Then
+                                If Not Pause Then
                                     Invoke(Sub()
                                                With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
                                                    .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
@@ -8103,113 +8106,6 @@ Public Class LTFSWriter
         Dim newkey As Byte() = IOManager.HexStringToByteArray(key)
         If newkey.Length <> 32 Then
             EncryptionKey = Nothing
-            If key = "test" Then
-                Dim frm As New Form With {.Width = 640, .Height = 200}
-                Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
-                Dim txtLocation As New TextBox With {.Top = 7, .Left = 65, .Width = 640 - 7 * 3 - 65,
-                    .Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top,
-                    .Text = "F:\DLTEMP\test", .Parent = frm}
-                Dim lbl2 As New Label With {.Parent = frm, .Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 7, .Width = 51, .Text = "Filter"}
-                Dim txtFilter As New TextBox With {.Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 65, .Width = 640 - 7 * 3 - 65,
-                   .Anchor = AnchorStyles.Left Or AnchorStyles.Right, .Parent = frm,
-                   .Text = ".!qb|.downloading|.downloading.cfg|.tmp"}
-                Dim chkAutoDelete As New CheckBox With {.Parent = frm, .Top = txtFilter.Top + txtFilter.Height + 7,
-                    .Left = 7, .Text = "AutoDelete", .Checked = True}
-                Dim ButtonStart As New Button With {.Parent = frm, .Width = 73, .Height = 23,
-                    .Top = frm.Height - 73 - 23, .Left = frm.Width / 2 - 73 / 2, .Anchor = AnchorStyles.Bottom,
-                    .Text = "Start"}
-                Dim isStarted As Boolean = False
-                Dim frmLock As New Object
-                AddHandler frm.FormClosing, Sub()
-                                                isStarted = False
-                                            End Sub
-
-                AddHandler ButtonStart.Click,
-                Sub(sender0 As Object, e0 As EventArgs)
-                    Task.Run(Sub()
-                                 isStarted = Not isStarted
-                                 SyncLock frmLock
-                                     Threading.Thread.Sleep(10)
-                                 End SyncLock
-                                 frm.Invoke(Sub()
-                                                If isStarted Then
-                                                    ButtonStart.Text = "Stop"
-                                                    Task.Run(
-                                                    Sub()
-                                                        SyncLock frmLock
-                                                            While isStarted
-                                                                Threading.Thread.Sleep(100)
-                                                                If Not AllowOperation Then Continue While
-                                                                Dim cap() As Long = RefreshCapacity()
-                                                                frm.Invoke(Sub() frm.Text = $"Idle. Capactiy remain: {cap(cap.Count - 2)}")
-                                                                Dim dirListen As New IO.DirectoryInfo(txtLocation.Text)
-                                                                If dirListen.GetDirectories().Count > 0 OrElse dirListen.GetFiles().Count > 0 Then
-                                                                    For i As Integer = 2 To 1 Step -1
-                                                                        Dim startsec As Integer = i
-                                                                        frm.Invoke(Sub() frm.Text = $"Will start in {startsec}s")
-                                                                        Threading.Thread.Sleep(1000)
-                                                                    Next
-                                                                End If
-                                                                Dim pathlist As New List(Of String)
-                                                                For Each f As IO.FileInfo In dirListen.GetFiles()
-                                                                    pathlist.Add(f.FullName)
-                                                                Next
-                                                                For Each d As IO.DirectoryInfo In dirListen.GetDirectories()
-                                                                    pathlist.Add(d.FullName)
-                                                                Next
-                                                                Dim filter As String() = txtFilter.Text.Split({"|"}, StringSplitOptions.RemoveEmptyEntries)
-                                                                If pathlist.Count > 0 Then
-                                                                    If Not isStarted Then Exit Sub
-                                                                    frm.Invoke(Sub() ButtonStart.Enabled = False)
-                                                                    frm.Invoke(Sub() frm.Text = $"Writing")
-                                                                    Dim caps As Long() = RefreshCapacity()
-                                                                    Dim cap1 As Long
-                                                                    If caps(3) > 0 Then cap1 = caps(2) Else cap1 = caps(0)
-                                                                    Invoke(Sub()
-                                                                               AddFileOrDir(DirectCast(ListView1.Tag, ltfsindex.directory), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
-                                                                           End Sub)
-                                                                    While AllowOperation
-                                                                        Threading.Thread.Sleep(100)
-                                                                    End While
-                                                                    While Not AllowOperation
-                                                                        Threading.Thread.Sleep(100)
-                                                                    End While
-                                                                    Dim DelList As New List(Of String)
-                                                                    For Each f As FileRecord In UnwrittenFiles
-                                                                        DelList.Add(f.SourcePath)
-                                                                    Next
-                                                                    Invoke(Sub()
-                                                                               写入数据ToolStripMenuItem_Click(sender0, e0)
-                                                                           End Sub)
-                                                                    While AllowOperation
-                                                                        Threading.Thread.Sleep(100)
-                                                                    End While
-                                                                    While Not AllowOperation
-                                                                        Threading.Thread.Sleep(100)
-                                                                    End While
-                                                                    If chkAutoDelete.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, $"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
-                                                                        For Each s As String In DelList
-                                                                            If IO.File.Exists(s) Then IO.File.Delete(s)
-                                                                        Next
-                                                                    End If
-
-                                                                    Threading.Thread.Sleep(5000)
-                                                                    frm.BeginInvoke(Sub() ButtonStart.Enabled = True)
-                                                                End If
-                                                            End While
-                                                        End SyncLock
-                                                    End Sub)
-                                                Else
-                                                    ButtonStart.Text = "Start"
-                                                End If
-                                            End Sub)
-
-                             End Sub)
-
-                End Sub
-                frm.Show()
-            End If
-
         Else
             Dim sum As Integer = 0
             For i As Integer = 0 To newkey.Length - 1
@@ -8646,7 +8542,7 @@ Public Class LTFSWriter
                             fr.ParentDirectory.contents._file.Add(fr.File)
                             fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                            If CheckUnindexedDataSizeLimit() Then p = New TapeUtils.PositionData(driveHandle)
+                            If CheckUnindexedDataLimit() Then p = New TapeUtils.PositionData(driveHandle)
                             If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
                                 p = New TapeUtils.PositionData(driveHandle)
                                 RefreshCapacity()
@@ -9330,6 +9226,117 @@ Public Class LTFSWriter
                 MessageBox.Show(My.Resources.ResText_Succ)
             End If
         End If
+    End Sub
+
+    Private Sub 监控写入ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 监控写入ToolStripMenuItem.Click
+        Dim frm As New Form With {.Width = 640, .Height = 200}
+        Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
+        Dim txtLocation As New TextBox With {.Top = 7, .Left = 65, .Width = 640 - 7 * 3 - 65,
+            .Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top,
+            .Text = "F:\DLTEMP\test", .Parent = frm}
+        Dim lbl2 As New Label With {.Parent = frm, .Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 7, .Width = 51, .Text = "Filter"}
+        Dim txtFilter As New TextBox With {.Top = 7 + txtLocation.Top + txtLocation.Height, .Left = 65, .Width = 640 - 7 * 3 - 65,
+           .Anchor = AnchorStyles.Left Or AnchorStyles.Right, .Parent = frm,
+           .Text = ".!qb|.downloading|.downloading.cfg|.tmp"}
+        Dim chkAutoDelete As New CheckBox With {.Parent = frm, .Top = txtFilter.Top + txtFilter.Height + 7,
+            .Left = 7, .Text = "AutoDelete", .Checked = True}
+        Dim ButtonStart As New Button With {.Parent = frm, .Width = 73, .Height = 23,
+            .Top = frm.Height - 73 - 23, .Left = frm.Width / 2 - 73 / 2, .Anchor = AnchorStyles.Bottom,
+            .Text = "Start"}
+        Dim isStarted As Boolean = False
+        Dim frmLock As New Object
+        AddHandler frm.FormClosing, Sub()
+                                        isStarted = False
+                                    End Sub
+
+        AddHandler ButtonStart.Click,
+        Sub(sender0 As Object, e0 As EventArgs)
+            Task.Run(Sub()
+                         isStarted = Not isStarted
+                         SyncLock frmLock
+                             Threading.Thread.Sleep(10)
+                         End SyncLock
+                         frm.Invoke(Sub()
+                                        If isStarted Then
+                                            ButtonStart.Text = "Stop"
+                                            Task.Run(
+                                            Sub()
+                                                SyncLock frmLock
+                                                    While isStarted
+                                                        Threading.Thread.Sleep(100)
+                                                        If Not AllowOperation Then Continue While
+                                                        Dim cap() As Long = RefreshCapacity()
+                                                        frm.Invoke(Sub() frm.Text = $"Idle. Capactiy remain: {cap(cap.Count - 2)}")
+                                                        Dim dirListen As New IO.DirectoryInfo(txtLocation.Text)
+                                                        If dirListen.GetDirectories().Count > 0 OrElse dirListen.GetFiles().Count > 0 Then
+                                                            For i As Integer = 2 To 1 Step -1
+                                                                Dim startsec As Integer = i
+                                                                frm.Invoke(Sub() frm.Text = $"Will start in {startsec}s")
+                                                                Threading.Thread.Sleep(1000)
+                                                            Next
+                                                        End If
+                                                        Dim pathlist As New List(Of String)
+                                                        For Each f As IO.FileInfo In dirListen.GetFiles()
+                                                            pathlist.Add(f.FullName)
+                                                        Next
+                                                        For Each d As IO.DirectoryInfo In dirListen.GetDirectories()
+                                                            pathlist.Add(d.FullName)
+                                                        Next
+                                                        Dim filter As String() = txtFilter.Text.Split({"|"}, StringSplitOptions.RemoveEmptyEntries)
+                                                        If pathlist.Count > 0 Then
+                                                            If Not isStarted Then Exit Sub
+                                                            frm.Invoke(Sub() ButtonStart.Enabled = False)
+                                                            frm.Invoke(Sub() frm.Text = $"Writing")
+                                                            Dim caps As Long() = RefreshCapacity()
+                                                            Dim cap1 As Long
+                                                            If caps(3) > 0 Then cap1 = caps(2) Else cap1 = caps(0)
+                                                            Invoke(Sub()
+                                                                       AddFileOrDir(DirectCast(ListView1.Tag, ltfsindex.directory), pathlist.ToArray(), 覆盖已有文件ToolStripMenuItem.Checked, filter)
+                                                                   End Sub)
+                                                            While AllowOperation
+                                                                Threading.Thread.Sleep(100)
+                                                            End While
+                                                            While Not AllowOperation
+                                                                Threading.Thread.Sleep(100)
+                                                            End While
+                                                            Dim DelList As New List(Of String)
+                                                            For Each f As FileRecord In UnwrittenFiles
+                                                                DelList.Add(f.SourcePath)
+                                                            Next
+                                                            Invoke(Sub()
+                                                                       写入数据ToolStripMenuItem_Click(sender0, e0)
+                                                                   End Sub)
+                                                            While AllowOperation
+                                                                Threading.Thread.Sleep(100)
+                                                            End While
+                                                            While Not AllowOperation
+                                                                Threading.Thread.Sleep(100)
+                                                            End While
+                                                            If chkAutoDelete.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, $"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+                                                                For Each s As String In DelList
+                                                                    If IO.File.Exists(s) Then IO.File.Delete(s)
+                                                                Next
+                                                            End If
+
+                                                            Threading.Thread.Sleep(5000)
+                                                            frm.BeginInvoke(Sub() ButtonStart.Enabled = True)
+                                                        End If
+                                                    End While
+                                                End SyncLock
+                                            End Sub)
+                                        Else
+                                            ButtonStart.Text = "Start"
+                                        End If
+                                    End Sub)
+
+                     End Sub)
+
+        End Sub
+        frm.Show()
+    End Sub
+
+    Private Sub 停止等待缓存ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 停止等待缓存ToolStripMenuItem.Click
+        PipePause = False
     End Sub
 
     Public Function FileExists(path As String) As Boolean

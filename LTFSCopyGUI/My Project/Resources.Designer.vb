@@ -453,6 +453,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 索引更新间隔（秒） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_IndexWriteIntervalSeconds() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_IndexWriteIntervalSeconds", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 取消写入后保留待写列表 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_KeepUnwrittenFilesOnAbort() As String
@@ -598,6 +607,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_SpeedLimit() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_SpeedLimit", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 缓存清空后，暂停写入，直到缓存填充至75%，或者连续10秒缓存无变化。Ring buffer模式下不支持。 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_WaitOnBufferEmpty() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_WaitOnBufferEmpty", resourceCulture)
             End Get
         End Property
         
@@ -2069,6 +2087,15 @@ Namespace My.Resources
         Friend ReadOnly Property ResText_SpeedBT() As String
             Get
                 Return ResourceManager.GetString("ResText_SpeedBT", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 速度 (MB/s) 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_SpeedBTD() As String
+            Get
+                Return ResourceManager.GetString("ResText_SpeedBTD", resourceCulture)
             End Get
         End Property
         
