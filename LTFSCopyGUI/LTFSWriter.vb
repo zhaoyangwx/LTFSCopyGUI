@@ -168,6 +168,7 @@ Public Class LTFSWriter
         End Get
         Set(value As Boolean)
             计算校验ToolStripMenuItem.Checked = value
+
         End Set
     End Property
 
@@ -343,6 +344,7 @@ Public Class LTFSWriter
         CleanCycle = CleanCycle
         IndexWriteInterval = IndexWriteInterval
         CapacityRefreshInterval = CapacityRefreshInterval
+        SpeedLimit = SpeedLimit
     End Sub
     Public Sub Save_Settings()
         If ColumnReordered Then
@@ -3600,7 +3602,7 @@ Public Class LTFSWriter
                                                                                        End Function))
                     For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
                         Dim succ As Boolean = False
-                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        If FileIndex.extentinfo.Count > 1 Then RestorePosition = New TapeUtils.PositionData(driveHandle)
                         PrintMsg($"Extent {FileIndex.extentinfo.IndexOf(fe)}:P={GetPartitionNumber(fe.partition)} B={fe.startblock} BO={fe.byteoffset} BC={fe.bytecount} FO={fe.fileoffset}", LogOnly:=True)
                         Do
                             Dim BlockAddress As ULong = fe.startblock
@@ -4657,6 +4659,10 @@ Public Class LTFSWriter
                                                                     End If
                                                                     lastlen = PipeBufferLength
                                                                     pCounter2 = 0
+                                                                Else
+                                                                    If PipeBufferLength >= My.Settings.LTFSWriter_PreLoadBytes * 0.75 Then
+                                                                        PipePause = False
+                                                                    End If
                                                                 End If
                                                             End If
                                                         End While
@@ -6196,6 +6202,7 @@ Public Class LTFSWriter
                     RestorePosition = New TapeUtils.PositionData(driveHandle)
                     RestorePosition.BlockNumber -= 1
                 Else
+                    'RestorePosition = New TapeUtils.PositionData(driveHandle)
                     If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
                         TapeUtils.Locate(handle:=driveHandle, BlockAddress:=fe.startblock, Partition:=GetPartitionNumber(fe.partition))
                         RestorePosition = New TapeUtils.PositionData(driveHandle)
