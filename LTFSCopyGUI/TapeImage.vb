@@ -61,7 +61,7 @@ Public Class TapeImage
         End Get
     End Property
 
-
+    Public Property Compressed As Boolean = True
     Private PartitionMappingStream As New Dictionary(Of Integer, IO.Stream)
     Private CurrentDatasetID As Integer = 0
     Private CurrentIntraSetBlockOffset As Integer = 0
@@ -87,14 +87,14 @@ Public Class TapeImage
     Public Sub New()
 
     End Sub
-    Public Sub New(filename As String, Optional ByVal PartitionCount As Integer = 1)
+    Public Sub New(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = True)
         If IO.File.Exists(filename) AndAlso (New IO.FileInfo(filename)).Length = 0 Then
             IO.File.Delete(filename)
         End If
         If IO.File.Exists(filename) Then
             OpenFile(filename)
         Else
-            CreateNewFile(filename, PartitionCount)
+            CreateNewFile(filename, PartitionCount, Compressed)
         End If
     End Sub
     Public Sub OpenFile(filename As String)
@@ -108,7 +108,13 @@ Public Class TapeImage
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
         End With
         For Each id As Integer In PartitionMappingFile.Keys
-            PartitionMappingStream.Add(id, New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open))
+            If PartitionMappingFile(id).ToLower().EndsWith(".lcgimg.zst") Then
+                Compressed = True
+                PartitionMappingStream.Add(id, New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open), 9, leaveOpen:=False))
+            Else
+                Compressed = False
+                PartitionMappingStream.Add(id, New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open))
+            End If
         Next
         Position = New TapeUtils.PositionData()
     End Sub
@@ -125,18 +131,23 @@ Public Class TapeImage
         Next
         Position = New TapeUtils.PositionData()
     End Sub
-    Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1)
+    Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = True)
         idxFile = New IO.FileInfo(filename)
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
+        Me.Compressed = Compressed
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
         For i As Integer = 0 To PartitionCount - 1
-            Dim imgfilename As String = $"{name}.{i}.lcgimg"
+            Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
             IO.File.Create(IO.Path.Combine(idxPath, imgfilename)).Close()
-            PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
+            If Me.Compressed Then
+                PartitionMappingStream.Add(i, New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False))
+            Else
+                PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
+            End If
             FilemarkBlockIndex.Add(i, New List(Of Long))
             PartitionEOD.Add(i, 0)
         Next
@@ -151,10 +162,14 @@ Public Class TapeImage
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
         For i As Integer = 0 To PartitionCount - 1
-            Dim imgfilename As String = $"{name}.{i}.lcgimg"
+            Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
             IO.File.Create(IO.Path.Combine(idxPath, imgfilename)).Close()
-            PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
+            If Compressed Then
+                PartitionMappingStream.Add(i, New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False))
+            Else
+                PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
+            End If
             FilemarkBlockIndex.Add(i, New List(Of Long))
             PartitionEOD.Add(i, 0)
         Next
@@ -231,7 +246,7 @@ Public Class TapeImage
     End Sub
     Public Sub WriteFilemark(Optional ByVal count As Integer = 1)
         If count = 0 Then
-            For Each s As FileStream In PartitionMappingStream.Values
+            For Each s As Stream In PartitionMappingStream.Values
                 s.Flush()
             Next
         Else
