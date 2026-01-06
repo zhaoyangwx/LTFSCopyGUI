@@ -34,7 +34,6 @@ Public Class TapeImage
         End Get
     End Property
 
-    <Xml.Serialization.XmlIgnore>
     Public Property Position As New TapeUtils.PositionData
 
     Public Property DatesetLength As Long = 2473000
@@ -87,7 +86,7 @@ Public Class TapeImage
     Public Sub New()
 
     End Sub
-    Public Sub New(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = True)
+    Public Sub New(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = False)
         If IO.File.Exists(filename) AndAlso (New IO.FileInfo(filename)).Length = 0 Then
             IO.File.Delete(filename)
         End If
@@ -106,6 +105,7 @@ Public Class TapeImage
             FilemarkBlockIndex = .FilemarkBlockIndex
             PartitionEOD = .PartitionEOD
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
+            Position = .Position
         End With
         For Each id As Integer In PartitionMappingFile.Keys
             If PartitionMappingFile(id).ToLower().EndsWith(".lcgimg.zst") Then
@@ -116,7 +116,12 @@ Public Class TapeImage
                 PartitionMappingStream.Add(id, New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open))
             End If
         Next
-        Position = New TapeUtils.PositionData()
+        If Position.PartitionNumber <> 0 Then
+            ChangePartition(Position.PartitionNumber, Nothing)
+            LocateByBlock(Position.BlockNumber, Nothing)
+        ElseIf Position.PartitionNumber <> 0 OrElse Position.BlockNumber <> 0 Then
+            LocateByBlock(Position.BlockNumber, Nothing)
+        End If
     End Sub
     Public Sub OpenStream(idx As TapeImage, partitions As List(Of Stream))
         With idx
@@ -124,14 +129,20 @@ Public Class TapeImage
             PartitionMappingFile = .PartitionMappingFile
             FilemarkBlockIndex = .FilemarkBlockIndex
             PartitionEOD = .PartitionEOD
+            Position = .Position
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
         End With
         For i As Integer = 0 To partitions.Count - 1
             PartitionMappingStream.Add(i, partitions(i))
         Next
-        Position = New TapeUtils.PositionData()
+        If Position.PartitionNumber <> 0 Then
+            ChangePartition(Position.PartitionNumber, Nothing)
+            LocateByBlock(Position.BlockNumber, Nothing)
+        ElseIf Position.PartitionNumber <> 0 OrElse Position.BlockNumber <> 0 Then
+            LocateByBlock(Position.BlockNumber, Nothing)
+        End If
     End Sub
-    Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = True)
+    Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = False)
         idxFile = New IO.FileInfo(filename)
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         Me.Compressed = Compressed
@@ -139,6 +150,7 @@ Public Class TapeImage
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
+        Position = New TapeUtils.PositionData()
         For i As Integer = 0 To PartitionCount - 1
             Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
@@ -161,6 +173,7 @@ Public Class TapeImage
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
+        Position = New TapeUtils.PositionData()
         For i As Integer = 0 To PartitionCount - 1
             Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
@@ -313,7 +326,7 @@ Public Class TapeImage
             residue -= readlen
         End While
         sense = SenseData.NoSense
-        Position.BlockNumber += 1
+        'Position.BlockNumber += 1
         Return result
     End Function
     Public Sub ChangePartition(partition As Byte, ByRef sense As Byte())
@@ -353,6 +366,10 @@ Public Class TapeImage
         Dim nextblock As ULong = currblock
         Dim lastset As Long = Math.Ceiling(CurrentStream.Length / DatesetLength)
         Dim lastblock As ULong = PartitionEOD(Position.PartitionNumber)
+        If blockIndex = lastblock Then
+            LocateToEOD(sense)
+            Exit Sub
+        End If
         While (currblock >= blockIndex) OrElse (nextblock < blockIndex AndAlso nextset < lastset) OrElse nextset - currset > 1
             While currblock > blockIndex
                 Dim delta As Integer = currset - currset \ 2

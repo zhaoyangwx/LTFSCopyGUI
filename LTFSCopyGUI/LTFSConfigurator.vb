@@ -825,17 +825,22 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugRewind_Click(sender As Object, e As EventArgs) Handles ButtonDebugRewind.Click
         Me.Enabled = False
         Task.Run(Sub()
-                     Dim cdb As Byte() = {1, 0, 0, 0, 0, 0}
-                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
-                     Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
-                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 60000, senseData)
-                         TapeUtils.CloseTapeDrive(handle)
-                     End SyncLock
+                     Dim cdb As Byte() = {1, 0, 0, 0, 0, 0}
+                     If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                         TapeUtils.Locate(ConfTapeDrive, 0, 0, TapeUtils.LocateDestType.Block, senseData)
+                     Else
+                         Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                         Dim handle As IntPtr
+                         SyncLock TapeUtils.SCSIOperationLock
+                             TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                             TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 60000, senseData)
+                             TapeUtils.CloseTapeDrive(handle)
+                         End SyncLock
+                         Marshal.FreeHGlobal(data)
+                     End If
+
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Marshal.FreeHGlobal(data)
                      Invoke(Sub() Me.Enabled = True)
                  End Sub)
 
