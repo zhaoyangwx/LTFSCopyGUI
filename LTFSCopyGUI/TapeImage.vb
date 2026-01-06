@@ -34,7 +34,16 @@ Public Class TapeImage
         End Get
     End Property
 
-    Public Property Position As New TapeUtils.PositionData
+    Private _Position As New TapeUtils.PositionData
+    Public Property Position As TapeUtils.PositionData
+        Get
+            Return _Position
+        End Get
+        Set(value As TapeUtils.PositionData)
+            _Position = value
+            If value.BlockNumber = 0 Then _Position.BOP = True Else _Position.BOP = False
+        End Set
+    End Property
 
     Public Property DatesetLength As Long = 2473000
 
