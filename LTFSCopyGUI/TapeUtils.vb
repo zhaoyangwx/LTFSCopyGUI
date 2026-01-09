@@ -2208,7 +2208,11 @@ Public Class TapeUtils
                             sense = senseData
                             Return True
                         End Function)
-                If Not succ Then Throw New Exception("SCSI Failure")
+                If Not succ Then
+                    Dim ErrCode As Integer = GetLastError()
+                    Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                    Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+                End If
             Case DriverType.SLR1
                 Dim BlockCount As Integer = Math.Ceiling(Data.Length / 512)
                 Dim succ As Boolean =
@@ -2217,7 +2221,11 @@ Public Class TapeUtils
                             sense = senseData
                             Return True
                         End Function)
-                If Not succ Then Throw New Exception("SCSI Failure")
+                If Not succ Then
+                    Dim ErrCode As Integer = GetLastError()
+                    Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                    Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+                End If
             Case DriverType.TapeStream
                 Dim ts As TapeImage
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
@@ -2234,7 +2242,11 @@ Public Class TapeUtils
                             sense = senseData
                             Return True
                         End Function)
-                If Not succ Then Throw New Exception("SCSI Failure")
+                If Not succ Then
+                    Dim ErrCode As Integer = GetLastError()
+                    Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                    Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+                End If
         End Select
         Return sense
     End Function
@@ -2262,7 +2274,11 @@ Public Class TapeUtils
             Case Else
                 Dim cdbData As Byte() = {&HA, 0, Length >> 16 And &HFF, Length >> 8 And &HFF, Length And &HFF, 0}
                 Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, Data, Length, 0, 900, sense)
-                If Not succ Then Throw New Exception("SCSI Failure")
+                If Not succ Then
+                    Dim ErrCode As Integer = GetLastError()
+                    Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                    Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+                End If
         End Select
         Return sense
     End Function
@@ -2326,7 +2342,9 @@ Public Class TapeUtils
                     Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, TransferLen, 0, 60000, sense)
                     If Not succ Then
                         Marshal.FreeHGlobal(dataBuffer)
-                        Throw New Exception("SCSI Failure")
+                        Dim ErrCode As Integer = GetLastError()
+                        Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                        Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
                         Return sense
                     End If
             End Select
@@ -2398,7 +2416,11 @@ Public Class TapeUtils
         End While
         Data.Close()
         Marshal.FreeHGlobal(DataPtr)
-        If Not succ Then Throw New Exception("SCSI Failure")
+        If Not succ Then
+            Dim ErrCode As Integer = GetLastError()
+            Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+            Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+        End If
         Return {0, 0, 0}
     End Function
     Public Shared Function Write(TapeDrive As String, sourceFile As String) As Byte()
@@ -2463,7 +2485,11 @@ Public Class TapeUtils
         End While
         fs.Close()
         Marshal.FreeHGlobal(DataPtr)
-        If Not succ Then Throw New Exception("SCSI Failure")
+        If Not succ Then
+            Dim ErrCode As Integer = GetLastError()
+            Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+            Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+        End If
         Return {0, 0, 0}
     End Function
     Public Shared Function Flush(TapeDrive As String) As Byte()
