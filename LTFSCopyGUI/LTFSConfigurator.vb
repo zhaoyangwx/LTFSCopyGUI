@@ -245,7 +245,10 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadThreaded)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadThreaded, Nothing, Function(sense As Byte()) As Boolean
+                                                                                                           PrintCommandResult({&H1B, 0, 0, 0, TapeUtils.LoadOption.LoadThreaded, 0}, {}, sense)
+                                                                                                           Return True
+                                                                                                       End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -277,7 +280,10 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Eject)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Eject, Nothing, Function(sense As Byte()) As Boolean
+                                                                                                    PrintCommandResult({&H1B, 0, 0, 0, TapeUtils.LoadOption.Eject, 0}, {}, sense)
+                                                                                                    Return True
+                                                                                                End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -377,7 +383,10 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadUnthreaded)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.LoadUnthreaded, Nothing, Function(sense As Byte()) As Boolean
+                                                                                                             PrintCommandResult({&H1B, 0, 0, 0, TapeUtils.LoadOption.LoadUnthreaded, 0}, {}, sense)
+                                                                                                             Return True
+                                                                                                         End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()
@@ -408,7 +417,10 @@ Public Class LTFSConfigurator
                 Sub()
                     Dim result As String
                     Try
-                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Unthread)
+                        result = TapeUtils.LoadEject(path, TapeUtils.LoadOption.Unthread, Nothing, Function(sense As Byte()) As Boolean
+                                                                                                       PrintCommandResult({&H1B, 0, 0, 0, TapeUtils.LoadOption.Unthread, 0}, {}, sense)
+                                                                                                       Return True
+                                                                                                   End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
                         result = ex.ToString()

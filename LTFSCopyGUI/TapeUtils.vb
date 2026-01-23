@@ -3216,11 +3216,11 @@ Public Class TapeUtils
 
         Return result
     End Function
-    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing) As Boolean
+    Public Shared Function LoadEject(TapeDrive As String, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 600) As Boolean
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As Boolean = LoadEject(handle, LoadOption, EncryptionKey)
+            Dim result As Boolean = LoadEject(handle, LoadOption, EncryptionKey, senseReport, TimeOut)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
@@ -3393,7 +3393,7 @@ Public Class TapeUtils
                 Try
                     Dim senseReportFunc As Func(Of Byte(), Boolean) = Function(sense As Byte()) As Boolean
                                                                           If sense(2) And &HF = 0 Then Return True
-                                                                          ProgressReport(ParseSenseData(sense))
+                                                                          ProgressReport($"{ParseSenseData(sense)}")
                                                                           Return False
                                                                       End Function
 

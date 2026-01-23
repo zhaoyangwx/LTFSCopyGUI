@@ -731,12 +731,14 @@ Public Class LTFSWriter
     Public LastC1Err(31) As Integer
     Public ChanErrLogRateHistory As New List(Of Double)
     Private _ErrLogRateHistory As Double
+    Public ErrLRRefreshed As New AutoResetEvent(False)
     Public Property ErrLogRateHistory As Double
         Set(value As Double)
             _ErrLogRateHistory = value
             BeginInvoke(Sub()
                             ToolStripStatusLabelErrLog.Text = $"{value.ToString("f2")}"
                             ToolStripStatusLabelErrLog.ForeColor = ErrRateHelper.GetColor(ToolStripStatusLabelErrLog.Text, 0.6)
+                            ErrLRRefreshed.Set()
                         End Sub)
             BeginInvoke(Sub()
                             Dim result As New StringBuilder
@@ -1335,6 +1337,7 @@ Public Class LTFSWriter
                 e.Cancel = True
                 Exit Sub
             Else
+                ErrLRRefreshed.Set()
                 Save_Settings()
                 e.Cancel = False
                 UFReadCount.Value = 0
@@ -1345,6 +1348,7 @@ Public Class LTFSWriter
             If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_X3, My.Resources.ResText_Warning, MessageBoxButtons.YesNo) = DialogResult.No Then
                 e.Cancel = True
             Else
+                ErrLRRefreshed.Set()
                 Save_Settings()
                 e.Cancel = False
                 UFReadCount.Value = 0
@@ -1634,12 +1638,16 @@ Public Class LTFSWriter
                         End Select
                         If (((mp23h(10 + 12) >> 7) And 1) = 1) Then
                             MediaDescription &= " RO(Phy)"
+                            WP = True
                         ElseIf (((mp23h(10 + 12) >> 6) And 1) = 1) Then
                             MediaDescription &= " RO(Asc)"
+                            WP = True
                         ElseIf (((mp23h(10 + 12) >> 4) And 1) = 1) Then
                             MediaDescription &= " RO(Pst)"
+                            WP = True
                         ElseIf (((mp23h(10 + 12) >> 0) And 1) = 1) Then
                             MediaDescription &= " RO(Pmn)"
+                            WP = True
                         Else
                             MediaDescription &= " RW"
                         End If
@@ -1756,11 +1764,16 @@ Public Class LTFSWriter
                 Invoke(Sub()
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}"
-                           If cap1 >= 4096 Then
-                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(121, 196, 232))
+                           If WP Then
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(191, 191, 191))
                            Else
-                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
+                               If cap1 >= 4096 Then
+                                   ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(121, 196, 232))
+                               Else
+                                   ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(255, 127, 127))
+                               End If
                            End If
+
                        End Sub)
                 result(2) = max1 - cap1
                 result(3) = max1
@@ -1777,11 +1790,16 @@ Public Class LTFSWriter
                            If cap0 < 0 Then Exit Sub
                            ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}"
-                           If cap0 >= 4096 Then
-                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(121, 196, 232))
+                           If WP Then
+                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(191, 191, 191))
                            Else
-                               ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(255, 127, 127))
+                               If cap0 >= 4096 Then
+                                   ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(121, 196, 232))
+                               Else
+                                   ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap0, MaxCapacity, Color.FromArgb(255, 127, 127))
+                               End If
                            End If
+
                        End Sub)
 
             End If
@@ -3742,6 +3760,7 @@ Public Class LTFSWriter
                     Next
                 Catch ex As Exception
                     PrintMsg($"{FileIndex.name}{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                    Invoke(Sub() MessageBox.Show($"{FileIndex.name}{My.Resources.ResText_RestoreErr}{ex.ToString}"))
                     SetStatusLight(LWStatus.Err)
                 End Try
                 Try
@@ -3959,7 +3978,9 @@ Public Class LTFSWriter
                 Dim add_code As UShort = TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, DataPartition, TapeUtils.LocateDestType.Block)
                 p = GetPos
                 If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse (p.BlockNumber <> schema.previousgenerationlocation.startblock) Then
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Dim result As DialogResult
+                    Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                    Select Case result
                         Case DialogResult.Ignore
                             Exit While
                         Case DialogResult.Abort
@@ -3998,7 +4019,9 @@ Public Class LTFSWriter
                     Dim add_code As UShort = TapeUtils.Locate(driveHandle, CULng(CurrentHeight), DataPartition, TapeUtils.LocateDestType.Block)
                     p = GetPos
                     If p.PartitionNumber <> DataPartition OrElse p.BlockNumber <> CULng(CurrentHeight) Then
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Dim result As DialogResult
+                        Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Select Case result
                             Case DialogResult.Ignore
                                 Exit While
                             Case DialogResult.Abort
@@ -4015,7 +4038,9 @@ Public Class LTFSWriter
             End If
         Else
             Dim p As TapeUtils.PositionData = GetPos
-            If MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_CurPos}P{p.PartitionNumber} B{p.BlockNumber}{My.Resources.ResText_NHWrn}", My.Resources.ResText_WriteWarning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            Dim result As DialogResult
+            Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_CurPos}P{p.PartitionNumber} B{p.BlockNumber}{My.Resources.ResText_NHWrn}", My.Resources.ResText_WriteWarning, MessageBoxButtons.OKCancel))
+            If result = DialogResult.OK Then
 
             Else
                 LockGUI(False)
@@ -4213,6 +4238,7 @@ Public Class LTFSWriter
                 Try
                     SetStatusLight(LWStatus.Busy)
                     StartTime = Now
+                    PipePause = False
                     PrintMsg("", True)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_PrepW)
@@ -5775,6 +5801,7 @@ Public Class LTFSWriter
                                         Sub(Message As String)
                                             'ProgressReport
                                             PrintMsg(Message)
+                                            If Message.Contains("error") Then MessageBox.Show(Message)
                                         End Sub,
                                         Sub(Message As String)
                                             'OnFinished
@@ -5782,7 +5809,7 @@ Public Class LTFSWriter
                                             SetStatusLight(LWStatus.Succ)
                                             LockGUI(False)
                                             Me.Invoke(Sub()
-                                                          MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_FmtFin)
+                                                          MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFin}")
                                                           读取索引ToolStripMenuItem_Click(sender, e)
                                                       End Sub)
                                         End Sub,
@@ -8966,6 +8993,20 @@ Public Class LTFSWriter
                 If e.Alt Then Exit Select
                 If e.Shift Then Exit Select
                 Search(GetSearchInput())
+            Case Keys.N
+                If Not AllowOperation Then Exit Sub
+                If Not e.Control Then Exit Select
+                If e.Alt Then Exit Select
+                If e.Shift Then Exit Select
+                新建目录ToolStripMenuItem_Click(sender, e)
+            Case Keys.P
+                If Not AllowOperation Then Exit Sub
+                If Not e.Control Then Exit Select
+                If e.Alt Then
+                    PipePause = Not PipePause
+                End If
+                If e.Shift Then Exit Select
+                Pause = Not Pause
             Case Keys.F3
                 If Not AllowOperation Then Exit Sub
                 If LastSearchKW = "" Then GetSearchInput()
@@ -9344,6 +9385,37 @@ Public Class LTFSWriter
 
     Private Sub 停止等待缓存ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 停止等待缓存ToolStripMenuItem.Click
         PipePause = False
+    End Sub
+
+    Private Sub 自适应限速ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 自适应限速ToolStripMenuItem.Click
+        自适应限速ToolStripMenuItem.Checked = Not 自适应限速ToolStripMenuItem.Checked
+        ErrLRRefreshed.Set()
+        If 自适应限速ToolStripMenuItem.Checked Then
+            SpeedLimit = 160
+            Task.Run(Sub()
+                         While 自适应限速ToolStripMenuItem.Checked
+                             ErrLRRefreshed.WaitOne()
+                             Invoke(Sub()
+                                        If ErrLogRateHistory < -4 Then
+                                            SpeedLimit = Math.Min(160, SpeedLimit + 5)
+                                        ElseIf ErrLogRateHistory < -3.9 Then
+                                            SpeedLimit = Math.Min(160, SpeedLimit + 2)
+                                        ElseIf ErrLogRateHistory < -3.8 Then
+                                            SpeedLimit = Math.Min(160, SpeedLimit + 1)
+                                        ElseIf ErrLogRateHistory >= -3.3 Then
+                                            SpeedLimit -= 10
+                                        ElseIf ErrLogRateHistory >= -3.4 Then
+                                            SpeedLimit -= 5
+                                        ElseIf ErrLogRateHistory >= -3.5 Then
+                                            SpeedLimit -= 2
+                                        ElseIf ErrLogRateHistory >= -3.6 Then
+                                            SpeedLimit -= 1
+                                        End If
+                                        ToolStripStatusLabelErrLog.Text = $"{ErrLogRateHistory.ToString("f2")}|{SpeedLimit}"
+                                    End Sub)
+                         End While
+                     End Sub)
+        End If
     End Sub
 
     Public Function FileExists(path As String) As Boolean
