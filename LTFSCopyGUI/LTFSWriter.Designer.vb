@@ -251,12 +251,13 @@ Partial Class LTFSWriter
         Me.DebugToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.SettingToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TestToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.停止等待缓存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.选中二级目录ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.导出待写列表ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.监控写入ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.停止等待缓存ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         Me.自适应限速ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.从文件添加ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -1440,9 +1441,14 @@ Partial Class LTFSWriter
         '
         'TestToolStripMenuItem
         '
-        Me.TestToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.停止等待缓存ToolStripMenuItem, Me.选中二级目录ToolStripMenuItem, Me.导出待写列表ToolStripMenuItem, Me.监控写入ToolStripMenuItem, Me.自适应限速ToolStripMenuItem})
+        Me.TestToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.停止等待缓存ToolStripMenuItem, Me.选中二级目录ToolStripMenuItem, Me.导出待写列表ToolStripMenuItem, Me.监控写入ToolStripMenuItem, Me.自适应限速ToolStripMenuItem, Me.从文件添加ToolStripMenuItem})
         Me.TestToolStripMenuItem.Name = "TestToolStripMenuItem"
         resources.ApplyResources(Me.TestToolStripMenuItem, "TestToolStripMenuItem")
+        '
+        '停止等待缓存ToolStripMenuItem
+        '
+        Me.停止等待缓存ToolStripMenuItem.Name = "停止等待缓存ToolStripMenuItem"
+        resources.ApplyResources(Me.停止等待缓存ToolStripMenuItem, "停止等待缓存ToolStripMenuItem")
         '
         '选中二级目录ToolStripMenuItem
         '
@@ -1459,10 +1465,15 @@ Partial Class LTFSWriter
         Me.监控写入ToolStripMenuItem.Name = "监控写入ToolStripMenuItem"
         resources.ApplyResources(Me.监控写入ToolStripMenuItem, "监控写入ToolStripMenuItem")
         '
-        '停止等待缓存ToolStripMenuItem
+        '自适应限速ToolStripMenuItem
         '
-        Me.停止等待缓存ToolStripMenuItem.Name = "停止等待缓存ToolStripMenuItem"
-        resources.ApplyResources(Me.停止等待缓存ToolStripMenuItem, "停止等待缓存ToolStripMenuItem")
+        Me.自适应限速ToolStripMenuItem.Name = "自适应限速ToolStripMenuItem"
+        resources.ApplyResources(Me.自适应限速ToolStripMenuItem, "自适应限速ToolStripMenuItem")
+        '
+        '从文件添加ToolStripMenuItem
+        '
+        Me.从文件添加ToolStripMenuItem.Name = "从文件添加ToolStripMenuItem"
+        resources.ApplyResources(Me.从文件添加ToolStripMenuItem, "从文件添加ToolStripMenuItem")
         '
         'ToolTipChanErrLog
         '
@@ -1472,11 +1483,6 @@ Partial Class LTFSWriter
         Me.ToolTipChanErrLog.ShowAlways = True
         Me.ToolTipChanErrLog.UseAnimation = False
         Me.ToolTipChanErrLog.UseFading = False
-        '
-        '自适应限速ToolStripMenuItem
-        '
-        Me.自适应限速ToolStripMenuItem.Name = "自适应限速ToolStripMenuItem"
-        resources.ApplyResources(Me.自适应限速ToolStripMenuItem, "自适应限速ToolStripMenuItem")
         '
         'LTFSWriter
         '
@@ -1720,4 +1726,5 @@ Partial Class LTFSWriter
     Friend WithEvents 监控写入ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 停止等待缓存ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 自适应限速ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 从文件添加ToolStripMenuItem As ToolStripMenuItem
 End Class
