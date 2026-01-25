@@ -1,19 +1,13 @@
 Imports System.Buffers
 Imports System.ComponentModel
-Imports System.Diagnostics.Eventing
 Imports System.IO.Pipelines
 Imports System.Runtime
 Imports System.Runtime.InteropServices
-Imports System.Runtime.Remoting.Messaging
 Imports System.Security.Cryptography
 Imports System.Text
 Imports System.Threading
-Imports Blake3
 Imports Fsp.Interop
-Imports FubarDev.FtpServer.CommandExtensions
-Imports Microsoft.Extensions.FileSystemGlobbing
 Imports Microsoft.WindowsAPICodePack.Dialogs
-Imports Microsoft.WindowsAPICodePack.Shell
 Imports ZstdSharp
 
 Public Class LTFSWriter
@@ -345,6 +339,7 @@ Public Class LTFSWriter
         IndexWriteInterval = IndexWriteInterval
         CapacityRefreshInterval = CapacityRefreshInterval
         SpeedLimit = SpeedLimit
+        If My.Settings.Application_License.ToLower().Contains("dev") Then TestToolStripMenuItem.Visible = True
     End Sub
     Public Sub Save_Settings()
         If ColumnReordered Then
@@ -9164,7 +9159,7 @@ Public Class LTFSWriter
             ChangeDirectory(TextBoxSelectedPath.Text)
         End If
     End Sub
-    Public Sub ChangeDirectory(path As String)
+    Public Function GetNode(path As String) As TreeNode
         If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
         Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
         ReDim Preserve DIR(DIR.Length - 2)
@@ -9183,9 +9178,16 @@ Public Class LTFSWriter
                 Next
             Next
             If found Then
-                TreeView1.SelectedNode = targetdir
-                targetdir.Expand()
+                Return targetdir
             End If
+        End If
+        Return Nothing
+    End Function
+    Public Sub ChangeDirectory(path As String)
+        Dim targetdir As TreeNode = GetNode(path)
+        If targetdir IsNot Nothing Then
+            TreeView1.SelectedNode = targetdir
+            targetdir.Expand()
         End If
         TriggerTreeView1Event()
     End Sub
@@ -9415,6 +9417,43 @@ Public Class LTFSWriter
                                     End Sub)
                          End While
                      End Sub)
+        End If
+    End Sub
+
+    Private Sub 从文件添加ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 从文件添加ToolStripMenuItem.Click
+        Dim ofd As New OpenFileDialog With {.FileName = ""}
+        Dim overwrite As Boolean = 覆盖已有文件ToolStripMenuItem.Checked
+        If ofd.ShowDialog = DialogResult.OK Then
+            Dim s() As String = IO.File.ReadAllLines(ofd.FileName)
+            Dim currdir As ltfsindex.directory = TreeView1.SelectedNode.Tag
+            LockGUI(True)
+            Task.Run(Sub()
+                         Dim currpath As String = ""
+                         If currdir Is Nothing Then currdir = schema._directory(0)
+                         For i As Integer = 0 To s.Length - 1
+                             Dim t() As String = s(i).Split({vbTab}, StringSplitOptions.None)
+                             Dim toadd As String = ""
+                             If t.Count >= 2 Then
+                                 If currpath <> t(0) Then
+                                     currpath = t(0)
+                                     currdir = schema.GetDirectory(currpath)
+                                     toadd = t(1)
+                                 End If
+                             Else
+                                 toadd = t(0)
+                             End If
+                             If IO.File.Exists(toadd) Then
+                                 AddFile(New IO.FileInfo(toadd), currdir, overwrite)
+                             ElseIf IO.Directory.Exists(toadd) Then
+                                 AddDirectry(New IO.DirectoryInfo(toadd), currdir, overwrite)
+                             End If
+                         Next
+                         RefreshDisplay()
+                         PrintMsg(My.Resources.ResText_AddFin)
+                         SetStatusLight(LWStatus.Succ)
+                         LockGUI(False)
+                     End Sub)
+
         End If
     End Sub
 

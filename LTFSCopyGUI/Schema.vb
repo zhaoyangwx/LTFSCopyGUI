@@ -500,7 +500,57 @@ Public Class ltfsindex
             q = qn
         End While
     End Sub
-
+    Public Function GetDirectory(path As String) As directory
+        Dim p() As String = path.Split({"\", "/"}, StringSplitOptions.None)
+        If p.Count <= 0 Then Return Nothing
+        If _directory Is Nothing OrElse _directory.Count = 0 Then Return Nothing
+        Dim result As ltfsindex.directory
+        If p(0) = _directory(0).name Then
+            result = _directory(0)
+        Else
+            Return Nothing
+        End If
+        For i As Integer = 1 To p.Length - 1
+            Dim found As Boolean = False
+            For j As Integer = 0 To result.contents._directory.Count - 1
+                If result.contents._directory(j).name = p(i) Then
+                    result = result.contents._directory(j)
+                    found = True
+                    Exit For
+                End If
+            Next
+            If Not found Then Return Nothing
+        Next
+        Return result
+    End Function
+    Public Function GetFile(path As String) As file
+        Dim p() As String = path.Split({"\", "/"}, StringSplitOptions.None)
+        If p.Count <= 0 Then Return Nothing
+        If _directory Is Nothing OrElse _directory.Count = 0 Then Return Nothing
+        Dim result As ltfsindex.directory
+        If p(0) = _directory(0).name Then
+            result = _directory(0)
+        Else
+            Return Nothing
+        End If
+        For i As Integer = 1 To p.Length - 2
+            Dim found As Boolean = False
+            For j As Integer = 0 To result.contents._directory.Count - 1
+                If result.contents._directory(j).name = p(i) Then
+                    result = result.contents._directory(j)
+                    found = True
+                    Exit For
+                End If
+            Next
+            If Not found Then Return Nothing
+        Next
+        For j As Integer = 0 To result.contents._file.Count - 1
+            If result.contents._file(j).name = p.Last Then
+                Return result.contents._file(j)
+            End If
+        Next
+        Return Nothing
+    End Function
     Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
         Dim sb As New Text.StringBuilder(40960)
         Using sw As New IO.StringWriter(sb)
