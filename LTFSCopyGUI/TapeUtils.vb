@@ -4987,9 +4987,9 @@ Public Class TapeUtils
                 Set(value As Integer)
                 End Set
             End Property
-            Public Property MB_PER_WRAP As Integer
+            Public Property KB_PER_WRAP As Integer
                 Get
-                    Return KB_PER_DATASET * SETS_PER_WRAP / 1024
+                    Return KB_PER_DATASET * SETS_PER_WRAP
                 End Get
                 Set(value As Integer)
                 End Set
@@ -6357,11 +6357,10 @@ Public Class TapeUtils
                     Output.Append(("| Load count: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
                 End Try
                 Try
-                    Dim TotalWriteMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
-                    TotalWriteMBytes *= Me.UsageData(0).LifeSetsWritten
-                    TotalWriteMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H20).AsNumeric
+                    Dim TotalWriteKBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
+                    TotalWriteKBytes *= Me.UsageData(0).LifeSetsWritten
                     If CartridgeMfgData.KB_PER_DATASET > 0 Then
-                        Output.Append(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteMBytes)).PadRight(74) & "|" & vbCrLf)
+                        Output.Append(("| Total write: ".PadRight(28) & ReduceDataUnit(TotalWriteKBytes)).PadRight(74) & "|" & vbCrLf)
                     Else
                         Output.Append(("| Total write: ".PadRight(28) & $"{UsageData(0).LifeSetsWritten} Sets").PadRight(74) & "|" & vbCrLf)
                     End If
@@ -6369,11 +6368,10 @@ Public Class TapeUtils
                     Output.Append(("| Total write: ".PadRight(28) & "Not available").PadRight(74) & "|" & vbCrLf)
                 End Try
                 Try
-                    Dim TotalReadMBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
-                    TotalReadMBytes *= Me.UsageData(0).LifeSetsRead
-                    TotalReadMBytes \= 1024 'TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, 2, &H21).AsNumeric
+                    Dim TotalReadKBytes As Int64 = Me.CartridgeMfgData.KB_PER_DATASET
+                    TotalReadKBytes *= Me.UsageData(0).LifeSetsRead
                     If CartridgeMfgData.KB_PER_DATASET > 0 Then
-                        Output.Append(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadMBytes)).PadRight(74) & "|" & vbCrLf)
+                        Output.Append(("| Total read: ".PadRight(28) & ReduceDataUnit(TotalReadKBytes)).PadRight(74) & "|" & vbCrLf)
                     Else
                         Output.Append(("| Total read: ".PadRight(28) & $"{UsageData(0).LifeSetsRead} Sets").PadRight(74) & "|" & vbCrLf)
                     End If
@@ -6548,11 +6546,11 @@ Public Class TapeUtils
                     Output.Append(("| Total partitions: ".PadRight(28) & DataWrapList.Count).PadRight(74) & "|" & vbCrLf)
                     For i As Integer = 0 To DataWrapList.Count - 1
                         Dim nWrap As Long = DataWrapList(i)
-                        Dim len As Long = nWrap * Me.CartridgeMfgData.MB_PER_WRAP
+                        Dim len As Long = nWrap * Me.CartridgeMfgData.KB_PER_WRAP
 
                         Dim WrittenSize As String = ""
                         If DataSize.Count = DataWrapList.Count Then
-                            WrittenSize = $"{IOManager.FormatSize(DataSize(i) * Me.CartridgeMfgData.KB_PER_DATASET * 1024, True)} / "
+                            WrittenSize = $"{IOManager.FormatSize(DataSize(i) * Me.CartridgeMfgData.KB_PER_DATASET * 1000, True)} / "
                         End If
                         Output.Append（($"| Partition {i} size: ".PadRight(28) & (WrittenSize & ReduceDataUnit(len)).PadRight(24) & $"[{nWrap.ToString().PadLeft(3)} wraps]").PadRight(74) & "|" & vbCrLf)
                     Next
@@ -9004,9 +9002,9 @@ Public Class TapeUtils
             Return result
         End Function
     End Class
-    Public Shared Function ReduceDataUnit(MBytes As Int64) As String
-        Dim Result As Decimal = MBytes
-        Dim ResultUnit As Integer = 0
+    Public Shared Function ReduceDataUnit(KBytes As Int64) As String
+        Dim Result As Decimal = KBytes * 1000
+        Dim ResultUnit As Integer = -6
         While Result >= 1000
             If My.Settings.Application_UseDecimalUnit Then
                 Result /= 1000
