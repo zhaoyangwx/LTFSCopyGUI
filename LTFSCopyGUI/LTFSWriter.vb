@@ -8995,7 +8995,6 @@ Public Class LTFSWriter
                 If e.Shift Then Exit Select
                 新建目录ToolStripMenuItem_Click(sender, e)
             Case Keys.P
-                If Not AllowOperation Then Exit Sub
                 If Not e.Control Then Exit Select
                 If e.Alt Then
                     PipePause = Not PipePause

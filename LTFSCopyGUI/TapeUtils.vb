@@ -2626,7 +2626,7 @@ Public Class TapeUtils
         Return sb.ToString()
     End Function
     Public Shared Function RichByte2Hex(bytes As Byte(), Optional ByVal TextShow As Boolean = False) As String
-        Const HalfWidthChars As String = "~!@#$%^&*()_+-=|\ <>?,./:;""''{}[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+        Const HalfWidthChars As String = "`~!@#$%^&*()_+-=|\ <>?,./:;""''{}[]0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
         If bytes Is Nothing Then Return ""
         If bytes.Length = 0 Then Return ""
         Dim sb As New StringBuilder
