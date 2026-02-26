@@ -1,5 +1,7 @@
+Imports System.Buffers
 Imports System.ComponentModel
 Imports System.Drawing.Imaging
+Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports NAudio.Wave
@@ -153,7 +155,7 @@ Public Class LTFSConfigurator
                                             ComboBoxDriveLetter.Text = t
                                         End If
                                     End If
-
+                                    If Not My.Settings.Application_License.ToLower().Contains("dev") Then TabControl1.TabPages.Remove(TabPageZBC)
                                     LoadComplete = True
                                     SelectedIndex = ListBox1.SelectedIndex
                                 End Sub)
@@ -1524,48 +1526,49 @@ Public Class LTFSConfigurator
                         End If
                         If My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.ZBCDevice Then
                             Threading.Interlocked.Add(zbcstartblk, zbcLBAWritten)
-                        End If
-                        Try
-                            If i Mod 200 = 0 Then
-                                Dim result As New StringBuilder
-                                Dim WERLHeader As Byte()
-                                Dim WERLPage As Byte()
-                                Dim WERLPageLen As Integer
-                                SyncLock TapeUtils.SCSIOperationLock
-                                    WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
-                                    If WERLHeader.Length <> 4 Then Exit Try
-                                    WERLPageLen = WERLHeader(2)
-                                    WERLPageLen <<= 8
-                                    WERLPageLen = WERLPageLen Or WERLHeader(3)
-                                    If WERLPageLen = 0 Then Exit Try
-                                    WERLPageLen += 4
-                                    WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
-                                End SyncLock
-                                Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
-                                info = ""
-                                Try
-                                    For ch As Integer = 4 To WERLData.Length - 5 Step 5
-                                        Dim chan As Integer = (ch - 4) \ 5
-                                        Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
-                                        Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
+                        Else
+                            Try
+                                If i Mod 200 = 0 Then
+                                    Dim result As New StringBuilder
+                                    Dim WERLHeader As Byte()
+                                    Dim WERLPage As Byte()
+                                    Dim WERLPageLen As Integer
+                                    SyncLock TapeUtils.SCSIOperationLock
+                                        WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
+                                        If WERLHeader.Length <> 4 Then Exit Try
+                                        WERLPageLen = WERLHeader(2)
+                                        WERLPageLen <<= 8
+                                        WERLPageLen = WERLPageLen Or WERLHeader(3)
+                                        If WERLPageLen = 0 Then Exit Try
+                                        WERLPageLen += 4
+                                        WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+                                    End SyncLock
+                                    Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                    info = ""
+                                    Try
+                                        For ch As Integer = 4 To WERLData.Length - 5 Step 5
+                                            Dim chan As Integer = (ch - 4) \ 5
+                                            Dim C1err As Integer = Integer.Parse(WERLData(ch + 0), Globalization.NumberStyles.HexNumber)
+                                            Dim NoCCPs As Integer = Integer.Parse(WERLData(ch + 4), Globalization.NumberStyles.HexNumber)
 
-                                        If NoCCPs - LastNoCCPs(chan) > 0 Then
-                                            Dim resulttxt As String = (Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2"))
-                                            resulttxt = resulttxt.Replace("∞", "Inf")
-                                            result.Append(resulttxt.PadLeft(6).PadRight(7))
-                                            LastC1Err(chan) = C1err
-                                            LastNoCCPs(chan) = NoCCPs
-                                        Else
-                                            result.Append("-".PadLeft(4).PadRight(7))
-                                        End If
-                                    Next
-                                Catch
-                                End Try
-                                info = result.ToString()
-                            End If
-                        Catch ex As Exception
-                            info = ex.ToString()
-                        End Try
+                                            If NoCCPs - LastNoCCPs(chan) > 0 Then
+                                                Dim resulttxt As String = (Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2"))
+                                                resulttxt = resulttxt.Replace("∞", "Inf")
+                                                result.Append(resulttxt.PadLeft(6).PadRight(7))
+                                                LastC1Err(chan) = C1err
+                                                LastNoCCPs(chan) = NoCCPs
+                                            Else
+                                                result.Append("-".PadLeft(4).PadRight(7))
+                                            End If
+                                        Next
+                                    Catch
+                                    End Try
+                                    info = result.ToString()
+                                End If
+                            Catch ex As Exception
+                                info = ex.ToString()
+                            End Try
+                        End If
 
                         progval = i * blkLen
                     Next
@@ -2414,6 +2417,474 @@ Public Class LTFSConfigurator
             If newdev.DevicePath = "" Then newdev.DevicePath = $"\\.\{newdev.DeviceType}{newdev.DevIndex}"
             If Not IO.Directory.Exists(My.Settings.customDevicePath) Then IO.Directory.CreateDirectory(My.Settings.customDevicePath)
             IO.File.WriteAllText(IO.Path.Combine(My.Settings.customDevicePath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
+        End If
+    End Sub
+
+    Private Sub ButtonReportZones_Click(sender As Object, e As EventArgs) Handles ButtonReportZones.Click
+        Me.Enabled = False
+        Dim opt As Byte = IOManager.HexStringToByteArray(ComboBoxReportOptions.Text.Substring(0, 2))(0)
+        Task.Run(Sub()
+                     Dim drvhandle As IntPtr
+                     TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
+                     Dim disk As New ZBCDeviceHelper With {.handle = drvhandle}
+                     Dim MP03 As Byte() = TapeUtils.ModeSense(drvhandle, 3)
+                     disk.SectorLength = BigEndianConverter.ToUInt16(MP03, 12)
+                     Invoke(Sub() NumericUpDownSectorSize.Value = If(disk.SectorLength > 0, disk.SectorLength, NumericUpDownSectorSize.Value))
+                     disk.ReportZones(opt)
+                     Dim output As New StringBuilder
+                     output.AppendLine($"     #  ZONE_TYPE    ZONE_CONDITION    START_LBA    END_LBA   WP_LBA   WP_VALIDITY  SEQ    RESET ")
+                     For i As Integer = 0 To disk.ZoneList.Count - 1
+                         With disk.ZoneList(i)
+                             output.AppendLine($"{i.ToString().PadLeft(6)}{ _
+                            .ZoneType.ToString().PadLeft(13)}{ _
+                            .ZoneCondition.ToString().PadLeft(18)}{ _
+                            .ZoneStartLBA.ToString().PadLeft(11)}{ _
+                            .ZoneEndLBA.ToString().PadLeft(11)}{ _
+                            .ZoneWritePointerLBA.ToString().PadLeft(11)}{ _
+                            If(.WRITER_POINTER_LBA_INVALID, " WP_Invalid", " WP_Valid  ")}{ _
+                            If(.NON_SEQ, " NON_SEQ ", "   SEQ   ")}{ _
+                            If(.RESET, " RESET ", "       ")}")
+                         End With
+                     Next
+                     TapeUtils.CloseTapeDrive(drvhandle)
+                     Invoke(Sub()
+                                TextBoxDebugOutput.Text = output.ToString()
+                                Me.Enabled = True
+                            End Sub)
+                 End Sub)
+
+    End Sub
+
+    Private Sub ButtonCloseAllZones_Click(sender As Object, e As EventArgs) Handles ButtonCloseAllZones.Click
+        Me.Enabled = False
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim cdb As Byte() = {&H94, &H1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+
+                     PrintCommandResult(cdb, Nothing, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonReadLBA_Click(sender As Object, e As EventArgs) Handles ButtonReadLBA.Click
+        Me.Enabled = False
+        Dim StartLBA As ULong = NumericUpDownLBA.Value
+        Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim result As Byte() = {}
+                     Dim cdb As Byte() = {&H28, 0,
+                        CByte((StartLBA >> 24) And &HFF),
+                        CByte((StartLBA >> 16) And &HFF),
+                        CByte((StartLBA >> 8) And &HFF),
+                        CByte((StartLBA >> 0) And &HFF),
+                        0, 0, 1, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         result = TapeUtils.SCSIReadParam(handle, cdb, sectorSize, Function(s As Byte()) As Boolean
+                                                                                       senseData = s
+                                                                                       Return True
+                                                                                   End Function, 30)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+                     PrintCommandResult(cdb, result, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonReportZone_Click(sender As Object, e As EventArgs) Handles ButtonReportZone.Click
+        Dim StartLBA As ULong = NumericUpDownLBA.Value
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim drvhandle As IntPtr
+                     TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
+                     Dim cdb As Byte() = {&H95, 0,
+                             CByte((StartLBA >> 56) And &HFF),
+                             CByte((StartLBA >> 48) And &HFF),
+                             CByte((StartLBA >> 40) And &HFF),
+                             CByte((StartLBA >> 32) And &HFF),
+                             CByte((StartLBA >> 24) And &HFF),
+                             CByte((StartLBA >> 16) And &HFF),
+                             CByte((StartLBA >> 8) And &HFF),
+                             CByte((StartLBA >> 0) And &HFF),
+                             0, 0, 0, 128, &H80, 0}
+                     Dim data1 As Byte() = TapeUtils.SCSIReadParam(drvhandle, cdb, 128, Function(s As Byte()) As Boolean
+                                                                                            senseData = s
+                                                                                            Return True
+                                                                                        End Function, 60)
+                     Dim readed As New ZBCDeviceHelper.Zone(data1, 64)
+                     Dim output As New StringBuilder
+                     output.AppendLine($"     #  ZONE_TYPE    ZONE_CONDITION    START_LBA    END_LBA   WP_LBA   WP_VALIDITY  SEQ    RESET ")
+                     With readed
+                         output.AppendLine($"{"".PadLeft(6)}{ _
+                            .ZoneType.ToString().PadLeft(13)}{ _
+                            .ZoneCondition.ToString().PadLeft(18)}{ _
+                            .ZoneStartLBA.ToString().PadLeft(11)}{ _
+                            .ZoneEndLBA.ToString().PadLeft(11)}{ _
+                            .ZoneWritePointerLBA.ToString().PadLeft(11)}{ _
+                            If(.WRITER_POINTER_LBA_INVALID, " WP_Invalid", " WP_Valid  ")}{ _
+                            If(.NON_SEQ, " NON_SEQ ", "   SEQ   ")}{ _
+                            If(.RESET, " RESET ", "       ")}")
+                     End With
+                     output.AppendLine()
+                     TapeUtils.CloseTapeDrive(drvhandle)
+
+                     Invoke(Sub()
+                                PrintCommandResult(cdb, data1, senseData)
+                                TextBoxDebugOutput.Text = output.ToString() & TextBoxDebugOutput.Text
+                                Me.Enabled = True
+                            End Sub)
+                 End Sub)
+
+    End Sub
+
+    Private Sub ButtonOpenZone_Click(sender As Object, e As EventArgs) Handles ButtonOpenZone.Click
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim cdb As Byte() = {&H94, &H3,
+                                          CByte((LBA >> 56) And &HFF),
+                                          CByte((LBA >> 48) And &HFF),
+                                          CByte((LBA >> 40) And &HFF),
+                                          CByte((LBA >> 32) And &HFF),
+                                          CByte((LBA >> 24) And &HFF),
+                                          CByte((LBA >> 16) And &HFF),
+                                          CByte((LBA >> 8) And &HFF),
+                                          CByte((LBA >> 0) And &HFF),
+                                          0, 0, 0, 0, 0, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+
+                     PrintCommandResult(cdb, Nothing, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonCloseZone_Click(sender As Object, e As EventArgs) Handles ButtonCloseZone.Click
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim cdb As Byte() = {&H94, &H1,
+                                          CByte((LBA >> 56) And &HFF),
+                                          CByte((LBA >> 48) And &HFF),
+                                          CByte((LBA >> 40) And &HFF),
+                                          CByte((LBA >> 32) And &HFF),
+                                          CByte((LBA >> 24) And &HFF),
+                                          CByte((LBA >> 16) And &HFF),
+                                          CByte((LBA >> 8) And &HFF),
+                                          CByte((LBA >> 0) And &HFF),
+                                          0, 0, 0, 0, 0, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+
+                     PrintCommandResult(cdb, Nothing, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonFinishZone_Click(sender As Object, e As EventArgs) Handles ButtonFinishZone.Click
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim cdb As Byte() = {&H94, &H2,
+                                          CByte((LBA >> 56) And &HFF),
+                                          CByte((LBA >> 48) And &HFF),
+                                          CByte((LBA >> 40) And &HFF),
+                                          CByte((LBA >> 32) And &HFF),
+                                          CByte((LBA >> 24) And &HFF),
+                                          CByte((LBA >> 16) And &HFF),
+                                          CByte((LBA >> 8) And &HFF),
+                                          CByte((LBA >> 0) And &HFF),
+                                          0, 0, 0, 0, 0, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+
+                     PrintCommandResult(cdb, Nothing, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonResetWritePointer_Click(sender As Object, e As EventArgs) Handles ButtonResetWritePointer.Click
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim cdb As Byte() = {&H94, &H4,
+                                          CByte((LBA >> 56) And &HFF),
+                                          CByte((LBA >> 48) And &HFF),
+                                          CByte((LBA >> 40) And &HFF),
+                                          CByte((LBA >> 32) And &HFF),
+                                          CByte((LBA >> 24) And &HFF),
+                                          CByte((LBA >> 16) And &HFF),
+                                          CByte((LBA >> 8) And &HFF),
+                                          CByte((LBA >> 0) And &HFF),
+                                          0, 0, 0, 0, 0, 0}
+                     Dim data As IntPtr = Marshal.AllocHGlobal(1)
+                     Dim handle As IntPtr
+                     SyncLock TapeUtils.SCSIOperationLock
+                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                         TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
+                         TapeUtils.CloseTapeDrive(handle)
+                     End SyncLock
+                     Marshal.FreeHGlobal(data)
+
+                     PrintCommandResult(cdb, Nothing, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+    End Sub
+
+    Private Sub ButtonWriteRandom_Click(sender As Object, e As EventArgs) Handles ButtonWriteRandom.Click
+        Me.Enabled = False
+        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+        Dim count As Integer = NumericUpDownWriteLBACount.Value
+        Task.Run(Sub()
+                     Dim senseData(63) As Byte
+                     Dim toSend(sectorSize - 1) As Byte
+                     Dim drvhandle As IntPtr
+                     TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
+                     Dim cdb As Byte()
+                     Dim r As New Random
+                     For i As Integer = 1 To count
+                         r.NextBytes(toSend)
+                         cdb = {&H2A, 0,
+                                          CByte(((LBA + i - 1) >> 24) And &HFF),
+                                          CByte(((LBA + i - 1) >> 16) And &HFF),
+                                          CByte(((LBA + i - 1) >> 8) And &HFF),
+                                          CByte(((LBA + i - 1) >> 0) And &HFF),
+                                          0, 0, 1, 0}
+
+                         TapeUtils.SendSCSICommand(drvhandle, cdb, toSend, 0, Function(s As Byte()) As Boolean
+                                                                                  senseData = s
+                                                                                  Return True
+                                                                              End Function)
+                     Next
+                     TapeUtils.CloseTapeDrive(drvhandle)
+
+
+                     PrintCommandResult(cdb, toSend, senseData)
+                     Invoke(Sub() Me.Enabled = True)
+                 End Sub)
+
+
+    End Sub
+
+    Private Sub ButtonDumpLBA_Click(sender As Object, e As EventArgs) Handles ButtonDumpLBA.Click
+        If SaveFileDialog2.ShowDialog() = DialogResult.OK Then
+            Me.Enabled = False
+            Dim LBA As ULong = NumericUpDownLBA.Value
+            Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+            Dim blocklim As Integer = 524288
+            Dim batch As Integer = blocklim \ sectorSize
+            blocklim = batch * sectorSize
+            Dim count As Integer = NumericUpDownWriteLBACount.Value
+            Dim progmsg As String = ""
+            Dim fin As Boolean = False
+            Task.Run(Sub()
+                         While Not fin
+                             Threading.Thread.Sleep(100)
+                             Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
+                         End While
+                         Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
+                     End Sub)
+            Task.Run(Async Function()
+                         Using fs As New IO.FileStream(SaveFileDialog2.FileName, IO.FileMode.Create)
+                             Dim senseData(63) As Byte
+                             Dim handle As IntPtr
+                             TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                             Dim stopflag As Boolean = False
+                             For i As ULong = LBA To LBA + count - 1 Step batch
+                                 If stopflag Then Exit For
+                                 Dim readsize As ULong = blocklim
+                                 If i + batch > LBA + count Then
+                                     readsize = (LBA + count - i) * sectorSize
+                                 End If
+
+                                 Dim result As Byte() = ArrayPool(Of Byte).Shared.Rent(readsize)
+                                 Dim cdb As Byte() = {&H28, 0,
+                                        CByte((i >> 24) And &HFF),
+                                        CByte((i >> 16) And &HFF),
+                                        CByte((i >> 8) And &HFF),
+                                        CByte((i >> 0) And &HFF),
+                                        0,
+                                        CByte((batch >> 8) And &HFF),
+                                        CByte((batch >> 0) And &HFF), 0}
+                                 Dim readsucc As Boolean = False
+                                 While Not readsucc
+                                     result = TapeUtils.SCSIReadParam(handle, cdb, readsize, Function(s As Byte()) As Boolean
+                                                                                                 senseData = s
+                                                                                                 Return True
+                                                                                             End Function, 30)
+                                     If (senseData(2) And &HF) <> 0 Then
+                                         progmsg = $"sense err {TapeUtils.Byte2Hex(senseData, True)}{vbCrLf}"
+                                         Try
+                                             Throw New Exception("SCSI sense error")
+                                         Catch ex As Exception
+                                             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(senseData, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                 Case DialogResult.Abort
+                                                     fs.Close()
+                                                     stopflag = True
+                                                     Throw New Exception(TapeUtils.ParseSenseData(senseData))
+                                                 Case DialogResult.Retry
+                                                     readsucc = False
+                                                 Case DialogResult.Ignore
+                                                     readsucc = True
+                                                     Exit While
+                                             End Select
+                                         End Try
+                                     Else
+                                         readsucc = True
+                                     End If
+                                 End While
+                                 progmsg = $"LBA {LBA}>{i}>{LBA + count - 1}"
+                                 Await WriteAndFree(fs, result, 0, readsize, ArrayPool(Of Byte).Shared)
+                             Next
+                             progmsg = $"LBA {LBA}>{LBA + count - 1}>{LBA + count - 1}"
+                             TapeUtils.CloseTapeDrive(handle)
+                         End Using
+                         fin = True
+                         Invoke(Sub() Me.Enabled = True)
+                     End Function)
+        End If
+    End Sub
+    Public Async Function WriteAndFree(fs As FileStream, toWrite As Byte(), offset As Integer, count As Integer, pool As ArrayPool(Of Byte)) As Task
+        Await fs.WriteAsync(toWrite, offset, count)
+        pool.Return(toWrite)
+    End Function
+
+    Private Sub ButtonRestoreLBA_Click(sender As Object, e As EventArgs) Handles ButtonRestoreLBA.Click
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            Me.Enabled = False
+            Dim LBA As ULong = NumericUpDownLBA.Value
+            Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+            Dim blocklim As Integer = 524288
+            Dim batch As Integer = blocklim \ sectorSize
+            blocklim = batch * sectorSize
+            Dim count As Integer = 0
+            Dim progmsg As String = ""
+            Dim fin As Boolean = False
+            Task.Run(Sub()
+                         While Not fin
+                             Threading.Thread.Sleep(100)
+                             Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
+                         End While
+                         Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
+                     End Sub)
+            Task.Run(Async Function()
+                         Using fs As New IO.FileStream(OpenFileDialog1.FileName, IO.FileMode.Open)
+
+                             Dim senseData(63) As Byte
+                             Dim handle As IntPtr
+                             TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
+                             Dim writeLBACount As Integer
+                             Dim stopflag As Boolean = False
+                             For i As ULong = LBA To LBA + count - 1 Step batch
+                                 If stopflag Then Exit For
+                                 Dim writeData As Byte() = ArrayPool(Of Byte).Shared.Rent(blocklim)
+                                 Dim readsize As ULong = fs.Read(writeData, 0, blocklim)
+                                 writeLBACount = Math.Ceiling(readsize / sectorSize)
+                                 Dim writeSize As Integer = writeLBACount * sectorSize
+                                 Dim cdb As Byte() = {&H2A, 0,
+                                        CByte((i >> 24) And &HFF),
+                                        CByte((i >> 16) And &HFF),
+                                        CByte((i >> 8) And &HFF),
+                                        CByte((i >> 0) And &HFF),
+                                        0,
+                                        CByte((writeLBACount >> 8) And &HFF),
+                                        CByte((writeLBACount >> 0) And &HFF), 0}
+                                 Dim writesucc As Boolean = False
+                                 Await Task.Run(Sub()
+                                                    While Not writesucc
+                                                        If Not TapeUtils.SendSCSICommand(handle, cdb, writeData, writeSize, 0, Function(s As Byte()) As Boolean
+                                                                                                                                   senseData = s
+                                                                                                                                   Return True
+                                                                                                                               End Function, 30) Then
+                                                            Dim ErrCode As Integer = TapeUtils.GetLastError()
+                                                            Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                                                            Select Case MessageBox.Show($"WinError{vbCrLf}Code: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}",
+                                                                                        My.Resources.ResText_Warning,
+                                                                                        MessageBoxButtons.AbortRetryIgnore,
+                                                                                        Nothing,
+                                                                                        MessageBoxDefaultButton.Button2,
+                                                                                        MessageBoxOptions.DefaultDesktopOnly)
+                                                                Case DialogResult.Abort
+                                                                    fs.Close()
+                                                                    stopflag = True
+                                                                    ArrayPool(Of Byte).Shared.Return(writeData)
+                                                                    Throw win32ex
+                                                                Case DialogResult.Retry
+                                                                    writesucc = False
+                                                                Case DialogResult.Ignore
+                                                                    writesucc = True
+                                                                    Exit While
+                                                            End Select
+                                                        ElseIf (senseData(2) And &HF) <> 0 Then
+                                                            progmsg = $"sense err {TapeUtils.Byte2Hex(senseData, True)}{vbCrLf}"
+                                                            Try
+                                                                Throw New Exception("SCSI sense error")
+                                                            Catch ex As Exception
+                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Error}{vbCrLf}{TapeUtils.ParseSenseData(senseData)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(senseData, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                    Case DialogResult.Abort
+                                                                        fs.Close()
+                                                                        stopflag = True
+                                                                        ArrayPool(Of Byte).Shared.Return(writeData)
+                                                                        Throw New Exception(TapeUtils.ParseSenseData(senseData))
+                                                                    Case DialogResult.Retry
+                                                                        writesucc = False
+                                                                    Case DialogResult.Ignore
+                                                                        writesucc = True
+                                                                        Exit While
+                                                                End Select
+                                                            End Try
+                                                        Else
+                                                            writesucc = True
+                                                        End If
+                                                    End While
+                                                    ArrayPool(Of Byte).Shared.Return(writeData)
+                                                    progmsg = $"LBA {LBA}>{i}>{LBA + writeLBACount - 1}"
+                                                End Sub)
+
+                             Next
+                             progmsg = $"LBA {LBA}>{LBA + writeLBACount - 1}>{LBA + writeLBACount - 1}"
+                             TapeUtils.CloseTapeDrive(handle)
+                         End Using
+                         fin = True
+                         Invoke(Sub() Me.Enabled = True)
+                     End Function)
         End If
     End Sub
 End Class

@@ -48,10 +48,16 @@ Namespace My
             If Not IO.Directory.Exists(My.Settings.cfgPath) Then IO.Directory.CreateDirectory(My.Settings.cfgPath)
             '旧设定迁移
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
-                IO.File.Move(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"), My.Settings.langcfgFile)
+                Try
+                    IO.File.Move(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"), My.Settings.langcfgFile)
+                Catch
+                End Try
             End If
             If IO.File.Exists(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
-                IO.File.Move(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key"), My.Settings.licenseFile)
+                Try
+                    IO.File.Move(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key"), My.Settings.licenseFile)
+                Catch
+                End Try
             End If
             Dim drvSettingUpdated As Boolean = False
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt")) Then
@@ -63,8 +69,7 @@ Namespace My
                     Next
                     drvSettingUpdated = True
                     IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
-                Catch ex As Exception
-
+                Catch
                 End Try
             End If
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini")) Then
@@ -74,22 +79,19 @@ Namespace My
                 IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini"))
             End If
             If drvSettingUpdated Then IO.File.WriteAllText(My.Settings.driveSettingFile, (New TapeUtils()).GetSerializedText())
-            TapeUtils.FromFile(My.Settings.driveSettingFile)
             '读取独立配置文件
             If IO.File.Exists(My.Settings.langcfgFile) Then
                 Try
                     Dim lang As String = IO.File.ReadAllText(My.Settings.langcfgFile)
                     Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
                     Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
-                Catch ex As Exception
-
+                Catch
                 End Try
             End If
             If IO.File.Exists(My.Settings.driveSettingFile) Then
                 Try
-                    TapeUtils.FromXML(My.Settings.driveSettingFile)
-                Catch ex As Exception
-
+                    TapeUtils.FromFile(My.Settings.driveSettingFile)
+                Catch
                 End Try
             End If
             TapeUtils.DriverTypeSetting = My.Settings.TapeUtils_DriverType

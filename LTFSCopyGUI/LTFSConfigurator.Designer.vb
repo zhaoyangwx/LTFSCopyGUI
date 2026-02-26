@@ -132,6 +132,24 @@ Partial Class LTFSConfigurator
         Me.LabelTestBlockCount = New System.Windows.Forms.Label()
         Me.NumericUpDownTestBlkSize = New System.Windows.Forms.NumericUpDown()
         Me.LabelTestBlocksize = New System.Windows.Forms.Label()
+        Me.TabPageZBC = New System.Windows.Forms.TabPage()
+        Me.ButtonRestoreLBA = New System.Windows.Forms.Button()
+        Me.ButtonDumpLBA = New System.Windows.Forms.Button()
+        Me.Label1 = New System.Windows.Forms.Label()
+        Me.ComboBoxReportOptions = New System.Windows.Forms.ComboBox()
+        Me.NumericUpDownWriteLBACount = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonWriteRandom = New System.Windows.Forms.Button()
+        Me.ButtonReportZone = New System.Windows.Forms.Button()
+        Me.NumericUpDownSectorSize = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonReadLBA = New System.Windows.Forms.Button()
+        Me.ButtonFinishZone = New System.Windows.Forms.Button()
+        Me.ButtonResetWritePointer = New System.Windows.Forms.Button()
+        Me.ButtonCloseZone = New System.Windows.Forms.Button()
+        Me.ButtonOpenZone = New System.Windows.Forms.Button()
+        Me.LabelLBA = New System.Windows.Forms.Label()
+        Me.NumericUpDownLBA = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonCloseAllZones = New System.Windows.Forms.Button()
+        Me.ButtonReportZones = New System.Windows.Forms.Button()
         Me.LabelTimeout = New System.Windows.Forms.Label()
         Me.TextBoxTimeoutValue = New System.Windows.Forms.TextBox()
         Me.TextBoxDataDir = New System.Windows.Forms.TextBox()
@@ -154,6 +172,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.ButtonEvenWrapStart = New System.Windows.Forms.Button()
+        Me.ButtonOddWrapStart = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -179,6 +199,10 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.TabPageZBC.SuspendLayout()
+        CType(Me.NumericUpDownWriteLBACount, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
         Me.SuspendLayout()
         '
@@ -422,6 +446,7 @@ Partial Class LTFSConfigurator
         Me.TabControl1.Controls.Add(Me.TabPageMAM)
         Me.TabControl1.Controls.Add(Me.TabPageLog)
         Me.TabControl1.Controls.Add(Me.TabPageTest)
+        Me.TabControl1.Controls.Add(Me.TabPageZBC)
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
         '
@@ -810,6 +835,8 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
+        Me.TabPageTest.Controls.Add(Me.ButtonOddWrapStart)
+        Me.TabPageTest.Controls.Add(Me.ButtonEvenWrapStart)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSets)
         Me.TabPageTest.Controls.Add(Me.LabelTestSets)
         Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
@@ -936,6 +963,134 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.LabelTestBlocksize, "LabelTestBlocksize")
         Me.LabelTestBlocksize.Name = "LabelTestBlocksize"
         '
+        'TabPageZBC
+        '
+        Me.TabPageZBC.Controls.Add(Me.ButtonRestoreLBA)
+        Me.TabPageZBC.Controls.Add(Me.ButtonDumpLBA)
+        Me.TabPageZBC.Controls.Add(Me.Label1)
+        Me.TabPageZBC.Controls.Add(Me.ComboBoxReportOptions)
+        Me.TabPageZBC.Controls.Add(Me.NumericUpDownWriteLBACount)
+        Me.TabPageZBC.Controls.Add(Me.ButtonWriteRandom)
+        Me.TabPageZBC.Controls.Add(Me.ButtonReportZone)
+        Me.TabPageZBC.Controls.Add(Me.NumericUpDownSectorSize)
+        Me.TabPageZBC.Controls.Add(Me.ButtonReadLBA)
+        Me.TabPageZBC.Controls.Add(Me.ButtonFinishZone)
+        Me.TabPageZBC.Controls.Add(Me.ButtonResetWritePointer)
+        Me.TabPageZBC.Controls.Add(Me.ButtonCloseZone)
+        Me.TabPageZBC.Controls.Add(Me.ButtonOpenZone)
+        Me.TabPageZBC.Controls.Add(Me.LabelLBA)
+        Me.TabPageZBC.Controls.Add(Me.NumericUpDownLBA)
+        Me.TabPageZBC.Controls.Add(Me.ButtonCloseAllZones)
+        Me.TabPageZBC.Controls.Add(Me.ButtonReportZones)
+        resources.ApplyResources(Me.TabPageZBC, "TabPageZBC")
+        Me.TabPageZBC.Name = "TabPageZBC"
+        Me.TabPageZBC.UseVisualStyleBackColor = True
+        '
+        'ButtonRestoreLBA
+        '
+        resources.ApplyResources(Me.ButtonRestoreLBA, "ButtonRestoreLBA")
+        Me.ButtonRestoreLBA.Name = "ButtonRestoreLBA"
+        Me.ButtonRestoreLBA.UseVisualStyleBackColor = True
+        '
+        'ButtonDumpLBA
+        '
+        resources.ApplyResources(Me.ButtonDumpLBA, "ButtonDumpLBA")
+        Me.ButtonDumpLBA.Name = "ButtonDumpLBA"
+        Me.ButtonDumpLBA.UseVisualStyleBackColor = True
+        '
+        'Label1
+        '
+        resources.ApplyResources(Me.Label1, "Label1")
+        Me.Label1.Name = "Label1"
+        '
+        'ComboBoxReportOptions
+        '
+        Me.ComboBoxReportOptions.DropDownWidth = 1000
+        Me.ComboBoxReportOptions.FormattingEnabled = True
+        Me.ComboBoxReportOptions.Items.AddRange(New Object() {resources.GetString("ComboBoxReportOptions.Items"), resources.GetString("ComboBoxReportOptions.Items1"), resources.GetString("ComboBoxReportOptions.Items2"), resources.GetString("ComboBoxReportOptions.Items3"), resources.GetString("ComboBoxReportOptions.Items4"), resources.GetString("ComboBoxReportOptions.Items5"), resources.GetString("ComboBoxReportOptions.Items6"), resources.GetString("ComboBoxReportOptions.Items7")})
+        resources.ApplyResources(Me.ComboBoxReportOptions, "ComboBoxReportOptions")
+        Me.ComboBoxReportOptions.Name = "ComboBoxReportOptions"
+        '
+        'NumericUpDownWriteLBACount
+        '
+        resources.ApplyResources(Me.NumericUpDownWriteLBACount, "NumericUpDownWriteLBACount")
+        Me.NumericUpDownWriteLBACount.Maximum = New Decimal(New Integer() {2147483647, 0, 0, 0})
+        Me.NumericUpDownWriteLBACount.Minimum = New Decimal(New Integer() {1, 0, 0, 0})
+        Me.NumericUpDownWriteLBACount.Name = "NumericUpDownWriteLBACount"
+        Me.NumericUpDownWriteLBACount.Value = New Decimal(New Integer() {1, 0, 0, 0})
+        '
+        'ButtonWriteRandom
+        '
+        resources.ApplyResources(Me.ButtonWriteRandom, "ButtonWriteRandom")
+        Me.ButtonWriteRandom.Name = "ButtonWriteRandom"
+        Me.ButtonWriteRandom.UseVisualStyleBackColor = True
+        '
+        'ButtonReportZone
+        '
+        resources.ApplyResources(Me.ButtonReportZone, "ButtonReportZone")
+        Me.ButtonReportZone.Name = "ButtonReportZone"
+        Me.ButtonReportZone.UseVisualStyleBackColor = True
+        '
+        'NumericUpDownSectorSize
+        '
+        resources.ApplyResources(Me.NumericUpDownSectorSize, "NumericUpDownSectorSize")
+        Me.NumericUpDownSectorSize.Maximum = New Decimal(New Integer() {65535, 0, 0, 0})
+        Me.NumericUpDownSectorSize.Name = "NumericUpDownSectorSize"
+        Me.NumericUpDownSectorSize.Value = New Decimal(New Integer() {4096, 0, 0, 0})
+        '
+        'ButtonReadLBA
+        '
+        resources.ApplyResources(Me.ButtonReadLBA, "ButtonReadLBA")
+        Me.ButtonReadLBA.Name = "ButtonReadLBA"
+        Me.ButtonReadLBA.UseVisualStyleBackColor = True
+        '
+        'ButtonFinishZone
+        '
+        resources.ApplyResources(Me.ButtonFinishZone, "ButtonFinishZone")
+        Me.ButtonFinishZone.Name = "ButtonFinishZone"
+        Me.ButtonFinishZone.UseVisualStyleBackColor = True
+        '
+        'ButtonResetWritePointer
+        '
+        resources.ApplyResources(Me.ButtonResetWritePointer, "ButtonResetWritePointer")
+        Me.ButtonResetWritePointer.Name = "ButtonResetWritePointer"
+        Me.ButtonResetWritePointer.UseVisualStyleBackColor = True
+        '
+        'ButtonCloseZone
+        '
+        resources.ApplyResources(Me.ButtonCloseZone, "ButtonCloseZone")
+        Me.ButtonCloseZone.Name = "ButtonCloseZone"
+        Me.ButtonCloseZone.UseVisualStyleBackColor = True
+        '
+        'ButtonOpenZone
+        '
+        resources.ApplyResources(Me.ButtonOpenZone, "ButtonOpenZone")
+        Me.ButtonOpenZone.Name = "ButtonOpenZone"
+        Me.ButtonOpenZone.UseVisualStyleBackColor = True
+        '
+        'LabelLBA
+        '
+        resources.ApplyResources(Me.LabelLBA, "LabelLBA")
+        Me.LabelLBA.Name = "LabelLBA"
+        '
+        'NumericUpDownLBA
+        '
+        resources.ApplyResources(Me.NumericUpDownLBA, "NumericUpDownLBA")
+        Me.NumericUpDownLBA.Maximum = New Decimal(New Integer() {-1, -1, 0, 0})
+        Me.NumericUpDownLBA.Name = "NumericUpDownLBA"
+        '
+        'ButtonCloseAllZones
+        '
+        resources.ApplyResources(Me.ButtonCloseAllZones, "ButtonCloseAllZones")
+        Me.ButtonCloseAllZones.Name = "ButtonCloseAllZones"
+        Me.ButtonCloseAllZones.UseVisualStyleBackColor = True
+        '
+        'ButtonReportZones
+        '
+        resources.ApplyResources(Me.ButtonReportZones, "ButtonReportZones")
+        Me.ButtonReportZones.Name = "ButtonReportZones"
+        Me.ButtonReportZones.UseVisualStyleBackColor = True
+        '
         'LabelTimeout
         '
         resources.ApplyResources(Me.LabelTimeout, "LabelTimeout")
@@ -1039,12 +1194,24 @@ Partial Class LTFSConfigurator
         '
         'SaveFileDialog2
         '
-        Me.SaveFileDialog2.FileName = "CM.bin"
+        Me.SaveFileDialog2.FileName = "Dump.bin"
         resources.ApplyResources(Me.SaveFileDialog2, "SaveFileDialog2")
         '
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
+        '
+        'ButtonEvenWrapStart
+        '
+        resources.ApplyResources(Me.ButtonEvenWrapStart, "ButtonEvenWrapStart")
+        Me.ButtonEvenWrapStart.Name = "ButtonEvenWrapStart"
+        Me.ButtonEvenWrapStart.UseVisualStyleBackColor = True
+        '
+        'ButtonOddWrapStart
+        '
+        resources.ApplyResources(Me.ButtonOddWrapStart, "ButtonOddWrapStart")
+        Me.ButtonOddWrapStart.Name = "ButtonOddWrapStart"
+        Me.ButtonOddWrapStart.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '
@@ -1086,6 +1253,11 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownTestSpeed, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkNum, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestBlkSize, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.TabPageZBC.ResumeLayout(False)
+        Me.TabPageZBC.PerformLayout()
+        CType(Me.NumericUpDownWriteLBACount, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
         Me.ResumeLayout(False)
 
@@ -1231,4 +1403,24 @@ Partial Class LTFSConfigurator
     End Sub
 
     Friend WithEvents AddImageToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents TabPageZBC As TabPage
+    Friend WithEvents ButtonReportZones As Button
+    Friend WithEvents ButtonCloseAllZones As Button
+    Friend WithEvents LabelLBA As Label
+    Friend WithEvents NumericUpDownLBA As NumericUpDown
+    Friend WithEvents ButtonResetWritePointer As Button
+    Friend WithEvents ButtonCloseZone As Button
+    Friend WithEvents ButtonOpenZone As Button
+    Friend WithEvents ButtonReadLBA As Button
+    Friend WithEvents ButtonFinishZone As Button
+    Friend WithEvents NumericUpDownSectorSize As NumericUpDown
+    Friend WithEvents ButtonReportZone As Button
+    Friend WithEvents ButtonWriteRandom As Button
+    Friend WithEvents NumericUpDownWriteLBACount As NumericUpDown
+    Friend WithEvents ComboBoxReportOptions As ComboBox
+    Friend WithEvents ButtonDumpLBA As Button
+    Friend WithEvents Label1 As Label
+    Friend WithEvents ButtonRestoreLBA As Button
+    Friend WithEvents ButtonEvenWrapStart As Button
+    Friend WithEvents ButtonOddWrapStart As Button
 End Class

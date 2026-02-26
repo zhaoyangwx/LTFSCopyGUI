@@ -33,34 +33,34 @@ Public Class IOManager
 
     Public Event ErrorOccured(s As String)
 
-    Public Shared Function FormatSize(l As Long, Optional ByVal More As Boolean = False) As String
+    Public Shared Function FormatSize(byteCount As Long, Optional ByVal More As Boolean = False) As String
         If My.Settings.Application_UseDecimalUnit Then
-            If l < 1000 Then
-                Return l & " Bytes"
-            ElseIf l < 1000 ^ 2 Then
-                Return (l / 1000).ToString("F2") & " KB"
-            ElseIf l < 1000 ^ 3 Then
-                Return (l / 1000 ^ 2).ToString("F2") & " MB"
-            ElseIf Not More OrElse l < 1000 ^ 4 Then
-                Return (l / 1000 ^ 3).ToString("F2") & " GB"
-            ElseIf l < 1000 ^ 5 Then
-                Return (l / 1000 ^ 4).ToString("F2") & " TB"
+            If byteCount < 1000 Then
+                Return byteCount & " Bytes"
+            ElseIf byteCount < 1000 ^ 2 Then
+                Return (byteCount / 1000).ToString("F2") & " KB"
+            ElseIf byteCount < 1000 ^ 3 Then
+                Return (byteCount / 1000 ^ 2).ToString("F2") & " MB"
+            ElseIf Not More OrElse byteCount < 1000 ^ 4 Then
+                Return (byteCount / 1000 ^ 3).ToString("F2") & " GB"
+            ElseIf byteCount < 1000 ^ 5 Then
+                Return (byteCount / 1000 ^ 4).ToString("F2") & " TB"
             Else
-                Return (l / 1000 ^ 5).ToString("F2") & " PB"
+                Return (byteCount / 1000 ^ 5).ToString("F2") & " PB"
             End If
         Else
-            If l < 1024 Then
-                Return l & " Bytes"
-            ElseIf l < 1024 ^ 2 Then
-                Return (l / 1024).ToString("F2") & " KiB"
-            ElseIf l < 1024 ^ 3 Then
-                Return (l / 1024 ^ 2).ToString("F2") & " MiB"
-            ElseIf Not More OrElse l < 1024 ^ 4 Then
-                Return (l / 1024 ^ 3).ToString("F2") & " GiB"
-            ElseIf l < 1024 ^ 5 Then
-                Return (l / 1024 ^ 4).ToString("F2") & " TiB"
+            If byteCount < 1024 Then
+                Return byteCount & " Bytes"
+            ElseIf byteCount < 1024 ^ 2 Then
+                Return (byteCount / 1024).ToString("F2") & " KiB"
+            ElseIf byteCount < 1024 ^ 3 Then
+                Return (byteCount / 1024 ^ 2).ToString("F2") & " MiB"
+            ElseIf Not More OrElse byteCount < 1024 ^ 4 Then
+                Return (byteCount / 1024 ^ 3).ToString("F2") & " GiB"
+            ElseIf byteCount < 1024 ^ 5 Then
+                Return (byteCount / 1024 ^ 4).ToString("F2") & " TiB"
             Else
-                Return (l / 1024 ^ 5).ToString("F2") & " PiB"
+                Return (byteCount / 1024 ^ 5).ToString("F2") & " PiB"
             End If
         End If
 
@@ -1457,233 +1457,6 @@ Public Class IOManager
             End SyncLock
         End Function
     End Class
-    ''' <summary>
-    ''' 智能流：用于线性存储介质的缓存流，具备预读、定位优化、缓存淘汰与最小阻塞控制等功能。
-    ''' </summary>
-    Public Class SmartStream
-        Inherits Stream
-
-        ''' <summary>
-        ''' 表示一个缓冲块，包含起始位置、数据、最后访问时间与访问计数。
-        ''' </summary>
-        Private Class BufferBlock
-            Public StartPos As Long
-            Public Data() As Byte
-            Public LastAccess As DateTime = DateTime.Now
-            Public AccessCount As Integer = 0
-
-            Public ReadOnly Property EndPos As Long
-                Get
-                    Return StartPos + Data.Length - 1
-                End Get
-            End Property
-
-            Public Function Covers(pos As Long) As Boolean
-                Return pos >= StartPos AndAlso pos <= EndPos
-            End Function
-
-            Public Function GetOffset(pos As Long) As Integer
-                Return CInt(pos - StartPos)
-            End Function
-        End Class
-
-        Private ReadOnly baseStream As Stream
-        Private ReadOnly fixedReadSize As Integer
-        Private ReadOnly minReadThreshold As Integer
-        Private ReadOnly maxSeekReadSize As Integer
-        Private ReadOnly bufferSize As Integer
-
-        Private bufferBlocks As New List(Of BufferBlock)
-        Private PositionValue As Long = 0
-        Private ReadLock As New SemaphoreSlim(1, 1)
-        Private bufferLock As New Object()
-
-        ''' <summary>
-        ''' 调试日志事件。使用 RaiseEvent 而不是直接打印。
-        ''' </summary>
-        Public Event DebugLog(message As String)
-
-        ''' <summary>
-        ''' 初始化智能流实例。
-        ''' </summary>
-        ''' <param name="baseStream">底层线性流</param>
-        ''' <param name="fixedReadSize">每次从底层读取的固定大小</param>
-        ''' <param name="minReadThreshold">当有其他 Seek 阻塞时的最小读取量</param>
-        ''' <param name="maxSeekReadSize">无阻塞时最大读取量</param>
-        ''' <param name="bufferSize">缓存块上限数量</param>
-        Public Sub New(baseStream As Stream, fixedReadSize As Integer, minReadThreshold As Integer, maxSeekReadSize As Integer, bufferSize As Integer)
-            Me.baseStream = baseStream
-            Me.fixedReadSize = fixedReadSize
-            Me.minReadThreshold = minReadThreshold
-            Me.maxSeekReadSize = maxSeekReadSize
-            Me.bufferSize = bufferSize
-        End Sub
-
-        ''' <summary>
-        ''' 从当前位置读取数据。会优先从缓存中读取。
-        ''' </summary>
-        Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
-            SyncLock bufferLock
-                Dim block = FindBlock(PositionValue)
-                If block Is Nothing Then
-                    RaiseEvent DebugLog($"[SmartStream] 缓存未命中：位置 {PositionValue}，准备缓冲...")
-                    EnsureBuffered(PositionValue)
-                    block = FindBlock(PositionValue)
-                    If block Is Nothing Then Return 0
-                Else
-                    RaiseEvent DebugLog($"[SmartStream] 缓存命中：位置 {PositionValue}。")
-                End If
-
-                block.LastAccess = DateTime.Now
-                block.AccessCount += 1
-
-                Dim offsetInBlock = block.GetOffset(PositionValue)
-                Dim readable = Math.Min(count, block.Data.Length - offsetInBlock)
-
-                Array.Copy(block.Data, offsetInBlock, buffer, offset, readable)
-                PositionValue += readable
-
-                TryPreloadNextBlock(PositionValue)
-
-                Return readable
-            End SyncLock
-        End Function
-
-        ''' <summary>
-        ''' 尝试预读取当前位置后一个块。
-        ''' </summary>
-        Private Sub TryPreloadNextBlock(currentPos As Long)
-            Dim nextPos = ((currentPos \ fixedReadSize) + 1) * fixedReadSize
-            If nextPos >= Length Then Exit Sub
-            If FindBlock(nextPos) Is Nothing Then
-                RaiseEvent DebugLog($"[SmartStream] 预读取下一块：{nextPos}...")
-                LoadBuffer(nextPos, fixedReadSize)
-            End If
-        End Sub
-
-        ''' <summary>
-        ''' 确保指定位置被缓冲。
-        ''' </summary>
-        Private Sub EnsureBuffered(pos As Long)
-            If pos >= Length Then Exit Sub
-            If FindBlock(pos) IsNot Nothing Then Return
-
-            ReadLock.Wait()
-            Try
-                If FindBlock(pos) Is Nothing Then
-                    Dim readSize = If(OtherSeekPending(), minReadThreshold, maxSeekReadSize)
-                    readSize = CInt(Math.Min(readSize, Length - pos))
-                    RaiseEvent DebugLog($"[SmartStream] 从位置 {pos} 读取 {readSize} 字节...")
-                    LoadBuffer(pos, readSize)
-                End If
-            Finally
-                ReadLock.Release()
-            End Try
-        End Sub
-
-        ''' <summary>
-        ''' 检测是否有其他 Seek 正在等待（伪实现）。
-        ''' </summary>
-        Private Function OtherSeekPending() As Boolean
-            Return False
-        End Function
-
-        ''' <summary>
-        ''' 从底层流读取数据并加入缓存。
-        ''' </summary>
-        Private Sub LoadBuffer(position As Long, size As Integer)
-            SyncLock bufferLock
-                Dim alignedPos = (position \ fixedReadSize) * fixedReadSize
-                If alignedPos >= Length Then Exit Sub
-
-                baseStream.Seek(alignedPos, SeekOrigin.Begin)
-                size = CInt(Math.Min(size, Length - alignedPos))
-
-                Dim data(size - 1) As Byte
-                Dim bytesRead = baseStream.Read(data, 0, size)
-                If bytesRead > 0 Then
-                    ReDim Preserve data(bytesRead - 1)
-                    bufferBlocks.Add(New BufferBlock With {
-                    .StartPos = alignedPos,
-                    .Data = data
-                })
-                    CleanupBuffer()
-                    RaiseEvent DebugLog($"[SmartStream] 已缓存块：起始 {alignedPos}，长度 {bytesRead} 字节。")
-                End If
-            End SyncLock
-        End Sub
-
-        ''' <summary>
-        ''' 淘汰最不常用的缓存块。
-        ''' </summary>
-        Private Sub CleanupBuffer()
-            While bufferBlocks.Count > bufferSize
-                Dim oldest = bufferBlocks.OrderByDescending(Function(b)
-                                                                Dim age = (DateTime.Now - b.LastAccess).TotalSeconds
-                                                                Return age / Math.Max(1, b.AccessCount)
-                                                            End Function).First()
-                RaiseEvent DebugLog($"[SmartStream] 淘汰缓存块：起始位置 {oldest.StartPos}。")
-                bufferBlocks.Remove(oldest)
-            End While
-        End Sub
-
-        ''' <summary>
-        ''' 查找包含指定位置的缓存块。
-        ''' </summary>
-        Private Function FindBlock(pos As Long) As BufferBlock
-            Return bufferBlocks.FirstOrDefault(Function(b) b.Covers(pos))
-        End Function
-
-        Public Overrides Property Position As Long
-            Get
-                Return PositionValue
-            End Get
-            Set(value As Long)
-                PositionValue = value
-            End Set
-        End Property
-
-        Public Overrides ReadOnly Property CanRead As Boolean = True
-        Public Overrides ReadOnly Property CanSeek As Boolean = True
-        Public Overrides ReadOnly Property CanWrite As Boolean = False
-        Public Overrides ReadOnly Property Length As Long = baseStream.Length
-
-        Public Overrides Sub Flush()
-            ' 不执行任何操作
-        End Sub
-
-        ''' <summary>
-        ''' 定位到指定位置，不清空缓存。
-        ''' </summary>
-        Public Overrides Function Seek(offset As Long, origin As SeekOrigin) As Long
-            Select Case origin
-                Case SeekOrigin.Begin
-                    Position = offset
-                Case SeekOrigin.Current
-                    Position += offset
-                Case SeekOrigin.End
-                    Position = Length + offset
-            End Select
-            RaiseEvent DebugLog($"[SmartStream] Seek 定位至 {Position}。")
-            Return Position
-        End Function
-
-        Public Overrides Sub SetLength(value As Long)
-            Throw New NotSupportedException()
-        End Sub
-
-        Public Overrides Sub Write(buffer() As Byte, offset As Integer, count As Integer)
-            Throw New NotSupportedException()
-        End Sub
-
-        Protected Overrides Sub Dispose(disposing As Boolean)
-            If disposing Then
-                baseStream.Dispose()
-                ReadLock.Dispose()
-            End If
-            MyBase.Dispose(disposing)
-        End Sub
-    End Class
 
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class NetworkCommand
@@ -1975,7 +1748,7 @@ Public Class ZBCDeviceHelper
             IMPLICIT_OPENED = 2
             EXPLICIT_OPENED = 3
             CLOSED = 4
-            FULL = 5
+            FULL = &HE
         End Enum
         Public Property ZoneCondition As ZoneConditionDef
         Public Property NON_SEQ As Boolean
@@ -1989,7 +1762,7 @@ Public Class ZBCDeviceHelper
         Public Property ZoneStartLBA As ULong
         Public ReadOnly Property ZoneEndLBA As ULong
             Get
-                Return ZoneStartLBA + ZoneLength - 1
+                Return Math.Max(0, ZoneStartLBA + ZoneLength - 1)
             End Get
         End Property
         Public Property ZoneWritePointerLBA As ULong
@@ -2016,7 +1789,7 @@ Public Class ZBCDeviceHelper
         ReportZones()
         LoadData()
     End Sub
-    Public Sub ReportZones()
+    Public Sub ReportZones(Optional ByVal opt As Byte = 0)
         Dim data0 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
                                                       0, 0, 0, 0, 0, 0, 0, 0,
                                                       0, 0, 0, &H40,
@@ -2041,7 +1814,7 @@ Public Class ZBCDeviceHelper
                                                           CByte((CommandLengthLimit >> 16) And &HFF),
                                                           CByte((CommandLengthLimit >> 8) And &HFF),
                                                           CByte((CommandLengthLimit >> 0) And &HFF),
-                                                          &H80, 0}, CommandLengthLimit)
+                                                          CByte(&H80 Or opt), 0}, CommandLengthLimit)
             ZoneListLen = BigEndianConverter.ToUInt32(data1, 0)
             If ZoneListLen = 0 Then Exit While
             ZoneCount = ZoneListLen \ 64UI
@@ -2066,7 +1839,7 @@ Public Class ZBCDeviceHelper
             End If
         Next
         If ZIDC1 >= 0 Then
-            Dim idstep1 As Integer = ZoneList.Count \ 1000
+            Dim idstep1 As Integer = Math.Max(1, ZoneList.Count \ 1000)
             For i As Integer = ZIDC1 To ZoneList.Count - 1 Step idstep1
                 If (i + idstep1) >= ZoneList.Count OrElse (ZoneList(i).ZoneType = Zone.ZoneTypeDef.Conventional AndAlso ZoneList(i + idstep1).ZoneType <> Zone.ZoneTypeDef.Conventional) Then
                     Dim found As Boolean = False
@@ -2369,7 +2142,11 @@ Public Class ZBCDeviceHelper
                 currentZone = nextZone
             End If
         End While
-
+        If Not Conventional AndAlso tempData.Count > 0 Then
+            For Each kv In tempData.OrderBy(Function(x) x.Key)
+                WriteBytes(kv.Value, kv.Key, 0, True)
+            Next
+        End If
         If Not Conventional Then
             'check zone condition
             RefreshZoneCondition(currentEndZone)
