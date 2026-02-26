@@ -2828,7 +2828,24 @@ Public Class TapeUtils
         End If
         Dim senseBuffer(63) As Byte
         Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, dataLen, DataIn, TimeOut, senseBuffer)
-        If succ AndAlso Data IsNot Nothing Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
+        If succ AndAlso Data IsNot Nothing AndAlso DataIn <> 1 Then Marshal.Copy(dataBufferPtr, Data, 0, Data.Length)
+        If senseReport IsNot Nothing Then
+            senseReport(senseBuffer)
+        End If
+        Marshal.FreeHGlobal(dataBufferPtr)
+        Return succ
+    End Function
+    Public Shared Function SendSCSICommand(handle As IntPtr, cdbData As Byte(), ByRef Data As Byte(), ByVal DataLen As Integer, Optional DataIn As Byte = 2, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 60000) As Boolean
+        Dim dataBufferPtr As IntPtr
+        If Data IsNot Nothing Then
+            dataBufferPtr = Marshal.AllocHGlobal(DataLen)
+            Marshal.Copy(Data, 0, dataBufferPtr, DataLen)
+        Else
+            dataBufferPtr = Marshal.AllocHGlobal(128)
+        End If
+        Dim senseBuffer(63) As Byte
+        Dim succ As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, DataLen, DataIn, TimeOut, senseBuffer)
+        If succ AndAlso Data IsNot Nothing AndAlso DataIn <> 1 Then Marshal.Copy(dataBufferPtr, Data, 0, DataLen)
         If senseReport IsNot Nothing Then
             senseReport(senseBuffer)
         End If
@@ -9084,7 +9101,6 @@ Public Class TapeUtils
         Return FromXML(IO.File.ReadAllText(fileName))
     End Function
     Public Shared Function FromXML(s As String) As TapeUtils
-        If Not IO.File.Exists(s) Then Return Nothing
         Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(TapeUtils))
         Dim t As IO.TextReader = New IO.StringReader(s)
         Return CType(reader.Deserialize(t), TapeUtils)
