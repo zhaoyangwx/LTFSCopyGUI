@@ -1,6 +1,5 @@
 Imports System.Buffers
 Imports System.ComponentModel
-Imports System.Drawing.Imaging
 Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
@@ -2886,5 +2885,67 @@ Public Class LTFSConfigurator
                          Invoke(Sub() Me.Enabled = True)
                      End Function)
         End If
+    End Sub
+
+    Private Sub ButtonBOT_Click(sender As Object, e As EventArgs) Handles ButtonBOT.Click
+        Me.Enabled = False
+        Select Case TapeUtils.DriverTypeSetting
+            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
+                Dim CMInfo As TapeUtils.CMParser = Nothing
+                Task.Run(Sub()
+                             Try
+                                 CMInfo = New TapeUtils.CMParser(ConfTapeDrive)
+                             Catch
+                                 Me.Enabled = True
+                                 Exit Sub
+                             End Try
+                             Invoke(Sub()
+                                        With CMInfo.InitialisationData
+                                            If .LP1 > 0 AndAlso .LP3 > .LP1 AndAlso .LP5 > .LP3 Then
+                                                Select Case CMInfo.CartridgeMfgData.CartridgeTypeAbbr
+                                                    Case "L1", "L2"
+                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 7100 + 100)
+                                                    Case "L3"
+                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 8100 + 100)
+                                                    Case "L4", "L5", "L6"
+                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 9600 + 100)
+                                                End Select
+                                            End If
+                                        End With
+                                        Me.Enabled = True
+                                    End Sub)
+                         End Sub)
+            Case Else
+                Me.Enabled = True
+        End Select
+    End Sub
+
+    Private Sub ButtonEOT_Click(sender As Object, e As EventArgs) Handles ButtonEOT.Click
+        Me.Enabled = False
+        Select Case TapeUtils.DriverTypeSetting
+            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
+                Dim CMInfo As TapeUtils.CMParser = Nothing
+                Task.Run(Sub()
+                             Try
+                                 CMInfo = New TapeUtils.CMParser(ConfTapeDrive)
+                             Catch
+                                 Me.Enabled = True
+                                 Exit Sub
+                             End Try
+                             Invoke(Sub()
+                                        With CMInfo.InitialisationData
+                                            If .LP1 > 0 AndAlso .LP3 > .LP1 AndAlso .LP5 > .LP3 Then
+                                                Select Case CMInfo.CartridgeMfgData.CartridgeTypeAbbr
+                                                    Case "L1", "L2", "L3", "L4", "L5", "L6"
+                                                        NumericUpDownTestStartLen.Value = Math.Round(.LP5 - .LP3) * 7.2
+                                                End Select
+                                            End If
+                                        End With
+                                        Me.Enabled = True
+                                    End Sub)
+                         End Sub)
+            Case Else
+                Me.Enabled = True
+        End Select
     End Sub
 End Class

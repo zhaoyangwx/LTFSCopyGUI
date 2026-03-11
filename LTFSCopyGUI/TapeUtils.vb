@@ -1885,11 +1885,4641 @@ Public Class TapeUtils
                 Msg.Append("Drive requires cleaning")
             Case &H8283
                 Msg.Append("Bad microcode detected")
+            Case Else
+                Msg.Append("")
         End Select
         If Add_Code >> 8 = &H40 Then
             Msg.Append("Diagnostic failure on component " & Hex(Add_Code And &HFF) & "h")
         End If
         Return Msg.ToString()
+    End Function
+    Public Shared Function ParseDriveCode(Drv_Code As UInt16) As String
+        Select Case Drv_Code
+            Case &H0
+                Return " GOOD"
+            Case &H1
+                Return " BAD"
+            Case &H2
+                Return " DONE"
+            Case &H3
+                Return " ABORTED"
+            Case &H4
+                Return " INVALID_CONFIG_VALUE"
+            Case &H5
+                Return " INVALID_CONFIG_NAME"
+            Case &H6
+                Return "UNHANDLED (Place holder until real status in known.)"
+            Case &H7
+                Return "INVALID_PARAMETER (Invalid parameter supplied to function)"
+            Case &H401
+                Return "AC_UNSUPPORTED_CMD_OPCODE (A automation controller has requested an unsupported command.)"
+            Case &H402
+                Return "AC_BUSY_CMD_REJECTED"
+            Case &H403
+                Return "AC_RAMBIST_FAILED"
+            Case &H404
+                Return "AC_INVALID_CMD_CHKSUM"
+            Case &H405
+                Return "AC_INVALID_BAUDRATE"
+            Case &H406
+                Return "AC_INVALID_CMD_WHILE_LOAD_UNLOAD_PENDING"
+            Case &H407
+                Return "AC_TIMEOUT_WAITING_TO_END_IMMED_CMD"
+            Case &H408
+                Return "AC_RAM_FRAMING_ERROR"
+            Case &H409
+                Return "AC_RAM_OVERRUN_ERROR"
+            Case &H40A
+                Return "AC_INVALID_CMD_LENGTH"
+            Case &H40B
+                Return "AC_BYTE_BUFFER_FRAMING_ERROR"
+            Case &H40C
+                Return "AC_BYTE_BUFFER_OVERRUN_ERROR"
+            Case &H40D
+                Return "AC_CMD_ACTIVE_ABORT_REJECTED"
+            Case &H40E
+                Return "AC_INVALID_RSP_ACKNOWLEDGEMENT"
+            Case &H40F
+                Return "AC_TRANSMISSION_TIMEOUT"
+            Case &H410
+                Return "AC_DID_NOT_RECEIVE_ETX"
+            Case &H411
+                Return "AC_CANCEL_CMD_PACKET_TIMER_ERROR"
+            Case &H412
+                Return "AC_CUSTOM_BYTE_ERROR"
+            Case &H413
+                Return "AC_RSP_ACKNOWLEDGEMENT_TIMEOUT"
+            Case &H414
+                Return "AC_CANCEL_RSP_ACK_TIMER_ERROR"
+            Case &H415
+                Return "AC_UNEXPECTED_BYTE_RECEIVED"
+            Case &H416
+                Return "AC_ZERO_LENGTH_CMD"
+            Case &H417
+                Return "AC_INVALID_CMD_RESERVED_FIELD"
+            Case &H418
+                Return "AC_RAMBIST_DID_NOT_COMPLETE"
+            Case &H419
+                Return "AC_IGNORED_BYTE_RECEIVED_WHILE_XMIT_RSP"
+            Case &H41A
+                Return "AC_INVALID_CDB_DATA_LENGTH"
+            Case &H41B
+                Return "AC_FW_IMAGE_TOO_BIG"
+            Case &H41C
+                Return "AC_RSP_TOO_LONG (ACI response longer than available buffer)"
+            Case &H41D
+                Return "AC_DID_NOT_RCV_ACK_TO_PROGRAM_FLASH"
+            Case &H41E
+                Return "AC_NULL_POLLING_FUNCTION (Attempt to create a polling object instance without a polling function.)"
+            Case &H41F
+                Return "AC_MAX_POLLERGEIST_LIMIT_EXCEEDED (Attempt to create more polling object instances than allowed.)"
+            Case &H420
+                Return "AC_ACCESSING_NON_EXISTENT_POLLERGEIST (Attempt to access a polling object instance that doesn't exist.)"
+            Case &H421
+                Return "AC_CMD_LENGTH_TOO_LONG (ACI command longer than available buffer.)"
+            Case &H422
+                Return "AC_CRAM_OVERFLOW (ACI has ran out of CRAM.)"
+            Case &H423
+                Return "AC_IMAGE_SENT_TOO_BIG (ACI has received a FW image larger than expected.)"
+            Case &H424
+                Return "AC_INVALID_CMD_PARM_VALUE (An ACI command parameter contains an invalid value.)"
+            Case &H425
+                Return "AC_OUT_OF_MEMORY (ACI acMalloc() failed, insufficient memory available to process command.)"
+            Case &H426
+                Return "AC_CONTROL_QUEUE_FULL (The ACI Control queue is full.)"
+            Case &H427
+                Return "AC_RESPONSE_QUEUE_FULL (The ACI Response queue is full.)"
+            Case &H428
+                Return "AC_CONTROL_QUEUE_EMPTY (The ACI Control queue is empty.)"
+            Case &H429
+                Return "AC_RESPONSE_QUEUE_EMPTY (The ACI Response queue is empty.)"
+            Case &H42A
+                Return "AC_RESPONSE_NAKED (The ACI Response packet was NAKed.)"
+            Case &H42B
+                Return "AC_UNSUPPORTED_PPL_CMD (ACI attempted to execute an unsupported PPL command.)"
+            Case &H42C
+                Return "AC_INVALID_PARAMETER (The ACI has detected a command with a parameter out-of-range.)"
+            Case &H42D
+                Return "AC_OVERLAPPED_PPL_CMD (ACI attempted to execute a PPL command before previous command completed.)"
+            Case &H42E
+                Return "AC_EXCESSIVE_RAW_DATA (ACI received more raw data than expected, see Write Buffer PPL command.)"
+            Case &H42F
+                Return "AC_SLOW_CMD (Internal status indicating a SLOW ACI command rather than a fast one.)"
+            Case &H430
+                Return "AC_XFER_PENDING (Internal status indicating an operation has initiated a DMA transfer.)"
+            Case &H431
+                Return "AC_UPGRADE_FW (Internal status indicating that a FW image has been downloaded so the f/w should be upgraded.)"
+            Case &H432
+                Return "AC_UPGRADE_ABORTED (Internal status indicating that a FW image download has been aborted.)"
+            Case &H433
+                Return "AC_SCSI_CMD_TERMINATED (Surrogate SCSI command terminated due to a SCSI Reset/Abort for LUN.)"
+            Case &H434
+                Return "AC_DRAM_ALLOCATION_ERROR (The ACI has not been allocated the amount of DRAM it requires.)"
+            Case &H435
+                Return "AC_CRAM_ALLOCATION_ERROR (The ACI has not been allocated the amount of CRAM it requires.)"
+            Case &H436
+                Return "AC_INVALID_SCSI_EXCHANGE_ID (An ACI surrogate SCSI command packet contained an invalid Exchange ID.)"
+            Case &H437
+                Return "AC_UNEXPECTED_EXCHANGE_ID (A CCB contained an invalid exchange ID when it should be valid.)"
+            Case &H438
+                Return "AC_SCSI_QUEUE_FULL (The ACI Surrogate SCSI queue is empty.)"
+            Case &H439
+                Return "AC_SCSI_QUEUE_EMPTY (The ACI Surrogate SCSI queue is empty.)"
+            Case &H43A
+                Return "AC_INVALID_SCSI_QUEUE_ENTRY (A request for an invalid entry in Surrogate SCSI queue has been made.)"
+            Case &H43B
+                Return "AC_INVALID_SCSI_CDB (The ACI has received an acSurrogateNotifyOp with an unknown SCSI CDB type.)"
+            Case &H43C
+                Return "AC_UNEXPECTED_SCSI_DATA_LENGTH (The SCSI Data Length parameter has changed unexpectedly.)"
+            Case &H43D
+                Return "AC_PPL_CMD_PENDING (Internal status indicating a PPL Command is being executed.)"
+            Case &H43E
+                Return "AC_TO_BUSY_FOR_FAST_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H43F
+                Return "AC_TO_BUSY_FOR_IMMED_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H440
+                Return "AC_TO_BUSY_FOR_SLOW_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H441
+                Return "AC_TO_BUSY_FOR_SCSI_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H442
+                Return "AC_TO_BUSY_COS_OVERLAPPED_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H443
+                Return "AC_TO_BUSY_COS_COMMS_RESYNCH (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H444
+                Return "AC_TO_BUSY_COS_UPGRADING (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H445
+                Return "AC_TO_BUSY_COS_OUT_OF_MEMORY (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H446
+                Return "AC_RESYNCHRONISING_COMMS (ACI is resynchronising comms with library after persistant comms failure.)"
+            Case &H447
+                Return "AC_UNSUPPORTED_OPCODE (The SCSI Opcode is not supported in this F/W release.)"
+            Case &H448
+                Return "AC_RESET_ACI_REQUIRED (Internal status indicating an ACI Reset is required.)"
+            Case &H449
+                Return "AC_RESET_DRIVE_REQUIRED (Internal status indicating a full Drive Reset is required.)"
+            Case &H44A
+                Return "AC_INVALID_MEMORY_ID (CCB Contains an invalid Memory ID.)"
+            Case &H44B
+                Return "AC_CCB_ALLOCATION_ERROR (All Command Control Blocks have been allocated.)"
+            Case &H44C
+                Return "AC_INVALID_CCB (The returned or referenced Command Control Block is invalid.)"
+            Case &H44D
+                Return "AC_TIMEOUT_CMD_ABORTED (Response Timeout - command aborted and response sent.)"
+            Case &H44E
+                Return "AC_TIMEOUT_CMD_CONTINUED (Response Timeout - response sent but command allowed to continue.)"
+            Case &H44F
+                Return "AC_RESPONSE_TIMEOUT (Response Timeout - ACI failed to send response within Response Period.)"
+            Case &H450
+                Return "AC_TO_BUSY_COS_CCB_QUEUE_FULL (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H451
+                Return "AC_REPEATED_SEQUENCE_NUMBER (ACI Command contains sequence number of previous command, command ignored.)"
+            Case &H452
+                Return "AC_SLOW_CMD_BEFORE_INIT (Internal status indicating a SLOW ACI command being executed before Drive Ready event.)"
+            Case &H453
+                Return "AC_ACKNOWLEDGEMENT_PERIOD_EXCEEDED (Failed to transmit ACK/NAK within Packet Acknowledgement Period.)"
+            Case &H454
+                Return "AC_DIRECT_CMD (Internal status indicating a DIRECT ACI command rather than a fast or Slow one.)"
+            Case &H455
+                Return "AC_TO_BUSY_FOR_DIRECT_CMD (Used in tracepoints to identify cause of AC_BUSY_CMD_REJECTED error.)"
+            Case &H456
+                Return "AC_BURST_SIZE_UNKNOWN (Cannot perform operation because the SCSI Burst size is zero or unknown.)"
+            Case &H457
+                Return "AC_PRIMARY_INTERFACE_NOT_CONFIGURED (Command not supported because the primary interface has not been enabled.)"
+            Case &H458
+                Return "AC_NO_TASK_OBJECT (Unable to get a new task object.)"
+            Case &H459
+                Return "AC_FRAME_NAKED_ACI_CMD_PENDING (An ADI frame has been received while one or more ACI commands are outstanding.)"
+            Case &H45A
+                Return "AC_NOT_ADI_FRAME (An SOF was received in ACI Mode but didn't turn out to be a valid Frame.)"
+            Case &H45B
+                Return "AC_REQUEST_DATA_LENGTH_ERROR (The SSC device server has not requested the amount of data supplied with the ACI SCSI command.)"
+            Case &H45C
+                Return "AC_UNSUPPORTED_PORT_ID (The specified automation port is not supported.)"
+            Case &H45D
+                Return "AC_RSP_PENDING (This status indicates a function shall send a response when it has finished)"
+            Case &H480
+                Return "AC_TEST_FAILED_COS_EXECUTING_DIRECT_CMD (ACI Self Test failure- The ACI shouldn't be executing a Direct Command while performing the Self Test.)"
+            Case &H481
+                Return "AC_TEST_FAILED_COS_EXECUTING_SLOW_CMD (ACI Self Test failure- The ACI shouldn't be executing a Slow Command while performing the Self Test.)"
+            Case &H482
+                Return "AC_TEST_FAILED_COS_CTRL_QUE_NOT_EMPTY (ACI Self Test failure- If the ACI is idle, the Control Queue should be empty.)"
+            Case &H483
+                Return "AC_TEST_FAILED_COS_RESPONSE_QUE_NOT_EMPTY (ACI Self Test failure - If the ACI is idle, the Response Queue should be empty.)"
+            Case &H484
+                Return "AC_TEST_FAILED_COS_SCSI_QUE_NOT_EMPTY (ACI Self Test failure- If the ACI is idle, the Surrogate SCSI queue should be empty.)"
+            Case &H485
+                Return "AC_TEST_FAILED_COS_SMALL_DATA_LEAK (ACI Self Test failure- If the ACI is idle, Only the Self Test command should be allocated in the Small Data Region.)"
+            Case &H486
+                Return "AC_TEST_FAILED_COS_LARGE_DATA_LEAK (ACI Self Test failure- If the ACI is idle, No memory from the Large Data Region should be allocated.)"
+            Case &H487
+                Return "AC_TEST_FAILED_COS_CRAM_DATA_LEAK (ACI Self Test failure- If the ACI is idle, No CRAM memory should be allocated.)"
+            Case &H488
+                Return "AC_TEST_FAILED_COS_CCB_MALLOC_LEAK (ACI Self Test failure- If the ACI is idle, only 1 CCB should be allocated.)"
+            Case &H800
+                Return "BMM_INIT_ERROR (The buffer manager failed to initialise correctly)"
+            Case &H801
+                Return "BMM_MODULE_ID_UNKOWN_ERROR (No Buffer Allocation description exist for the supplied Module ID)"
+            Case &H802
+                Return "BMM_REQUEST_QUEUE_OVF_ERROR (The request queue has over run)"
+            Case &H803
+                Return "BMM_PRIORITY_QUEUE_OVF_ERROR (The priority request queue has over run)"
+            Case &H804
+                Return "BMM_DATASET_IDX_ERROR (BMMDataSetIdxToAddr() has been passed an invalid Idx)"
+            Case &H805
+                Return "BMM_DSIT_IDX_ERROR (BMMDataSetIdxToDSITAddr() has been passed an invalid Idx)"
+            Case &H806
+                Return "BMM_ACN_IDX_ERROR (BMMDataSetIdxToACNandLPOSAddr() has been passed an invalid Idx)"
+            Case &H807
+                Return "BMM_WRAP_IDX_ERROR (BMMDataSetIdxToWrapAddr() has been passed an invalid Data Set Idx)"
+            Case &H808
+                Return "BMM_NOTIFICATION_QUEUE_OVF_ERROR (The Notification queue has overflowed. See BMMRequestXferEx().)"
+            Case &H809
+                Return "BMM_NOTIFICATION_C1_CHECK_FAIL_ERROR (The notification was not SDL signal for DSIT read. See BMMXferComplete().)"
+            Case &H80A
+                Return "BMM_REQUEST_QUEUE_UVF_ERROR (The Notification queue has underflowed. See BMMXferComplete().)"
+            Case &H1800
+                Return "DI_NO_ERROR"
+            Case &H1801
+                Return "DI_INVALID_COMMAND"
+            Case &H1802
+                Return "DI_INVALID_PARAMETER"
+            Case &H1803
+                Return "DI_DRIVE_NOT_READY"
+            Case &H1804
+                Return "DI_COMMAND_FAILED"
+            Case &H1805
+                Return "DI_COMMAND_ABORTED"
+            Case &H1806
+                Return "DI_TOO_FEW_PARMS"
+            Case &H1807
+                Return "DI_TOO_MANY_PARMS"
+            Case &H1808
+                Return "DI_COMMAND_DENIED"
+            Case &H1809
+                Return "DI_CDB_OPCODE_ERR (Operation Code not supported in Diagnostic CDB command)"
+            Case &H180A
+                Return "DI_CDB_PAGE_CODE_ERR (Page Code not supported in Diagnostic CDB command)"
+            Case &H180B
+                Return "DI_CDB_BUF_ID_ERR (Buffer ID not supported in READ/WRITE BUFFER command)"
+            Case &H180C
+                Return "DI_PARITY_ERROR (Parity error on serial receive)"
+            Case &H180D
+                Return "DI_FRAMING_ERROR (Framing error on serial receive)"
+            Case &H180E
+                Return "DI_OVERFLOW_ERROR (Overflow erroron serial receive)"
+            Case &H180F
+                Return "DI_INPUT_TOO_LONG (Excessive input length, exceeds 220 characters)"
+            Case &H1810
+                Return "DI_POST_NOT_EXECUTED (POST Not Executed)"
+            Case &H1820
+                Return "DI_REG_TEST_FAILED (Error Detected During Register Walking 1 Test)"
+            Case &H1821
+                Return "DI_BIST_TEST_FAILED (Built-in Selftest Failure)"
+            Case &H1822
+                Return "DI_UNSUPPORTED_TEST_COMMAND (No Test AvailableFor The Parameters Provided)"
+            Case &H1823
+                Return "DI_MEM_TEST_FAILED (Error Detected During Memory Test)"
+            Case &H1830
+                Return "DI_POST_FAILED_BRUTUS_DATA_BUS (POST Failed Brutus Internal SRAM Data Bus Test)"
+            Case &H1831
+                Return "DI_POST_FAILED_BRUTUS_ADDR_BUS (POST Failed Brutus Internal SRAM Address Bus Test)"
+            Case &H1840
+                Return "DI_POST_FAILED_DRAM_MPU_PORT (POST Failed DRAM MPU Port Test)"
+            Case &H1841
+                Return "DI_POST_FAILED_DRAM_DATA_BUS (POST Failed DRAM Data Bus Test)"
+            Case &H1842
+                Return "DI_POST_FAILED_DRAM_ADDR_BUS (POST Failed DRAM Addr Bus Test)"
+            Case &H1843
+                Return "DI_POST_FAILED_YURI_REG (POST Failed Yuri Register Test)"
+            Case &H1844
+                Return "DI_POST_FAILED_YURI_BIST (POST Failed Yuri BIST (Built In Self Test))"
+            Case &H1845
+                Return "DI_POST_FAILED_IMAGE_CHECKSUM (POST Failed Firmware Image Checksum)"
+            Case &H1846
+                Return "DI_POST_FAILED_CRAM_DATA_BUS (POST Failed CRAM Data Bus Test)"
+            Case &H1847
+                Return "DI_POST_FAILED_CRAM_ADDR_BUS (POST Failed CRAM Address Bus Test)"
+            Case &H1848
+                Return "DI_POST_FAILED_SELWAY_REG (POST Failed Selway Register Test)"
+            Case &H1849
+                Return "DI_POST_FAILED_SELWAY_DATA_BUS (POST Failed Selway Buffer Data Bus Test)"
+            Case &H184A
+                Return "DI_POST_FAILED_SELWAY_ADDR_BUS (POST Failed Selway Buffer Address Bus Test)"
+            Case &H184B
+                Return "DI_EXIT_DC_MODE (Internal status instructing DI to exit Data Collection Mode)"
+            Case &H184C
+                Return "DI_SLOW_CMD (Internal status instructing DI to execute cmd as a Slow command)"
+            Case &H184D
+                Return "DI_BUSY_CMD_REJECTED (Diagnostic Control has rejected a command because it's already executing a command.)"
+            Case &H184E
+                Return "DI_MEM_RELEASE_VIOLATION (Attempted to release Diagnostic Diagnostic Results memory that hasn't been allocated.)"
+            Case &H184F
+                Return "DI_RESULTS_RESERVED (Unable to perform Diagnostic command as the Diagnostic Results memory is already reserved.)"
+            Case &H1850
+                Return "DI_RESULTS_OVERFLOW (Diagnostic Results data has overflow the memory allocated for results.)"
+            Case &H1851
+                Return "DI_UNSUPPORT_SCSI_OPCODE (DI has received an unsupported SCSI opcode in diExecScsiDiagOp.)"
+            Case &H1852
+                Return "DI_INVALID_BAUDRATE (DI attemptedto set an illegal Baud Rate.)"
+            Case &H1853
+                Return "DI_READ_ONLY_CONFIG (Set Config attempted to set a Read-Only configuration.)"
+            Case &H1854
+                Return "DI_XMIT_RESPONSE (Indicates DI needs to send response in Port Buffer before completing cmd.)"
+            Case &H1855
+                Return "DI_POST_FAILED_EXT_SRAM_DATA_BUS (POST Failed Brutus External SRAM Data Bus Test)"
+            Case &H1856
+                Return "DI_POST_FAILED_EXT_SRAM_ADDR_BUS (POST Failed Brutus External SRAM Address Bus Test)"
+            Case &H1857
+                Return "DI_PROCESS_FLM_LOG (Internal status indicating that a Log command specifies a FLM log.)"
+            Case &H1858
+                Return "DI_OPERATION_INCOMPLETE (Returned by some log extraction functions to indicate there is more data to extract)"
+            Case &H1859
+                Return "DI_COMMS_ERROR (Some sort of comms error (framing/overrun etc) detected on Serial Test Port)"
+            Case &H185A
+                Return "DI_RECEIVE_TIMEOUT (The Serial Test Port has timed-out receiving data)"
+            Case &H185B
+                Return "DI_UNSUPPORTED_OPERATION (A Device Server has requested an operation not supported by diPortIF)"
+            Case &H185C
+                Return "DI_NO_TASK_OBJECT (Unable to get a new task object.)"
+            Case &H185D
+                Return "DI_ERR_LUN_NOT_CONFIGURED (SCSI Command cannot be executed in Limited Operation Mode!)"
+            Case &H185E
+                Return "DI_STATUS_BEFORE_PROTOCOL (Internal status instructing DI to send Status before starting protocol test)"
+            Case &H185F
+                Return "DI_CDB_BUF_ACCESS_ERR (Memory access denied to READ/WRITE BUFFER command)"
+            Case &H1860
+                Return "DI_MEMORY_ACCESS_ERR (Memory access denied to READ/WRITE MEMORY command)"
+            Case &H1861
+                Return "DI_POST_FAILED_ECC_URERR (POST Failed Unrecoverable ECC error detected)"
+            Case &H1862
+                Return "DI_INVALID_FIELD_IN_CDB (A field is invalid in a Diagnostic CDB command)"
+            Case &H1863
+                Return "DI_POST_FAILED_IMAGE_CS (POST Failed Image checksum invalid)"
+            Case &H1864
+                Return "DI_POST_IMAGE_CS_INCOMPLETE (POST Failed Image checksum incomplete)"
+            Case &H1865
+                Return "DI_EEPROM_ACCESS_ERR (Invalid Length/Address in READ/WRITE MEMORY command)"
+            Case &H1866
+                Return "DI_WRITE_CM_EEPROM_ACCESS_DENIED (Drive Configuration Table returned permission denied in response to Write CM/EEPROM operation)"
+            Case &H1867
+                Return "DI_ROOT_KEY_NOT_FOUND (Verify root key failed as no root key found in OTP)"
+            Case &H1868
+                Return "DI_ROOT_KEY_VERIFICATION_FAILED (Root key is incorrect)"
+            Case &H1869
+                Return "DI_DRIVE_IN_UNSECURED_STATE (Drive unexpectedly in unsecured state)"
+            Case &H186A
+                Return "DI_PUBLIC_KEY_NOT_FOUND (RSA Public key not found )"
+            Case &H186B
+                Return "DI_PRIVATE_KEY_NOT_FOUND (RSA Private key not found )"
+            Case &H186C
+                Return "DI_RSA_KEY_NOT_FOUND (RSA Key pair not found )"
+            Case &H186D
+                Return "DI_RSA_KEY_ENCRYPT_DECRYPT_FAILED (Data following encryption/decryption with RSA key is incorrect)"
+            Case &H186E
+                Return "DI_ROOT_KEY_DUPLICATED (Root key generated when one already exists)"
+            Case &H186F
+                Return "DI_UNEXPECTED_SECURITY_STATE (Drive in unexpected security state)"
+            Case &H1870
+                Return "DI_RSA_KEY_DUPLICATED (RSA key storage was attempted when one already exists)"
+            Case &H1871
+                Return "DI_OTP_PUBLIC_KEY_DUPLICATED (OTP Public key already exists)"
+            Case &H1872
+                Return "DI_OTP_PUBLIC_KEY_NOT_FOUND (OTP Public key not found)"
+            Case &H1873
+                Return "DI_MGMNT_ARM_TESTID_INVALID (Management ARM testid is not supported)"
+            Case &H1874
+                Return "DI_HUMIDITY_UNAVAILABLE (Unable to obtain Humdity Value)"
+            Case &H1875
+                Return "DI_TEMP_UNAVAILABLE (Unable to obtain Humdity Value)"
+            Case &H1876
+                Return "DI_OTP_WRITE_FAILURE (Unable to perform OTP write)"
+            Case &H1877
+                Return "DI_OTP_READ_FAILURE (Unable to perform OTP Read)"
+            Case &H1878
+                Return "DI_OTP_WRPROT_SET (Unable to perform OTP Write, WP set)"
+            Case &H1879
+                Return "DI_OTP_BANK_NOT_EMPTY (Unable to perform OTP Write, Bank has been previously written to)"
+            Case &H187A
+                Return "DI_OTP_WRITE_EXCEEDS_MAX_TIME (OTP Write has taken to long)"
+            Case &H187B
+                Return "DI_OTP_STATUS_NOT_READY (OTP STATUS_RDY not set when expected)"
+            Case &H187C
+                Return "DI_OTP_RAW_STATUS_NOT_READY (OTP STATUS_RDY not set for bank re-read following write)"
+            Case &H187D
+                Return "DI_POST_FAILED_OTP_SECURITY_STATE (POST Failed OTP Security state in Debug Mode! )"
+            Case &H187E
+                Return "DI_OTP_BLANK_CHECK_PARMS_INVALID (Chacking OTP Banks blank, parameters out of bounds  )"
+            Case &H187F
+                Return "DI_MEMORY_BOUNDS_ERR (Supplied Parameters out of bounds for this Buffer ID)"
+            Case &H1880
+                Return "DI_POST_FAILED_OTP_VERIFY_DEBUG_SECURITY_STATE (POST Failed OTP verifying Debug Mode! )"
+            Case &H1881
+                Return "DI_POST_FAILED_OTP_SET_DEBUG_SECURITY_STATE (POST Failed OTP setting Debug Mode! )"
+            Case &H1882
+                Return "DI_POST_FAILED_OTP_SET_DEBUG_SECURITY_STATE_UNSECURED (POST succesfully set Debug Mode! )"
+            Case &H1883
+                Return "DI_ISERIAL_BINARY_READ_ERR (Failed to read binary data from the iSerial port!)"
+            Case &H1884
+                Return "DI_ERT_TEST_IN_PROGRESS (Attempting to run ERT test whilst ERT test in progress)"
+            Case &H1885
+                Return "DI_RO_TEST_UNEXPECTED_PORT_IF_OP (SCSI Infrastructure requested a Read Only Test PortIF operation with an invalid/obsolete TaskPtr)"
+            Case &H1886
+                Return "DI_RO_TEST_ILLEGAL_TEST_STATE (Read Only Test operation with an invalid TestState)"
+            Case &H1887
+                Return "DI_RO_TEST_INVALID_TAPE_TYPE (Read Only Test attempted with an invalid TapeType)"
+            Case &H1888
+                Return "DI_RO_DATA_PHASE_ERROR (A Read Only Test command requested more SCSI data (out) than was available!)"
+            Case &H1889
+                Return "DI_RO_UNEXPECTED_CDB_OP (SCSI Infrastructure requested a read only test PortIF operation with an unexpected Opcode)"
+            Case &H188A
+                Return "DI_HI_PHY_SETTINGS_INVALID (PHY setting parameter incorrect)"
+            Case &H188B
+                Return "DI_WERT_TEST_INVALID_TAPE_TYPE (Write Ony Test attempted with an invalid TapeType)"
+            Case &H188C
+                Return "DI_WERT_TEST_ILLEGAL_TEST_STATE (Internal Wert Test operation completed with an invalid TestState)"
+            Case &H188D
+                Return "DI_FLASH_ROOT_KEY_ERASE_FAIL (An attempt to erase the FLASH area containing the ROOT key failed)"
+            Case &H188E
+                Return "DI_FLASH_ROOT_KEY_WRITE_FAIL (An attempt to write the FLASH area containing the ROOT key failed)"
+            Case &H188F
+                Return "DI_FLASH_ROOT_KEY_VERIFY_FAIL (An attempt to verify the FLASH area containing the ROOT key failed)"
+            Case &H1890
+                Return "DI_FLASH_ROOT_KEY_READ_FAIL (An attempt to read the FLASH area containing the ROOT key failed)"
+            Case &H1891
+                Return "DI_CMD_UNSUPPORTED_IN_THIS_CODE (Clear Buffer ID 0xB2,0xB4,0xB5,0xB6,0xB7,0xB8,0xBB,or 0xBF only supported in Manufauring FW code)"
+            Case &H1892
+                Return "DI_POST_FIPS_COMPLIANCE_FAILURE (POST failed as one or more ports will remain open when POST fails, which is not FIPS compliant)"
+            Case &H1C00
+                Return "DR_ERROR_BAD_CART_TYPE (Attempting to Load a cartridge of a type that Drive Control cannot handle)"
+            Case &H1C01
+                Return "DR_ERROR_UNLOAD_WITH_PMR (Attempt to unload a cartridge when Prevent Medium Removal is on)"
+            Case &H1C02
+                Return "DR_FUG_NO_IMAGE (No firmware image available for upgrade)"
+            Case &H1C03
+                Return "DR_FUG_INCOMPLETE (Firmware image is incomplete)"
+            Case &H1C04
+                Return "DR_FUG_CORRUPT (Firmware image has checksum or other errors)"
+            Case &H1C05
+                Return "DR_FUG_INCOMPATIBLE (Firmware image is not compatible with drive configuration)"
+            Case &H1C06
+                Return "DR_FUG_TOO_BIG (Firmware image is too big to upgrade from)"
+            Case &H1C07
+                Return "DR_FUG_INTERNAL_ERROR (Internal error in Drive Control firmware upgrade code)"
+            Case &H1C08
+                Return "DR_POWERON_WITH_FWCART (A FW upgrade cartridge was in the drive when it powered on)"
+            Case &H1C09
+                Return "DR_BADCM_NOTHREAD (A load without threading has been requested for a cartridge with unusable CM)"
+            Case &H1C0A
+                Return "DR_BADCM_WRITABLE (Tried to load a writable cartridge with an unusable CM)"
+            Case &H1C0B
+                Return "DR_WRITETAB_CHANGE (Write protect tab setting was changed during a load)"
+            Case &H1C0C
+                Return "DR_NON_HP_CLEANING_CART (A non-HPE cleaning cartridge was put in the drive)"
+            Case &H1C0D
+                Return "DR_UNKNOWN_MANUF_CLEANING_CART (Cannot determine manufacturer of cleaning cartridge)"
+            Case &H1C0E
+                Return "DR_FUG_NO_IMAGE_SPACE (No DRAM space reserved to hold firmware image)"
+            Case &H1C0F
+                Return "DR_POWERON_WITH_CLEANINGCART (A cleaning cartridge was in the drive when it powered on)"
+            Case &H1C10
+                Return "DR_POWERON_EJECT (Drive Control did an eject during the power-on sequence)"
+            Case &H1C11
+                Return "DR_FWCART (Firmware upgrade cartridge loaded. Expected data cartridge.)"
+            Case &H1C12
+                Return "DR_NOT_FWCART (Expected firmware upgrade cartridge but got something else on load)"
+            Case &H1C13
+                Return "DR_THERMAL_FAIL (Failure due to drive temperature being out of acceptable range.)"
+            Case &H1C14
+                Return "DR_NON_HP_INIT_CLEANING_CART (Cleaning cartridge initialised by a non-HPE drive)"
+            Case &H1C15
+                Return "DR_CANNOT_CREATE_FWCART (Trying to convert a non data cartridge into a FW upgrade cartridge)"
+            Case &H1C16
+                Return "DR_NO_CART_PRESENT (Operation failed bacause cartridge is not present or not ready)"
+            Case &H1C17
+                Return "DR_CLEANING_CART (Cleaning cartridge loaded. Expected data cartridge.)"
+            Case &H1C18
+                Return "DR_NOT_CLEANING_CART (Expected cleaning cartridge but got something else on load)"
+            Case &H1C19
+                Return "DR_CANNOT_READ_FID (Cartridge CM is unusable and failed to read the FID)"
+            Case &H1C1A
+                Return "DR_FUG_NO_IMAGE_INFO (Firmware upgrade image information is unavailable)"
+            Case &H1C1B
+                Return "DR_FUG_BAD_IMAGE_INFO (Could not find firmware information in new image)"
+            Case &H1C1C
+                Return "DR_TAPE_LOAD_FAILED_ERROR (Used to signify that a tape load has failed)"
+            Case &H1C1D
+                Return "DR_EOD_INVALID (Used to signify that the EOD Validity field is not Good)"
+            Case &H1C1E
+                Return "DR_FUG_INCOMPATIBLE_SUB_PERSONALITY (Firmware image is not compatible with drive sub-personality configuration)"
+            Case &H1C1F
+                Return "DR_UNEXPECTED_CALLBACK_TIMER (A TMR Timer fired but the ID doesn't match what was expected)"
+            Case &H1C20
+                Return "DR_FUG_SIGNATURE_INCORRECT (Firmware image has incorrect signature)"
+            Case &H1C21
+                Return "DR_FUG_UPGRADE_IMAGE_INCOMPATIBLE (Firmware upgrade image version is too old)"
+            Case &H1C22
+                Return "DR_FUG_IMAGE_IS_TOO_LARGE (Firmware upgrade image version is too large)"
+            Case &H1C23
+                Return "DR_FUG_INCORRECT_TAPE_FORMAT (Unknown tape format encountered during firmware upgrade)"
+            Case &H1C24
+                Return "DR_FUG_HOST_FAILURE (Unknown host error during firmware upgrade)"
+            Case &H1C25
+                Return "DR_INVALID_CHANGE_PARTITION_OPERATION (Unable to change to the specified partition because- We haven't got a loaded two parititon tape, we are already in that specified partition or there is no such partition)"
+            Case &H1C26
+                Return "DR_PARTITIONS_NOT_SUPPORTED_ON_THIS_MEDIA (Cannot perform a multi partition operation as partitions are not supported on this media)"
+            Case &H1C27
+                Return "DR_INVALID_NUMBER_OF_PARTITIONS (Media doesn't support this number of partitions)"
+            Case &H1C28
+                Return "DR_TAPE_CURRENTLY_IN_REQUIRED_FORMAT (Format not required as the tape is already formatted as required)"
+            Case &H1C29
+                Return "DR_INVALID_PARTITION_SIZES (Requested sizes of paritions are outside valid range for this media)"
+            Case &H1C2A
+                Return "DR_REINITIALISE_MCC_TASK (DR determined that MCC is hung and we are going to attempt to reinitialise that task)"
+            Case &H1C2B
+                Return "DR_FUG_INVALID_IMAGE (Unknown update image format)"
+            Case &H1C2C
+                Return "DR_BOOTLOADER_VERSION_TOO_OLD (Bootloader is too old. Drive contains newer, backward-compatible version)"
+            Case &H1C2D
+                Return "DR_BOOTLOADER_INCOMPATIBLE (Incompatible bootloader configuration)"
+            Case &H1C2E
+                Return "DR_BOOTLOADER_SIGNATURE_FAILURE (Bootloader payload signature incorrect)"
+            Case &H1C2F
+                Return "DR_BOOTLOADER_TOO_BIG (Bootloader too big)"
+            Case &H1C30
+                Return "DR_FUG_CANT_READ_BL_VERSION (Can't read bootloader version from flash)"
+            Case &H2000
+                Return "DM_NO_ERROR (Synonymous with GOOD status.)"
+            Case &H2001
+                Return "DM_INVALID_PARAMETERS (The value of a parameter received with a Drive Monitor operation falls outside its valid range.)"
+            Case &H2400
+                Return "EI_COMMAND_HOLDER_FULL"
+            Case &H2401
+                Return "EI_BAD_COMMAND_HANDLE"
+            Case &H2402
+                Return "EI_EMPTY_COMMAND_HANDLE"
+            Case &H2403
+                Return "EI_NO_TAPE_LOADED"
+            Case &H2404
+                Return "EI_ALREADY_LOADED"
+            Case &H2405
+                Return "EI_IN_DIAG_MODE"
+            Case &H2406
+                Return "EI_NOT_IN_DIAG_MODE"
+            Case &H2407
+                Return "EI_WRITE_PROTECT (Tried to write to write protected cartridge)"
+            Case &H2408
+                Return "EI_ABORT_ACTIVE (Aborted an active command)"
+            Case &H2409
+                Return "EI_ABORT_INACTIVE (Aborted a command before it became active)"
+            Case &H240A
+                Return "EI_ABORT_NONE (Tried to abort a command that was not queued)"
+            Case &H240B
+                Return "EI_INVALID_STATE (Invalid state requested of EII State Manager)"
+            Case &H240C
+                Return "EI_INVALID_FWTYPE (EII tried to process unsupported firmware upgrade type)"
+            Case &H240D
+                Return "EI_CANNOT_ABORT (EII state manager could not handle abort request)"
+            Case &H240E
+                Return "EI_ABORT_ABORTING (Tried to abort a command that was already being aborted)"
+            Case &H240F
+                Return "EI_BAD_MODULE (Tried to get a command for the wrong module)"
+            Case &H2410
+                Return "EI_CMD_QUEUE_NOT_EMPTY (Command Specified in eiNotifyOp would not have been top of queue)"
+            Case &H2411
+                Return "EI_DELETE_QUEUED_CMD (Attempt to delete a queued EII command (FW bug))"
+            Case &H2412
+                Return "EI_DELETE_EXECUTING_CMD (Multiple attempts to delete an executing EII command (FW bug))"
+            Case &H2413
+                Return "EI_QUEUE_QUEUED_CMD (Attempt to queue a queued EII command (FW bug))"
+            Case &H2414
+                Return "EI_QUEUE_EXECUTING_CMD (Attempt to queue an executing EII command (FW bug))"
+            Case &H2415
+                Return "EI_CMD_QUEUE_EMPTY (Attempt to remove a command from empty EII command queue (FW bug))"
+            Case &H2416
+                Return "EI_EXECUTE_QUEUED_CMD (Attempt to execute a command still on the EII command queue (FW bug))"
+            Case &H2417
+                Return "EI_MULTIPLE_EXECUTE (Attempt to execute an EII command when another is executing (FW bug))"
+            Case &H2418
+                Return "EI_NOT_EXECUTING (Attempt to stop executing an EII command that was not executing (FW bug))"
+            Case &H2419
+                Return "EI_HANDLE_MODULE_CHANGE (The module putting a commnad on the EII command queue is not the module that allocated it (FW bug))"
+            Case &H2801
+                Return "FP_FORCED_EJECT (Failure due to use of forced eject)	"
+            Case &H2C01
+                Return "HI_UNKNOWN_OPCODE"
+            Case &H2C02
+                Return "HI_RESERVED_FIELD_SET"
+            Case &H2C03
+                Return "HI_UNKNOWN_MODE_PAGE"
+            Case &H2C04
+                Return "HI_FIRMWARE_BUG"
+            Case &H2C05
+                Return "HI_PARAMETER_LIST_LENGTH_ERROR"
+            Case &H2C06
+                Return "HI_ALREADY_PREVENTED"
+            Case &H2C07
+                Return "HI_NOT_PREVENTED"
+            Case &H2C08
+                Return "HI_TOO_MANY_HOSTS"
+            Case &H2C09
+                Return "HI_32_BIT_OVERFLOW"
+            Case &H2C0A
+                Return "HI_INVALID_SPACE_CODE"
+            Case &H2C0B
+                Return "HI_BAD_INQUIRY_PAGE"
+            Case &H2C0C
+                Return "HI_NOT_THE_RESERVER"
+            Case &H2C0D
+                Return "HI_NOT_RESERVED"
+            Case &H2C0E
+                Return "HI_THIRD_PARTY_BAD"
+            Case &H2C0F
+                Return "HI_THIRD_PARTY_HOST"
+            Case &H2C10
+                Return "HI_RESERVED"
+            Case &H2C11
+                Return "HI_READ_BUFFER_ID"
+            Case &H2C12
+                Return "HI_READ_BUFFER_MODE"
+            Case &H2C13
+                Return "HI_WRITE_BUFFER_ID"
+            Case &H2C14
+                Return "HI_WRITE_BUFFER_MODE"
+            Case &H2C15
+                Return "HI_MAIN_BUFFER_MODE"
+            Case &H2C16
+                Return "HI_WRITE_BUFFER_HEADER"
+            Case &H2C17
+                Return "HI_NO_EVPD"
+            Case &H2C18
+                Return "HI_DRIVE_NOT_READY"
+            Case &H2C19
+                Return "HI_DENSITY_MEDIUM_NO_TAPE"
+            Case &H2C1A
+                Return "HI_ARM_FW_ERROR_CODE0 (Used by Embedded ARM FW)"
+            Case &H2C1B
+                Return "HI_ARM_POST_FAIL (INF_HI_ARM_POST_FAIL)"
+            Case &H2C1C
+                Return "HI_TX_FAIL (INF_HI_TX_FAIL)"
+            Case &H2C1D
+                Return "HI_INF_HI_ARM_POST_SDRAM_TEST_FAILED (INF_HI_ARM_POST_SDRAM_TEST_FAILED)"
+            Case &H2C1E
+                Return "HI_INF_HI_ARM_POST_SDRAM_BIST_TIMEOUT (INF_HI_ARM_POST_SDRAM_BIST_TIMEOUT)"
+            Case &H2C1F
+                Return "HI_INF_HI_ARM_POST_SDRAM_MEMACCESS (INF_HI_ARM_POST_SDRAM_MEMACCESS)"
+            Case &H2C20
+                Return "HI_INF_HI_ARM_POST_ATMEL_MEM_TEST (INF_HI_ARM_POST_ATMEL_MEM_TEST)"
+            Case &H2C21
+                Return "HI_INF_HI_ARM_POST_FAIL_NO_OLGA_CONNECTED (INF_HI_ARM_POST_FAIL_NO_OLGA_CONNECTED)"
+            Case &H2C22
+                Return "HI_INF_HI_ARM_POST_FC_DIAG_CC1 (INF_HI_ARM_POST_FC_DIAG_CC1)"
+            Case &H2C23
+                Return "HI_INF_HI_ARM_POST_FC_DIAG_COUNTERS (INF_HI_ARM_POST_FC_DIAG_COUNTERS)"
+            Case &H2C24
+                Return "HI_INF_HI_ARM_POST_FC_DIAG_FIFOTEST (INF_HI_ARM_POST_FC_DIAG_FIFOTEST)"
+            Case &H2C25
+                Return "HI_INF_HI_ARM_POST_FC_DIAG_INT (INF_HI_ARM_POST_FC_DIAG_INT)"
+            Case &H2C26
+                Return "HI_INF_HI_ARM_POST_FC_DIAG_REG_CHECK (INF_HI_ARM_POST_FC_DIAG_REG_CHECK)"
+            Case &H2C27
+                Return "HI_SPI_HI_REPORT_PARITY_ERROR_STATUS (SPI_HI_REPORT_PARITY_ERROR_STATUS)"
+            Case &H2C28
+                Return "HI_SPI_HI_ARM_POST_REG_DIAGS_FAILED (SPI_HI_ARM_POST_REG_DIAGS_FAILED)"
+            Case &H2C29
+                Return "HI_SPI_HI_ARM_POST_PDC_BIST_TIMEOUT (SPI_HI_ARM_POST_PDC_BIST_TIMEOUT)"
+            Case &H2C2A
+                Return "HI_SPI_HI_ARM_POST_PDC_RAM_BIST_ERROR (SPI_HI_ARM_POST_PDC_RAM_BIST_ERROR)"
+            Case &H2C2B
+                Return "HI_SPI_HI_ARM_POST_BC_BIST_TIMEOUT (SPI_HI_ARM_POST_BC_BIST_TIMEOUT)"
+            Case &H2C2C
+                Return "HI_SPI_HI_ARM_POST_BC_RAM_BIST_ERROR (SPI_HI_ARM_POST_BC_RAM_BIST_ERROR)"
+            Case &H2C2D
+                Return "HI_SPI_BUFF_CHAN_1_CRC_ERROR (SPI_BUFF_CHAN_1_CRC_ERROR)"
+            Case &H2C2E
+                Return "HI_SPI_BUFF_CHAN_1_FIFO_PARITY_ERROR (SPI_BUFF_CHAN_1_FIFO_PARITY_ERROR)"
+            Case &H2C2F
+                Return "HI_SPI_SYNC_OFFSET_ERROR (SPI_SYNC_OFFSET_ERROR)"
+            Case &H2C30
+                Return "HI_SPI_ILLEGAL_WRITE_ERROR (SPI_ILLEGAL_WRITE_ERROR)"
+            Case &H2C31
+                Return "HI_SPI_ILLEGAL_CMD_ERROR (SPI_ILLEGAL_CMD_ERROR)"
+            Case &H2C32
+                Return "HI_SPI_FIFO_OVER_UNDER_FLOW_ERROR (SPI_FIFO_OVER_UNDER_FLOW_ERROR)"
+            Case &H2C33
+                Return "HI_SPI_IDE_MESSAGE_RECEIVED (SPI_IDE_MESSAGE_RECEIVED)"
+            Case &H2C34
+                Return "HI_SPI_BDR_MESSAGE_RECEIVED (SPI_BDR_MESSAGE_RECEIVED)"
+            Case &H2C35
+                Return "HI_SPI_ABORT_TASK_MESSAGE_RECEIVED (SPI_ABORT_TASK_MESSAGE_RECEIVED)"
+            Case &H2C36
+                Return "HI_SPI_PARITY_ERROR_MESSAGE_RECEIVED (SPI_PARITY_ERROR_MESSAGE_RECEIVED)"
+            Case &H2C37
+                Return "HI_SPI_HI_ARM_POST_REC_MGR_DIAGS_FAILED (SPI_HI_ARM_POST_REC_MGR_DIAGS_FAILED)"
+            Case &H2C38
+                Return "HI_SPI_HI_ARM_POST_HOST_PORT_DIAGS_FAILED (SPI_HI_ARM_POST_HOST_PORT_DIAGS_FAILED)"
+            Case &H2C39
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_PREMATURE_DREQ (BM_TITOV_HOST_PORT_CTRL_PREMATURE_DREQ)"
+            Case &H2C3A
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_PARITY_ERROR (BM_TITOV_HOST_PORT_CTRL_PARITY_ERROR)"
+            Case &H2C3B
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_CRC_ERROR (BM_TITOV_HOST_PORT_CTRL_CRC_ERROR)"
+            Case &H2C3C
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_FIFO_OVERFLOW (BM_TITOV_HOST_PORT_CTRL_FIFO_OVERFLOW)"
+            Case &H2C3D
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_DMA_OVERRUN (BM_TITOV_HOST_PORT_CTRL_DMA_OVERRUN)"
+            Case &H2C3E
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_OUTSTANDING_ERROR (BM_TITOV_HOST_PORT_CTRL_OUTSTANDING_ERROR)"
+            Case &H2C3F
+                Return "HI_BM_TITOV_HOST_PORT_CTRL_SYNC_DATA_ERROR (BM_TITOV_HOST_PORT_CTRL_SYNC_DATA_ERROR)"
+            Case &H2C40
+                Return "HI_BM_CHECK_BUFF_CRCS_MISMATCH (BM_TITOV_HOST_PORT_CTRL_SYNC_DATA_ERROR)"
+            Case &H2C41
+                Return "HI_BM_CHECK_CRC_PASSED (BM_TITOV_HOST_PORT_CTRL_SYNC_DATA_ERROR)"
+            Case &H2C42
+                Return "SAS_ACTIVE_CABLE_ERROR (SAS_ACTIVE_CABLE_ERROR)"
+            Case &H2C50
+                Return "HI_ILLEGAL_SCSI_CMD (HW or FW does not recognize the CDB of SCSI command)"
+            Case &H2C51
+                Return "HI_SEL_ABORTED_CMD (SCSI Macro command was aborted because drive was selected first)"
+            Case &H2C52
+                Return "HI_ATN (ATN was pulled by initiator)"
+            Case &H2C53
+                Return "HI_RESELECT_TIMEOUT (Initiator did not respond to reselect within reselect timeout period)"
+            Case &H2C54
+                Return "HI_NO_PI_TASK (Internal port interface task queue was empty)"
+            Case &H2C55
+                Return "HI_TOO_MANY_PI_TASKS (No room left in internal port interface task queue)"
+            Case &H2C56
+                Return "HI_PARITY_SCSI (Parity error on SCSI bus)"
+            Case &H2C57
+                Return "HI_PARITY_BUFFER (Parity error in mini-buffer)"
+            Case &H2C58
+                Return "HI_INVALID_VALUE (Attempted to use invalid value internally)"
+            Case &H2C59
+                Return "HI_FIFO_NOT_EMPTY (SCSI Fifo not empty when attempting to write to it)"
+            Case &H2C5A
+                Return "HI_NOT_CONNECTED (Attempted to issue SCSI macro target command while not in target mod)"
+            Case &H2C5B
+                Return "HI_WRONG_HOST (Attempted to communicate with Host X while connected to Host Y)"
+            Case &H2C5C
+                Return "HI_WRONG_BUS_STATE (Attempted SCSI macro command while in incorrect bus phase)"
+            Case &H2C5D
+                Return "HI_NO_INFO_ON_HOST (This host has not communicated with us previously)"
+            Case &H2C5E
+                Return "HI_INVALID_SPEED (Saved SCSI bus speed for this host is corrupted)"
+            Case &H2C5F
+                Return "HI_INVALID_SCSI_ID (SCSI ID is out of range (0-15))"
+            Case &H2C60
+                Return "HI_INVALID_GROUP_CODE (Group code in CDB not supported)"
+            Case &H2C61
+                Return "HI_OVERLAPPED_CMD (Host attempted to issue overlapped command)"
+            Case &H2C62
+                Return "HI_NOT_ENOUGH_BUFFER_SPACE (Internal requestor asked for more space than available in the mini-buffer)"
+            Case &H2C63
+                Return "HI_NO_MINI_BUFFER (Mini-buffer is non-functional)"
+            Case &H2C64
+                Return "HI_BUFFER_IN_USE (Internal requestor is denied access to the mini-buffer)"
+            Case &H2C65
+                Return "HI_STATUS_INTERRUPTED (SCSI status phase failed)"
+            Case &H2C66
+                Return "HI_IDE (Received Initiator Detected Error Message)"
+            Case &H2C67
+                Return "HI_MPE (Received Message Parity Error Message)"
+            Case &H2C68
+                Return "HI_BDR (Received Bus Device Reset Message)"
+            Case &H2C69
+                Return "HI_ABORT_MSG (Received Abort Message)"
+            Case &H2C6A
+                Return "HI_NO_MEDIA_INFO (Failed Media Information check)"
+            Case &H2C6B
+                Return "HI_NO_MEDIA (No Tape in Drive)"
+            Case &H2C6C
+                Return "HI_LOADING_MEDIA (Loading Tape)"
+            Case &H2C6D
+                Return "HI_MEDIA_CHANGED (Media present but not loaded)"
+            Case &H2C6E
+                Return "HI_CLEANING (Cleaning heads)"
+            Case &H2C6F
+                Return "HI_RESET (Got a PON or SCSI Reset)"
+            Case &H2C70
+                Return "HI_SCSI_MODE_CHANGE (Mode change (LVD/SE) on SCSI bus)"
+            Case &H2C71
+                Return "HI_SCSI_GROSS_ERROR (Gross error detected by SCSI Macro)"
+            Case &H2C72
+                Return "HI_ILI_LONG (Illegal length record - too long)"
+            Case &H2C73
+                Return "HI_ILI_SHORT (Illegal length record - too short)"
+            Case &H2C74
+                Return "HI_CRC_ERROR (CRC error on read)"
+            Case &H2C75
+                Return "HI_BURST_SIZE_TOO_LARGE (Requested Burst Size larger than is supported)"
+            Case &H2C76
+                Return "HI_INVALID_FIELD_IN_MODE_PARAMETER_LIST (There was an invalid field in the mode parameter list for this mode select command)"
+            Case &H2C77
+                Return "HI_UNLOADING_MEDIA (Unloading Tape)"
+            Case &H2C78
+                Return "HI_PARAMETER_OUT_OF_RANGE (Internal requestor supplied parameter is out of range)"
+            Case &H2C79
+                Return "HI_INVALID_ALLOCATION_LENGTH (Allocation length exceeds permitted length)"
+            Case &H2C7A
+                Return "HI_INVALID_PAGE_CODE (Unsupported Pagecode)"
+            Case &H2C7B
+                Return "HI_INVALID_PAGE_CODE_IN_PARM_LIST (Unsupported Pagecode)"
+            Case &H2C7C
+                Return "HI_BOT (BOT encountered on space)"
+            Case &H2C7D
+                Return "HI_EOT (EOT encountered on space)"
+            Case &H2C7E
+                Return "HI_BLANK_CHECK_VIRGIN_MEDIA (The media has never been written to before and there was an attempt to read/verify data. Returned by hiPerformPreExeChecks)"
+            Case &H2C7F
+                Return "HI_POSITION_LOST (TEMP code for returning status after write behind error)"
+            Case &H2C80
+                Return "HI_LOG_SELECT_PCR_ERROR (PCR error in Log Select command)"
+            Case &H2C81
+                Return "HI_NON_RESETABLE_LOG_PAGE (The Page Code is not a resetable page)"
+            Case &H2C82
+                Return "HI_NON_WRITABLE_LOG_PAGE (The Page Code is not a writable page)"
+            Case &H2C83
+                Return "HI_LOG_PAGE_HEADER_RSVD_BIT_SET (The reserved bit in the Log Page header has been set)"
+            Case &H2C84
+                Return "HI_LOG_SELECT_PAGE_LENGTH_ERROR (Log Select Page Length incorrect)"
+            Case &H2C85
+                Return "HI_LOG_SELECT_PARAMETER_HEADER_ERROR (There is an error with the Log Parameter Header)"
+            Case &H2C86
+                Return "HI_LOG_SELECT_PARAM_LIST_LENGTH_ERROR (Log Select Parameter list length error)"
+            Case &H2C87
+                Return "HI_LOG_SENSE_PAGE_CODE_ERROR (Log Sense Page Code is invalid)"
+            Case &H2C88
+                Return "HI_LOG_SENSE_PC_ERROR (Log Sense PC Code is in Error)"
+            Case &H2C89
+                Return "HI_PARAMETER_HEADER_ERROR (Log Select Error - Parameter Header Error)"
+            Case &H2C8A
+                Return "HI_RESTART_LP (Restart the Logical Pipeline after a format error)"
+            Case &H2C8E
+                Return "HI_BUFFER_MANAGER_ERROR (Buffer Manager has been interrupted with an Error)"
+            Case &H2C8F
+                Return "HI_CHECK_YOUR_SCSI_CABLES (HIF has finished all of the retries for a data phase)"
+            Case &H2C90
+                Return "HI_LOG_SELECT_PARAM_LIST_ERROR (Log Select parameter list length error)"
+            Case &H2C91
+                Return "HI_NO_FREE_SENSE_BUFFERS (hiPopulateSenseBuffer() could not find any free sense data buffers)"
+            Case &H2C92
+                Return "HI_FAILURE_PREDITION_THRESHOLD_EXCEEDED_FALSE (This error code is sent when we check condition a CDB as a result of the Test flag being set in the Information Exceptions Mode Page)"
+            Case &H2C93
+                Return "HI_RESET_AFTER_GE (Used to POST UA 2900 after detected Selway GE)"
+            Case &H2C94
+                Return "HI_RETURN_GOOD_STATUS (Used to force good status to be returned)"
+            Case &H2C95
+                Return "HI_INQUIRY_FIRMWARE_BUG (Indicates a FW bug in inquiry page handling)"
+            Case &H2C96
+                Return "HI_SET_MEDIUM_REMOVAL_FW_BUG (Indicates a FW bug in PreventAllowMediaRemove)"
+            Case &H2C97
+                Return "HI_MODEPAGE_FW_FIRMWARE_BUG (Indicates a FW bug in Mode Page parsing)"
+            Case &H2C98
+                Return "HI_EWEOM (Write/Write Filemarks inside EWEOM)"
+            Case &H2C99
+                Return "HI_ILLEGAL_SCSI_MACRO_CMD (Firmware incorrectly programmed SCSI macro)"
+            Case &H2C9A
+                Return "HI_UNSUPPORTED_LUN (Indicates that an Unsupported LUN was specified in the SCSI Identify Message)"
+            Case &H2C9B
+                Return "HI_ABORT_IN_PROGRESS (Aborting a Previous Cmd)"
+            Case &H2C9C
+                Return "HI_ABORTING_AND_NO_DISCONNECT (Reject a cmd that ca,'t be queued whilst abort processing is active)"
+            Case &H2C9D
+                Return "HI_COMMAND_PHASE_RETRIES_FAILED (HIF has finished all of the retries for a command phase)"
+            Case &H2C9E
+                Return "HI_PARAMETER_NOT_SUPPORTED (A request for an invalid page code has been sent)"
+            Case &H2C9F
+                Return "HI_BUFFER_OFFSET_GOOD (Used internally by Read Write Buffer code, should never be reported to the Host)"
+            Case &H2CA0
+                Return "HI_OLD_STYLE_OPERATION_IN_PROGRESS (Reported when an Immediate command is executing and a subsequent command received)"
+            Case &H2CA1
+                Return "HI_ILI_LONG_AND_EOR (Illegal length record - too long and EOR in FIFO. Occurs when rec is long by less than FIFO length)"
+            Case &H2CA2
+                Return "HI_ILI_SHORT_AND_CRC (Illegal length record - too short with bad CRC)"
+            Case &H2CA3
+                Return "HI_ILI_LONG_AND_CRC (Illegal length record - too long with bad CRC)"
+            Case &H2CA4
+                Return "HI_LUN_NOT_CONFIGURED (Drive is the process of becoming ready)"
+            Case &H2CA5
+                Return "HI_ILI_LONG_RESIDUE_READ_ERROR (ILI long has been detected, but a read error was encountered during residue flush)"
+            Case &H2CA6
+                Return "HI_INIT_CMD_REQUIRED (Tape is loaded but not threaded, init comamnd is required)"
+            Case &H2CA7
+                Return "HI_ILI_LONG_FLUSH_TIMEOUT (ILI long has been detected, but flush for residue timed out)"
+            Case &H2CA8
+                Return "HI_EL_TORITO_CORRUPT (CDROM El Torito Identifier is corrupt)"
+            Case &H2CA9
+                Return "HI_GAGARIN_ASIC_NOT_SUPPORTED (Gagarin ASIC not supported anymore)"
+            Case &H2CAA
+                Return "HI_INVALID_SELWAY_ASIC_REVISION (Invalid revision of Selway ASIC)"
+            Case &H2CAB
+                Return "HI_MAM_ATTRIB_HEADER_TRUNCATED (Parameter list length specified has resulted in a attribute header truncation)"
+            Case &H2CAC
+                Return "HI_MAM_INVALID_FIELD_IN_ATTRIB_HEADER (Reserved field set in attribute header)"
+            Case &H2CAD
+                Return "HI_MAM_ATTRIB_ID_NOT_ASCENDING (Attribute ID's need to be in ascending order)"
+            Case &H2CAE
+                Return "HI_MAM_ATTRIB_FORMAT_UNSUPPORTED (Attribute header specifiecs a unsupported attribute value)"
+            Case &H2CAF
+                Return "HI_MAM_ATTRIB_ID_INVALID (Attrib ID unsupported)"
+            Case &H2CB0
+                Return "HI_MAM_FORMAT_INCORRECT_FOR_ATTRIBUTE_ID (Incorrect Format for this attribute ID)"
+            Case &H2CB1
+                Return "HI_MAM_ATTRIB_LENGTH_INCORRECT (Attribute header specifies an incorrect length for this attribute)"
+            Case &H2CB2
+                Return "HI_MAM_NO_SPACE_FOR_ATTRIB (Host attribute area in MAM is full)"
+            Case &H2CB3
+                Return "HI_MAM_DEL_NON_EXISTANT_ATTRIB_ID (Write Attrib command attempted to delete non-existant attribute)"
+            Case &H2CB4
+                Return "HI_MAM_INVALID_SERVICE_ACTION (Write Attrib command attempted to delete non-existant attribute)"
+            Case &H2CB5
+                Return "HI_MAM_HOST_ATTRIB_AREA_NOT_VALID (Read attrib failed due to Host Attribute area not being valid)"
+            Case &H2CB6
+                Return "HI_MAM_INVALID_FIELD_IN_ATTRIB_DATA (Attribute data is invalid for format)"
+            Case &H2CB7
+                Return "HI_FAILURE_PREDITION_THRESHOLD_EXCEEDED (A Tape Alert flag has been set and the next SCSI command needs to be check conditioned)"
+            Case &H2CB8
+                Return "HI_GWIF_IDLE_CAUSE_UNKNOWN (Parameter used by hiGWIFIdleOp/hiFlsuhGWIFIdleOp NEVER returned to HOST)"
+            Case &H2CB9
+                Return "HI_GWIF_IDLE_CAUSE_READ_ERROR (Parameter used by hiGWIFIdleOp/hiFlsuhGWIFIdleOp NEVER returned to HOST)"
+            Case &H2CBA
+                Return "HI_GWIF_IDLE_CAUSE_WRITE_ERROR (Parameter used by hiGWIFIdleOp/hiFlsuhGWIFIdleOp NEVER returned to HOST)"
+            Case &H2CBB
+                Return "HI_MAM_ACCESSIBLE (MAM is accessible but cartridge is in load HOLD position - Unit Attention)"
+            Case &H2CBC
+                Return "HI_MEDIA_NOT_PRESENT_MAM_ACCESSIBLE (MAM is accessible but cartridge is in load HOLD position - Not Ready)"
+            Case &H2CBD
+                Return "HI_INVALID_PI_TASK (Internal port interface task queue error - invalid task)"
+            Case &H2CBE
+                Return "HI_WRITE_INHIBIT_BAD_CM (Unable to write due to bad CM)"
+            Case &H2CBF
+                Return "HI_SELWAY_ATN_IGNORED (Selway ignored ATN on Request Sense)"
+            Case &H2CC0
+                Return "HI_INVALID_LEOT_WRAPS_REQ (Invalid number of wraps requested for LEOT)"
+            Case &H2CC1
+                Return "HI_INVALID_LEOT_POS_REQ (Invalid LEOT request compared to current position)"
+            Case &H2CC2
+                Return "HI_MAM_NOT_ACCESSIBLE (CM is in readable position but cannot be read)"
+            Case &H2CC3
+                Return "HI_INVALID_NEXUS (SCSI Sequencer was asked to reconnect during invalid nexus)"
+            Case &H2CC4
+                Return "HI_DATA_PHASE_RETRY_FAILED (SCSI Sequencer received a hiRetryDataBurst which failed)"
+            Case &H2CC5
+                Return "HI_INQUIRY_DATA_TOO_LONG (Inquiry Data Too Long)"
+            Case &H2CC6
+                Return "HI_REQUEST_SENSE_DATA_TOO_LONG (Request Sense Data Too Long)"
+            Case &H2CC7
+                Return "HI_INVALID_INQUIRY_DATA_LUN (Invalid Lun for storing Inquriy Data in MiniBuffer)"
+            Case &H2CC8
+                Return "HI_NO_FREE_SENSE_SLOT (No Free Slot to Store Request Sense Data)"
+            Case &H2CC9
+                Return "HI_SURROAGTE_SCSI_NOT_CONFIGURABLE (Surrogate SCSI not configurable)"
+            Case &H2CCA
+                Return "HI_INVALID_SURROGATE_LUN (Surrogate SCSI Lun not a valid Lun)"
+            Case &H2CCB
+                Return "HI_SURROGATE_SCSI_COMMAND (Surrogate SCSI Command arrived)"
+            Case &H2CCC
+                Return "HI_INVALID_TAPE_TYPE (Incompatible tape type)"
+            Case &H2CCD
+                Return "HI_INVALID_EXCHANGE_ID (The supplied exchange is invalid)"
+            Case &H2CCE
+                Return "HI_INVALID_DEV_CFG_SDCA_VALUE (Invalid value for Dev Cfg SDCA)"
+            Case &H2CCF
+                Return "HI_WRITE_BUFFER_PARAMETER_ERROR (Bad length for write buffer command)"
+            Case &H2CD0
+                Return "HI_ECHO_BUFFER_OVERWRITTEN (Echo Buffer has been overwritten by another host)"
+            Case &H2CD1
+                Return "HI_HOST_REPORTED_ERROR (Never reported to Host. Used to signify a specical entry in Fault Log. See DDT 69873)"
+            Case &H2CD2
+                Return "HI_HEBRIDES_GOOD (Never reported to Host - Hebrides gave good status)"
+            Case &H2CD3
+                Return "HI_HEBRIDES_BUS_ERROR (Hebrides detected a bus error)"
+            Case &H2CD4
+                Return "HI_UNKNOWN_OPERATION (Hebrides detected an unknown internal opcode)"
+            Case &H2CD5
+                Return "HI_BAD_CONTEXT (Hebrides detected a bad context ID)"
+            Case &H2CD6
+                Return "HI_BAD_PARAMETERS (Hebrides detected bad parameters for an internal operation)"
+            Case &H2CD7
+                Return "HI_DRIVE_ERROR (Hebrides has encountered a FM/EOD. Should not be reported)"
+            Case &H2CD8
+                Return "HI_RESEL_TIMEOUT (Hebrides SCSI reselection timeout)"
+            Case &H2CD9
+                Return "HI_INTERNAL_ERROR (Hebrides internal operation failed due to a PIF/MIF buffer parity error)"
+            Case &H2CDA
+                Return "HI_COMMAND_OUTSTANDING (Should not be reported)"
+            Case &H2CDB
+                Return "HI_NO_COMMAND_OUTSTANDING (Should not be reported)"
+            Case &H2CDC
+                Return "HI_NOT_IN_AUTO_MODE_STATUS (Should not be reported)"
+            Case &H2CDD
+                Return "HI_ARM_POST_FAILURE (ARM POST Failure)"
+            Case &H2CDE
+                Return "HI_BAD_DATA_LEN_STATUS (Hebrides detected Bad Data Length - FC_DPL mismatch to CDB allocation length)"
+            Case &H2CDF
+                Return "HI_SELECTED_WHILST_RESELECTING (Never reported to Host)"
+            Case &H2CE0
+                Return "HI_BAD_STATE (Firmware defect)"
+            Case &H2CE1
+                Return "HI_BAD_CONFIG (Firmware defect)"
+            Case &H2CE2
+                Return "HI_MAILBOX_OP_TIME_OUT (The HostIF asic has not responded to a mail box operation within 10ms )"
+            Case &H2CE3
+                Return "HI_INTERNAL_FW_REBOOT (Got an Internal Firmware Reboot)"
+            Case &H2CE4
+                Return "HI_SCSI_BUS_RESET (SCSI Bus Reset signal asserted by host)"
+            Case &H2CE5
+                Return "HI_SCSI_BDR (Bus Device Reset message sent by host)"
+            Case &H2CE6
+                Return "HI_TRANSCEIVERS_TO_SE (Transceivers changed to SE)"
+            Case &H2CE7
+                Return "HI_TRANSCEIVERS_TO_LVD (Transceivers changed to LVD)"
+            Case &H2CE8
+                Return "HI_POWER_ON_RESET (Got a Power ON Reset)"
+            Case &H2CE9
+                Return "HI_ARM_BOOTLOAD_DOWNLOAD_CHECKSUM_FAIL (Checksum failure when copying bootloader code into Lucan Dual Port RAM)"
+            Case &H2CEA
+                Return "HI_AMUNSDEN_HAS_BEEN_RESET (DDT73055 - Amunsden has been reset prior to receving the hiPowerOneEvent from IONA)"
+            Case &H2CEB
+                Return "HI_DDT72972_LF_STALL_ERROR (LF stall on reads)"
+            Case &H2CEC
+                Return "HI_LOADED_NOT_AVAILABLE (Tape is threaded but drive shows it as unloaded. DDT75213)"
+            Case &H2CED
+                Return "HI_ARM_VERIFY_DR_TAPE_FAILED (The ARM FW has determined that this is not a DR tape)"
+            Case &H2CEE
+                Return "HI_LU_INVENTORY_CHANGED (There has been a change in the support Logical Unit inventory)"
+            Case &H2CEF
+                Return "HI_INVALID_PORT_ID (An invalid Port ID has been Logged In)"
+            Case &H2CF0
+                Return "HI_INVALID_CFG_SURROGATE_LUN_OPCODE (An invalid Lun operation code has been passed to hiConfigureSurrogateLun() )"
+            Case &H2CF1
+                Return "HI_OVERSIZED_FIXED_MODE_REQUEST (Fixed mode request was too large)"
+            Case &H2CF2
+                Return "HI_LUCAN_EXPAND_DOWNLOAD_SIZE_FAIL (Decompression size mismatch while expanding and programming the Lucan FPGA code)"
+            Case &H2CF3
+                Return "HI_MORE_TO_DO"
+            Case &H2CFD
+                Return "HI_LOG_SELECT_CHANGED (SCSI command failed because another host has changed the log pages)"
+            Case &H2CFE
+                Return "HI_FIRMWARE_UPDATED (SCSI command failed because new firmware has been downloaded)"
+            Case &H2CFF
+                Return "HI_MODE_PARAMETERS_CHANGED (SCSI command failed because another host has changed the mode pages)"
+            Case &H2D00
+                Return "HI_RAE_ERROR (Hebrides is reporting a failure due to a read ahead error)"
+            Case &H2D01
+                Return "HI_WBE_ERROR (Hebrides is reporting a failure due to a write behind error)"
+            Case &H2D04
+                Return "HI_STREAMING_MODE (Drive requested single shot read/write while streamin)"
+            Case &H2D05
+                Return "HI_HANDLE_NOT_FOUND (Search for a handle for a given context ID failed)"
+            Case &H2D06
+                Return "HI_EXTENDED_RESET_COMPLETE (This dispatcher has completed the handling of the extended reset rewind )"
+            Case &H2D07
+                Return "HI_LOADED_FWUPGRADE_UNKNOWN_CART (FW upgrade/unknown cartridge loaded but not threaded)"
+            Case &H2D08
+                Return "HI_LOADED_CLEANING_CART (Cleaning tape loaded but not threaded)"
+            Case &H2D09
+                Return "HI_FW_UPGRADE_IN_PROGRESS (Drive control has set drDriveStatus to DR_FW_UPGRADE)"
+            Case &H2D0A
+                Return "HI_LUN_NOT_READY_OP_IN_PROGRESS (Immediate Load/Unload in progress)"
+            Case &H2D0B
+                Return "HI_OPERATION_IN_PROGRESS (Reported when an Immediate command is executing and a subsequent command received)"
+            Case &H2D0C
+                Return "HI_I_T_NEXUS_LOSS_OCCURRED (I_T Nexus Loss Occurred)"
+            Case &H2D0D
+                Return "HI_TOO_MANY_LOGICAL_UNITS (The maximum number of surrogate logical units have been defined)"
+            Case &H2D0E
+                Return "HI_INVALID_SURROGATE_INQ_PAGE (The supplied surrogate inquiry page is incorrect)"
+            Case &H2D0F
+                Return "HI_INQ_CACHE_FULL (The surrogate logical unit inquiry area is full)"
+            Case &H2D10
+                Return "HI_INQ_CACHE_CORRUPTED (The surrogate logical unit inquiry area has been corrupted)"
+            Case &H2D11
+                Return "HI_PORTIF_IS_ENABLED (The operation has been denied as the SCSI port is currently enabled)"
+            Case &H2D12
+                Return "HI_NO_SENSE_DATA_STORED (ACI has attempted a Surrogate SCSI status operation with out first setting up any sense data)"
+            Case &H2D13
+                Return "HI_NO_SURROGATE_CMD (This is no nexus live for this surrogate logical unit)"
+            Case &H2D14
+                Return "HI_INVALID_SCSI_STATUS (An invalid Scsi status value has been supplied)"
+            Case &H2D15
+                Return "HI_FWD_CMD_TO_LIB (Can not process this command, for some reason send it to lib)"
+            Case &H2D16
+                Return "HI_SURROGATE_LUN_DELETED (The hiConfigureSurrogateLunOp has resulted in a LUN being deleted)"
+            Case &H2D17
+                Return "HI_INVALID_SUB_PAGE_CODE (Unsupported Sub Pagecode)"
+            Case &H2D18
+                Return "HI_FIRST_BURST"
+            Case &H2D19
+                Return "HI_ACK_NAK_TIMEOUT"
+            Case &H2D1A
+                Return "HI_NAK_RECEIVED"
+            Case &H2D1B
+                Return "HI_INITIATOR_RSP_TIMEOUT"
+            Case &H2D1C
+                Return "HI_DATA_OFFSET_ERROR"
+            Case &H2D1D
+                Return "HI_IU_TOO_SHORT"
+            Case &H2D1E
+                Return "HI_TOO_MUCH_WRITE_DATA"
+            Case &H2D1F
+                Return "HI_CHAN1_CRC_ERROR_BUFF_CRC_RECHECK_GOOD (Chan1 dectected CRC error, subsiquent check of buffer found CRC to be good)"
+            Case &H2D20
+                Return "HI_CHAN1_CRC_ERROR_BUFF_CRC_RECHECK_BAD (Chan1 dectected CRC error, subsiquent check of buffer found CRC to be wrong)"
+            Case &H2D21
+                Return "HI_ERR_PHY_TEST_FUNCTION_IN_PROGRESS"
+            Case &H2D22
+                Return "HI_ERR_INVALID_CONFIG_ACTION"
+            Case &H2D23
+                Return "HI_ERR_INVALID_RELATIVE_PORT (F/W Defect, caller specified invalid Relative Target Port)"
+            Case &H2D24
+                Return "HI_ADI_VERIFY_ILI_ERROR (ILI encountered performing ADI Verify)"
+            Case &H2D25
+                Return "HI_ADI_VERIFY_READ_AHEAD_ERROR (Indicates a read ahead error was encountered during ADI Verify. The read ahead error should be reported to host not this error!)"
+            Case &H2D26
+                Return "HI_ERR_COUNTERMAND_QUEUE_OVERFLOW (No space on queue for hiCountermandOp)"
+            Case &H3000
+                Return "LF_NO_ERROR (Synonymous with GOOD status.)"
+            Case &H3001
+                Return "LF_ABORTED (Operation of the Logical Formatter has been aborted.)"
+            Case &H3002
+                Return "LF_BUSY (A Logical Formatter process has received a operation request while in a transient state.)"
+            Case &H3003
+                Return "LF_INVALID_PARAMETERS (The value of a parameter received with a Logical Formatter operation request falls outside its valid range.)"
+            Case &H3004
+                Return "LF_UNSUPPORTED_OPERATION (A Logical Formatter process has received an operation request while in a mode that does not support that operation.)"
+            Case &H3010
+                Return "LF_POWERON_RESET_FAILURE (An error condition occured during execution of the Logical Formatter's Power-On or Reset algorithm.)"
+            Case &H3011
+                Return "LF_UNEXPECTED_INTERRUPT (A Logical Formatter process has recieved a signal from the hardware at an unexpected time.)"
+            Case &H3012
+                Return "LF_UNEXPECTED_DISCARD_COMPLETE (A Logical Formatter process has recieved a DiscardComplete signal from the hardware at an unexpected time.)"
+            Case &H301C
+                Return "LF_COMPRESSOR_PARITY_ERROR_CODE (The Logical Formatter has encountered a Compressor parity error.)"
+            Case &H301D
+                Return "LF_E2E_RECORD_CRC_ERROR_ENCOUNTERED_READ (The Logical Formatter has encountered an E2E CRC error while unformatting the data stream.)"
+            Case &H301E
+                Return "LF_E2E_RECORD_CRC_ERROR_ENCOUNTERED_WRITE (The Logical Formatter has encountered an E2E CRC error while formatting the data stream.)"
+            Case &H301F
+                Return "LF_PACKER_STARVED (The Codeword Packer contains data bits that cannot be self-flushed.)"
+            Case &H3020
+                Return "LF_DATA_PATH_NOT_EMPTY (The Hardware Functional Blocks that form the Logical Formatter data path contain data.)"
+            Case &H3021
+                Return "LF_FILE_MARK_ENCOUNTERED (The Logical Formatter has encountered a File Mark codeword while unformatting the data stream.)"
+            Case &H3022
+                Return "LF_RECOVERABLE_FORMAT_ERROR_ENCOUNTERED (The Logical Formatter has encountered a format error while unformatting the data stream.)"
+            Case &H3023
+                Return "LF_UNRECOVERABLE_FORMAT_ERROR_ENCOUNTERED (The Logical Formatter has encountered a format error while unformatting the data stream.)"
+            Case &H3024
+                Return "LF_END_MARKER_NOT_REQUIRED (The Logical Formatter has not inserted an End Marker in the current DataSet because it's empty.)"
+            Case &H3025
+                Return "LF_DATA_PATH_PAUSED (One or more Hardware Functional Blocks in the Logical Formatter are paused.)"
+            Case &H3026
+                Return "LF_FILE_MARK_PENDING (The Logical Formatter has a File Mark pending meaning it's logically before the Filemark but physically after it.)"
+            Case &H3027
+                Return "LF_RESTART_LP (Restart the Logical Formatter hardware.)"
+            Case &H3028
+                Return "LF_BEYOND_TARGET (The Logical Media has provided a Data Set with an Access Point beyond the target position.)"
+            Case &H3029
+                Return "LF_RECORD_CRC_ERROR_ENCOUNTERED (The Logical Formatter has encountered a CRC error while unformatting the data stream.)"
+            Case &H302A
+                Return "LF_PRIME_FAILED (The Logical Formatter's C1LFI Hardware Functional Block has failed to prime.)"
+            Case &H302B
+                Return "LF_ZERO_LEN_REC_ERROR_ENCOUNTERED (The Logical Formatter has encountered a zero length record error.)"
+            Case &H302C
+                Return "LF_RSVD_CODEWORD_ERROR_ENCOUNTERED (The Logical Formatter has encountered a reserved codeword error.)"
+            Case &H302D
+                Return "LF_FILE_MARK_IN_REC_ERROR_ENCOUNTERED (The Logical Formatter has encountered a filemark in record error.)"
+            Case &H302E
+                Return "LF_DECOMP_ERROR_ENCOUNTERED (The Logical Formatter has encountered a decompression error.)"
+            Case &H302F
+                Return "LF_EOD_ENCOUNTERED (The Logical Formatter has encountered End-Of-Data.)"
+            Case &H3030
+                Return "LF_WR_FM_FAIL_ABORTED (The Logical Formatter failed to write a filemark - aborted.)"
+            Case &H3031
+                Return "LF_WR_FM_FAIL_DATA_PATH_NOT_EMPTY (The Logical Formatter failed to write a filemark - data path not empty.)"
+            Case &H3032
+                Return "LF_WR_FM_FAIL_UNSUPPORTED_OP (The Logical Formatter failed to write a filemark - unsupported op.)"
+            Case &H3033
+                Return "LF_UNEXPECTED_DATA_TYPE (The Logical Formatter has received a non-user data set.)"
+            Case &H3034
+                Return "LF_WR_FM_FAIL_PACKER_PAUSED (The Logical Formatter failed to write a filemark - packer paused.)"
+            Case &H3035
+                Return "LF_ERR_UNEXPECTED_ACCESS_POINT_INTERRUPT (The Logical Formatter received an unexpected Access Point interrupt.)"
+            Case &H3036
+                Return "LF_ERR_UNABLE_TO_INSERT_AN_END_MARKER (The Logical Formatter was unable to insert an End Marker.)"
+            Case &H3037
+                Return "LF_ERR_UNABLE_TO_COMPLETE_NEW_DATA_KEY_PROCESS (The Logical Formatter was unable to complete the new LTO5 Data Key process.)"
+            Case &H3040
+                Return "LF_DATA_COLLECTION_NO_MORE_DATA (Logical Media not able to supply any more datasets.)"
+            Case &H3301
+                Return "LF_HAL_ABORTED (Operation of the Logical Formatter's Hardware Abstraction Layer has been aborted.)"
+            Case &H3302
+                Return "LF_HAL_INVALID_PARAMETER (The value of a parameter passed to a function in the Logical Formatter's Hardware Abstraction Layer falls outside its valid range.)"
+            Case &H3303
+                Return "LF_HAL_ILLEGAL_INTERNAL_STATE (A function in the Logical Formatter's Hardware Abstraction Layer has detected an illegal combination of variable values.)"
+            Case &H3304
+                Return "LF_HAL_UNSUPPORTED_SERVICE (A function in the Logical Formatter's Hardware Abstraction Layer has received a request while in a mode that does not support that request.)"
+            Case &H3305
+                Return "LF_HAL_HARDWARE_EVENT_MISSING (The Logical Formatter's hardware has failed to signal (issue an interrupt for) an event expected by the firmware.)"
+            Case &H3306
+                Return "LF_HAL_HARDWARE_EVENT_MISSING_SHORT_FINAL_BURST (During a Buffer transfer which ends with a final burst of ten bytes or less, the Logical Formatter's hardware failed to signal the transfer completion.)"
+            Case &H3307
+                Return "LF_HAL_HARDWARE_EVENT_MISSING_SHORT_TRANSFER (During a Buffer transfer of ten bytes or less, the Logical Formatter's hardware failed to signal the transfer completion.)"
+            Case &H3308
+                Return "LF_HAL_HARDWARE_EVENT_MISSING_FIRST_1K_SHORT_FINAL_BURST (During a Buffer transfer which ends with a final burst of ten bytes or less within the first 1k DRAM page.)"
+            Case &H3309
+                Return "LF_HOST_PARITY_ERROR_DETECTED (A parity error was detected transferring data between Iona/Lucan and Amundsen.)"
+            Case &H330A
+                Return "LF_HAL_MISSING_INT_DATAPATH_NOT_EMPTY (Wanted to start a timer for a potential missing NextDAEmpty interrupt but the pipeline wasn't empty.)"
+            Case &H330B
+                Return "LF_C1LFI_FIFO_HARD_ERR (LF's C1LFI block detected a parity error while reading a byte out of its FIFO.)"
+            Case &H330C
+                Return "LF_CORRECTABLE_SDRAM_CORRUPTION_ON_RESTORE (LF detected a correctable SDRAM corruption during Restore.)"
+            Case &H330D
+                Return "LF_UNCORRECTABLE_SDRAM_CORRUPTION_ON_RESTORE (LF detected an uncorrectable SDRAM corruption during Restore.)"
+            Case &H330E
+                Return "LF_SDRAM_CORRUPTION_BUFFER_INFO (LF SDRAM corruption Buffer info)"
+            Case &H3310
+                Return "LF_HAL_PIPELINE_STALLED (LF PIPELINE STALLED)"
+            Case &H3311
+                Return "LF_HAL_COMPRESSOR_RESET (LF COMPRESSOR RESET)"
+            Case &H3312
+                Return "LF_HAL_STALL_TIMER_ID_CONFUSION (LF STALL TIMER ID CONFUSION)"
+            Case &H3320
+                Return "LF_HAL_PACKER_OVERRUN (LF PACKER OVERRUN)"
+            Case &H3321
+                Return "LF_HAL_NON_EMPTY_PACKED_SEGMENT (LF NON-EMPTY PACKED SEGMENT)"
+            Case &H3322
+                Return "LF_HAL_PACKER_MISSED_EOR (LF PACKER MISSED EOR)"
+            Case &H3323
+                Return "LF_HAL_UNPACKER_OVERRUN (LF UNPACKER OVERRUN)"
+            Case &H3324
+                Return "LF_HAL_PACKER_ALIGNED_EOR (LF PACKER ALIGNED EOR)"
+            Case &H3325
+                Return "LF_HAL_PACKER_DATA_IN_PACKER (LF PACKER DATA IN PACKER)"
+            Case &H3326
+                Return "LF_HAL_COMPRESSOR_AT_RECORD_BOUNDARY (LF COMPRESSOR AT RECORD BOUNDARY)"
+            Case &H3327
+                Return "LF_HAL_RECORD_BOUNDARY_STATUS (LF RECORD BOUNDARY STATUS)"
+            Case &H332A
+                Return "LF_HAL_NO_END_MARKER_FOUND_WHILE_WRITING (LF NO END MARKER FOUND IN PARTIALLY FULL DATASET WHILE WRITING)"
+            Case &H332B
+                Return "LF_HAL_NO_END_MARKER_FOUND_WHILE_READING (LF NO END MARKER FOUND IN PARTIALLY FULL DATASET WHILE READING)"
+            Case &H332C
+                Return "LF_HAL_ADJUSTING_BAD_VALID_DATA_LENGTH_WHILE_WRITING (LF BAD VALID DATA LENGTH DETECTED WHILE WRITING)"
+            Case &H332D
+                Return "LF_HAL_ADJUSTING_BAD_VALID_DATA_LENGTH_WHILE_READING (LF BAD VALID DATA LENGTH DETECTED WHILE READING)"
+            Case &H3330
+                Return "LF_HAL_UNEXPECTED_CURRENT_REG_VAL (LF PACKER OVERRUN WITH UNEXPECTED CURRENT REG VAL)"
+            Case &H3331
+                Return "LF_HAL_UNEXPECTED_NEXT_REG_VAL (LF PACKER OVERRUN WITH UNEXPECTED NEXT REG VAL)"
+            Case &H3332
+                Return "LF_HAL_BAD_ACCESS_POINT_WHILE_WRITING (LF BAD ACCESS POINT VALUE DETECTED WHILE WRITING)"
+            Case &H3333
+                Return "LF_HAL_BAD_ACCESS_POINT_WHILE_READING (LF BAD ACCESS POINT VALUE DETECTED WHILE READING)"
+            Case &H3334
+                Return "LF_HAL_ADJUSTING_BAD_ACCESS_POINT_WHILE_WRITING (LF ADJUSTING BAD ACCESS POINT WHILE WRITING)"
+            Case &H3335
+                Return "LF_HAL_ADJUSTING_BAD_ACCESS_POINT_WHILE_READING (LF ADJUSTING BAD ACCESS POINT WHILE READING)"
+            Case &H3336
+                Return "LF_HAL_UNABLE_TO_FIND_A_GOOD_ACCESS_POINT_WHILE_WRITING (LF UNABLE TO FIND A GOOD ACCESS POINT WHILE WRITING)"
+            Case &H3337
+                Return "LF_HAL_UNABLE_TO_FIND_A_GOOD_ACCESS_POINT_WHILE_READING (LF UNABLE TO FIND A GOOD ACCESS POINT WHILE READING)"
+            Case &H3338
+                Return "LF_HAL_UNABLE_TO_ADJUST_ACCESS_POINT (LF UNABLE TO ADJUST ACCESS POINT)"
+            Case &H3339
+                Return "LF_ERR_UNABLE_TO_RELEASE (LF UNABLE TO RELEASE)"
+            Case &H333A
+                Return "LF_ERR_UNSAFE_TO_INSERT_AN_END_MARKER (LF UNSAFE TO INSERT AN END MARKER)"
+            Case &H333B
+                Return "LF_ERR_END_MARKER_INSERTION (LF END MARKER INSERTION WAS UNSUCCESSFUL)"
+            Case &H333C
+                Return "LF_ERR_END_MARKER_INSERTION_BAD (LF END MARKER INSERTION WAS BAD)"
+            Case &H3340
+                Return "LF_HAL_COMPRESSOR_NOT_HUNG_WHEN_EXPECTED (LF PACKER OVERRUN WITH COMPRESSOR NOT HUNG WHEN EXPECTED)"
+            Case &H3341
+                Return "LF_TRNG_BIST_FAILURE (LF TRNG BIST FAILURE)"
+            Case &H3342
+                Return "LF_MONOBIT_TEST_FAILURE (LF RNG MONOBIT TEST FAILURE)"
+            Case &H3343
+                Return "LF_TWOBIT_TEST_FAILURE (LF RNG TWOBIT TEST FAILURE)"
+            Case &H3344
+                Return "LF_RNG_FAILURE (LF RNG FAILURE)"
+            Case &H3345
+                Return "LF_IGNORED_TRNG_BIST_FAILURE (LF IGNORING TRNG BIST FAILURE)"
+            Case &H3346
+                Return "LF_ERR_TRNG_BIST_FAILED_IN_AN_UNEXPECTED_WAY (LF TRNG BIST FAILED IN AN UNEXPECTED WAY)"
+            Case &H3347
+                Return "LF_ERR_SKIPPING_AN_ALL_ZERO_SAMPLE_FROM_THE_TRNG (LF SKIPPING AN ALL ZERO SAMPLE FROM THE TRUE RANDOM NUMBER GENERATOR)"
+            Case &H3350
+                Return "LF_HAL_BAD_ENCRYPTION_KEY_INDEX (LF Bad Encryption Key Index detected)"
+            Case &H3351
+                Return "LF_ENCRYPT_DECOMP_ERR_ENCOUNTERED (LF Encrypt Decompression error detected)"
+            Case &H3352
+                Return "LF_ENCRYPT_REC_CRC_ERR_ENCOUNTERED (LF Encrypt Record CRC error detected)"
+            Case &H3353
+                Return "LF_ENCRYPT_CRYPT_ERR_ENCOUNTERED (LF Encrypt Crypt error detected)"
+            Case &H3354
+                Return "LF_ENCRYPT_UNPACKERLITE_ERR_ENCOUNTERED (LF Encrypt UnpackerLite error detected)"
+            Case &H3355
+                Return "LF_CRYPT_GCM_TAG_ERR (LF Crypt GCM Tag error detected)"
+            Case &H3356
+                Return "LF_CRYPT_EOR_ALIGN_ERR (LF Crypt EoR alignment error detected)"
+            Case &H3357
+                Return "LF_CRYPT_EOR_BEFORE_TAG_ERR (LF Crypt EoR before Tag error detected)"
+            Case &H3358
+                Return "LF_CRYPT_LF_DATA_VALID_ERR (LF Crypt lf_data_valid error detected)"
+            Case &H3359
+                Return "LF_CRYPT_EOR_FOUND_ERR (LF Crypt EoR found error detected)"
+            Case &H335A
+                Return "LF_POST_KEY_WRAP_FAILURE (LF POST KEY WRAP FAILURE)"
+            Case &H335B
+                Return "LF_POST_KEY_UNWRAP_FAILURE (LF POST KEY UNWRAP FAILURE)"
+            Case &H335C
+                Return "LF_POST_KEY_UNWRAP_IV_FAILURE (LF POST KEY UNWRAP IV FAILURE)"
+            Case &H335D
+                Return "LF_KEY_UNWRAP_IV_FAILURE (LF KEY UNWRAP IV FAILURE)"
+            Case &H3360
+                Return "LF_ENCRYPTED_DATA_DETECTED (LF Encryption Boundary detected)"
+            Case &H3361
+                Return "LF_ENCRYPTION_KEY_MISMATCH (LF Encryption Key mismatch detected)"
+            Case &H3362
+                Return "LF_ENCRYPTION_AAD_MISMATCH (LF Encryption AAD mismatch detected)"
+            Case &H3363
+                Return "LF_ENCRYPTION_UAD_MISMATCH (LF Encryption UAD mismatch detected)"
+            Case &H3364
+                Return "LF_UNENCRYPTED_DATA_DETECTED (LF Unencryption Boundary detected)"
+            Case &H3365
+                Return "LF_ENCRYPTION_KAD_MISMATCH (LF Encryption Key Signature mismatch detected while in RAW read mode)"
+            Case &H3366
+                Return "LF_RAW_RD_ATTEMPTED (LF RAW read attempted on encrypted data)"
+            Case &H3367
+                Return "LF_EXTERNALLY_ENCRYPTED_DATA_DETECTED (LF Externally Encrypted data detected)"
+            Case &H3368
+                Return "LF_NON_EXTERNALLY_ENCRYPTED_DATA_DETECTED (LF Non-Externally Encrypted data detected)"
+            Case &H3369
+                Return "LF_INCORRECT_ENCRYPTION_PARAMS_DETECTED (LF RAW Read M-KAD mismatch detected)"
+            Case &H3370
+                Return "LF_ENCRYPTION_KAT_FAILED (LF Encryption Known Answer Test has failed)"
+            Case &H3371
+                Return "LF_DECRYPTION_KAT_FAILED (LF Decryption Known Answer Test has failed)"
+            Case &H3372
+                Return "LF_RNG_KAT_FAILED (LF Random Number Generator Known Answer Test has failed)"
+            Case &H3373
+                Return "LF_RNG_CONTINUOUS_TEST_FAILED (LF Random Number Generator Continuous Test has failed)"
+            Case &H3380
+                Return "LF_BUFF_PORT_DISABLE_FAILED (LF Buffer Port has not disabled)"
+            Case &H3381
+                Return "LF_BUFF_PORT_LFPOUT_FIFO_EMPTY_FAILED (LF Buffer Port lfpout FIFO has not emptied)"
+            Case &H3382
+                Return "LF_COMPRESSOR_HW_BUG_WORKAROUND_FAILED (LF Check of Popovich Compressor HW Bug workaround shows the special pattern check has failed return CR 502855)"
+            Case &H33FF
+                Return "LF_UNDEFINED_ERROR (A non-specific error has occurred in the Logical Formatter.)"
+            Case &H3400
+                Return "LM_CACHE_OVERFLOW (DataSet has been received when the Cache is already full)"
+            Case &H3401
+                Return "LM_UNEXPECTED_DATASET (DataSet has been located in the Cache where it shouldn't be)"
+            Case &H3402
+                Return "LM_UNEXPECTED_TAG (Tag DataSet has been located in the Cache where it shouldn't be)"
+            Case &H3403
+                Return "LM_DATASET_NOT_LOCKED (Attempted to unlock a DataSet which isn't locked)"
+            Case &H3404
+                Return "LM_CACHE_EMPTY (Expected at least one DataSet in the Cache)"
+            Case &H3405
+                Return "LM_DUPLICATE_INDEX (DataSet index appears in the Cache more than once)"
+            Case &H3406
+                Return "LM_INDEX_OUT_OF_RANGE (DataSet Index is too larger to be valid)"
+            Case &H3407
+                Return "LM_INVALID_DATASET (Cache entry doesn't contain valid DataSet)"
+            Case &H3408
+                Return "LM_EOD_ENCOUNTERED (End-Of-Data has been encountered)"
+            Case &H3409
+                Return "LM_EXCESSIVE_TAGS (Number of Tag DataSets in the Cache exceed limit)"
+            Case &H340A
+                Return "LM_UNEXPECTED_CACHE_ENTRY (A DataSet is positioned in the Cache incorrectly)"
+            Case &H340B
+                Return "LM_MISPLACED_INDEX (One or mode DataSet indices are missing from Cache)"
+            Case &H340C
+                Return "LM_INVALID_VIRTUAL_MODE (Not a recognised Virtual Mode)"
+            Case &H340D
+                Return "LM_MULTIPLE_DATASETS_LOCKED (Operation not supported when more than one DataSet locked)"
+            Case &H340E
+                Return "LM_BLANK_TAPE (The tape is unformatted or contains no user DataSets)"
+            Case &H340F
+                Return "LM_BROKEN_LINKED_LIST (One or more Cache pointers are invalid)"
+            Case &H3410
+                Return "LM_DATASET_NOT_AVAILABLE (No DataSets in Cache to fulfil request)"
+            Case &H3411
+                Return "LM_OUTSTANDING_OPERATIONS (Operation not supported while there are operations outstanding)"
+            Case &H3412
+                Return "LM_DATASETS_LOCKED (Operation not supported while DataSets are locked)"
+            Case &H3413
+                Return "LM_TARGET_NOT_FOUND (Target DataSet has not been located)"
+            Case &H3414
+                Return "LM_TARGET_FOUND (Target DataSet has been located)"
+            Case &H3415
+                Return "LM_CACHE_NOT_INITIALISED (Cache has not be initialised)"
+            Case &H3416
+                Return "LM_UNSUPPORTED_OPERATION (Received an operation which isn't support in the current mode)"
+            Case &H3417
+                Return "LM_READ_ONLY_DATASET (LF has attempted to rewrite a read-only DataSet)"
+            Case &H3418
+                Return "LM_TEST_TIMEOUT (A test has taken too long to complete)"
+            Case &H3419
+                Return "LM_LP_CACHE_TOO_SLOW (Too many pending LP Cache operations)"
+            Case &H341A
+                Return "LM_PP_CACHE_TOO_SLOW (Too many pending PP Cache operations)"
+            Case &H341B
+                Return "LM_UNEXPECTED_RESPONSE (Received an inappropriate reposnse)"
+            Case &H341C
+                Return "LM_INVALID_POINTER (Linked-List 'Next' pointer is invalid)"
+            Case &H341D
+                Return "LM_CRAM_TRANSFER_PENDING (CRAM transfer started but not finished)"
+            Case &H341E
+                Return "LM_INSUFFICIENT_CRAM (Allocated insufficient CRAM)"
+            Case &H341F
+                Return "LM_NEED_POSN_TO_APPEND (DataSet is available in LM but drive isn't positioned to append)"
+            Case &H3420
+                Return "LM_FLUSH_REQUIRED (DataSets in LM, Flush WITH_EOD required before the current operation)"
+            Case &H3421
+                Return "LM_EOD_REQUIRED (LM flushed but EOD required before the current operation)"
+            Case &H3422
+                Return "LM_UNSUPPORTED_DATASET_TYPE (The specified DataSet type is not supported by the operation)"
+            Case &H3423
+                Return "LM_UNSUPPORTED_CRAM_TYPE (The specified CRAM DataSet type is not supported)"
+            Case &H3424
+                Return "LM_NOT_POSITIONED_AT_EOD (LF has attempted an operation away from EOD which can only be performed at EOD)"
+            Case &H3425
+                Return "LM_DATASET_NUMBER_MISMATCH (Search DataSet Available DataSet No. doesn't match DSIT contents.)"
+            Case &H3426
+                Return "LM_ENTERING_BACKUP_MODE (LF has requested a dataset while LM is changing to Backup Mode.)"
+            Case &H3427
+                Return "LM_DS_HAS_NO_ACCESS_POINT (LM has recieved a PP space dataset with no access point.)"
+            Case &H3428
+                Return "LM_PREVIOUS_DS_HAS_NO_AP (LM has recieved a previous PP space dataset with no access point.)"
+            Case &H3480
+                Return "LM_GENERATE_EOD (LM is generating an EOD dataset)"
+            Case &H37FF
+                Return "LM_UNDEFINED_ERROR"
+            Case &H3800
+                Return "LP_NO_ERROR (Synonymous with GOOD status.)"
+            Case &H3801
+                Return "LP_ABORTED_OPERATION"
+            Case &H3802
+                Return "LP_BUSY (Logical Pipeline Control has received an operation request while in a transient state.)"
+            Case &H3803
+                Return "LP_INVALID_PARAMETERS (The value of a parameter received with a Logical Pipeline Control operation request falls outside its valid range.)"
+            Case &H3804
+                Return "LP_UNSUPPORTED_OPERATION (Logical Pipeline Control has received an operation request while in a mode that does not allow that operation.)"
+            Case &H3805
+                Return "LP_WRITE_BEHIND_ERROR_PENDING (Logical Pipeline Control has aborted the operation because of a write behind error.)"
+            Case &H3806
+                Return "LP_FILE_MARK_ENCOUNTERED (Logical Pipeline Control has detected an unexpected File Mark during a Space operation.)"
+            Case &H3BFF
+                Return "LP_UNDEFINED_ERROR (A non-specific error has occurred in Logical Pipeline Control.)"
+            Case &H3C00
+                Return "mcNoError"
+            Case &H3C01
+                Return "mcAbortedCmdError"
+            Case &H3C02
+                Return "mcUnsupportedCmdError"
+            Case &H3C03
+                Return "mcBadParamError"
+            Case &H3D01
+                Return "mcUndefinedDataObjError"
+            Case &H3E01
+                Return "mcWaitForSignal"
+            Case &H3E02
+                Return "mcObjCreateFailed"
+            Case &H3E03
+                Return "mcObjExecuteFailed"
+            Case &H3E04
+                Return "mcCmLposValuesSuspect"
+            Case &H3E05
+                Return "mcNotifyClientListFull"
+            Case &H3E06
+                Return "mcPosNotifyListFull"
+            Case &H3E07
+                Return "mcNotifyExistsParamDifferent"
+            Case &H3E08
+                Return "mcNotifyEventCreateFailed"
+            Case &H3E09
+                Return "mcNotifyKeyMapFailed"
+            Case &H3E0A
+                Return "mcNotifyIndexTooLarge"
+            Case &H3E0B
+                Return "mcTooManyMcCmdObjects"
+            Case &H3E0C
+                Return "mcCleaningCartExpired"
+            Case &H3E0D
+                Return "mcUnknownCartFormat (Cannot determine, or do not recognise, cartridge format)"
+            Case &H3E0E
+                Return "mcCleaningCartThreadError (Cleaning cartridge could not be threaded)"
+            Case &H3E0F
+                Return "mcTooManyMiCmdObjects"
+            Case &H3E10
+                Return "mcListingCommandObjects (INFO - Listing command objects in queue)"
+            Case &H3E11
+                Return "mcMaxHeadBrushesReached (INFO - The max head brushes have been reached)"
+            Case &H3FFE
+                Return "mcPureVirtualCalled (C++ pure virtual function called)"
+            Case &H3FFF
+                Return "mcUndefinedError"
+            Case &H4002
+                Return "nv_INVALID_PARAM"
+            Case &H4003
+                Return "nv_DATA_LENGTH_INVALID (Data length exceed table length)"
+            Case &H4004
+                Return "nv_INVALID_EEPROM (Not a valid Eeprom)"
+            Case &H4005
+                Return "nv_CHKSUM_LOGIC_ERROR (Write to eeprom failed, eeprom invalid)"
+            Case &H4006
+                Return "nv_CHKSUM_READ_ERROR (Checksum read did not match checksum written)"
+            Case &H4007
+                Return "nv_GETDATA_UNSUPPORTED_DATA_TYPE (An UnSupported Data Type was requested from Non Volatile Data Manager)"
+            Case &H4008
+                Return "nv_SETDATA_UNSUPPORTED_DATA_TYPE (An UnSupported Data Type was requested to be set in Non Volatile Data Manager)"
+            Case &H4011
+                Return "nv_PCA_EEPROM_ABSENT"
+            Case &H4012
+                Return "nv_PCA_EEPROM_VOID"
+            Case &H4013
+                Return "nv_PCA_EEPROM_CORRUPT"
+            Case &H4014
+                Return "nv_PCA_TABLE_INVALID"
+            Case &H4015
+                Return "nv_READ_ERT_LOG_UPDATE_FAILED (A failure occured while trying to update the Read ERT log in the PCA Eeprom)"
+            Case &H4016
+                Return "nv_WRITE_ERT_LOG_UPDATE_FAILED (A failure occured while trying to update the Write ERT log in the PCA Eeprom)"
+            Case &H4017
+                Return "nv_WRTFLTCNTRS_LOG_UPDATE_FAILED (A failure occured while trying to update the Write Fault Counters log in the PCA Eeprom)"
+            Case &H4018
+                Return "nv_TAPES_USED_LOG_UPDATE_FAILED (A failure occured while trying to update the Tapes Used logs in the PCA Eeprom)"
+            Case &H4019
+                Return "nv_PCA_TABLE1_INVALID"
+            Case &H401A
+                Return "nv_PCA_TABLE2_INVALID"
+            Case &H4021
+                Return "nv_HEAD_EEPROM_ABSENT"
+            Case &H4022
+                Return "nv_HEAD_EEPROM_VOID"
+            Case &H4023
+                Return "nv_HEAD_EEPROM_CORRUPT"
+            Case &H4024
+                Return "nv_HEAD_TABLE_INVALID"
+            Case &H4025
+                Return "nv_TABLE_A0_INVALID (Head/Flex Manufacturing Parameters Table Invalid)"
+            Case &H4026
+                Return "nv_TABLE_A1_INVALID (Head Tuning Parameters Table Invalid)"
+            Case &H4027
+                Return "nv_HEAD_TABLE3_INVALID"
+            Case &H4028
+                Return "nv_TABLE_A3_INVALID (Formatter Data Skew Parameters Table Invalid)"
+            Case &H4031
+                Return "nv_MECH_EEPROM_ABSENT"
+            Case &H4032
+                Return "nv_MECH_EEPROM_VOID"
+            Case &H4033
+                Return "nv_MECH_EEPROM_CORRUPT"
+            Case &H4034
+                Return "nv_MECH_TABLE_INVALID"
+            Case &H4035
+                Return "nv_DRIVE_FAULT_LOG_UPDATE_FAILED (A failure occured while trying to update the Drive Fault logs in the PCA Eeprom)"
+            Case &H4036
+                Return "nv_FAULT_LOG_POINTER_ERROR (An Algorithm error occured while trying to update the Drive Fault Logs in the Eeprom)"
+            Case &H4037
+                Return "nv_MECH_TABLE3_INVALID"
+            Case &H4038
+                Return "nv_MECH_TABLE4_INVALID"
+            Case &H4039
+                Return "nv_ABORTED_SERVO_FAULT_LOG_ADDITION (The Servo Fault could not be logged because of Eprom access failure)"
+            Case &H403A
+                Return "nv_MECH_TABLE2_INVALID"
+            Case &H403B
+                Return "nv_MECH_TABLE1_INVALID"
+            Case &H4041
+                Return "nv_CM_EEPROM_ABSENT"
+            Case &H4042
+                Return "nv_CM_EEPROM_VOID"
+            Case &H4043
+                Return "nv_CM_EEPROM_CORRUPT (The CM could not be written before an unload causing probable corruption in the CM.)"
+            Case &H4044
+                Return "nv_CM_INVALID_PROTECTED_PAGE_TABLE (An invalid protected page table was found.)"
+            Case &H4045
+                Return "nv_CM_INVALID_UNPROTECTED_PAGE_TABLE (A CRC error was discoverd over the Unprotected Page Table)"
+            Case &H4046
+                Return "nv_CM_UNINITIALISED (Not really an error, Indicates a fresh cartridge)"
+            Case &H4047
+                Return "nv_CM_INVALID_CRC"
+            Case &H4048
+                Return "nv_CM_INVALID_CRC_CMI (An invalid CRC over the Cartridge Manufacturers Information page was found)"
+            Case &H4049
+                Return "nv_CM_INVALID_CRC_MMI (An invalid CRC over the Media Manufacturers Information page was found)"
+            Case &H404A
+                Return "nv_CM_INVALID_CRC_ID (An invalid CRC over the Initialisation Data page was found)"
+            Case &H404B
+                Return "nv_CM_INITIALISED (An initialisation table was request to be created for a CM with a valid initialisation table in it.)"
+            Case &H404C
+                Return "nv_CM_NO_EMPTY_PAGE_TABLE (While trying to add a page descriptor to the Unprotected page table a failure occured.)"
+            Case &H404D
+                Return "nv_CM_INVALID_PAGE_ENTRY_UNPROTECTED (An Unprotected Page Table Entry was attempted with an invalid Page ID.  Page ID is the next parameter shown)"
+            Case &H404E
+                Return "nv_CM_INVALID_CRC_DMS (An invalid CRC over the Drive Manufacturers Support page was found.)"
+            Case &H4050
+                Return "nv_CM_TAPE_DIR_VOID (An access to the Tape Directory was requested before it was read from the CM.)"
+            Case &H4051
+                Return "nv_CM_WRAP_SECTION_HAS_INVALID_CRC (A CRC error was detected in the Tape Directory while being read.)"
+            Case &H4052
+                Return "nv_CM_INVALID_WRAP_SECTION_REQUESTED (Data for an illegal wrap section was requested from the Tape Directory.)"
+            Case &H4053
+                Return "nv_CM_INSUFFICIENT_CRAM_FOR_CM_DATA (The Buffer Manager does not have enough CRAM to hold the CM.)"
+            Case &H4054
+                Return "nv_CM_ABORTED_WRITE_PROTECT (The Write Protect operation was aborted due to bogus initialisation data address in CRAM.)"
+            Case &H4055
+                Return "nv_CM_WRAP_SECTION_HAS_INVALID_DATA (A consistency error was detected in the Tape Directory while being read.)"
+            Case &H4056
+                Return "nv_CM_SUSPENDED_APPEND_PAGE_FULL (No more entries can be added to the Suspended Appends page.)"
+            Case &H4057
+                Return "nv_CM_TAPE_DIR_HEADER_HAS_INVALID_CRC (A CRC error was detected in the the Tape Directory header while being read.)"
+            Case &H4058
+                Return "nv_CM_EOD_TAPE_DIR_HEADER_HAS_INVALID_CRC (A CRC error was detected in the the Tape Directory header while trying to rebuild it from the EOD copy.)"
+            Case &H4060
+                Return "nv_CM_EOD_PAGE_VOID (An access to a non-existant EOD page was attempted.)"
+            Case &H4061
+                Return "nv_CM_INVALID_CRC_EOD (An invalid CRC over the End Of Data <EOD> page was found)"
+            Case &H4062
+                Return "nv_CM_INITIALISATION_PAGE_VOID (An access to a non-existant Initialisation page was attempted.)"
+            Case &H4070
+                Return "nv_CM_TAPE_WRITE_PASS_PAGE_VOID (An access to a non-existant tape write pass page was attempted.)"
+            Case &H4080
+                Return "nv_CM_TAPE_ALERT_PAGE_VOID (An access to a non-existant tape alert page was attempted.)"
+            Case &H4090
+                Return "nv_CM_NO_USAGE_DATA_AVAILABLE (There is no Usage Data available in the Cartridge Memory.)"
+            Case &H4091
+                Return "nv_CM_USAGE_PAGE_LOGIC_ERROR (Usage Pages are out of order and cannot be accessed.)"
+            Case &H4092
+                Return "nv_CM_USAGE_PAGE_CRC_ERROR (The last updated usage page has a CRC error. Data INVALID )"
+            Case &H40A0
+                Return "nv_CM_NO_MECH_DATA_AVAILABLE (There is no Mech Sub Page Data available in the Cartridge Memory.)"
+            Case &H40A1
+                Return "nv_CM_MECH_SUB_PAGE_CRC_ERROR (The last updated Mechanism sub page has a CRC error. Data INVALID )"
+            Case &H40A2
+                Return "nv_INTERNAL_FAILURE (There has been a failure executing self test. This failure is logged in the Fault Log)"
+            Case &H40A3
+                Return "nv_CM_TAPE_ALERT_CRC_ERROR"
+            Case &H40A4
+                Return "nv_CM_EOD_PAGE_CRC_ERROR"
+            Case &H40A5
+                Return "nv_CM_SUSPEND_APPEND_CRC_ERROR"
+            Case &H40A6
+                Return "nv_CM_MEDIA_MANUF_CRC_ERROR"
+            Case &H40A7
+                Return "nv_CM_MECHANISM_CRC_ERROR"
+            Case &H40A8
+                Return "nv_CM_APPLICATION_SPECIFIC_CRC_ERROR"
+            Case &H40A9
+                Return "nv_UNKNOWN_CART_TYPE_IN_CM"
+            Case &H40AA
+                Return "nv_CM_FLUSH_TIMEOUT (A CM Flush operation (CRAM to CM) was aborted. Probable cause was a timeout condition.)"
+            Case &H40AB
+                Return "nv_PCA_PERSISTENT_RESERVATION_TABLE_INVALID"
+            Case &H40AC
+                Return "nv_CM_INCONSISTENT_WITH_FID (A Specific request to check the consistency between the FID and CM pages shows that an inconsistency exists)"
+            Case &H40AD
+                Return "nv_EEPROM_READ_ERROR (Unable to read a word from either the head or PCA EEPROM.)"
+            Case &H40AE
+                Return "nv_TUNING_REV_NO_INVALIDATION_ERROR (A call to nvInvalidateTuningRevNo was made with an incorrect parameter.)"
+            Case &H40AF
+                Return "nv_GENERAL_INFO (General info about NVDS.)"
+            Case &H40B0
+                Return "nv_CM_INVALID_CRC_FATAL_ERROR (An invalid CRC over the Fatal Error page was found)"
+            Case &H40B1
+                Return "nv_CM_UCI_INFORMATION_NOT_AVAILABLE (Not enough information was available to form a correct Unique Cartridge Identity)"
+            Case &H40B2
+                Return "nv_CANNOT_CHANGE_FIXED_PERSONALITY_BYTE (nvSetPersonalityByte() was asked to change the personality but this variant of code has a fixed personality)"
+            Case &H40B3
+                Return "nv_PERSONALITY_CHANGE_NOT_ALLOWED_NO_KEY_MATCH (nvSetPersonalityByte() was asked to change the personality but the key provided did not allow this.)"
+            Case &H40B4
+                Return "nv_PERSONALITY_CHANGE_NOT_ALLOWED (nvSetPersonalityByte() was asked to change the personality but cannot change zero to non-zero or non-zero to zero)"
+            Case &H40B5
+                Return "nv_CM_INVALID_PAGE_ENTRY_PROTECTED (A protected Page Table Entry was attempted with an invalid Page ID.)"
+            Case &H40B6
+                Return "nv_CM_CARTRIDGE_CONTENT_CRC_ERROR (The Cartridge Content Data page has a CRC error. Data INVALID )"
+            Case &H40B7
+                Return "nv_CM_CARTRIDGE_CONTENT_PAGE_VOID (An access to a non-existant Cartridge Content Data page was attempted.)"
+            Case &H40B8
+                Return "nv_CM_INCORRECT_PAGE_VERSION (The requested field to be accessed does not exist in this version of the page)"
+            Case &H40B9
+                Return "nv_HAT_NOT_SUPPORTED (This products EEPROM configuration does not support the Persistant storage for the Host Access Table)"
+            Case &H40BA
+                Return "nv_HAT_NOT_INITIALISED (The persistant storage area for the HAT has never been written to and is therefore not initialised)"
+            Case &H40BB
+                Return "nv_DI_NOT_INITIALISED (The persistant storage area for the Device Identifier has never been written to and is therefore not initialised)"
+            Case &H40BC
+                Return "nv_DI_UNSUPPORTED_LUN (The persistant storage area for the Device Identifier only supports storage for 2 LUNS - more has been asked for)"
+            Case &H40BD
+                Return "nv_CM_OUT_OF_BOUNDS_ACCESS (A request to access an area of CM which is out of bounds has occurred.  The access was disallowed)"
+            Case &H40BE
+                Return "nv_CM_ALTERNATE_UCI_INFORMATION_NOT_AVAILABLE (Not enough information was available to form a correct Alternate Unique Cartridge Identity)"
+            Case &H40BF
+                Return "nv_CM_NO_MECH_RELATED_KAD (nvCMGetMechRelatedKAD() was asked to retrieve the KAD in the mech related page but no KAD has been stored)"
+            Case &H40C0
+                Return "nv_CM_KAD_TOO_BIG (The KAD length in the Mech related page which was asked to be stored or retrieved was too large)"
+            Case &H40C1
+                Return "nv_CM_NO_MECH_RELATED_PAGE_AVAILABLE (The mech related page has not been created (or tape not loaded) so storage or retrieval of the KAD data is not allowed now)"
+            Case &H40C2
+                Return "nv_INVALID_STTF_LOG_IDX (This error indicates a request to access a STTF log idex that is outside the permitted range)"
+            Case &H40C3
+                Return "nv_NO_SAVED_SNAPSHOT_EVENT_CONFIG (This status indicates that the EEPROM doesn't contain previously saved snapshot event configuration data)"
+            Case &H40C4
+                Return "nv_CM_SUSPENDED_APPEND_PAGE_VOID (An access to a non-existant Suspended Append page was attempted.)"
+            Case &H40C5
+                Return "nv_CM_FATAL_ERROR_PAGE_VOID (An access to a non-existant Fatal Error page was attempted.)"
+            Case &H40C6
+                Return "nv_CM_MECH_SPECIFIC_PAGE_VOID (An access to a non-existant Mechanism Specific page was attempted.)"
+            Case &H40C7
+                Return "nv_CM_KAD_ACCESS_NOT_SUPPORTED (An access to a non-existant Fatal Error page was attempted.)"
+            Case &H40C8
+                Return "nv_CM_MECH_SPECIFIC_CRC_ERROR (The Mech Specific page has a CRC error. Data INVALID )"
+            Case &H40C9
+                Return "nv_CM_NO_MECH_SPECIFIC_KAD (nvCMGetMechSpecificKAD() was asked to retrieve the KAD in the mech specific page but no KAD has been stored)"
+            Case &H40CA
+                Return "nv_CM_NO_MECH_SPECIFIC_PAGE_AVAILABLE (The mech specific page has not been created (or tape not loaded) so storage or retrieval of the KAD data is not allowed now)"
+            Case &H40CB
+                Return "nv_SECURITY_PARAMETER_NOT_AVAILABLE (The Certificate storage table does not have an entry for the security paramter requested (i.e. it is not stored in the table))"
+            Case &H40CC
+                Return "nv_NO_SECURITY_PARAMETER_SLOT_FREE (The Certificate storage table does not have a free slot to place the security paramter into)"
+            Case &H40CD
+                Return "nv_UNKNOWN_SECURITY_PARAMETER (An unknown security paramter was asked for)"
+            Case &H40CE
+                Return "nv_SECURITY_PARAMETER_TOO_BIG (The security parameter to be stored is too large to fit in the table)"
+            Case &H40CF
+                Return "nv_CLEARING_SECURITY_PARAMETER_DENIED (This security parameter is not allowed to be cleared)"
+            Case &H40D0
+                Return "nv_SECURITY_TABLE_BAD_CRC_ON_DIRECTORY (The Initialisation check of the security table showed a bad CRC on the directory entries - we have to clear and rebuild the whole table)"
+            Case &H40D1
+                Return "nv_MECH_TABLE8_INVALID"
+            Case &H40D2
+                Return "nv_SECURITY_ENCRYPTED_RECORD_IS_TOO_LARGE (The security parameter was encrypted, however the encrypted record size ends up being too large for storage)"
+            Case &H40D3
+                Return "nv_KMS_SECURITY_PARAMETER_TOO_BIG (The KMS security parameter to be stored is too large to fit in the table)"
+            Case &H40D4
+                Return "nv_PCA2_EEPROM_ABSENT (The PCA2 EEPROM is not supported on this platform)"
+            Case &H40D5
+                Return "nv_UNKNOWN_KMA_SECURITY_PARAMETER (An unknown KMS security paramter was asked for)"
+            Case &H40D6
+                Return "nv_KMS_SECURITY_ENCRYPTED_RECORD_IS_TOO_LARGE (The KMS security parameter was encrypted, however the encrypted record size ends up being too large for storage)"
+            Case &H40D7
+                Return "nv_KMS_SECURITY_TABLE_BAD_CRC_ON_DIRECTORY (The Initialisation check of the KMS security table showed a bad CRC on the directory entries - we have to clear and rebuild the whole table)"
+            Case &H40D8
+                Return "nv_KMS_SECURITY_PARAMETER_NOT_AVAILABLE (The KMS Security table does not have an entry for the KMS security paramter requested (i.e. it is not stored in the table))"
+            Case &H40D9
+                Return "nv_SECURITY_FIELD_MUST_BE_MOD_16 (The Secure EEPROM storage will only allow encryption of field sizes divisible by 16, e.g. 16, 32, 48 etc)"
+            Case &H40DA
+                Return "nv_OTP_KEY_NOT_SET (A Decrypt/encrypt operation has been attempted when the OTP Public key is empty)"
+            Case &H40DB
+                Return "nv_INVALID_DRIVE_KEY_DETECTED_DURING_INITIALISATION (The check of the Drives RSA Key Pair failed.  Parameter 1 gives the actual error propogated from the GetParameter function)"
+            Case &H40DC
+                Return "nv_NOT_A_TWO_PARTITION_CAPABLE_CARTRIDGE (A two partition type of operation was requested but the cartridge has only been formatted as a single partition cartridge - operation invalid)"
+            Case &H40DD
+                Return "nv_CM_TRANSPONDER_SN_ERROR (The transponder serial number check byte does not agree with the transponder serial number.)"
+            Case &H40DE
+                Return "nv_CM_REPORTED_CM_SIZE_ERROR (The reported LTO CM Mfr Info CM size is not valid.)"
+            Case &H40DF
+                Return "nv_CM_TRANSPONDER_TYPE_ERROR (The transponder type is not valid.)"
+            Case &H40E0
+                Return "nv_CARTRIDGE_PARTITION_CAPABILITY_EXCEEDED (Operation requested partition number not supported for this cartridge type)"
+            Case &H40E1
+                Return "nv_CM_APPLICATION_SPECIFIC_PAGE_VOID (An access to a non-existant application specific page was attempted.)"
+            Case &H40E2
+                Return "nv_CM_READ_WRITE_ERROR_TAPE_NOT_LOADED (An attempt to read or write to the CM failed, however the drive status indicates that no tape was loaded so this may be a spurious issue)"
+            Case &H40E4
+                Return "nv_TAPE_USAGE_UNKNOWN_LICENCEE (Insert into the tape roller usage log came across an unknown licencee - no data inserted into the table)"
+            Case &H40E5
+                Return "nv_ENCRYPTION_PARAMETER_TOO_BIG (The Encryption parameter to be stored will be too large to fit in the allowed space)"
+            Case &H40E6
+                Return "nv_MECH_HAS_NOT_BEEN_PAIRED_TO_PCA (The POST Test to check the Mech pairing with the PCA has shown that the EEPROM has not been paired or has been tampered with)"
+            Case &H40E7
+                Return "nv_HEAD_FLEX_HAS_NOT_BEEN_PAIRED_TO_PCA (The POST Test to check the Head/Flex pairing with the PCA has shown that the EEPROM has not been paired or has been tampered with)"
+            Case &H40E8
+                Return "nv_CAL_TABLE_UNKNOWN_SPECIAL_CONTROL_WORD (The special control word in the cal table is not known)"
+            Case &H40E9
+                Return "nv_PHY_TUNING_TABLE_INCOMPATIBLE_WITH_DRIVE (The product/interface given in the Phy Tuning revision control word shows that it is incompatible with this drive type)"
+            Case &H40EA
+                Return "nv_FLASH_PROG_ERR_ATTEMPT (An attempt to program a write-protected sector of the serial flash was made)"
+            Case &H40EB
+                Return "nv_CM_CACHED (Not really an error, Indicates cached CM)"
+            Case &H40EC
+                Return "nv_UNPROTECTED_PAGE_ERROR (An error has been detected in the unprotected page table during load or unload)"
+            Case &H40ED
+                Return "nv_CM_APPLICATION_SPECIFIC_CREATION_SUSPECT (The FW is trying to build an application specific page but does not know what generation of tape is loaded)"
+            Case &H4400
+                Return "OS_GIVE_SEM_FAIL ('vGiveSem' failed to signal a semaphore)"
+            Case &H4C00
+                Return "C1_HOLD (C1 has finished before C2 is ready for the dataset)"
+            Case &H4C01
+                Return "PF_INVALID_CONFIG_NAME (Physical formatter has been sent an invalid config)"
+            Case &H4C02
+                Return "PF_INVALID_CONFIG_VALUE (Physical formatter has been sent an invalid config value)"
+            Case &H4C03
+                Return "PF_C2_HW_BUSY (Physical formatter C2 hardware is currently processing a dataset)"
+            Case &H4C04
+                Return "PF_C2_CONTROL_DS0_GO_BIT_SET (Physical formatter C2 control DS0 register go bit is set)"
+            Case &H4C05
+                Return "PF_C2_CONTROL_DS1_GO_BIT_SET (Physical formatter C2 control DS1 register go bit is set)"
+            Case &H4C06
+                Return "PF_C1_CONTROL_GO_BIT_SET (Physical formatter C1 control register go bit is set)"
+            Case &H4C07
+                Return "PF_CCQR_CONTROL_GO_BIT_SET (Physical formatter CCQ Reader control register go bit is set)"
+            Case &H4C08
+                Return "PF_RCC_CONTROL_GO_BIT_SET (Physical formatter Read Chain Controller control register go bit is set)"
+            Case &H4C09
+                Return "PF_INVALID_WRITE_LOG_CHANNEL_NUMBER (Physical Formatter has been asked for the error rate log for a channel which does not exist)"
+            Case &H4C0A
+                Return "PF_INVALID_READ_LOG_CHANNEL_NUMBER (Physical Formatter has been asked for the error rate logs for a channel which does not exist)"
+            Case &H4C0B
+                Return "PF_CALLBACK_TIMER_NOT_SET (Physical Formatter could not set callback timer to enable Hyperion read gate)"
+            Case &H4C0C
+                Return "PF_RCC_DS0_STUCK (Physical Formatter Read Chain Controller DS0 stuck)"
+            Case &H4C0D
+                Return "PF_RCC_DS1_STUCK (Physical Formatter Read Chain Controller DS1 stuck)"
+            Case &H4C0E
+                Return "PF_DDT63434_WP_UPDATE_FORCED_TO_WORKAROUND (Physical Formatter WP Update - using Yuri bug workaround DDT63434)"
+            Case &H4C0F
+                Return "PF_NO_VALID_FORMAT (Format other than Gen1 or Gen2)"
+            Case &H4C10
+                Return "PF_SDRAM_ERROR_DETECTED (SDRAM Error has been detected)"
+            Case &H4C11
+                Return "PF_CCPS_PRESENTED_BELOW_THRESHOLD (The number of CCPs Presented has fallen below the warning threshold)"
+            Case &H4C12
+                Return "PF_CCP_OVERWRITTEN (A CCP has been overwritten)"
+            Case &H4C13
+                Return "PF_C2_ERROR (A C2 error has been reported)"
+            Case &H4C14
+                Return "PF_C2_INFO (General PF information)"
+            Case &H4C15
+                Return "PF_UNEXPECTED_FORMAT_COMPLETED (Unexpected format done signal arrived)"
+            Case &H4C16
+                Return "PF_CHECK_CCQ_WRITE_REWRITE_LOG (Parma 1 = CCQSetsWritten, Param 2 = CCQSetRewrites, Param 3 - pfStatus)"
+            Case &H4C17
+                Return "PF_WRITE_ERROR_RATE_LOG_ROLLOVER (No of CCPS have rolled over causing a reset of the write error rate log)"
+            Case &H4C18
+                Return "PF_READ_ERROR_RATE_LOG_ROLLOVER (No of CCPS have rolled over causing a reset of the Read error rate log)"
+            Case &H5000
+                Return "PP_EOD_NOT_FOUND (Have not found EOD on tape)"
+            Case &H5001
+                Return "PP_BLANK_TAPE (Have not found any data on tape)"
+            Case &H5002
+                Return "PP_EOD_ENCOUNTERED (EOD Encountered)"
+            Case &H5003
+                Return "PP_UNDEFINED_ERROR (Que?)"
+            Case &H5004
+                Return "PP_START_LPOS_BEFORE_PREVIOUS (Start LPOS of Data Set is before LPOS of previous Data Set)"
+            Case &H5005
+                Return "PP_START_LPOS_LONG_WAY_AFTER_PREVIOUS (Start LPOS is more than 1 metre after previous Data Set)"
+            Case &H5008
+                Return "INVALID_CONFIGNUM (An invalid configuration has been requested)"
+            Case &H5009
+                Return "ABORT_REJECTED_CONTINUE (Not used)"
+            Case &H501E
+                Return "PP_SEARCH_ACTIVE (Search in progress)"
+            Case &H501F
+                Return "PP_MECHCMD_TIMEOUT (Mech Control command never responded)"
+            Case &H5020
+                Return "PP_COMMAND_NOT_ALLOWED (Command not allowed in this variant)"
+            Case &H5080
+                Return "INVALID_TAPE_TYPE (The tape type returned is not valid for this product.)"
+            Case &H5081
+                Return "PP_ABORTERT (The Error Rate Test has been aborted)"
+            Case &H5083
+                Return "PP_PF_WRITE_ERROR (PF reported a write error (excessive RWWs))"
+            Case &H5084
+                Return "PP_PF_READ_ERROR (PF reported a read error (C2))"
+            Case &H5086
+                Return "PP_PF_STREAM_FAILED (PF reported a streamfail)"
+            Case &H5087
+                Return "PP_ERT_REACHED_C1THRESHOLD (Error threshold reached)"
+            Case &H5088
+                Return "PP_UNKNOWN_NOTIFICATION (Unexpected Mech Control)"
+            Case &H5089
+                Return "PP_DATA_MISCOMPARE"
+            Case &H508A
+                Return "PP_REACHED_FOURMETER_GIVEUP_POINT (Drive has gone 4 metres since last Data Set was reported)"
+            Case &H508B
+                Return "PP_INVALID_SPEED_FOR_ERT (Speed requested for ERT s out of valid range)"
+            Case &H508C
+                Return "PP_4M_NOTIFY_MISSING (Notify for 4m giveup point is missing)"
+            Case &H508D
+                Return "PP_WRITE_REACHED_EOT_ERR (EOT reached before requested datasets done)"
+            Case &H508E
+                Return "PP_INVALID_STARTPOS_FOR_ERT (Start position requested for ERT s out of valid range)"
+            Case &H508F
+                Return "PP_EXPECTED_DATASET_NOT_FOUND (Cannot find expected Data Set Number)"
+            Case &H5090
+                Return "PP_BLANK_CHECK (Cannot read anything off tape in last 4 metres)"
+            Case &H5091
+                Return "PP_TOO_MANY_FLUSHED_DATA_SETS (Too many Data Sets returned while flushing.)"
+            Case &H5092
+                Return "PP_FAILED_TO_FIND_TARGET (Could not find the target during a space operation.)"
+            Case &H5093
+                Return "PP_FAILED_TO_FIND_APPEND_ACN (Could not find the target ACN during a search operation.)"
+            Case &H5094
+                Return "PP_WP_CORRUPT (Write Pass on write has been corrupted.)"
+            Case &H5095
+                Return "PP_READ_TOO_MANY_DATASETS (ERT read more datasets than expected.)"
+            Case &H5096
+                Return "PP_INVALID_DATASET_INDEX_FOR_WRITES (Logical Media has supplied an Invalid Data Set Index.)"
+            Case &H5097
+                Return "PP_DATASET_WRITTEN_BEFORE_BOW (Data Set written before BOW.)"
+            Case &H5098
+                Return "PP_READ_REACHED_EOT_ERR (EOT reached during reading)"
+            Case &H5099
+                Return "PP_BOW_FLAGS_NON_ZERO (Warning- Data Set Flags non-zero)"
+            Case &H509A
+                Return "PP_UNEXPECTED_EOD_ENCOUNTERED (EOD has been read, but is not the one in the CM)"
+            Case &H509B
+                Return "PP_UNEXPECTED_WRAP_FOR_DATASET (The Data Set that has been read should not be on this wrap)"
+            Case &H509C
+                Return "PP_SPACE_TARGET_BEYOND_EOD (The Space command is to a logical position that is beyond EOD)"
+            Case &H509D
+                Return "PP_WRITE_ERT_NOT_ALLOWED (The current cartridge cannot be written to - Write ERT is not allowed.)"
+            Case &H509E
+                Return "PP_C2_ERROR_IGNORED (The Data Set reported as C2 uncorrectable, is considered GOOD.)"
+            Case &H509F
+                Return "PP_UCI_IN_DSIT_INCORRECT (The DSIT contains an invalid UCI.)"
+            Case &H50A0
+                Return "PP_WORM_DATA_HAS_SUSPECT_INTEGRITY (The drive has determined that the WORM data may have been tampered with.)"
+            Case &H50A1
+                Return "PP_INVALID_PREVIOUS_DS_INDEX (The Logical Media has given an illegal Data Set Index for an Append.)"
+            Case &H50A2
+                Return "PP_POS_TOO_EARLY_FOR_APPEND (A search operation appears to have found the target too early.)"
+            Case &H50A3
+                Return "PP_LTO4_FORMAT_VIOLATION_ALGORITHM_ID (An LTO4 dataset was encountered whose Encryption Algorithm Id was not 0x01.)"
+            Case &H50A4
+                Return "PP_SET_TAPE_WRITE_PASS_VALUE (The value of TapeWritePassValue CurrentWrap and SDL sheet.)"
+            Case &H50A5
+                Return "PP_MAX_ATS_SPEED_CHANGED (Shows the value that the Max ATS has been set to.)"
+            Case &H50A6
+                Return "PP_LOSS_OF_LPOS_DETECTED (A 7501 (Loss of LPOS) has been detected => reducing servo MR bias.)"
+            Case &H50A7
+                Return "PP_RAMP_TO_SPEED_SIG_CONSUMED (A RampToSpeedRsp signal has arrived whilst trying to abort)"
+            Case &H50A8
+                Return "PP_EXCESSIVE_FUJI_OFFTRACKS (Excessive offtracks have been seen on a Fuji tape)"
+            Case &H50A9
+                Return "PP_TAPE_NOT_READY_FOR_ERT (Trying to perform an ERT whilst the tape is not threaded)"
+            Case &H50AA
+                Return "PP_RESTART_WRITE_WITH_NO_ABORT (The FW may have followed a path where we have not aborted the formatter before a re-write)"
+            Case &H50AB
+                Return "PP_WRITE_PAST_EOW_FORMAT_VIOLATION (The FW has managed to write a dataset that finishes past EOW)"
+            Case &H50AC
+                Return "PP_LTO5_FORMAT_VIOLATION_ALGORITHM_ID (An LTO5 dataset was encountered whose Encryption Algorithm Id was not 0x02)"
+            Case &H50AD
+                Return "PP_UNEXPECTED_ERROR_FROM_NVDS (A call to an NVDS function returned with an unexpected error (placed in parameter 2))"
+            Case &H50AE
+                Return "PP_LTO6_FORMAT_VIOLATION_ALGORITHM_ID (An LTO6 dataset was encountered whose Encryption Algorithm Id was not 0x03.)"
+            Case &H50AF
+                Return "PP_DATASET_STARTED_4M_AWAY_FROM_EOW (A Dataset was started over 4M away from EOW but reached 4M giveup within 450mm of EOW)"
+            Case &H50B0
+                Return "PP_CLEAN_BEING_PERFORMED_FOR_A_750C (There have been enougth 750C errors whilst trying to write this dataset to trigger a head clean Param 1 = Total head cleans this load for 750C, Param 2 bitmap of which retry had a 750C)"
+            Case &H50B1
+                Return "PP_LOG_RETRY_NUMBER_AND_TYPE (This is for information only and highlights which retry is being used Param 1 = Retry Number, Param 2 = Type of retry 0 = Write, 1 = Read, 2 = Space)"
+            Case &H50B2
+                Return "PP_WRITING_DRIVE_ID_MSB (This is for information only and displays the drive ID from the DSIT of the writing drive (upper 12 bytes of 16))"
+            Case &H50B3
+                Return "PP_WRITING_DRIVE_ID_LSB (This is for information only and displays the drive ID from the DSIT of the writing drive (lowwer 4 bytes of 16).It is contains two confidence bytes)"
+            Case &H50B4
+                Return "PP_NO_VALID_EOD_WRITTEN (Have not read EOD on tape and CM contents does not show a valid EOD)"
+            Case &H50B5
+                Return "PP_INVALID_DATASET_STORE_VALUE (Attempt to rebuild corrupt tape directory wrap resulted in an incorrect dataset store index)"
+            Case &H50C0
+                Return "PP_WRAP_ZERO_OVERWRITE_DEBUG (CR 505838 - Wrap 0 overwrite investigation)"
+            Case &H50C1
+                Return "PP_WRAP_ZERO_OVERWRITE_DEBUG_CONTINUED (CR 505838 - Wrap 0 overwrite investigation)"
+            Case &H50C2
+                Return "PP_5093_APPEND_OFFSET_ORDER_CHANGED (Change offset in an attempt to be able to read the append point)"
+            Case &H5400
+                Return "PE_SWITCH_TRACE_LOGS (Not an error - just requests trace log bank switch)"
+            Case &H5401
+                Return "PE_READ_RETRY_TUNING_POSITION (Shows the LPos and MM position for the start of tuning)"
+            Case &H5800
+                Return "rwc_SUCCESS"
+            Case &H5801
+                Return "rwc_NULL_POINT"
+            Case &H5802
+                Return "rwc_INVALID_PARAM"
+            Case &H5803
+                Return "rwc_NO_HARDWARE"
+            Case &H5804
+                Return "rwc_SPI_TRANSFER_ERROR"
+            Case &H5805
+                Return "rwc_PROMETHEUS_SET_ERROR"
+            Case &H5806
+                Return "rwc_HYPERION_SET_ERROR"
+            Case &H5807
+                Return "rwc_DAUGHTER_SET_ERROR"
+            Case &H5808
+                Return "rwc_CALIB_DIDNOT_COMPLETE"
+            Case &H5809
+                Return "rwc_SERVOBIASSTATUS_FALSE"
+            Case &H5810
+                Return "rwc_WRONG_NO_OF_PARMS"
+            Case &H5820
+                Return "rwc_PROMETHEUS_0_DEFAULT_SETUP_ERROR (Could not set Prometheus 0 to default values)"
+            Case &H5821
+                Return "rwc_PROMETHEUS_1_DEFAULT_SETUP_ERROR (Could not set Prometheus 1 to default values)"
+            Case &H5822
+                Return "rwc_PROMETHEUS_2_DEFAULT_SETUP_ERROR (Could not set Prometheus 2 to default values)"
+            Case &H5823
+                Return "rwc_PROMETHEUS_3_DEFAULT_SETUP_ERROR (Could not set Prometheus 3 to default values)"
+            Case &H5824
+                Return "rwc_UNKNOWN_MOD_LEVEL (A Valid Mod Level was not received from the PCA Eeprom. Configuring drive with Mouri BGA default values)"
+            Case &H5825
+                Return "rwc_PROMETHEUS_4_DEFAULT_SETUP_ERROR (Could not set Prometheus 4 to default values)"
+            Case &H5826
+                Return "rwc_WRITE_ELEM_RES_FAIL (A failure was detected during a Write Element Resistance test for Artemis)"
+            Case &H5827
+                Return "rwc_READ_ELEM_RES_FAIL (A failure was detected during a Read Element Resistance test for Apollo)"
+            Case &H5828
+                Return "rwc_WRITE_CHIP_PLL_LOCK_FAIL (Artemis did not achieve PLL lock. param 1 is Artemis (0=BumpA,1=BumpB,0xFF=No Artemis was specified) param2 is value of the artemis PLL register.)"
+            Case &H5829
+                Return "rwc_INCORRECT_CAL_TABLE_FOR_WRITE_CHIP (The cal table is not correct for the write driver chip used on this PCA)"
+            Case &H5830
+                Return "rwc_HYPERION_0_DEFAULT_SETUP_ERROR (Could not set Hyperion 0 to default values)"
+            Case &H5831
+                Return "rwc_HYPERION_1_DEFAULT_SETUP_ERROR (Could not set Hyperion 1 to default values)"
+            Case &H5840
+                Return "rwc_DIAGNOSTIC_SETUP_ERROR (Could not initialize the Diagnostic Data rwInitDiagnosticData )"
+            Case &H5841
+                Return "rwc_UNEXPECTED_DIRECTION_VALUE (Did not get either INTODRIVE or INTOCARTRIDGE)"
+            Case &H5842
+                Return "rwc_REPORT_CAL_TABLE_FW_REV_WRITE_CHIP (Report some relevent parameters at power on, param 1 Chip ID, param 2 Cal table revision, param 3 FW revision)"
+            Case &H5850
+                Return "rwc_DELILAH_AUTOCAL_FAILURE (Delilah failed to autocalibrate)"
+            Case &H5851
+                Return "rwc_GIDEON_AUTOCAL_FAIL (Gideon failed to autocalibrate- param1=GideonRegisters, param2=RegisterValue, param3=nothing)"
+            Case &H5852
+                Return "rwc_GIDEON_HT_RESET_FAIL (Gideon HyperTransport PLL failed to come out of reset- param1=GideonRegisters, param2=RegisterValue, param3=nothing)"
+            Case &H5853
+                Return "rwc_HT_SYNC_ERROR (HT Sync Failure- param1=bus, param2=count, param3=type)"
+            Case &H5854
+                Return "rwc_HT_PARITY_ERROR (HT Parity error- param1=bus, param2=count, param3=type)"
+            Case &H5855
+                Return "rwc_HT_UNEXPECTED_PARITY (HT Unexpected Parity state at power-on- param1=HT_PARITY_ERROR, param2=HT_PARITY_ERROR_COUNT_0, param3=HT_PARITY_ERROR_COUNT_1)"
+            Case &H5856
+                Return "rwc_NO_VALID_BLO_DAC_VALUES_FOUND (A Valid Blo Dac Gideon Register setting could not be determined in the manual calibration mode.)"
+            Case &H5857
+                Return "rwc_SET_ATS_FAILURE (The Mech Interface firmware returned a failure to RWC firmware when requested to set an ATS clock frequency for Gideon calibration.)"
+            Case &H5858
+                Return "rwc_RNG_MAX_SAMPLES_TAKEN (The Random Bit Sequence Generator failed to collect the required samples in the allowed time.)"
+            Case &H5859
+                Return "rwc_NO_VALID_BLO_DAC_VALUES_FOUND_ON_FIRST_CAL_ATTEMPT (A Valid Blo Dac Gideon Register setting could not be determined in the manual calibration mode, retrying the Gideon offset calibration.)"
+            Case &H585A
+                Return "rwc_HT_ALIGN_FAILED (HT_ALIGN_FAILED HT_CONTROL bits 30:28 not set to 1. Param_1 = bit 30 , Param_2 = bit 29, Param_3 = bit 28)"
+            Case &H585B
+                Return "rwc_HT_IN_UNEXPECTED_STATE (HT_IN_UNEXPECTED_STATE HT reg is not as expected should be enabled Param_1 = Value of HT reg 0x147, Param_2 = Ammount of HT parity errors)"
+            Case &H585C
+                Return "rwc_HT_TURNING_OFF_PARITY_CHECKING (HT_TURNING_OFF_PARITY_CHECKING Stop checking HT parity otherwise the FW will eventually lock up)"
+            Case &H585D
+                Return "rwc_HT_PARITY_ERROR_THRESHOLD_EXCEEDED (HT_PARITY_ERROR_THRESHOLD_EXCEEDED Have had too many HT parity errors)"
+            Case &H5860
+                Return "rwc_INCOMPATIBLE_TAPE_LOADED (Expected either a compatible data tape but got something else !?)"
+            Case &H5861
+                Return "rwc_INVALID_CAL_TABLE_CONTROL_WORD (In invalid control word was found while parsing the cal table to program up a ASIC. Param_1 = control word, Param_2 = an integer value unique to each ASIC. !?)"
+            Case &H5870
+                Return "rwc_FAILED_TO_DISABLE_AMUNDSENS_WEQ (Couldn't write to Amundsen's WEQ Control register)"
+            Case &H5871
+                Return "rwc_ILLEGAL_WEQ_SETUP_REQUESTED (Illegal WEQ setup requested)"
+            Case &H5880
+                Return "rwc_INVALID_EEPROM_CAL_TABLE_AREA (The EEPROM cal table area contains at least one invalid entry)"
+            Case &H5881
+                Return "rwc_INVALID_EEPROM_PER_DRIVE_CAL_TABLE (The Per Drive Cal Table in the EEPROM contains at least one invalid entry)"
+            Case &H5882
+                Return "rwc_DEPRECATED_EEPROM_PER_DRIVE_CAL_TABLE (The Per Drive Cal Table in the EEPROM contains a revision number that is less than the revision number found in the base cal table)"
+            Case &H5890
+                Return "rwc_ESTIMATE_BOOST"
+            Case &H5891
+                Return "rwc_ADJUST_BOOST"
+            Case &H5892
+                Return "rwc_BOOST_DATASETS"
+            Case &H5893
+                Return "rwc_RESET_AFIRS_ON_CHANNEL (A request to reset the Afirs on channel, param1, was made to RWC.)"
+            Case &H5894
+                Return "rwc_READ_WITH_WRITE_BUMP_ENABLED (The drive will read using the alternate, or secondary, or writing, bump)"
+            Case &H5895
+                Return "rwc_READ_WITH_WRITE_BUMP_DISABLED (The drive will return to using the primary bump for reading)"
+            Case &H58A0
+                Return "rwc_CALIBRATE_WRITE_FAILED (The Write ERT operation executed as part of the FFIR calibration during load failed to complete enough datasets. param_1 = datasets written, param_2 = datasets expected)"
+            Case &H58A1
+                Return "rwc_FFIR_CALIBRATE_STARTED (A channel ERT result has indicated that an FFIR tuning pass is required. param_1 = channel, param_2 = CCPsSentToC1, param_3 = C1CodewordErrors)"
+            Case &H58A2
+                Return "rwc_FFIR_CALIBRATE_FAILED (An FFIR calibration attempt at Load has failed. Bad status was returned from the ERT operation)"
+            Case &H58A3
+                Return "rwc_OVERWRITE_UNCORRECTABLE_DATASETS (Uncorrectable datasets reported in Overwrite Test. Params P1=1st attempt, P2=2/3 attempt, P3=Fwd=even/Rev=odd)"
+            Case &H58A4
+                Return "rwc_OVERWRITE_THRESHOLD_C2_DATASETS (Threshold C2 (max C2 needed to correct) datasets reported in an Overwrite Test. Params P1=1st attempt, P2=2/3 attempt, P3=Fwd=even/Rev=odd)"
+            Case &H58A5
+                Return "rwc_OVERWRITE_TEST_WRITE_FAILED (Write ERT executed in Overwrite Test failed to complete enough datasets. Params P1=datasets written, P2=datasets expected)"
+            Case &H58A6
+                Return "rwc_OVERWRITE_TEST_STARTED (Overwrite Test has started currently starts on first tape movement after tape load)"
+            Case &H58A7
+                Return "rwc_OVERWRITE_TEST_FAILED (Overwrite Test has failed. Bad status was returned from the ERT operation)"
+            Case &H58A8
+                Return "rwc_OVERWRITE_AVERAGE_C2 (The average C2 needed to correct datasets reported in Overwrite Test. Params P1=1st attempt, P2=2/3 attempt, P3=Fwd=even/Rev=odd)"
+            Case &H58A9
+                Return "rwc_OVERWRITE_TEST_MARGINAL (An Overwrite test has passed but is considered marginal)"
+            Case &H58AA
+                Return "rwc_VIWP_TEMP_FAULT_ENTRY_A (Params P1 = DAC6, P2 = DAC7, P3 = WCDSM)"
+            Case &H58AB
+                Return "rwc_VIWP_TEMP_FAULT_ENTRY_B (Params P1 = DAC6, P2 = DAC7, P3 = WCDSM)"
+            Case &H58AC
+                Return "rwc_VIWP_TEMP_FAULT_ENTRY_C (Params P1 = DAC6, P2 = DAC7, P3 = WCDSM)"
+            Case &H58AD
+                Return "rwc_OVERWRITE_TEST_PASSED (An Overwrite test has passed)"
+            Case &H58BA
+                Return "rwc_VIWP_VALUES (param1 = viwp_A, param2 = viwp_B)"
+            Case &H58BB
+                Return "rwc_VIWP_TEMP_CALCULATED_A (param1 = DAC6, param2 = DAC7, param3 = WCDSM)"
+            Case &H58BC
+                Return "rwc_VIWP_TEMP_CALCULATED_B (param1 = DAC6, param2 = DAC7, param3 = WCDSM)"
+            Case &H58CA
+                Return "rwc_RMATCH_VALUES (param1 = rmatch_A, param2 = rmatch_b)"
+            Case &H58D8
+                Return "rwc_MC_ADAPTION_UNEXPECTED_ADAPTION_MODE (param1 = MC adaption mode, param2 = expected adaption mode)"
+            Case &H58D9
+                Return "rwc_MC_ADAPTION_UNEXPECTED_CHANNEL (param1 = MC adapted channel, param2 = expected channel)"
+            Case &H58DA
+                Return "rwc_MC_ADAPTION_CHANNEL_RESULT (param1 = 0 Chan failed, 1 Chan no change, 2 Chan better, param2 = Pre SNR, param3 = Post SNR)"
+            Case &H58DB
+                Return "rwc_ADAPTION_STILL_IN_PROGRESS (RWC attempted to start adaption but it looks like adaption is already in progress, this should not happen)"
+            Case &H58DC
+                Return "rwc_WAITING_FOR_SHADOW_COPY_PPC_IN_IDLE (RWC Checking to see if shadow copy done when PPC is in an IDLE state, this should not happen)"
+            Case &H58DE
+                Return "rwc_ADAPTION_RESOURCE_COUNT_HIGHWATERMARK (RWC attempted to start adaption but it looks like adaption is already in progress - the resource count for this semaphore has reached a new highwatermark level)"
+            Case &H58F0
+                Return "rwc_SETUP_SERVO"
+            Case &H58F1
+                Return "rwc_SMUX"
+            Case &H58F2
+                Return "rwc_BEN"
+            Case &H58FF
+                Return "rwc_UNDEFINED_ERROR"
+            Case &H6401
+                Return "SA_GAGARIN_ASIC_REVISION_CHECK_FAILED (Gagarin ASIC revision check failed , Asic is not a Gagarin or Yuri)"
+            Case &H6402
+                Return "PROC_IDLE_TIME_LESS_THAN_30_PER_CENT (ProcessorIdle Time is < 30%)"
+            Case &H6801
+                Return "TI_ERR_HANDLER_CALLED (The Cmicro Error Handler function has been called (cm_ErrorHandler))"
+            Case &H6802
+                Return "TI_ERR_IMPLICIT_CONSUMPTION (An implicit signal consuption has occurred! )"
+            Case &H6803
+                Return "TI_ERR_OUT_OF_TIMER_STORAGE (No free SDL timer storage (in SDLTimerFreeList) to set new timer - increase MAX_SDL_TIMERS in TightInteg/cmTmr.c )"
+            Case &H6C00
+                Return "TLM_INIT_ERROR (TraceLogger Init failed! BMM returned No GOOD)"
+            Case &H6C01
+                Return "TLM_NO_MORE_LIVE_TRACE_ENTRIES (Not an error, just an indication we've reached the last Live Trace entry)"
+            Case &H6C02
+                Return "TLM_MAX_LIVE_TRACES_REACHED (The drive has insufficient resources to set more Live Traces)"
+            Case &H6C03
+                Return "TLM_FLUSH_PENDING (Indicates a flush has started and the initiator must wait to receive SDL signal diTraceLogFlushed)"
+            Case &H6C04
+                Return "TLM_RSP_PENDING (Indicates an operation has started but the caller must wait for the callback function to be executed)"
+            Case &H6C05
+                Return "TLM_SYSARM_HW_FLUSH_FAILED (Indicates that the TraceLogging SysARM HW Flush All blocking function timed out)"
+            Case &H6C06
+                Return "TLM_SERVOARM_HW_FLUSH_FAILED (Indicates that the TraceLogging ServoARM HW Flush Trace channel blocking function timed out)"
+            Case &H7400
+                Return "miNoError"
+            Case &H7401
+                Return "miAbortedCmdError"
+            Case &H7402
+                Return "miUnsupportedCmdError"
+            Case &H7403
+                Return "miWrongNumParamsError"
+            Case &H7404
+                Return "miInvalidParamError"
+            Case &H7405
+                Return "miCmdAlreadyInProgError"
+            Case &H7406
+                Return "miCmdNotAllowedNowError"
+            Case &H7407
+                Return "miCmdProcessingError"
+            Case &H7408
+                Return "miDspEventOccurred (A DSP event has occurred.  (Most likely an off-track event unless the default was changed.))"
+            Case &H7409
+                Return "miObsoleteCmdError"
+            Case &H740A
+                Return "miIncompleteMechInit"
+            Case &H740B
+                Return "miServoInterruptTimingFault"
+            Case &H740C
+                Return "miObsoleteOrUnsupportedMechType (Mech Type (SensorRev) specified in Mech EEPROM is either obsolete or unsupported.)"
+            Case &H740D
+                Return "miObsoleteCmd300C"
+            Case &H740E
+                Return "miObsoleteCmd300D"
+            Case &H740F
+                Return "miInvalidTaskError (Current Task for servo system is of unknown type.  Most likely caused by a firmware bug!)"
+            Case &H7410
+                Return "miLoadDiagCmdNotAllowedNow (Some condition persists that prohibits a Load)"
+            Case &H7411
+                Return "miUnloadDiagCmdNotAllowedNow (Some condition persists that prohibits an UnLoad)"
+            Case &H7412
+                Return "miShuttleCmdNotAllowedNow (Shuttle tape command can not be executed at this time.)"
+            Case &H7413
+                Return "miSetCartTypeCmdNotAllowedNow (Set Cartridge Type command can not be executed at this time.)"
+            Case &H7414
+                Return "miSetMechTypeCmdNotAllowedNow (Set Cartridge Type command can not be executed at this time.)"
+            Case &H7415
+                Return "miSetTensionCmdNotAllowedNow (Set Tension command can not be executed at this time.)"
+            Case &H7416
+                Return "miSetSpeedCmdNotAllowedNow (Set Speed command can not be executed at this time.)"
+            Case &H7417
+                Return "miAdjustSpeedCmdNotAllowedNow (Adjust Speed command can not be executed at this time.)"
+            Case &H7418
+                Return "miSetPositionCmdNotAllowedNow (Set Position command can not be executed at this time.)"
+            Case &H7419
+                Return "miCancelSetPosCmdNotAllowedNow (The Cancel Set Position command can not be executed at this time.  Most likely because there is no previous set position command active.)"
+            Case &H741A
+                Return "miSetPosAndSpeedCmdNotAllowedNow (Set Position and Speed command can not be executed at this time.)"
+            Case &H741B
+                Return "miCalServoCmdNotAllowedNow (Servo Calibration command can not be executed at this time.)"
+            Case &H741C
+                Return "miEndOfTapeCalCmdNotAllowedNow (End of Tape Servo Calibration command can not be executed at this time.)"
+            Case &H741D
+                Return "miServoInitCmdNotAllowedNow (Servo Initialization command can not be executed at this time.)"
+            Case &H741E
+                Return "miLoadCmdNotAllowedNow (Load Cartridge command can not be executed at this time.)"
+            Case &H741F
+                Return "miGrabCmdNotAllowedNow (Grab leader pin command can not be executed at this time.)"
+            Case &H7420
+                Return "miLoadAndGrabCmdNotAllowedNow (Load and Grab leader pin command can not be executed at this time.)"
+            Case &H7421
+                Return "miUngrabCmdNotAllowedNow (Ungrab leader pin command can not be executed at this time.)"
+            Case &H7422
+                Return "miUnloadCmdNotAllowedNow (Unload cartridge command can not be executed at this time.)"
+            Case &H7423
+                Return "miThreadCmdNotAllowedNow (Thread command can not be executed at this time.)"
+            Case &H7424
+                Return "miUnthreadCmdNotAllowedNow (Unthread command can not be executed at this time.)"
+            Case &H7425
+                Return "miRecoverTapeCmdNotAllowedNow (Recover Tape command can not be executed at this time.)"
+            Case &H7426
+                Return "miHeadCleanCmdNotAllowedNow (Head clean command can not be executed at this time.)"
+            Case &H7427
+                Return "miPowerOnCalsCmdNotAllowedNow (Power-on calibration command can not be executed at this time.)"
+            Case &H7428
+                Return "miSetNotifyCmdNotAllowedNow (Set Notify command can not be executed at this time.)"
+            Case &H7429
+                Return "miWaitUntilEventCmdNotAllowedNow (Wait Until Event command can not be executed at this time.  Most likely because tape is not moving.)"
+            Case &H742A
+                Return "miSetHeadPositionCmdNotAllowedNow (Set Head Position command can not be executed at this time.  Most likely because a servo calibration is in progress.)"
+            Case &H742B
+                Return "miSetTrackingOffsetCmdNotAllowedNow (Set tracking offset command can not be executed at this time.  Most likely because a servo calibration is in progress.)"
+            Case &H742C
+                Return "miDspLearnVIOffsetNotAllowed (A DSP command to learn the VI offset is not allowed now because tape is moving or another task is in progress. )"
+            Case &H742D
+                Return "miSetGenCmdNotAllowedNow (The Set Gen command is not allowed now. The format can not be changed at this time.)"
+            Case &H742E
+                Return "miForcedEjectCmdNotAllowedNow (The Forced Eject command is not allowed now.  Most likely another operation is in progress.)"
+            Case &H742F
+                Return "miUnstickTapeCmdNotAllowedNow (The command to try to unstick the tape from the head can not be executed at this time.)"
+            Case &H7430
+                Return "miIllegalSensorState (Sensors are in a state that indicate that the sensors or Callisto is not working correctly)"
+            Case &H7431
+                Return "miIllegalSensorSequenceOnLoad (Sensors are in a state that indicate that the sensors or Callisto is not working correctly on a Load)"
+            Case &H7432
+                Return "miIllegalSensorSequenceOnGrab (Sensors are in a state that indicate that the sensors or Callisto is not working correctly on a Grab)"
+            Case &H7433
+                Return "miIllegalSensorSequenceOnUngrab (Sensors are in a state that indicate that the sensors or Callisto is not working correctly on an UnGrab)"
+            Case &H7434
+                Return "miIllegalSensorSequenceOnUnload (Sensors are in a state that indicate that the sensors or Callisto is not working correctly on an UnLoad)"
+            Case &H7435
+                Return "miRDSensorTimeOut (The RD sensor stopped toggling, usually the loader mechanism is blocked or motor not working)"
+            Case &H7436
+                Return "miCartUnsafeToLoad (A Runaway condition of the FRM has been detected.  This is usually a broken tape.)"
+            Case &H7437
+                Return "miUnexpectedLPOnGrab (One of the LP sensors is asserted (and only one) at the beginning of the Grab.)"
+            Case &H7438
+                Return "miUnexpectedLPStartOfGrab (One of the LP sensors is asserted (and only one) at the beginning of the Grab. This is logged but not a failure.)"
+            Case &H7439
+                Return "miWriteProtectSensorNotInSpecifiedState (The write protect sensor does not match the expected state.)"
+            Case &H743A
+                Return "miCartPresentSensorNotInSpecifiedState (The Cartridge Present sensor does not match the expected state.)"
+            Case &H743B
+                Return "miRotateReelCmdNotAllowedNow (Rotate reel command can not be executed at this time.)"
+            Case &H743C
+                Return "miMeasureKtCmdNotAllowedNow (Measure Kt command can not be executed at this time.)"
+            Case &H743D
+                Return "miFRMFaultWhileRotating (The fault line on the FRM Driver asserted while the reel was rotating)"
+            Case &H743E
+                Return "miBRMFaultWhileRotating (The fault line on the BRM Driver asserted while the reel was rotating)"
+            Case &H7440
+                Return "miCallistoBusTestError"
+            Case &H7441
+                Return "miSetSpeedCmdNotAllowedNowTapeIsSnapped (Set Speed command can not be executed because the tape is snapped.)"
+            Case &H7442
+                Return "miSetSpeedCmdNotAllowedNowTapeIsUnthreaded (Set Speed command can not be executed because the tape is unthreaded.)"
+            Case &H7443
+                Return "miSetPositionCmdNotAllowedNowTapeIsSnapped (Set Position command can not be executed because the tape is snapped.)"
+            Case &H7444
+                Return "miSetPositionCmdNotAllowedNowTapeIsUnthreaded (Set Position command can not be executed because the tape is unthreaded.)"
+            Case &H7445
+                Return "miSetPosAndSpeedCmdNotAllowedNowTapeIsSnapped (Set Position and Speed command can not be executed because the tape is snapped.)"
+            Case &H7446
+                Return "miSetPosAndSpeedCmdNotAllowedNowTapeIsUnthreaded (Set Position and Speed command can not be executed because the tape is unthreaded.)"
+            Case &H7447
+                Return "miAdjustSpeedCmdNotAllowedNowTapeIsSnapped (Adjust speed command can not be executed because the tape is snapped.)"
+            Case &H7448
+                Return "miAdjustSpeedCmdNotAllowedNowTapeIsUnthreaded (Adjust speed command can not be executed because the tape is unthreaded.)"
+            Case &H7449
+                Return "miCalServoCmdNotAllowedNowTapeIsSnapped (Servo Cal command can not be executed because the tape is snapped.)"
+            Case &H744A
+                Return "miCalServoCmdNotAllowedNowTapeIsUnthreaded (Servo Cal command can not be executed because the tape is unthreaded.)"
+            Case &H744F
+                Return "miInTransitAfterInitNoCart"
+            Case &H7450
+                Return "miInTransitAfterInit"
+            Case &H7451
+                Return "miUnGrabAfterInit"
+            Case &H7452
+                Return "miUnknownAfterInit"
+            Case &H7453
+                Return "miTimedOutWaitingToSendCmdToGetDspHeadCleaningInfo"
+            Case &H7454
+                Return "miTimedOutWaitingForDspResponseWithHeadCleaningInfo"
+            Case &H7455
+                Return "miTimedOutWaitingToSetUpDspForHeadCleaningCmd"
+            Case &H7456
+                Return "miTimedOutWaitingForDspResponseToHeadCleaningSetup"
+            Case &H7457
+                Return "miTimedOutWaitingForDspToCompleteHeadCleaningCmd"
+            Case &H7458
+                Return "miHeadCleanEngageTimeOut"
+            Case &H7459
+                Return "miHeadCleanParkingTimeOut"
+            Case &H745A
+                Return "miHeadCleanCyclingTimeOut"
+            Case &H745B
+                Return "miIllegalSensorStateAfterInit (The Sensor states read at init are illegal.  Can't make sense of the results.)"
+            Case &H745C
+                Return "miTimedOutWaitingToRestoreDspAfterHeadCleaningCmd"
+            Case &H745D
+                Return "miTimedOutWaitingForDspDuringPostHeadCleanRestoration"
+            Case &H745F
+                Return "miUnableToSendDspCompensatorCoefs"
+            Case &H7460
+                Return "miOrionArmDownLoadError"
+            Case &H7461
+                Return "miInvalidDspOpCodeError"
+            Case &H7462
+                Return "miUnableToSendDspCmdError"
+            Case &H7463
+                Return "miUnableToSendDspSeekCmd"
+            Case &H7464
+                Return "miOrionFailedToCompleteSeekCmd (Command mailbox abandoned)"
+            Case &H7465
+                Return "miSendLongTermDspCmdTimeOut"
+            Case &H7466
+                Return "miSendShortTermOrionCmdTimeOut (Command mailbox abandoned)"
+            Case &H7467
+                Return "miDspLongTermCmdProtocolError"
+            Case &H7468
+                Return "miDspShortTermCmdProtocolError"
+            Case &H7469
+                Return "miTooManyParamsOnDspLongTermCmd"
+            Case &H746A
+                Return "miTooManyParamsOnDspShortTermCmd"
+            Case &H746B
+                Return "miTooManyResultsOnDspLongTermCmd"
+            Case &H746C
+                Return "miTooManyResultsOnDspShortTermCmd"
+            Case &H746D
+                Return "miLongTermDspCmdAlreadyInProg"
+            Case &H746E
+                Return "miShortTermDspCmdAlreadyInProg"
+            Case &H746F
+                Return "miLongTermDspCmdDoneButNoneInProg"
+            Case &H7470
+                Return "miShortTermDspCmdDoneButNoneInProg"
+            Case &H7471
+                Return "miUnableToSendDspLearnVIoffsetCmd"
+            Case &H7472
+                Return "miOrionFailedToCompleteLearnVIoffset (Command mailbox abandoned)"
+            Case &H7473
+                Return "miUnableToSendDspCalViCmd"
+            Case &H7474
+                Return "miOrionFailedToCompleteCalViCmd (Command mailbox abandoned)"
+            Case &H7475
+                Return "miTooManyDataPointsRequested"
+            Case &H7476
+                Return "miNoScopeDataAvailFromDsp"
+            Case &H7477
+                Return "miDspFailedToCompleteCmdDuringInitProcess"
+            Case &H7478
+                Return "miUnableToSendDspTuneParams"
+            Case &H7479
+                Return "miDspFailedToBootProperly"
+            Case &H747A
+                Return "miTimeOutOnSendOfClearDspFaultLog"
+            Case &H747B
+                Return "miTimeOutOnCompletionOfClearDspFaultLog"
+            Case &H747C
+                Return "miUnableToSendDspHeadCleanCmd"
+            Case &H747D
+                Return "miAbortCmdAlreadyInProg (An abort command was requested while one is already in progress.)"
+            Case &H747E
+                Return "miAbortCmdTimedOut (An abort command has timed-out while waiting for the tape to stop.)"
+            Case &H747F
+                Return "miAdjustSpeedCmdAlreadyInProg (An AdjustSpeed command was requested while one is already in progress.)"
+            Case &H7480
+                Return "miGeneralLoadFailure"
+            Case &H7481
+                Return "miLoadEPNotSeen (EP did not transition on a Load.  Most likely because no cartridge is present.)"
+            Case &H7482
+                Return "miLoadCDNotSeen (CD did not transition on a Load)"
+            Case &H7483
+                Return "miGrabCGNotSeen (CG did not transition on a Grab)"
+            Case &H7484
+                Return "miGrabLPNotSeen (LP did not transition on a Grab)"
+            Case &H7485
+                Return "miAbortedLoadRecovery (Too many retries to recover on a load or unload)"
+            Case &H7486
+                Return "miLoadRotCheckFailure (Cartridge not free to rotate when Cartridge Down.)"
+            Case &H7487
+                Return "miLoadRDTimeOutEP (The RD sensor stopped toggling while EP durring a Load)"
+            Case &H7488
+                Return "miLoadRDTimeOutIT (The RD sensor stopped toggling while IT during a Load)"
+            Case &H7489
+                Return "miLoadRDTimeOutCD (The RD sensor stopped toggling while CD during a Load)"
+            Case &H748A
+                Return "miGrabRDTimeOutCD (The RD sensor stopped toggling while CD during a Grab)"
+            Case &H748B
+                Return "miGrabRDTimeOutLP (The RD sensor stopped toggling while LP during a Grab)"
+            Case &H748C
+                Return "miInvokedTensionRampRetry"
+            Case &H748D
+                Return "miLoadFRMRunaway (Too much rotation was detected in the cartridge before it was threaded.)"
+            Case &H748E
+                Return "miCartNotLoaded (A Grab was requested, but the cartridge was not loaded)"
+            Case &H748F
+                Return "miUnexpectedGrabDuringLoad (Sensors indicate grabber unexpectedly moved into a grab position during a load operation.)"
+            Case &H7490
+                Return "miParkBackOff2 (While Parking the LP, we incremented the LM Voltage from .25V to .5V)"
+            Case &H7491
+                Return "miParkBackOff3 (While Parking the LP, we incremented the LM Voltage from .5V to .75V)"
+            Case &H7492
+                Return "miParkBackOff4 (While Parking the LP, we incremented the LM Voltage from .75V to 1.0V)"
+            Case &H7493
+                Return "miThreadBackOff2 (While Threading, we incremented the LM Voltage from .25V to .5V)"
+            Case &H7494
+                Return "miThreadBackOff3 (While Threading, we incremented the LM Voltage from .5V to .75V)"
+            Case &H7495
+                Return "miThreadBackOff4 (While Threading, we incremented the LM Voltage from .75V to 1.0V)"
+            Case &H749A
+                Return "miLoadFailedSuspectNoCartridgePresent (Load command failed and no CM was detected, therefore it is likely there is no cartridge present.)"
+            Case &H74A0
+                Return "miGeneralUnLoadFailure"
+            Case &H74A1
+                Return "miUnLoadEPNotSeen (EP did not transition while UnLoading)"
+            Case &H74A2
+                Return "miUnLoadCDNotSeen (CD did not transition while UnLoading)"
+            Case &H74A3
+                Return "miUnGrabCGNotSeen (CG did not transition while UnGrabbing)"
+            Case &H74A4
+                Return "miUnGrabLPNotSeen (LP did not transition while UnGrabbing)"
+            Case &H74A6
+                Return "miUnGrabRDTimeOutCG (RD stopped toggling while CG durring UnGrab)"
+            Case &H74A7
+                Return "miUnGrabRDTimeOutLP (RD stopped toggling while LP durring UnGrab)"
+            Case &H74A8
+                Return "miUnGrabRDTimeOutCD (RD stopped toggling while CD durring UnGrab)"
+            Case &H74A9
+                Return "miUnLoadRDTimeOutCD (RD stopped toggling while CD durring UnLoad)"
+            Case &H74AA
+                Return "miUnLoadRDTimeOutIT (RD stopped toggling while IT durring UnLoad)"
+            Case &H74AC
+                Return "miUnLoadFRMRunaway (Too much rotation of the cartridge was detected while tape was not threaded)"
+            Case &H74AD
+                Return "miLoadControlWatchDogTimerExpired (The load,unload,grab or ungrab operation timed out)"
+            Case &H74C0
+                Return "miTimeOutWhileDeslackingCartridge"
+            Case &H74C1
+                Return "miEmergencyStopError"
+            Case &H74C2
+                Return "miAlreadyPastTargetPosition"
+            Case &H74C3
+                Return "miSetSpeedTimeOutError"
+            Case &H74C4
+                Return "miTimeOutWaitingForAnLpos"
+            Case &H74C5
+                Return "miFatalReelFaultErrorCode"
+            Case &H74C6
+                Return "miSafetyLimitStopReached"
+            Case &H74C7
+                Return "miLposCalcWithInvalidLP0"
+            Case &H74C8
+                Return "miMissedTargetPosition"
+            Case &H74C9
+                Return "miPreviousTapeMotionCmdInProg"
+            Case &H74CA
+                Return "miSetSpeedTimeOutError2"
+            Case &H74CB
+                Return "miUnthreadingTimeOutError"
+            Case &H74CC
+                Return "miRemoveSlackProcessTimedOut"
+            Case &H74CD
+                Return "miLeaderMayHaveDisconnected"
+            Case &H74CE
+                Return "miTimeOutWaitingForRadiiEstimate"
+            Case &H74CF
+                Return "miRadiiEstimationProcessFailed"
+            Case &H74D0
+                Return "miRecoverTapeTimeOutError"
+            Case &H74D1
+                Return "miInvalidCartridgeType"
+            Case &H74D2
+                Return "miCalReelDvrOffsetTimeOut"
+            Case &H74D3
+                Return "miTimeOutWaitingForSpecifiedEvent"
+            Case &H74D4
+                Return "miFrontReelMotorHallSensorFault"
+            Case &H74D5
+                Return "miBackReelMotorHallSensorFault"
+            Case &H74D6
+                Return "miPrethreadingDeslackingTimeOut (Deslacking process did not complete.  Most likely due to back reel motor failing to rotate.)"
+            Case &H74D7
+                Return "miThreadingTimeOutWaitingForHalfMoonToPassFirstRoller (Threading time out while waiting for half moon to pass the first roller.)"
+            Case &H74D8
+                Return "miThreadingTimeOutWaitingForSpeedUpPosition (Timed out waiting for tape to reach position for speed-up during a thread.)"
+            Case &H74D9
+                Return "miThreadingTimeOutWaitingForPosToBeginStop (Time out while waiting for tape to reach the position to stop threading.)"
+            Case &H74DA
+                Return "miUnthreadCmdAbortedTapeMotion (An unthread command was issued and it aborted a tape motion operation that was already in progress.)"
+            Case &H74DB
+                Return "miCartridgeTypeNotSpecified (The cartridge type has not been specified either from LTO-CM or via a serial port command.)"
+            Case &H74DC
+                Return "miDspTapeSpeedSuspicious (The Tape speed reported by the DSP is significantly different than the tape speed indicated by the hall sensors.)"
+            Case &H74DD
+                Return "miSpecifiedTensionIsOutOfRange (Specified value of tension is either too high or too low.)"
+            Case &H74DE
+                Return "miTimedOutWaitingForPanicStopToComplete (Panic stop process did not complete properly.)"
+            Case &H74DF
+                Return "miSetTensionTimeOutError (Timed-out waiting for the proper tape tension to be established.)"
+            Case &H74E0
+                Return "miHeadSelectionTimeOut"
+            Case &H74E1
+                Return "miUnableToPositionHead"
+            Case &H74E2
+                Return "miSpeedTooLowForEnablingHeads"
+            Case &H74E3
+                Return "miSpeedTooLowForHeadServo"
+            Case &H74E4
+                Return "miSpeedTooLowForSensorCal"
+            Case &H74E5
+                Return "miSeekAttemptedWhileTapeStopped (DSP seek command was attempted while tape speed was zero.)"
+            Case &H74E6
+                Return "miSensorCalAttemptedWhileTapeStopped (DSP sensor cal command was attempted while tape speed was zero.)"
+            Case &H74E7
+                Return "miSpeedTooLowForVIOffset (The speed is too low to attempt a VI offset command in recover tape.  Most likely the tape is stuck to the head)"
+            Case &H7500
+                Return "miWriteFaultFirst"
+            Case &H7501
+                Return "miWriteFaultTooLongSinceValidLPOS (It has been too long since a valid LPOS was read, writing is not allowed.)"
+            Case &H7502
+                Return "miWriteFaultDspRecoveryInProgress (DSP tracking recovery operations are in progress, writing is not allowed.)"
+            Case &H7503
+                Return "miWriteFaultTapeStartUpIncomplete (Tape motion or DSP tracking start-up operations incomplete, writing is not allowed.)"
+            Case &H7504
+                Return "miWriteFaultDspNotTracking (DSP is not tracking properly on the tape, writing is not allowed.)"
+            Case &H7505
+                Return "miWriteFaultTapeSpeedTooLow (The current tape speed is too low, writing is not allowed.)"
+            Case &H7508
+                Return "miWriteFaultDSPIdle (Write is not allowed. DSP in Idle mode.)"
+            Case &H7509
+                Return "miWriteFaultDSPCalib"
+            Case &H750A
+                Return "miWriteFaultDSPVITrkFollow"
+            Case &H750B
+                Return "miWriteFaultDSPTapeOffTrack"
+            Case &H750C
+                Return "miWriteFaultDSPDemodChanOut"
+            Case &H750D
+                Return "miWriteFaultDSPSeek"
+            Case &H750E
+                Return "miWriteFaultDSPuPVI"
+            Case &H750F
+                Return "miWriteFaultWriteUnsafe"
+            Case &H7510
+                Return "miWriteFaultUnknown"
+            Case &H7511
+                Return "miWriteFaultMultiple"
+            Case &H7512
+                Return "miWriteFaultATSClockFrozen (Write is not allowed; ATS clock frequency clipped)"
+            Case &H7513
+                Return "miWriteFaultPOR (Write is not allowed; Power On or Reset occurred)"
+            Case &H7514
+                Return "miWriteFaultMicroJogApplied (Write is not allowed; Micro Jog is being applied)"
+            Case &H7515
+                Return "miWriteFaultOrionParityError (Write is not allowed; Orion TCM parity error detected)"
+            Case &H7516
+                Return "miWriteFaultLast (Write is not allowed; 12v power has been lost)"
+            Case &H7517
+                Return "miWriteFaultDSPTrackingOffsetApplied (Write is not allowed; Tracking offset is being applied)"
+            Case &H7518
+                Return "miWriteFaultTensionOffset (Write is not allowed because tension offset is being applied.)"
+            Case &H7519
+                Return "miWriteFaultBandIDVerification (Write is not allowed because servo bands could not be identified with GOOD status.)"
+            Case &H75BB
+                Return "miWriteFaultDSPStillOffTrack (Write cannot recommence while still offtrack)"
+            Case &H7600
+                Return "miSetSpeedCmdInvalidParam"
+            Case &H7601
+                Return "miAdjustSpeedCmdInvalidParam"
+            Case &H7602
+                Return "miSetPositionCmdInvalidParam"
+            Case &H7603
+                Return "miSetHeadPositionCmdInvalidParam"
+            Case &H7604
+                Return "miSetHeadTableCmdInvalidParam"
+            Case &H7605
+                Return "miOrionStatsCmdInvalidParam"
+            Case &H7606
+                Return "miGetServoFaultCmdInvalidParam"
+            Case &H7607
+                Return "miSetTrackingOffsetCmdInvalidParam"
+            Case &H7608
+                Return "miSetNotifyCmdInvalidParam"
+            Case &H7609
+                Return "miClearNotifyCmdNullHandle"
+            Case &H760A
+                Return "miAtsDiagCmdInvalidParam"
+            Case &H760B
+                Return "miHallCalCmdInvalidParam"
+            Case &H760C
+                Return "miRadiusCalCmdInvalidParam"
+            Case &H760D
+                Return "miWaitUntilEventCmdInvalidParam"
+            Case &H760E
+                Return "miConvertLposCmdInvalidParam"
+            Case &H760F
+                Return "miShuttleCmdInvalidParam"
+            Case &H7610
+                Return "miGetDspFaultLogInvalidParam"
+            Case &H7611
+                Return "miSetGenCmdInvalidParam"
+            Case &H7612
+                Return "miSetTestModeCmdInvalidParam (SetTestMode command parameter is out of range or is invalid.)"
+            Case &H7613
+                Return "miEepromServoTableCmdInvalidParam (Eeprom servo table command parameter is out of range or is invalid.)"
+            Case &H7614
+                Return "miRotateCmdInvalidParam"
+            Case &H7615
+                Return "miMeasureKtCmdInvalidParam"
+            Case &H7616
+                Return "miSleepRecursionFault (Sleep Recursion fault in MechInterface.  Most likely a firmware bug)"
+            Case &H7620
+                Return "miSetSpeedTimeOut2 (Set speed operation timed-out during a recover tape command.)"
+            Case &H7621
+                Return "miTimedOutWaitingForAlmostParked (Timed-out waiting for the pin sensors to indicate almost parked.)"
+            Case &H7622
+                Return "miTimedOutWaitingForFullParkIndication (Timed-out waiting for the pin sensors to indicate fully parked.)"
+            Case &H7623
+                Return "miUnthreadingTimeOutWaitingForFullTension (Unthread timed-out waiting for the full leader pin seating tension to be established.)"
+            Case &H7624
+                Return "miCyclingTensionDidNotParkPin (Cycling the pull-in tension did not achieve pin park.)"
+            Case &H7625
+                Return "miRethreadRetryDidNotParkPin (Rethreading and then unthreading again did not get the leader pin parked.)"
+            Case &H7626
+                Return "miTimedOutWaitingForAlmostParkedRetry (Timed-out during the rethread/re-unthread recovery while waiting for almost parked.)"
+            Case &H7627
+                Return "miUnableToParkLeaderPin (All recovery algorithms exhausted and still unable to park leader pin!)"
+            Case &H7628
+                Return "miRethreadingTimeOutWaitingForStop (Rethread recovery operation timed-out waiting for tape to come to a stop.)"
+            Case &H7629
+                Return "miRethreadingTimeOut2 (Rethreading time out while waiting for the tape to reach the required position.)"
+            Case &H762A
+                Return "miRethreadingDeslackingTimeOut (Deslacking process did not complete.  Most likely due to back reel motor failing to rotate.)"
+            Case &H762B
+                Return "miLeaderPinCameUnparked (Leader pin was parked as indicated by both LP sensors, but then came unparked.)"
+            Case &H762C
+                Return "miRecovTapeCompleteButOriginalCmdFailed (The tape has been recovered and leader pin parked, but the original operation failed and was abandoned.)"
+            Case &H762D
+                Return "miRethreadingTimeOut3 (Rethreading time out while waiting for the tape to reach the required position.)"
+            Case &H762E
+                Return "miRethreadingTimeOutWaitingForStop2 (Rethread recovery operation timed-out waiting for tape to come to a stop.)"
+            Case &H762F
+                Return "miSpecialUnthreadingRecoveryWasUsed (A special unthreading recovery operation was needed to un-jam the leader block.)"
+            Case &H7630
+                Return "miRethreadRetryDidNotRecover (An iteration of the special unthreading recovery operation did not succeed.)"
+            Case &H7631
+                Return "miStopTapeTimeOutError (The stop tape operation took longer than expected.)"
+            Case &H7632
+                Return "miPosErrorExceededLimit (Attempt to stop the tape while still too far away from the specified position.)"
+            Case &H7633
+                Return "miTapeStoppedByAbortCmd (An abort command was issued and it stopped the tape motion operation that was already in progress.)"
+            Case &H7634
+                Return "miTapeThicknessTooLarge (The tape thickness is too large to be handled properly by the servo system.)"
+            Case &H7635
+                Return "miAdjustSpeedTimeOutError (ATS speed change operation (AdjustSpeed) timed-out waiting for tape to reach target speed.)"
+            Case &H7636
+                Return "miAttemptToAdjustSpeedWhileTapeStopped (ATS speed change operation (AdjustSpeed) was attempted while the tape was not moving.)"
+            Case &H7637
+                Return "miPinNotParkedAfterCCWRotation (While trying to park the pin LP2 was seen, but LP1 was not seen after rotating the grabber CCW.)"
+            Case &H7638
+                Return "miThreadingTimeOutWaitingForHalfMoonSeating (Threading time out while waiting for the half moon to seat onto the back reel.)"
+            Case &H7639
+                Return "miTapeStoppedUnexpectedly (Tape motion apparently stopped while waiting for head positioning to complete.)"
+            Case &H763A
+                Return "miTimedOutDuringUnthreadRewind (Unthread timed-out during the initial rewind of tape back into the cartridge.)"
+            Case &H763B
+                Return "miTimedOutDuringSetPosAndSpeedOperation (Timed-out during operation to set tape position and speed.)"
+            Case &H763C
+                Return "miTimedOutDuringSetPositionOperation (Timed-out during operation to set tape position.)"
+            Case &H763D
+                Return "miTimedOutDuringRecoverTapeOperation (Timed-out during a RecoverTape operation.)"
+            Case &H763E
+                Return "miFrontReelStalledWhileDeslacking (Front reel did not rotate during tape slack removal process.)"
+            Case &H763F
+                Return "miThreadingTimeOutWaitingForLeaderBlockSeating (Timed out waiting for back reel to reach position where leader block is fully seated.)"
+            Case &H7640
+                Return "miThreadingTimeOutWaitingForReversal (Timed out waiting for back reel to rotate to the threading reversal point.)"
+            Case &H7641
+                Return "miThreadingTimeOutWaitingForReverseThreadedPos (Timed out waiting for back reel to rotate to the reverse threaded position.)"
+            Case &H7642
+                Return "miReverseThreadSetTensionTimeOutError (Timed out waiting for tension to be established during the reverse threading process.)"
+            Case &H7643
+                Return "miThreadingTimeOutWaitingForRevThreadTargetPos (Timed out waiting for the reverse threading target position.)"
+            Case &H7644
+                Return "miUnableToDetachLeaderBlock (Timed out waiting for leader block to detach during an unthread.)"
+            Case &H7645
+                Return "miReverseUnthreadSetTensionTimeOutError (Timed out waiting for tension to be established during the reverse unthreading process.)"
+            Case &H7646
+                Return "miReverseUnthreadSetSpeedTimeOutError (Timed out waiting for speed to be established during the reverse unthreading process.)"
+            Case &H7647
+                Return "miFatalReelFaultWhileStoppingTape (A fatal reel fault occurred during the time when the tape was being stopped.)"
+            Case &H7648
+                Return "miBackReelStalledWhileDeterminingThreadDirection (Back reel stalled and was not rotating when determining thread direction.)"
+            Case &H7649
+                Return "miDetermineThreadDirectionOperationTimedOut (An operation that determines thread direction timed out.)"
+            Case &H764A
+                Return "miUnableToMaintainSpeed_TapeIsMoving (Tape speed error integrator value is very large.  Tape is still moving.  This is a warning.)"
+            Case &H764B
+                Return "miTimedOutDuringUnthreadReversal (Timed out waiting for back reel to rotate to the unthreading reversal point.)"
+            Case &H764C
+                Return "miTimedOutWaitingForUnthreadReveralSlowDown (Timed out waiting for tape to reach unthreading reversal slow down point.)"
+            Case &H764D
+                Return "miTimedOutWaitingForUnthreadTurnAroundPoint (Timed out waiting for tape to reach unthreading turn around point.)"
+            Case &H764E
+                Return "miFrontReelRotatingWrongDirection (Front reel turning CCW but should be CW after going through critical point during recover tape process.)"
+            Case &H764F
+                Return "miStuckTapeDuringRadiusControlledRewind (Tape motion unexpectedly stopped during recover tape process of rewinding based on radius estimate.)"
+            Case &H7650
+                Return "miUnableToDetachLeaderBlockInRecovTapeWhenRevThreaded (Unable to detach leader block during recover tape operation when reverse threaded.)"
+            Case &H7651
+                Return "miUnableToDetachLeaderBlockInRecovTapeWhenForThreaded (Unable to detach leader block during recover tape operation when forward threaded.)"
+            Case &H7652
+                Return "miCartridgeIndentificationProcessFailed (Unable to indentify cartridge type during recover-tape operation.)"
+            Case &H7653
+                Return "miTapeThicknessInCmIsSuspect (The tape thickness reported by the CM looks suspicious.  It's too large or too small.)"
+            Case &H7654
+                Return "miInvalidTapeThicknessInCm (The tape thickness reported by the CM is invalid and can not be used.)"
+            Case &H7655
+                Return "miInvalidPackRadiusInCm (The full pack radius reported by the CM appears to be invalid and will not be used.)"
+            Case &H7656
+                Return "miInvalidTapeLengthInCm (The tape length reported by the CM appears to be invalid and will not be used.)"
+            Case &H7657
+                Return "miInvalidReelInertiaInCm (The empty reel inertia reported by the CM appears to be invalid and will not be used.)"
+            Case &H7658
+                Return "miInvalidReelRadiusInCm (The empty reel radius reported by the CM appears to be invalid and will not be used.)"
+            Case &H7659
+                Return "miFrontReelStalledWhileBackReelRotated (Front reel not rotating properly.  Possibly due to the tape sticking to the tape lifter.)"
+            Case &H765A
+                Return "miBestDirForRecoveryIsUnknown (Recovery process was unable to determine best direction to move tape.)"
+            Case &H765B
+                Return "miFrontReelDidNotReverseDirectionDuringThread (Front reel did not reverse direction after passing through critical region for threading reversal.)"
+            Case &H765C
+                Return "miBackReelStopOperationTimedOut (Back reel did stop as expected during a tape recovery process.)"
+            Case &H765D
+                Return "miBackReelPushedClockwiseDuringLeaderBlockDemate (WARNING- Leader block demate process resorted to pushing the back reel CW!)"
+            Case &H765E
+                Return "miRethreadingTimeOutDuringLeaderBlockDemateRetry (Rethreading position time out during leader block demate retry process.)"
+            Case &H765F
+                Return "miLeaderBlockDemateRetriesExhausted (Leader block demate retry process was unsuccessful.)"
+            Case &H7660
+                Return "miLeaderBlockYankWasNeeded (Indicates is was necessary to yank on the tape to detach the leader block.)"
+            Case &H7661
+                Return "miTimedOutWaitingForOverWrapPosition (Timed out waiting for the required number of layers to over wrap the leader block.)"
+            Case &H7662
+                Return "miTimedOutWaitingForUnwrapPosition (Timed out waiting for the tape to unwrap from the leader block during a reverse thread.)"
+            Case &H7663
+                Return "miTimedOutWaitingForReturnToLockInPosition (Timed out waiting for a return to the original lock in position during a reverse thread.)"
+            Case &H7664
+                Return "miResetDspTuningParams (DSP tuning params were reloaded into the DSP prior to a VI-sensor cal command.   (This is a recovery algorithm.))"
+            Case &H7665
+                Return "miServoTestModeENABLED (Indicates a special test mode has been enabled that will generate specific faults.)"
+            Case &H7666
+                Return "miServoTestModeDISABLED (Indicates the special test mode has now been DISABLED.  Normal operation will resume.)"
+            Case &H7667
+                Return "miFrontReelDidNotReverseDirAfterThreadingTensionRamp (Front reel is not running in reverse direction after the tension ramp after passing through critical region during a thread.)"
+            Case &H7668
+                Return "miFrontReelDidNotReverseDirDuringUnthreadStep1 (Front reel did not reverse direction after passing through critical region during an unthread.)"
+            Case &H7669
+                Return "miFrontReelDidNotReverseDirDuringUnthreadStep2 (Front reel did not reverse direction after passing through critical region during an unthread.)"
+            Case &H766A
+                Return "miTimedOutWaitingForThreadingApproachSpeed (Timed out waiting for speed to reduce while approaching the critical region during a thread.)"
+            Case &H766B
+                Return "miUsingSecondaryHeadSetForSensorCal (Recovery process is using a secondary head set to perform a Sensor Cal operation.)"
+            Case &H766C
+                Return "miUsingSecondaryHeadSetForAziCal (Recovery process is using a secondary head set to perform an azimuth cal operation.)"
+            Case &H766D
+                Return "miTooCloseToBotForSensorCal (ServoCal can not be done now because too close to beginning of tape.)"
+            Case &H766E
+                Return "miThreadingTimeOutWaitingForHalfMoonToApproachHead (Timed out waiting for half moon to approach head during a thread.)"
+            Case &H766F
+                Return "miUnThreadingTimeOutWaitingForHalfMoonToApproachHead (Timed out waiting for half moon to approach head during an unthread.)"
+            Case &H7670
+                Return "miThreadingTimeOutWaitingForHalfMoonToPassHead (Timed out waiting for half moon to pass head during a thread.)"
+            Case &H7671
+                Return "miUnThreadingTimeOutWaitingForHalfMoonToPassHead (Timed out waiting for half moon to pass head during an unthread.)"
+            Case &H7672
+                Return "miUnThreadingTimeOutWaitingForGuideEntry (Timed out waiting for half moon to enter guide during an unthread.)"
+            Case &H7673
+                Return "miServoTimingReferenceMismatch (Servo timing reference mismatch during timing reference calibration)"
+            Case &H7674
+                Return "miMissedTargetPositionByTooMuch (Set position and speed operation missed the target objectives by way too much. Probably due to DSP retries.)"
+            Case &H7675
+                Return "miTimedOutWaitingToDeactivateTapeLifter (Timed out waiting for the grabber to rotate enough to deactivate the tape lifter and lower the tape onto the head)"
+            Case &H7676
+                Return "miMechParamsNotUpdatedFromCM (CM read after threading, MechParams cannot be updated at this time)"
+            Case &H7677
+                Return "miMechSensorsNotInExpectedStateAfterLoad (Mech Sensors not in expected state after a load command.)"
+            Case &H7678
+                Return "miMechSensorsNotInExpectedStateAfterUnload (Mech Sensors not in expected state after an unload command.)"
+            Case &H7679
+                Return "miMechSensorsNotInExpectedStateAfterGrab (Mech Sensors not in expected state after a grab command.)"
+            Case &H767A
+                Return "miMechSensorsNotInExpectedStateAfterUngrab (Mech Sensors not in expected state after an ungrab command.)"
+            Case &H767B
+                Return "miPreloadingDeslackingTimeOut (Deslacking process did not complete.  Most likely due to back reel motor failing to rotate.)"
+            Case &H767C
+                Return "miFRMTensionRampTimeout (FRM tension ramp process did not complete.  Most likely due to excessive tape slippage in the cartridge.)"
+            Case &H767D
+                Return "miFRMRotationDetectedDuringUngrab (FRM rotation was unexpectedly detected while ungrabbing the cartridge leader pin)"
+            Case &H767E
+                Return "miLPOSMediaMfgStringCheckSumFlt (The calculated LPOS media manufacturers string checksum does not match what was read from the tape.)"
+            Case &H767F
+                Return "miLPAssertedPriorToLoading (The LP sensor was asserted prior to loading, possibly a stuck or faulty sensor)"
+            Case &H7680
+                Return "miRelockingDspOntoTape (The DSP was commanded to re-lock onto servo code.   (This is a recovery algorithm.))"
+            Case &H7681
+                Return "miRetryDspSeekCommand (A retry was necessary on a DSP seek command.   (This is a recovery algorithm.))"
+            Case &H7682
+                Return "miRetryDspSensorCalCommand (A retry was necessary on a DSP VI-sensor cal command.   (This is a recovery algorithm.))"
+            Case &H7683
+                Return "miRetryDspAziCalCommand (A retry was necessary on a DSP azimuth cal command.   (This is a recovery algorithm.))"
+            Case &H7684
+                Return "miRetryDspViOffsetCalCommand (A retry was necessary on a DSP command to learn the VI-offset.   (This is a recovery algorithm.))"
+            Case &H7685
+                Return "miThreadingTimeOutUnableToInitiateMotion (Unable to thread.  An ungrab/regrab/rethread recovery process will now be attempted.)"
+            Case &H7686
+                Return "miPinDetectFaultDuringThreading (Thread operation being retried because the pin detect sensor indicates parked when not parked.)"
+            Case &H7687
+                Return "miTimeOutWaitingForThreadToStop (Threading recovery could not get tape stopped in a reasonable time period.)"
+            Case &H7688
+                Return "miPrethreadingRegrabTimeOut (Timed out waiting for a regrab to complete prior to threading.)"
+            Case &H7689
+                Return "miReadMediaManufacturesStringTimeOut (Timed out trying to read the media manufacturers information.  Additional retries may still be possible.)"
+            Case &H768A
+                Return "miParkDetectionViaMotorStall (A faulty LP sensor has made it neccessary to detect pin parking via FRM stall.)"
+            Case &H768B
+                Return "miFalseParkingIndication (Attempt to park failed.  LP sensor most likely asserted when it should not have.)"
+            Case &H768C
+                Return "miSeekRecoveryNowUsingVIcal (A VI cal was necessary to recover a DSP seek command failure.   (This is a recovery algorithm.))"
+            Case &H768D
+                Return "miFRMRequiredRestart (The FRM Driver required a reset and was restarted)"
+            Case &H768E
+                Return "miBRMRequiredRestart (The BRM Driver required a reset and was restarted)"
+            Case &H768F
+                Return "miContinuityCheckFailedH (The reel motor flex continuity check failed, the line is stuck high)"
+            Case &H7690
+                Return "miContinuityCheckFailedL (The reel motor flex continuity check failed, the line is stuck low)"
+            Case &H7691
+                Return "miUnableToReadMediaManufacturesString (Unable to read the media manufacturers information from the LPOS bit stream.)"
+            Case &H7692
+                Return "miFullEjectLoadRetryInvoked (A full eject was invoked as part of a load fault recovery)"
+            Case &H7693
+                Return "miNudgedGrabberToHelpParkPin (Gently nudged grabber in order to help park leader pin. NOT a fault.  Info only.)"
+            Case &H7694
+                Return "miRegrabbingLeaderPinAfterNudgingGrabberOpen (Leader pin may have come ungrabbed.  Regrabbing pin.)"
+            Case &H7695
+                Return "miCartridgeLoadOnInitFailed (A cartridge load as part of init failed.)"
+            Case &H7696
+                Return "miStuckLPSensorRecoveryInProgress (A Special recovery to try to free a stuck LP sensor is in progress)"
+            Case &H7697
+                Return "miStuckLPSensorRecoveryFailed (The recovery effort to try to free a stuck LP sensor failed)"
+            Case &H7698
+                Return "miR2OverRotatedDuringLeaderBlockDemate (The BRM over rotated during leader block demate in recover tape. Info only)"
+            Case &H7699
+                Return "miFrontReelDacOffsetIsOutOfRange (The front reel motor DAC offset is too large or too small.)"
+            Case &H769A
+                Return "miBackReelDacOffsetIsOutOfRange (The back reel motor DAC offset is too large or too small.)"
+            Case &H769B
+                Return "miForcedEjectCommandInvoked (A Forced Eject command was invoked, THIS IS NOT A FAULT, INFO ONLY)"
+            Case &H769C
+                Return "miLpos1SanityCheckFailed (The LPOS lock-up process produced a value that does pass the basic sanity check.)"
+            Case &H769D
+                Return "miLpos2SanityCheckFailed (The LPOS lock-up process produced a value that does pass the basic sanity check.)"
+            Case &H769E
+                Return "miUnableToFindBestDirForRecovery (The REMOVING_SLACK operation timed out in the section where it is trying to determine the best direction for recovery)"
+            Case &H769F
+                Return "miRadiusEstimateSuspect (The radii estimation process in recover tape yielded a negative result )"
+            Case &H76A0
+                Return "miUnableToSendDspSetGenCmd"
+            Case &H76A1
+                Return "miDspFailedToCompleteSetGenCmd"
+            Case &H76A2
+                Return "miEmptyDspInterrupt"
+            Case &H76A3
+                Return "miTimeOutDuringReadDspFaultLog"
+            Case &H76A4
+                Return "miTimeOutDuringClearDspFaultLog"
+            Case &H76A5
+                Return "miUnableToSendDspWriteDataMemCmd"
+            Case &H76A6
+                Return "miDspFailedToCompleteWriteDataMemCmd"
+            Case &H76A7
+                Return "miUnableToSendDspSampleRateParams"
+            Case &H76A8
+                Return "miThreadingFault (A threading fault occurred.)"
+            Case &H76A9
+                Return "miUnthreadingFault (An unthreading fault occurred)"
+            Case &H76AA
+                Return "miUnableToSendDspPCADiagCmd"
+            Case &H76AB
+                Return "miDspFailedToCompletePCADiagCmd"
+            Case &H76AC
+                Return "miUnableToMoveTape (Unable to initiate tape motion. Tape is stuck!)"
+            Case &H76AD
+                Return "miTapeStillStuckAfterUsingTapeLifter (Unable to initiate tape motion even after using tape lifter. Tape is stuck!)"
+            Case &H76AE
+                Return "miTapeStillStuckAfterRelaxingTension (Unable to initiate tape motion even after relaxing hard pull. Tape is stuck!)"
+            Case &H76AF
+                Return "miUnableToMaintainSpeed_TapeIsStopped (Tape speed error integrator value is very large.  Tape is stuck and not moving.)"
+            Case &H76B0
+                Return "miTapeStillStuckAfterTryingOppositeDirection (Unable to initiate tape motion even after pulling the opposite direction. Tape is stuck!)"
+            Case &H76B1
+                Return "miTapeCameFreeAfterTryingOppositeDirection (Tape finally came free after pulling in the opposite direction.)"
+            Case &H76B2
+                Return "miUnableToReadLposForDetermingLP0 (Unable to read enough valid LPOS words from any servo head to determine LP0.)"
+            Case &H76B3
+                Return "miChangingSpeedAndOrHeadDuringServoCal (Switching to a different speed or different head as part of a Servo Cal retry and recovery process.)"
+            Case &H76B4
+                Return "miSimulatedDspFault (This fault code is for firmware debug only.  It simulates a DSP fault code.)"
+            Case &H76B5
+                Return "miRelaxedGrabberDuringThread (Relaxed grabber during thread to help pull leader pin out of cartridge.  NOT a fault.  Info only.)"
+            Case &H76B6
+                Return "miTooManyResultsOnOrionCmd (An Orion command returned more results than the maximum allowed)"
+            Case &H76B7
+                Return "miEmptyOrionInterrupt (The servo ASIC interrupted the system processor for no good reason. )"
+            Case &H76B8
+                Return "miLpos0SanityCheckFailed (The LPOS lock-up process produced a value that does pass the basic sanity check.)"
+            Case &H76B9
+                Return "miLpos3SanityCheckFailed (The LPOS lock-up process produced a value that does pass the basic sanity check.)"
+            Case &H76BA
+                Return "miRecoverTapeCompletedSuccessfully (RecoverTape Completed Successfully, NOT A FAULT, INFO ONLY)"
+            Case &H76BB
+                Return "miTooManyParamsOnOrionCmd (An Orion command was sent with more than the maximum allowed number of parameters)"
+            Case &H76BC
+                Return "miHardwareDetectedTapeOffTrack (Hardware detected offtrack, info only)"
+            Case &H76BD
+                Return "miUnexpectedOrionPowerOnReset (The servo ARM reported an unexpected reset.)"
+            Case &H76BE
+                Return "miUnableToSendOrionCmd (No Orion command mailboxes were available)"
+            Case &H76BF
+                Return "miWriteProtectSensorNotInSpecifiedHighState (The write protect sensor does not match the specified high state.)"
+            Case &H76C0
+                Return "miWriteProtectSensorNotInSpecifiedLowState (The write protect sensor does not match the specified low state.)"
+            Case &H76C1
+                Return "miUsingDefaultReelTuningValues (EEPROM values unavailable. Invalid table revision. Default servo tuning values are being used instead.)"
+            Case &H76C2
+                Return "miUsingDefaultHeadPosTuningValues (EEPROM values unavailable. Invalid table revision. Default values are being used instead.)"
+            Case &H76C3
+                Return "miChangePowerModeNotAllowedNow (The drive is not in the correct state to allow the power mode to be changed.)"
+            Case &H76C4
+                Return "miInvalidPowerModeParam (The power mode requested is invalid.)"
+            Case &H76C5
+                Return "miCoolingFanStalled (The cooling fan is stalled or running significantly below normal operating speed)"
+            Case &H76C6
+                Return "miCoolingFanWorkingAfterStall (The cooling fan was stalled but is now operating normally)"
+            Case &H76C7
+                Return "miServoArmITCMParityError (A servo ARM memory parity error was detected.  Drive must be reset!)"
+            Case &H76C8
+                Return "miServoArmDTCM1ParityError (A servo ARM memory parity error was detected.  Drive must be reset!)"
+            Case &H76C9
+                Return "miServoArmDTCM2ParityError (A servo ARM memory parity error was detected. Info Only )"
+            Case &H76CA
+                Return "miServoArmDTCM3ParityError (A servo ARM memory parity error was detected.  Drive must be reset!)"
+            Case &H76CB
+                Return "miOrionResetDueToServoArmParityError (MI resetting Orion. A fatal Servo ARM memory parity error was detected.)"
+            Case &H76CC
+                Return "miServoArmTimeoutFault (The Servo ARM did not respond within the alotted timeout, shutting down actuator motor.)"
+            Case &H76CD
+                Return "miLoadInhibitedReelDriverOffsetOutOfRange (The drive is LOAD inibited. Reel driver offset out of range.  Loading a tape would put it at risk!)"
+            Case &H76CE
+                Return "miHeadTurnoffTimeOutError (Deceleration to the head turn-off speed took longer than expected.)"
+            Case &H76CF
+                Return "miAdjustSpeedCmdTerminatedDueToAtsEnabled (An AdjustSpeed command was terminated early because ATS mode was enabled.)"
+            Case &H76D0
+                Return "miReelTuningParamsUnchanged (Change to reel tuning parameters not allowed now. Leaving them unchanged. Info Only)"
+            Case &H76D1
+                Return "miTapePositionDiscrepancyFault (Tape Position indicated via LPOS does not agree with Tape Position via Halls)"
+            Case &H76D2
+                Return "miSpeedDiscrepancyFault (The speeds indicated by the reels do not agree with each other)"
+            Case &H76D3
+                Return "miSpecialReelSpeedFault (Speed fault when reels are being controlled in special reel servo mode)"
+            Case &H76D4
+                Return "miAtsCommandNotAllowedNow (An ATS command cannot be executed at this time)"
+            Case &H76D5
+                Return "miDeslackingTimeOutAfterFrontReelStalled (Unable to pull in all the slack tape after the front reel stalled during a RecoverTape operation.)"
+            Case &H76D6
+                Return "miFrontReelStallRetriesExhausted (Front reel stalled and all retries have been exhausted.)"
+            Case &H76D7
+                Return "miTimedOutWhileConfirmingSlackTapeIsGone (Timed out while rotating back reel to confirm slack tape was removed.)"
+            Case &H76D8
+                Return "miR2StalledWhileConfirmingSlackTapeIsGone (Back reel stalled during process to confirm slack tape was removed.)"
+            Case &H76D9
+                Return "miFrontReelStallRecoveryWasSuccessful (Successfully recovered from when the front reel stalled.  This is not a new failure.  It is information only.)"
+            Case &H76DA
+                Return "miTapeLiftOperationStillInProgress (A new tape lifter operation was attempted before the previous tape lifter operation completed.)"
+            Case &H76DB
+                Return "miTapeLiftAttemptedPriorToCompletingTapeDrop (A tape lift operation was attempted while a previous tape drop operation was still in progress.)"
+            Case &H76DC
+                Return "miTapeDropAttemptedPriorToCompletingTapeLift (A tape drop operation was attempted while a previous tape lift operation was still in progress.)"
+            Case &H76DD
+                Return "miInvalidTapeLifterTargetState (Tape lifter target state is not valid. Operation can not be completed.)"
+            Case &H76DE
+                Return "miTimedOutWaitingForTapeLifterToDropTape (Tape lifter did not drop the tape onto the head within the alloted time.)"
+            Case &H76DF
+                Return "miTimedOutWaitingForTapeLifterToLiftTape (Tape lifter did not lift the tape off the head within the alloted time.)"
+            Case &H76E0
+                Return "miTapeLifterOperationAttemptedPriorToGrabMode (A tape lifter operation was requested prior to the mech mode being grabbed.)"
+            Case &H76E1
+                Return "miTapeLifterDiagCmdTimedOut (The tape lifter diag cmd timed out waiting for motion to complete.)"
+            Case &H76E2
+                Return "miTapeLifterTimeOutDuringLift (Timed out waiting for the tape lifter to lift the tape off the head.)"
+            Case &H76E3
+                Return "miTapeLifterTimeOutDuringDrop (Timed out waiting for the tape lifter to drop the tape onto the head.)"
+            Case &H76E4
+                Return "miCGNotSeenDuringPinParkingSweep (CG sensor not seen during pin parking grabber sweep - INFO ONLY)"
+            Case &H76E5
+                Return "miRetryingPinParkingSweep (Initial attempt to park the pin failed.  Retrying with larger grabber motion)"
+            Case &H76E6
+                Return "miReelDriverFaultDuringDriverCal (The fault line on the reel motor driver asserted during driver offset nulling)"
+            Case &H76E7
+                Return "miTapeDropDidNotCompleteInTime (The tape lifter did not drop the tape onto the head quickly enough.)"
+            Case &H76E8
+                Return "miReelMotorFlexCheckFailed (The reel motor flex connection is suspect, the dataset field in fault log indicates which lines are in error)"
+            Case &H76E9
+                Return "miTapeTiltCalibrationFailed (Tape tilt calibration failed.  Drive write inhibited)"
+            Case &H76EA
+                Return "miUsingDefaultServoCompensatorValues (EEPROM values unavailable. Default dsp servo compensator values are being used instead.)"
+            Case &H76EB
+                Return "miCoolingFanDisabled (Drive has cooled.  The cooling fan has been turned OFF!)"
+            Case &H76EC
+                Return "miCoolingFanEnabled (Drive is getting too hot.  The cooling fan has been turned ON!)"
+            Case &H76ED
+                Return "miResumingNormalTapeSpeeds (Drive has cooled.  Resuming normal tape speeds.)"
+            Case &H76EE
+                Return "miTemperatureRequiresSlowerSpeed (Drive is getting too hot.  Tape speed now being reduced to minimum!)"
+            Case &H76EF
+                Return "miAsicTemperaturesExceeded (ASIC temperatures are too high!  Operations must stop!  Cartridge must be ejected!)"
+            Case &H76F0
+                Return "miBufferAddressMustBeEven (The address into the main DRAM buffer must be on an even byte boundary.)"
+            Case &H76F1
+                Return "miBufferAddressOutOfRange (The address into the main DRAM buffer is outside the range allowed for the servo system to use.)"
+            Case &H76F2
+                Return "miInvalidScopeMode (The specified mode is not valid.)"
+            Case &H76F3
+                Return "miInvalidScopeChanSize (The specified scope channel bit width is not supported.)"
+            Case &H76F4
+                Return "miTriggerPosBeyondEndOfTrace (The specified scope trigger position is too large compared to the specified number of data packets in the trace.)"
+            Case &H76F5
+                Return "miBufferLengthMustBeEven (The length of the buffer must be larger than zero and an even number.)"
+            Case &H76F6
+                Return "miInvalidScopeSourceID (The specified source number is not valid.)"
+            Case &H76F7
+                Return "miInvalidScopeBufferFormat (The specified scope buffer format parameter is not valid.)"
+            Case &H76F8
+                Return "miDriverCalFactorOutOfBounds (A reel driver calibration factor is out-of-range.)"
+            Case &H76F9
+                Return "miStaticTorqLossFactorOutOfBounds (A reel driver calibration factor for static torque loss is out-of-range.)"
+            Case &H76FA
+                Return "miDynamicTorqLossFactorOutOfBounds (A reel driver calibration factor for dynamic torque loss is out-of-range.)"
+            Case &H76FB
+                Return "miUpperTemperatureLimitExceeded (The temperature is above the maximum limit.)"
+            Case &H76FC
+                Return "miLowerTemperatureLimitExceeded (The temperature is below the minimum limit.)"
+            Case &H76FD
+                Return "miUsingDefaultServoTuningValues (EEPROM values unavailable. Default servo tuning values are being used instead.)"
+            Case &H76FE
+                Return "miUnsafeToThreadCart (Previous fault conditions have made it unsafe to thread this cartridge.)"
+            Case &H76FF
+                Return "miTapePathTemperatureExceeded (Tape temperature is too high!  Operations must stop!  Cartridge must be ejected!)"
+            Case &H7700
+                Return "miStartOfDspErrorCodes (Base number for constructing DSP error codes.  This is not an actual error.)"
+            Case &H7701
+                Return "miDspFault_0x01 (DSP Fault- ProcResetFlt - TMS320 was just reset due either to hardware pin assertion or receipt of the Reset command.)"
+            Case &H7702
+                Return "miDspFault_0x02 (DSP Fault- CheckSumFlt - The DSP checksum failed after a hardware/software reset.)"
+            Case &H7703
+                Return "miDspFault_0x03 (DSP Fault- UnsupCommand - Unsupported command op code.)"
+            Case &H7704
+                Return "miDspFault_0x04 (DSP Fault- IllegComSeq - Illegal command sequence.)"
+            Case &H7705
+                Return "miDspFault_0x05 (DSP Fault- OperSysAlertFlt - AlertBit set when a seek or CalibrateVI command. Usually associated with recovery from a tracking fault.)"
+            Case &H7706
+                Return "miDspFault_0x06 (DSP Fault- InhTapeSrvFlt - The DSP was asked to do a tape seek when the uP said this was not a safe operation to do.)"
+            Case &H7707
+                Return "miDspFault_0x07 (DSP Fault- VIOffsetFlt - A seek or VI calibration command was issued but the mech has not learned the VI offset yet.)"
+            Case &H7708
+                Return "miDspFault_0x08 (DSP Fault- StrokeSizeFlt - The stroke measured by the VI sensor hardware was not large enough.)"
+            Case &H7709
+                Return "miDspFault_0x09 (DSP Fault- PwrAmpOffsetFlt - Excessive actuator power amp offset.)"
+            Case &H770A
+                Return "miDspFault_0x0A (DSP Fault- uPTimeoutFlt - Brutus uP timeout.)"
+            Case &H770B
+                Return "miDspFault_0x0B (DSP Fault- The tracking PLL in the servo front end did not lock up at power up. INFO ONLY fault log entry )"
+            Case &H770C
+                Return "miDspFault_0x0C (DSP Fault- IllegCommandFlt - The servo firmware was sent a command it could not interpret )"
+            Case &H770D
+                Return "miDspFault_0x0D (DSP Fault- TimerUnavailableFlt - No timers were available for use in the servo firmware)"
+            Case &H770E
+                Return "miDspFault_0x0E (DSP Fault- spare)"
+            Case &H770F
+                Return "miDspFault_0x0F (DSP Fault- spare)"
+            Case &H7710
+                Return "miDspFault_0x10 (DSP Fault- CalibMidBndFlt - Unable to find a top servo band.)"
+            Case &H7711
+                Return "miDspFault_0x11 (DSP Fault- CalibTrk0Flt - Unable to lock to track 0 on a top servo band.)"
+            Case &H7712
+                Return "miDspFault_0x12 (DSP Fault- CalibIDFlt - Unable to verify band ID on a top servo band.)"
+            Case &H7713
+                Return "miDspFault_0x13 (DSP Fault- spare)"
+            Case &H7714
+                Return "miDspFault_0x14 (DSP Fault- spare)"
+            Case &H7715
+                Return "miDspFault_0x15 (DSP Fault- spare)"
+            Case &H7716
+                Return "miDspFault_0x16 (DSP Fault- spare)"
+            Case &H7717
+                Return "miDspFault_0x17 (DSP Fault- spare)"
+            Case &H7718
+                Return "miDspFault_0x18 (DSP Fault- spare)"
+            Case &H7719
+                Return "miDspFault_0x19 (DSP Fault- spare)"
+            Case &H771A
+                Return "miDspFault_0x1A (DSP Fault- spare)"
+            Case &H771B
+                Return "miDspFault_0x1B (DSP Fault- spare)"
+            Case &H771C
+                Return "miDspFault_0x1C (DSP Fault- spare)"
+            Case &H771D
+                Return "miDspFault_0x1D (DSP Fault- spare)"
+            Case &H771E
+                Return "miDspFault_0x1E (DSP Fault- spare)"
+            Case &H771F
+                Return "miDspFault_0x1F (DSP Fault- spare)"
+            Case &H7720
+                Return "miDspFault_0x20 (DSP Fault- VITrackingFlt - The track follow loop could not stay at the desired set point.)"
+            Case &H7721
+                Return "miDspFault_0x21 (DSP Fault- spare)"
+            Case &H7722
+                Return "miDspFault_0x22 (DSP Fault- spare)"
+            Case &H7723
+                Return "miDspFault_0x23 (DSP Fault- spare)"
+            Case &H7724
+                Return "miDspFault_0x24 (DSP Fault- spare)"
+            Case &H7725
+                Return "miDspFault_0x25 (DSP Fault- spare)"
+            Case &H7726
+                Return "miDspFault_0x26 (DSP Fault- spare)"
+            Case &H7727
+                Return "miDspFault_0x27 (DSP Fault- spare)"
+            Case &H7728
+                Return "miDspFault_0x28 (DSP Fault- spare)"
+            Case &H7729
+                Return "miDspFault_0x29 (DSP Fault- spare)"
+            Case &H772A
+                Return "miDspFault_0x2A (DSP Fault- spare)"
+            Case &H772B
+                Return "miDspFault_0x2B (DSP Fault- spare)"
+            Case &H772C
+                Return "miDspFault_0x2C (DSP Fault- spare)"
+            Case &H772D
+                Return "miDspFault_0x2D (DSP Fault- spare)"
+            Case &H772E
+                Return "miDspFault_0x2E (DSP Fault- spare)"
+            Case &H772F
+                Return "miDspFault_0x2F (DSP Fault- spare)"
+            Case &H7730
+                Return "miDspFault_0x30 (DSP Fault- TapeTrackFlt - Couldn't stay locked to tape servo code.)"
+            Case &H7731
+                Return "miDspFault_0x31 (DSP Fault- spare)"
+            Case &H7732
+                Return "miDspFault_0x32 (DSP Fault- spare)"
+            Case &H7733
+                Return "miDspFault_0x33 (DSP Fault- spare)"
+            Case &H7734
+                Return "miDspFault_0x34 (DSP Fault- spare)"
+            Case &H7735
+                Return "miDspFault_0x35 (DSP Fault- spare)"
+            Case &H7736
+                Return "miDspFault_0x36 (DSP Fault- spare)"
+            Case &H7737
+                Return "miDspFault_0x37 (DSP Fault- spare)"
+            Case &H7738
+                Return "miDspFault_0x38 (DSP Fault- spare)"
+            Case &H7739
+                Return "miDspFault_0x39 (DSP Fault- spare)"
+            Case &H773A
+                Return "miDspFault_0x3A (DSP Fault- spare)"
+            Case &H773B
+                Return "miDspFault_0x3B (DSP Fault- spare)"
+            Case &H773C
+                Return "miDspFault_0x3C (DSP Fault- spare)"
+            Case &H773D
+                Return "miDspFault_0x3D (DSP Fault- spare)"
+            Case &H773E
+                Return "miDspFault_0x3E (DSP Fault- spare)"
+            Case &H773F
+                Return "miDspFault_0x3F (DSP Fault- spare)"
+            Case &H7740
+                Return "miDspFault_0x40 (DSP Fault- AccelFlt - No tape servo data during seek acceleration phase.)"
+            Case &H7741
+                Return "miDspFault_0x41 (DSP Fault- AccelTOFlt - Acceleration timeout fault.)"
+            Case &H7742
+                Return "miDspFault_0x42 (DSP Fault- spare)"
+            Case &H7743
+                Return "miDspFault_0x43 (DSP Fault- DecelFlt - No tape servo data during seek deceleration phase.)"
+            Case &H7744
+                Return "miDspFault_0x44 (DSP Fault- spare)"
+            Case &H7745
+                Return "miDspFault_0x45 (DSP Fault- spare)"
+            Case &H7746
+                Return "miDspFault_0x46 (DSP Fault- VIGrossSetlFlt - Seek failure during gross settle)"
+            Case &H7747
+                Return "miDspFault_0x47 (DSP Fault- TapeGrossSetlFlt - Seek failure during gross settle)"
+            Case &H7748
+                Return "miDspFault_0x48 (DSP Fault- spare)"
+            Case &H7749
+                Return "miDspFault_0x49 (DSP Fault- spare)"
+            Case &H774A
+                Return "miDspFault_0x4A (DSP Fault- spare)"
+            Case &H774B
+                Return "miDspFault_0x4B (DSP Fault- FineSetlFlt - No tape servo data during seek fine settle phase)"
+            Case &H774C
+                Return "miDspFault_0x4C (DSP Fault- AzimuthFlt - Too few samples to generate an azimuth correction)"
+            Case &H774D
+                Return "miDspFault_0x4D (DSP Fault- TimingRefFlt - Too few samples to generate a valid timing reference)"
+            Case &H774E
+                Return "miDspFault_0x4E (DSP Fault- spare)"
+            Case &H774F
+                Return "miDspFault_0x4F (DSP Fault- spare)"
+            Case &H7750
+                Return "miRudeAwakening (MI task was awakened for no apparent good reason)"
+            Case &H7751
+                Return "miOrionTraceFIFONotEmpty (Orion trace port FIFO not empty when preparing to hibernate)"
+            Case &H7752
+                Return "miHeadCleanRDTimeOutIT (The RD sensor stopped toggling while IT during a head clean)"
+            Case &H7753
+                Return "miFRMNotEnabled (The FRM Driver could not be enabled because the DAC's are disabled)"
+            Case &H7754
+                Return "miBRMNotEnabled (The BRM Driver could not be enabled because the DAC's are disabled)"
+            Case &H7755
+                Return "miTwelveVoltPowerFail (12v power has been lost)"
+            Case &H7756
+                Return "miCatastrophicServoFault (A catastrophic servo fault occurred)"
+            Case &H7757
+                Return "miAdjustTensionCmdNotAllowedNow (Adjust Tension command can not be executed at this time.)"
+            Case &H7758
+                Return "miExcessiveOfftracksBOT (Excessive offtracks at BOT, NOT a fault, info only"
+            Case &H7759
+                Return "miExcessiveOfftracksEOT (Excessive offtracks at EOT, NOT a fault, info only)"
+            Case &H775A
+                Return "miStickyTapeAlertOnRead (A tape alert was raised on a read)"
+            Case &H775B
+                Return "miStickyTapeAlertOnWrite (A tape alert was raised on a write)"
+            Case &H775C
+                Return "miStickyTapeAlertOnSpace (A tape alert was raised on a space)"
+            Case &H77FF
+                Return "miEndOfDspErrorCodes (Denotes end of MI error codes.  This is not an actual error.)"
+            Case &H7800
+                Return "EXH_UNRECOGNISED_EXCEPTION"
+            Case &H7801
+                Return "EXH_FATAL_ASSERT_CALLED (A Fatal Assert has been seen.  Parameter 1 shows the PC.  Parameter 2 the error code for the Assert)"
+            Case &H7802
+                Return "EXH_LOG_ASSERT_CALLED (A Logged Assert has been called.  Parameter 1 shows the PC. Parameter 2 shows the File ID, Parameter 3 shows the Line Number)"
+            Case &H7803
+                Return "EXH_ASSERT_CALLED (An Assert has been called.  Parameter 1 shows the PC.)"
+            Case &H7830
+                Return "Servo Acquire Err wo ACT"
+            Case &H7836
+                Return "Servo PES Acquire Error w ACT"
+            Case &H7C01
+                Return "GSPI_ERR_BUFOVRFL"
+            Case &H7C02
+                Return "GSPI_ERR_TIMEOUT"
+            Case &H7C10
+                Return "SPI_ERR_EEPROM_WRITE (EEPROM Write did not complete (still in progress))"
+            Case &H7C11
+                Return "SPI_ERR_FLASH_WRITE (FLASH Write did not complete)"
+            Case &H7C12
+                Return "SPI_ERR_FLASH_READ (FLASH Read did not complete)"
+            Case &H7C13
+                Return "SPI_ERR_EEPROM_WRITE_PROTECT (EEPROM Write Protect bits are set)"
+            Case &H7C14
+                Return "SPI_ERR_FLASH_VERIFY (EEPROM Write did not complete (still in progress))"
+            Case &H8000
+                Return "CM_ADDRESS_OUT_OF_LIMITS"
+            Case &H8001
+                Return "CM_SPI_WRITING_PROBLEMS"
+            Case &H8002
+                Return "CM_WRONG_NUMBER_OF_BITS_RETURNED"
+            Case &H8003
+                Return "CM_NACK_ERROR"
+            Case &H8004
+                Return "CM_UNRECOGNISED_DATA_RECEIVED"
+            Case &H8005
+                Return "CM_SPI_READING_PROBLEMS"
+            Case &H8006
+                Return "CM_PARITY_ERROR"
+            Case &H8007
+                Return "CM_COLLISION_ERROR"
+            Case &H8008
+                Return "CM_OVERFLOW_ERROR"
+            Case &H8009
+                Return "CM_UNDERFLOW_ERROR"
+            Case &H800A
+                Return "CM_OVERFLOW_ERROR_SENDING"
+            Case &H800B
+                Return "CM_NRBITS_ON_DATA_RCV_ERROR"
+            Case &H800C
+                Return "CM_IMPOSIBLE_ADDRESS_SITUATION"
+            Case &H800D
+                Return "CM_INVALID_CONFIG_NAME"
+            Case &H800E
+                Return "CM_INVALID_CONFIG_VALUE"
+            Case &H800F
+                Return "CM_CRC_ERROR"
+            Case &H8010
+                Return "CM_SERIAL_NUMBER_CHECK_FAILED"
+            Case &H8011
+                Return "CM_ERROR_BIT_SET"
+            Case &H8012
+                Return "CM_TYPE_OF_TRANSPONDER_NOT_RECOGNISED"
+            Case &H8013
+                Return "CM_RF_CHANNEL_ALREADY_OPENED"
+            Case &H8014
+                Return "CM_RF_CHANNEL_ALREADY_CLOSED"
+            Case &H8015
+                Return "CM_EOT_POLL_TO"
+            Case &H8400
+                Return "FL_NOT_YET_IMPLEMENTED (Log Not Yet Implemented)"
+            Case &H8401
+                Return "FL_NO_MORE_ENTRIES (No more entries to extract)"
+            Case &H8402
+                Return "FL_NV_NOT_IN_USE (Uninitialised NV Logs OR The log requested is a volatile Log only)"
+            Case &H8403
+                Return "FL_BAD_SPI_XFER (An SPIXferRequest Failed)"
+            Case &H8404
+                Return "FL_MISSED_LOG_ENTRIES (Some Fault entries were not placed in the log due to flushing occuring)"
+            Case &H8405
+                Return "FL_LOG_SIZE_MISMATCH (A sizeof operation of an entry is different to what the logging system thinks it is)"
+            Case &H8406
+                Return "FL_TAPE_LOADED_INFO (A tape has been loaded and the fault log entry shows the load count and cartridge serial number)"
+            Case &H8407
+                Return "FL_FLUSH_IN_PROGRESS (Requested operation cannot be performed at this time as a flush to NV is currently in progress)"
+            Case &H8408
+                Return "FL_UNEXPECTED_CALLBACK_TIMER (The quick flush callback timer was called - but with the incorrect timer ID)"
+            Case &H8480
+                Return "SS_LOGGING_IN_PROGRESS (A snapshot change is not allow now as a snapshot is currently in progress)"
+            Case &H8481
+                Return "SS_LOG_NOT_FOUND (A request to read a snapshot log has failed because the requested log number does not exist)"
+            Case &H8482
+                Return "SS_SNAPSHOT_NOT_ALLOWED_NOW (Snapshotting is not allow now as a one or more preconditions have not been passed)"
+            Case &H8483
+                Return "SS_LOG_NOT_BEING_READ (A request to stop reading a log found that the log was not being read in the first place)"
+            Case &H8484
+                Return "SS_TOO_MANY_COMMANDS (An attempt was made to insert too many cdbs for snapshotting.)"
+            Case &H8485
+                Return "SS_END_OF_COMMAND_SET (The end of the snapshot command set has been reached.)"
+            Case &H8486
+                Return "SS_COMMAND_SET_UPDATE_IN_PROGRESS (An attempt to access the log snapshot command set while it is being updated.)"
+            Case &H8487
+                Return "SS_DATA_PHASE_ERROR (A snapshot command requested more SCSI data (out) than was available!)"
+            Case &H8488
+                Return "SS_UNEXPECTED_PORT_IF_OP (SCSI Infrastructure requested a snapshot PortIF operation with an invalid/obsolete TaskPtr)"
+            Case &H8489
+                Return "SS_LOG_UNAVAILABLE_BEING_FILLED (The specified snapshot log is unavailable cos it's being filled/created.)"
+            Case &H848A
+                Return "SS_LOG_UNAVAILABLE_BEING_READ (The specified snapshot log is unavailable cos it's being read.)"
+            Case &H848B
+                Return "SS_LOG_UNAVAILABLE_UNEXPECTED_STATUS (The specified snapshot log is unavailable cos its status is unexpected.)"
+            Case &H848C
+                Return "SS_COMMAND_SET_IN_USE (The command set cannot changed while it is being read.)"
+            Case &H848D
+                Return "SS_ILLEGAL_LOGGING_STATUS (The data structure that contains status has an illegal value!)"
+            Case &H848E
+                Return "SS_MAX_LOG_LENGTH_ERR (The specified snapshot LogSize config is invalid (range error).)"
+            Case &H848F
+                Return "SS_ERR_NO_TASK_OBJECTS (No task objects available in Scsi Task Manager. This is a fatal error)"
+            Case &H8490
+                Return "SS_NO_FREE_SSTF_LOGS (The Snapshot log sub-system is unable to save a snapshot log to flash because it's full)"
+            Case &H8491
+                Return "SS_ERR_PROTECTED_STTF_LOGS (An operation was attempted that cannot be performed when there are protected STTF logs in flash)"
+            Case &H8492
+                Return "SS_STTF_CONFIG_IN_PROGRESS (Cannot create a snapshot or STTF log while a STTF Flash configuration is in progress.)"
+            Case &H8493
+                Return "SS_SNAPSHOT_LOGGING_ABORTED (Snapshot logging aborted; possibly because a FORCE SNAPSHOT command was aborted by the host.)"
+            Case &H8494
+                Return "SS_STTF_FLASH_WRITE_ERR (spi_write() failed writing STTF log to flash.)"
+            Case &H8800
+                Return "INF_OEV_EVENT_LIST_FULL (INF OnEvent- EventSet - event list full, event not set)"
+            Case &H8801
+                Return "INF_OEV_EVENT_NOT_FOUND (INF OnEvent- Event not found in list)"
+            Case &H8802
+                Return "INF_OEV_EVENT_LIST_IDX_OUT_OF_BOUNDS (INF OnEvent- EventGetIdx - Index out of bounds)"
+            Case &H8803
+                Return "INF_ARM_UNDEFINED_INSTRUCTION (INF ARM exception vector taken- Undefined instruction)"
+            Case &H8804
+                Return "INF_ARM_SOFTWARE_INTERRUPT (INF ARM exception vector taken- Software interrupt)"
+            Case &H8805
+                Return "INF_ARM_PREFETCH_ABORT (INF ARM exception vector taken- Prefetch abort)"
+            Case &H8806
+                Return "INF_ARM_DATA_ABORT (INF ARM exception vector taken- Data abort)"
+            Case &H8807
+                Return "INF_ECC_RECOVERABLE (INF ECC event- Recoverable ECC error detected)"
+            Case &H8808
+                Return "INF_ECC_UNRECOVERABLE (INF ECC event- Unrecoverable ECC error detected)"
+            Case &H8809
+                Return "INF_BOOT_FAILURE (INF Boot Failure- Firmware image failed to boot)"
+            Case &H880A
+                Return "INF_ACI_RESET_LINE_ACTIVATED (This status indicates the ACI_RST_L input on the ACI connector has been activated.)"
+            Case &H880B
+                Return "INF_ITCM_ECC_RECOVERABLE (INF ECC event- Recoverable ITCM ECC error detected)"
+            Case &H880C
+                Return "INF_DTCM_ECC_RECOVERABLE (INF ECC event- Recoverable DTCM ECC error detected)"
+            Case &H880D
+                Return "INF_ENTERING_DIAG_LITE (INF the System ARM is about to enter DiagLite)"
+            Case &H880E
+                Return "INF_TRNG_FAILURE_START_OF_INIT (INF the True Random Number Generator's init routine failed at the start)"
+            Case &H880F
+                Return "INF_TRNG_FAILURE_BIST_NEVER_COMPLETED (INF the True Random Number Generator's BIST never completed)"
+            Case &H8810
+                Return "INF_TRNG_FAILURE_BIST_SIG (INF the True Random Number Generator's BIST SIG never became non-zero)"
+            Case &H8811
+                Return "INF_TRNG_FAILURE_RESEED (INF the True Random Number Generator has failed to re-seed)"
+            Case &H8812
+                Return "INF_TRNG_FAILURE_CACHE_FILL (INF the True Random Number Generator has failed to fill its cache)"
+            Case &H8813
+                Return "INF_INTERRUPTS_ENABLED_WHEN_THEY_SHOULD_NOT_BE (INF RTKCritIntSectBeg() has detected that we are in a nested critical section but interrupts are enabled (they should not be))"
+            Case &H8814
+                Return "INF_FUG_COMPARE_FAILED (INF FUG Flash write and reads succeeded, but a subsequent compare failed)"
+            Case &H8815
+                Return "INF_TRNG_UNABLE_TO_RESET (INF the True Random Number Generator's init routine failed to reset)"
+            Case &H8816
+                Return "INF_TRNG_RNG_LOGIC_SELFTESTS_FAILED (INF the True Random Number Generator's logic self test failed)"
+            Case &H8817
+                Return "INF_TRNG_ENTROPY_SOURCE_LOGIC_SELFTESTS_FAILED (INF the True Random Number Generator's entropy source logic test failed)"
+            Case &H8818
+                Return "INF_TRNG_INIT_TIMEOUT_FAILED (INF the True Random Number Generator has timed out waiting for initialisation)"
+            Case &H8819
+                Return "INF_TRNG_CONTINUOUS_TEST_FAILED (INF the True Random Number Generator's continuous test has failed)"
+            Case &H881A
+                Return "INF_TRNG_NO_DATA_AVAILABLE (INF the True Random Number Generator has no data available to read)"
+            Case &H881B
+                Return "INF_SYS_WATCHDOG_TIMER_FIRED (INF The SysARM Watchdog Timer has fired - this indicates that the SysARM FW has locked up)"
+            Case &H881C
+                Return "INF_OS_REINITIALISE_MCC_EXTRA_WORKAROUND_CALLED (INF Whilst reinitialising the MCC task we found that the current P0 task was MCC, so reset this.  This is informational only)"
+            Case &H881D
+                Return "INF_BOOT_FAILURE_DETECTED (INF Previous boot attempt failed, see trace log for details)"
+            Case &H881E
+                Return "INF_BOOT_STATUS_FAILURE (INF Failed to read flash for bootloader version during POST boot status check)"
+            Case &H881F
+                Return "INF_BOOT_INFO_FAILURE (INF Failed to read flash for firmware version info during POST)"
+            Case &H8820
+                Return "INF_CURRENT_TASK_STACK_CORRUPT (INF Current task stask corrupt)"
+            Case &H8821
+                Return "INF_CURRENT_TASK_STACK_FULL (INF Current task stask full)"
+            Case &H8822
+                Return "INF_NEXT_TASK_STACK_CORRUPT (INF Next task stask corrupt)"
+            Case &H8C00
+                Return "CS_END_SECTION_NOT_BEGUN (CRSEndCritIntSect was ended without CRSBegIntSect)"
+            Case &H8C01
+                Return "CS_BEGIN_SECTION_INTS_OFF (CRSBegCritIntSect found ints already off)"
+            Case &H9401
+                Return "SI_ERR_UA_PWR_ON_RESET (Power On Rest UA)"
+            Case &H9402
+                Return "SI_ERR_UA_FIRMWARE_UPDATED (FW reboot after upgrade UA)"
+            Case &H9403
+                Return "SI_ERR_UA_SCSI_BUS_RESET (SCSI bus reset UA)"
+            Case &H9404
+                Return "SI_ERR_UA_BUS_DEVICE_RESET (BDR reset UA)"
+            Case &H9405
+                Return "SI_ERR_UA_DEVICE_INTERNAL_RESET (Soft Reset UA)"
+            Case &H9406
+                Return "SI_ERR_UA_TRANSCEIVERS_TO_SE"
+            Case &H9407
+                Return "SI_ERR_UA_TRANSCEIVERS_TO_LVD"
+            Case &H9408
+                Return "SI_ERR_UA_NEXUS_LOST"
+            Case &H9409
+                Return "SI_ERR_UA_MEDIA_CHANGED"
+            Case &H940A
+                Return "SI_ERR_UA_MODE_PARAMETER_CHANGED"
+            Case &H940B
+                Return "SI_ERR_UA_LOG_VALUES_CHANGED"
+            Case &H940C
+                Return "SI_ERR_UNSUPPORTED_TASK_MGMT_FUNC"
+            Case &H940D
+                Return "SI_LUN_HAS_TOO_MANY_TASK_OBJECTS"
+            Case &H940E
+                Return "SI_ERR_UNSUPPORTED_LUN"
+            Case &H940F
+                Return "SI_ERR_INVALID_FIELD_IN_CDB"
+            Case &H9410
+                Return "SI_ERR_UNSUPPORTED_OPCODE"
+            Case &H9412
+                Return "SI_ERR_UNSUPPORTED_CMD_HANDLER_REQUEST"
+            Case &H9413
+                Return "SI_ERR_UNAVAILABLE_OPCODE"
+            Case &H9414
+                Return "SI_ERR_NOT_FAST_ACI_CMD"
+            Case &H9415
+                Return "SI_RSP_PENDING"
+            Case &H9416
+                Return "SI_ERR_ABORTED"
+            Case &H9417
+                Return "SI_ERR_RESERVED"
+            Case &H9418
+                Return "SI_ERR_INVALID_GROUP_CODE"
+            Case &H9419
+                Return "SI_ERR_TRUNCATED_MODE_PAGE"
+            Case &H941A
+                Return "SI_ERR_INVALID_FIELD_MODE_DATA"
+            Case &H941B
+                Return "SI_ERR_SPACE_REC_BOT_ENCOUNTERED"
+            Case &H941C
+                Return "SI_ERR_SPACE_FM_BOT_ENCOUNTERED"
+            Case &H941D
+                Return "SI_ERR_FIRMWARE_BUG"
+            Case &H941E
+                Return "SI_ERR_ECHO_BUFFER_OVERWRITTEN"
+            Case &H941F
+                Return "SI_ERR_REPORT_DENSITY_MEDIA_NOT_PRESENT"
+            Case &H9420
+                Return "SI_ERR_OVERLAPPED_CMD"
+            Case &H9421
+                Return "SI_ERR_ERASE_OPERATION_IN_PROGRESS"
+            Case &H9422
+                Return "SI_ERR_LOCATE_OPERATION_IN_PROGRESS"
+            Case &H9423
+                Return "SI_ERR_REWIND_OPERATION_IN_PROGRESS"
+            Case &H9424
+                Return "SI_ERR_WRITE_INHIBIT_TAPEDR"
+            Case &H9425
+                Return "SI_ERR_UA_DEVICE_IDENTIFIER_CHANGED"
+            Case &H9426
+                Return "SI_ERR_TRUNCATED_LOG_DATA"
+            Case &H9427
+                Return "SI_ERR_NON_CLEARABLE_LOG_PAGE"
+            Case &H9428
+                Return "SI_ERR_INVALID_FIELD_LOG_DATA"
+            Case &H9429
+                Return "SI_FWD_TASK_TO_LIB (Not a reportable error code)"
+            Case &H942A
+                Return "SI_ERR_INVALID_SURROGATE_LUN"
+            Case &H942B
+                Return "SI_ERR_INVALID_SURROGATE_INQ_PAGE"
+            Case &H942C
+                Return "SI_ERR_TOO_MANY_SUR_SCSI_LUNS"
+            Case &H942D
+                Return "SI_ERR_INQ_CACHE_CORRUPTED"
+            Case &H942E
+                Return "SI_ERR_INQ_CACHE_FULL"
+            Case &H942F
+                Return "SI_ERR_INVALID_EXCHANGE_ID"
+            Case &H9430
+                Return "SI_ERR_NO_SENSE_DATA_PROVIDED"
+            Case &H9431
+                Return "SI_ERR_INVALID_SCSI_STATUS"
+            Case &H9432
+                Return "SI_ERR_UA_REPORTED_LUNS_DATA_HAS_CHANGED"
+            Case &H9433
+                Return "SI_ERR_PARAMETER_NOT_SUPPORTED_IN_CDB"
+            Case &H9434
+                Return "SI_ERR_LOAD_OPERATION_IN_PROGRESS"
+            Case &H9435
+                Return "SI_ERR_UNLOAD_OPERATION_IN_PROGRESS"
+            Case &H9436
+                Return "SI_ERR_EWEOM"
+            Case &H9437
+                Return "SI_ERR_INVALID_FIELD_WR_BUFFER_DESCRIPTOR"
+            Case &H9438
+                Return "SI_ERR_FAILURE_PREDITION_THRESHOLD_EXCEEDED_FALSE"
+            Case &H9439
+                Return "SI_ERR_FAILURE_PREDITION_THRESHOLD_EXCEEDED"
+            Case &H943A
+                Return "SI_ERR_ECHO_BUFFER_INVALID"
+            Case &H943B
+                Return "SI_ERR_LUN_NOT_CONFIGURED"
+            Case &H943C
+                Return "SI_ERR_INVALID_FIELD_PR_OUT_DATA"
+            Case &H943D
+                Return "SI_ERR_PR_OUT_PARAM_LIST_LENGTH_ERROR_IN_CDB"
+            Case &H943E
+                Return "SI_ERR_PR_OUT_TRUNCATED_DATA"
+            Case &H943F
+                Return "SI_ERR_UA_RESERVATIONS_RELEASED"
+            Case &H9440
+                Return "SI_ERR_UA_REGISTRATIONS_PREEMPTED"
+            Case &H9441
+                Return "SI_ERR_UA_RESERVATIONS_PREEMPTED"
+            Case &H9442
+                Return "SI_ERR_INVALID_RELEASE_PERSISTENT_RESERVATION"
+            Case &H9443
+                Return "SI_ERR_WORM_OVERWRITE_ATTEMPTED"
+            Case &H9444
+                Return "SI_ERR_WORM_CANNOT_ERASE"
+            Case &H9445
+                Return "SI_ERR_CLEANING_DRIVE"
+            Case &H9446
+                Return "SI_ERR_LOADING_MEDIA"
+            Case &H9448
+                Return "SI_ERR_UNLOADING_MEDIA"
+            Case &H9449
+                Return "SI_ERR_FW_UPGRADE_IN_PROGRESS"
+            Case &H944A
+                Return "SI_ERR_WRITE_PROTECT"
+            Case &H944B
+                Return "SI_ERR_WRITE_INHIBIT_BAD_CM"
+            Case &H944C
+                Return "SI_ERR_LOADED_UNKNOWN_CART (Unknown cartridge loaded but not threaded)"
+            Case &H944D
+                Return "SI_ERR_INIT_CMD_REQUIRED (Tape is loaded but not threaded, init comamnd is required)"
+            Case &H944E
+                Return "SI_ERR_MEDIA_NOT_PRESENT_MAM_ACCESSIBLE (MAM is accessible but cartridge is in load HOLD position - Not Ready)"
+            Case &H944F
+                Return "SI_ERR_LOADED_NOT_AVAILABLE (Tape is threaded but drive shows it as unloaded. DDT75213)"
+            Case &H9450
+                Return "SI_ERR_NO_MEDIA_LOADED"
+            Case &H9451
+                Return "SI_INVALID_PORT_ID (An invalid Port ID has been Logged In)"
+            Case &H9452
+                Return "SI_ERR_OFFLINE_OPERATION_IN_PROGRESS (RMC LU has been taken Offline by the ADC RMC Logical Unit Mode page)"
+            Case &H9453
+                Return "SI_ERR_WRITE_INHIBIT_WRONG_TAPE_GEN (E.g. Gen III product not allowed to write to Gen I media)"
+            Case &H9454
+                Return "SI_ERR_POSITION_PAST_BOM"
+            Case &H9455
+                Return "SI_ERR_NO_DEFAULT_WWN (Used by WWN Module to signify that there is no default WWN)"
+            Case &H9456
+                Return "SI_ERR_NO_CURRENT_VALUE_FOR_WWN (Used by WWN Module to signify that there is no current WWN)"
+            Case &H9457
+                Return "SI_ERR_WWN_NOT_CHANGED"
+            Case &H9458
+                Return "SI_ERR_NO_DEFAULT_VALUE_FOR_WWN (Used by WWN Module to signify that there is no default WWN)"
+            Case &H9459
+                Return "SI_ERR_PR_OUT_INSUFFICIENT_REGISTRATION_RESOURCES (Used in Fibre Channel when we have reached maximum number of WWNs)"
+            Case &H945A
+                Return "SI_ERR_LIB_CHECK_CONDITION_SURROGATE_CMD (Used in surrogate SCSI to cause siSetScsiStatus to set task Scsi status to 2)"
+            Case &H945B
+                Return "SI_ERR_WRITE_INHIBIT_SUSPECT_INTEGRITY"
+            Case &H945C
+                Return "SI_ERR_BUSY_CMD_DURING_LU_RESET (This commad should get BUSY'd during the reseting of the logical unit, DDT 1000205284)"
+            Case &H945D
+                Return "SI_OPERATION_COMPLETE"
+            Case &H945E
+                Return "SI_ERR_TOO_MANY_BRIDGE_LUNS (The maximum number of Bridge LUNs has been reached.)"
+            Case &H945F
+                Return "SI_SMC_UNIT_ATTENTION (Unit Attention condition has been detected for this initiator to the SMC LUN)"
+            Case &H9460
+                Return "SI_SMC_NOT_READY (The Remote SMC Device Server is in the NOT READY State)"
+            Case &H9461
+                Return "SI_ERR_MODE_SENSE_CACHE_CORRUPTED (The Bridging Mode Sense Cache has become corrupt due to a f/w defect)"
+            Case &H9462
+                Return "SI_ERR_MODE_SENSE_CACHE_FULL (The Bridging Mode Sense cache is full, caching operation failed!)"
+            Case &H9463
+                Return "SI_ADT_PORT_LOGGED_OUT (Unable to forward command to Automation Device as the ADT port is logged-out)"
+            Case &H9464
+                Return "SI_RESEND_SMC_SCSI_COMMAND (Used to instruct the Bridge Device Server to resend a SCSI command to the Remote SMC LUN)"
+            Case &H9465
+                Return "SI_ERR_INIT_CMD_REQUIRED_CLEANING_CART (Cleaning cartridge seated but not threaded)"
+            Case &H9466
+                Return "SI_ERR_INIT_CMD_REQUIRED_FWUPGRADE_CART (FW upgrade cartridge is seated but not threaded)"
+            Case &H9467
+                Return "SI_ERR_INVALID_DRIVE_SERIAL_NUMBER (Invalid value in supplied drive serial number)"
+            Case &H9468
+                Return "SI_ERR_WWN_ALREADY_IN_USE (siCheckWWN() has detected that the supplied WWN is already assigned)"
+            Case &H9469
+                Return "SI_ERR_TAGGED_OVERLAPPED_CMD"
+            Case &H946A
+                Return "SI_ERR_RETURN_GOOD_STATUS"
+            Case &H946B
+                Return "SI_LOCK_SMC_CACHE_FAILED (Internal return status indicating SMC cache wasn't locked)"
+            Case &H946C
+                Return "SI_ERR_SMC_CACHE_LOCKED (Reported if siSmcLockCache() is called when the cache isn't unlocked)"
+            Case &H946D
+                Return "SI_BRIDGE_READY_OPERATION_IN_PROGRESS (Bridging Manager is busy. It already has an open exchange with the remote SMC device server)"
+            Case &H946E
+                Return "SI_BRIDGE_NOT_READY_OPERATION_IN_PROGRESS (Bridging Manager is busy. It already has an open exchange with the remote SMC device server)"
+            Case &H946F
+                Return "SI_ERR_INVALID_VENDOR_ID"
+            Case &H9470
+                Return "SI_ERR_INVALID_PRODUCT_ID"
+            Case &H9471
+                Return "SI_ERR_MEDIUM_REMOVAL_PREVENTED"
+            Case &H9472
+                Return "SI_FWD_TASK_TO_DRIVE (Not a reportable error code)"
+            Case &H9473
+                Return "SI_ERR_LOGOUT_IN_BAD_STATE (Bridging Manager received notification of an ADT Port logout while awaiting TMF response to abort synchronising PAMR command)"
+            Case &H9474
+                Return "SI_ERR_NOT_RESERVED (If OIR bit set in Device Config mode page, then commands will return this if there is no (persistent) reservation)"
+            Case &H9475
+                Return "SI_ERR_INITIALISATION_IN_PROGRESS (Automation Controller is initialising drive)"
+            Case &H9476
+                Return "SI_ERR_INVALID_FIELD_IN_MEDIUM_ATTRIBUTE (Invalid field in SCSI Set Medium Attribute command parameter list [ADC-2])"
+            Case &H9477
+                Return "SI_ERR_TRUNCATED_MEDIUM_ATTRIBUTE (A medium attribute in a SCSI Set Medium Attribute command parameter list is truncated [ADC-2])"
+            Case &H9478
+                Return "SI_ERR_INVALID_FIELD_IN_LOG_DATA_CACHE (Invalid field in SCSI Set Log Data Cache command parameter list)"
+            Case &H9479
+                Return "SI_ERR_TRUNCATED_LOG_PAGE_DESCRIPTOR (A log page descriptor in a SCSI Set Log Data Cache command is truncated)"
+            Case &H947A
+                Return "SI_ERR_INVALID_FIELD_IN_PARAMETER_LIST (Invalid field in parameter list)"
+            Case &H947B
+                Return "SI_ERR_INVALID_FIELD_SP_OUT_DATA"
+            Case &H947C
+                Return "SI_ERR_SP_OUT_PARAM_LIST_LENGTH_ERROR_IN_CDB"
+            Case &H947D
+                Return "SI_ERR_SI_UA_DATA_ENCR_PARAMS_CHANGED_BY_ANOTHER_INIT (Encryption UA)"
+            Case &H947E
+                Return "SI_ERR_SI_UA_DATA_ENCR_PARAMS_CHANGED_BY_VEND_SPEC_EVENT (Encryption UA)"
+            Case &H947F
+                Return "SI_ERR_SP_KEY_INSTANCE_CTR_CHANGED"
+            Case &H9480
+                Return "SI_ERR_UNSUPPORTED_ENCRYPTION_CARTRIDGE (This cartridge cannot be used for encryption)"
+            Case &H9481
+                Return "SI_ERR_EN_FUG_DOWNLOAD_ALEADY_IN_PROGRESS (Another Initiator has started a download sequence)"
+            Case &H9482
+                Return "SI_ERR_EN_FUG_IMAGE_NOT_MOD4 (FUGImage needs to be mod4)"
+            Case &H9483
+                Return "SI_ERR_EN_FUG_HEAD_CS_FAILURE (FUGImage has bad CS on first chunk)"
+            Case &H9484
+                Return "SI_ERR_EN_FUG_REBOOT_STARTED (Reboot in progress)"
+            Case &H9485
+                Return "SI_ERR_BOOT_INFO_AREA_CORRUPT (The boot info area of the serial flash is corrupt. EnFUG command set will not work)"
+            Case &H9486
+                Return "SI_ERR_SET_SP_PARAM_FOR_LF_NO_KEY_AVAILABLE (siSPSetSecurityParametersForPipelineUse()- No key available but we are told to encrypt or decrypt)"
+            Case &H9487
+                Return "SI_ERR_SET_MGMT_URI_NOT_ALLOWED (SetManagementURI cmd is only allowed when dirve is not ready)"
+            Case &H9488
+                Return "SI_ERR_NOT_ENOUGH_SPACE_FOR_URI (Parameter list legnth specified too many URI descriptors. Used in SetManagementURI command)"
+            Case &H9489
+                Return "SI_ERR_REACHED_PPC_EOT (Logical EOT has been detected)"
+            Case &H948A
+                Return "SI_ERR_DECRYPT_KEY_FAIL_LIMIT_REACHED (Encryption- Exhaustive-search attack prevention)"
+            Case &H948B
+                Return "SI_ERR_TITAN_NV_HAT_COUNT_INVALID (siInitTitanAccessControls()- Stored HAT Count in NV is > SI_MAX_HAT_ENTRIES )"
+            Case &H948C
+                Return "SI_ERR_TITAN_NV_HAT_DEFAULT_PORT_INVALID (siInitTitanAccessControls()- Stored Default mapId for this port is invalid )"
+            Case &H948D
+                Return "SI_ERR_WRITE_CMD_ALLOC_LENGTH_ERROR_IN_CDB (If encryption mode is set to ENCRYPT, only up to 8MB record size is allowed)"
+            Case &H948E
+                Return "SI_ERR_TOO_MANY_STALLED_TASKS (Too many stalled auto mode commands already exist in the slow device server queue)"
+            Case &H948F
+                Return "SI_ERR_INVALID_FIXED_FORMAT_SENSE_DATA (This internal error is reported when the drive detects invalid sense data from the remote SMC device server)"
+            Case &H9490
+                Return "SI_ERR_CRYPTOGRAPHIC_KEY_UNAVAILABLE (Returned to host when KMS did not provide a key)"
+            Case &H9491
+                Return "SI_ERR_PARAM_LIST_LENGTH_ERROR_IN_CDB"
+            Case &H9492
+                Return "SI_ERR_TRUNCATED_SNAPSHOT_COMMAND_DESCRIPTOR (A command descriptor in the SET SNAPSHOT COMMAND SET parameter list was truncated)"
+            Case &H9493
+                Return "SI_ERR_TRUNCATED_SNAPSHOT_CONFIG_DESCRIPTOR (The configuration descriptor in the SET SNAPSHOT CONFIG parameter list was truncated)"
+            Case &H9494
+                Return "SI_ERR_SERVICE_BUFFER_SNAPSHOT_IN_PROGRESS (Failed to start Service Buffer snapshot one is already in progress!)"
+            Case &H9495
+                Return "SI_ERR_RSA_SIGNATURE_KAT_FAILED (SI RSA Signature Known Answer Test has failed)"
+            Case &H9496
+                Return "SI_ERR_DATA_ENCR_CONF_PREVENTED (Cannot set security parameters, the drive has been (externally) configured to not accept security parameters)"
+            Case &H9497
+                Return "SI_ERR_EXT_DATA_ENCR_CONTROL_ERROR (KMS reported it failed to obtain security parameters, the command cannot be executed without security parameters)"
+            Case &H9498
+                Return "SI_ERR_EXT_DATA_ENCR_KM_ACCESS_ERROR (KMS reported it failed to obtain security parameters, unrecoverable error)"
+            Case &H9499
+                Return "SI_ERR_EXT_DATA_ENCR_KM_ERROR (KMS reported it failed to obtain security parameters, error when trying to access key)"
+            Case &H949A
+                Return "SI_ERR_EXT_DATA_ENCR_KEY_NOT_FOUND (KMS reported it failed to obtain security parameters, key not found)"
+            Case &H949B
+                Return "SI_ERR_INCORRECT_DATA_ENCR_KEY (KMS reported it failed to obtain security parameters, incorrect key)"
+            Case &H949D
+                Return "SI_ERR_EXT_DATA_ENCR_CONTROL_TIMEOUT (Timer expired when waiting for security parameters from KMS)"
+            Case &H949E
+                Return "SI_ERR_UA_DATA_ENCR_CAPABILITIES_CHANGED (Encryption UA)"
+            Case &H949F
+                Return "SI_ERR_EXT_DATA_ENCR_RQST_NOT_AUTHORISED (KMS reported it failed to obtain security parameters, request not authorised (e.g. loaded tape is non-encryption capable))"
+            Case &H94A0
+                Return "SI_ERR_NOT_READY_SELFTEST_IN_PROGRESS (Drive is in a special Maintenance or Selftest mode)"
+            Case &H94A1
+                Return "SI_ERR_TRUNCATED_LIVE_TRACE_DATA (The parameter list of a SET LIVE TRACE POINTS/VARIABLES command was truncated)"
+            Case &H94A2
+                Return "SI_ERR_TRUNCATED_TIMESTAMP_DATA (The parameter data of a SET TIMESTAMP command was truncated)"
+            Case &H94A3
+                Return "SI_ERR_UA_TIMESTAMP_CHANGED (Timestamp changed UA)"
+            Case &H94A4
+                Return "SI_ERR_STTF_SPI_XFER_REQUEST (Failed to initiate an SPI transfer to read a STTF Log from flash memory)"
+            Case &H94A5
+                Return "SI_ERR_SERVICE_LOCATION_DESCRIPTOR_TRUNCATED (The parameter data of a SET SERVICE LOCATION command was truncated)"
+            Case &H94A6
+                Return "SI_ERR_PHYSICAL_PORT_NOT_IN_POINT_TO_POINT (Cannot enable NPIV port when the physical port is in Loop Mode)"
+            Case &H94A7
+                Return "SI_ERR_TRUNCATED_PREVENT_MEDIUM_REMOVAL_DATA (The parameter data of a SET PREVENT MEDIUM REMOVAL command was truncated)"
+            Case &H94A8
+                Return "SI_ERR_INSUFFICIENT_INITIATOR_RESOURCES (The device server doesn't have sufficient recourses to process all the initiators in the parameter list)"
+            Case &H94A9
+                Return "SI_ERR_SET_PMR_PROHIBITED_WHEN_SMC_ENABLED (SET PREVENT MEDIUM REMOVAL command not allowed when SMC LUN enabled!)"
+            Case &H94AA
+                Return "SI_ERR_SET_PMR_PROHIBITED_NO_NPIV_PORT (SET PREVENT MEDIUM REMOVAL command not allowed when an NPIV is not associated with the SMC Logical Unit)"
+            Case &H94AB
+                Return "SI_ERR_SET_LEGACY_RESERV_PROHIBITED_WHEN_SMC_ENABLED (SET LEGACY RESERVATION command not allowed when SMC LUN enabled!)"
+            Case &H94AC
+                Return "SI_ERR_SET_LEGACY_RESERV_PROHIBITED_NO_NPIV_PORT (SET LEGACY RESERVATION command not allowed when an NPIV is not associated with the SMC Logical Unit)"
+            Case &H94AD
+                Return "SI_ERR_TRUNCATED_LEGACY_RESERVATION_DATA (The parameter data of a SET LEGACY RESERVATIONS command was truncated)"
+            Case &H94AE
+                Return "SI_ERR_TRUNCATED_PERSISTENT_RESERVATION_DATA (The parameter data of a SET PERSISTENT RESERVATIONS command was truncated)"
+            Case &H94AF
+                Return "SI_ERR_INSUFFICIENT_RESERVATION_KEY_RESOURCES (The device server doesn't have sufficient recourses to process all the reservation keys in the parameter list)"
+            Case &H94B0
+                Return "SI_ERR_SA_CREATION_PARAMETER_VALUE_INVALID (Error detected in SP OUT cmd or its data either- when attempting to establish a CCS; or, after decryted and integrity checked)"
+            Case &H94B1
+                Return "SI_ERR_SA_CREATION_PARAMETER_VALUE_REJECTED (Error detected in SP OUT cmd Authentication step- SAI_AC or SAI_DS is wrong)"
+            Case &H94B2
+                Return "SI_ERR_SA_AUTHENTICATION_FAILED (Error detected in SP OUT cmd Authentication step- Authentication failed)"
+            Case &H94B3
+                Return "SI_ERR_CONFLICTING_SA_CREATION_RQST (A host tried to initiate a new SA whilst another one in progress)"
+            Case &H94B4
+                Return "SI_ERR_SA_CREATION_IN_PROGRESS (The creation of a SA is in progress, command not allowed)"
+            Case &H94B5
+                Return "SI_ERR_EN_FUG_IMAGE_TOO_LARGE (FUGImage too large for flash)"
+            Case &H94B6
+                Return "SI_ERR_BRIDGING_PORT_NOT_REGISTERED (The bridging manager has attempted to send a SCSI command to the remote SMC LUN before the bridging port has been registered/configured!)"
+            Case &H94B7
+                Return "SI_ERR_SA_CA_FUNCTION_RETURNED_BAD_LENGTH (A Cryptographic Algorithm function returned an unexpected length)"
+            Case &H94B8
+                Return "SI_ERR_TRUNCATED_BEACON_LED_CONFIG_DATA (The Set Beacon LED Config parameter list is truncated)"
+            Case &H94B9
+                Return "SI_ERR_NO_TASK_OBJECTS (No task objects available in Scsi Task Manager. This is a fatal error)"
+            Case &H94BA
+                Return "SI_ERR_TRUNCATED_IP_CONFIG_DATA (The Set IP Config parameter list is truncated)"
+            Case &H94BB
+                Return "SI_ERR_SA_CE_FUNCTION_RETURNED_BAD_LENGTH (A Certificate Manager function returned an unexpected length)"
+            Case &H94BC
+                Return "SI_ERR_SC_CE_FUNCTION_RETURNED_BAD_LENGTH (A Certificate Manager function returned an unexpected length on a Security Configuration command)"
+            Case &H94BD
+                Return "SI_ERR_SC_CA_FUNCTION_RETURNED_BAD_LENGTH (A Cryptographic Algorithm function returned an unexpected length on a Security Configuration command)"
+            Case &H94BE
+                Return "SI_ERR_SC_MANAGEMENT_HOST_CERT_NOT_PRESENT (The SPOUT signature could not be authenticated because the Management Host Certificate public key is not present)"
+            Case &H94BF
+                Return "SI_ERR_TRUNCATED_ADVANCED_PRIMARY_PORT_DESCRIPTOR (An Advanced Primary Port Descriptor is truncated)"
+            Case &H94C0
+                Return "SI_ERR_NO_MEDIA_LOADED_CART_PRESENT (A cartridge is not loaded but it has been detected in the jaws of the drive)"
+            Case &H94C1
+                Return "SI_ERR_TRUNCATED_AUTOMATION_ATTRIBUTE_DESCRIPTOR (An Automation Device Attribute Descriptor header was truncated)"
+            Case &H94C2
+                Return "SI_ERR_TRUNCATED_AUTOMATION_DEVICE_ATTRIBUTE_DATA (The Automation Device Attribute value was truncated)"
+            Case &H94C3
+                Return "SI_ERR_TRUNCATED_AER_CONTROL_DATA (The AER Control Descriptor was truncated)"
+            Case &H94C4
+                Return "SI_ERR_SYMBOLIC_NAME_NOT_CHANGED (Status indicating that the specified Symbolic Name is the same as the current symbolic name )"
+            Case &H94C5
+                Return "SI_ERR_TRUNCATED_ADVANCED_PORT_SETTINGS_DATA (The SET ADVANCED PORT SETTINGS parameter list was truncated)"
+            Case &H94C6
+                Return "SI_ERR_SYMBOLIC_NAME_TOO_LONG (The specified Symbolic Name exceeds maximum permitted length!)"
+            Case &H94C7
+                Return "SI_ERR_SYMBOLIC_NAME_TERMINATION (The specified symbolic name is not null terminated!)"
+            Case &H94C8
+                Return "SI_ERR_DUPLICATE_LIVE_TRACE_POINT_ID (The specified Live Trace point has been specified multiple times in the parameter list!)"
+            Case &H94C9
+                Return "SI_ERR_INVALID_LIVE_TRACE_POINT_ID (The specified Live Trace point Id is invalid, it must be 0000h)"
+            Case &H94CA
+                Return "SI_ERR_FIRMWARE_FILE_TOO_BIG (The firmware file sent is too big)"
+            Case &H94CB
+                Return "SI_ERR_FUG_TAPE_CONTAINS_DATA (Firmware upgrade tape contains data)"
+            Case &H94CC
+                Return "SI_ERR_FUG_TAPE_FLASH_READ_FAILURE (Can't read flash for firmware upgrade tape)"
+            Case &H94CD
+                Return "SI_FUG_INCORRECT_TAPE_FORMAT (Incompatible tape format encountered while creating firmware upgrade tape)"
+            Case &H94CE
+                Return "SI_ERR_FORMAT_MEDIUM_OPERATION_IN_PROGRESS"
+            Case &H94CF
+                Return "SI_ERR_CANNOT_FORMAT_INCOMPATIBLE_MEDIUM (The cartridge does not support formatting (partitioning))"
+            Case &H94D0
+                Return "SI_ERR_SC_ROOT_CA_CERT_NOT_PRESENT (The SPOUT signature could not be authenticated because the Root CA Certificate is not present)"
+            Case &H94D1
+                Return "SI_ERR_SYMBOLIC_PORT_NAME_MISMATCH (In Data Path Failover the symbolic Names of Port A & B must be the same, they're not)"
+            Case &H94D2
+                Return "SI_ERR_CLEAR_RSA_KEY_REJECTED (Attempt to clear RSA Key pair not allowed, SECURE MODE disabled )"
+            Case &H94D3
+                Return "SI_ERR_UA_FAILOVER_SESSION_RELEASED (A failover session was released by an intiator that did not own it)"
+            Case &H94D4
+                Return "SI_ERR_ROOT_CA_CERTIFICATE_REJECTED_NOT_A_CA_CERTIFICATE (The certificate is not a Root CA certificate)"
+            Case &H94D5
+                Return "SI_ERR_UA_SECURITY_CONFIGURATION_CHANGED (Security configuration changed UA)"
+            Case &H94D6
+                Return "SI_ERR_SC_DEVICE_CERTIFICATE_PRESENT (Attempt to erase root CA certificate when drive certificate is present)"
+            Case &H94D7
+                Return "SI_ERR_WRITE_PROTECTED_BY_LIBRARY (The WP bit in the RMC Logical Unit mode page 0Eh/03h is set to 1, i.e. the library has write protected the media!)"
+            Case &H94D8
+                Return "SI_ERR_SEQUENTIAL_POSITIONING_ERROR (The logical position supplied in the ALLOW OVERWRITE CDB does not match current logical position)"
+            Case &H94D9
+                Return "SI_ERR_ILLEGAL_CMD_NOT_APPEND_ONLY_MODE (The ALLOW OVERWRITE CDB is not allowed if Append-Only mode is not enabled)"
+            Case &H94DA
+                Return "SI_ERR_OPERATOR_SELECTED_WRITE_PROTECT (Append-Only mode is enabled but the Allow Overwrite variable is not set to 'Format')"
+            Case &H94DB
+                Return "SI_ERR_IDLE_CONDITION_ACTIVATED_BY_TIMER (When the drive is in idle (hibernate mode), the REQUEST SENSE data will reflect this state)"
+            Case &H94DC
+                Return "SI_ERR_FAILOVER_SESSION_SEQUENCE_ERROR (The drive received a failover restricted command from an I_T_L nexus not associated with a failover session)"
+            Case &H94DD
+                Return "SI_ERR_FAILOVER_COMMAND_SEQUENCE_ERROR (The drive received a command that did not have the expect Failover Sequence Count in the CDB Control byte)"
+            Case &H94DE
+                Return "SI_ERR_DUPLICATE_FAILOVER_SESSION_KEY (A failover session has already been established using the specified failover session key)"
+            Case &H94DF
+                Return "SI_ERR_INVALID_FAILOVER_KEY (No failover session has been established with the specified failover session key)"
+            Case &H94E0
+                Return "SI_ERR_TRUNCATED_PATH_FAILOVER_PARAMETER_DATA (The SET PATH FAILOVER LICENCE KEY parameter list was truncated)"
+            Case &H94E1
+                Return "SI_ERR_NO_FREE_FAILOVER_SESSION_AVAILABLE (All failover sessions have been allocated)"
+            Case &H94E2
+                Return "SI_ERR_FIPS_SELFTEST_FAILURE (One or more OpenSSL FIPS selftests failed when SME set to 1 by SPOut command)"
+            Case &H94E3
+                Return "SI_ERR_INVALID_INTERNAL_LUN (Invalid internal LUN number)"
+            Case &H94E4
+                Return "SI_ERR_ROLE_BASED_AUTHENTICATION_FAILED (Role-based authentication of primary port I_T nexus failed)"
+            Case &H94E5
+                Return "SI_ERR_UA_FAILOVER_SMC_STATE_CHANGED (The failover session I_T_L nexus settings have changed)"
+            Case &H94E6
+                Return "SI_ERR_UA_FAILOVER_SMC_DEVICE_SERVER_MOVED (The media changer control path has moved to a different drive)"
+            Case &H94E7
+                Return "SI_ERR_SC_AUTHENTICATION_REQUEST_FAILED (Security Configuration Protocol Authentication Request failed)"
+            Case &H94E8
+                Return "SI_ERR_SC_DEVICE_CERT_DRIVE_KEY_MISMATCH (The device certificate does not contain this drive's public key)"
+            Case &H94E9
+                Return "SI_ERR_SC_CLIENT_CA_NAME_SAME_AS_ROOT_CA_NAME (The name of the client CA certificate is the same as the root CA name)"
+            Case &H94EA
+                Return "SI_ERR_SC_PUBLIC_KEY_ALREADY_IN_WHITELIST (The public key is already in the whitelist and must be deleted before being replaced)"
+            Case &H94EB
+                Return "SI_ERR_UA_MEDIUM_REMOVAL_PREVENTION_PREEMPTED (An initiators Prevent Medium Removal has been preempted by another initiator)"
+            Case &H94EC
+                Return "SI_ERR_WRONG_PARTITION_REPORT_EOD (Failover return NCN command tried to reposition to a partition that doesn't exist)"
+            Case &H94ED
+                Return "SI_ERR_INVALID_RSA_KEY (An RSA key is corrupted)"
+            Case &H94EE
+                Return "SI_ERR_UNKNOWN_SIGNATURE_VERIFICATION_KEY (Whitelist does not contain the required public key)"
+            Case &H94EF
+                Return "SI_ERR_UNABLE_TO_DECRYPT_DATA (An error occurred while decrypting data)"
+            Case &H94F0
+                Return "SI_ERR_CRYPTOGRAPHIC_INTEGRITY_VALIDATION_FAILURE (An error occurred while performing a signature verification)"
+            Case &H94F1
+                Return "SI_ERR_TOO_MANY_LOGICAL_OBJECTS_CANNOT_SUPPORT_OP (The command cannot return info requested because the logical position cannot be represented)"
+            Case &H94F2
+                Return "SI_ERR_TRUNCATED_STTF_CONFIG_DATA (The Set STTF Config parameter list is truncated)"
+            Case &H94F3
+                Return "SI_ERR_TRUNCATED_DRIVE_HEALTH_DATA (The SET DRIVE HEALTH RULES parameter list is truncated)"
+            Case &H94F4
+                Return "SI_ERR_TOO_MANY_RULES_TO_PROCESS (The device server has insufficient buffer space to process the number of rules specified in the parameter list)"
+            Case &H94F5
+                Return "SI_DRIVE_HEALTH_ALGORITHM_STATE_CHANGE (Reported to Drive Monitor when the Drive Health Algorithm changes Tape Alert flags & front panel LEDs)"
+            Case &H94F6
+                Return "SI_ERR_NOT_READY_HOST_SPECIFIED_SENSE_DATA (The SET PRIMARY PORT TO NOT READY command has put the primary port into a NOT READY state and has specified the sense data to report)"
+            Case &H94F7
+                Return "SI_ERR_NO_SECONDARY_IMAGE (Attempt to delete non-existant firmware image)"
+            Case &H94F8
+                Return "SI_ERR_PARAMETER_LIST_LENGTH_TOO_LONG (The parameter list length of a SCSI command exceeds the size of the device server's buffer)"
+            Case &H94F9
+                Return "SI_ERR_SEND_TMF_COMPLETE_BAD_TASK (The ADT Encapsulated SCSI transport layer sent SDL signal siSendTaskManagementRsp with a suspicious TaskPtr)"
+            Case &H94FA
+                Return "SI_ERR_SEND_CDB_COMPLETE_BAD_TASK (The ADT Encapsulated SCSI transport layer sent SDL signal siSendCdbRsp with a suspicious TaskPtr)"
+            Case &H94FB
+                Return "SI_ERR_DELETE_FIRMWARE_IMAGE_FAILED (Attempting to delete the secondary firmware image failed)"
+            Case &H94FC
+                Return "SI_ERR_READ_FIRMWARE_IMAGE_CACHE_FAILED (Attempting to read the firmware cache failed)"
+            Case &H94FD
+                Return "SI_ERR_VERIFY_OPERATION_IN_PROGRESS (The drive is not ready because it is currently performing a VERIFY operation)"
+            Case &H94FE
+                Return "SI_ERR_SET_EDV_BAD_SME_IS_SET (Set EDV command failed because Secure Mode is enabled (FIPS-related))"
+            Case &H94FF
+                Return "SI_ERR_FW_DEFECT_INVALID_DEVICE_SERVER (Firmware Defect return A SCSI function has been called specifying an invalid device server Id)"
+            Case &H9801
+                Return "AD_QUEUE_FULL (Resource Issue- The ADI failed to queue an object because the queue is full.)"
+            Case &H9802
+                Return "AD_QUEUE_EMPTY (The ADI failed to get a queue item because the queue was empty.)"
+            Case &H9803
+                Return "AD_FCB_ALLOCATION_ERROR (Resource Issue- The ADI was unable to allocate a new Frame Control Block)"
+            Case &H9804
+                Return "AD_MALLOC_ERROR (Resource Issue- The ADI doesn't have sufficient memory to complete the current operation.)"
+            Case &H9805
+                Return "AD_INVALID_QUEUE (F/W defect- An invalid queue was was referenced)"
+            Case &H9806
+                Return "AD_EXCHANGE_ALLOCATION_ERROR (Resource Issue- Unable to allocate a new exchange ID, all Exchange IDs are in use.)"
+            Case &H9807
+                Return "AD_INVALID_STATE_MACHINE_EVENT (F/W defect- F/W generated an invalid state-machine event.)"
+            Case &H9808
+                Return "AD_INVALID_STATE_MACHINE (F/W defect- F/W referenced an invalid f/w state-machine.)"
+            Case &H9809
+                Return "AD_INVALID_FCB (F/W defect- F/W referenced an invalid FCB Handle.)"
+            Case &H980A
+                Return "AD_NO_TASK_OBJECT (Unable to get a new task object.)"
+            Case &H980B
+                Return "AD_EXCHANGE_ID_TABLE_FULL (The SCSI Exchange ID table is full.)"
+            Case &H980C
+                Return "AD_INVALID_EXCHANGE (A new exchange has been started with an ID of an existing exchange.)"
+            Case &H980D
+                Return "AD_INVALID_FIELD_IN_SCSI_CMD_IU (The ADT Port I/F received a SCSI COMMAND IU containing an invalid field.)"
+            Case &H980E
+                Return "AD_INVALID_FIELD_IN_SCSI_DATA_IU (The ADT Port I/F received a SCSI DATA IU containing an invalid field.)"
+            Case &H980F
+                Return "AD_INVALID_FIELD_IN_SCSI_RESPONSE_IU (The ADT Port I/F received a SCSI RESPONSE IU containing an invalid field.)"
+            Case &H9810
+                Return "AD_INVALID_CONTEXT (The ADT Port I/F received a SCSI operation from a Device Server with an invalid Context ID.)"
+            Case &H9811
+                Return "AD_PAYLOAD_EXCEEDS_MAX (Unable to generate Frame because it exceeds Max Payload Size.)"
+            Case &H9812
+                Return "AD_MORE_DATA_THAN_EXPECTED (The ADT Port I/F received more SCSI data than permited within a burst.)"
+            Case &H9813
+                Return "AD_INCORRECT_RELATIVE_OFFSET (The ADI Port I/F has received a Data IU with an offset outside the current burst.)"
+            Case &H9814
+                Return "AD_UNSUPPORTED_OPERATION (The ADT Port I/F received a command from a Device Server that it cannot support.)"
+            Case &H9815
+                Return "AD_TRANSMISSION_ERROR (The ADT Port did not receive an ACK for a frame it transmitted.)"
+            Case &H9816
+                Return "AD_TASK_QUEUE_FULL (Temp need to replace with SI_ERR_TASK_QUEUE_FULL when available)"
+            Case &H9817
+                Return "AD_SELFTEST_FCB_MALLOC_FAILED (SelfTest FAILED- Unexpected FCBs allocated.)"
+            Case &H9818
+                Return "AD_SELFTEST_EXCHANGES_FAILED (SelfTest FAILED- Unexpected exchange open.)"
+            Case &H9819
+                Return "AD_SELFTEST_QUEUES_FAILED (SelfTest FAILED- Queue not empty.)"
+            Case &H981A
+                Return "AD_SELFTEST_SCSI_STATE_FAILED (SelfTest FAILED- SCSI Exchange not in State IDLE.)"
+            Case &H981B
+                Return "AD_EXCESSIVE_FRAMING_ERRORS (The ADT port has detected an excessive number of framing errors.)"
+            Case &H981C
+                Return "AD_SELFTEST_NON_ZERO_ACK_OFFSET (SelfTest FAILED- Non zero lib ACK offset.)"
+            Case &H981D
+                Return "AD_DATA_OFFSET_ERROR_IN_TRANSFER_READY (The received TRANSFER READY IU contained an invalid BUFFER OFFSET field.)"
+            Case &H981E
+                Return "AD_UNEXPECTED_ACK (ADT Port received an ACK frame but not for frame it was expecting.)"
+            Case &H981F
+                Return "AD_UNEXPECTED_NAK (ADT Port received an NAK frame but not for frame it was expecting.)"
+            Case &H9820
+                Return "AD_GIVING_UP_INITIATING_LOGIN (The ADT Port is giving up initiating a Port Login after a number of failed attempts.)"
+            Case &H9821
+                Return "AD_RECEIVED_LATE_ACK (The ADT Port is discarding an ACK frame it received after the acknowledgement timeout.)"
+            Case &H9822
+                Return "AD_ACKNOWLEDGEMENT_TIMEOUT (The ADT Port did not receive acknowledgement within the Acknowledgement Period.)"
+            Case &H9823
+                Return "AD_CHECKSUM_ERROR (The ADT Port received a frame with a checksum error.)"
+            Case &H9824
+                Return "AD_PORT_DISABLED (The ADT Port received a frame when the port was disabled.)"
+            Case &H9825
+                Return "AD_INFORMATION_UNIT_TOO_SHORT (The received TRANSFER READY IU was shorter than expected.)"
+            Case &H9826
+                Return "AD_INFORMATION_UNIT_TOO_LONG (The received TRANSFER READY IU was longer than expected.)"
+            Case &H9827
+                Return "AD_ZERO_BURST_LENGTH_TRANSFER_READY (The received TRANSFER READY IU contained a BURST LENGTH value of zero.)"
+            Case &H9828
+                Return "AD_ABORTED_CMD_PORT_LOGGED_OUT (The ADT Port failed to execute a SCSI operation because it's logged-out.)"
+            Case &H9829
+                Return "AD_ABORTED_CMD_BUSY (The ADT Port failed to execute a SCSI operation because it's busy doing something else.)"
+            Case &H982A
+                Return "AD_BRIDGE_SCSI_CMD_ABORTED (The ADT Port aborted bridged SCSI command due to a communication failure.)"
+            Case &H982B
+                Return "AD_UNSUPPORTED_TASK_MGMT_FUNC (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H982C
+                Return "AD_INVALID_SCSI_RESPONSE_CODE (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H982D
+                Return "AD_INVALID_FIELD_IN_SCSI_IU (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H982E
+                Return "AD_MORE_DATA_TRANSFERRED_THAN_REQUESTED (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H982F
+                Return "AD_TASK_MANAGEMENT_FUNC_FAILED (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H9830
+                Return "AD_SERVICE_DELIVERY_FAILED (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H9831
+                Return "AD_INVALID_LUN_IN_TASK_MANAGEMENT_IU (This error reflects the Response Code in a SCSI RESPONSE IU received by the drive.)"
+            Case &H9832
+                Return "AD_FAILED_TO_TRANSMIT_SCSI_CMD_OR_TMF (The ADT Port failed to transmit a SCSI COMMAND IU or TASK MANAGEMENT FUNC IU.)"
+            Case &H9833
+                Return "AD_ZERO_LENGTH_SCSI_DATA_IU (The ADT Port received a zero length SCSI DATA IU.)"
+            Case &H9834
+                Return "AD_DATA_IU_RECEIVED_UNEXPECTEDLY (The ADI Port I/F has received a Data IU unexpectedly.)"
+            Case &H9835
+                Return "AD_NULL_FRAME_POINTER (Unexpected NULL frame pointer.)"
+            Case &H9836
+                Return "AD_AUTOMATION_DEVICE_FW_DEFECT (This error indicates the drive has detected a library firmware defect!)"
+            Case &H9837
+                Return "AD_INVALID_ADT_PORT (The specified Port is not a recognised ADT port)"
+            Case &H9838
+                Return "AD_COMPLETE_COMMAND_WITH_UNIT_ATTENTION (Instructs Bridging Manager NOT to resend a command with a UNIT ATTENTION Sense Key)"
+            Case &H9839
+                Return "AD_RSP_PENDING (This status indicates a function shall send a response when it has finished)"
+            Case &H983A
+                Return "AD_DTD_FRAME_NAKED (Reported in ADI/AMI Command History log to indicate the library NAKed a frame from the drive.)"
+            Case &H983B
+                Return "AD_DIAGNOSTIC_PORT_RESET_EVENT (Reported in ADI/AMI Command History Log to indicate a PORT RESET event occured due to a diagnostic command)"
+            Case &H983C
+                Return "AD_UNEXPECTED_REBOOT_SCSI_OP (Not reported to a host but indicates a f/w defect sequencing a firmware reboot related to an ADT RESET IU)"
+            Case &H983D
+                Return "AD_SMC_TEST_UNIT_ATTENTION (The error code is specifically used for test purposes only, it should never been seen in customer firmware)"
+            Case &H983E
+                Return "AD_FRAME_SAVED_DURING_PORT_RESET (Not reported to a host but indicates that the recieved frame was saved while the ADI port was being reset)"
+            Case &H983F
+                Return "AD_OVERWRITE_FRAME_DURING_PORT_RESET (Not reported to a host but indicates that the previously save frame was overwritten by another while the ADI port was being reset)"
+            Case &H9840
+                Return "AD_IMPLICIT_LOGOUT_EVENT_RECEIVED (Not reported directly to a host but used in the ADI Command History log to indicate an Implicit Logout event)"
+            Case &H9841
+                Return "AD_MAILBOX_TRANSMIT_TIMEOUT (Management ARM Mailbox failed to complete maAdtTransmitFrame request within timeout period!)"
+            Case &H9C01
+                Return "MA_IADT_RESET_LINE_ACTIVATED (The Ethernet RESET line has been actived!)"
+            Case &H9C02
+                Return "MA_ERR_INVALID_EVENT (The System ARM maHandleEvent() function has received an illegal event)"
+            Case &H9C03
+                Return "MA_ERR_CONNECT_TO_INVALID_PORT (This error is reported if an invalid iADT port is specified for connection.)"
+            Case &H9C04
+                Return "MA_SENSEA_ASSERTED (The iADT SENSEa input is Asserted by the library controller)"
+            Case &H9C05
+                Return "MA_SENSEA_DEASSERTED (The iADT SENSEa input is not asserted by the library controller)"
+            Case &H9C06
+                Return "MA_SENSEA_NOT_AVAILABLE (The iADT SENSEa input has been read yet)"
+            Case &H9C07
+                Return "MA_RECV_FAIL (Failure during socket read)"
+            Case &H9C08
+                Return "MA_SEND_FAIL (Failure during socket write)"
+            Case &H9C09
+                Return "MA_CFG_REJECT (MgmtArm rejected the maConfigNetworkIF options)"
+            Case &H9C0A
+                Return "MA_SELF_TEST_PASS (Requested Self Test passed)"
+            Case &H9C0B
+                Return "MA_SELF_TEST_FAIL (Requested Self Test failed)"
+            Case &H9C0C
+                Return "MA_MGMT_ASSERTED (Fatal condition caused the Management ARM to die a painful death)"
+            Case &H9C0D
+                Return "MA_MAILBOX_FULL (Could not queue the message, the Mailbox is full)"
+            Case &H9C0E
+                Return "MA_RECEIVE_FRAME_MALLOC_FAILED (Could not allocate memory to copy an ADT frame)"
+            Case &H9C0F
+                Return "MA_EVENT_TRIGGERED (The awaited event has occurred)"
+            Case &H9C10
+                Return "MA_MAILBOX_EMPTY (The Mailbox is empty)"
+            Case &H9C11
+                Return "MA_PORT_NOT_FOUND (The command failed because the requested port does not exist)"
+            Case &H9C12
+                Return "MA_CONNECT_FAILED (Failed to connect to the remote host)"
+            Case &H9C13
+                Return "MA_POST_NOT_AVAILABLE (POST status not available)"
+            Case &H9C14
+                Return "MA_NO_TASK_OBJECT (Unable to get a new task object.)"
+            Case &H9C15
+                Return "MA_ERR_TASK_QUEUE_FULL (Cannot execute SCSI command because another is in progress)"
+            Case &H9C16
+                Return "MA_MORE_DATA_THAN_EXPECTED (The KMS Agent Port I/F received more SCSI data than permited within a burst.)"
+            Case &H9C17
+                Return "MA_PKI_TYPE_INVALID (PKI type invalid)"
+            Case &H9C18
+                Return "MA_PKI_FORMAT_INVALID (PKI format invalid)"
+            Case &H9C19
+                Return "MA_PKI_CONVERSION_ERROR (PKI conversion error)"
+            Case &H9C1A
+                Return "MA_PKI_PROCESSING_ERROR (PKI processing error)"
+            Case &H9C1B
+                Return "MA_FRAME_BUFFER_ERROR (Frame Buffer Unrecoverable Error)"
+            Case &H9C1C
+                Return "MA_BUFFER_BRIDGE_ERROR (Buffer Bridge Unrecoverable Error)"
+            Case &H9C1D
+                Return "MA_DTCM_ERROR (DTCM Unrecoverable Error)"
+            Case &H9C1E
+                Return "MA_ITCM_ERROR (ITCM Unrecoverable Error)"
+            Case &H9C1F
+                Return "MA_UNDEF_INSTRUCTION (Undefined Instruction Error)"
+            Case &H9C20
+                Return "MA_PREFETCH_ABORT (Prefetch Abort Error)"
+            Case &H9C21
+                Return "MA_DATA_ABORT (Data Abort Error)"
+            Case &H9C22
+                Return "MA_MGMT_ASSERTED_DTRAP (Fatal condition caused the Management ARM to Invoke Dtrap())"
+            Case &H9C23
+                Return "MA_INVALID_FIELD_IN_CDB (Invalid field in CDB)"
+            Case &H9C24
+                Return "MA_INVALID_FIELD_IN_PARAM_LIST (Invalid field in parameter list)"
+            Case &H9C25
+                Return "MA_LED_TEST_PASS (MA LED Test passed)"
+            Case &H9C26
+                Return "MA_LED_TEST_FAIL (MA LED Test Failed)"
+            Case &H9C27
+                Return "MA_POST_FAIL_TCM (TCM POST Failed)"
+            Case &H9C28
+                Return "MA_POST_FAIL_FRAME_BUFFER (Frame Buffer POST Failed)"
+            Case &H9C29
+                Return "MA_POST_FAIL_MAC_REGISTER (MAC Register POST Failed)"
+            Case &H9C2A
+                Return "MA_POST_FAIL_PHY_REGISTER (PHY Register POST Failed)"
+            Case &H9C2B
+                Return "MA_POST_FAIL_VIC (VIC POST Failed)"
+            Case &H9C2C
+                Return "MA_POST_FAIL_TIMER (Timer POST Failed)"
+            Case &H9C2D
+                Return "MA_POST_FAIL_SYS_CONTROLLER (Sys Controller POST Failed)"
+            Case &H9C2E
+                Return "MA_POST_FAIL_TRACE_POINT (Tracepoint POST Failed)"
+            Case &H9C2F
+                Return "MA_FIPS_SELFTEST_FAILURE (OpenSSL known answer test failed)"
+            Case &H9C30
+                Return "MA_ISERIAL_UNEXPECTED_RECEIVE_ERR (The System ARM received data on the iSerial port unexpectedly)"
+            Case &H9C31
+                Return "MA_KMS_AGENT_MSG_QUEUE_ERR (The KMS Agent Message Queue is full so the message cannot be queued)"
+            Case &H9C32
+                Return "MA_POST_FAIL_OPENSSL (OpenSSL POST Failed)"
+            Case &HA000
+                Return "srNoError"
+            Case &HA001
+                Return "srPanic (The servo system has shutdown due to panic conditions)"
+            Case &HA002
+                Return "srTaskFaultBufferOverFlow (The Servo Task fault buffer has overflowed some entries have been lost)"
+            Case &HA003
+                Return "srMasterFaultBufferOverFlow (The Servo Interrupt fault buffer has overflowed some entries have been lost)"
+            Case &HA005
+                Return "srTimerNotAvailable (The Servo firmware requested a timer when none available)"
+            Case &HA006
+                Return "srStatsReportTimeout (Timeout occured whilst waiting to report Servo statistics)"
+            Case &HA007
+                Return "srInvalidTask (The current Servo firmware task is not valid a task)"
+            Case &HA008
+                Return "srAccelSeekTimeout (Accel phase of the seek did not complete within alloted time)"
+            Case &HA009
+                Return "srDecelSeekTimeout (Decel phase of the seek did not complete within alloted time)"
+            Case &HA00A
+                Return "srSettleWindowSeekTimeout (Settle window criteria was not met at the end of the Decel phase of the seek)"
+            Case &HA00B
+                Return "srHandOffSeekTimeout (Hand off to tracking phase of the seek did not complete within alloted time)"
+            Case &HA00C
+                Return "srUnknownServoModeDuringSeek (Servo mode was not recognised during seek)"
+            Case &HA00D
+                Return "srNegStictionPulseTimerFlt (A timer fault occurred during neg stiction pulse)"
+            Case &HA00E
+                Return "srPosStictionPulseTimerFlt (A timer fault occurred during pos stiction pulse)"
+            Case &HA00F
+                Return "srBotStopTimerFlt (A timer fault occurred during bottom crash stop cal)"
+            Case &HA010
+                Return "srTopStopTimerFlt (A timer fault occurred during top crash stop cal)"
+            Case &HA011
+                Return "srStrokeSizeTooSmallFlt (The measured actuator stroke size is too small)"
+            Case &HA012
+                Return "srTSBTimerFlt (A timer fault occurred during TSB calibration)"
+            Case &HA013
+                Return "srCalibrateTSB0Timeout (TSB0 calibration did not complete within the alloted time)"
+            Case &HA014
+                Return "srCalibrateTSB1Timeout (TSB1 calibration did not complete within the alloted time)"
+            Case &HA015
+                Return "srCalibrateTSB2Timeout (TSB2 calibration did not complete within the alloted time)"
+            Case &HA016
+                Return "srCalibrateTSB3Timeout (TSB3 calibration did not complete within the alloted time)"
+            Case &HA017
+                Return "srServoTrackOutOfBounds (An invalid servo track number was specified for a seek)"
+            Case &HA018
+                Return "srViSeekTargetOutOfRange (The calculated final target for a VI seek was out of range)"
+            Case &HA019
+                Return "srTapeSeekTargetOutOfRange (The calculated final target for a Tape seek was out of range)"
+            Case &HA01A
+                Return "srUnableToFindRequestedTSB (Unable to find the requested TSB)"
+            Case &HA01B
+                Return "srNoTapeServoCodeFound (Unable to find Servo Code on the tape)"
+            Case &HA01C
+                Return "srUnableToIdentifyTSB (Unable to identify the current Top Servo Band)"
+            Case &HA01D
+                Return "srUnknownSeekType (Unable to identify the requested Seek Type)"
+            Case &HA01E
+                Return "srUnableToAttemptTapeLockNotViTracking (Unable to lock to tape when not tracking on VI)"
+            Case &HA01F
+                Return "srTimedOutWaitingForTapeLock (Unable to lock to tape servo code within alloted time)"
+            Case &HA020
+                Return "srWriteWhilePrimaryBumpOut (Primary servo bump went out whilst writing)"
+            Case &HA021
+                Return "srTapeServoInhibit (System ARM is not allowing tape servo operations)"
+            Case &HA022
+                Return "srViOffsetCalibrationNotDone (VI offset calibration has not been done)"
+            Case &HA023
+                Return "srInvalidScopeMode (The specified Servo scope mode is not valid.)"
+            Case &HA024
+                Return "srInvalidScopeChanSize (The specified Servo scope channel bit width is not supported.)"
+            Case &HA025
+                Return "srInvalidScopeSourceID (The specified Servo source number is not valid.)"
+            Case &HA026
+                Return "srTriggerPosBeyondEndOfTrace (The specified Servo scope trigger position is too large compared to the specified number of data packets in the trace.)"
+            Case &HA027
+                Return "srServoScopeSourceAddressNotFound (The specified Servo scope source address was not found in the address array.)"
+            Case &HA028
+                Return "srServoScopeSourceSizeNotFound (The specified Servo scope source bit size was not found in the size array.)"
+            Case &HA029
+                Return "srMeasureServoHeadsTimeout (A Measure Servo Heads command did not complete within the alloted time.)"
+            Case &HA02A
+                Return "srSystemRequiredRevertToVi (The main system ARM flagged the need to revert to VI.)"
+            Case &HA02B
+                Return "srIdentifiedTSBsMatchButAreInvalid (Band ID had good skew values from both bumps but was unable to identify the band.)"
+            Case &HA02C
+                Return "srIdentifiedTSBMismatch (Band ID had good skew values from both bumps but identified different valid bands for each bump.)"
+            Case &HA02D
+                Return "srNotEnoughGoodChannelsToBandID (Not enough good demod channels whilst tape tracking to attempt band ID.)"
+            Case &HA02E
+                Return "srNotEnoughGoodChannelsToBandIDDuringTSBCalibration (Not enough good demod channels to attempt band ID whilst searching for tape servo during TSB calibration.)"
+            Case &HA02F
+                Return "srUnableToLockOnTapeWithServoCodePresentDuringTSBCalibration (Tape servo code available from at least one channel but unable to achieve tape lock, suspect head.)"
+            Case &HA030
+                Return "srInvalidCommand (Servo command is incorrectly formatted)"
+            Case &HA031
+                Return "srCommandNotAllowedNow (The Servo Command cannot be executed now)"
+            Case &HA032
+                Return "srTapeSpeedTooHighForDiagnostic (The Servo Command cannot be executed with the current tape speed)"
+            Case &HA033
+                Return "srObsoleteCmdError"
+            Case &HA034
+                Return "srFault_0x34 (Servo fault)"
+            Case &HA035
+                Return "srFault_0x35 (Servo fault)"
+            Case &HA036
+                Return "srFault_0x36 (Servo fault)"
+            Case &HA037
+                Return "srInvalidCommandParameter (One or more of the command parameters are invalid)"
+            Case &HA038
+                Return "srUnsupportedCommand (The servo command sent is not supported)"
+            Case &HA039
+                Return "srInvalidCommandSequence (The servo command sent is out of sequence)"
+            Case &HA03A
+                Return "srMechInterfaceTimeoutFault (uPTimeoutFlt - MechInterface did not respond within the alotted timeout, shutting down reel motors! )"
+            Case &HA03B
+                Return "srInitServoCommandAlreadyInProgress (Init servo command already in progress.)"
+            Case &HA03C
+                Return "srWriteMemoryServoCommandAlreadyInProgress (Write memory servo command already in progress.)"
+            Case &HA03D
+                Return "srReadMemoryServoCommandAlreadyInProgress (Read memory servo command already in progress.)"
+            Case &HA03E
+                Return "srSetGenerationServoCommandAlreadyInProgress (Set generation servo command already in progress.)"
+            Case &HA03F
+                Return "srSetScopeModeServoCommandAlreadyInProgress (Set scope mode servo command already in progress.)"
+            Case &HA040
+                Return "srPCADiagnosticServoCommandAlreadyInProgress (PCA diagnostic servo command already in progress.)"
+            Case &HA041
+                Return "srLiveStatisticsServoCommandAlreadyInProgress (Live statistics servo command already in progress.)"
+            Case &HA042
+                Return "srSeekCommandAlreadyInProgress (Seek command already in progress.)"
+            Case &HA043
+                Return "srReportTSBsServoCommandAlreadyInProgress (Report TSBs servo command already in progress.)"
+            Case &HA044
+                Return "srDefineScopeSourcesServoCommandAlreadyInProgress (Define scope sources servo command already in progress.)"
+            Case &HA045
+                Return "srConfigureOscillatorServoCommandAlreadyInProgress (Configure oscillator servo command already in progress.)"
+            Case &HA046
+                Return "srDefineSignalNodesServoCommandAlreadyInProgress (Define Signal Nodes servo command already in progress.)"
+            Case &HA047
+                Return "srCalibrateViStrokeServoCommandAlreadyInProgress (Calibrate VI stroke servo command already in progress.)"
+            Case &HA048
+                Return "srCalibrateTSBsServoCommandAlreadyInProgress (Calibrate TSBs servo command already in progress.)"
+            Case &HA049
+                Return "srReportServoStatusServoCommandAlreadyInProgress (Report servo status servo command already in progress.)"
+            Case &HA04A
+                Return "srConfigureTestDacsServoCommandAlreadyInProgress (Configure test DACs servo command already in progress.)"
+            Case &HA04B
+                Return "srReportServoConfigServoCommandAlreadyInProgress (Report servo configuration servo command already in progress.)"
+            Case &HA04C
+                Return "srMeasureServoHeadsServoCommandAlreadyInProgress (Measure servo heads servo command already in progress.)"
+            Case &HA04D
+                Return "srCopyMemoryBlockServoCommandAlreadyInProgress (Copy memory block servo command already in progress.)"
+            Case &HA04E
+                Return "srReportEnumAddressServoCommandAlreadyInProgress (Report Enum address servo command already in progress.)"
+            Case &HA04F
+                Return "srSetCompensatorCoefsServoCommandAlreadyInProgress (Set compensator coefficients servo command already in progress.)"
+            Case &HA050
+                Return "srSetHeadPosTuningParamsServoCommandAlreadyInProgress (Set head position tuning parameters servo command already in progress.)"
+            Case &HA051
+                Return "srCleanHeadCommandAlreadyInProgress (Clean head servo command already in progress.)"
+            Case &HA052
+                Return "srAccelerometerSelfTestCommandAlreadyInProgress (Accelerometer self test servo command already in progress.)"
+            Case &HA053
+                Return "srTSBCalibrationWatchdogTimeout (TSB calibration routine did not complete within alloted time.)"
+            Case &HA054
+                Return "srServoRequiredRevertToVi (The servo interrupt flagged the need to revert to VI, tape position data went away whilst tracking most likely.)"
+            Case &HA055
+                Return "srActuatorRecoveryAttempted (The servo system attempted to recover the actuator to a known state.)"
+            Case &HA056
+                Return "srServoInterruptOverrun (The servo Interrupt execution was longer than the interrupt rate.)"
+            Case &HA057
+                Return "srInvalidViGainAtDestination (The calculated VI gain at destination of a seek is invalid.)"
+            Case &HA058
+                Return "srAdaptiveEnteredFailsafe (The adaptive servo algorithm entered fail safe.)"
+            Case &HA060
+                Return "srMechRevNotRecognised (The Mech Revision was not recognised whilst trying to configure compensator.)"
+            Case &HA061
+                Return "srUpwardCleanHeadMotionTimerFlt (Timer unavailable for motion to top crashstop as part of head clean routine.)"
+            Case &HA062
+                Return "srDownwardCleanHeadMotionTimerFlt (Timer unavailable for motion to bottom crashstop as part of head clean routine.)"
+            Case &HA063
+                Return "srCleanHeadDwellTimerFlt (Timer unavailable for motion to bottom crashstop as part of head clean routine.)"
+            Case &HA064
+                Return "srCleanHeadSeekAtTopStopFlt (Seek at top crashstop during head clean.)"
+            Case &HA065
+                Return "srCleanHeadSeekAtBottomStopFlt (Seek at bottom crashstop during head clean.)"
+            Case &HA066
+                Return "srUnableToSetCompensatorByMechRev (Compensator configuration already set from EEPROM content or Mech Rev param missing.)"
+            Case &HA067
+                Return "srUnrecognisedHeadMode (Specified head mode is not recognised.)"
+            Case &HA068
+                Return "srUnableToDetermineTargetViGain (Target VI gain for use at seek destination could not be determined.)"
+            Case &HA069
+                Return "srDefectScanCommandAlreadyInProgress (A defect scan is already in progress.)"
+            Case &HA06A
+                Return "srTopStopVelocityTimeout (Unable to detect motion has ceased at the top stop during a sensor stroke cal.)"
+            Case &HA06B
+                Return "srBottomStopVelocityTimeout (Unable to detect motion has ceased at the bottom stop during a sensor stroke cal.)"
+            Case &HA06C
+                Return "srNotTrackingOnTargetTSB (Target TSB does not match the TSB returned from BandID.)"
+            Case &HA06D
+                Return "srCountDownHasBegun"
+            Case &HA06E
+                Return "srSensorFunctionalFault (Actuator position sensor is not functioning correctly.)"
+            Case &HA06F
+                Return "srViOscillatorFault (VI oscillator is not oscillating)"
+            Case &HA070
+                Return "srServoArmTraceportFifoOverflow (The traceport FIFO between system and servo ARMs overflowed.)"
+            Case &HA071
+                Return "srUnableToSendResetTraceportRequest (Unable to reset traceport hardware, event mailbox was busy)"
+            Case &HA072
+                Return "srTooCloseToTheEdgeOfTheBand (VI seek landed too close to the edge of servo code to attempt tape tracking.)"
+            Case &HA073
+                Return "srStrokeSizeTooBigFlt (The measured actuator stroke size is too big.)"
+            Case &HA074
+                Return "srViTableIndexOutOfRange (The index into the VI table is out of range.)"
+            Case &HA075
+                Return "srTSBCalibrationValueError (The learned VI value for one or more TSBs is invalid.)"
+            Case &HA076
+                Return "srInertialSystemNotLockedOrSkipCountTooHigh (The Inertial system is not locked or too many frame skips for BandID.)"
+            Case &HA077
+                Return "srTSBIdentifiedByBumpA (TSB was only identified by BumpA.)"
+            Case &HA078
+                Return "srTSBIdentifiedByBumpB (TSB was only identified by BumpB.)"
+            Case &HA079
+                Return "srSearchForTSBsValueError (TSB search algorithm did not obtain valid results.)"
+            Case &HA07A
+                Return "srInvalidBandIDDeltaTimeValue (BandID obtained an invalid delta time value from the hardware.)"
+            Case &HA080
+                Return "srDemodOutTopA (Demod data unavailable from elements- TopA.)"
+            Case &HA081
+                Return "srDemodOutBottomA (Demod data unavailable from elements- BottomA.)"
+            Case &HA082
+                Return "srDemodOutTopABottomA (Demod data unavailable from elements- TopA, BottomA.)"
+            Case &HA083
+                Return "srDemodOutTopB (Demod data unavailable from elements- TopB.)"
+            Case &HA084
+                Return "srDemodOutTopATopB (Demod data unavailable from elements- TopA, TopB.)"
+            Case &HA085
+                Return "srDemodOutBottomATopB (Demod data unavailable from elements- BottomA, TopB.)"
+            Case &HA086
+                Return "srDemodOutTopABottomATopB (Demod data unavailable from elements- TopA, BottomA, TopB.)"
+            Case &HA087
+                Return "srDemodOutBottomB (Demod data unavailable from elements- BottomB.)"
+            Case &HA088
+                Return "srDemodOutTopABottomB (Demod data unavailable from elements- TopA, BottomB.)"
+            Case &HA089
+                Return "srDemodOutBottomABottomB (Demod data unavailable from elements- BottomA, BottomB.)"
+            Case &HA08A
+                Return "srDemodOutTopABottomABottomB (Demod data unavailable from elements- TopA, BottomA, BottomB.)"
+            Case &HA08B
+                Return "srDemodOutTopBBottomB (Demod data unavailable from elements- TopB, BottomB.)"
+            Case &HA08C
+                Return "srDemodOutTopATopBBottomB (Demod data unavailable from elements- TopA, TopB, BottomB.)"
+            Case &HA08D
+                Return "srDemodOutBottomATopBBottomB (Demod data unavailable from elements- BottomA, TopB, BottomB.)"
+            Case &HA08E
+                Return "srDemodOutTopABottomATopBBottomB (Demod data unavailable from elements- TopA, BottomA, TopB, BottomB.)"
+            Case &HA08F
+                Return "srFault_0x8F (Reserved Servo fault.)"
+            Case &HA401
+                Return "CE_ERR_ROOT_CA_CERTIFICATE_REJECTED (A Root CA certificate already exists and authentication is not possible without a Management Host certificate)"
+            Case &HA402
+                Return "CE_ERR_MGMT_HOST_CERT_REJECTED_BECAUSE_ROOT_CA_CERT_DOES_NOT_EXIST (The Management Host certificate was rejected because the Root CA does not exist)"
+            Case &HA403
+                Return "CE_ERR_UNKNOWN_OR_UNEXPECTED_STATE (Unknown or unexpected Certificate Manager state)"
+            Case &HA404
+                Return "CE_ERR_MGMT_HOST_CERT_VERIFICATION_AGAINST_ROOT_CA_CERT_FAILED (The Management Host certificate failed verification)"
+            Case &HA405
+                Return "CE_ERR_PUBLIC_KEY_LENGTH_MISMATCH (The Public Key length returned does not match the length in the Public Key descriptor)"
+            Case &HA406
+                Return "CE_ERR_INVALID_CERTIFICATE_USAGE_OR_INDEX CertificateManagerID (The certificate usage and index do not specify a valid certificate storage slot)"
+            Case &HA407
+                Return "CE_ERR_INVALID_WHITELIST_USAGE_OR_INDEX  CertificateManagerID (The certificate usage and index do not specify a valid whitelist public key storage slot)"
+            Case &HA408
+                Return "CE_ERR_DEVICE_CERT_VERIFICATION_AGAINST_ROOT_CA_CERT_FAILED CertificateManagerID (The Device certificate failed verification)"
+            Case &HA409
+                Return "CE_ERR_DEVICE_CERT_REJECTED_BECAUSE_ROOT_CA_CERT_DOES_NOT_EXIST CertificateManagerID (The Device certificate was rejected because the Root CA does not exist)"
+            Case &HA801
+                Return "CA_UNSUPPORTED_ALGORITHM (AlgorithmId indicated an unsupported algorithm)"
+            Case &HA802
+                Return "CA_INVALID_KEY_LENGTH (Invalid key length specified)"
+            Case &HA803
+                Return "CA_ALGORITHM_INDEX_NOT_FOUND"
+            Case &HA804
+                Return "CA_INVALID_ARGUMENT_NULL_POINTER (One or more pointer arguments were NULL)"
+            Case &HA805
+                Return "CA_INVALID_ALGORITHM_DATABASE"
+            Case &HA806
+                Return "CA_AUTH_SIGNATURE_INVALID (Initiator message signature is invalid)"
+            Case &HA807
+                Return "CA_MESSAGE_DIGEST_BUFFER_TOO_SMALL (Message digest buffer is too small)"
+            Case &HA808
+                Return "CA_PRNG_INSUFFICIENT_ENTROPY (Insufficient entropy)"
+            Case &HA809
+                Return "CA_DECRYPTION_AUTHENTICATION_FAILURE (Decryption authentication failure)"
+            Case &HA80A
+                Return "CA_CERTIFICATION_AUTHORITY_HASH_MISMATCH (Certification authority hash mismatch)"
+            Case &HA80B
+                Return "CA_RANDOM_NUMBER_GENERATION_FAILED (Random number generation failed)"
+            Case &HA80C
+                Return "CA_DH_PUBLIC_VALUE_GENERATION_FAILED (Diffie-Hellman public value creation failed)"
+            Case &HA80D
+                Return "CA_BN_CONVERSION_FAILED (Bignum conversion failed)"
+            Case &HA80E
+                Return "CA_MESSAGE_DIGEST_FAILURE (Message digest failure)"
+            Case &HA80F
+                Return "CA_SIGNING_FAILURE (Signature failure)"
+            Case &HA810
+                Return "CA_ENCRYPTION_ARGUMENT_ERROR (Encryption argument error)"
+            Case &HA811
+                Return "CA_ENCRYPTION_FAILURE (Encryption failure)"
+            Case &HA812
+                Return "CA_OPENSSL_INITIALIZATION_FAILURE (OpenSSL initialization failure)"
+            Case &HA813
+                Return "CA_OPENSSL_D2I_CONVERSION_FAILURE (OpenSSL d2i conversion failure)"
+            Case &HA814
+                Return "CA_BUFFER_TOO_SMALL (Buffer is too small)"
+            Case &HA815
+                Return "CA_CAVP_FAILURE (One or more CAVP tests failed)"
+            Case &HA816
+                Return "CA_FIPS_SELFTEST_FAILURE (One or more OpenSSL FIPS selftests failed at poweron with SME set to 1)"
+            Case &HA817
+                Return "CA_RSA_KEY_GENERATION_FAILURE (Generation of new RSA key pair failed)"
+            Case &HA818
+                Return "CA_OPENSSL_MALLOC_FAILURE (OpenSSL memory allocation failure)"
+            Case &HAC01
+                Return "MCC_AFIR2_RS_COUNT_IS_ZERO (revi() failed, AFIR2 RS Counter is zero)"
+            Case &HAC02
+                Return "MCC_SANDSTROM_READ_TIMEOUT (SAMDSTROM read timeout)"
+            Case &HAC03
+                Return "MCC_PP_ADAPT_NO_DATA_DETECTED (PP Adaptation failed to read. Possible No Data Detected.)"
+            Case &HAC04
+                Return "MCC_AFIR2_ADAPT_NO_DATA_DETECTED (AFIR2 Adaptation failed to read. Possible No Data Detected)"
+            Case &HF401
+                Return " HYPER_ERROR_READ_SMI_STATUS_TIMEOUT_BEFORE (sandstrom read failed waiting for status bit)"
+            Case &HF402
+                Return " HYPER_ERROR_READ_SMI_STATUS_TIMEOUT_AFTER (sandstrom read failed waiting for data)"
+            Case &HF403
+                Return " HYPER_ERROR_INIT_READ_SSTROM_RDSP_CONTROL (hyper_init return failed to read READ_SSTROM_RDSP_CONTROL)"
+            Case &HF404
+                Return " HYPER_ERROR_INIT_READ_READ_DSP_TESPORT_ADDRESS (hyper_init return failed to read READ_DSP_TESPORT_ADDRESS)"
+            Case &HF405
+                Return " HYPER_ERROR_INIT_READ_DSP_TESPORT_DATA_BAD (hyper_init return failed to read DSP_TESPORT_DATA_BAD)"
+            Case &HF406
+                Return " HYPER_ERROR_INIT_READ_SSTROM_RDSP_PARITY_ERROR (hyper_init return failed to read SSTROM_RDSP_PARITY_ERROR)"
+            Case &HF407
+                Return " HYPER_ERROR_INIT_READ_SSTROM_RDSP_SYNC_ERROR (hyper_init return failed to read SSTROM_RDSP_SYNC_ERROR)"
+            Case &HF408
+                Return " HYPER_ERROR_INIT_ORION_PAGE_IN_USE (hyper_init return Orion page in use)"
+            Case &HF409
+                Return " HYPER_ERROR_INIT_HT_CONTROL_CHECK (hyper_init return HT CONTROL check failed)"
+            Case &HF40A
+                Return " HYPER_ERROR_INIT_HT_PARITY_ERROR_NOT_ZERO (hyper_init return HT PARITY NOT ZERO)"
+            Case &HF40B
+                Return " HYPER_ERROR_INIT_HT_SYNC_ERROR_NOT_ZERO (hyper_init return HT SYNC NOT ZERO)"
+            Case &HF40C
+                Return " GWIF_PENDING"
+            Case &HF801
+                Return " GWIF_PENDING"
+            Case &HF802
+                Return " GWIF_NO_CHANGE"
+            Case Else
+                Return $"0x{Hex(Drv_Code).ToUpper().PadLeft(4, "0"c)}"
+        End Select
     End Function
     Public Shared Function ParseSenseData(sense As Byte()) As String
         Dim Msg As New StringBuilder
@@ -1965,13 +6595,14 @@ Public Class TapeUtils
                     Msg.AppendLine("Progress = " & (CInt(sense(16)) << 8 Or sense(17)))
                 End If
             Else
-                Msg.AppendLine("Drive Error Code = " & Byte2Hex({sense(16), sense(17)}))
+                Msg.Append($"Drive Error Code: 0x{Byte2Hex({sense(16), sense(17)}).Replace(" ", "")} ")
+                Msg.AppendLine(ParseDriveCode(CUShort(sense(16)) << 8 Or sense(17)))
             End If
             If ((sense(21) >> 3) And 1) = 1 Then
                 Msg.AppendLine("Clean is required")
             End If
         End If
-        Msg.Append("Additional code: ")
+        Msg.Append($"Additional code: 0x{Byte2Hex({sense(12), sense(13)}).Replace(" ", "")} ")
         Msg.AppendLine(ParseAdditionalSenseCode(Add_Code))
         Return Msg.ToString()
     End Function
@@ -2212,7 +6843,7 @@ Public Class TapeUtils
                     Dim ErrCode As Integer = GetLastError()
                     Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
                     Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
-                End If
+        End If
             Case DriverType.SLR1
                 Dim BlockCount As Integer = Math.Ceiling(Data.Length / 512)
                 Dim succ As Boolean =
@@ -2890,6 +7521,7 @@ Public Class TapeUtils
         Try
             obj = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
             obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("USBSTOR").ToList())
+            obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList())
         Catch ex As Exception
             obj = New List(Of SetupAPIHelper.Device)
         End Try
@@ -2964,6 +7596,7 @@ Public Class TapeUtils
     Public Shared Function GetDiskDriveList() As List(Of BlockDevice)
         Dim LDrive As New List(Of BlockDevice)
         Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList())
         Dim diskobj As New List(Of SetupAPIHelper.Device)
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
@@ -3040,6 +7673,7 @@ Public Class TapeUtils
     Public Shared Function GetMediumChangerList() As List(Of MediumChanger)
         Dim LChanger As New List(Of MediumChanger)
         Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
+        obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList())
         Dim tapeobj As New List(Of SetupAPIHelper.Device)
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then

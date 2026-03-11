@@ -9279,6 +9279,7 @@ Public Class LTFSWriter
 
     Private Sub 监控写入ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 监控写入ToolStripMenuItem.Click
         Dim frm As New Form With {.Width = 640, .Height = 200}
+        DisplayHelper.BeforeInitializeComponent(frm)
         Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
         Dim txtLocation As New TextBox With {.Top = 7, .Left = 65, .Width = 640 - 7 * 3 - 65,
             .Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top,
@@ -9381,6 +9382,8 @@ Public Class LTFSWriter
                      End Sub)
 
         End Sub
+        ' 在 InitializeComponent() 调用之后添加任何初始化。
+        DisplayHelper.AfterInitializeComponent(frm)
         frm.Show()
     End Sub
 

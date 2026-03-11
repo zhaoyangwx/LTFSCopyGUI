@@ -115,6 +115,8 @@ Partial Class LTFSConfigurator
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.ButtonResetLogPage = New System.Windows.Forms.Button()
         Me.TabPageTest = New System.Windows.Forms.TabPage()
+        Me.ButtonEOT = New System.Windows.Forms.Button()
+        Me.ButtonBOT = New System.Windows.Forms.Button()
         Me.NumericUpDownTestSets = New System.Windows.Forms.NumericUpDown()
         Me.LabelTestSets = New System.Windows.Forms.Label()
         Me.ButtonDiagTest = New System.Windows.Forms.Button()
@@ -172,8 +174,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ButtonEvenWrapStart = New System.Windows.Forms.Button()
-        Me.ButtonOddWrapStart = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -835,8 +835,8 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
-        Me.TabPageTest.Controls.Add(Me.ButtonOddWrapStart)
-        Me.TabPageTest.Controls.Add(Me.ButtonEvenWrapStart)
+        Me.TabPageTest.Controls.Add(Me.ButtonEOT)
+        Me.TabPageTest.Controls.Add(Me.ButtonBOT)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSets)
         Me.TabPageTest.Controls.Add(Me.LabelTestSets)
         Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
@@ -857,6 +857,18 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.TabPageTest, "TabPageTest")
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
+        '
+        'ButtonEOT
+        '
+        resources.ApplyResources(Me.ButtonEOT, "ButtonEOT")
+        Me.ButtonEOT.Name = "ButtonEOT"
+        Me.ButtonEOT.UseVisualStyleBackColor = True
+        '
+        'ButtonBOT
+        '
+        resources.ApplyResources(Me.ButtonBOT, "ButtonBOT")
+        Me.ButtonBOT.Name = "ButtonBOT"
+        Me.ButtonBOT.UseVisualStyleBackColor = True
         '
         'NumericUpDownTestSets
         '
@@ -1201,18 +1213,6 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'ButtonEvenWrapStart
-        '
-        resources.ApplyResources(Me.ButtonEvenWrapStart, "ButtonEvenWrapStart")
-        Me.ButtonEvenWrapStart.Name = "ButtonEvenWrapStart"
-        Me.ButtonEvenWrapStart.UseVisualStyleBackColor = True
-        '
-        'ButtonOddWrapStart
-        '
-        resources.ApplyResources(Me.ButtonOddWrapStart, "ButtonOddWrapStart")
-        Me.ButtonOddWrapStart.Name = "ButtonOddWrapStart"
-        Me.ButtonOddWrapStart.UseVisualStyleBackColor = True
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1421,6 +1421,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonDumpLBA As Button
     Friend WithEvents Label1 As Label
     Friend WithEvents ButtonRestoreLBA As Button
-    Friend WithEvents ButtonEvenWrapStart As Button
-    Friend WithEvents ButtonOddWrapStart As Button
+    Friend WithEvents ButtonBOT As Button
+    Friend WithEvents ButtonEOT As Button
 End Class
