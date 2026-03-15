@@ -1209,11 +1209,11 @@ Public Class LTFSWriter
         End Get
     End Property
     <Category("LTFSWriter")>
-    Public Property UnwrittenCountOverwriteValue As ULong = 0
+    Public Property UnwrittenCountOverrideValue As ULong = 0
     <Category("LTFSWriter")>
     Public ReadOnly Property UnwrittenCount As ULong
         Get
-            If UnwrittenCountOverwriteValue > 0 Then Return UnwrittenCountOverwriteValue
+            If UnwrittenCountOverrideValue > 0 Then Return UnwrittenCountOverrideValue
             Return UnwrittenFiles.Count
         End Get
     End Property
@@ -3180,6 +3180,8 @@ Public Class LTFSWriter
                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
             End If
         Next
+        UnwrittenCountOverrideValue = 0
+        UnwrittenSizeOverrideValue = 0
         RefreshDisplay()
 
     End Sub
@@ -3274,6 +3276,8 @@ Public Class LTFSWriter
                     End If
                 Next
             End SyncLock
+            UnwrittenCountOverrideValue = 0
+            UnwrittenSizeOverrideValue = 0
             RefreshDisplay()
         End If
     End Sub
@@ -3377,7 +3381,7 @@ Public Class LTFSWriter
 
                 StopFlag = False
                 UnwrittenSizeOverrideValue = 0
-                UnwrittenCountOverwriteValue = 0
+                UnwrittenCountOverrideValue = 0
                 RefreshDisplay()
                 PrintMsg(My.Resources.ResText_AddFin)
                 SetStatusLight(LWStatus.Succ)
@@ -3437,7 +3441,7 @@ Public Class LTFSWriter
                                                                                           End Function))
                     StopFlag = False
                     UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverwriteValue = 0
+                    UnwrittenCountOverrideValue = 0
                     RefreshDisplay()
                     PrintMsg(My.Resources.ResText_AddFin)
                     SetStatusLight(LWStatus.Succ)
@@ -3805,7 +3809,7 @@ Public Class LTFSWriter
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = flist.Count
+                            UnwrittenCountOverrideValue = flist.Count
                             StartTime = Now
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
@@ -3835,7 +3839,7 @@ Public Class LTFSWriter
                         TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverwriteValue = 0
+                        UnwrittenCountOverrideValue = 0
                         LockGUI(False)
                         PrintMsg(My.Resources.ResText_RestFin)
                         SetStatusLight(LWStatus.Succ)
@@ -3903,7 +3907,7 @@ Public Class LTFSWriter
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = FileList.Count
+                            UnwrittenCountOverrideValue = FileList.Count
                             StartTime = Now
                             For Each FI As FileRecord In FileList
                                 UnwrittenSizeOverrideValue += FI.File.length
@@ -3939,7 +3943,7 @@ Public Class LTFSWriter
                         End SyncLock
 
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverwriteValue = 0
+                        UnwrittenCountOverrideValue = 0
                         LockGUI(False)
                     End Sub)
             LockGUI()
@@ -4255,13 +4259,13 @@ Public Class LTFSWriter
                         CurrentFilesProcessed = 0
                         CurrentBytesProcessed = 0
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverwriteValue = 0
+                        UnwrittenCountOverrideValue = 0
                         UFReadCount.Inc()
                         For Each fr As FileRecord In UnwrittenFiles
                             WriteList.Add(fr)
                         Next
                         UFReadCount.Dec()
-                        UnwrittenCountOverwriteValue = UnwrittenCount
+                        UnwrittenCountOverrideValue = UnwrittenCount
                         UnwrittenSizeOverrideValue = UnwrittenSize
                         provider = New FileDataProvider(WriteList,
                                                              smallThresholdBytes:=16 * 1024,
@@ -5048,7 +5052,7 @@ Public Class LTFSWriter
                         SyncLock UFReadCount
                             If UFReadCount > 0 Then Continue While
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = 0
+                            UnwrittenCountOverrideValue = 0
                             If Not My.Settings.LTFSWriter_KeepUnwrittenFilesOnAbort Then
                                 UnwrittenFiles.Clear()
                                 ltfsindex.WSort(schema._directory, Nothing, Sub(d As ltfsindex.directory)
@@ -5056,7 +5060,7 @@ Public Class LTFSWriter
                                                                             End Sub)
                             Else
                                 UnwrittenSizeOverrideValue = UnwrittenSize
-                                UnwrittenCountOverwriteValue = UnwrittenCount
+                                UnwrittenCountOverrideValue = UnwrittenCount
                             End If
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
@@ -6530,7 +6534,7 @@ Public Class LTFSWriter
                             CurrentBytesProcessed = 0
                             CurrentFilesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = flist.Count
+                            UnwrittenCountOverrideValue = flist.Count
                             flist.Sort(New Comparison(Of ltfsindex.file)(Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
                                                                              If a.extentinfo.Count = 0 And b.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
                                                                              If b.extentinfo.Count = 0 And a.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
@@ -6812,7 +6816,7 @@ Public Class LTFSWriter
                             SetStatusLight(LWStatus.Err)
                         End Try
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverwriteValue = 0
+                        UnwrittenCountOverrideValue = 0
                         StopFlag = False
                         LockGUI(False)
                         RefreshDisplay()
@@ -6871,7 +6875,7 @@ Public Class LTFSWriter
                     CurrentBytesProcessed = 0
                     CurrentFilesProcessed = 0
                     UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverwriteValue = FileList.Count
+                    UnwrittenCountOverrideValue = FileList.Count
                     For Each FI As FileRecord In FileList
                         UnwrittenSizeOverrideValue += FI.File.length
                     Next
@@ -7175,7 +7179,7 @@ Public Class LTFSWriter
                     PrintMsg(My.Resources.ResText_HErr)
                 End Try
                 UnwrittenSizeOverrideValue = 0
-                UnwrittenCountOverwriteValue = 0
+                UnwrittenCountOverrideValue = 0
                 SetStatusLight(LWStatus.Idle)
                 LockGUI(False)
                 RefreshDisplay()
@@ -8066,7 +8070,7 @@ Public Class LTFSWriter
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = flist.Count
+                            UnwrittenCountOverrideValue = flist.Count
                             For Each FI As ltfsindex.file In flist
                                 UnwrittenSizeOverrideValue += FI.length
                             Next
@@ -8104,7 +8108,7 @@ Public Class LTFSWriter
                         TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverwriteValue = 0
+                        UnwrittenCountOverrideValue = 0
                         LockGUI(False)
                         PrintMsg(My.Resources.ResText_AddFin)
                         SetStatusLight(LWStatus.Succ)
@@ -8383,11 +8387,11 @@ Public Class LTFSWriter
                     CurrentFilesProcessed = 0
                     CurrentBytesProcessed = 0
                     UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverwriteValue = 0
+                    UnwrittenCountOverrideValue = 0
                     If UnwrittenFiles.Count > 0 Then
                         UFReadCount.Inc()
                         UFReadCount.Dec()
-                        UnwrittenCountOverwriteValue = UnwrittenCount
+                        UnwrittenCountOverrideValue = UnwrittenCount
                         UnwrittenSizeOverrideValue = UnwrittenSize
                         Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
@@ -8619,7 +8623,7 @@ Public Class LTFSWriter
                             If UFReadCount > 0 Then Continue While
                             UnwrittenFiles.Clear()
                             UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverwriteValue = 0
+                            UnwrittenCountOverrideValue = 0
                             CurrentFilesProcessed = 0
                             CurrentBytesProcessed = 0
                             Exit While

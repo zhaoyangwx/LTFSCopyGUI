@@ -1512,290 +1512,407 @@
   <data name="&gt;&gt;TabPageCommand.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+  <data name="ButtonDebugWriteBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.Location" type="System.Drawing.Point, System.Drawing">
-    <value>862, 6</value>
+  <data name="ButtonDebugWriteBuffer.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
+  <data name="ButtonDebugWriteBuffer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>943, 7</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.TabIndex" type="System.Int32, mscorlib">
-    <value>41</value>
+  <data name="ButtonDebugWriteBuffer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>79, 23</value>
   </data>
-  <data name="ButtonDebugDumpBuffer.Text" xml:space="preserve">
-    <value>RAWDump</value>
+  <data name="ButtonDebugWriteBuffer.TabIndex" type="System.Int32, mscorlib">
+    <value>44</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Name" xml:space="preserve">
-    <value>ButtonDebugDumpBuffer</value>
+  <data name="ButtonDebugWriteBuffer.Text" xml:space="preserve">
+    <value>Write</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Type" xml:space="preserve">
+  <data name="&gt;&gt;ButtonDebugWriteBuffer.Name" xml:space="preserve">
+    <value>ButtonDebugWriteBuffer</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugWriteBuffer.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.Parent" xml:space="preserve">
+  <data name="&gt;&gt;ButtonDebugWriteBuffer.Parent" xml:space="preserve">
     <value>TabPageBuffer</value>
   </data>
-  <data name="&gt;&gt;ButtonDebugDumpBuffer.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;ButtonDebugWriteBuffer.ZOrder" xml:space="preserve">
     <value>0</value>
+  </data>
+  <data name="NumericUpDownRBMode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="NumericUpDownRBMode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>814, 7</value>
+  </data>
+  <data name="NumericUpDownRBMode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>42, 21</value>
+  </data>
+  <data name="NumericUpDownRBMode.TabIndex" type="System.Int32, mscorlib">
+    <value>43</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownRBMode.Name" xml:space="preserve">
+    <value>NumericUpDownRBMode</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownRBMode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.NumericUpDown, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownRBMode.Parent" xml:space="preserve">
+    <value>TabPageBuffer</value>
+  </data>
+  <data name="&gt;&gt;NumericUpDownRBMode.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="ButtonDebugReadBuffer.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
+  </data>
+  <data name="ButtonDebugReadBuffer.Location" type="System.Drawing.Point, System.Drawing">
+    <value>862, 6</value>
+  </data>
+  <data name="ButtonDebugReadBuffer.Size" type="System.Drawing.Size, System.Drawing">
+    <value>75, 23</value>
+  </data>
+  <data name="ButtonDebugReadBuffer.TabIndex" type="System.Int32, mscorlib">
+    <value>41</value>
+  </data>
+  <data name="ButtonDebugReadBuffer.Text" xml:space="preserve">
+    <value>Read</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadBuffer.Name" xml:space="preserve">
+    <value>ButtonDebugReadBuffer</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadBuffer.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadBuffer.Parent" xml:space="preserve">
+    <value>TabPageBuffer</value>
+  </data>
+  <data name="&gt;&gt;ButtonDebugReadBuffer.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="ComboBoxBufferPage.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
   <data name="ComboBoxBufferPage.Items" xml:space="preserve">
-    <value>00h - Main buffer memory</value>
+    <value>00h - Main buffer memory / Dump data - Microcode Dump (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items1" xml:space="preserve">
-    <value>02h - Burst buffer</value>
+    <value>01h - Dump data (IBM) / Microcode (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items2" xml:space="preserve">
-    <value>05h - Cartridge memory (IBM)</value>
+    <value>02h - Burst buffer (HPE) / Test (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items3" xml:space="preserve">
-    <value>10h - CM EEPROM</value>
+    <value>03h - VPD (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items4" xml:space="preserve">
-    <value>11h - Mechanical EEPROM</value>
+    <value>04h - Firmware (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items5" xml:space="preserve">
-    <value>12h - Head assembly EEPROM</value>
+    <value>05h - Cartridge memory (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items6" xml:space="preserve">
-    <value>13h - PCA EEPROM</value>
+    <value>06h - Error Log (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items7" xml:space="preserve">
-    <value>14h - PCA2 EEPROM</value>
+    <value>07h - SCSI Log (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items8" xml:space="preserve">
-    <value>20h - Main buffer segments 0</value>
+    <value>08h - WWN (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items9" xml:space="preserve">
-    <value>21h - Main buffer segments 1</value>
+    <value>09h - Dump Data - Tapemap (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items10" xml:space="preserve">
-    <value>22h - Main buffer segments 2</value>
+    <value>0Ah - Test Buffer (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items11" xml:space="preserve">
-    <value>23h - Main buffer segments 3</value>
+    <value>0Bh</value>
   </data>
   <data name="ComboBoxBufferPage.Items12" xml:space="preserve">
-    <value>24h - Main buffer segments 4</value>
+    <value>0Ch</value>
   </data>
   <data name="ComboBoxBufferPage.Items13" xml:space="preserve">
-    <value>25h - Main buffer segments 5</value>
+    <value>0Dh</value>
   </data>
   <data name="ComboBoxBufferPage.Items14" xml:space="preserve">
-    <value>26h - Main buffer segments 6</value>
+    <value>0Eh</value>
   </data>
   <data name="ComboBoxBufferPage.Items15" xml:space="preserve">
-    <value>27h - Main buffer segments 7</value>
+    <value>0Fh</value>
   </data>
   <data name="ComboBoxBufferPage.Items16" xml:space="preserve">
-    <value>28h - Main buffer segments 8</value>
+    <value>10h - CM EEPROM</value>
   </data>
   <data name="ComboBoxBufferPage.Items17" xml:space="preserve">
-    <value>29h - Main buffer segments 9</value>
+    <value>11h - Mechanical EEPROM</value>
   </data>
   <data name="ComboBoxBufferPage.Items18" xml:space="preserve">
-    <value>2Ah - Main buffer segments 10</value>
+    <value>12h - Head assembly EEPROM</value>
   </data>
   <data name="ComboBoxBufferPage.Items19" xml:space="preserve">
-    <value>2Bh - Main buffer segments 11</value>
+    <value>13h - PCA EEPROM</value>
   </data>
   <data name="ComboBoxBufferPage.Items20" xml:space="preserve">
-    <value>2Ch - Main buffer segments 12</value>
+    <value>14h - PCA2 EEPROM</value>
   </data>
   <data name="ComboBoxBufferPage.Items21" xml:space="preserve">
-    <value>2Dh - Main buffer segments 13</value>
+    <value>19h - Host non-volatile (IBMLTO)</value>
   </data>
   <data name="ComboBoxBufferPage.Items22" xml:space="preserve">
-    <value>2Eh - Main buffer segments 14</value>
+    <value>20h - Main buffer segments 0 / CM (IBMLTO &amp; 3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items23" xml:space="preserve">
-    <value>2Fh - Main buffer segments 15</value>
+    <value>21h - Main buffer segments 1 / CM from EOD dataset (IBMLTO &amp; 3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items24" xml:space="preserve">
-    <value>30h - Main buffer segments 16</value>
+    <value>22h - Main buffer segments 2</value>
   </data>
   <data name="ComboBoxBufferPage.Items25" xml:space="preserve">
-    <value>31h - Main buffer segments 17</value>
+    <value>23h - Main buffer segments 3</value>
   </data>
   <data name="ComboBoxBufferPage.Items26" xml:space="preserve">
-    <value>32h - Main buffer segments 18</value>
+    <value>24h - Main buffer segments 4</value>
   </data>
   <data name="ComboBoxBufferPage.Items27" xml:space="preserve">
-    <value>33h - Main buffer segments 19</value>
+    <value>25h - Main buffer segments 5</value>
   </data>
   <data name="ComboBoxBufferPage.Items28" xml:space="preserve">
-    <value>34h - Main buffer segments 20</value>
+    <value>26h - Main buffer segments 6</value>
   </data>
   <data name="ComboBoxBufferPage.Items29" xml:space="preserve">
-    <value>35h - Main buffer segments 21</value>
+    <value>27h - Main buffer segments 7</value>
   </data>
   <data name="ComboBoxBufferPage.Items30" xml:space="preserve">
-    <value>36h - Main buffer segments 22</value>
+    <value>28h - Main buffer segments 8</value>
   </data>
   <data name="ComboBoxBufferPage.Items31" xml:space="preserve">
-    <value>37h - Main buffer segments 23</value>
+    <value>29h - Main buffer segments 9</value>
   </data>
   <data name="ComboBoxBufferPage.Items32" xml:space="preserve">
-    <value>38h - Main buffer segments 24</value>
+    <value>2Ah - Main buffer segments 10</value>
   </data>
   <data name="ComboBoxBufferPage.Items33" xml:space="preserve">
-    <value>39h - Main buffer segments 25</value>
+    <value>2Bh - Main buffer segments 11</value>
   </data>
   <data name="ComboBoxBufferPage.Items34" xml:space="preserve">
-    <value>3Ah - Main buffer segments 26</value>
+    <value>2Ch - Main buffer segments 12</value>
   </data>
   <data name="ComboBoxBufferPage.Items35" xml:space="preserve">
-    <value>3Bh - Main buffer segments 27</value>
+    <value>2Dh - Main buffer segments 13</value>
   </data>
   <data name="ComboBoxBufferPage.Items36" xml:space="preserve">
-    <value>3Ch - Main buffer segments 28</value>
+    <value>2Eh - Main buffer segments 14</value>
   </data>
   <data name="ComboBoxBufferPage.Items37" xml:space="preserve">
-    <value>3Dh - Main buffer segments 29</value>
+    <value>2Fh - Main buffer segments 15</value>
   </data>
   <data name="ComboBoxBufferPage.Items38" xml:space="preserve">
-    <value>3Eh - Main buffer segments 30</value>
+    <value>30h - Main buffer segments 16 / Microcode (do not reset) (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items39" xml:space="preserve">
-    <value>3Fh - Main buffer segments 31</value>
+    <value>31h - Main buffer segments 17</value>
   </data>
   <data name="ComboBoxBufferPage.Items40" xml:space="preserve">
-    <value>40h - Snapshot data buffer</value>
+    <value>32h - Main buffer segments 18</value>
   </data>
   <data name="ComboBoxBufferPage.Items41" xml:space="preserve">
-    <value>90h - Mech EPPROM Manufacturing Parameters</value>
+    <value>33h - Main buffer segments 19</value>
   </data>
   <data name="ComboBoxBufferPage.Items42" xml:space="preserve">
-    <value>91h - Mech EPPROM Drive Usage Parameters</value>
+    <value>34h - Main buffer segments 20</value>
   </data>
   <data name="ComboBoxBufferPage.Items43" xml:space="preserve">
-    <value>93h - Mech EPPROM Drive Usage Parameters(Shipped)</value>
+    <value>35h - Main buffer segments 21</value>
   </data>
   <data name="ComboBoxBufferPage.Items44" xml:space="preserve">
-    <value>94h - Mech EPPROM In-House Testing</value>
+    <value>36h - Main buffer segments 22</value>
   </data>
   <data name="ComboBoxBufferPage.Items45" xml:space="preserve">
-    <value>95h - Mech EPPROM Servo/Mech Use</value>
+    <value>37h - Main buffer segments 23</value>
   </data>
   <data name="ComboBoxBufferPage.Items46" xml:space="preserve">
-    <value>96h - Mech EPPROM Host Access Table</value>
+    <value>38h - Main buffer segments 24</value>
   </data>
   <data name="ComboBoxBufferPage.Items47" xml:space="preserve">
-    <value>97h - Mech EPPROM Partner-specific Config Table</value>
+    <value>39h - Main buffer segments 25</value>
   </data>
   <data name="ComboBoxBufferPage.Items48" xml:space="preserve">
-    <value>99h - Mech EPPROM Ethernet I/F Table</value>
+    <value>3Ah - Main buffer segments 26</value>
   </data>
   <data name="ComboBoxBufferPage.Items49" xml:space="preserve">
-    <value>9Ah - Mech EPPROM Certificate Table</value>
+    <value>3Bh - Main buffer segments 27</value>
   </data>
   <data name="ComboBoxBufferPage.Items50" xml:space="preserve">
-    <value>9Bh - Mech EPPROM Reserved</value>
+    <value>3Ch - Main buffer segments 28</value>
   </data>
   <data name="ComboBoxBufferPage.Items51" xml:space="preserve">
-    <value>9Ch - Mech EEPROM LTT Drive Health Rules</value>
+    <value>3Dh - Main buffer segments 29</value>
   </data>
   <data name="ComboBoxBufferPage.Items52" xml:space="preserve">
-    <value>9Dh - Mech EEPROM Tape Pull Usage</value>
+    <value>3Eh - Main buffer segments 30</value>
   </data>
   <data name="ComboBoxBufferPage.Items53" xml:space="preserve">
-    <value>A0h - Head EPPROM Manufacturing Parameters</value>
+    <value>3Fh - Main buffer segments 31</value>
   </data>
   <data name="ComboBoxBufferPage.Items54" xml:space="preserve">
-    <value>A1h - Head EPPROM Tuning Parameters</value>
+    <value>40h - Snapshot data buffer / String Search Match List (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items55" xml:space="preserve">
-    <value>A2h - Head EPPROM Resistance Parameters</value>
+    <value>50h - Active IP addresses (IBMLTO &amp; 3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items56" xml:space="preserve">
-    <value>A3h - Head EPPROM Formatter Data Skew Parameters</value>
+    <value>81h - Dump Data - Tapemap (3592)</value>
   </data>
   <data name="ComboBoxBufferPage.Items57" xml:space="preserve">
-    <value>A4h - Head EPPROM In-House Testing</value>
+    <value>90h - Mech EPPROM Manufacturing Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items58" xml:space="preserve">
-    <value>A5h - Head EPPROM Manufacturing Use</value>
+    <value>91h - Mech EPPROM Drive Usage Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items59" xml:space="preserve">
-    <value>A6h - Head EPPROM Read/Write Tuning Parameters</value>
+    <value>93h - Mech EPPROM Drive Usage Parameters(Shipped)</value>
   </data>
   <data name="ComboBoxBufferPage.Items60" xml:space="preserve">
-    <value>A7h - Head EPPROM Media Usage Table</value>
+    <value>94h - Mech EPPROM In-House Testing</value>
   </data>
   <data name="ComboBoxBufferPage.Items61" xml:space="preserve">
-    <value>A8h - Head EPPROM Reserved</value>
+    <value>95h - Mech EPPROM Servo/Mech Use</value>
   </data>
   <data name="ComboBoxBufferPage.Items62" xml:space="preserve">
-    <value>A9h - Head EPPROM Jabil Production</value>
+    <value>96h - Mech EPPROM Host Access Table</value>
   </data>
   <data name="ComboBoxBufferPage.Items63" xml:space="preserve">
-    <value>AAh - Head EPPROM Reserved</value>
+    <value>97h - Mech EPPROM Partner-specific Config Table</value>
   </data>
   <data name="ComboBoxBufferPage.Items64" xml:space="preserve">
-    <value>ABh - Head EEPROM Vendor Information</value>
+    <value>99h - Mech EPPROM Ethernet I/F Table</value>
   </data>
   <data name="ComboBoxBufferPage.Items65" xml:space="preserve">
-    <value>B0h - PCA EPPROM Manufacturing Parameters</value>
+    <value>9Ah - Mech EPPROM Certificate Table</value>
   </data>
   <data name="ComboBoxBufferPage.Items66" xml:space="preserve">
-    <value>B1h - PCA EPPROM Tape Speed Parameters</value>
+    <value>9Bh - Mech EPPROM Reserved</value>
   </data>
   <data name="ComboBoxBufferPage.Items67" xml:space="preserve">
-    <value>B2h - PCA EPPROM Tape Tools Area</value>
+    <value>9Ch - Mech EEPROM LTT Drive Health Rules</value>
   </data>
   <data name="ComboBoxBufferPage.Items68" xml:space="preserve">
-    <value>B3h - PCA EPPROM Thermal Data Parameters</value>
+    <value>9Dh - Mech EEPROM Tape Pull Usage</value>
   </data>
   <data name="ComboBoxBufferPage.Items69" xml:space="preserve">
-    <value>B4h - PCA EPPROM Tape 'A' Log</value>
+    <value>A0h - Head EPPROM Manufacturing Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items70" xml:space="preserve">
-    <value>B5h - PCA EPPROM Tape 'B' Log</value>
+    <value>A1h - Head EPPROM Tuning Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items71" xml:space="preserve">
-    <value>B6h - PCA EPPROM Tape 'C' Log</value>
+    <value>A2h - Head EPPROM Resistance Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items72" xml:space="preserve">
-    <value>B7h - PCA EPPROM Tape 'D' Log</value>
+    <value>A3h - Head EPPROM Formatter Data Skew Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items73" xml:space="preserve">
-    <value>B8h - PCA EPPROM Write ERT Logs</value>
+    <value>A4h - Head EPPROM In-House Testing</value>
   </data>
   <data name="ComboBoxBufferPage.Items74" xml:space="preserve">
-    <value>B9h - PCA EPPROM Write Fault Counters</value>
+    <value>A5h - Head EPPROM Manufacturing Use</value>
   </data>
   <data name="ComboBoxBufferPage.Items75" xml:space="preserve">
-    <value>BAh - PCA EPPROM In-House Testing</value>
+    <value>A6h - Head EPPROM Read/Write Tuning Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items76" xml:space="preserve">
-    <value>BBh - PCA EPPROM Read ERT Logs</value>
+    <value>A7h - Head EPPROM Media Usage Table</value>
   </data>
   <data name="ComboBoxBufferPage.Items77" xml:space="preserve">
-    <value>BCh - PCA EPPROM Persistent Reservation Table</value>
+    <value>A8h - Head EPPROM Reserved</value>
   </data>
   <data name="ComboBoxBufferPage.Items78" xml:space="preserve">
-    <value>BDh - PCA EPPROM Host I/F Information Table</value>
+    <value>A9h - Head EPPROM Jabil Production</value>
   </data>
   <data name="ComboBoxBufferPage.Items79" xml:space="preserve">
-    <value>BEh - PCA EPPROM NV Logs</value>
+    <value>AAh - Head EPPROM Reserved</value>
   </data>
   <data name="ComboBoxBufferPage.Items80" xml:space="preserve">
-    <value>BFh - PCA EEPROM Physical Calbration Table</value>
+    <value>ABh - Head EEPROM Vendor Information</value>
   </data>
   <data name="ComboBoxBufferPage.Items81" xml:space="preserve">
-    <value>C0h - PCA-2 EPPROM KMA Security Table</value>
+    <value>B0h - PCA EPPROM Manufacturing Parameters</value>
   </data>
   <data name="ComboBoxBufferPage.Items82" xml:space="preserve">
+    <value>B1h - PCA EPPROM Tape Speed Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items83" xml:space="preserve">
+    <value>B2h - PCA EPPROM Tape Tools Area</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items84" xml:space="preserve">
+    <value>B3h - PCA EPPROM Thermal Data Parameters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items85" xml:space="preserve">
+    <value>B4h - PCA EPPROM Tape 'A' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items86" xml:space="preserve">
+    <value>B5h - PCA EPPROM Tape 'B' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items87" xml:space="preserve">
+    <value>B6h - PCA EPPROM Tape 'C' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items88" xml:space="preserve">
+    <value>B7h - PCA EPPROM Tape 'D' Log</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items89" xml:space="preserve">
+    <value>B8h - PCA EPPROM Write ERT Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items90" xml:space="preserve">
+    <value>B9h - PCA EPPROM Write Fault Counters</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items91" xml:space="preserve">
+    <value>BAh - PCA EPPROM In-House Testing</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items92" xml:space="preserve">
+    <value>BBh - PCA EPPROM Read ERT Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items93" xml:space="preserve">
+    <value>BCh - PCA EPPROM Persistent Reservation Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items94" xml:space="preserve">
+    <value>BDh - PCA EPPROM Host I/F Information Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items95" xml:space="preserve">
+    <value>BEh - PCA EPPROM NV Logs</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items96" xml:space="preserve">
+    <value>BFh - PCA EEPROM Physical Calbration Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items97" xml:space="preserve">
+    <value>C0h - PCA-2 EPPROM KMA Security Table</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items98" xml:space="preserve">
     <value>C1h - PCA-2 EPPROM Reserved</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items99" xml:space="preserve">
+    <value>FAh - MIR position data (T10K)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items100" xml:space="preserve">
+    <value>FCh - MIR performance data (T10K)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items101" xml:space="preserve">
+    <value>FDh - Permanent error trace data (T10K)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items102" xml:space="preserve">
+    <value>FEh - Event log data (T10K)</value>
+  </data>
+  <data name="ComboBoxBufferPage.Items103" xml:space="preserve">
+    <value>FFh - Dump buffer (T10K)</value>
   </data>
   <data name="ComboBoxBufferPage.Location" type="System.Drawing.Point, System.Drawing">
     <value>83, 7</value>
   </data>
   <data name="ComboBoxBufferPage.Size" type="System.Drawing.Size, System.Drawing">
-    <value>773, 20</value>
+    <value>725, 20</value>
   </data>
   <data name="ComboBoxBufferPage.TabIndex" type="System.Int32, mscorlib">
     <value>42</value>
@@ -1810,34 +1927,34 @@
     <value>TabPageBuffer</value>
   </data>
   <data name="&gt;&gt;ComboBoxBufferPage.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>3</value>
   </data>
-  <data name="LabelReadBuffer.AutoSize" type="System.Boolean, mscorlib">
+  <data name="LabelBufferID.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="LabelReadBuffer.Location" type="System.Drawing.Point, System.Drawing">
+  <data name="LabelBufferID.Location" type="System.Drawing.Point, System.Drawing">
     <value>6, 11</value>
   </data>
-  <data name="LabelReadBuffer.Size" type="System.Drawing.Size, System.Drawing">
-    <value>71, 12</value>
+  <data name="LabelBufferID.Size" type="System.Drawing.Size, System.Drawing">
+    <value>59, 12</value>
   </data>
-  <data name="LabelReadBuffer.TabIndex" type="System.Int32, mscorlib">
+  <data name="LabelBufferID.TabIndex" type="System.Int32, mscorlib">
     <value>38</value>
   </data>
-  <data name="LabelReadBuffer.Text" xml:space="preserve">
-    <value>Read Buffer</value>
+  <data name="LabelBufferID.Text" xml:space="preserve">
+    <value>Buffer ID</value>
   </data>
-  <data name="&gt;&gt;LabelReadBuffer.Name" xml:space="preserve">
-    <value>LabelReadBuffer</value>
+  <data name="&gt;&gt;LabelBufferID.Name" xml:space="preserve">
+    <value>LabelBufferID</value>
   </data>
-  <data name="&gt;&gt;LabelReadBuffer.Type" xml:space="preserve">
+  <data name="&gt;&gt;LabelBufferID.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;LabelReadBuffer.Parent" xml:space="preserve">
+  <data name="&gt;&gt;LabelBufferID.Parent" xml:space="preserve">
     <value>TabPageBuffer</value>
   </data>
-  <data name="&gt;&gt;LabelReadBuffer.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="&gt;&gt;LabelBufferID.ZOrder" xml:space="preserve">
+    <value>4</value>
   </data>
   <data name="TabPageBuffer.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 22</value>

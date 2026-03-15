@@ -997,6 +997,40 @@ Public Class TapeUtils
     End Function
 #End Region
 
+#Region "SCSIOP_WRITE_BUFFER"
+    Public Shared Function WriteBuffer(handle As IntPtr, BufferID As Byte, Data As Byte()) As Boolean
+        Return WriteBuffer(handle, BufferID, 2, Data)
+    End Function
+    Public Shared Function WriteBuffer(handle As IntPtr, BufferID As Byte, Mode As Byte, Data As Byte()) As Boolean
+        'Get EEPROM buffer Length
+        WriteBuffer = False
+        Dim len As Integer = Data.Length
+        Dim cdb As Byte() = {&H3B, Mode, BufferID, 0, 0, 0, ((len >> 16) And &HFF), ((len >> 8) And &HFF), (len And &HFF), 0}
+        Dim DataPtr As IntPtr = Marshal.AllocHGlobal(len)
+        Marshal.Copy(Data, 0, DataPtr, len)
+        Dim sense(64) As Byte
+        SyncLock SCSIOperationLock
+            Flush(handle)
+            'Write Buffer Data
+            Dim result As Boolean = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, DataPtr, len, 0, 60, sense)
+            Marshal.FreeHGlobal(DataPtr)
+            Return result
+        End SyncLock
+    End Function
+    Public Shared Function WriteBuffer(TapeDrive As String, BufferID As Byte, Data As Byte()) As Boolean
+        Return WriteBuffer(TapeDrive, BufferID, 2, Data)
+    End Function
+    Public Shared Function WriteBuffer(TapeDrive As String, BufferID As Byte, Mode As Byte, Data As Byte()) As Boolean
+        SyncLock SCSIOperationLock
+            Dim handle As IntPtr
+            If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
+            Dim result As Boolean = WriteBuffer(handle, BufferID, Mode, Data)
+            If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
+            Return result
+        End SyncLock
+    End Function
+#End Region
+
     Public Shared Function ReadFileMark(handle As IntPtr, Optional ByRef sense As Byte() = Nothing) As Boolean
         SyncLock SCSIOperationLock
             Dim data As Byte() = ReadBlock(handle:=handle, sense:=sense)
@@ -7596,7 +7630,6 @@ Public Class TapeUtils
     Public Shared Function GetDiskDriveList() As List(Of BlockDevice)
         Dim LDrive As New List(Of BlockDevice)
         Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("SCSI").ToList()
-        obj.AddRange(SetupAPIHelper.Device.EnumerateDevices("MPIO").ToList())
         Dim diskobj As New List(Of SetupAPIHelper.Device)
         For Each dev As SetupAPIHelper.Device In obj
             If dev.Present Then
