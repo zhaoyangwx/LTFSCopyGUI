@@ -174,7 +174,7 @@ Public Class LTFSConfigurator
             Exit Sub
         End If
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
-        ComboBoxBufferPage.SelectedIndex = 3
+        ComboBoxBufferPage.SelectedIndex = 16
         ComboBoxLocateType.SelectedIndex = 0
         Text = $"LTFSConfigurator - {ApplicationWheels.ApplicationInfo}"
         LoadCMD()
@@ -895,11 +895,12 @@ Public Class LTFSConfigurator
                  End Sub)
     End Sub
 
-    Private Sub ButtonDebugDumpBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpBuffer.Click
+    Private Sub ButtonDebugReadBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBuffer.Click
         Me.Enabled = False
         Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
+        Dim Mode As Byte = NumericUpDownRBMode.Value
         Task.Run(Sub()
-                     Dim DumpData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, BufferID)
+                     Dim DumpData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, BufferID, Mode)
                      Invoke(Sub()
                                 TextBoxDebugOutput.Text = "Buffer len=" & DumpData.Length & vbCrLf
                                 SaveFileDialog2.FileName = ComboBoxBufferPage.SelectedItem & ".bin"
@@ -2947,5 +2948,22 @@ Public Class LTFSConfigurator
             Case Else
                 Me.Enabled = True
         End Select
+    End Sub
+
+    Private Sub ButtonDebugWriteBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBuffer.Click
+        If OpenFileDialog1.ShowDialog = DialogResult.OK Then
+            Me.Enabled = False
+            Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
+            Dim Mode As Byte = NumericUpDownRBMode.Value
+            Task.Run(Sub()
+                         Dim BufferData As Byte() = IO.File.ReadAllBytes(OpenFileDialog1.FileName)
+                         TapeUtils.WriteBuffer(ConfTapeDrive, BufferID, Mode, BufferData)
+                         Invoke(Sub()
+                                    TextBoxDebugOutput.Text = "Buffer len=" & BufferData.Length & vbCrLf
+                                    TextBoxDebugOutput.Text &= IOManager.Byte2Hex(BufferData, True)
+                                    Me.Enabled = True
+                                End Sub)
+                     End Sub)
+        End If
     End Sub
 End Class

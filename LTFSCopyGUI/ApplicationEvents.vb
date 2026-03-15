@@ -373,7 +373,16 @@ dataDir:{dataDir}
                             End If
                         Case "-crc"
                             If i < param.Count - 1 Then
-                                Dim Num1 As Byte() = IOManager.HexStringToByteArray(param(i + 1))
+                                Dim Num1 As Byte()
+                                If IO.File.Exists(param(i + 1)) Then
+                                    If param(i + 1).ToLower.EndsWith(".txt") OrElse param(i + 1).ToLower.EndsWith(".csv") OrElse param(i + 1).ToLower.EndsWith(".tsv") Then
+                                        Num1 = IOManager.HexStringToByteArray(IO.File.ReadAllText(param(i + 1)).Replace(" ", "").Replace(vbCr, "").Replace(vbLf, "").Replace(vbTab, "").Replace(",", ""))
+                                    Else
+                                        Num1 = IO.File.ReadAllBytes(param(i + 1))
+                                    End If
+                                Else
+                                    Num1 = IOManager.HexStringToByteArray(param(i + 1))
+                                End If
                                 InitConsole()
                                 Console.WriteLine($"{TapeUtils.Byte2Hex(TapeUtils.GX256.CalcCRC(Num1))}")
                                 CloseConsole()

@@ -93,9 +93,11 @@ Partial Class LTFSConfigurator
         Me.PlayPCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WritePCMToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.TabPageBuffer = New System.Windows.Forms.TabPage()
-        Me.ButtonDebugDumpBuffer = New System.Windows.Forms.Button()
+        Me.ButtonDebugWriteBuffer = New System.Windows.Forms.Button()
+        Me.NumericUpDownRBMode = New System.Windows.Forms.NumericUpDown()
+        Me.ButtonDebugReadBuffer = New System.Windows.Forms.Button()
         Me.ComboBoxBufferPage = New System.Windows.Forms.ComboBox()
-        Me.LabelReadBuffer = New System.Windows.Forms.Label()
+        Me.LabelBufferID = New System.Windows.Forms.Label()
         Me.TabPageMAM = New System.Windows.Forms.TabPage()
         Me.LabelBarcode = New System.Windows.Forms.Label()
         Me.TextBoxBarcode = New System.Windows.Forms.TextBox()
@@ -188,6 +190,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownBlockLen, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripRawDump.SuspendLayout()
         Me.TabPageBuffer.SuspendLayout()
+        CType(Me.NumericUpDownRBMode, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageMAM.SuspendLayout()
         CType(Me.NumericUpDownPCHigh, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownPCLow, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -681,31 +684,46 @@ Partial Class LTFSConfigurator
         '
         'TabPageBuffer
         '
-        Me.TabPageBuffer.Controls.Add(Me.ButtonDebugDumpBuffer)
+        Me.TabPageBuffer.Controls.Add(Me.ButtonDebugWriteBuffer)
+        Me.TabPageBuffer.Controls.Add(Me.NumericUpDownRBMode)
+        Me.TabPageBuffer.Controls.Add(Me.ButtonDebugReadBuffer)
         Me.TabPageBuffer.Controls.Add(Me.ComboBoxBufferPage)
-        Me.TabPageBuffer.Controls.Add(Me.LabelReadBuffer)
+        Me.TabPageBuffer.Controls.Add(Me.LabelBufferID)
         resources.ApplyResources(Me.TabPageBuffer, "TabPageBuffer")
         Me.TabPageBuffer.Name = "TabPageBuffer"
         Me.TabPageBuffer.UseVisualStyleBackColor = True
         '
-        'ButtonDebugDumpBuffer
+        'ButtonDebugWriteBuffer
         '
-        resources.ApplyResources(Me.ButtonDebugDumpBuffer, "ButtonDebugDumpBuffer")
-        Me.ButtonDebugDumpBuffer.Name = "ButtonDebugDumpBuffer"
-        Me.ButtonDebugDumpBuffer.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.ButtonDebugWriteBuffer, "ButtonDebugWriteBuffer")
+        Me.ButtonDebugWriteBuffer.Name = "ButtonDebugWriteBuffer"
+        Me.ButtonDebugWriteBuffer.UseVisualStyleBackColor = True
+        '
+        'NumericUpDownRBMode
+        '
+        resources.ApplyResources(Me.NumericUpDownRBMode, "NumericUpDownRBMode")
+        Me.NumericUpDownRBMode.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
+        Me.NumericUpDownRBMode.Name = "NumericUpDownRBMode"
+        Me.NumericUpDownRBMode.Value = New Decimal(New Integer() {2, 0, 0, 0})
+        '
+        'ButtonDebugReadBuffer
+        '
+        resources.ApplyResources(Me.ButtonDebugReadBuffer, "ButtonDebugReadBuffer")
+        Me.ButtonDebugReadBuffer.Name = "ButtonDebugReadBuffer"
+        Me.ButtonDebugReadBuffer.UseVisualStyleBackColor = True
         '
         'ComboBoxBufferPage
         '
         resources.ApplyResources(Me.ComboBoxBufferPage, "ComboBoxBufferPage")
         Me.ComboBoxBufferPage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
         Me.ComboBoxBufferPage.FormattingEnabled = True
-        Me.ComboBoxBufferPage.Items.AddRange(New Object() {resources.GetString("ComboBoxBufferPage.Items"), resources.GetString("ComboBoxBufferPage.Items1"), resources.GetString("ComboBoxBufferPage.Items2"), resources.GetString("ComboBoxBufferPage.Items3"), resources.GetString("ComboBoxBufferPage.Items4"), resources.GetString("ComboBoxBufferPage.Items5"), resources.GetString("ComboBoxBufferPage.Items6"), resources.GetString("ComboBoxBufferPage.Items7"), resources.GetString("ComboBoxBufferPage.Items8"), resources.GetString("ComboBoxBufferPage.Items9"), resources.GetString("ComboBoxBufferPage.Items10"), resources.GetString("ComboBoxBufferPage.Items11"), resources.GetString("ComboBoxBufferPage.Items12"), resources.GetString("ComboBoxBufferPage.Items13"), resources.GetString("ComboBoxBufferPage.Items14"), resources.GetString("ComboBoxBufferPage.Items15"), resources.GetString("ComboBoxBufferPage.Items16"), resources.GetString("ComboBoxBufferPage.Items17"), resources.GetString("ComboBoxBufferPage.Items18"), resources.GetString("ComboBoxBufferPage.Items19"), resources.GetString("ComboBoxBufferPage.Items20"), resources.GetString("ComboBoxBufferPage.Items21"), resources.GetString("ComboBoxBufferPage.Items22"), resources.GetString("ComboBoxBufferPage.Items23"), resources.GetString("ComboBoxBufferPage.Items24"), resources.GetString("ComboBoxBufferPage.Items25"), resources.GetString("ComboBoxBufferPage.Items26"), resources.GetString("ComboBoxBufferPage.Items27"), resources.GetString("ComboBoxBufferPage.Items28"), resources.GetString("ComboBoxBufferPage.Items29"), resources.GetString("ComboBoxBufferPage.Items30"), resources.GetString("ComboBoxBufferPage.Items31"), resources.GetString("ComboBoxBufferPage.Items32"), resources.GetString("ComboBoxBufferPage.Items33"), resources.GetString("ComboBoxBufferPage.Items34"), resources.GetString("ComboBoxBufferPage.Items35"), resources.GetString("ComboBoxBufferPage.Items36"), resources.GetString("ComboBoxBufferPage.Items37"), resources.GetString("ComboBoxBufferPage.Items38"), resources.GetString("ComboBoxBufferPage.Items39"), resources.GetString("ComboBoxBufferPage.Items40"), resources.GetString("ComboBoxBufferPage.Items41"), resources.GetString("ComboBoxBufferPage.Items42"), resources.GetString("ComboBoxBufferPage.Items43"), resources.GetString("ComboBoxBufferPage.Items44"), resources.GetString("ComboBoxBufferPage.Items45"), resources.GetString("ComboBoxBufferPage.Items46"), resources.GetString("ComboBoxBufferPage.Items47"), resources.GetString("ComboBoxBufferPage.Items48"), resources.GetString("ComboBoxBufferPage.Items49"), resources.GetString("ComboBoxBufferPage.Items50"), resources.GetString("ComboBoxBufferPage.Items51"), resources.GetString("ComboBoxBufferPage.Items52"), resources.GetString("ComboBoxBufferPage.Items53"), resources.GetString("ComboBoxBufferPage.Items54"), resources.GetString("ComboBoxBufferPage.Items55"), resources.GetString("ComboBoxBufferPage.Items56"), resources.GetString("ComboBoxBufferPage.Items57"), resources.GetString("ComboBoxBufferPage.Items58"), resources.GetString("ComboBoxBufferPage.Items59"), resources.GetString("ComboBoxBufferPage.Items60"), resources.GetString("ComboBoxBufferPage.Items61"), resources.GetString("ComboBoxBufferPage.Items62"), resources.GetString("ComboBoxBufferPage.Items63"), resources.GetString("ComboBoxBufferPage.Items64"), resources.GetString("ComboBoxBufferPage.Items65"), resources.GetString("ComboBoxBufferPage.Items66"), resources.GetString("ComboBoxBufferPage.Items67"), resources.GetString("ComboBoxBufferPage.Items68"), resources.GetString("ComboBoxBufferPage.Items69"), resources.GetString("ComboBoxBufferPage.Items70"), resources.GetString("ComboBoxBufferPage.Items71"), resources.GetString("ComboBoxBufferPage.Items72"), resources.GetString("ComboBoxBufferPage.Items73"), resources.GetString("ComboBoxBufferPage.Items74"), resources.GetString("ComboBoxBufferPage.Items75"), resources.GetString("ComboBoxBufferPage.Items76"), resources.GetString("ComboBoxBufferPage.Items77"), resources.GetString("ComboBoxBufferPage.Items78"), resources.GetString("ComboBoxBufferPage.Items79"), resources.GetString("ComboBoxBufferPage.Items80"), resources.GetString("ComboBoxBufferPage.Items81"), resources.GetString("ComboBoxBufferPage.Items82")})
+        Me.ComboBoxBufferPage.Items.AddRange(New Object() {resources.GetString("ComboBoxBufferPage.Items"), resources.GetString("ComboBoxBufferPage.Items1"), resources.GetString("ComboBoxBufferPage.Items2"), resources.GetString("ComboBoxBufferPage.Items3"), resources.GetString("ComboBoxBufferPage.Items4"), resources.GetString("ComboBoxBufferPage.Items5"), resources.GetString("ComboBoxBufferPage.Items6"), resources.GetString("ComboBoxBufferPage.Items7"), resources.GetString("ComboBoxBufferPage.Items8"), resources.GetString("ComboBoxBufferPage.Items9"), resources.GetString("ComboBoxBufferPage.Items10"), resources.GetString("ComboBoxBufferPage.Items11"), resources.GetString("ComboBoxBufferPage.Items12"), resources.GetString("ComboBoxBufferPage.Items13"), resources.GetString("ComboBoxBufferPage.Items14"), resources.GetString("ComboBoxBufferPage.Items15"), resources.GetString("ComboBoxBufferPage.Items16"), resources.GetString("ComboBoxBufferPage.Items17"), resources.GetString("ComboBoxBufferPage.Items18"), resources.GetString("ComboBoxBufferPage.Items19"), resources.GetString("ComboBoxBufferPage.Items20"), resources.GetString("ComboBoxBufferPage.Items21"), resources.GetString("ComboBoxBufferPage.Items22"), resources.GetString("ComboBoxBufferPage.Items23"), resources.GetString("ComboBoxBufferPage.Items24"), resources.GetString("ComboBoxBufferPage.Items25"), resources.GetString("ComboBoxBufferPage.Items26"), resources.GetString("ComboBoxBufferPage.Items27"), resources.GetString("ComboBoxBufferPage.Items28"), resources.GetString("ComboBoxBufferPage.Items29"), resources.GetString("ComboBoxBufferPage.Items30"), resources.GetString("ComboBoxBufferPage.Items31"), resources.GetString("ComboBoxBufferPage.Items32"), resources.GetString("ComboBoxBufferPage.Items33"), resources.GetString("ComboBoxBufferPage.Items34"), resources.GetString("ComboBoxBufferPage.Items35"), resources.GetString("ComboBoxBufferPage.Items36"), resources.GetString("ComboBoxBufferPage.Items37"), resources.GetString("ComboBoxBufferPage.Items38"), resources.GetString("ComboBoxBufferPage.Items39"), resources.GetString("ComboBoxBufferPage.Items40"), resources.GetString("ComboBoxBufferPage.Items41"), resources.GetString("ComboBoxBufferPage.Items42"), resources.GetString("ComboBoxBufferPage.Items43"), resources.GetString("ComboBoxBufferPage.Items44"), resources.GetString("ComboBoxBufferPage.Items45"), resources.GetString("ComboBoxBufferPage.Items46"), resources.GetString("ComboBoxBufferPage.Items47"), resources.GetString("ComboBoxBufferPage.Items48"), resources.GetString("ComboBoxBufferPage.Items49"), resources.GetString("ComboBoxBufferPage.Items50"), resources.GetString("ComboBoxBufferPage.Items51"), resources.GetString("ComboBoxBufferPage.Items52"), resources.GetString("ComboBoxBufferPage.Items53"), resources.GetString("ComboBoxBufferPage.Items54"), resources.GetString("ComboBoxBufferPage.Items55"), resources.GetString("ComboBoxBufferPage.Items56"), resources.GetString("ComboBoxBufferPage.Items57"), resources.GetString("ComboBoxBufferPage.Items58"), resources.GetString("ComboBoxBufferPage.Items59"), resources.GetString("ComboBoxBufferPage.Items60"), resources.GetString("ComboBoxBufferPage.Items61"), resources.GetString("ComboBoxBufferPage.Items62"), resources.GetString("ComboBoxBufferPage.Items63"), resources.GetString("ComboBoxBufferPage.Items64"), resources.GetString("ComboBoxBufferPage.Items65"), resources.GetString("ComboBoxBufferPage.Items66"), resources.GetString("ComboBoxBufferPage.Items67"), resources.GetString("ComboBoxBufferPage.Items68"), resources.GetString("ComboBoxBufferPage.Items69"), resources.GetString("ComboBoxBufferPage.Items70"), resources.GetString("ComboBoxBufferPage.Items71"), resources.GetString("ComboBoxBufferPage.Items72"), resources.GetString("ComboBoxBufferPage.Items73"), resources.GetString("ComboBoxBufferPage.Items74"), resources.GetString("ComboBoxBufferPage.Items75"), resources.GetString("ComboBoxBufferPage.Items76"), resources.GetString("ComboBoxBufferPage.Items77"), resources.GetString("ComboBoxBufferPage.Items78"), resources.GetString("ComboBoxBufferPage.Items79"), resources.GetString("ComboBoxBufferPage.Items80"), resources.GetString("ComboBoxBufferPage.Items81"), resources.GetString("ComboBoxBufferPage.Items82"), resources.GetString("ComboBoxBufferPage.Items83"), resources.GetString("ComboBoxBufferPage.Items84"), resources.GetString("ComboBoxBufferPage.Items85"), resources.GetString("ComboBoxBufferPage.Items86"), resources.GetString("ComboBoxBufferPage.Items87"), resources.GetString("ComboBoxBufferPage.Items88"), resources.GetString("ComboBoxBufferPage.Items89"), resources.GetString("ComboBoxBufferPage.Items90"), resources.GetString("ComboBoxBufferPage.Items91"), resources.GetString("ComboBoxBufferPage.Items92"), resources.GetString("ComboBoxBufferPage.Items93"), resources.GetString("ComboBoxBufferPage.Items94"), resources.GetString("ComboBoxBufferPage.Items95"), resources.GetString("ComboBoxBufferPage.Items96"), resources.GetString("ComboBoxBufferPage.Items97"), resources.GetString("ComboBoxBufferPage.Items98"), resources.GetString("ComboBoxBufferPage.Items99"), resources.GetString("ComboBoxBufferPage.Items100"), resources.GetString("ComboBoxBufferPage.Items101"), resources.GetString("ComboBoxBufferPage.Items102"), resources.GetString("ComboBoxBufferPage.Items103")})
         Me.ComboBoxBufferPage.Name = "ComboBoxBufferPage"
         '
-        'LabelReadBuffer
+        'LabelBufferID
         '
-        resources.ApplyResources(Me.LabelReadBuffer, "LabelReadBuffer")
-        Me.LabelReadBuffer.Name = "LabelReadBuffer"
+        resources.ApplyResources(Me.LabelBufferID, "LabelBufferID")
+        Me.LabelBufferID.Name = "LabelBufferID"
         '
         'TabPageMAM
         '
@@ -1239,6 +1257,7 @@ Partial Class LTFSConfigurator
         Me.ContextMenuStripRawDump.ResumeLayout(False)
         Me.TabPageBuffer.ResumeLayout(False)
         Me.TabPageBuffer.PerformLayout()
+        CType(Me.NumericUpDownRBMode, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPageMAM.ResumeLayout(False)
         Me.TabPageMAM.PerformLayout()
         CType(Me.NumericUpDownPCHigh, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1306,12 +1325,12 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonDebugReadInfo As Button
     Friend WithEvents ButtonDebugDumpMAM As Button
     Friend WithEvents SaveFileDialog1 As SaveFileDialog
-    Friend WithEvents LabelReadBuffer As Label
+    Friend WithEvents LabelBufferID As Label
     Friend WithEvents ButtonDebugRewind As Button
     Friend WithEvents SaveFileDialog2 As SaveFileDialog
     Friend WithEvents ButtonDebugReadBlock As Button
     Friend WithEvents NumericUpDownBlockLen As NumericUpDown
-    Friend WithEvents ButtonDebugDumpBuffer As Button
+    Friend WithEvents ButtonDebugReadBuffer As Button
     Friend WithEvents ComboBoxBufferPage As ComboBox
     Friend WithEvents ButtonDebugLocate As Button
     Friend WithEvents LabelPartition As Label
@@ -1423,4 +1442,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonRestoreLBA As Button
     Friend WithEvents ButtonBOT As Button
     Friend WithEvents ButtonEOT As Button
+    Friend WithEvents NumericUpDownRBMode As NumericUpDown
+    Friend WithEvents ButtonDebugWriteBuffer As Button
 End Class
