@@ -693,6 +693,7 @@ Public Class Form1
         Dim OnLWFLoad As New EventHandler(Sub()
                                               LWF.Invoke(Sub()
                                                              LWF.schema = schema
+                                                             LWF.ShowXAttr_Barcode = True
                                                              LWF.RefreshDisplay()
                                                              LWF.ToolStripStatusLabel1.Text = "BROWSE"
                                                          End Sub)

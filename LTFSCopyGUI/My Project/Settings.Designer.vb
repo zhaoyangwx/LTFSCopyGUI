@@ -193,7 +193,7 @@ Namespace My
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
-         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
          Category("LTFSConfigurator"),
          LocalizedDescription("PropertyDescription_LTFSConf_AutoRefresh")>
         Public Property LTFSConf_AutoRefresh() As Boolean

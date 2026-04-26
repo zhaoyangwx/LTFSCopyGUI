@@ -416,7 +416,9 @@ Public Class TapeUtils
                                                    dataBuffer As IntPtr,
                                                    bufferLength As UInt32,
                                                    dataIn As Byte,
-                                                   timeoutValue As UInt32) As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER
+                                                   timeoutValue As UInt32,
+                                                   Optional ByVal TargetID As Byte = 0,
+                                                   Optional ByVal LUN As Byte = 0) As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER
             Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = New SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER()
             With scsi.Spt
                 .Length = CUShort(Marshal.SizeOf(scsi.Spt))
@@ -428,6 +430,8 @@ Public Class TapeUtils
                 .TimeOutValue = timeoutValue
                 .SenseInfoOffset = CUInt(Marshal.OffsetOf(GetType(SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER), "Sense"))
                 .SenseInfoLength = CByte(scsi.Sense.Length)
+                .TargetId = TargetID
+                .Lun = LUN
             End With
             Return scsi
         End Function
@@ -437,14 +441,16 @@ Public Class TapeUtils
                                                    bufferLength As UInt32,
                                                    dataIn As Byte,
                                                    timeoutValue As UInt32,
-                                                   ByRef sense As Byte()) As Boolean
-            Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = BuildSCSIPassThroughStructure(cdb, dataBuffer, bufferLength, dataIn, timeoutValue)
+                                                   ByRef sense As Byte(),
+                                                   Optional ByVal TargetID As Byte = 0,
+                                                   Optional ByVal LUN As Byte = 0,
+                                                   Optional ByRef BytesReturned As UInteger = 0) As Boolean
+            Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = BuildSCSIPassThroughStructure(cdb, dataBuffer, bufferLength, dataIn, timeoutValue, TargetID, LUN)
             Dim size As UInteger = CUInt(Marshal.SizeOf(scsi))
             Dim inBuffer As IntPtr = Marshal.AllocHGlobal(CInt(size))
             Marshal.StructureToPtr(scsi, inBuffer, True)
             Dim result As Boolean
-            Dim bytesReturned As UInteger
-            result = DeviceIoControl(handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, inBuffer, size, inBuffer, size, bytesReturned, IntPtr.Zero)
+            result = DeviceIoControl(handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, inBuffer, size, inBuffer, size, BytesReturned, IntPtr.Zero)
             If result Then
                 Marshal.PtrToStructure(inBuffer, scsi)
                 sense = scsi.Sense
@@ -7750,6 +7756,28 @@ Public Class TapeUtils
                         End Function))
         Return LChanger
     End Function
+    Public Shared Function GetHBAList() As List(Of BlockDevice)
+        Dim LAdapter As New List(Of BlockDevice)
+        Dim obj As List(Of SetupAPIHelper.Device) = SetupAPIHelper.Device.EnumerateDevices("PCI").ToList()
+        Dim devobj As New List(Of SetupAPIHelper.Device)
+        For Each dev As SetupAPIHelper.Device In obj
+            If dev.Present Then
+                If dev.ClassName.ToLower = "scsiadapter" Then
+                    devobj.Add(dev)
+                End If
+            End If
+        Next
+        For Each dev As SetupAPIHelper.Device In devobj
+            Dim drv As New BlockDevice
+            drv.DeviceType = "SCSIAdapter"
+            drv.DevicePath = $"\\.\Globalroot{dev.PDOName}"
+            drv.ProductId = dev.Name
+            drv.SerialNumber = dev.PDOName.Substring(8)
+            'drv.VendorId = dev.Manufacturer
+            LAdapter.Add(drv)
+        Next
+        Return LAdapter
+    End Function
     Public Shared Function GetDriveMappings() As String
         Dim p As IntPtr = _GetDriveMappings()
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -8740,6 +8768,7 @@ Public Class TapeUtils
                         Array.Copy(RawElementData, offset, PageHeader, 0, 8)
                         offset += 8
                         Dim dlen As UInt16 = CInt(PageHeader(2)) << 8 Or PageHeader(3)
+                        If dlen = 0 Then Continue For
                         Dim totallen As UInt32 = CInt(PageHeader(5)) << 16 Or CInt(PageHeader(6)) << 8 Or PageHeader(7)
                         Dim dcount As Integer = totallen \ dlen
                         Dim pagedata(dlen - 1) As Byte

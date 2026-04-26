@@ -3,6 +3,7 @@ Imports System.ComponentModel
 Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
+Imports LTFSCopyGUI.TapeImage
 Imports NAudio.Wave
 
 Public Class LTFSConfigurator
@@ -342,12 +343,13 @@ Public Class LTFSConfigurator
 
                     Dim senseBuffer(63) As Byte
                     Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
-                    Dim succ As Boolean
+                    Dim succ As Boolean, BytesReturned As UInteger
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length, CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer)
-                        'succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, cdbData.Length, dataBufferPtr, dataData.Length, TextBoxDataDir.Text, CInt(TextBoxTimeoutValue.Text), senseBufferPtr)
+                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length,
+                                                           CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer,
+                                                           CByte(TextBoxTargetID.Text), CByte(TextBoxLUN.Text), BytesReturned)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
@@ -359,9 +361,11 @@ Public Class LTFSConfigurator
                     Marshal.FreeHGlobal(dataBufferPtr)
                     Marshal.FreeHGlobal(senseBufferPtr)
                     If succ Then
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "OK")
+                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}OK{vbCrLf}Bytesreturned = {BytesReturned}")
                     Else
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "FAIL")
+                        Dim ErrCode As Integer = TapeUtils.GetLastError()
+                        Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}FAIL{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
                     End If
                 Catch ex As Exception
                     MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
@@ -685,6 +689,8 @@ Public Class LTFSConfigurator
 ")
     End Sub
     Public Function ReduceDataUnit(MBytes As Int64) As String
+        Dim sym As String = If(MBytes >= 0, "", "-")
+        MBytes = Math.Abs(MBytes)
         Dim Result As Decimal = MBytes
         Dim ResultUnit As Integer = 0
         If My.Settings.Application_UseDecimalUnit Then
@@ -692,7 +698,7 @@ Public Class LTFSConfigurator
                 Result /= 1000
                 ResultUnit += 3
             End While
-            Dim ResultString As String = Math.Round(Result, 2)
+            Dim ResultString As String = sym & Math.Round(Result, 2)
             Select Case ResultUnit
                 Case 0
                     Return ResultString & " MB"
@@ -716,7 +722,7 @@ Public Class LTFSConfigurator
                 Result /= 1024
                 ResultUnit += 3
             End While
-            Dim ResultString As String = Math.Round(Result, 2)
+            Dim ResultString As String = sym & Math.Round(Result, 2)
             Select Case ResultUnit
                 Case 0
                     Return ResultString & " MiB"
@@ -2965,5 +2971,35 @@ Public Class LTFSConfigurator
                                 End Sub)
                      End Sub)
         End If
+    End Sub
+
+    Private Sub SCSIAdapterToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SCSIAdapterToolStripMenuItem.Click
+        LoadComplete = False
+        CheckBoxAutoRefresh.Checked = False
+        ListBox1.Items.Clear()
+        Dim DevList As List(Of TapeUtils.BlockDevice)
+        LastDeviceList = TapeUtils.GetHBAList()
+        DevList = LastDeviceList
+        For Each D As TapeUtils.BlockDevice In DevList
+            D.DeviceType = "SCSIAdapter"
+            ListBox1.Items.Add(D.ToString())
+        Next
+        ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
+        Dim t As String = ComboBoxDriveLetter.Text
+        ComboBoxDriveLetter.Items.Clear()
+        ComboBoxDriveLetter.Text = ""
+        For Each s As String In AvailableDriveLetters
+            ComboBoxDriveLetter.Items.Add(s)
+        Next
+        If ComboBoxDriveLetter.Items.Count > 0 Then
+            If Not ComboBoxDriveLetter.Items.Contains(t) Then
+                ComboBoxDriveLetter.SelectedIndex = 0
+            Else
+                ComboBoxDriveLetter.Text = t
+            End If
+        End If
+
+        LoadComplete = True
+        SelectedIndex = ListBox1.SelectedIndex
     End Sub
 End Class

@@ -971,4 +971,10 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="ResText_SpeedBTD" xml:space="preserve">
     <value>速度 (MB/s)</value>
   </data>
+  <data name="ResText_Deleting" xml:space="preserve">
+    <value>正在删除</value>
+  </data>
+  <data name="ResText_DeleteFin" xml:space="preserve">
+    <value>删除完成</value>
+  </data>
 </root>
