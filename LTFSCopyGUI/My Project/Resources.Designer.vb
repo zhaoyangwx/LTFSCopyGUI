@@ -1002,6 +1002,24 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 删除完成 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_DeleteFin() As String
+            Get
+                Return ResourceManager.GetString("ResText_DeleteFin", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 正在删除 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_Deleting() As String
+            Get
+                Return ResourceManager.GetString("ResText_Deleting", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 个目录？ 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_Directories_C() As String

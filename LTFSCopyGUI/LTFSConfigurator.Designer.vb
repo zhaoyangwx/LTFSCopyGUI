@@ -176,6 +176,11 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.SCSIAdapterToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.LabelTargetID = New System.Windows.Forms.Label()
+        Me.TextBoxTargetID = New System.Windows.Forms.TextBox()
+        Me.LabelLUN = New System.Windows.Forms.Label()
+        Me.TextBoxLUN = New System.Windows.Forms.TextBox()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -219,7 +224,7 @@ Partial Class LTFSConfigurator
         'ContextMenuStripRefreshDeviceList
         '
         Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.AddImageToolStripMenuItem, Me.BrowseToolStripMenuItem})
+        Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.SCSIAdapterToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.AddImageToolStripMenuItem, Me.BrowseToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
         '
@@ -425,6 +430,10 @@ Partial Class LTFSConfigurator
         '
         resources.ApplyResources(Me.Panel2, "Panel2")
         Me.Panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.Panel2.Controls.Add(Me.TextBoxLUN)
+        Me.Panel2.Controls.Add(Me.LabelLUN)
+        Me.Panel2.Controls.Add(Me.TextBoxTargetID)
+        Me.Panel2.Controls.Add(Me.LabelTargetID)
         Me.Panel2.Controls.Add(Me.TabControl1)
         Me.Panel2.Controls.Add(Me.LabelTimeout)
         Me.Panel2.Controls.Add(Me.TextBoxTimeoutValue)
@@ -1231,6 +1240,31 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'SCSIAdapterToolStripMenuItem
+        '
+        Me.SCSIAdapterToolStripMenuItem.Name = "SCSIAdapterToolStripMenuItem"
+        resources.ApplyResources(Me.SCSIAdapterToolStripMenuItem, "SCSIAdapterToolStripMenuItem")
+        '
+        'LabelTargetID
+        '
+        resources.ApplyResources(Me.LabelTargetID, "LabelTargetID")
+        Me.LabelTargetID.Name = "LabelTargetID"
+        '
+        'TextBoxTargetID
+        '
+        resources.ApplyResources(Me.TextBoxTargetID, "TextBoxTargetID")
+        Me.TextBoxTargetID.Name = "TextBoxTargetID"
+        '
+        'LabelLUN
+        '
+        resources.ApplyResources(Me.LabelLUN, "LabelLUN")
+        Me.LabelLUN.Name = "LabelLUN"
+        '
+        'TextBoxLUN
+        '
+        resources.ApplyResources(Me.TextBoxLUN, "TextBoxLUN")
+        Me.TextBoxLUN.Name = "TextBoxLUN"
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1444,4 +1478,9 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonEOT As Button
     Friend WithEvents NumericUpDownRBMode As NumericUpDown
     Friend WithEvents ButtonDebugWriteBuffer As Button
+    Friend WithEvents SCSIAdapterToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents TextBoxTargetID As TextBox
+    Friend WithEvents LabelTargetID As Label
+    Friend WithEvents TextBoxLUN As TextBox
+    Friend WithEvents LabelLUN As Label
 End Class

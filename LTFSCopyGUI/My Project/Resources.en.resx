@@ -960,4 +960,10 @@ Enable only when memory usage is abnormally high</value>
   <data name="ResText_SpeedBTD" xml:space="preserve">
     <value>Speed (MB/s)</value>
   </data>
+  <data name="ResText_Deleting" xml:space="preserve">
+    <value>Deleting</value>
+  </data>
+  <data name="ResText_DeleteFin" xml:space="preserve">
+    <value>Delete finished</value>
+  </data>
 </root>

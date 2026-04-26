@@ -34,33 +34,35 @@ Public Class IOManager
     Public Event ErrorOccured(s As String)
 
     Public Shared Function FormatSize(byteCount As Long, Optional ByVal More As Boolean = False) As String
+        Dim sym As String = If(byteCount >= 0, "", "-")
+        byteCount = Math.Abs(byteCount)
         If My.Settings.Application_UseDecimalUnit Then
             If byteCount < 1000 Then
-                Return byteCount & " Bytes"
+                Return sym & byteCount & " Bytes"
             ElseIf byteCount < 1000 ^ 2 Then
-                Return (byteCount / 1000).ToString("F2") & " KB"
+                Return sym & (byteCount / 1000).ToString("F2") & " KB"
             ElseIf byteCount < 1000 ^ 3 Then
-                Return (byteCount / 1000 ^ 2).ToString("F2") & " MB"
+                Return sym & (byteCount / 1000 ^ 2).ToString("F2") & " MB"
             ElseIf Not More OrElse byteCount < 1000 ^ 4 Then
-                Return (byteCount / 1000 ^ 3).ToString("F2") & " GB"
+                Return sym & (byteCount / 1000 ^ 3).ToString("F2") & " GB"
             ElseIf byteCount < 1000 ^ 5 Then
-                Return (byteCount / 1000 ^ 4).ToString("F2") & " TB"
+                Return sym & (byteCount / 1000 ^ 4).ToString("F2") & " TB"
             Else
-                Return (byteCount / 1000 ^ 5).ToString("F2") & " PB"
+                Return sym & (byteCount / 1000 ^ 5).ToString("F2") & " PB"
             End If
         Else
             If byteCount < 1024 Then
-                Return byteCount & " Bytes"
+                Return sym & byteCount & " Bytes"
             ElseIf byteCount < 1024 ^ 2 Then
-                Return (byteCount / 1024).ToString("F2") & " KiB"
+                Return sym & (byteCount / 1024).ToString("F2") & " KiB"
             ElseIf byteCount < 1024 ^ 3 Then
-                Return (byteCount / 1024 ^ 2).ToString("F2") & " MiB"
+                Return sym & (byteCount / 1024 ^ 2).ToString("F2") & " MiB"
             ElseIf Not More OrElse byteCount < 1024 ^ 4 Then
-                Return (byteCount / 1024 ^ 3).ToString("F2") & " GiB"
+                Return sym & (byteCount / 1024 ^ 3).ToString("F2") & " GiB"
             ElseIf byteCount < 1024 ^ 5 Then
-                Return (byteCount / 1024 ^ 4).ToString("F2") & " TiB"
+                Return sym & (byteCount / 1024 ^ 4).ToString("F2") & " TiB"
             Else
-                Return (byteCount / 1024 ^ 5).ToString("F2") & " PiB"
+                Return sym & (byteCount / 1024 ^ 5).ToString("F2") & " PiB"
             End If
         End If
 
@@ -1516,7 +1518,28 @@ Public Class IOManager
         End Function
     End Class
 
+    Public Shared Function CreateSparceFile(path As String, size As Long) As Boolean
+        Const FSCTL_SET_SPARSE As Integer = &H900C4
+        Dim result As Boolean = False
+        Try
+            Using fs As New FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None)
 
+                ' 标记为稀疏文件
+                Dim bytesReturned As UInteger = 0
+                result = TapeUtils.DeviceIoControl(fs.SafeFileHandle.DangerousGetHandle(),
+                                FSCTL_SET_SPARSE,
+                                IntPtr.Zero, 0,
+                                IntPtr.Zero, 0,
+                                bytesReturned,
+                                IntPtr.Zero)
+
+                ' 设置大小
+                fs.SetLength(size)
+            End Using
+        Catch
+        End Try
+        Return result
+    End Function
     Public Class StreamPcmPlayer
         Private waveOut As IWavePlayer
         Private waveProvider As BufferedWaveProvider
