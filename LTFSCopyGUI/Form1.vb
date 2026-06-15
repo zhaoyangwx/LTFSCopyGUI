@@ -749,7 +749,10 @@ Public Class Form1
         If DevList IsNot Nothing AndAlso DevList.Count > 0 AndAlso ComboBox1.SelectedIndex >= 0 Then
             RefreshDeviceList()
             If Button27.Enabled = False Then Exit Sub
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {DevList(ComboBox1.SelectedIndex).DevIndex}"})
+            Dim device As TapeUtils.BlockDevice = DevList(ComboBox1.SelectedIndex)
+            TapeUtils.CheckSwitchConfig(device)
+            My.Settings.Save()
+            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {device.DevicePath}"})
         End If
     End Sub
 

@@ -1,9 +1,4 @@
-﻿Imports System
-Imports System.IO
-Imports System.Text
-Imports System.Collections.Generic
-Imports Microsoft.WindowsAPICodePack.Sensors
-Imports System.ComponentModel
+﻿Imports System.IO
 Public Class TapeStreamMapping
     Public Shared MappingTable As New SerializableDictionary(Of IntPtr, TapeImage)
 End Class
@@ -545,6 +540,79 @@ Public Class TapeImage
     Public Sub Dispose() Implements IDisposable.Dispose
 
     End Sub
+    Public Function SCSIOp(cdb As Byte(), param As Byte(), dataIn As Byte) As (outData As Byte(), sense As Byte())
+        Dim outdata As Byte() = {}
+        Dim sense As Byte() = {}
+        If dataIn <> 0 Then
+            Dim datalen As Integer = param.Length
+            Select Case cdb(0)
+                Case &H3
+                    datalen = cdb(4)
+                Case &H5
+                    datalen = 6
+                Case &H8
+                    datalen = BigEndianConverter.GetValue(cdb, 2, 4)
+                Case &H12
+                    datalen = BigEndianConverter.GetValue(cdb, 3, 4)
+                Case &H1A
+                    datalen = cdb(4)
+                Case &H1C
+                    datalen = BigEndianConverter.GetValue(cdb, 3, 4)
+                Case &H25
+                    datalen = 8
+                Case &H28
+                    datalen = BigEndianConverter.GetValue(cdb, 7, 8)
+                Case &H34
+                    If cdb(1) = 0 Then
+                        datalen = 20
+                    Else
+                        datalen = 32
+                    End If
+                Case &H3C
+                    datalen = BigEndianConverter.GetValue(cdb, 6, 8)
+                Case &H43
+                    datalen = Math.Max(BigEndianConverter.GetValue(cdb, 7, 8), 20)
+                Case &H44
+                    datalen = BigEndianConverter.GetValue(cdb, 7, 8)
+                Case &H4D
+                    datalen = BigEndianConverter.GetValue(cdb, 7, 8)
+                Case &H5A
+                    datalen = BigEndianConverter.GetValue(cdb, 7, 8)
+                Case &H5E
+                    datalen = BigEndianConverter.GetValue(cdb, 7, 8)
+                Case &H8C
+                    datalen = BigEndianConverter.GetValue(cdb, 10, 13)
+                Case &HA0
+                    datalen = Math.Min(32, BigEndianConverter.GetValue(cdb, 6, 9))
+                Case &HA2
+                    datalen = BigEndianConverter.GetValue(cdb, 6, 9)
+                Case &HA3
+                    Select Case cdb(1)
+                        Case &H5, &HA, &HC, &HD, &HF
+                            datalen = BigEndianConverter.GetValue(cdb, 6, 9)
+                        Case &H1F
+                            Select Case cdb(2)
+                                Case &H6, &H10, &H12, &H15
+                                    datalen = BigEndianConverter.GetValue(cdb, 6, 9)
+                                Case &H7, &HA, &HB, &HD, &HE, &H18
+                                    datalen = BigEndianConverter.GetValue(cdb, 6, 7)
+                                Case &H8, &H9
+                                    datalen = BigEndianConverter.GetValue(cdb, 6, 8)
+                                Case &H14
+                                    datalen = cdb(9)
+                            End Select
+                    End Select
+                Case &HAB
+                    datalen = BigEndianConverter.GetValue(cdb, 6, 9)
+            End Select
+        Else
+            Select Case cdb(0)
+                Case &HA
+
+            End Select
+        End If
+        Return (outdata, sense)
+    End Function
     Public Shared Sub test()
         Dim dir As String = IO.Path.Combine(Application.StartupPath, "testimg")
         Dim path As String = IO.Path.Combine(dir, "test.lcgidx")

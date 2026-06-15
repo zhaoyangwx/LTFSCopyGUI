@@ -337,7 +337,7 @@ Public Class LTFSConfigurator
                         dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
                         Marshal.Copy(dataData, 0, dataBufferPtr, dataData.Length)
                     Else
-                        dataBufferPtr = Marshal.AllocHGlobal(64)
+                        dataBufferPtr = IntPtr.Zero
                     End If
                     Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
@@ -352,7 +352,7 @@ Public Class LTFSConfigurator
                                                            CByte(TextBoxTargetID.Text), CByte(TextBoxLUN.Text), BytesReturned)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
-                    Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
+                    If dataData.Length > 0 Then Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
                     'Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
                                   PrintCommandResult(cdbData, dataData, senseBuffer)
