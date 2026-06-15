@@ -2482,4 +2482,12 @@ Public Class BigEndianConverter
         Next
         Return result
     End Function
+    Public Shared Function GetValue(data As Byte(), startbyte As Integer, endbyte As Integer) As Long
+        Dim result As Long = 0
+        For i As Integer = startbyte To endbyte
+            result <<= 8
+            result = result Or data(i)
+        Next
+        Return result
+    End Function
 End Class

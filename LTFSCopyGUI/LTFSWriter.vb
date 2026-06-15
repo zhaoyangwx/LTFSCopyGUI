@@ -1763,7 +1763,7 @@ Public Class LTFSWriter
                 LastRemainCapValue = cap1 << lshbits
                 'cap1 = TapeUtils.MAMAttribute.FromTapeDrive(TapeDrive, 0, 0, 1).AsNumeric
                 Invoke(Sub()
-                           ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)}/{IOManager.FormatSize(max0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}/{IOManager.FormatSize(max1 << lshbits)}"
+                           ToolStripStatusLabel2.Text = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{IOManager.FormatSize(cap0 << lshbits)} P1:{IOManager.FormatSize(cap1 << lshbits)}"
                            ToolStripStatusLabel2.ToolTipText = $"{MediaDescription} {My.Resources.ResText_CapRem} P0:{LTFSConfigurator.ReduceDataUnit(cap0 >> (20 - lshbits))}/{LTFSConfigurator.ReduceDataUnit(max0 >> (20 - lshbits))} P1:{LTFSConfigurator.ReduceDataUnit(cap1 >> (20 - lshbits))}/{LTFSConfigurator.ReduceDataUnit(max1 >> (20 - lshbits))}"
                            If WP Then
                                ToolStripStatusLabel2.BackgroundImage = GetProgressImage(MaxCapacity - cap1, MaxCapacity, Color.FromArgb(191, 191, 191))
@@ -3781,18 +3781,20 @@ Public Class LTFSWriter
                     finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
                     finfo.IsReadOnly = FileIndex.readonly
                     finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
-
                 Catch ex As Exception
 
                 End Try
             End If
-
         Else
             Dim finfo As New IO.FileInfo(FileName)
-            finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
-            finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
-            finfo.IsReadOnly = FileIndex.readonly
-            finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+            Try
+                finfo.CreationTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.creationtime)
+                finfo.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.modifytime)
+                finfo.IsReadOnly = FileIndex.readonly
+                finfo.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(FileIndex.accesstime)
+            Catch ex As Exception
+
+            End Try
         End If
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
@@ -3880,9 +3882,12 @@ Public Class LTFSWriter
                                         dirOutput = New IO.DirectoryInfo(thisDir)
                                         IterDir(d, dirOutput)
                                         If RestoreTimeStamp Then
-                                            dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
-                                            dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
-                                            dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
+                                            Try
+                                                dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
+                                                dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
+                                                dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
+                                            Catch ex As Exception
+                                            End Try
                                         End If
                                     Next
                                 End Sub

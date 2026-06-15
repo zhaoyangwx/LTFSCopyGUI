@@ -400,7 +400,7 @@ Public Class TapeUtils
             Public Cdb(CdbBufferLength - 1) As Byte
 
             Public Sub New()
-                ReDim Cdb(CdbBufferLength)
+                ReDim Cdb(CdbBufferLength - 1)
             End Sub
         End Class
         <StructLayout(LayoutKind.Sequential)>
@@ -449,6 +449,8 @@ Public Class TapeUtils
             Dim size As UInteger = CUInt(Marshal.SizeOf(scsi))
             Dim inBuffer As IntPtr = Marshal.AllocHGlobal(CInt(size))
             Marshal.StructureToPtr(scsi, inBuffer, True)
+            'Dim packet(size - 1) As Byte
+            'Marshal.Copy(inBuffer, packet, 0, size)
             Dim result As Boolean
             result = DeviceIoControl(handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, inBuffer, size, inBuffer, size, BytesReturned, IntPtr.Zero)
             If result Then
