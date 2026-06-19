@@ -1354,7 +1354,8 @@ Public Class LTFSWriter
     Dim CurrDrive As TapeUtils.BlockDevice
     Public Function GetLocInfo() As String
         Dim DriveInfo As String = ""
-        If TapeUtils.IsOpened(driveHandle) Then
+        Dim IsOpened As Boolean = TapeUtils.IsOpened(driveHandle)
+        If IsOpened Then
             If CurrDrive Is Nothing AndAlso Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
                 Try
                     CurrDrive = TapeUtils.Inquiry(driveHandle)
@@ -1363,12 +1364,12 @@ Public Class LTFSWriter
                 End Try
                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
             End If
-            If CurrDrive IsNot Nothing Then
-                If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
-                    DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}"
-                Else
-                    DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}"
-                End If
+        End If
+        If CurrDrive IsNot Nothing Then
+            If TapeUtils.TagDictionary.ContainsKey(CurrDrive.SerialNumber) Then
+                DriveInfo = $" {TapeUtils.TagDictionary(CurrDrive.SerialNumber)}{If(Not IsOpened, $" ({My.Resources.ResText_NotOpened})", "")}"
+            Else
+                DriveInfo = $" {CurrDrive.SerialNumber} {CurrDrive.VendorId} {CurrDrive.ProductId}{If(Not IsOpened, $" ({My.Resources.ResText_NotOpened})", "")}"
             End If
         End If
         If schema Is Nothing Then Return $"{My.Resources.ResText_NIndex} [{TapeDrive}{DriveInfo}] - {ApplicationWheels.ApplicationInfo} ({TapeUtils.DriverTypeSetting})"
@@ -5153,10 +5154,9 @@ Public Class LTFSWriter
                     PrintMsg($"Position = {p.ToString()}", LogOnly:=True)
                     CurrentHeight = p.BlockNumber
                     If ExtraPartitionCount = 0 Then
-                        TapeUtils.Write(driveHandle, {0})
+                        TapeUtils.SendSCSICommand(driveHandle, {19, 0, 0, 0, 0, 0})
+                        TapeUtils.Flush(driveHandle)
                         PrintMsg($"Byte written", LogOnly:=True)
-                        PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                        TapeUtils.Locate(driveHandle, CULng(CurrentHeight), CByte(0), TapeUtils.LocateDestType.Block)
                         PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     End If
                     While True
@@ -9699,6 +9699,24 @@ Public Class LTFSWriter
             LockGUI()
             th.Start()
         End If
+    End Sub
+
+    Private Sub ToolStripButton7_Click(sender As Object, e As EventArgs) Handles ToolStripButton7.Click
+        If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_ForceEjectConfirm, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
+        LockGUI(True)
+        Task.Run(Sub()
+                     SetStatusLight(LWStatus.Busy)
+                     TapeUtils.ReleaseUnit(driveHandle)
+                     TapeUtils.AllowMediaRemoval(driveHandle)
+                     TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
+                     PrintMsg(My.Resources.ResText_Ejd)
+                     Invoke(Sub()
+                                SetStatusLight(LWStatus.Succ)
+                                LockGUI(False)
+                                RefreshDisplay()
+                                RaiseEvent TapeEjected()
+                            End Sub)
+                 End Sub)
     End Sub
 
     Public Function FileExists(path As String) As Boolean

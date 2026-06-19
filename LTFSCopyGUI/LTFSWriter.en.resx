@@ -118,126 +118,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>211, 224</value>
-  </data>
-  <data name="ImageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+  <data name="提取ToolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
-        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
-        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
-        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
-        CwAAAk1TRnQBSQFMAgEBBAEAAZQBAwGUAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
-        AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
-        AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
-        AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
-        AWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHMAgABMwH/AgABZgMAAWYBMwIAAmYCAAFm
-        AZkCAAFmAcwCAAFmAf8CAAGZAwABmQEzAgABmQFmAgACmQIAAZkBzAIAAZkB/wIAAcwDAAHMATMCAAHM
-        AWYCAAHMAZkCAALMAgABzAH/AgAB/wFmAgAB/wGZAgAB/wHMAQABMwH/AgAB/wEAATMBAAEzAQABZgEA
-        ATMBAAGZAQABMwEAAcwBAAEzAQAB/wEAAf8BMwIAAzMBAAIzAWYBAAIzAZkBAAIzAcwBAAIzAf8BAAEz
-        AWYCAAEzAWYBMwEAATMCZgEAATMBZgGZAQABMwFmAcwBAAEzAWYB/wEAATMBmQIAATMBmQEzAQABMwGZ
-        AWYBAAEzApkBAAEzAZkBzAEAATMBmQH/AQABMwHMAgABMwHMATMBAAEzAcwBZgEAATMBzAGZAQABMwLM
-        AQABMwHMAf8BAAEzAf8BMwEAATMB/wFmAQABMwH/AZkBAAEzAf8BzAEAATMC/wEAAWYDAAFmAQABMwEA
-        AWYBAAFmAQABZgEAAZkBAAFmAQABzAEAAWYBAAH/AQABZgEzAgABZgIzAQABZgEzAWYBAAFmATMBmQEA
-        AWYBMwHMAQABZgEzAf8BAAJmAgACZgEzAQADZgEAAmYBmQEAAmYBzAEAAWYBmQIAAWYBmQEzAQABZgGZ
-        AWYBAAFmApkBAAFmAZkBzAEAAWYBmQH/AQABZgHMAgABZgHMATMBAAFmAcwBmQEAAWYCzAEAAWYBzAH/
-        AQABZgH/AgABZgH/ATMBAAFmAf8BmQEAAWYB/wHMAQABzAEAAf8BAAH/AQABzAEAApkCAAGZATMBmQEA
-        AZkBAAGZAQABmQEAAcwBAAGZAwABmQIzAQABmQEAAWYBAAGZATMBzAEAAZkBAAH/AQABmQFmAgABmQFm
-        ATMBAAGZATMBZgEAAZkBZgGZAQABmQFmAcwBAAGZATMB/wEAApkBMwEAApkBZgEAA5kBAAKZAcwBAAKZ
-        Af8BAAGZAcwCAAGZAcwBMwEAAWYBzAFmAQABmQHMAZkBAAGZAswBAAGZAcwB/wEAAZkB/wIAAZkB/wEz
-        AQABmQHMAWYBAAGZAf8BmQEAAZkB/wHMAQABmQL/AQABzAMAAZkBAAEzAQABzAEAAWYBAAHMAQABmQEA
-        AcwBAAHMAQABmQEzAgABzAIzAQABzAEzAWYBAAHMATMBmQEAAcwBMwHMAQABzAEzAf8BAAHMAWYCAAHM
-        AWYBMwEAAZkCZgEAAcwBZgGZAQABzAFmAcwBAAGZAWYB/wEAAcwBmQIAAcwBmQEzAQABzAGZAWYBAAHM
-        ApkBAAHMAZkBzAEAAcwBmQH/AQACzAIAAswBMwEAAswBZgEAAswBmQEAA8wBAALMAf8BAAHMAf8CAAHM
-        Af8BMwEAAZkB/wFmAQABzAH/AZkBAAHMAf8BzAEAAcwC/wEAAcwBAAEzAQAB/wEAAWYBAAH/AQABmQEA
-        AcwBMwIAAf8CMwEAAf8BMwFmAQAB/wEzAZkBAAH/ATMBzAEAAf8BMwH/AQAB/wFmAgAB/wFmATMBAAHM
-        AmYBAAH/AWYBmQEAAf8BZgHMAQABzAFmAf8BAAH/AZkCAAH/AZkBMwEAAf8BmQFmAQAB/wKZAQAB/wGZ
-        AcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHMAWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEz
-        AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
-        AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
-        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD//8A/wD/AP8AIQAB8QFz
-        AZIDAAHtC/cOAAHxAW4BkgEAAfcBEwENAfEBEgLsAe0B6wHtARIB9wHsARIB/wGKCAAB9AH3AVEBWQFT
-        AVIBSwMAAe8F/wb0CgAB9AH3AUUCFwFGAUUBAAG7AYsBigG7AbQBCQG7AWcBrgGzAXMBeAFzAbsBtAGK
-        BQAB8AFzAnoEUwFLAVEB8gIAAe8D/wf0AfMHAAHwAW4BFwHjAhcBRwEXAkUB8gH3Aa0BsgGzAawCswGt
-        A7MBkASzAwABUgJ6BVkBUwF5AUwBUgMAAe8C/wf0AvMFAAFMAuMGFwFvAkYBAAEHBbICrAKtBrMCAAHD
-        BnoDWQHvAUwBUgMAAe8B/wb0BPMEAAG9BeMEFwHvAkYBAAH0AbIBiwFsAbIIswGLAZABswIACHoBWQF6
-        AQcBSwFSAwAB7wb0BfMEAAJ1AeMBFgPjAhcB4wEHAUUBRgIAAbMBrQFsCLMBkAGLArMBAAH2ApoGegGZ
-        AQcBvAFRAVIDAAHvBfQG8wMAAfQClAJ1ARYD4wGTAQcBvAFFAUYCAA+zAQACoAKaAXoBmQS8AfEB9AFS
-        AXoDAAEHA/QH8wHyAwAElAHjAZMEvAHxAf8BRgHjAgAPswEAA6ABmgEaAfEB8AHxAfIC8wH/AVEBegH0
-        AgABBwL0B/MC8gMAA5oBlAEHAfEB8ALyAvMB/wFFAeMB9AEAD7MB9gHDAfQBAAGaAf8E9AHzAfQB/wFS
-        AXoB9gIAAQcB9AbzAvIC8QIAAfQBGwH0AQABlAH/BPQB8wH0Af8BTAHjAfQBAA+zBAABmgH/B/QBUgF6
-        Af8CAAEHBvMB8gEHAu8B9wYAAZQB/wf0AUwBFgH/AQABkQ6zBAABmgH/BPQB8wH3ARwBeQEbAwABBwXz
-        A/IB8QHwAbwGAAGUAf8E9AHzAfcBHAF0Ab0BAAH0AZIGswG0BrMBtAQAAfYB/wT0AfEBBwYAAQcE8wLy
-        AfEB8gHwAe8HAAL/BPQB8QHvBwAB9AH3Ae8C9wG7AQcB7wIHAu8BBwUAAv8C9AH/AfEHAAEHAvMC8gLx
-        AvABBwkAAv8C9AH/AfEaAAH/AQcB8AoAAQcB8wLyAvEC8AHxCgAB/wEHAfBIAAFCAU0BPgcAAT4DAAEo
-        AwABQAMAASADAAEBAQABAQYAAQEWAAP/gQAD/wHxAcABAwH/AfECAAH/AQEBwAEDAf8BAQIAAfgBAAHA
-        AQMB+AMAAeABAQHAAQMB4AEBAgABwAEBAcABAwHAAQECAAHAAQEBwAEDAcABAQGAAQABgAEBAcABAwGA
-        AQEBgAEAAYABAQHAAQMBgAEBAYABAAGAAQABwAEDAYABAAGAAQABEAEAAcABAwEQAQABgAEAAfABAAHA
-        AQMB8AEAAYABAAHwAQEBwAEDAfABAQIAAfABDwHAAQcB8AEPAeABAAH4AR8BwAEPAfgBHwL/AfgB/wHA
-        AR8B+An/Cw==
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
 </value>
-  </data>
-  <data name="Column_name.Text" xml:space="preserve">
-    <value>Name</value>
-  </data>
-  <data name="Column_length.Text" xml:space="preserve">
-    <value>Length (Bytes)</value>
-  </data>
-  <data name="Column_creationtime.Text" xml:space="preserve">
-    <value>Creation time</value>
-  </data>
-  <data name="Column_fileuid.Text" xml:space="preserve">
-    <value>File UID</value>
-  </data>
-  <data name="Column_openforwrite.Text" xml:space="preserve">
-    <value>Open for write</value>
-  </data>
-  <data name="Column_readonly.Text" xml:space="preserve">
-    <value>Readonly</value>
-  </data>
-  <data name="Column_changetime.Text" xml:space="preserve">
-    <value>Change time</value>
-  </data>
-  <data name="Column_modifytime.Text" xml:space="preserve">
-    <value>Modify time</value>
-  </data>
-  <data name="Column_accesstime.Text" xml:space="preserve">
-    <value>Access time</value>
-  </data>
-  <data name="Column_backuptime.Text" xml:space="preserve">
-    <value>Backup time</value>
-  </data>
-  <data name="Column_tag.Text" xml:space="preserve">
-    <value>Tag</value>
-  </data>
-  <data name="Column_StartBlock.Text" xml:space="preserve">
-    <value>Start block</value>
-  </data>
-  <data name="Column_Partition.Text" xml:space="preserve">
-    <value>Partition</value>
-  </data>
-  <data name="Column_FriendlyLen.Text" xml:space="preserve">
-    <value>Length</value>
-  </data>
-  <data name="Column_writtenBytes.Text" xml:space="preserve">
-    <value>Written bytes</value>
-  </data>
-  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>282, 490</value>
-  </data>
-  <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>145, 208</value>
   </data>
   <data name="提取ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 22</value>
   </data>
   <data name="提取ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Restore</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>210, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>SHA1 Checksum</value>
   </data>
   <data name="计算并更新ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>212, 22</value>
@@ -256,6 +148,12 @@
   </data>
   <data name="仅验证ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Validate only</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>210, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>SHA1 Checksum</value>
   </data>
   <data name="剪切目录ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>210, 22</value>
@@ -305,17 +203,123 @@
   <data name="解压索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Unarchive Index</value>
   </data>
+  <data name="ContextMenuStrip3.Size" type="System.Drawing.Size, System.Drawing">
+    <value>211, 224</value>
+  </data>
+  <data name="ContextMenuStrip3.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ImageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
+    <value>
+        AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
+        LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
+        ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAG
+        CwAAAk1TRnQBSQFMAgEBBAEAAZwBAwGcAQMBEAEAARABAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        AwABQAMAASADAAEBAQABCAYAAQgYAAGAAgABgAMAAoABAAGAAwABgAEAAYABAAKAAgADwAEAAcAB3AHA
+        AQAB8AHKAaYBAAEzBQABMwEAATMBAAEzAQACMwIAAxYBAAMcAQADIgEAAykBAANVAQADTQEAA0IBAAM5
+        AQABgAF8Af8BAAJQAf8BAAGTAQAB1gEAAf8B7AHMAQABxgHWAe8BAAHWAucBAAGQAakBrQIAAf8BMwMA
+        AWYDAAGZAwABzAIAATMDAAIzAgABMwFmAgABMwGZAgABMwHMAgABMwH/AgABZgMAAWYBMwIAAmYCAAFm
+        AZkCAAFmAcwCAAFmAf8CAAGZAwABmQEzAgABmQFmAgACmQIAAZkBzAIAAZkB/wIAAcwDAAHMATMCAAHM
+        AWYCAAHMAZkCAALMAgABzAH/AgAB/wFmAgAB/wGZAgAB/wHMAQABMwH/AgAB/wEAATMBAAEzAQABZgEA
+        ATMBAAGZAQABMwEAAcwBAAEzAQAB/wEAAf8BMwIAAzMBAAIzAWYBAAIzAZkBAAIzAcwBAAIzAf8BAAEz
+        AWYCAAEzAWYBMwEAATMCZgEAATMBZgGZAQABMwFmAcwBAAEzAWYB/wEAATMBmQIAATMBmQEzAQABMwGZ
+        AWYBAAEzApkBAAEzAZkBzAEAATMBmQH/AQABMwHMAgABMwHMATMBAAEzAcwBZgEAATMBzAGZAQABMwLM
+        AQABMwHMAf8BAAEzAf8BMwEAATMB/wFmAQABMwH/AZkBAAEzAf8BzAEAATMC/wEAAWYDAAFmAQABMwEA
+        AWYBAAFmAQABZgEAAZkBAAFmAQABzAEAAWYBAAH/AQABZgEzAgABZgIzAQABZgEzAWYBAAFmATMBmQEA
+        AWYBMwHMAQABZgEzAf8BAAJmAgACZgEzAQADZgEAAmYBmQEAAmYBzAEAAWYBmQIAAWYBmQEzAQABZgGZ
+        AWYBAAFmApkBAAFmAZkBzAEAAWYBmQH/AQABZgHMAgABZgHMATMBAAFmAcwBmQEAAWYCzAEAAWYBzAH/
+        AQABZgH/AgABZgH/ATMBAAFmAf8BmQEAAWYB/wHMAQABzAEAAf8BAAH/AQABzAEAApkCAAGZATMBmQEA
+        AZkBAAGZAQABmQEAAcwBAAGZAwABmQIzAQABmQEAAWYBAAGZATMBzAEAAZkBAAH/AQABmQFmAgABmQFm
+        ATMBAAGZATMBZgEAAZkBZgGZAQABmQFmAcwBAAGZATMB/wEAApkBMwEAApkBZgEAA5kBAAKZAcwBAAKZ
+        Af8BAAGZAcwCAAGZAcwBMwEAAWYBzAFmAQABmQHMAZkBAAGZAswBAAGZAcwB/wEAAZkB/wIAAZkB/wEz
+        AQABmQHMAWYBAAGZAf8BmQEAAZkB/wHMAQABmQL/AQABzAMAAZkBAAEzAQABzAEAAWYBAAHMAQABmQEA
+        AcwBAAHMAQABmQEzAgABzAIzAQABzAEzAWYBAAHMATMBmQEAAcwBMwHMAQABzAEzAf8BAAHMAWYCAAHM
+        AWYBMwEAAZkCZgEAAcwBZgGZAQABzAFmAcwBAAGZAWYB/wEAAcwBmQIAAcwBmQEzAQABzAGZAWYBAAHM
+        ApkBAAHMAZkBzAEAAcwBmQH/AQACzAIAAswBMwEAAswBZgEAAswBmQEAA8wBAALMAf8BAAHMAf8CAAHM
+        Af8BMwEAAZkB/wFmAQABzAH/AZkBAAHMAf8BzAEAAcwC/wEAAcwBAAEzAQAB/wEAAWYBAAH/AQABmQEA
+        AcwBMwIAAf8CMwEAAf8BMwFmAQAB/wEzAZkBAAH/ATMBzAEAAf8BMwH/AQAB/wFmAgAB/wFmATMBAAHM
+        AmYBAAH/AWYBmQEAAf8BZgHMAQABzAFmAf8BAAH/AZkCAAH/AZkBMwEAAf8BmQFmAQAB/wKZAQAB/wGZ
+        AcwBAAH/AZkB/wEAAf8BzAIAAf8BzAEzAQAB/wHMAWYBAAH/AcwBmQEAAf8CzAEAAf8BzAH/AQAC/wEz
+        AQABzAH/AWYBAAL/AZkBAAL/AcwBAAJmAf8BAAFmAf8BZgEAAWYC/wEAAf8CZgEAAf8BZgH/AQAC/wFm
+        AQABIQEAAaUBAANfAQADdwEAA4YBAAOWAQADywEAA7IBAAPXAQAD3QEAA+MBAAPqAQAD8QEAA/gBAAHw
+        AfsB/wEAAaQCoAEAA4ADAAH/AgAB/wMAAv8BAAH/AwAB/wEAAf8BAAL/AgAD//8A/wD/AP8AIQAB8QFz
+        AZIDAAHtC/cOAAHxAW4BkgEAAfcBEwENAfEBEgLsAe0B6wHtARIB9wHsARIB/wGKCAAB9AH3AVEBWQFT
+        AVIBSwMAAe8F/wb0CgAB9AH3AUUCFwFGAUUBAAG7AYsBigG7AbQBCQG7AWcBrgGzAXMBeAFzAbsBtAGK
+        BQAB8AFzAnoEUwFLAVEB8gIAAe8D/wf0AfMHAAHwAW4BFwHjAhcBRwEXAkUB8gH3Aa0BsgGzAawCswGt
+        A7MBkASzAwABUgJ6BVkBUwF5AUwBUgMAAe8C/wf0AvMFAAFMAuMGFwFvAkYBAAEHBbICrAKtBrMCAAHD
+        BnoDWQHvAUwBUgMAAe8B/wb0BPMEAAG9BeMEFwHvAkYBAAH0AbIBiwFsAbIIswGLAZABswIACHoBWQF6
+        AQcBSwFSAwAB7wb0BfMEAAJ1AeMBFgPjAhcB4wEHAUUBRgIAAbMBrQFsCLMBkAGLArMBAAH2ApoGegGZ
+        AQcBvAFRAVIDAAHvBfQG8wMAAfQClAJ1ARYD4wGTAQcBvAFFAUYCAA+zAQACoAKaAXoBmQS8AfEB9AFS
+        AXoDAAEHA/QH8wHyAwAElAHjAZMEvAHxAf8BRgHjAgAPswEAA6ABmgEaAfEB8AHxAfIC8wH/AVEBegH0
+        AgABBwL0B/MC8gMAA5oBlAEHAfEB8ALyAvMB/wFFAeMB9AEAD7MB9gHDAfQBAAGaAf8E9AHzAfQB/wFS
+        AXoB9gIAAQcB9AbzAvIC8QIAAfQBGwH0AQABlAH/BPQB8wH0Af8BTAHjAfQBAA+zBAABmgH/B/QBUgF6
+        Af8CAAEHBvMB8gEHAu8B9wYAAZQB/wf0AUwBFgH/AQABkQ6zBAABmgH/BPQB8wH3ARwBeQEbAwABBwXz
+        A/IB8QHwAbwGAAGUAf8E9AHzAfcBHAF0Ab0BAAH0AZIGswG0BrMBtAQAAfYB/wT0AfEBBwYAAQcE8wLy
+        AfEB8gHwAe8HAAL/BPQB8QHvBwAB9AH3Ae8C9wG7AQcB7wIHAu8BBwUAAv8C9AH/AfEHAAEHAvMC8gLx
+        AvABBwkAAv8C9AH/AfEaAAH/AQcB8AoAAQcB8wLyAvEC8AHxCgAB/wEHAfBIAAFCAU0BPgcAAT4DAAEo
+        AwABQAMAASADAAEBAQABAQYAAQEWAAP/gQAD/wHxAcABAwH/AfECAAH/AQEBwAEDAf8BAQIAAfgBAAHA
+        AQMB+AMAAeABAQHAAQMB4AEBAgABwAEBAcABAwHAAQECAAHAAQEBwAEDAcABAQGAAQABgAEBAcABAwGA
+        AQEBgAEAAYABAQHAAQMBgAEBAYABAAGAAQABwAEDAYABAAGAAQABEAEAAcABAwEQAQABgAEAAfABAAHA
+        AQMB8AEAAYABAAHwAQEBwAEDAfABAQIAAfABDwHAAQcB8AEPAeABAAH4AR8BwAEPAfgBHwL/AfgB/wHA
+        AR8B+An/Cw==
+</value>
+  </data>
+  <data name="TreeView1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer1.Panel1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="Column_name.Text" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Column_length.Text" xml:space="preserve">
+    <value>Length (Bytes)</value>
+  </data>
+  <data name="Column_creationtime.Text" xml:space="preserve">
+    <value>Creation time</value>
+  </data>
+  <data name="Column_fileuid.Text" xml:space="preserve">
+    <value>File UID</value>
+  </data>
+  <data name="Column_openforwrite.Text" xml:space="preserve">
+    <value>Open for write</value>
+  </data>
+  <data name="Column_readonly.Text" xml:space="preserve">
+    <value>Readonly</value>
+  </data>
+  <data name="Column_changetime.Text" xml:space="preserve">
+    <value>Change time</value>
+  </data>
+  <data name="Column_modifytime.Text" xml:space="preserve">
+    <value>Modify time</value>
+  </data>
+  <data name="Column_accesstime.Text" xml:space="preserve">
+    <value>Access time</value>
+  </data>
+  <data name="Column_backuptime.Text" xml:space="preserve">
+    <value>Backup time</value>
+  </data>
+  <data name="Column_tag.Text" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="Column_StartBlock.Text" xml:space="preserve">
+    <value>Start block</value>
+  </data>
+  <data name="Column_Partition.Text" xml:space="preserve">
+    <value>Partition</value>
+  </data>
+  <data name="Column_FriendlyLen.Text" xml:space="preserve">
+    <value>Length</value>
+  </data>
+  <data name="Column_writtenBytes.Text" xml:space="preserve">
+    <value>Written bytes</value>
+  </data>
   <data name="提取ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>281, 22</value>
   </data>
   <data name="提取ToolStripMenuItem.Text" xml:space="preserve">
     <value>Restore file</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
-    <value>SHA1 checksum</value>
   </data>
   <data name="计算并更新ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>212, 22</value>
@@ -334,6 +338,12 @@
   </data>
   <data name="仅验证ToolStripMenuItem.Text" xml:space="preserve">
     <value>Validate only</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="校验ToolStripMenuItem.Text" xml:space="preserve">
+    <value>SHA1 checksum</value>
   </data>
   <data name="移动到索引区ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>281, 22</value>
@@ -386,7 +396,7 @@
   <data name="导入文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxAAAAsQAa0jvXUAAAVySURBVFhHxZXdaxxVGMZ76Z/Q
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAVySURBVFhHxZXdaxxVGMZ76Z/Q
         S73sZS5zIxIpSBoEo1e98SIWLKFojSI1alGCre0SNaS11m2U0A0aOiFWZq3BWSWjs9DFXXTbXcI2s0pq
         p6bE03QTJm1aH5/3zMx+TmrEr8CPc+Zs5jy/854zMzsA/K/EDv6XxA62o24qNsCly5cwb8/DnrdRLpex
         vLwsw7H3bJfYwXZurq6y2fpPxLLfZZG7mEMoGztPHLGD7UQCvu8TaYO+dHS7qX/Wf27FxZXFK9KNnaud
@@ -443,12 +453,6 @@
   <data name="新建压缩文件ToolStripMenuItem.Text" xml:space="preserve">
     <value>Create archive file</value>
   </data>
-  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Write option</value>
-  </data>
   <data name="覆盖已有文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>297, 22</value>
   </data>
@@ -460,6 +464,12 @@
   </data>
   <data name="跳过符号链接ToolStripMenuItem.Text" xml:space="preserve">
     <value>Ignore symbolic link</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="选项ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Write option</value>
   </data>
   <data name="ToolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
     <value>278, 6</value>
@@ -497,12 +507,6 @@
   <data name="文件详情ToolStripMenuItem.Text" xml:space="preserve">
     <value>File details</value>
   </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>281, 22</value>
-  </data>
-  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Copy to clipboard</value>
-  </data>
   <data name="复制选中信息ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>190, 22</value>
   </data>
@@ -523,6 +527,31 @@
   </data>
   <data name="XAttrToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>190, 22</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>281, 22</value>
+  </data>
+  <data name="复制信息到剪贴板ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Copy to clipboard</value>
+  </data>
+  <data name="ContextMenuStrip1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>282, 490</value>
+  </data>
+  <data name="ContextMenuStrip1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ListView1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer2.Panel1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="S60ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="S60ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>144, 22</value>
@@ -581,14 +610,33 @@
   <data name="LogarithmicToolStripMenuItem.Text" xml:space="preserve">
     <value>Logarithmic</value>
   </data>
-  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>49, 21</value>
+  <data name="ContextMenuStrip2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>145, 208</value>
   </data>
-  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Tape</value>
+  <data name="ContextMenuStrip2.ToolTip" xml:space="preserve">
+    <value />
   </data>
-  <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Index</value>
+  <data name="Chart1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer2.Panel2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer1.Panel2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="SplitContainer1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="读取索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="读取索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>221, 22</value>
@@ -611,7 +659,7 @@
   <data name="备份当前索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAICSURBVDhPnZLdS5NRHMd31z/h
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsAAAA7AAWrWiQkAAAICSURBVDhPnZLdS5NRHMd31z/h
         jdCFt5YvjNZiOnjKNRyzhiF4IUphYb5tWSkl9oJGTd1AneHMSep0Ek5U8gVCiejCqAQNq41oiUNNsUkX
         wdfzO+fR49aF4g++nPO8fD6/55zzaABojlKwJ0GNekctEoyPxUAJjmxjOLCF/r4N9LyIotOzArfrJ5zP
         wgKePsFHe/VnlN/8KDqTgMCZacDV+pddHijZVQpUyZX8V1IQGNrkgqbG3/+De1BixHMh6Hu5zgX1938d
@@ -629,13 +677,23 @@
   <data name="备份当前索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Export backup</value>
   </data>
-  <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Data</value>
+  <data name="索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
+  </data>
+  <data name="索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
+  <data name="索引ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Index</value>
   </data>
   <data name="写入数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsEAAA7BAbiRa+0AAACbSURBVDhPvZJRDoMgEAUfXxAu
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsAAAA7AAWrWiQkAAACbSURBVDhPvZJRDoMgEAUfXxAu
         4VW4BufsAbe71Kdbuhptk35MENyZGANE5CfCw9aaROScPwjF3nuIC4G8yZEU4SN4LBDjbkBBSukVkFpH
         JBo+gpEtwIgP6ScOvEjCwBxSoMOoenYrQBgppXwXMOz9LP8vcCbranfn/CfOIjkMXBG9bDd4C6wrDA7O
         mEh0vwe8rM8DP+wxkbKI4Al9KN3pTJfS/gAAAABJRU5ErkJggg==
@@ -647,6 +705,13 @@
   <data name="写入数据ToolStripMenuItem.Text" xml:space="preserve">
     <value>Write to tape</value>
   </data>
+  <data name="更新数据区索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
+  </data>
   <data name="更新数据区索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>253, 22</value>
   </data>
@@ -656,7 +721,7 @@
   <data name="更新全部索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsEAAA7BAbiRa+0AAABzSURBVDhPrY7BEYAwCAT5W4IP
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsAAAA7AAWrWiQkAAABzSURBVDhPrY7BEYAwCAT5W4IP
         v3ZjJVaWpuwEg+NliEGcYB774OB2IGb+hRmCZZ/5xtwLZiiosisxQ5Smgy48SRM8y1+SangrAy0RKgGW
         VlGDO/S6ykBLisA69GgEEYpgSytlazfjPpAhG7sYL4hQBHGYTpSgKEpq5pBgAAAAAElFTkSuQmCC
 </value>
@@ -667,14 +732,27 @@
   <data name="更新全部索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Update all indexes (Eject tape)</value>
   </data>
-  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>Automation</value>
+  <data name="数据操作ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
+  <data name="数据操作ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 6</value>
   </data>
   <data name="ToolStripTextBox2.Size" type="System.Drawing.Size, System.Drawing">
     <value>200, 16</value>
   </data>
   <data name="ToolStripTextBox2.Text" xml:space="preserve">
     <value>---------On finished writing---------</value>
+  </data>
+  <data name="WA0ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="WA0ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>348, 22</value>
@@ -700,11 +778,12 @@
   <data name="WA3ToolStripMenuItem.Text" xml:space="preserve">
     <value>Update all indexes and eject</value>
   </data>
-  <data name="电源选项ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>348, 22</value>
-  </data>
-  <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
-    <value>Power plan</value>
+  <data name="无更改ToolStripMenuItem1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="无更改ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>190, 22</value>
@@ -736,6 +815,12 @@
   <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Custom power plan</value>
   </data>
+  <data name="电源选项ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
   <data name="ToolStripTextBox1.Size" type="System.Drawing.Size, System.Drawing">
     <value>200, 16</value>
   </data>
@@ -754,11 +839,8 @@
   <data name="异步校验CPU占用高ToolStripMenuItem.Text" xml:space="preserve">
     <value>Calculate checksum async</value>
   </data>
-  <data name="去重SHA1ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+  <data name="去重ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>348, 22</value>
-  </data>
-  <data name="去重SHA1ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Dedupe</value>
   </data>
   <data name="索引间隔36GiBToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>348, 22</value>
@@ -802,11 +884,12 @@
   <data name="APToolStripMenuItem.Text" xml:space="preserve">
     <value>Hold up when capacity loss is detected</value>
   </data>
-  <data name="容量缺失检测参数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>348, 22</value>
-  </data>
-  <data name="容量缺失检测参数ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Capacity loss speed interval</value>
+  <data name="速度下限ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="速度下限ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>173, 22</value>
@@ -829,17 +912,24 @@
   <data name="错误率ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>173, 22</value>
   </data>
+  <data name="容量缺失检测参数ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
+  </data>
+  <data name="容量缺失检测参数ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Capacity loss speed interval</value>
+  </data>
   <data name="重装带前清洁次数3ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>348, 22</value>
   </data>
   <data name="重装带前清洁次数3ToolStripMenuItem.Text" xml:space="preserve">
     <value>Clean cycle before rethreading: 3</value>
   </data>
-  <data name="电源选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>348, 22</value>
-  </data>
-  <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Power plan</value>
+  <data name="无更改ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="无更改ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>190, 22</value>
@@ -871,6 +961,12 @@
   <data name="其他ToolStripMenuItem.Text" xml:space="preserve">
     <value>Custom power plan</value>
   </data>
+  <data name="电源选项ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
+  </data>
+  <data name="电源选项ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Power plan</value>
+  </data>
   <data name="ToolStripSeparator7.Size" type="System.Drawing.Size, System.Drawing">
     <value>345, 6</value>
   </data>
@@ -898,8 +994,21 @@
   <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
     <value>Display file count</value>
   </data>
-  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Roll back</value>
+  <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
+  </data>
+  <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
+    <value>Automation</value>
+  </data>
+  <data name="ToolStripSeparator6.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 6</value>
+  </data>
+  <data name="清除当前索引后数据ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="清除当前索引后数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>300, 22</value>
@@ -907,11 +1016,25 @@
   <data name="清除当前索引后数据ToolStripMenuItem.Text" xml:space="preserve">
     <value>Clear data after current index</value>
   </data>
+  <data name="回滚ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
+  </data>
   <data name="回滚ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>300, 22</value>
   </data>
   <data name="回滚ToolStripMenuItem.Text" xml:space="preserve">
     <value>Roll back one generation</value>
+  </data>
+  <data name="查找指定位置前的索引ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="查找指定位置前的索引ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>300, 22</value>
@@ -919,11 +1042,17 @@
   <data name="查找指定位置前的索引ToolStripMenuItem.Text" xml:space="preserve">
     <value>Search index before specified position</value>
   </data>
-  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>47, 21</value>
+  <data name="回退ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>143, 22</value>
   </data>
-  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Data</value>
+  <data name="回退ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Roll back</value>
+  </data>
+  <data name="磁带ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>49, 21</value>
+  </data>
+  <data name="磁带ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Tape</value>
   </data>
   <data name="格式化ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>284, 22</value>
@@ -937,11 +1066,12 @@
   <data name="设置高度ToolStripMenuItem.Text" xml:space="preserve">
     <value>Set write pointer to current position</value>
   </data>
-  <data name="加密ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>284, 22</value>
-  </data>
-  <data name="加密ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Encryption</value>
+  <data name="设置密钥ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="设置密钥ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>154, 22</value>
@@ -955,10 +1085,16 @@
   <data name="设置密码ToolStripMenuItem.Text" xml:space="preserve">
     <value>Set Password</value>
   </data>
+  <data name="加密ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>284, 22</value>
+  </data>
+  <data name="加密ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Encryption</value>
+  </data>
   <data name="合并SHA1ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAGZSURBVDhPY/j//z9FGKsgCG/d
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAADsAAAA7AAWrWiQkAAAGZSURBVDhPY/j//z9FGKsgCG/d
         8uP/5k0//j+4//P/3Tvf/9+48e3/tatf/l+69Ol/ee35/9FR24HK8BiwacPP/6tXfwUyMUFa6f7/Ts4T
         QUwcBjAz/4djEADSf//9A9PP3nz6H19yHCaP24Dlyz79nznjIZALBED+n39/wfSjF+/BdHDoVjCN0wAY
         XrkaaAgSP6vtMAofrAFbgC1d8hmsoLL6AZiOTDgCpt0CgYEHpL19FiMMwAgwoAQMZxetAtNJ+Q1gOjp5
@@ -977,7 +1113,7 @@
   <data name="校验源文件ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxAAAAsQAa0jvXUAAAEMSURBVDhPldDBToNAEAbgvfcV
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACw8AAAsPAZL5A6UAAAEMSURBVDhPldDBToNAEAbgvfcV
         fEMPfSR74SEaE84+AQchrSvBSpEiUlzbpvndmc0AJazEw5/ZA/+XGRQAzuphhZmoMAzV+nGt4jjuejdA
         uS+Rv+fI0gx6q5E8J4ii6Ab5E6iKioPlHUe/aGySzRBgxA+UrkwIbUPv7DUbA4xMAlw+uC2GiBSDIOje
         fqCyZUI++nOkNMwk0H61PWJD76d7xVCRF9i97ZDq1A+YxnCoKGWJnESIHzg6gNLUDW8xRih+wNhy2yN0
@@ -1009,11 +1145,12 @@
   <data name="启动iSCSI服务ToolStripMenuItem.Text" xml:space="preserve">
     <value>Start iSCSI Service</value>
   </data>
-  <data name="驱动器锁定状态ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>284, 22</value>
-  </data>
-  <data name="驱动器锁定状态ToolStripMenuItem.Text" xml:space="preserve">
-    <value>Drive lock</value>
+  <data name="加锁ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACwwAAAsMAT9AIsgAAAA2SURBVDhPpcixEQAgAAMh9186
+        LkDhnwUNZ9sXZsEsmAWzYBbMglkwC2bBLJgFs2AWzIL5bucCxa39H+iOy+4AAAAASUVORK5CYII=
+</value>
   </data>
   <data name="加锁ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>158, 22</value>
@@ -1026,6 +1163,21 @@
   </data>
   <data name="解锁ToolStripMenuItem.Text" xml:space="preserve">
     <value>Decrease lock</value>
+  </data>
+  <data name="驱动器锁定状态ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>284, 22</value>
+  </data>
+  <data name="驱动器锁定状态ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Drive lock</value>
+  </data>
+  <data name="数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>47, 21</value>
+  </data>
+  <data name="数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Data</value>
+  </data>
+  <data name="MenuStrip1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="ToolStripDropDownButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1082,13 +1234,16 @@
     <value>Clean</value>
   </data>
   <data name="ToolStripStatusLabel4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>983, 21</value>
+    <value>894, 21</value>
   </data>
   <data name="ToolStripStatusLabel2.Size" type="System.Drawing.Size, System.Drawing">
     <value>180, 21</value>
   </data>
   <data name="ToolStripStatusLabel2.Text" xml:space="preserve">
     <value>Capacity remaining: Unknown</value>
+  </data>
+  <data name="StatusStrip1.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="ToolStripButton1.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -1179,6 +1334,29 @@
   </data>
   <data name="ToolStripButton3.Text" xml:space="preserve">
     <value>Update indexes and eject</value>
+  </data>
+  <data name="ToolStripButton7.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABWSURBVDhPtZDJDQAgCAQpmwppS6NhP4IHqJvMw4SZh/R1
+        zFwa+owNcioCSUQ6ocgohyIzGSwjOxm4kVMZmEhEBiaQQfUH8+onqP7oD7yjFSaQQfWbEVWc8Iy4Bg2h
+        EgAAAABJRU5ErkJggg==
+</value>
+  </data>
+  <data name="ToolStripButton7.Text" xml:space="preserve">
+    <value>Force eject</value>
+  </data>
+  <data name="ToolStrip1.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="StatusStrip2.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="TextBoxSelectedPath.ToolTip" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ContextMenuStrip4.ToolTip" xml:space="preserve">
+    <value />
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -2386,5 +2564,8 @@
         69g6to6tY+vYOraOrWPr2Dq2jq1j69g6to6tY+vYOraOrWPr2Dq2jq1j69g6to6tY+vYOraOrWPr2Dq2
         jq1j6/j/0/H/AnU44wBriU+yAAAAAElFTkSuQmCC
 </value>
+  </data>
+  <data name="$this.ToolTip" xml:space="preserve">
+    <value />
   </data>
 </root>
