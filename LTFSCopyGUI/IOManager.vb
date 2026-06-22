@@ -4,15 +4,11 @@ Imports System.Security.Cryptography
 Imports System.Threading
 Imports Blake3
 Imports System.IO.Hashing
-Imports LTFSCopyGUI
 Imports System.Runtime.InteropServices
 Imports NAudio.Wave
 Imports System.Text
-Imports System.Net.Sockets
 Imports System.Globalization
-Imports LTFSCopyGUI.IOManager
 Imports System.Xml.Serialization
-Imports SetupAPIHelper
 Imports System.Buffers
 Imports System.Text.RegularExpressions
 
@@ -2370,6 +2366,143 @@ Public Class ZBCDeviceHelper
         End Function
 
     End Class
+End Class
+Public Class DiskQuery
+
+    '========================
+    ' Public function
+    '========================
+    Public Shared Function QuerySectorInfo(hDevice As IntPtr) As (LBACount As ULong, SectorSize As Integer)
+
+        Dim totalBytes As Long = GetDiskLength(hDevice)
+        Dim sectorSize As Integer = GetSectorSize(hDevice)
+
+        If sectorSize <= 0 Then Throw New Exception("Invalid sector size")
+
+        Dim lbaCount As ULong = CULng(totalBytes) \ CULng(sectorSize)
+
+        Return (lbaCount, sectorSize)
+
+    End Function
+
+    '========================
+    ' 1. Total size (bytes)
+    '========================
+    Public Shared Function GetDiskLength(hDevice As IntPtr) As Long
+
+        Const IOCTL_DISK_GET_LENGTH_INFO As UInteger = &H7405C
+
+        Dim outInfo As Long = 0
+        Dim bytesReturned As Integer
+
+        Dim outSize As Integer = Marshal.SizeOf(Of Long)()
+
+        Dim outPtr As IntPtr = Marshal.AllocHGlobal(outSize)
+
+        Try
+            Dim ok = TapeUtils.DeviceIoControl(
+                hDevice,
+                IOCTL_DISK_GET_LENGTH_INFO,
+                IntPtr.Zero,
+                0,
+                outPtr,
+                outSize,
+                bytesReturned,
+                IntPtr.Zero)
+
+            If Not ok Then Throw New System.ComponentModel.Win32Exception()
+
+            outInfo = Marshal.ReadInt64(outPtr)
+
+            Return outInfo
+
+        Finally
+            Marshal.FreeHGlobal(outPtr)
+        End Try
+
+    End Function
+
+    '========================
+    ' 2. Sector size
+    '========================
+    Public Shared Function GetSectorSize(hDevice As IntPtr) As Integer
+
+        Const IOCTL_STORAGE_QUERY_PROPERTY As UInteger = &H2D1400
+
+        Const PropertyStandardQuery As UInteger = 0
+        Const StorageAccessAlignmentProperty As UInteger = 6
+
+        ' input buffer
+        Dim querySize As Integer = Marshal.SizeOf(Of STORAGE_PROPERTY_QUERY)()
+        Dim inPtr As IntPtr = Marshal.AllocHGlobal(querySize)
+
+        ' output buffer
+        Dim outSize As Integer = 1024
+        Dim outPtr As IntPtr = Marshal.AllocHGlobal(outSize)
+
+        Dim bytesReturned As Integer
+
+        Try
+            ' fill input struct
+            Dim query As New STORAGE_PROPERTY_QUERY With {
+                .PropertyId = StorageAccessAlignmentProperty,
+                .QueryType = PropertyStandardQuery,
+                .AdditionalParameters = 0
+            }
+
+            Marshal.StructureToPtr(query, inPtr, False)
+
+            Dim ok = TapeUtils.DeviceIoControl(
+                hDevice,
+                IOCTL_STORAGE_QUERY_PROPERTY,
+                inPtr,
+                querySize,
+                outPtr,
+                outSize,
+                bytesReturned,
+                IntPtr.Zero)
+
+            If Not ok Then Throw New System.ComponentModel.Win32Exception()
+
+            Dim desc As STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR =
+                Marshal.PtrToStructure(Of STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR)(outPtr)
+
+            Return CInt(desc.BytesPerLogicalSector)
+
+        Finally
+            Marshal.FreeHGlobal(inPtr)
+            Marshal.FreeHGlobal(outPtr)
+        End Try
+
+    End Function
+
+    '========================
+    ' Structures
+    '========================
+
+    <StructLayout(LayoutKind.Sequential)>
+    Private Structure GET_LENGTH_INFORMATION
+        Public Length As Long
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Private Structure STORAGE_PROPERTY_QUERY
+        Public PropertyId As UInteger
+        Public QueryType As UInteger
+        Public AdditionalParameters As Byte
+    End Structure
+
+    <StructLayout(LayoutKind.Sequential)>
+    Private Structure STORAGE_ACCESS_ALIGNMENT_DESCRIPTOR
+        Public Version As UInteger
+        Public Size As UInteger
+        Public BytesPerCacheLine As UInteger
+        Public BytesOffsetForCacheAlignment As UInteger
+        Public BytesPerLogicalSector As UInteger
+        Public BytesPerPhysicalSector As UInteger
+        Public BytesOffsetForSectorAlignment As UInteger
+    End Structure
+
 End Class
 Public Class ExplorerUtils
     Implements IComparer(Of String)
