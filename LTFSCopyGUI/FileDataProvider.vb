@@ -1,9 +1,7 @@
-Imports System
 Imports System.Collections.Concurrent
 Imports System.IO
 Imports System.IO.Pipelines
 Imports System.Threading
-Imports System.Threading.Tasks
 Imports System.Buffers
 Imports System.Runtime.InteropServices
 
@@ -171,7 +169,7 @@ Public Class FileDataProvider
                             If res.IsCanceled OrElse res.IsCompleted Then Exit While
                         End If
                     End If
-                    Else
+                Else
                     ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
                     Await StreamFileToPipeAsync(fr, _cts.Token)
                 End If
@@ -316,4 +314,176 @@ Public Class FileDataProvider
         Catch
         End Try
     End Function
+End Class
+Public Class HardDriveDataProvider
+    Private ReadOnly _pipe As Pipe
+    Private ReadOnly _writer As PipeWriter
+    Public ReadOnly Property Reader As PipeReader
+    Public ReadOnly RingBuffer As SpscRingBuffer
+    Private _ringBufferEnabled As Boolean
+
+    Private ReadOnly _cts As New CancellationTokenSource()
+
+    Private _started As Integer = 0
+    Public Property DevicePath As String
+    Public Property StartLBA As ULong
+    Public Property SectorCount As Long
+    Public Property SectorLength As Integer = 512
+    Public Property SectorLenUpdated As Boolean = False
+
+    Public Class Config
+        Public Property DrivePath As String
+        Public Property StartLBA As ULong
+        Public Property SectorCount As Long
+    End Class
+    ' 参数：
+    ' - pipeBufferMiB: Pipe 背压阈值（默认 256MiB）
+    Public Sub New(path As String, StartLBA As ULong, SectorCount As Long,
+                   Optional pipeBufferBytes As Long = 256 << 20)
+
+        _ringBufferEnabled = My.Settings.LTFSWriter_RingBufferEnabled
+        DevicePath = path
+        Me.StartLBA = StartLBA
+        Me.SectorCount = SectorCount
+        If _ringBufferEnabled Then
+            RingBuffer = New SpscRingBuffer(pipeBufferBytes)
+        Else
+            Dim pause As Long = pipeBufferBytes
+            Dim resumeTh As Long = Math.Max(1L, (pause \ 4) * 3)
+            _pipe = New Pipe(New PipeOptions(
+                pauseWriterThreshold:=pause,
+                resumeWriterThreshold:=resumeTh,
+                minimumSegmentSize:=My.Settings.LTFSWriter_MinimumSegmentSize,
+                useSynchronizationContext:=False
+            ))
+            Reader = _pipe.Reader
+            _writer = _pipe.Writer
+        End If
+    End Sub
+
+    Public Sub Start()
+        If Interlocked.Exchange(_started, 1) <> 0 Then Return
+        Task.Run(AddressOf ProducerLoopAsync)
+    End Sub
+
+
+    Public Sub Cancel()
+        _cts.Cancel()
+    End Sub
+
+    Public Async Function CompleteAsync() As Task
+        Try
+            _cts.Cancel()
+        Finally
+            Try
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
+            Catch
+            End Try
+        End Try
+    End Function
+
+    Private Async Function ProducerLoopAsync() As Task
+        Try
+            While Not _cts.IsCancellationRequested
+
+                ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
+                Await StreamDiskToPipeAsync(DevicePath, StartLBA, SectorCount, _cts.Token)
+
+            End While
+        Catch ex As Exception
+            MessageBox.Show(ex.ToString())
+            Try
+                If _ringBufferEnabled Then
+                    RingBuffer.Complete()
+                Else
+                    _writer.Complete()
+                    Reader.Complete()
+                End If
+            Catch
+            End Try
+        End Try
+    End Function
+
+    Private Sub WriteAllToRing(data As Byte(), ct As CancellationToken)
+        Dim offset As Integer = 0
+        While offset < data.Length
+            Dim seg = RingBuffer.GetWriteSegment(1, ct)
+            Dim n As Integer = Math.Min(seg.Count, data.Length - offset)
+            Buffer.BlockCopy(data, offset, seg.Array, seg.Offset, n)
+            RingBuffer.AdvanceWrite(n)
+            offset += n
+        End While
+    End Sub
+    Private Async Function StreamDiskToPipeAsync(path As String, StartLBA As ULong, SectorCount As Long, ct As CancellationToken) As Task
+        Dim driveHandle As IntPtr
+        If Not TapeUtils.OpenTapeDrive(path, driveHandle) Then
+            Throw New System.ComponentModel.Win32Exception(TapeUtils.GetLastError())
+        End If
+        Try
+            Dim batchSize As Integer = 128
+            With DiskQuery.QuerySectorInfo(driveHandle)
+                SectorLength = .SectorSize
+                batchSize = 65536 \ SectorLength
+                If SectorCount < 0 Then
+                    SectorCount = .LBACount - StartLBA
+                End If
+                Me.SectorCount = SectorCount
+                SectorLenUpdated = True
+            End With
+            Dim LBA As ULong = StartLBA
+            Dim EndLBA As ULong = StartLBA + SectorCount - 1
+            If _ringBufferEnabled Then
+                Dim minChunk As Integer = sectorLength * batchSize
+                While Not ct.IsCancellationRequested
+                    If LBA > EndLBA Then Exit While
+                    Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
+                    If seg.Count = 0 Then
+                        Exit While
+                    End If
+                    Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
+                    CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
+                    CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
+                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, batch * SectorLength)
+                    LBA += batch
+                    Marshal.Copy(dataPtr, seg.Array, seg.Offset, batch * sectorLength)
+                    Marshal.FreeHGlobal(dataPtr)
+                    RingBuffer.AdvanceWrite(batch * sectorLength)
+                End While
+            Else
+                Dim minSize As Integer = sectorLength * batchSize
+                While Not ct.IsCancellationRequested
+                    If LBA > EndLBA Then Exit While
+                    Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
+                    Dim seg As ArraySegment(Of Byte)
+                    If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
+                        Throw New Exception("TryGetArray failed")
+                    End If
+                    Dim cap As Integer = Math.Min(minSize, seg.Count)
+                    Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
+                    CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
+                    CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
+                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, batch * SectorLength)
+                    LBA += batch
+                    Marshal.Copy(dataPtr, seg.Array, seg.Offset, batch * sectorLength)
+                    Marshal.FreeHGlobal(dataPtr)
+                    _writer.Advance(batch * sectorLength)
+                    Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
+                    If result.IsCanceled OrElse result.IsCompleted Then Exit While
+                End While
+            End If
+        Catch ex As Exception
+            Throw ex
+        Finally
+            TapeUtils.CloseTapeDrive(driveHandle)
+        End Try
+
+    End Function
+
 End Class
