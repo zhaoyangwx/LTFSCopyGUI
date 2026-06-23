@@ -441,39 +441,55 @@ Public Class HardDriveDataProvider
                 Dim minChunk As Integer = sectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
-                    Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
-                    If seg.Count = 0 Then
-                        Exit While
-                    End If
                     Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim totalBytes As Integer = batch * SectorLength
                     Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
                     CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
                     CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
-                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, batch * SectorLength)
+                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, totalBytes)
                     LBA += batch
-                    Marshal.Copy(dataPtr, seg.Array, seg.Offset, batch * sectorLength)
+
+                    Dim remaining As Integer = totalBytes
+                    Dim srcOffset As Integer = 0
+                    While remaining > 0
+                        Dim seg = RingBuffer.GetWriteSegment(remaining, ct)
+                        If seg.Count = 0 Then Exit While
+                        Dim toCopy As Integer = Math.Min(remaining, seg.Count)
+                        Marshal.Copy(IntPtr.Add(dataPtr, srcOffset), seg.Array, seg.Offset, toCopy)
+                        RingBuffer.AdvanceWrite(toCopy)
+                        srcOffset += toCopy
+                        remaining -= toCopy
+                    End While
                     Marshal.FreeHGlobal(dataPtr)
-                    RingBuffer.AdvanceWrite(batch * sectorLength)
                 End While
             Else
                 Dim minSize As Integer = sectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
-                    Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
-                    Dim seg As ArraySegment(Of Byte)
-                    If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
-                        Throw New Exception("TryGetArray failed")
-                    End If
-                    Dim cap As Integer = Math.Min(minSize, seg.Count)
                     Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim totalBytes As Integer = batch * SectorLength
                     Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
                     CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
                     CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
-                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, batch * SectorLength)
+                    0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, totalBytes)
                     LBA += batch
-                    Marshal.Copy(dataPtr, seg.Array, seg.Offset, batch * sectorLength)
+
+                    Dim remaining As Integer = totalBytes
+                    Dim srcOffset As Integer = 0
+                    While remaining > 0
+                        Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
+                        Dim seg As ArraySegment(Of Byte)
+                        If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
+                            Throw New Exception("TryGetArray failed")
+                        End If
+                        Dim cap As Integer = Math.Min(minSize, seg.Count)
+                        Dim toCopy As Integer = Math.Min(remaining, cap)
+                        Marshal.Copy(IntPtr.Add(dataPtr, srcOffset), seg.Array, seg.Offset, toCopy)
+                        _writer.Advance(toCopy)
+                        srcOffset += toCopy
+                        remaining -= toCopy
+                    End While
                     Marshal.FreeHGlobal(dataPtr)
-                    _writer.Advance(batch * sectorLength)
                     Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
                     If result.IsCanceled OrElse result.IsCompleted Then Exit While
                 End While
