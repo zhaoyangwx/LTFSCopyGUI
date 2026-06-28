@@ -3677,22 +3677,32 @@ Public Class LTFSWriter
                                         End If
                                     ElseIf sense(2) And &HF <> 0 Then
                                         PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                                        Try
-                                            Throw New Exception("SCSI sense error")
-                                        Catch ex As Exception
-                                            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
-                                                Case DialogResult.Abort
-                                                    fs.Close()
-                                                    StopFlag = True
-                                                    Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                Case DialogResult.Retry
-                                                    readsucc = False
-                                                Case DialogResult.Ignore
-                                                    readsucc = True
-                                                    ignored = True
-                                                    Exit While
-                                            End Select
-                                        End Try
+                                        Dim AutoIgnore As Boolean = False
+                                        If My.Settings.LTFSWriter_IgnoreILI Then
+                                            Dim DriveCode As UShort = CUShort(sense(16)) << 8 Or sense(17)
+                                            If DriveCode = &H2C72 Then
+                                                AutoIgnore = True
+                                            End If
+                                        End If
+                                        If Not AutoIgnore Then
+                                            Try
+                                                Throw New Exception("SCSI sense error")
+                                            Catch ex As Exception
+                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Case DialogResult.Abort
+                                                        fs.Close()
+                                                        StopFlag = True
+                                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                    Case DialogResult.Retry
+                                                        readsucc = False
+                                                    Case DialogResult.Ignore
+                                                        readsucc = True
+                                                        ignored = True
+                                                        Exit While
+                                                End Select
+                                            End Try
+                                        End If
+
                                     Else
                                         readsucc = True
                                     End If

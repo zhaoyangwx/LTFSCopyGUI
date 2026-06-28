@@ -563,6 +563,21 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("忽略长度错误"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_IgnoreILI")>
+        Public Property LTFSWriter_IgnoreILI() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_IgnoreILI"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_IgnoreILI") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("忽略Volume Overflow"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("False"),
