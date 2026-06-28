@@ -977,4 +977,13 @@ P0Size和P1Size如果都不为65535，则两者总和不得超过磁带容量</v
   <data name="ResText_DeleteFin" xml:space="preserve">
     <value>删除完成</value>
   </data>
+  <data name="ResText_NotOpened" xml:space="preserve">
+    <value>未打开</value>
+  </data>
+  <data name="ResText_ForceEjectConfirm" xml:space="preserve">
+    <value>未写入的数据可能会丢失，并导致LTFS索引不一致。是否弹出？</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_IgnoreILI" xml:space="preserve">
+    <value>忽略长度错误</value>
+  </data>
 </root>

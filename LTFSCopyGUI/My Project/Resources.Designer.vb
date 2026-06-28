@@ -435,6 +435,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 忽略长度错误 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_IgnoreILI() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_IgnoreILI", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 忽略Volume Overflow 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_IgnoreVolumeOverflow() As String
@@ -1263,6 +1272,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 未写入的数据可能会丢失，并导致LTFS索引不一致。是否弹出？ 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_ForceEjectConfirm() As String
+            Get
+                Return ResourceManager.GetString("ResText_ForceEjectConfirm", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 大小： 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property ResText_FSizeP() As String
@@ -1592,6 +1610,15 @@ Namespace My.Resources
         Friend ReadOnly Property ResText_NoSLim() As String
             Get
                 Return ResourceManager.GetString("ResText_NoSLim", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 未打开 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property ResText_NotOpened() As String
+            Get
+                Return ResourceManager.GetString("ResText_NotOpened", resourceCulture)
             End Get
         End Property
         

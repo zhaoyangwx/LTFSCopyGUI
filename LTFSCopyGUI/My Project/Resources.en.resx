@@ -966,4 +966,13 @@ Enable only when memory usage is abnormally high</value>
   <data name="ResText_DeleteFin" xml:space="preserve">
     <value>Delete finished</value>
   </data>
+  <data name="ResText_NotOpened" xml:space="preserve">
+    <value>Not opened</value>
+  </data>
+  <data name="ResText_ForceEjectConfirm" xml:space="preserve">
+    <value>Force ejecting may result in data loss and leave the LTFS volume in an inconsistent state. Force eject anyway?</value>
+  </data>
+  <data name="PropertyDescription_LTFSWriter_IgnoreILI" xml:space="preserve">
+    <value>Ignore ILI</value>
+  </data>
 </root>
