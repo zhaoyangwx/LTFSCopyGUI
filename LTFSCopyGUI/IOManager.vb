@@ -99,7 +99,7 @@ Public Class IOManager
         Dim tb As String = ""
         Dim ln As New StringBuilder
         For i As Integer = 0 To bytes.Length - 1
-            If i Mod 16 = 0 And TextShow Then
+            If i Mod 16 = 0 AndAlso TextShow Then
                 ln.Append("|" & Hex(i).PadLeft(5) & "h: ")
             End If
             ln.Append(Convert.ToString((bytes(i) And &HFF) + &H100, 16).Substring(1).ToUpper)

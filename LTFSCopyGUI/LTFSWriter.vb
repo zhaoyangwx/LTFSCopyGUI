@@ -3680,7 +3680,12 @@ Public Class LTFSWriter
                                         Dim AutoIgnore As Boolean = False
                                         If My.Settings.LTFSWriter_IgnoreILI Then
                                             Dim DriveCode As UShort = CUShort(sense(16)) << 8 Or sense(17)
-                                            If DriveCode = &H2C72 Then
+                                            If DriveCode = &H2C72 OrElse DriveCode = &H2C73 Then
+                                                AutoIgnore = True
+                                            ElseIf DriveCode = &H3021 Then 'Filemark
+                                                'Skip index
+                                                While TapeUtils.ReadBlock(driveHandle, Nothing, CurrentBlockLen).Length > 0
+                                                End While
                                                 AutoIgnore = True
                                             End If
                                         End If
@@ -9228,6 +9233,7 @@ Public Class LTFSWriter
         svc.driveHandle = driveHandle
         svc.BlockSize = plabel.blocksize
         svc.ExtraPartitionCount = ExtraPartitionCount
+        If My.Settings.LTFSWriter_LogEnabled Then svc.LogCommand = True
         SyncLock TapeUtils.SCSIOperationLock
             svc.StartService($"iqn.2019-01.com.ltfscopygui:ltfswriter{If(CurrDrive IsNot Nothing, $":{CurrDrive.SerialNumber}", "")}")
             MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
