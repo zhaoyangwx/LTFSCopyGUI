@@ -913,7 +913,7 @@ Public Class LTFSConfigurator
                                 If SaveFileDialog2.ShowDialog = DialogResult.OK Then
                                     IO.File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
                                 End If
-                                TextBoxDebugOutput.Text &= IOManager.Byte2Hex(DumpData, True)
+                                TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(DumpData, True))
                                 Me.Enabled = True
                             End Sub)
                  End Sub)

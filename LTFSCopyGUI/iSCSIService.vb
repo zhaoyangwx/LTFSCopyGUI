@@ -1,4 +1,5 @@
 ﻿Imports System.Runtime.InteropServices
+Imports System.Text
 Imports System.Threading
 Imports ISCSI
 Imports ISCSI.Server
@@ -11,6 +12,8 @@ Public Class iSCSIService
     Public Event LogPrint(s As String)
     Public svc As ISCSI.Server.ISCSIServer
     Public target As ISCSITarget
+    Public Property LogCommand As Boolean = False
+
     Public Class SCSIDirectInterface
         Implements SCSITargetInterface
         Public driveHandle As IntPtr
@@ -19,6 +22,8 @@ Public Class iSCSIService
         Public Event OnDeviceIdentificationInquiry As EventHandler(Of DeviceIdentificationInquiryEventArgs) Implements SCSITargetInterface.OnDeviceIdentificationInquiry
         Public QueueTaskProcessor As Task
         Private Shared _DataDir As Dictionary(Of Byte(), Byte)
+        Public Property LogCommand As Boolean
+        Public Property LogFile As String = IO.Path.Combine(Application.StartupPath, "log", $"iscsi_{Now.ToString("yyyyMMdd_HHmmss_fffffff")}.log")
         Public Shared ReadOnly Property DataDir As Dictionary(Of Byte(), Byte)
             Get
                 If _DataDir Is Nothing Then
@@ -122,10 +127,9 @@ Public Class iSCSIService
                                                       If _stopping AndAlso _pendingTask Is Nothing Then Exit While
                                                   End If
 
-                                                  Dim t As Task = Nothing
-                                                  Interlocked.Exchange(t, _pendingTask)
+                                                  Dim t As Task = Interlocked.Exchange(_pendingTask, Nothing)
 
-                                                  If t IsNot Nothing Then
+                                                  If t IsNot Nothing AndAlso Not t.IsCompleted Then
                                                       t.Start()
                                                       t.Wait()
                                                   End If
@@ -177,50 +181,102 @@ Public Class iSCSIService
                               Sub()
                                   Dim cmddir As Byte = GetDataDir(commandBytes)
                                   Dim datalen As Integer = data.Length
-
+                                  Dim cdblen As Integer = 16
                                   If cmddir <> 0 Then
                                       datalen = 0
                                       Select Case commandBytes(0)
-                                          Case &H3
+                                          Case &H0 'TEST UNIT READY
+                                              cdblen = 6
+                                          Case &H1 'REWIND
+                                              cdblen = 6
+                                          Case &H3 'REQUEST SENSE
                                               datalen = commandBytes(4)
-                                          Case &H5
+                                              cdblen = 6
+                                          Case &H4 'FORMAT
+                                              cdblen = 6
+                                          Case &H5 'READ BLOCK LIMITS
                                               datalen = 6
-                                          Case &H8
+                                              cdblen = 6
+                                          Case &H8 'READ
                                               datalen = BigEndianConverter.GetValue(commandBytes, 2, 4)
-                                          Case &H12
+                                              cdblen = 6
+                                          Case &HB 'SET CAPACITY
+                                              cdblen = 6
+                                          Case &H10 'WRITE FILEMARKS
+                                              cdblen = 6
+                                          Case &H11 'SPACE
+                                              cdblen = 6
+                                          Case &H12 'INQUIRY
                                               datalen = BigEndianConverter.GetValue(commandBytes, 3, 4)
-                                          Case &H1A
+                                              cdblen = 6
+                                          Case &H13 'VERIFY
+                                              cdblen = 6
+                                          Case &H16 'RESERVE UNIT
+                                              cdblen = 6
+                                          Case &H17 'RELEASE UNIT
+                                              cdblen = 6
+                                          Case &H19 'ERASE
+                                              cdblen = 6
+                                          Case &H1A 'MODE SENSE
                                               datalen = commandBytes(4)
-                                          Case &H1C
+                                              cdblen = 6
+                                          Case &H1B 'LOAD/UNLOAD
+                                              cdblen = 6
+                                          Case &H1C 'RECEIVE DIAGNOSTIC RESULTS
                                               datalen = BigEndianConverter.GetValue(commandBytes, 3, 4)
-                                          Case &H25
+                                              cdblen = 6
+                                          Case &H1E 'PREVENT/ALLOW MEDIUM REMOVAL 
+                                              cdblen = 6
+                                          Case &H25 'READ CAPACITY
                                               datalen = 8
-                                          Case &H28
+                                              cdblen = 10
+                                          Case &H28 'READ 10
                                               datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
-                                          Case &H34
+                                              cdblen = 10
+                                          Case &H2B 'LOCATE 10
+                                              cdblen = 10
+                                          Case &H34 'READ POSITION
                                               If commandBytes(1) = 0 Then
                                                   datalen = 20
                                               Else
                                                   datalen = 32
                                               End If
-                                          Case &H3C
+                                              cdblen = 10
+                                          Case &H3C 'READ BUFFER
                                               datalen = BigEndianConverter.GetValue(commandBytes, 6, 8)
-                                          Case &H43
+                                              cdblen = 10
+                                          Case &H43 'READ TOC
                                               datalen = Math.Max(BigEndianConverter.GetValue(commandBytes, 7, 8), 20)
-                                          Case &H44
+                                              cdblen = 10
+                                          Case &H44 'REPORT DENSITY SUPPORT
                                               datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
-                                          Case &H4D
+                                              cdblen = 10
+                                          Case &H4D 'LOG SENSE
                                               datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
-                                          Case &H5A
+                                              cdblen = 10
+                                          Case &H56 'RESERVE UNIT
+                                              cdblen = 10
+                                          Case &H57 'RELEASE UNIT
+                                              cdblen = 10
+                                          Case &H5A 'MODE SENSE
                                               datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
-                                          Case &H5E
+                                              cdblen = 10
+                                          Case &H5E 'PERSISTENT RESERVE IN
                                               datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
-                                          Case &H8C
+                                              cdblen = 10
+                                          Case &H8C 'READ ATTRIBUTE
                                               datalen = BigEndianConverter.GetValue(commandBytes, 10, 13)
-                                          Case &HA0
+                                              cdblen = 16
+                                          Case &H91 'SPACE 16
+                                              cdblen = 16
+                                          Case &H92 'LOCATE 16
+                                              cdblen = 16
+                                          Case &HA0 'REPORT LUNS
                                               datalen = Math.Min(32, BigEndianConverter.GetValue(commandBytes, 6, 9))
-                                          Case &HA2
+                                              cdblen = 16
+                                          Case &HA2 'SECURITY PROTOCOL IN
                                               datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                              cdblen = 16
                                           Case &HA3
                                               Select Case commandBytes(1)
                                                   Case &H5, &HA, &HC, &HD, &HF
@@ -237,20 +293,59 @@ Public Class iSCSIService
                                                               datalen = commandBytes(9)
                                                       End Select
                                               End Select
+                                              cdblen = 16
                                           Case &HAB
                                               datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                              cdblen = 16
+                                      End Select
+                                  Else
+                                      Select Case commandBytes(0)
+                                          Case &HA 'WRITE
+                                              cdblen = 6
+                                          Case &H15 'MODE SELECT
+                                              cdblen = 6
+                                          Case &H1D 'SEND DIAGNOSTIC
+                                              cdblen = 6
+                                          Case &H3B 'WRITE BUFFER
+                                              cdblen = 10
+                                          Case &H4C 'LOG SELECT
+                                              cdblen = 10
+                                          Case &H55 'MODE SELECT
+                                              cdblen = 10
+                                          Case &H5F 'PERSISTENT RESERVE OUT
+                                              cdblen = 10
+                                          Case &H8D 'WRITE ATTRIBUTE
+                                              cdblen = 16
+                                          Case &HA4
+                                              cdblen = 16
+                                          Case &HB5 'SECURITY PROTOCOL OUT
+                                              cdblen = 16
                                       End Select
                                   End If
-
-
-                                  Dim databuffer As IntPtr = Marshal.AllocHGlobal(datalen)
+                                  ReDim Preserve commandBytes(cdblen - 1)
                                   Dim sense(63) As Byte
-                                  If cmddir <> 1 Then Marshal.Copy(data, 0, databuffer, datalen)
-                                  TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, datalen, cmddir, 24 * 3600, sense)
-
                                   Dim responsedata(datalen - 1) As Byte
-                                  If cmddir <> 0 Then Marshal.Copy(databuffer, responsedata, 0, responsedata.Length)
-                                  Marshal.FreeHGlobal(databuffer)
+                                  Select Case My.Settings.TapeUtils_DriverType
+                                      Case TapeUtils.DriverType.TapeStream
+                                          Dim vt As TapeImage
+                                          TapeStreamMapping.MappingTable.TryGetValue(driveHandle, vt)
+                                          If vt IsNot Nothing Then
+                                              vt.HandleSCSICommand(commandBytes, data, cmddir, datalen, responsedata, sense)
+                                          Else
+                                              sense = TapeImage.SenseData.NotPresent
+                                              responsedata = {}
+                                          End If
+                                      Case Else
+                                          Dim databuffer As IntPtr = Marshal.AllocHGlobal(datalen)
+                                          If cmddir <> 1 Then
+                                              Marshal.Copy(data, 0, databuffer, datalen)
+                                          Else
+                                              Marshal.Copy(responsedata, 0, databuffer, datalen)
+                                          End If
+                                          TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, datalen, cmddir, 24 * 3600, sense)
+                                          If cmddir <> 0 Then Marshal.Copy(databuffer, responsedata, 0, datalen)
+                                          Marshal.FreeHGlobal(databuffer)
+                                  End Select
 
 
                                   Dim response As Byte()
@@ -268,6 +363,22 @@ Public Class iSCSIService
                                       response = response.Concat(sense).Concat(responsedata).ToArray()
                                   End If
                                   OnCommandCompleted(status, response, task)
+                                  If LogCommand Then
+                                      Dim logdata As New StringBuilder
+                                      logdata.AppendLine($"TIME {Now.ToString("yyyyMMdd_HHmmss.fffffff")}")
+                                      logdata.AppendLine("CDB")
+                                      logdata.AppendLine(IOManager.Byte2Hex(commandBytes))
+                                      If commandBytes(0) <> &H8 AndAlso commandBytes(0) <> &HA Then
+                                          logdata.AppendLine("PARAM")
+                                          logdata.AppendLine(IOManager.Byte2Hex(responsedata))
+                                      End If
+                                      logdata.AppendLine("SENSE")
+                                      logdata.AppendLine(IOManager.Byte2Hex(sense))
+                                      Dim result = logdata.ToString()
+                                      SyncLock LogFile
+                                          IO.File.AppendAllText(LogFile, result)
+                                      End SyncLock
+                                  End If
                               End Sub)
 
             Do
@@ -305,7 +416,10 @@ Public Class iSCSIService
     End Sub
     Public Sub StartService(Optional ByVal TargetName As String = "iqn.2019-01.com.ltfscopygui:target1")
         svc = New ISCSIServer()
-        target = New ISCSITarget(TargetName, New SCSIDirectInterface(driveHandle))
+        If LogCommand Then
+            If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
+        End If
+        target = New ISCSITarget(TargetName, New SCSIDirectInterface(driveHandle) With {.LogCommand = LogCommand})
         svc.AddTarget(target)
         svc.Start(port)
     End Sub
