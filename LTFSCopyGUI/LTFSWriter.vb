@@ -935,6 +935,13 @@ Public Class LTFSWriter
             Next
             Dim USize As Long = UnwrittenSize
             Dim UFile As Long = UnwrittenCount
+            Dim fastProviderSnapshot = _activeFastReaderProvider
+            If fastProviderSnapshot IsNot Nothing Then
+                Try
+                    PipeBufferLength = fastProviderSnapshot.BufferedBytes
+                Catch
+                End Try
+            End If
             ToolStripStatusLabel4.Text = " "
             ToolStripStatusLabel4.Text &= $"{My.Resources.ResText_S0}{IOManager.FormatSize(ddelta)}/s"
             ToolStripStatusLabel4.Text &= $"  {My.Resources.ResText_S1}{IOManager.FormatSize(TotalBytesProcessed)}"
@@ -1703,8 +1710,8 @@ Public Class LTFSWriter
                                     End If
                                 End If
                             Next
-                            cap0=max0-cap0
-                            cap1=max1-cap1
+                            cap0 = max0 - cap0
+                            cap1 = max1 - cap1
                         End If
                 End Select
             End If
@@ -4079,6 +4086,7 @@ Public Class LTFSWriter
     Public StartTime As Date
     Public Property IsWriting As Boolean = False
     Private _PipeBufferLength As Long = 0
+    Private _activeFastReaderProvider As RustFastReaderProvider = Nothing
     Public Property PipeBufferLength As Long
         Get
             Return _PipeBufferLength
@@ -4257,6 +4265,181 @@ Public Class LTFSWriter
         End While
     End Sub
 
+    Private Sub ApplyFastReaderHashes(fr As FileRecord, hashes As Dictionary(Of String, String))
+        If fr Is Nothing OrElse fr.File Is Nothing OrElse hashes Is Nothing Then Return
+        Dim v As String = Nothing
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso hashes.TryGetValue("SHA1", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 AndAlso hashes.TryGetValue("SHA256", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA256, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 AndAlso hashes.TryGetValue("SHA512", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA512, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 AndAlso hashes.TryGetValue("CRC32", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.CRC32, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso hashes.TryGetValue("MD5", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso hashes.TryGetValue("BLAKE3", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso hashes.TryGetValue("XxHash3", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, v)
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso hashes.TryGetValue("XxHash128", v) Then fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, v)
+    End Sub
+
+    Private Function GetFastReaderDedupeHash(hashes As Dictionary(Of String, String)) As String
+        If hashes Is Nothing Then Return ""
+        Dim key As String
+        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                key = "SHA256"
+            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                key = "SHA512"
+            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                key = "CRC32"
+            Case ltfsindex.file.xattr.HashType.Available.MD5
+                key = "MD5"
+            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                key = "BLAKE3"
+            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                key = "XxHash3"
+            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                key = "XxHash128"
+            Case Else
+                key = "SHA1"
+        End Select
+        Dim value As String = Nothing
+        If hashes.TryGetValue(key, value) Then Return value
+        Return ""
+    End Function
+
+    Private Function WriteFileFromFastReader(fastProvider As RustFastReaderProvider,
+                                             fileIndex As Integer,
+                                             fr As FileRecord,
+                                             driveHandle As IntPtr,
+                                             p As TapeUtils.PositionData) As Boolean
+        Dim remainingInFile As Long = fr.File.length
+        Dim lastWriteTask As Task = Nothing
+        Dim lwte As New AutoResetEvent(False)
+        Dim eofSeen As Boolean = False
+        PrintMsg($"fastreader reading: {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
+        fastProvider.QueueFile(fileIndex)
+
+        While Not StopFlag AndAlso remainingInFile > 0
+            If lastWriteTask IsNot Nothing Then
+                While Not (lastWriteTask.IsCompleted OrElse lastWriteTask.IsCanceled OrElse lastWriteTask.IsFaulted)
+                    lwte.WaitOne(10)
+                    PipeBufferLength = fastProvider.BufferedBytes
+                End While
+                If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
+            End If
+
+            If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso PipePause Then
+                fastProvider.WaitForFillFraction(fileIndex, 0.75, 10000, Threading.CancellationToken.None)
+                PipeBufferLength = fastProvider.BufferedBytes
+                PipePause = False
+            End If
+
+            Dim slot As RustFastReaderProvider.Slot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
+            If (slot.Flags And 1) <> 0 Then
+                fastProvider.AdvanceSlot(slot)
+                eofSeen = True
+                Exit While
+            End If
+            If slot.Length <= 0 Then
+                fastProvider.AdvanceSlot(slot)
+                Exit While
+            End If
+            PipeBufferLength = fastProvider.BufferedBytes
+            If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso PipeBufferLength <= My.Settings.LTFSWriter_MinimumSegmentSize * 2 Then PipePause = True
+
+            Dim bytesReaded As Integer = slot.Length
+            lastWriteTask = Task.Factory.StartNew(
+                Sub(state)
+                    Dim currentSlot = DirectCast(state, RustFastReaderProvider.Slot)
+                    Try
+                        CheckCount += 1
+                        If CheckCount >= CheckCycle Then CheckCount = 0
+                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
+                            Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                            While SpeedLimit > 0 AndAlso ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
+                                Threading.Thread.Sleep(0)
+                                ts = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                            End While
+                            SpeedLimitLastTriggerTime = Now
+                        End If
+
+                        Dim succ As Boolean = False
+                        While Not succ
+                            Dim sense As Byte()
+                            Try
+                                sense = TapeUtils.Write(driveHandle, currentSlot.DataPtr, CUInt(currentSlot.Length), True)
+                                SyncLock p
+                                    p.BlockNumber += 1
+                                End SyncLock
+                            Catch ex As Exception
+                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                    Case DialogResult.Abort
+                                        StopFlag = True
+                                        Throw
+                                    Case DialogResult.Retry
+                                        succ = False
+                                    Case DialogResult.Ignore
+                                        succ = True
+                                        Exit While
+                                End Select
+                                p = New TapeUtils.PositionData(driveHandle)
+                                Continue While
+                            End Try
+                            If (((sense(2) >> 6) And &H1) = 1) Then
+                                If ((sense(2) And &HF) = 13) AndAlso (Not My.Settings.LTFSWriter_IgnoreVolumeOverflow) Then
+                                    PrintMsg(My.Resources.ResText_VOF)
+                                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
+                                    StopFlag = True
+                                    Exit While
+                                Else
+                                    PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
+                                    succ = True
+                                    Exit While
+                                End If
+                            ElseIf sense(2) And &HF <> 0 Then
+                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                    Case DialogResult.Abort
+                                        StopFlag = True
+                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                    Case DialogResult.Retry
+                                        succ = False
+                                    Case DialogResult.Ignore
+                                        succ = True
+                                        Exit While
+                                End Select
+                                p = New TapeUtils.PositionData(driveHandle)
+                            Else
+                                succ = True
+                                Exit While
+                            End If
+                        End While
+
+                        If Not StopFlag Then
+                            fr.File.WrittenBytes += currentSlot.Length
+                            TotalBytesProcessed += currentSlot.Length
+                            CurrentBytesProcessed += currentSlot.Length
+                            TotalBytesUnindexed += currentSlot.Length
+                        End If
+                    Finally
+                        fastProvider.AdvanceSlot(currentSlot)
+                        lwte.Set()
+                    End Try
+                End Sub, slot)
+            remainingInFile -= bytesReaded
+        End While
+
+        If lastWriteTask IsNot Nothing Then
+            While Not (lastWriteTask.IsCompleted OrElse lastWriteTask.IsCanceled OrElse lastWriteTask.IsFaulted)
+                lwte.WaitOne(10)
+                PipeBufferLength = fastProvider.BufferedBytes
+            End While
+            If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
+        End If
+
+        If Not eofSeen Then fastProvider.DrainEof(fileIndex)
+        If HashOnWrite AndAlso Not StopFlag Then ApplyFastReaderHashes(fr, fastProvider.WaitFileDone(fileIndex))
+        TotalFilesProcessed += 1
+        CurrentFilesProcessed += 1
+        Return Not StopFlag
+    End Function
+
 
     Private Sub 写入数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 写入数据ToolStripMenuItem.Click
         Dim th As New Threading.Thread(
@@ -4283,6 +4466,8 @@ Public Class LTFSWriter
                     UFReadCount.Inc()
                     Dim WriteList As New List(Of FileRecord)
                     Dim provider As FileDataProvider = Nothing
+                    Dim fastProvider As RustFastReaderProvider = Nothing
+                    Dim useFastReader As Boolean = False
                     If UnwrittenFiles.Count > 0 Then
                         CurrentFilesProcessed = 0
                         CurrentBytesProcessed = 0
@@ -4295,12 +4480,32 @@ Public Class LTFSWriter
                         UFReadCount.Dec()
                         UnwrittenCountOverrideValue = UnwrittenCount
                         UnwrittenSizeOverrideValue = UnwrittenSize
-                        provider = New FileDataProvider(WriteList,
-                                                             smallThresholdBytes:=16 * 1024,
-                                                             smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
-                                                             pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
                         GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency
-                        provider.Start()
+                        If My.Settings.LTFSWriter_ExternalReaderEnabled Then
+                            Try
+                                fastProvider = New RustFastReaderProvider(WriteList, CInt(plabel.blocksize), My.Settings.LTFSWriter_PreLoadBytes)
+                                fastProvider.Start()
+                                useFastReader = True
+                                _activeFastReaderProvider = fastProvider
+                                PrintMsg($"fastreader enabled: driver={TapeUtils.DriverTypeSetting} buffer={IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}", LogOnly:=True, ForceLog:=True)
+                                For Each fr As FileRecord In WriteList
+                                    If fr IsNot Nothing Then fr.IsOpened = True
+                                Next
+                            Catch ex As Exception
+                                PrintMsg($"fastreader unavailable, fallback to .NET reader: {ex.Message}", LogOnly:=True, ForceLog:=True)
+                                If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
+                                If fastProvider IsNot Nothing Then fastProvider.Dispose()
+                                fastProvider = Nothing
+                                useFastReader = False
+                            End Try
+                        End If
+                        If Not useFastReader Then
+                            provider = New FileDataProvider(WriteList,
+                                                                 smallThresholdBytes:=16 * 1024,
+                                                                 smallCacheCapacity:=My.Settings.LTFSWriter_PreLoadFileCount,
+                                                                 pipeBufferBytes:=My.Settings.LTFSWriter_PreLoadBytes)
+                            provider.Start()
+                        End If
 
                     End If
 
@@ -4310,11 +4515,24 @@ Public Class LTFSWriter
                         lcounter += 1
                         If lcounter >= 100 Then
                             lcounter = 0
-                            If provider IsNot Nothing Then PipeBufferLength = If(RingBufferEnabled, PipeGetLength(provider.RingBuffer), PipeGetLength(provider.Reader))
+                            If useFastReader AndAlso fastProvider IsNot Nothing Then
+                                PipeBufferLength = fastProvider.BufferedBytes
+                            ElseIf provider IsNot Nothing Then
+                                PipeBufferLength = If(RingBufferEnabled, PipeGetLength(provider.RingBuffer), PipeGetLength(provider.Reader))
+                            End If
                         End If
                     End While
                     If Not locateResult Then
                         UFReadCount.Dec()
+                        If fastProvider IsNot Nothing Then
+                            Try
+                                PipeBufferLength = 0
+                                If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
+                                fastProvider.Dispose()
+                            Catch
+                                PrintMsg("fastreader complete failed", LogOnly:=True)
+                            End Try
+                        End If
                         If provider IsNot Nothing Then
                             Try
                                 PipeBufferLength = 0
@@ -4426,24 +4644,28 @@ Public Class LTFSWriter
                                             If frefchecksum <> "" Then
                                                 PrintMsg($"{My.Resources.ResText_CHashing} {My.Settings.LTFSWriter_DedupeAlgorithm.ToString()}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
                                                 If checksumvalue = "" Then
-                                                    Select Case My.Settings.LTFSWriter_DedupeAlgorithm
-                                                        Case ltfsindex.file.xattr.HashType.Available.SHA256
-                                                            checksumvalue = IOManager.GetSHA256(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.SHA512
-                                                            checksumvalue = IOManager.GetSHA512(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.CRC32
-                                                            checksumvalue = IOManager.GetCRC32(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.MD5
-                                                            checksumvalue = IOManager.GetMD5(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.BLAKE3
-                                                            checksumvalue = IOManager.GetBlake3(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.XxHash3
-                                                            checksumvalue = IOManager.GetXxHash3(fr.SourcePath)
-                                                        Case ltfsindex.file.xattr.HashType.Available.XxHash128
-                                                            checksumvalue = IOManager.GetXxHash128(fr.SourcePath)
-                                                        Case Else
-                                                            checksumvalue = IOManager.SHA1(fr.SourcePath)
-                                                    End Select
+                                                    If useFastReader Then
+                                                        checksumvalue = GetFastReaderDedupeHash(fastProvider.HashFile(i, Timeout.Infinite))
+                                                    Else
+                                                        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+                                                            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                                                                checksumvalue = IOManager.GetSHA256(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                                                                checksumvalue = IOManager.GetSHA512(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                                                                checksumvalue = IOManager.GetCRC32(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.MD5
+                                                                checksumvalue = IOManager.GetMD5(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                                                                checksumvalue = IOManager.GetBlake3(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                                                                checksumvalue = IOManager.GetXxHash3(fr.SourcePath)
+                                                            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                                                                checksumvalue = IOManager.GetXxHash128(fr.SourcePath)
+                                                            Case Else
+                                                                checksumvalue = IOManager.SHA1(fr.SourcePath)
+                                                        End Select
+                                                    End If
                                                 End If
 
                                                 If frefchecksum.Equals(checksumvalue) Then
@@ -4480,7 +4702,9 @@ Public Class LTFSWriter
                                         End If
                                     End If
                                     If dupe Then
-                                        If RingBufferEnabled Then
+                                        If useFastReader Then
+                                            'HASH pre-scan does not enqueue shared-memory data, so there is nothing to drain.
+                                        ElseIf RingBufferEnabled Then
                                             PipeDrain(provider.RingBuffer, fr.File.length)
                                         Else
                                             PipeDrain(provider.Reader, fr.File.length)
@@ -4526,11 +4750,21 @@ Public Class LTFSWriter
                                         'write to tape
                                         Dim LastWriteTask As Task = Nothing
                                         If fr.File Is Nothing Then Continue For
-                                        While Not fr.IsOpened
+                                        While (Not useFastReader) AndAlso Not fr.IsOpened
                                             If fr.File Is Nothing Then Continue For
                                             Threading.Thread.Sleep(1)
                                         End While
-                                        If fr.File.length <= plabel.blocksize Then
+                                        If useFastReader AndAlso IsIndexPartition Then
+                                            fastProvider.Drain(i, fr.File.length)
+                                            fr.File.WrittenBytes += fr.File.length
+                                            TotalBytesProcessed += fr.File.length
+                                            CurrentBytesProcessed += fr.File.length
+                                            TotalFilesProcessed += 1
+                                            CurrentFilesProcessed += 1
+                                            TotalBytesUnindexed += fr.File.length
+                                        ElseIf useFastReader AndAlso Not IsIndexPartition Then
+                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p) Then Exit For
+                                        ElseIf fr.File.length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData(fr.File.length - 1) As Byte
                                             While True
@@ -5033,7 +5267,9 @@ Public Class LTFSWriter
                                 pCounter += 1
                                 If pCounter >= 100 Then
                                     pCounter = 0
-                                    If RingBufferEnabled Then
+                                    If useFastReader AndAlso fastProvider IsNot Nothing Then
+                                        PipeBufferLength = fastProvider.BufferedBytes
+                                    ElseIf RingBufferEnabled Then
                                         PipeBufferLength = PipeGetLength(provider.RingBuffer)
                                     Else
                                         PipeBufferLength = PipeGetLength(provider.Reader)
@@ -5066,8 +5302,14 @@ Public Class LTFSWriter
 
                         Try
                             PipeBufferLength = 0
-                            provider.Cancel()
-                            provider.CompleteAsync().GetAwaiter().GetResult()
+                            If fastProvider IsNot Nothing Then
+                                If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
+                                fastProvider.Dispose()
+                            End If
+                            If provider IsNot Nothing Then
+                                provider.Cancel()
+                                provider.CompleteAsync().GetAwaiter().GetResult()
+                            End If
                         Catch
                             PrintMsg("pipe complete failed", LogOnly:=True)
                         End Try
@@ -5104,6 +5346,13 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
+                    Try
+                        Dim fastProviderSnapshot = _activeFastReaderProvider
+                        _activeFastReaderProvider = Nothing
+                        PipeBufferLength = 0
+                        If fastProviderSnapshot IsNot Nothing Then fastProviderSnapshot.Dispose()
+                    Catch
+                    End Try
                     MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                     SetStatusLight(LWStatus.Err)

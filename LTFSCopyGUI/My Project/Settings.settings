@@ -80,8 +80,11 @@
     <Setting Name="LTFSWriter_PreLoadFileCount" Description="预读文件数" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">1000</Value>
     </Setting>
-    <Setting Name="LTFSWriter_PreLoadBytes" Description="预读字节数" Type="System.Int32" Scope="User">
+    <Setting Name="LTFSWriter_PreLoadBytes" Description="预读字节数" Type="System.Int64" Scope="User">
       <Value Profile="(Default)">268435456</Value>
+    </Setting>
+    <Setting Name="LTFSWriter_ExternalReaderEnabled" Description="启用Rust外部高速读取器" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="LTFSWriter_DisablePartition" Description="禁用分区" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>

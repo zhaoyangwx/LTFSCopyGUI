@@ -372,6 +372,7 @@
     <Compile Include="IOManager.vb" />
     <Compile Include="ApplicationWheels.vb" />
     <Compile Include="iSCSIService.vb" />
+    <Compile Include="RustFastReaderProvider.vb" />
     <Compile Include="LTFSConfigurator.Designer.vb">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </Compile>
@@ -526,6 +527,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <Target Name="BuildFastReader" AfterTargets="Build">
+    <Exec Command="cargo build --release --manifest-path &quot;$(MSBuildProjectDirectory)\..\LtfsFastReader\Cargo.toml&quot;" WorkingDirectory="$(MSBuildProjectDirectory)\..\LtfsFastReader" ContinueOnError="WarnAndContinue" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\..\LtfsFastReader\target\release\ltfscopy-fastreader.exe" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('$(MSBuildProjectDirectory)\..\LtfsFastReader\target\release\ltfscopy-fastreader.exe')" />
+  </Target>
   <PropertyGroup>
     <PreBuildEvent>"$(ProjectDir)\BuildVersionPropagator.exe" "$(ProjectDir)\Build.vb"</PreBuildEvent>
   </PropertyGroup>

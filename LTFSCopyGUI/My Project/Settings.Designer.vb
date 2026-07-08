@@ -508,6 +508,21 @@ Namespace My
                 Me("LTFSWriter_PreLoadBytes") = Value
             End Set
         End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("启用Rust外部高速读取器"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter")>
+        Public Property LTFSWriter_ExternalReaderEnabled() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ExternalReaderEnabled"), Boolean)
+            End Get
+            Set(Value As Boolean)
+                Me("LTFSWriter_ExternalReaderEnabled") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("Ring buffer模式"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
