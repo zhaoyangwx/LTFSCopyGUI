@@ -513,7 +513,8 @@ Namespace My
          Global.System.Configuration.SettingsDescriptionAttribute("启用Rust外部高速读取器"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("False"),
-         Category("LTFSWriter")>
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ExternalReaderEnabled")>
         Public Property LTFSWriter_ExternalReaderEnabled() As Boolean
             Get
                 Return CType(Me("LTFSWriter_ExternalReaderEnabled"), Boolean)
