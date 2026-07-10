@@ -377,6 +377,15 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 启用外部高速读取器（需要Windows 10及以上系统） 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ExternalReaderEnabled() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ExternalReaderEnabled", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 文件标签设置 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_FileLabel() As String
