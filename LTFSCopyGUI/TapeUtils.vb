@@ -941,7 +941,7 @@ Public Class TapeUtils
             Dim result As New List(Of Byte)
             While Remain > 0
                 Dim seglen As Integer = Math.Min(Seg, Remain)
-                Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, (seglen >> 16) And &HFF, (seglen >> 8) And &HFF, seglen And &HFF, (seglen >> 16) And &HFF, (seglen >> 8 And &HFF), seglen And &HFF, 0}
+                Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, (Offset >> 16) And &HFF, (Offset >> 8) And &HFF, Offset And &HFF, (seglen >> 16) And &HFF, (seglen >> 8 And &HFF), seglen And &HFF, 0}
                 Offset += seglen
                 Remain -= seglen
                 Dim dumpData(seglen - 1) As Byte
@@ -1532,20 +1532,28 @@ Public Class TapeUtils
         End Select
     End Function
     Public Shared Function SetBarcode(handle As IntPtr, barcode As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+        Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &H29, 0, 0}
+        Dim data As Byte() = {0, 0, 0, &H25, &H8, &H6, &H1, 0, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20,
+                    &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20}
+        barcode = barcode.PadRight(32).Substring(0, 32)
+        For i As Integer = 0 To barcode.Length - 1
+            data(9 + i) = CByte(Asc(barcode(i)) And &HFF)
+        Next
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Return True
+                Dim ts As TapeImage
+                TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
+                If ts IsNot Nothing Then
+                    Dim sense() As Byte = {}
+                    ts.HandleSCSICommand(cdb, data, 0, data.Length, Nothing, sense)
+                    If senseReport IsNot Nothing Then senseReport(sense)
+                    Return True
+                Else
+                    Return False
+                End If
             Case Else
-                Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &H29, 0, 0}
-                Dim data As Byte() = {0, 0, 0, &H29, &H8, &H6, &H1, 0, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20,
-                    &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20}
-                barcode = barcode.PadRight(32).Substring(0, 32)
-                For i As Integer = 0 To barcode.Length - 1
-                    data(9 + i) = CByte(Asc(barcode(i)) And &HFF)
-                Next
                 Return SendSCSICommand(handle, cdb, data, 0, senseReport)
         End Select
-
     End Function
     Public Shared Function SetBarcode(TapeDrive As String, barcode As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         SyncLock SCSIOperationLock
@@ -1603,20 +1611,28 @@ Public Class TapeUtils
         Reserved = &H3
     End Enum
     Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
-        Select Case DriverTypeSetting
-            Case DriverType.TapeStream
-                Return True
-            Case Else
-                Dim Param_LEN As UInt64 = Data.Length + 9
-                Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
+        Dim Param_LEN As UInt64 = Data.Length + 9
+        Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
                                      Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF, 0, 0}
-                Dim param As Byte() = {Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF,
+        Dim param As Byte() = {Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF,
                                        PageID >> 8 And &HFF, PageID And &HFF, Format,
                                        Data.Length >> 8 And &HFF, Data.Length And &HFF}
-                param = param.Concat(Data).ToArray()
+        param = param.Concat(Data).ToArray()
+        Select Case DriverTypeSetting
+            Case DriverType.TapeStream
+                Dim ts As TapeImage
+                TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
+                If ts IsNot Nothing Then
+                    Dim sense As Byte() = {}
+                    ts.HandleSCSICommand(cdb, param, 0, param.Length, {}, sense)
+                    If SenseReport IsNot Nothing Then SenseReport(sense)
+                    Return True
+                Else
+                    Return False
+                End If
+            Case Else
                 Return SendSCSICommand(handle, cdb, param, 0, SenseReport)
         End Select
-
     End Function
     Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         SyncLock SCSIOperationLock
@@ -7252,22 +7268,22 @@ Public Class TapeUtils
         Return GetMAMAttributeBytes(handle, PageCode_H, PageCode_L, 0)
     End Function
     Public Shared Function GetMAMAttributeBytes(handle As IntPtr, PageCode_H As Byte, PageCode_L As Byte, ByVal PartitionNumber As Byte) As Byte()
-        Select Case DriverTypeSetting
-            Case DriverType.TapeStream
-                Dim ts As TapeImage
-                TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
-                If ts IsNot Nothing Then
-                    Dim DATA_LEN As Integer = 0
-                    Dim BCArray(DATA_LEN + 8) As Byte
-                    Dim sense() As Byte = {}
-                    Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
+        Dim DATA_LEN As Integer = 0
+        Dim BCArray(DATA_LEN + 8) As Byte
+        Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
                     PageCode_H,
                     PageCode_L,
                     (DATA_LEN + 9) >> 24 And &HFF,
                     (DATA_LEN + 9) >> 16 And &HFF,
                     (DATA_LEN + 9) >> 8 And &HFF,
                     (DATA_LEN + 9) And &HFF, 0, 0}
-                    Dim Result As Byte()
+        Dim Result As Byte() = {}
+        Select Case DriverTypeSetting
+            Case DriverType.TapeStream
+                Dim ts As TapeImage
+                TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
+                If ts IsNot Nothing Then
+                    Dim sense() As Byte = {}
                     ts.HandleSCSICommand(cdbData, Nothing, 1, 9, BCArray, sense)
                     DATA_LEN = CInt(BCArray(7)) << 8 Or BCArray(8)
                     If DATA_LEN > 0 Then
@@ -7289,19 +7305,9 @@ Public Class TapeUtils
                     Return {}
                 End If
             Case Else
-                Dim DATA_LEN As Integer = 0
                 Dim sense(63) As Byte
-                Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
-                    PageCode_H,
-                    PageCode_L,
-                    (DATA_LEN + 9) >> 24 And &HFF,
-                    (DATA_LEN + 9) >> 16 And &HFF,
-                    (DATA_LEN + 9) >> 8 And &HFF,
-                    (DATA_LEN + 9) And &HFF, 0, 0}
                 Dim dataBuffer As IntPtr = Marshal.AllocHGlobal(DATA_LEN + 9)
-                Dim BCArray(DATA_LEN + 8) As Byte
                 Marshal.Copy(BCArray, 0, dataBuffer, 9)
-                Dim Result As Byte() = {}
                 Dim succ As Boolean = False
                 SyncLock SCSIOperationLock
                     Try

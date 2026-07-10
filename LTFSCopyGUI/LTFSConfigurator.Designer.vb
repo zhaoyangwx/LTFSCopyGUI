@@ -27,6 +27,7 @@ Partial Class LTFSConfigurator
         Me.ButtonRefresh = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.DiskToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.SCSIAdapterToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ManualAddToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.AddImageToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.BrowseToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -57,6 +58,10 @@ Partial Class LTFSConfigurator
         Me.ButtonLoadUnthreaded = New System.Windows.Forms.Button()
         Me.CheckBoxDebugPanel = New System.Windows.Forms.CheckBox()
         Me.Panel2 = New System.Windows.Forms.Panel()
+        Me.TextBoxLUN = New System.Windows.Forms.TextBox()
+        Me.LabelLUN = New System.Windows.Forms.Label()
+        Me.TextBoxTargetID = New System.Windows.Forms.TextBox()
+        Me.LabelTargetID = New System.Windows.Forms.Label()
         Me.TabControl1 = New System.Windows.Forms.TabControl()
         Me.TabPageCommand = New System.Windows.Forms.TabPage()
         Me.ButtonDebugRewind = New System.Windows.Forms.Button()
@@ -176,11 +181,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.SCSIAdapterToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.LabelTargetID = New System.Windows.Forms.Label()
-        Me.TextBoxTargetID = New System.Windows.Forms.TextBox()
-        Me.LabelLUN = New System.Windows.Forms.Label()
-        Me.TextBoxLUN = New System.Windows.Forms.TextBox()
+        Me.Label2 = New System.Windows.Forms.Label()
+        Me.NumericUpDownRAPartition = New System.Windows.Forms.NumericUpDown()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -212,6 +214,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
+        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -232,6 +235,11 @@ Partial Class LTFSConfigurator
         '
         Me.DiskToolStripMenuItem.Name = "DiskToolStripMenuItem"
         resources.ApplyResources(Me.DiskToolStripMenuItem, "DiskToolStripMenuItem")
+        '
+        'SCSIAdapterToolStripMenuItem
+        '
+        Me.SCSIAdapterToolStripMenuItem.Name = "SCSIAdapterToolStripMenuItem"
+        resources.ApplyResources(Me.SCSIAdapterToolStripMenuItem, "SCSIAdapterToolStripMenuItem")
         '
         'ManualAddToolStripMenuItem
         '
@@ -449,6 +457,26 @@ Partial Class LTFSConfigurator
         Me.Panel2.Controls.Add(Me.LabelSCSIIOCtl)
         Me.Panel2.Controls.Add(Me.LabelDebugPanel)
         Me.Panel2.Name = "Panel2"
+        '
+        'TextBoxLUN
+        '
+        resources.ApplyResources(Me.TextBoxLUN, "TextBoxLUN")
+        Me.TextBoxLUN.Name = "TextBoxLUN"
+        '
+        'LabelLUN
+        '
+        resources.ApplyResources(Me.LabelLUN, "LabelLUN")
+        Me.LabelLUN.Name = "LabelLUN"
+        '
+        'TextBoxTargetID
+        '
+        resources.ApplyResources(Me.TextBoxTargetID, "TextBoxTargetID")
+        Me.TextBoxTargetID.Name = "TextBoxTargetID"
+        '
+        'LabelTargetID
+        '
+        resources.ApplyResources(Me.LabelTargetID, "LabelTargetID")
+        Me.LabelTargetID.Name = "LabelTargetID"
         '
         'TabControl1
         '
@@ -736,6 +764,8 @@ Partial Class LTFSConfigurator
         '
         'TabPageMAM
         '
+        Me.TabPageMAM.Controls.Add(Me.NumericUpDownRAPartition)
+        Me.TabPageMAM.Controls.Add(Me.Label2)
         Me.TabPageMAM.Controls.Add(Me.LabelBarcode)
         Me.TabPageMAM.Controls.Add(Me.TextBoxBarcode)
         Me.TabPageMAM.Controls.Add(Me.ButtonDebugWriteBarcode)
@@ -1240,30 +1270,16 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'SCSIAdapterToolStripMenuItem
+        'Label2
         '
-        Me.SCSIAdapterToolStripMenuItem.Name = "SCSIAdapterToolStripMenuItem"
-        resources.ApplyResources(Me.SCSIAdapterToolStripMenuItem, "SCSIAdapterToolStripMenuItem")
+        resources.ApplyResources(Me.Label2, "Label2")
+        Me.Label2.Name = "Label2"
         '
-        'LabelTargetID
+        'NumericUpDownRAPartition
         '
-        resources.ApplyResources(Me.LabelTargetID, "LabelTargetID")
-        Me.LabelTargetID.Name = "LabelTargetID"
-        '
-        'TextBoxTargetID
-        '
-        resources.ApplyResources(Me.TextBoxTargetID, "TextBoxTargetID")
-        Me.TextBoxTargetID.Name = "TextBoxTargetID"
-        '
-        'LabelLUN
-        '
-        resources.ApplyResources(Me.LabelLUN, "LabelLUN")
-        Me.LabelLUN.Name = "LabelLUN"
-        '
-        'TextBoxLUN
-        '
-        resources.ApplyResources(Me.TextBoxLUN, "TextBoxLUN")
-        Me.TextBoxLUN.Name = "TextBoxLUN"
+        resources.ApplyResources(Me.NumericUpDownRAPartition, "NumericUpDownRAPartition")
+        Me.NumericUpDownRAPartition.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
+        Me.NumericUpDownRAPartition.Name = "NumericUpDownRAPartition"
         '
         'LTFSConfigurator
         '
@@ -1312,6 +1328,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
+        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1483,4 +1500,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents LabelTargetID As Label
     Friend WithEvents TextBoxLUN As TextBox
     Friend WithEvents LabelLUN As Label
+    Friend WithEvents Label2 As Label
+    Friend WithEvents NumericUpDownRAPartition As NumericUpDown
 End Class

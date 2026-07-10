@@ -634,7 +634,7 @@ Public Class LTFSConfigurator
         Panel1.Enabled = False
         Dim PCH As Byte = NumericUpDownPCHigh.Value
         Dim PCL As Byte = NumericUpDownPCLow.Value
-        Dim PN As Byte = NumericUpDownPartitionNum.Value
+        Dim PN As Byte = NumericUpDownRAPartition.Value
         Task.Run(Sub()
                      Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, PCH, PCL, PN)
                      Dim Result As String = ""
@@ -645,8 +645,8 @@ Public Class LTFSConfigurator
                      End If
 
                      Invoke(Sub()
-                                If Result <> "" Then TextBoxDebugOutput.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
-                                TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(ResultB))
+                                TextBoxDebugOutput.Text = ("Result: " & vbCrLf & Result & vbCrLf & vbCrLf)
+                                TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(ResultB, True))
                                 Panel1.Enabled = True
                             End Sub)
                  End Sub)

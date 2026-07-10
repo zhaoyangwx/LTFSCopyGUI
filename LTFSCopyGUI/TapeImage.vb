@@ -48,6 +48,35 @@ Public Class TapeImage
 
     Public Property PartitionMappingFile As New SerializableDictionary(Of Integer, String)
     Public Property PartitionEOD As New SerializableDictionary(Of Integer, Long)
+
+    Public Property VCR As UInt32
+
+    <Xml.Serialization.XmlIgnore>
+    Public ReadOnly Property VolumeChangeReference As UInt32
+        Get
+            If VolumeChanged Then
+                VolumeChanged = False
+                VCR += 1UI
+            End If
+            Return VCR
+        End Get
+    End Property
+    <Xml.Serialization.XmlIgnore>
+    Public Property VolumeChanged As Boolean
+    Public Property MediumSN As String = ""
+    Public Property MediumMFDate As String = ""
+    Public Property MAM0800 As String = ""
+    Public Property MAM0801 As String = ""
+    Public Property MAM0802 As String = ""
+    Public Property MAM0803 As String = ""
+    Public Property MAM0804 As String = ""
+    Public Property MAM0805 As Byte = 0
+    Public Property MAM0806 As String = ""
+    Public Property MAM0807 As String = ""
+    Public Property MAM0808 As String = ""
+    Public Property MAM0809 As New SerializableDictionary(Of Integer, String)
+    Public Property MAM080B As String = ""
+    Public Property MAM080C As New SerializableDictionary(Of Integer, Byte())
     Public Property FilemarkBlockIndex As New SerializableDictionary(Of Integer, List(Of Long))
     <Xml.Serialization.XmlIgnore>
     Public ReadOnly Property PartitionCount As Integer
@@ -72,6 +101,7 @@ Public Class TapeImage
     End Property
 
     Public Property Compressed As Boolean = True
+    Public Property WriteProtect As Boolean = False
     Private PartitionMappingStream As New Dictionary(Of Integer, IO.Stream)
     Private CurrentDatasetID As Integer = 0
     Private CurrentIntraSetBlockOffset As Integer = 0
@@ -145,6 +175,22 @@ Public Class TapeImage
             PartitionEOD = .PartitionEOD
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
             Position = .Position
+            MediumSN = .MediumSN
+            MediumMFDate = .MediumMFDate
+            MAM0800 = .MAM0800
+            MAM0801 = .MAM0801
+            MAM0802 = .MAM0802
+            MAM0803 = .MAM0803
+            MAM0804 = .MAM0804
+            MAM0805 = .MAM0805
+            MAM0806 = .MAM0806
+            MAM0807 = .MAM0807
+            MAM0808 = .MAM0808
+            MAM0809 = .MAM0809
+            MAM080B = .MAM080B
+            MAM080C = .MAM080C
+            WriteProtect = .WriteProtect
+            VCR = .VCR
         End With
         For Each id As Integer In PartitionMappingFile.Keys
             If PartitionMappingFile(id).ToLower().EndsWith(".lcgimg.zst") Then
@@ -189,6 +235,8 @@ Public Class TapeImage
         PartitionMappingStream = New Dictionary(Of Integer, Stream)
         FilemarkBlockIndex = New SerializableDictionary(Of Integer, List(Of Long))
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
+        MAM0809 = New SerializableDictionary(Of Integer, String)
+        MAM080C = New SerializableDictionary(Of Integer, Byte())
         Position = New TapeUtils.PositionData()
         For i As Integer = 0 To PartitionCount - 1
             Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
@@ -200,12 +248,20 @@ Public Class TapeImage
                 PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
             End If
             FilemarkBlockIndex.Add(i, New List(Of Long))
+            MAM0809.Add(i, "")
+            MAM080C.Add(i, {})
             PartitionEOD.Add(i, 0)
         Next
+        VCR = 0
+        MediumSN = $"LV{(New Guid()).ToString().ToUpper().Substring(0, 8)}"
+        MediumMFDate = Now.ToString("yyyyMMdd")
         IO.File.WriteAllText(filename, Me.GetSerializedString())
     End Sub
 
     Public Sub ResetPartitionNumber(PartitionCount As Integer)
+        If WriteProtect Then
+            Exit Sub
+        End If
         CloseFile()
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
@@ -225,6 +281,7 @@ Public Class TapeImage
             FilemarkBlockIndex.Add(i, New List(Of Long))
             PartitionEOD.Add(i, 0)
         Next
+        VolumeChanged = True
     End Sub
     Public Sub ReOpen()
         CloseFile()
@@ -232,6 +289,10 @@ Public Class TapeImage
     End Sub
     Public Sub CloseFile()
         Try
+            If VolumeChanged Then
+                VolumeChanged = False
+                VCR += 1
+            End If
             IO.File.WriteAllText(idxFile.FullName, Me.GetSerializedString())
             For i As Integer = 0 To PartitionCount - 1
                 PartitionMappingStream(i).Close()
@@ -271,8 +332,12 @@ Public Class TapeImage
                 If Response.Length <> dataLen Then ReDim Preserve Response(dataLen)
             Case &HA  'WRITE6
                 If Param.Length <> dataLen Then ReDim Preserve Param(dataLen - 1)
+                If WriteProtect Then
+                    sense = SenseData.MediumError
+                Else
+                    sense = SenseData.NoSense
+                End If
                 WriteBlock(Param, dataLen)
-                sense = SenseData.NoSense
             Case &H10 'WRITE FILEMARKS
                 Dim FMCount As Integer = 0
                 For i As Integer = 2 To 4
@@ -280,7 +345,11 @@ Public Class TapeImage
                     FMCount = FMCount Or Param(i)
                 Next
                 WriteFilemark(FMCount)
-                sense = SenseData.NoSense
+                If WriteProtect AndAlso FMCount > 0 Then
+                    sense = SenseData.MediumError
+                Else
+                    sense = SenseData.NoSense
+                End If
             Case &H12 'INQUIRY
                 ReDim Response(dataLen - 1)
                 Dim EVPD As Byte = &H1 And commandBytes(1)
@@ -403,7 +472,11 @@ Public Class TapeImage
                 ReDim Preserve Response(dataLen - 1)
             Case &H19 'ERASE
                 [Erase]()
-                sense = SenseData.NoSense
+                If WriteProtect Then
+                    sense = SenseData.MediumError
+                Else
+                    sense = SenseData.NoSense
+                End If
             Case &H15, &H55 'MODE SELECT
                 Dim PF As Byte = (commandBytes(1) >> 4) And 1
                 Dim ParamLen As Integer = 0
@@ -647,12 +720,22 @@ Public Class TapeImage
                     allocLen <<= 8
                     allocLen = allocLen Or commandBytes(i)
                 Next
+
                 Select Case ServiceAction
                     Case 0
-                        Select Case FID
-                            Case &H1 'Maximum capacity in partition
-                                Dim cap As Long = GetTotalDiskSpace(Partition) \ 1000000
-                                Response = {0, 0, 0, &HD, 0, 1, &H80, 0, 8,
+                        Dim paramData As New List(Of Byte())
+                        Dim remain As Long = GetAvailableDiskSpace(Partition) \ 1000000
+                        paramData.Add({0, 0, &H80, 0, 8,
+                                    (remain >> 52) And &HFF,
+                                    (remain >> 48) And &HFF,
+                                    (remain >> 40) And &HFF,
+                                    (remain >> 32) And &HFF,
+                                    (remain >> 24) And &HFF,
+                                    (remain >> 16) And &HFF,
+                                    (remain >> 8) And &HFF,
+                                    remain And &HFF})
+                        Dim cap As Long = GetTotalDiskSpace(Partition) \ 1000000
+                        paramData.Add({0, 1, &H80, 0, 8,
                                     (cap >> 52) And &HFF,
                                     (cap >> 48) And &HFF,
                                     (cap >> 40) And &HFF,
@@ -660,11 +743,140 @@ Public Class TapeImage
                                     (cap >> 24) And &HFF,
                                     (cap >> 16) And &HFF,
                                     (cap >> 8) And &HFF,
-                                    cap And &HFF}
-                        End Select
+                                    cap And &HFF})
+                        paramData.Add({0, 2, &H80, 0, 8, 0, 0, 0, 0, 0, 0, &H80, 0})
+                        paramData.Add({0, 3, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({0, 4, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({0, 5, &H80, 0, 8, &H4C, &H54, &H4F, &H2D, &H43, &H56, &H45, &H20})
+                        paramData.Add({0, 6, &H80, 0, 1, &H5A})
+                        paramData.Add({0, 7, &H80, 0, 2, 0, 1})
+                        paramData.Add({0, 8, &H81, 0, 0})
+                        paramData.Add({0, 9, &H80, 0, 4,
+                                      (VolumeChangeReference >> 24) And &HFF,
+                                      (VolumeChangeReference >> 16) And &HFF,
+                                      (VolumeChangeReference >> 8) And &HFF,
+                                      VolumeChangeReference And &HFF})
+                        Dim DeviceSN As Byte() = Encoding.ASCII.GetBytes($"LT{ApplicationWheels.Build}".PadRight(&H28).Substring(0, &H28))
+                        paramData.Add((New Byte() {&H2, &HA, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
+                        paramData.Add((New Byte() {&H2, &HB, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
+                        paramData.Add((New Byte() {&H2, &HC, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
+                        paramData.Add((New Byte() {&H2, &HD, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
+                        paramData.Add({2, &H20, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({2, &H21, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({2, &H22, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({2, &H23, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
+                        paramData.Add({2, &H24, &H80, 0, 8, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF})
+                        paramData.Add({2, &H25, &H80, 0, 8, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF})
+                        paramData.Add((New Byte() {4, 0, &H81, 0, 8}).Concat(Encoding.ASCII.GetBytes($"LCGVT".PadRight(8).Substring(0, 8))).ToArray())
+                        paramData.Add((New Byte() {4, 1, &H81, 0, &H20}).Concat(Encoding.ASCII.GetBytes(MediumSN.PadRight(&H20).Substring(0, &H20))).ToArray())
+                        paramData.Add({4, 2, &H80, 0, 4, 0, 0, 3, &H4E})
+                        paramData.Add({4, 3, &H80, 0, 4, 0, 0, 0, &H7F})
+                        paramData.Add({4, 4, &H81, 0, 8, &H4C, &H54, &H4F, &H2D, &H43, &H56, &H45, &H20})
+                        paramData.Add({4, 5, &H80, 0, 1, &H5A})
+                        paramData.Add((New Byte() {4, 6, &H81, 0, 8}).Concat(Encoding.ASCII.GetBytes(MediumMFDate.PadRight(8).Substring(0, 8))).ToArray())
+                        paramData.Add({4, 7, &H80, 0, 8, 0, 0, 0, 0, 0, 0, &H20, 0})
+                        paramData.Add({4, 8, &H80, 0, 1, 0})
+                        paramData.Add({4, 9, &H80, 0, 2, 0, 0})
+                        paramData.Add((New Byte() {8, 0, &H1, 0, 8}).Concat(Encoding.ASCII.GetBytes(MAM0800.PadRight(8).Substring(0, 8))).ToArray())
+                        paramData.Add((New Byte() {8, 1, &H1, 0, 32}).Concat(Encoding.ASCII.GetBytes(MAM0801.PadRight(32).Substring(0, 32))).ToArray())
+                        paramData.Add((New Byte() {8, 2, &H1, 0, 8}).Concat(Encoding.ASCII.GetBytes(MAM0802.PadRight(8).Substring(0, 8))).ToArray())
+                        paramData.Add((New Byte() {8, 3, &H2, 0, 160}).Concat(Encoding.ASCII.GetBytes(MAM0803.PadRight(160).Substring(0, 160))).ToArray())
+                        paramData.Add((New Byte() {8, 4, &H1, 0, 12}).Concat(Encoding.ASCII.GetBytes(MAM0804.PadRight(12).Substring(0, 12))).ToArray())
+                        paramData.Add({8, 5, 0, 0, 1, MAM0805})
+                        paramData.Add((New Byte() {8, 6, &H1, 0, 32}).Concat(Encoding.ASCII.GetBytes(MAM0806.PadRight(32).Substring(0, 32))).ToArray())
+                        paramData.Add((New Byte() {8, 7, &H2, 0, 80}).Concat(Encoding.ASCII.GetBytes(MAM0807.PadRight(80).Substring(0, 80))).ToArray())
+                        paramData.Add((New Byte() {8, 8, &H2, 0, 160}).Concat(Encoding.ASCII.GetBytes(MAM0808.PadRight(160).Substring(0, 160))).ToArray())
+                        If Not MAM0809.ContainsKey(Partition) Then MAM0809.Add(Partition, "")
+                        paramData.Add((New Byte() {8, 9, &H1, 0, 16}).Concat(Encoding.ASCII.GetBytes(MAM0809(Partition).PadRight(16).Substring(0, 16))).ToArray())
+                        paramData.Add((New Byte() {8, &HB, &H1, 0, 16}).Concat(Encoding.ASCII.GetBytes(MAM080B.PadRight(16).Substring(0, 16))).ToArray())
+                        If Not MAM080C.ContainsKey(Partition) Then MAM080C.Add(Partition, {})
+                        paramData.Add((New Byte() {8, &HC, &H0, 0, MAM080C(Partition).Length And &HFF}).Concat(MAM080C(Partition)).ToArray())
+                        paramData.Add((New Byte() {&H10, 0, &H80, 0, &H1C}).Concat(
+                                      Encoding.ASCII.GetBytes(MediumSN.PadRight(4).Substring(0, 4) & ApplicationWheels.Build.PadRight(8).Substring(0, 8) & "LCGVT   ")).Concat(
+                                      {0, 0, 0, 0, 0, &H10, 0, 0}).ToArray())
+                        paramData.Add((New Byte() {&H10, 1, &H80, 0, &H18}).Concat(
+                                      Encoding.ASCII.GetBytes(MediumSN.PadRight(4).Substring(0, 4) & ApplicationWheels.Build.PadRight(8).Substring(0, 8) & MediumSN.PadRight(10).Substring(0, 10))).Concat(
+                                      {0, &H10}).ToArray())
+                        Dim respData As New List(Of Byte)
+                        For i As Integer = 0 To paramData.Count - 1
+                            If FID <= ((CInt(paramData(i)(0)) << 8) Or CInt(paramData(i)(1))) Then
+                                respData.AddRange(paramData(i))
+                            End If
+                        Next
+                        Response = {(respData.Count << 24) And &HFF,
+                            (respData.Count << 16) And &HFF,
+                            (respData.Count << 8) And &HFF,
+                            respData.Count And &HFF}
+                        Response = Response.Concat(respData).ToArray()
+                        ReDim Preserve Response(dataLen - 1)
                     Case Else
                         sense = SenseData.IllegalOpCode
                 End Select
+            Case &H8D 'WRITE ATTRIBUTE
+                Dim Partition As Byte = commandBytes(7)
+                If Partition >= PartitionCount Then
+                    sense = SenseData.IllegalOpCode
+                    Return True
+                End If
+                Dim allocLen As Integer = 0
+                For i As Integer = 10 To 13
+                    allocLen <<= 8
+                    allocLen = allocLen Or commandBytes(i)
+                Next
+                If allocLen >= 4 Then
+                    ReDim Preserve Param(allocLen - 1)
+                    Dim ParamLen As Integer = 0
+                    For i As Integer = 0 To 3
+                        ParamLen <<= 8
+                        ParamLen = ParamLen Or Param(i)
+                    Next
+                    If allocLen - 4 >= ParamLen Then
+                        Dim offset As Integer = 4
+                        While offset + 4 < allocLen - 1
+                            Dim attriblen As Integer = Param(offset + 3)
+                            attriblen <<= 8
+                            attriblen = attriblen Or Param(offset + 4)
+                            Dim attribID As Integer = Param(offset)
+                            attribID <<= 8
+                            attribID = attribID Or Param(offset + 1)
+                            If attriblen > 0 Then
+                                If offset + 4 + attriblen > allocLen Then Exit While
+                                Dim attribvalue(attriblen - 1) As Byte
+                                Array.Copy(Param, offset + 5, attribvalue, 0, attriblen)
+                                Select Case attribID
+                                    Case &H800
+                                        MAM0800 = Encoding.ASCII.GetString(attribvalue).PadRight(8).Substring(0, 8)
+                                    Case &H801
+                                        MAM0801 = Encoding.ASCII.GetString(attribvalue).PadRight(32).Substring(0, 32)
+                                    Case &H802
+                                        MAM0802 = Encoding.ASCII.GetString(attribvalue).PadRight(8).Substring(0, 8)
+                                    Case &H803
+                                        MAM0803 = Encoding.ASCII.GetString(attribvalue).PadRight(160).Substring(0, 160)
+                                    Case &H804
+                                        MAM0804 = Encoding.ASCII.GetString(attribvalue).PadRight(12).Substring(0, 12)
+                                    Case &H805
+                                        MAM0805 = attribvalue(0)
+                                    Case &H806
+                                        MAM0806 = Encoding.ASCII.GetString(attribvalue).PadRight(32).Substring(0, 32)
+                                    Case &H807
+                                        MAM0807 = Encoding.ASCII.GetString(attribvalue).PadRight(80).Substring(0, 80)
+                                    Case &H808
+                                        MAM0808 = Encoding.ASCII.GetString(attribvalue).PadRight(160).Substring(0, 160)
+                                    Case &H809
+                                        If Not MAM0809.ContainsKey(Partition) Then MAM0809.Add(Partition, "")
+                                        MAM0809(Partition) = Encoding.ASCII.GetString(attribvalue).PadRight(16).Substring(0, 16)
+                                    Case &H80C
+                                        If Not MAM080C.ContainsKey(Partition) Then MAM080C.Add(Partition, {})
+                                        MAM080C(Partition) = attribvalue
+                                End Select
+                            End If
+                            offset += attriblen + 5
+                        End While
+                    Else
+                        sense = SenseData.IllegalOpCode
+                    End If
+                End If
+                sense = SenseData.NoSense
             Case &H3C 'READ BUFFER
                 Response = {}
                 sense = SenseData.NoSense
@@ -895,10 +1107,13 @@ Public Class TapeImage
         Return True
     End Function
     Public Sub [Erase]()
+        If WriteProtect Then Exit Sub
         CurrentStream.SetLength(CurrentFileOffset)
+        VolumeChanged = True
     End Sub
 
     Public Sub WriteBlock(data As Byte(), Optional ByVal len As Integer = -1)
+        If WriteProtect Then Exit Sub
         If len = -1 Then len = data.Length
         Dim blocklen As Integer = Math.Min(data.Length, len)
         If CurrentSetResidueBytes < BlockHeaderLen Then
@@ -952,6 +1167,7 @@ Public Class TapeImage
             Position.BlockNumber += 1
         End If
         PartitionEOD(Position.PartitionNumber) = Position.BlockNumber
+        VolumeChanged = True
     End Sub
     Public Sub WriteFilemark(Optional ByVal count As Integer = 1)
         If count = 0 Then
@@ -959,9 +1175,11 @@ Public Class TapeImage
                 s.Flush()
             Next
         Else
+            If WriteProtect Then Exit Sub
             For i As Integer = 0 To count - 1
                 WriteBlock({})
             Next
+            VolumeChanged = True
         End If
     End Sub
 
@@ -1231,56 +1449,5 @@ Public Class TapeImage
     ' 释放
     Public Sub Dispose() Implements IDisposable.Dispose
 
-    End Sub
-    Public Shared Sub test()
-        Dim dir As String = IO.Path.Combine(Application.StartupPath, "testimg")
-        Dim path As String = IO.Path.Combine(dir, "test.lcgidx")
-        If IO.Directory.Exists(dir) Then
-            IO.Directory.Delete(dir, True)
-        End If
-        IO.Directory.CreateDirectory(dir)
-        Dim sense As Byte()
-        Dim testimg As New TapeImage(path, 2)
-        testimg.WriteBlock({0, 0, 0, 0})
-        testimg.WriteFilemark()
-        testimg.WriteBlock({0, 0, 0, 1})
-        testimg.WriteFilemark()
-        testimg.WriteBlock({0, 0, 0, 2})
-        testimg.WriteBlock({0, 0, 0, 3})
-        testimg.ChangePartition(1, sense)
-        testimg.WriteBlock({0, 0, 0, 0})
-        testimg.WriteFilemark()
-        testimg.WriteBlock({0, 0, 0, 1})
-        testimg.WriteFilemark()
-        testimg.WriteBlock({0, 0, 0, 2})
-        testimg.WriteBlock({0, 0, 0, 3})
-        testimg.WriteBlock({0, 0, 0, 4})
-        testimg.CloseFile()
-        testimg.Dispose()
-        testimg = New TapeImage(path)
-        Dim data As Byte()
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        testimg.ChangePartition(1, sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        data = testimg.ReadBlock(sense)
-        testimg.LocateByBlock(0, sense)
-        testimg.LocateByBlock(1, sense)
-        testimg.LocateByFilemark(0, sense)
-        testimg.LocateByFilemark(1, sense)
-        testimg.CloseFile()
     End Sub
 End Class
