@@ -36,6 +36,7 @@ Public Class TapeImage
     Private _Position As New TapeUtils.PositionData
     Public Property Position As TapeUtils.PositionData
         Get
+            If _Position.BlockNumber = 0 Then _Position.BOP = True Else _Position.BOP = False
             Return _Position
         End Get
         Set(value As TapeUtils.PositionData)
@@ -174,7 +175,7 @@ Public Class TapeImage
             FilemarkBlockIndex = .FilemarkBlockIndex
             PartitionEOD = .PartitionEOD
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
-            Position = .Position
+            Position = New TapeUtils.PositionData()
             MediumSN = .MediumSN
             MediumMFDate = .MediumMFDate
             MAM0800 = .MAM0800
@@ -201,11 +202,11 @@ Public Class TapeImage
                 PartitionMappingStream.Add(id, New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open))
             End If
         Next
-        If Position.PartitionNumber <> 0 Then
-            ChangePartition(Position.PartitionNumber, Nothing)
-            LocateByBlock(Position.BlockNumber, Nothing)
-        ElseIf Position.PartitionNumber <> 0 OrElse Position.BlockNumber <> 0 Then
-            LocateByBlock(Position.BlockNumber, Nothing)
+        If idx.Position.PartitionNumber <> 0 Then
+            ChangePartition(idx.Position.PartitionNumber, Nothing)
+            LocateByBlock(idx.Position.BlockNumber, Nothing)
+        ElseIf Position.PartitionNumber <> 0 OrElse idx.Position.BlockNumber <> 0 Then
+            LocateByBlock(idx.Position.BlockNumber, Nothing)
         End If
     End Sub
     Public Sub OpenStream(idx As TapeImage, partitions As List(Of Stream))

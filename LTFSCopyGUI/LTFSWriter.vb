@@ -3538,6 +3538,7 @@ Public Class LTFSWriter
                 End If
                 Dim dirList As String() = s.Split({"\", "/"}, StringSplitOptions.RemoveEmptyEntries)
                 Dim d As ltfsindex.directory = ListView1.Tag
+                Dim path As String = GetPath(TreeView1.SelectedNode)
                 For Each newdirName As String In dirList
 
                     SyncLock d.contents._directory
@@ -3562,9 +3563,10 @@ Public Class LTFSWriter
                     schema.highestfileuid += 1
                     d.contents._directory.Add(newdir)
                     d = newdir
+                    path &= $"\{newdirName}"
                 Next
-
                 RefreshDisplay()
+                ChangeDirectory(path)
             End If
         End If
     End Sub
