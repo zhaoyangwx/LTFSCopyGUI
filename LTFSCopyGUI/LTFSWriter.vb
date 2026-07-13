@@ -9448,6 +9448,10 @@ Public Class LTFSWriter
         If DIR.Length > 1 AndAlso DIR(1) = CType(targetdir.Tag, ltfsindex.directory).name Then
             Dim found As Boolean = False
             For i As Integer = 2 To DIR.Length - 1
+                If targetdir.Nodes.Count = 0 AndAlso CType(targetdir.Tag, ltfsindex.directory).contents._directory.Count > 0 Then
+                    TreeView1.SelectedNode = targetdir
+                    Application.DoEvents()
+                End If
                 For j As Integer = 0 To targetdir.Nodes.Count - 1
                     If CType(targetdir.Nodes(j).Tag, ltfsindex.directory).name = DIR(i) Then
                         targetdir = targetdir.Nodes(j)
