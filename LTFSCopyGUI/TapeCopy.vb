@@ -46,6 +46,7 @@
             TapeB = TextBox2.Text
             Dim handleA, handleB As IntPtr
             Dim drivertype As TapeUtils.DriverType = TapeUtils.DriverTypeSetting
+            If drivertype = TapeUtils.DriverType.TapeStream Then drivertype = TapeUtils.DriverType.LTO
             Dim IsFileA As Boolean = CheckBox2.Checked
             Dim IsFileB As Boolean = CheckBox3.Checked
             If IsFileA Then
