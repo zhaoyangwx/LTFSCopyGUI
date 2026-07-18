@@ -181,8 +181,10 @@ Public Class TapeImage
             FilemarkBlockIndex = .FilemarkBlockIndex
             PartitionEOD = .PartitionEOD
             PartitionMappingStream = New Dictionary(Of Integer, Stream)
+            ValidLengthLookupTable = New SerializableDictionary(Of Stream, Integer)
             ValidLength = .ValidLength
             If ValidLength Is Nothing OrElse ValidLength.Keys.Count <> PartitionMappingFile.Keys.Count Then
+                ValidLength = New SerializableDictionary(Of Integer, Long)
                 For Each id As Integer In PartitionMappingFile.Keys
                     ValidLength.Add(id, 0)
                 Next
@@ -1461,6 +1463,7 @@ Public Class TapeImage
             blockfraglen = GetInteger(BlockHeader.Skip(12).Take(4).ToArray())
             CurrentIntraSetBlockOffset += blockfraglen
         End While
+        Position.BlockNumber += 1
         ReadBlock(sense)
         For i As Integer = 0 To FilemarkBlockIndex(Position.PartitionNumber).Count - 1
             If FilemarkBlockIndex(Position.PartitionNumber)(i) < Position.BlockNumber Then
