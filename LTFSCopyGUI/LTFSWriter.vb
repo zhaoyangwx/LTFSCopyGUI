@@ -3727,7 +3727,7 @@ Public Class LTFSWriter
                                 If Data.Length <> CurrentBlockLen OrElse CurrentBlockLen = 0 Then
                                     Dim errmsg As String = $"Error reading at p{RestorePosition.PartitionNumber}b{RestorePosition.BlockNumber}: readed length {Data.Length} should be {CurrentBlockLen}"
                                     PrintMsg(errmsg, LogOnly:=True, ForceLog:=True)
-                                    If Not ignored Then
+                                    If (Not ignored) AndAlso (Not My.Settings.LTFSWriter_IgnoreILI) Then
                                         While True
                                             Select Case MessageBox.Show(New Form With {.TopMost = True}, errmsg, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                                 Case DialogResult.Abort
@@ -3741,7 +3741,7 @@ Public Class LTFSWriter
                                             End Select
                                         End While
                                     End If
-                                    If Not ignored Then
+                                    If (Not ignored) AndAlso (Not My.Settings.LTFSWriter_IgnoreILI) Then
                                         succ = False
                                         SetStatusLight(LWStatus.Err)
                                         Exit Do
