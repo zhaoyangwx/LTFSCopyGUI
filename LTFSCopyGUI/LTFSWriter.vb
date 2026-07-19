@@ -1059,7 +1059,8 @@ Public Class LTFSWriter
                         .extendedattributes.AddRange(xlist)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}")
+                    Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                    ActiveFrm.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
                 End Try
             End With
             ParentDirectory.UnwrittenFiles.Add(File)
@@ -1091,7 +1092,10 @@ Public Class LTFSWriter
                         IsOpened = True
                         Exit While
                     Catch ex As Exception
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                        Dim dResult As DialogResult
+                        ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Select Case dResult
                             Case DialogResult.Abort
                                 IsOpened = False
                                 Return 3
@@ -3664,7 +3668,9 @@ Public Class LTFSWriter
                                         Data = TapeUtils.ReadBlock(driveHandle, sense, CurrentBlockLen, True)
 
                                     Catch ex As Exception
-                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                        Dim dResult As DialogResult
+                                        Invoke(Sub() dResult = MessageBox.Show(Me, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                        Select Case dResult
                                             Case DialogResult.Abort
                                                 StopFlag = True
                                                 Throw ex
@@ -3702,7 +3708,9 @@ Public Class LTFSWriter
                                             Try
                                                 Throw New Exception("SCSI sense error")
                                             Catch ex As Exception
-                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                Dim dResult As DialogResult
+                                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                Select Case dResult
                                                     Case DialogResult.Abort
                                                         fs.Close()
                                                         StopFlag = True
@@ -3729,7 +3737,9 @@ Public Class LTFSWriter
                                     PrintMsg(errmsg, LogOnly:=True, ForceLog:=True)
                                     If (Not ignored) AndAlso (Not My.Settings.LTFSWriter_IgnoreILI) Then
                                         While True
-                                            Select Case MessageBox.Show(New Form With {.TopMost = True}, errmsg, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                            Dim dResult As DialogResult
+                                            Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, errmsg, My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                            Select Case dResult
                                                 Case DialogResult.Abort
                                                     fs.Close()
                                                     StopFlag = True
@@ -4371,7 +4381,9 @@ Public Class LTFSWriter
                                     p.BlockNumber += 1
                                 End SyncLock
                             Catch ex As Exception
-                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                Dim dResult As DialogResult
+                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                Select Case dResult
                                     Case DialogResult.Abort
                                         StopFlag = True
                                         Throw
@@ -4396,7 +4408,9 @@ Public Class LTFSWriter
                                     Exit While
                                 End If
                             ElseIf sense(2) And &HF <> 0 Then
-                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                Dim dResult As DialogResult
+                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                Select Case dResult
                                     Case DialogResult.Abort
                                         StopFlag = True
                                         Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -4784,7 +4798,9 @@ Public Class LTFSWriter
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Dim dResult As DialogResult
+                                                    Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                    Select Case dResult
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             fr.Close()
@@ -4806,7 +4822,9 @@ Public Class LTFSWriter
                                                         p.BlockNumber += 1
                                                     End SyncLock
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Dim dResult As DialogResult
+                                                    Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                    Select Case dResult
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             fr.Close()
@@ -4836,7 +4854,9 @@ Public Class LTFSWriter
                                                     Try
                                                         Throw New Exception("SCSI sense error")
                                                     Catch ex As Exception
-                                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                        Dim dResult As DialogResult
+                                                        Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                        Select Case dResult
                                                             Case DialogResult.Abort
                                                                 fr.Close()
                                                                 StopFlag = True
@@ -4963,7 +4983,9 @@ Public Class LTFSWriter
                                                         Exit While
                                                     End If
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Dim dResult As DialogResult
+                                                    Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                    Select Case dResult
                                                         Case DialogResult.Abort
                                                             StopFlag = True
                                                             Throw
@@ -5020,7 +5042,9 @@ Public Class LTFSWriter
                                                                     p.BlockNumber += 1
                                                                 End SyncLock
                                                             Catch ex As Exception
-                                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                Dim dResult As DialogResult
+                                                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                                Select Case dResult
                                                                     Case DialogResult.Abort
                                                                         StopFlag = True
                                                                         Throw
@@ -5055,7 +5079,9 @@ Public Class LTFSWriter
                                                                 Try
                                                                     Throw New Exception("SCSI sense error")
                                                                 Catch ex As Exception
-                                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                                    Dim dResult As DialogResult
+                                                                    Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                                    Select Case dResult
                                                                         Case DialogResult.Abort
                                                                             StopFlag = True
                                                                             Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -5249,7 +5275,7 @@ Public Class LTFSWriter
                                     End If
                                 End If
                             Catch ex As Exception
-                                MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
+                                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                                 SetStatusLight(LWStatus.Err)
                                 StopFlag = True
@@ -5355,7 +5381,7 @@ Public Class LTFSWriter
                         If fastProviderSnapshot IsNot Nothing Then fastProviderSnapshot.Dispose()
                     Catch
                     End Try
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                     SetStatusLight(LWStatus.Err)
                 End Try
@@ -5901,9 +5927,9 @@ Public Class LTFSWriter
             If MAM080C IsNot Nothing Then
                 VCI = MAM080C.RawData
             End If
-            If Not Silent Then MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_ILdedP}{vbCrLf}{vbCrLf}{My.Resources.ResText_VCID}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}")
+            If Not Silent Then Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_ILdedP}{vbCrLf}{vbCrLf}{My.Resources.ResText_VCID}{vbCrLf}{TapeUtils.Byte2Hex(VCI, True)}"))
         Catch ex As Exception
-            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IAErrp}{ex.Message}")
+            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IAErrp}{ex.Message}"))
             SetStatusLight(LWStatus.Err)
         End Try
     End Sub
@@ -6001,7 +6027,7 @@ Public Class LTFSWriter
                 Try
                     SetStatusLight(LWStatus.Busy)
                     Dim outputfile As String = AutoDump()
-                    Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}"))
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_IndexBak2}{vbCrLf}{outputfile}"))
                 Catch ex As Exception
                     PrintMsg(My.Resources.ResText_IndexBakF)
                     SetStatusLight(LWStatus.Err)
@@ -6258,7 +6284,7 @@ Public Class LTFSWriter
                         If checksumlegal Then
                             Threading.Interlocked.Increment(fhash)
                         ElseIf fprocessed - fhash <= 5 Then
-                            MessageBox.Show(New Form With {.TopMost = True}, illegalinfo.ToString())
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, illegalinfo.ToString()))
                         End If
                     Catch ex As Exception
                         SetStatusLight(LWStatus.Err)
@@ -6530,7 +6556,9 @@ Public Class LTFSWriter
                             Try
                                 Throw New Exception("SCSI sense error")
                             Catch ex As Exception
-                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                Dim dResult As DialogResult
+                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                Select Case dResult
                                     Case DialogResult.Abort
                                         StopFlag = True
                                         Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -6566,7 +6594,9 @@ Public Class LTFSWriter
                             Try
                                 Throw New Exception("SCSI sense error")
                             Catch ex As Exception
-                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                Dim dResult As DialogResult
+                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                Select Case dResult
                                     Case DialogResult.Abort
                                         StopFlag = True
                                         Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -7730,7 +7760,9 @@ Public Class LTFSWriter
                 Host.MaxComponentLength = 4096
 
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}")
+                Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                Dim dResult As DialogResult
+                ActiveFrm.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
             End Try
             Return STATUS_SUCCESS
         End Function
@@ -8035,7 +8067,6 @@ Public Class LTFSWriter
             Host.FileSystemName = "LTFS"
             Dim Code As Integer = Host.Mount("L:", Nothing, True, 0)
             _Host = Host
-            'MessageBox.Show(New Form With {.TopMost = True}, $"Code {Code} Name={Host.FileSystemName} MP={Host.MountPoint} Pf={Host.Prefix}")
         End Sub
         Protected Overrides Sub OnStop()
             _Host.Unmount()
@@ -8199,7 +8230,9 @@ Public Class LTFSWriter
                                              pos.BlockNumber += 1
                                          End SyncLock
                                      Catch ex As Exception
-                                         Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{ My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                         Dim dResult As DialogResult
+                                         Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{ My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                         Select Case dResult
                                              Case DialogResult.Abort
                                                  SetStatusLight(LWStatus.Err)
                                                  Throw ex
@@ -8229,7 +8262,9 @@ Public Class LTFSWriter
                                          Try
                                              Throw New Exception("SCSI sense error")
                                          Catch ex As Exception
-                                             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                             Dim dResult As DialogResult
+                                             Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                             Select Case dResult
                                                  Case DialogResult.Abort
                                                      SetStatusLight(LWStatus.Err)
                                                      Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -8719,7 +8754,9 @@ Public Class LTFSWriter
                                         BytesReaded = fr.Read(buffer, 0, plabel.blocksize)
                                         Exit While
                                     Catch ex As Exception
-                                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                        Dim dResult As DialogResult
+                                        Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                        Select Case dResult
                                             Case DialogResult.Abort
                                                 StopFlag = True
                                                 fr.Close()
@@ -8760,7 +8797,9 @@ Public Class LTFSWriter
                                                     p.BlockNumber += 1
                                                 End SyncLock
                                             Catch ex As Exception
-                                                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                Dim dResult As DialogResult
+                                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                Select Case dResult
                                                     Case DialogResult.Abort
                                                         fr.Close()
                                                         StopFlag = True
@@ -8772,7 +8811,7 @@ Public Class LTFSWriter
                                                         Exit While
                                                 End Select
                                                 p = New TapeUtils.PositionData(driveHandle)
-                                                Continue While
+                                                           Continue While
                                             End Try
                                             If (((sense(2) >> 6) And &H1) = 1) Then
                                                 If ((sense(2) And &HF) = 13) Then
@@ -8790,17 +8829,19 @@ Public Class LTFSWriter
                                                 Try
                                                     Throw New Exception("SCSI sense error")
                                                 Catch ex As Exception
-                                                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                    Dim dResult As DialogResult
+                                                    Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                    Select Case dResult
                                                         Case DialogResult.Abort
                                                             fr.Close()
-                                                            StopFlag = True
-                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                        Case DialogResult.Retry
-                                                            succ = False
-                                                        Case DialogResult.Ignore
-                                                            succ = True
-                                                            Exit While
-                                                    End Select
+                                                                       StopFlag = True
+                                                                       Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                                   Case DialogResult.Retry
+                                                                       succ = False
+                                                                   Case DialogResult.Ignore
+                                                                       succ = True
+                                                                       Exit While
+                                                               End Select
                                                 End Try
 
                                                 p = New TapeUtils.PositionData(driveHandle)
@@ -8867,7 +8908,7 @@ Public Class LTFSWriter
                                 End If
                             End If
                         Catch ex As Exception
-                            MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                             PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                         End Try
                         If Pause Then
@@ -8916,7 +8957,7 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As Exception
-                    MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                 End Try
                 TapeUtils.Flush(driveHandle)
@@ -9220,7 +9261,7 @@ Public Class LTFSWriter
                      End While
                      Invoke(Sub() LockGUI(False))
                      PrintMsg($"""{LastSearchKW}"" not found.")
-                     MessageBox.Show(New Form With {.TopMost = True}, $"""{LastSearchKW}"" not found.")
+                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"""{LastSearchKW}"" not found."))
                  End Sub)
     End Sub
     Private Sub LTFSWriter_KeyDown(sender As Object, e As KeyEventArgs) Handles Me.KeyDown
@@ -9676,10 +9717,14 @@ Public Class LTFSWriter
                                                             While Not AllowOperation
                                                                 Threading.Thread.Sleep(100)
                                                             End While
-                                                            If chkAutoDelete.Checked OrElse MessageBox.Show(New Form With {.TopMost = True}, $"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK Then
-                                                                For Each s As String In DelList
-                                                                    If IO.File.Exists(s) Then IO.File.Delete(s)
-                                                                Next
+                                                            If chkAutoDelete.Checked Then
+                                                                Dim mResult As Boolean
+                                                                Invoke(Sub() mResult = MessageBox.Show(New Form With {.TopMost = True}, $"Delete written files?{vbCrLf}{DelList.Count}", "Confirm", MessageBoxButtons.OKCancel) = DialogResult.OK)
+                                                                If mResult Then
+                                                                    For Each s As String In DelList
+                                                                        If IO.File.Exists(s) Then IO.File.Delete(s)
+                                                                    Next
+                                                                End If
                                                             End If
 
                                                             Threading.Thread.Sleep(5000)
@@ -10140,7 +10185,9 @@ Public Class LTFSWriter
                                      Exit While
                                  End If
                              Catch ex As Exception
-                                 Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                 Dim dResult As DialogResult
+                                 Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                 Select Case dResult
                                      Case DialogResult.Abort
                                          StopFlag = True
                                          Throw
@@ -10196,7 +10243,9 @@ Public Class LTFSWriter
                                                      p.BlockNumber += 1
                                                  End SyncLock
                                              Catch ex As Exception
-                                                 Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                 Dim dResult As DialogResult
+                                                 Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                 Select Case dResult
                                                      Case DialogResult.Abort
                                                          StopFlag = True
                                                          Throw
@@ -10231,7 +10280,9 @@ Public Class LTFSWriter
                                                  Try
                                                      Throw New Exception("SCSI sense error")
                                                  Catch ex As Exception
-                                                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                                                     Dim dResult As DialogResult
+                                                     Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                                                     Select Case dResult
                                                          Case DialogResult.Abort
                                                              StopFlag = True
                                                              Throw New Exception(TapeUtils.ParseSenseData(sense))
@@ -10409,7 +10460,7 @@ Public Class LTFSWriter
                              End If
                          End If
                      Catch ex As Exception
-                         MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}")
+                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                          PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
                          SetStatusLight(LWStatus.Err)
                          StopFlag = True

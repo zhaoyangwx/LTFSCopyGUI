@@ -1051,7 +1051,10 @@ Partial Public Class ApplicationWheels
             Try
                 sense = command()
             Catch ex As Exception
-                Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_Error}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                Dim dResult As DialogResult
+                ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_Error}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                Select Case dResult
                     Case DialogResult.Abort
                         Throw ex
                     Case DialogResult.Retry
@@ -1077,7 +1080,10 @@ Partial Public Class ApplicationWheels
                         AutoRetryCount -= 1
                         succ = False
                     Else
-                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                        Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                        Dim dResult As DialogResult
+                        ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Select Case dResult
                             Case DialogResult.Abort
                                 Throw New Exception(TapeUtils.ParseSenseData(sense))
                             Case DialogResult.Retry
@@ -1093,6 +1099,15 @@ Partial Public Class ApplicationWheels
             End If
         End While
         Return succ
+    End Function
+    Public Shared Function GetActiveWindow() As Form
+        Dim ActiveFrm As Form = Nothing
+        If Application.OpenForms.Count > 0 Then Application.OpenForms(0).Invoke(
+            Sub()
+                ActiveFrm = Application.OpenForms.Cast(Of Form)().FirstOrDefault(Function(f) f.Focused)
+            End Sub)
+        If ActiveFrm Is Nothing Then ActiveFrm = If(Application.OpenForms.Count > 0, Application.OpenForms(0), New Form With {.TopMost = True})
+        Return ActiveFrm
     End Function
 End Class
 
