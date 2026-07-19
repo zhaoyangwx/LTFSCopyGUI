@@ -1351,12 +1351,15 @@ Public Class TapeUtils
         While Not TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBuffer, paramLen, 1, 60000, senseData)
             Dim ErrCode As Integer = GetLastError()
             Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
-            Select Case MessageBox.Show($"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}",
+            Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+            Dim dResult As DialogResult
+            ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.StrSCSIFail}{vbCrLf}{ParseSenseData(senseData)}{vbCrLf}{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}",
                                         My.Resources.ResText_Warning,
                                         MessageBoxButtons.AbortRetryIgnore,
                                         Nothing,
                                         MessageBoxDefaultButton.Button2,
-                                        MessageBoxOptions.DefaultDesktopOnly)
+                                        MessageBoxOptions.DefaultDesktopOnly))
+            Select Case dResult
                 Case DialogResult.Abort
                     Throw New Exception("SCSI Error")
                     Exit While
@@ -6942,7 +6945,7 @@ Public Class TapeUtils
                     Dim ErrCode As Integer = GetLastError()
                     Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
                     Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
-        End If
+                End If
             Case DriverType.SLR1
                 Dim BlockCount As Integer = Math.Ceiling(Data.Length / 512)
                 Dim succ As Boolean =
@@ -7133,7 +7136,10 @@ Public Class TapeUtils
                     End If
                     Exit Do
                 Else
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                    Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                    Dim dResult As DialogResult
+                    ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore))
+                    Select Case dResult
                         Case DialogResult.Abort
                             Exit While
                         Case DialogResult.Retry
@@ -7201,7 +7207,10 @@ Public Class TapeUtils
                         If succ Then
                             Exit Do
                         Else
-                            Select Case MessageBox.Show(New Form With {.TopMost = True}, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore)
+                            Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                            Dim dResult As DialogResult
+                            ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"写入出错：SCSI指令执行失败", "警告", MessageBoxButtons.AbortRetryIgnore))
+                            Select Case dResult
                                 Case DialogResult.Abort
                                     Exit While
                                 Case DialogResult.Retry
@@ -7989,7 +7998,10 @@ Public Class TapeUtils
                         retrycount -= 1
                         Continue While
                     End If
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI }{vbCrLf}{ParseSenseData(sensedata)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                    Dim dResult As DialogResult
+                    ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_WErrSCSI }{vbCrLf}{ParseSenseData(sensedata)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                    Select Case dResult
                         Case DialogResult.Abort
                             Return False
                         Case DialogResult.Retry
@@ -8648,7 +8660,8 @@ Public Class TapeUtils
                     Return True
                 End If
             Catch ex As Exception
-                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
+                Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                ActiveFrm.Invoke(Sub() MessageBox.Show(ActiveFrm, ex.ToString))
                 fs.Close()
                 IO.File.Delete(OutputFile)
                 If LockDrive Then
