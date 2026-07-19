@@ -8254,7 +8254,7 @@ Public Class TapeUtils
                         ProgressReport("MODE SELECT - Partition mode page..")
                         If DriverTypeSetting <> DriverType.TapeStream Then
                             'Mode Select:1st Partition to Minimum 
-                            If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), ModeData(6), ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0, senseReport:=senseReportFunc) Then
+                            If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), 9, ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0, senseReport:=senseReportFunc) Then
                                 ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                             Else
                                 OnError("MODE SELECT 11h Fail" & vbCrLf)
