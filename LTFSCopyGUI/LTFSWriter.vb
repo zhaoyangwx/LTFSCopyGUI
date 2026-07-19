@@ -6078,7 +6078,7 @@ Public Class LTFSWriter
                                         Sub(Message As String)
                                             'ProgressReport
                                             PrintMsg(Message)
-                                            If Message.Contains("error") Then MessageBox.Show(Message)
+                                            If Message.Contains("error") Then Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, Message))
                                         End Sub,
                                         Sub(Message As String)
                                             'OnFinished
