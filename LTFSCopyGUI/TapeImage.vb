@@ -1314,6 +1314,19 @@ Public Class TapeImage
             LocateToEOD(sense)
             Exit Sub
         End If
+        Dim debuglogs As New StringBuilder '死循环检测
+        Dim logcount As Integer = 0
+        Dim DebugLog As New Action(Of String, Boolean)(Sub(info As String, ByVal ForceReport As Boolean)
+                                                           debuglogs.AppendLine(info)
+                                                           logcount += 1
+                                                           If logcount >= 200 OrElse ForceReport Then
+                                                               logcount = 0
+                                                               Dim debuginfo = debuglogs.ToString()
+                                                               MessageBox.Show($"已复制到剪贴板，请粘贴后回报{vbCrLf}{debuginfo}")
+                                                               Application.OpenForms(0).Invoke(Sub() Clipboard.SetText(debuginfo))
+                                                               debuglogs = New StringBuilder
+                                                           End If
+                                                       End Sub)
         While (currblock >= blockIndex) OrElse (nextblock < blockIndex AndAlso nextset < lastset) OrElse nextset - currset > 1
             While currblock > blockIndex
                 Dim delta As Integer = currset - currset \ 2
@@ -1324,6 +1337,7 @@ Public Class TapeImage
                 End If
                 currset \= 2
                 currblock = GetHeaderBlockNumber(currset)
+                DebugLog($"L1340 currblock={currblock}, currset={currset}, blockindex={blockIndex}", False)
             End While
             While nextblock <= blockIndex
                 Dim delta As Integer = nextset - Math.Ceiling((nextset + lastset) / 2)
@@ -1334,6 +1348,7 @@ Public Class TapeImage
                 End If
                 nextset = Math.Ceiling((nextset + lastset) / 2)
                 nextblock = GetHeaderBlockNumber(nextset)
+                DebugLog($"L1351 currblock={currblock}, nextblock={nextblock}, currset={currset}, nextset={nextset}, lastset={lastset}", False)
             End While
             If nextset - currset < 5 Then
                 For i As Integer = nextset To currset + 1 Step -1
@@ -1343,12 +1358,26 @@ Public Class TapeImage
                 Next
             End If
             Dim midset As Long = (currset + nextset) \ 2
-            If GetHeaderBlockNumber(midset) < blockIndex Then
+            Dim midblk As ULong = GetHeaderBlockNumber(midset)
+            DebugLog($"L1362 currset={currset}, nextset={nextset}, midset={midset}, midblk={midblk}", False)
+            If midblk < blockIndex Then
                 currset = midset
-            Else
+            ElseIf midblk > blockIndex Then
                 nextset = midset
+            Else
+                Dim BlockHeader() As Byte = GetHeaderBlock(midset)
+                Dim blocknum As ULong = GetULong(BlockHeader.Take(8).ToArray())
+                Dim blocklen As Integer = GetInteger(BlockHeader.Skip(8).Take(4).ToArray())
+                Dim blockfraglen As Integer = GetInteger(BlockHeader.Skip(12).Take(4).ToArray())
+                If blocklen = blockfraglen Then
+                    currset = midset
+                    currblock = GetHeaderBlockNumber(currset)
+                Else
+                    currset = midset - 1
+                    currblock = GetHeaderBlockNumber(currset)
+                    Exit While
+                End If
             End If
-
             If currset < 0 Then
                 currset = 0
                 currblock = 0
@@ -1357,6 +1386,7 @@ Public Class TapeImage
             currblock = GetHeaderBlockNumber(currset)
             nextblock = GetHeaderBlockNumber(nextset)
             If currblock = blockIndex Then Exit While
+            If nextset - currset <= 1 Then Exit While
         End While
         Dim iofs As Long = 0
         Position.SetNumber = currset
