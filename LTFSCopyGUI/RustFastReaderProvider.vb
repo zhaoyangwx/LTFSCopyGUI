@@ -28,10 +28,19 @@ Public Class RustFastReaderProvider
     Private Const Synchronize As UInteger = &H100000
     Private Const Infinite As UInteger = &HFFFFFFFFUI
     Private Const WaitObject0 As UInteger = 0
+    Private Const SmallOpenConcurrency As Integer = 32
+    Private Const SmallActiveFileLimit As Integer = 64
+    Private Const SmallIocpBatchSize As Integer = 64
+    Private Const SmallMinimumThreshold As Long = 64L * 1024L
+    Private Const SmallMaximumThreshold As Long = 4L * 1024L * 1024L
+    Private Const SmallMaximumInflightBytes As Long = 128L * 1024L * 1024L
 
     Private ReadOnly _writeList As List(Of LTFSWriter.FileRecord)
     Private ReadOnly _capacityBytes As Long
     Private ReadOnly _slotSize As Integer
+    Private ReadOnly _smallInflightByteLimit As Long
+    Private ReadOnly _smallFileThreshold As Long
+    Private ReadOnly _smallPrefetchWindow As Integer
     Private ReadOnly _id As String = Guid.NewGuid().ToString("N")
     Private ReadOnly _shmName As String
     Private ReadOnly _dataEventName As String
@@ -41,6 +50,7 @@ Public Class RustFastReaderProvider
     Private ReadOnly _stdoutDone As New ManualResetEvent(False)
     Private ReadOnly _inputLock As New Object()
     Private ReadOnly _queuedFiles As New HashSet(Of Long)
+    Private ReadOnly _prefetchedFiles As New HashSet(Of Long)
 
     Private _proc As Process
     Private _mapHandle As IntPtr = IntPtr.Zero
@@ -58,6 +68,9 @@ Public Class RustFastReaderProvider
         _writeList = writeList.ToList()
         _slotSize = Math.Max(1, blockSize)
         _capacityBytes = Math.Max(CLng(_slotSize) * 2, capacityBytes)
+        _smallInflightByteLimit = Math.Max(SmallMinimumThreshold, Math.Min(SmallMaximumInflightBytes, _capacityBytes))
+        _smallFileThreshold = Math.Max(SmallMinimumThreshold, Math.Min(SmallMaximumThreshold, _smallInflightByteLimit \ SmallActiveFileLimit))
+        _smallPrefetchWindow = Math.Max(1, My.Settings.LTFSWriter_PreLoadFileCount)
         _shmName = "Local\LTFSCopyGUI.FastReader." & _id
         _dataEventName = "Local\LTFSCopyGUI.FastReader.Data." & _id
         _spaceEventName = "Local\LTFSCopyGUI.FastReader.Space." & _id
@@ -134,6 +147,11 @@ Public Class RustFastReaderProvider
             "space_event=" & _spaceEventName,
             "capacity=" & _capacityBytes.ToString(),
             "slot_size=" & _slotSize.ToString(),
+            "small_threshold=" & _smallFileThreshold.ToString(),
+            "small_inflight_bytes=" & _smallInflightByteLimit.ToString(),
+            "small_open_concurrency=" & SmallOpenConcurrency.ToString(),
+            "small_active_files=" & SmallActiveFileLimit.ToString(),
+            "small_iocp_batch=" & SmallIocpBatchSize.ToString(),
             "SHA1=" & If(IsHashRequired("SHA1"), "1", "0"),
             "SHA256=" & If(IsHashRequired("SHA256"), "1", "0"),
             "SHA512=" & If(IsHashRequired("SHA512"), "1", "0"),
@@ -305,6 +323,7 @@ Public Class RustFastReaderProvider
             _done.TryRemove(fileIndex, ignored)
             Dim fr = _writeList(CInt(fileIndex))
             If fr Is Nothing OrElse fr.File Is Nothing Then Return New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+            QueueSmallRunLocked(fileIndex)
             _proc.StandardInput.WriteLine($"HASH{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
             _proc.StandardInput.Flush()
         End SyncLock
@@ -376,11 +395,28 @@ Public Class RustFastReaderProvider
             If _queuedFiles.Contains(fileIndex) Then Return
             Dim fr = _writeList(CInt(fileIndex))
             If fr IsNot Nothing AndAlso fr.File IsNot Nothing Then
+                QueueSmallRunLocked(fileIndex)
                 _proc.StandardInput.WriteLine($"FILE{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
                 _proc.StandardInput.Flush()
             End If
             _queuedFiles.Add(fileIndex)
         End SyncLock
+    End Sub
+
+    Private Sub QueueSmallRunLocked(fileIndex As Long)
+        Dim sent As Integer = 0
+        Dim lastIndex As Long = Math.Min(CLng(_writeList.Count) - 1L, fileIndex + CLng(_smallPrefetchWindow) - 1L)
+        For index As Long = fileIndex To lastIndex
+            Dim fr = _writeList(CInt(index))
+            If fr Is Nothing OrElse fr.File Is Nothing Then Exit For
+            Dim length = fr.File.length
+            If length < 0 OrElse length > _smallFileThreshold Then Exit For
+            If _prefetchedFiles.Add(index) Then
+                _proc.StandardInput.WriteLine($"PREFETCH{vbTab}{index}{vbTab}{length}{vbTab}{EncodePath(fr.SourcePath)}")
+            End If
+            sent += 1
+            If sent >= _smallPrefetchWindow Then Exit For
+        Next
     End Sub
 
     Private Sub EnsureFileQueued(fileIndex As Long)
