@@ -45,6 +45,7 @@ Public Class RustFastReaderProvider
     Private ReadOnly _shmName As String
     Private ReadOnly _dataEventName As String
     Private ReadOnly _spaceEventName As String
+    Private ReadOnly _cancelEventName As String
     Private ReadOnly _done As New ConcurrentDictionary(Of Long, Dictionary(Of String, String))
     Private ReadOnly _errors As New ConcurrentQueue(Of String)
     Private ReadOnly _stdoutDone As New ManualResetEvent(False)
@@ -57,12 +58,14 @@ Public Class RustFastReaderProvider
     Private _basePtr As IntPtr = IntPtr.Zero
     Private _dataEvent As IntPtr = IntPtr.Zero
     Private _spaceEvent As IntPtr = IntPtr.Zero
+    Private _cancelEvent As IntPtr = IntPtr.Zero
     Private _slotCount As ULong
     Private _dataOffset As Long
     Private _mapSize As Long
     Private _readIndex As ULong
     Private _started As Boolean
     Private _disposed As Boolean
+    Private _cancelRequested As Integer
 
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord), blockSize As Integer, capacityBytes As Long)
         _writeList = writeList.ToList()
@@ -74,6 +77,7 @@ Public Class RustFastReaderProvider
         _shmName = "Local\LTFSCopyGUI.FastReader." & _id
         _dataEventName = "Local\LTFSCopyGUI.FastReader.Data." & _id
         _spaceEventName = "Local\LTFSCopyGUI.FastReader.Space." & _id
+        _cancelEventName = "Local\LTFSCopyGUI.FastReader.Cancel." & _id
     End Sub
 
     Public ReadOnly Property BufferedBytes As Long
@@ -145,6 +149,7 @@ Public Class RustFastReaderProvider
             "shm=" & _shmName,
             "data_event=" & _dataEventName,
             "space_event=" & _spaceEventName,
+            "cancel_event=" & _cancelEventName,
             "capacity=" & _capacityBytes.ToString(),
             "slot_size=" & _slotSize.ToString(),
             "small_threshold=" & _smallFileThreshold.ToString(),
@@ -219,11 +224,13 @@ Public Class RustFastReaderProvider
         If _dataEvent = IntPtr.Zero Then Throw New ComponentModel.Win32Exception(Marshal.GetLastWin32Error())
         _spaceEvent = OpenEvent(EventModifyState Or Synchronize, False, _spaceEventName)
         If _spaceEvent = IntPtr.Zero Then Throw New ComponentModel.Win32Exception(Marshal.GetLastWin32Error())
+        _cancelEvent = OpenEvent(EventModifyState Or Synchronize, False, _cancelEventName)
+        If _cancelEvent = IntPtr.Zero Then Throw New ComponentModel.Win32Exception(Marshal.GetLastWin32Error())
     End Sub
 
     Private Sub StdoutLoop()
         Try
-            While Not _proc.HasExited
+            While True
                 Dim line = _proc.StandardOutput.ReadLine()
                 If line Is Nothing Then Exit While
                 If line.StartsWith("FILE_DONE" & vbTab) Then
@@ -382,10 +389,23 @@ Public Class RustFastReaderProvider
     End Function
 
     Private Sub ThrowIfFailed()
+        If Threading.Volatile.Read(_cancelRequested) <> 0 Then Throw New OperationCanceledException("fastreader operation cancelled")
         Dim msg As String = Nothing
         If _errors.TryDequeue(msg) Then Throw New IOException(msg)
         If _basePtr <> IntPtr.Zero AndAlso Marshal.ReadInt32(AddPtr(_basePtr, 52)) <> 0 Then Throw New IOException("fastreader reported an error")
-        If _proc IsNot Nothing AndAlso _proc.HasExited AndAlso Marshal.ReadInt32(AddPtr(_basePtr, 48)) = 0 Then Throw New IOException("fastreader exited unexpectedly")
+        If _proc IsNot Nothing AndAlso _proc.HasExited Then
+            Dim exitedNormally = _basePtr <> IntPtr.Zero AndAlso Marshal.ReadInt32(AddPtr(_basePtr, 48)) <> 0
+            If Not exitedNormally Then Throw New IOException($"fastreader exited unexpectedly (exit code {_proc.ExitCode})")
+        End If
+    End Sub
+
+    Public Sub Cancel()
+        If Threading.Interlocked.Exchange(_cancelRequested, 1) <> 0 Then Return
+        Try
+            If _cancelEvent <> IntPtr.Zero Then SetEvent(_cancelEvent)
+            If _dataEvent <> IntPtr.Zero Then SetEvent(_dataEvent)
+        Catch
+        End Try
     End Sub
 
     Public Sub QueueFile(fileIndex As Long)
@@ -484,15 +504,20 @@ Public Class RustFastReaderProvider
     Public Sub Dispose() Implements IDisposable.Dispose
         If _disposed Then Return
         _disposed = True
+        Cancel()
         Complete()
         Try
-            If _proc IsNot Nothing AndAlso Not _proc.WaitForExit(1000) Then _proc.Kill()
+            If _proc IsNot Nothing AndAlso Not _proc.WaitForExit(1000) Then
+                _proc.Kill()
+                _proc.WaitForExit(1000)
+            End If
         Catch
         End Try
         If _basePtr <> IntPtr.Zero Then UnmapViewOfFile(_basePtr) : _basePtr = IntPtr.Zero
         If _mapHandle <> IntPtr.Zero Then CloseHandle(_mapHandle) : _mapHandle = IntPtr.Zero
         If _dataEvent <> IntPtr.Zero Then CloseHandle(_dataEvent) : _dataEvent = IntPtr.Zero
         If _spaceEvent <> IntPtr.Zero Then CloseHandle(_spaceEvent) : _spaceEvent = IntPtr.Zero
+        If _cancelEvent <> IntPtr.Zero Then CloseHandle(_cancelEvent) : _cancelEvent = IntPtr.Zero
         If _proc IsNot Nothing Then _proc.Dispose() : _proc = Nothing
     End Sub
 

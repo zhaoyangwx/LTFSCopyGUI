@@ -10,9 +10,10 @@ use std::os::windows::ffi::OsStrExt;
 use std::ptr::{null, null_mut};
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 use windows_sys::Win32::Foundation::{
     CloseHandle, ERROR_IO_PENDING, ERROR_NOT_FOUND, GENERIC_READ, HANDLE, INVALID_HANDLE_VALUE,
-    WAIT_OBJECT_0,
+    WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::Storage::FileSystem::{
     CreateFileW, GetFileSizeEx, ReadFile, FILE_ATTRIBUTE_NORMAL, FILE_FLAG_OVERLAPPED,
@@ -23,7 +24,7 @@ use windows_sys::Win32::System::Memory::{
     MEMORY_MAPPED_VIEW_ADDRESS, PAGE_READWRITE,
 };
 use windows_sys::Win32::System::Threading::{
-    CreateEventW, SetEvent, WaitForSingleObject, INFINITE,
+    CreateEventW, SetEvent, WaitForMultipleObjects, WaitForSingleObject, INFINITE,
 };
 use windows_sys::Win32::System::IO::{
     CancelIoEx, CreateIoCompletionPort, GetOverlappedResult, GetQueuedCompletionStatusEx,
@@ -40,6 +41,15 @@ const FLAG_EOF: u32 = 1;
 const FLAG_ERROR: u32 = 2;
 const IO_QUEUE_DEPTH: usize = 16;
 const HASH_CHUNK_SIZE: usize = 4 * 1024 * 1024;
+const CANCEL_POLL_MS: u32 = 100;
+
+fn cancelled_error() -> io::Error {
+    io::Error::new(io::ErrorKind::Interrupted, "fastreader operation cancelled")
+}
+
+unsafe fn is_cancelled(cancel_event: HANDLE) -> bool {
+    !cancel_event.is_null() && WaitForSingleObject(cancel_event, 0) == WAIT_OBJECT_0
+}
 
 fn wide(s: &str) -> Vec<u16> {
     OsStr::new(s).encode_wide().chain(Some(0)).collect()
@@ -60,6 +70,13 @@ unsafe fn read_u64(base: *mut u8, off: usize) -> u64 {
 
 struct Handle(HANDLE);
 unsafe impl Send for Handle {}
+
+#[derive(Clone, Copy)]
+struct SessionEvents {
+    data: HANDLE,
+    space: HANDLE,
+    cancel: HANDLE,
+}
 
 impl Drop for Handle {
     fn drop(&mut self) {
@@ -146,14 +163,22 @@ impl Mapping {
             .add(self.data_offset + (idx as usize % self.slot_count as usize) * self.slot_size)
     }
 
-    unsafe fn wait_free_slot(&self, space_event: HANDLE) -> io::Result<u64> {
+    unsafe fn wait_free_slot(&self, space_event: HANDLE, cancel_event: HANDLE) -> io::Result<u64> {
         loop {
+            if is_cancelled(cancel_event) {
+                return Err(cancelled_error());
+            }
             let write_idx = read_u64(self.base, 32);
             let meta = self.slot_meta(write_idx);
             if read_u32(meta, 0) == STATUS_EMPTY {
                 return Ok(write_idx);
             }
-            if WaitForSingleObject(space_event, INFINITE) != WAIT_OBJECT_0 {
+            let handles = [cancel_event, space_event];
+            let wait = WaitForMultipleObjects(handles.len() as u32, handles.as_ptr(), 0, INFINITE);
+            if wait == WAIT_OBJECT_0 {
+                return Err(cancelled_error());
+            }
+            if wait != WAIT_OBJECT_0 + 1 {
                 return Err(io::Error::last_os_error());
             }
         }
@@ -408,6 +433,7 @@ struct AsyncSequentialReader {
     next_submit: u64,
     next_consume: u64,
     outstanding: usize,
+    cancel_event: HANDLE,
 }
 
 fn completed_request_at(requests: &[ReadRequest], offset: u64) -> Option<usize> {
@@ -417,7 +443,15 @@ fn completed_request_at(requests: &[ReadRequest], offset: u64) -> Option<usize> 
 }
 
 impl AsyncSequentialReader {
-    unsafe fn open(path: &str, expected_len: u64, chunk_size: usize) -> io::Result<Self> {
+    unsafe fn open(
+        path: &str,
+        expected_len: u64,
+        chunk_size: usize,
+        cancel_event: HANDLE,
+    ) -> io::Result<Self> {
+        if is_cancelled(cancel_event) {
+            return Err(cancelled_error());
+        }
         if chunk_size == 0 || chunk_size > u32::MAX as usize {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -476,10 +510,14 @@ impl AsyncSequentialReader {
             next_submit: 0,
             next_consume: 0,
             outstanding: 0,
+            cancel_event,
         })
     }
 
     unsafe fn submit(&mut self, request_index: usize) -> io::Result<()> {
+        if is_cancelled(self.cancel_event) {
+            return Err(cancelled_error());
+        }
         if self.next_submit >= self.file_len {
             return Ok(());
         }
@@ -528,11 +566,18 @@ impl AsyncSequentialReader {
             entries.as_mut_ptr(),
             entries.len() as u32,
             &mut removed,
-            INFINITE,
+            CANCEL_POLL_MS,
             0,
         ) == 0
         {
-            return Err(io::Error::last_os_error());
+            let error = io::Error::last_os_error();
+            if error.raw_os_error() == Some(WAIT_TIMEOUT as i32) {
+                if is_cancelled(self.cancel_event) {
+                    return Err(cancelled_error());
+                }
+                return Ok(());
+            }
+            return Err(error);
         }
 
         for entry in &entries[..removed as usize] {
@@ -576,6 +621,9 @@ impl AsyncSequentialReader {
     {
         self.prime()?;
         while self.next_consume < self.file_len {
+            if is_cancelled(self.cancel_event) {
+                return Err(cancelled_error());
+            }
             let next_ready = completed_request_at(&self.requests, self.next_consume);
             let Some(index) = next_ready else {
                 self.receive_completions()?;
@@ -652,12 +700,13 @@ unsafe fn read_file_overlapped<F>(
     path: &str,
     expected_len: u64,
     chunk_size: usize,
+    cancel_event: HANDLE,
     consume: F,
 ) -> io::Result<()>
 where
     F: FnMut(u64, &[u8]) -> io::Result<()>,
 {
-    let mut reader = AsyncSequentialReader::open(path, expected_len, chunk_size)?;
+    let mut reader = AsyncSequentialReader::open(path, expected_len, chunk_size, cancel_event)?;
     reader.run(consume)
 }
 
@@ -707,6 +756,7 @@ struct SmallFileState {
     max_active_files: usize,
     max_reserved_bytes: usize,
     shutdown: bool,
+    fatal_error: Option<String>,
 }
 
 impl SmallFileState {
@@ -720,6 +770,7 @@ impl SmallFileState {
             max_active_files: 0,
             max_reserved_bytes: 0,
             shutdown: false,
+            fatal_error: None,
         }
     }
 
@@ -770,6 +821,7 @@ struct SmallShared {
     active_limit: usize,
     inflight_byte_limit: usize,
     completion_batch: usize,
+    cancel_event: SharedHandle,
 }
 
 struct CachedSmallFile {
@@ -827,6 +879,10 @@ fn small_open_worker(shared: Arc<SmallShared>) {
             loop {
                 if state.shutdown {
                     return;
+                }
+                if state.fatal_error.is_some() {
+                    state = shared.changed.wait(state).unwrap();
+                    continue;
                 }
                 if state.active_files < shared.active_limit {
                     let position = state.queue.iter().position(|index| {
@@ -990,9 +1046,31 @@ fn small_completion_worker(shared: Arc<SmallShared>) {
             )
         };
         if ok == 0 {
-            if shared.state.lock().unwrap().shutdown {
+            let error = io::Error::last_os_error();
+            let mut report_error = false;
+            {
+                let mut state = shared.state.lock().unwrap();
+                if state.fatal_error.is_none() {
+                    state.fatal_error = Some(format!("small-file IOCP failed: {error}"));
+                    report_error = true;
+                }
+                shared.changed.notify_all();
+            }
+            if report_error {
+                eprintln!("IOCP_ERROR\t{error}");
+                io::stderr().flush().ok();
+                let operations = shared.operations.lock().unwrap();
+                for operation in operations.values() {
+                    unsafe {
+                        CancelIoEx(operation.file.0, null());
+                    }
+                }
+            }
+            if shared.state.lock().unwrap().shutdown && shared.operations.lock().unwrap().is_empty()
+            {
                 return;
             }
+            thread::sleep(Duration::from_millis(10));
             continue;
         }
 
@@ -1074,6 +1152,7 @@ impl SmallFilePool {
         active_limit: usize,
         inflight_byte_limit: usize,
         completion_batch: usize,
+        cancel_event: HANDLE,
     ) -> io::Result<Self> {
         let raw_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null_mut(), 0, 0);
         if raw_port.is_null() {
@@ -1088,6 +1167,7 @@ impl SmallFilePool {
             active_limit: active_limit.max(1),
             inflight_byte_limit: inflight_byte_limit.max(64 * 1024),
             completion_batch: completion_batch.clamp(1, 128),
+            cancel_event: SharedHandle(cancel_event),
         });
         let workers = (0..open_concurrency.max(1))
             .map(|_| {
@@ -1112,7 +1192,8 @@ impl SmallFilePool {
             return;
         }
         let mut state = self.shared.state.lock().unwrap();
-        if state.shutdown || state.entries.contains_key(&task.index) {
+        if state.shutdown || state.fatal_error.is_some() || state.entries.contains_key(&task.index)
+        {
             return;
         }
         let index = task.index;
@@ -1167,6 +1248,12 @@ impl SmallFilePool {
         self.enqueue(task.clone(), true);
         let mut state = self.shared.state.lock().unwrap();
         loop {
+            if unsafe { is_cancelled(self.shared.cancel_event.0) } {
+                return Err(cancelled_error());
+            }
+            if let Some(message) = state.fatal_error.as_ref() {
+                return Err(io::Error::other(message.clone()));
+            }
             let Some(entry) = state.entries.get_mut(&task.index) else {
                 drop(state);
                 self.enqueue(task.clone(), true);
@@ -1198,7 +1285,12 @@ impl SmallFilePool {
                     self.shared.changed.notify_all();
                 }
                 _ => {
-                    state = self.shared.changed.wait(state).unwrap();
+                    state = self
+                        .shared
+                        .changed
+                        .wait_timeout(state, Duration::from_millis(CANCEL_POLL_MS as u64))
+                        .unwrap()
+                        .0;
                 }
             }
         }
@@ -1241,7 +1333,17 @@ impl SmallFilePool {
         }
         PostQueuedCompletionStatus(self.completion_port.0, 0, 0, null());
         if let Some(completion_thread) = self.completion_thread.take() {
-            let _ = completion_thread.join();
+            let join_result = completion_thread.join();
+            let mut operations = self
+                .shared
+                .operations
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if join_result.is_err() || !operations.is_empty() {
+                for (_, operation) in operations.drain() {
+                    std::mem::forget(operation);
+                }
+            }
         }
     }
 }
@@ -1276,12 +1378,11 @@ fn digest_bytes(data: &[u8], enabled: &HashMap<String, bool>) -> io::Result<Stri
 
 unsafe fn publish_error_slot(
     mapping: &Mapping,
-    data_event: HANDLE,
-    space_event: HANDLE,
+    events: SessionEvents,
     file_index: u64,
     file_offset: u64,
 ) -> io::Result<()> {
-    let idx = mapping.wait_free_slot(space_event)?;
+    let idx = mapping.wait_free_slot(events.space, events.cancel)?;
     let meta = mapping.slot_meta(idx);
     write_u32(meta, 4, FLAG_ERROR);
     write_u64(meta, 8, file_index);
@@ -1289,22 +1390,23 @@ unsafe fn publish_error_slot(
     write_u32(meta, 24, 0);
     write_u32(meta, 0, STATUS_FULL);
     write_u64(mapping.base, 32, idx + 1);
-    SetEvent(data_event);
+    SetEvent(events.data);
     Ok(())
 }
 
 unsafe fn fill_cached_file(
     pool: &SmallFilePool,
     mapping: &Mapping,
-    data_event: HANDLE,
-    space_event: HANDLE,
+    events: SessionEvents,
     task: SmallFileTask,
     enabled: &HashMap<String, bool>,
 ) -> io::Result<()> {
     let mut cached = match pool.wait_take(task.clone()) {
         Ok(cached) => cached,
         Err(error) => {
-            publish_error_slot(mapping, data_event, space_event, task.index, 0)?;
+            if error.kind() != io::ErrorKind::Interrupted {
+                publish_error_slot(mapping, events, task.index, 0)?;
+            }
             return Err(error);
         }
     };
@@ -1315,7 +1417,7 @@ unsafe fn fill_cached_file(
         };
         let mut file_offset = 0u64;
         for slice in cached.data.chunks(mapping.slot_size) {
-            let idx = mapping.wait_free_slot(space_event)?;
+            let idx = mapping.wait_free_slot(events.space, events.cancel)?;
             let meta = mapping.slot_meta(idx);
             let data = mapping.slot_data(idx);
             std::ptr::copy_nonoverlapping(slice.as_ptr(), data, slice.len());
@@ -1326,11 +1428,11 @@ unsafe fn fill_cached_file(
             write_u32(meta, 0, STATUS_FULL);
             file_offset += slice.len() as u64;
             write_u64(mapping.base, 32, idx + 1);
-            SetEvent(data_event);
+            SetEvent(events.data);
         }
         println!("FILE_DONE\t{}\t{}", task.index, digest);
         io::stdout().flush().ok();
-        let idx = mapping.wait_free_slot(space_event)?;
+        let idx = mapping.wait_free_slot(events.space, events.cancel)?;
         let meta = mapping.slot_meta(idx);
         write_u32(meta, 4, FLAG_EOF);
         write_u64(meta, 8, task.index);
@@ -1338,7 +1440,7 @@ unsafe fn fill_cached_file(
         write_u32(meta, 24, 0);
         write_u32(meta, 0, STATUS_FULL);
         write_u64(mapping.base, 32, idx + 1);
-        SetEvent(data_event);
+        SetEvent(events.data);
         Ok(())
     })();
     pool.release(task.index, cached);
@@ -1367,8 +1469,7 @@ fn hash_cached_file(
 
 unsafe fn fill_file(
     mapping: &Mapping,
-    data_event: HANDLE,
-    space_event: HANDLE,
+    events: SessionEvents,
     file_index: u64,
     expected_len: u64,
     path: &str,
@@ -1376,15 +1477,19 @@ unsafe fn fill_file(
 ) -> io::Result<()> {
     let mut hashes = HashSet::new(enabled)?;
     let mut file_offset = 0u64;
-    let read_result =
-        read_file_overlapped(path, expected_len, mapping.slot_size, |offset, slice| {
+    let read_result = read_file_overlapped(
+        path,
+        expected_len,
+        mapping.slot_size,
+        events.cancel,
+        |offset, slice| {
             if offset != file_offset {
                 return Err(io::Error::new(
                     io::ErrorKind::InvalidData,
                     "asynchronous read order mismatch",
                 ));
             }
-            let idx = mapping.wait_free_slot(space_event)?;
+            let idx = mapping.wait_free_slot(events.space, events.cancel)?;
             let meta = mapping.slot_meta(idx);
             let data = mapping.slot_data(idx);
             std::ptr::copy_nonoverlapping(slice.as_ptr(), data, slice.len());
@@ -1396,17 +1501,20 @@ unsafe fn fill_file(
             write_u32(meta, 0, STATUS_FULL);
             file_offset += slice.len() as u64;
             write_u64(mapping.base, 32, idx + 1);
-            SetEvent(data_event);
+            SetEvent(events.data);
             Ok(())
-        });
+        },
+    );
     if let Err(error) = read_result {
-        publish_error_slot(mapping, data_event, space_event, file_index, file_offset)?;
+        if error.kind() != io::ErrorKind::Interrupted {
+            publish_error_slot(mapping, events, file_index, file_offset)?;
+        }
         return Err(error);
     }
     let digest = hashes.finish()?;
     println!("FILE_DONE\t{}\t{}", file_index, digest);
     io::stdout().flush().ok();
-    let idx = mapping.wait_free_slot(space_event)?;
+    let idx = mapping.wait_free_slot(events.space, events.cancel)?;
     let meta = mapping.slot_meta(idx);
     write_u32(meta, 4, FLAG_EOF);
     write_u64(meta, 8, file_index);
@@ -1414,7 +1522,7 @@ unsafe fn fill_file(
     write_u32(meta, 24, 0);
     write_u32(meta, 0, STATUS_FULL);
     write_u64(mapping.base, 32, idx + 1);
-    SetEvent(data_event);
+    SetEvent(events.data);
     Ok(())
 }
 
@@ -1422,12 +1530,17 @@ unsafe fn hash_file(
     file_index: u64,
     expected_len: u64,
     path: &str,
+    cancel_event: HANDLE,
     enabled: &HashMap<String, bool>,
 ) -> io::Result<()> {
     let mut hashes = HashSet::new(enabled)?;
-    read_file_overlapped(path, expected_len, HASH_CHUNK_SIZE, |_offset, slice| {
-        hashes.update(slice)
-    })?;
+    read_file_overlapped(
+        path,
+        expected_len,
+        HASH_CHUNK_SIZE,
+        cancel_event,
+        |_offset, slice| hashes.update(slice),
+    )?;
     let digest = hashes.finish()?;
     println!("FILE_DONE\t{}\t{}", file_index, digest);
     io::stdout().flush().ok();
@@ -1456,6 +1569,10 @@ fn main() -> io::Result<()> {
     let space_event_name = cfg
         .get("space_event")
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing space_event"))?
+        .clone();
+    let cancel_event_name = cfg
+        .get("cancel_event")
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing cancel_event"))?
         .clone();
     let capacity: u64 = cfg
         .get("capacity")
@@ -1513,11 +1630,22 @@ fn main() -> io::Result<()> {
             return Err(io::Error::last_os_error());
         }
         let _space_event = Handle(space_event);
+        let cancel_event = CreateEventW(null(), 1, 0, wide(&cancel_event_name).as_ptr());
+        if cancel_event.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+        let _cancel_event = Handle(cancel_event);
+        let events = SessionEvents {
+            data: data_event,
+            space: space_event,
+            cancel: cancel_event,
+        };
         let small_pool = SmallFilePool::new(
             small_open_concurrency,
             small_active_files,
             small_inflight_bytes,
             small_iocp_batch,
+            cancel_event,
         )?;
         println!(
             "READY\tslot_count={}\tdata_offset={}\tmap_size={}\tsmall_threshold={}\tsmall_inflight_bytes={}",
@@ -1529,59 +1657,48 @@ fn main() -> io::Result<()> {
         );
         io::stdout().flush().ok();
 
-        for line in lines {
-            let line = line?;
-            if line == "DONE" {
-                break;
+        let session_result = (|| -> io::Result<()> {
+            for line in lines {
+                let line = line?;
+                if line == "DONE" {
+                    break;
+                }
+                if let Some(rest) = line.strip_prefix("PREFETCH\t") {
+                    let task = parse_file_task(rest, "prefetch")?;
+                    if task.len <= small_threshold {
+                        small_pool.enqueue(task, false);
+                    }
+                } else if let Some(rest) = line.strip_prefix("FILE\t") {
+                    let task = parse_file_task(rest, "file")?;
+                    small_pool.discard_before(task.index);
+                    let result = if task.len <= small_threshold {
+                        fill_cached_file(&small_pool, &mapping, events, task.clone(), &enabled)
+                    } else {
+                        fill_file(&mapping, events, task.index, task.len, &task.path, &enabled)
+                    };
+                    result.map_err(|error| {
+                        io::Error::new(error.kind(), format!("file {}: {error}", task.index))
+                    })?;
+                } else if let Some(rest) = line.strip_prefix("HASH\t") {
+                    let task = parse_file_task(rest, "hash")?;
+                    small_pool.discard_before(task.index);
+                    let result = if task.len <= small_threshold {
+                        hash_cached_file(&small_pool, task.clone(), &enabled)
+                    } else {
+                        hash_file(task.index, task.len, &task.path, cancel_event, &enabled)
+                    };
+                    result.map_err(|error| {
+                        io::Error::new(error.kind(), format!("hash {}: {error}", task.index))
+                    })?;
+                }
             }
-            if let Some(rest) = line.strip_prefix("PREFETCH\t") {
-                let task = parse_file_task(rest, "prefetch")?;
-                if task.len <= small_threshold {
-                    small_pool.enqueue(task, false);
-                }
-            } else if let Some(rest) = line.strip_prefix("FILE\t") {
-                let task = parse_file_task(rest, "file")?;
-                small_pool.discard_before(task.index);
-                let result = if task.len <= small_threshold {
-                    fill_cached_file(
-                        &small_pool,
-                        &mapping,
-                        data_event,
-                        space_event,
-                        task.clone(),
-                        &enabled,
-                    )
-                } else {
-                    fill_file(
-                        &mapping,
-                        data_event,
-                        space_event,
-                        task.index,
-                        task.len,
-                        &task.path,
-                        &enabled,
-                    )
-                };
-                if let Err(e) = result {
-                    eprintln!("FILE_ERROR\t{}\t{}", task.index, e);
-                    write_u32(mapping.base, 52, 1);
-                    SetEvent(data_event);
-                    break;
-                }
-            } else if let Some(rest) = line.strip_prefix("HASH\t") {
-                let task = parse_file_task(rest, "hash")?;
-                small_pool.discard_before(task.index);
-                let result = if task.len <= small_threshold {
-                    hash_cached_file(&small_pool, task.clone(), &enabled)
-                } else {
-                    hash_file(task.index, task.len, &task.path, &enabled)
-                };
-                if let Err(e) = result {
-                    eprintln!("FILE_ERROR\t{}\t{}", task.index, e);
-                    write_u32(mapping.base, 52, 1);
-                    SetEvent(data_event);
-                    break;
-                }
+            Ok(())
+        })();
+        if let Err(error) = session_result {
+            if error.kind() != io::ErrorKind::Interrupted || !is_cancelled(cancel_event) {
+                eprintln!("FILE_ERROR\t{error}");
+                io::stderr().flush().ok();
+                write_u32(mapping.base, 52, 1);
             }
         }
         write_u32(mapping.base, 48, 1);
@@ -1656,6 +1773,7 @@ mod tests {
                     file.0.to_str().unwrap(),
                     len as u64,
                     CHUNK,
+                    null_mut(),
                     |offset, slice| {
                         assert_eq!(offset, actual.len() as u64);
                         actual.extend_from_slice(slice);
@@ -1672,7 +1790,13 @@ mod tests {
     fn overlapped_reader_rejects_length_changes() -> io::Result<()> {
         let file = TempFile::create("length", b"abcdef")?;
         let result = unsafe {
-            read_file_overlapped(file.0.to_str().unwrap(), 5, 4096, |_offset, _slice| Ok(()))
+            read_file_overlapped(
+                file.0.to_str().unwrap(),
+                5,
+                4096,
+                null_mut(),
+                |_offset, _slice| Ok(()),
+            )
         };
         assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidData);
         Ok(())
@@ -1680,7 +1804,7 @@ mod tests {
 
     #[test]
     fn small_file_pool_prefetches_once_within_limits() -> io::Result<()> {
-        let mut pool = unsafe { SmallFilePool::new(8, 12, 2 * 1024 * 1024, 16)? };
+        let mut pool = unsafe { SmallFilePool::new(8, 12, 2 * 1024 * 1024, 16, null_mut())? };
         let mut files = Vec::new();
         let mut tasks = Vec::new();
         let mut expected = Vec::new();

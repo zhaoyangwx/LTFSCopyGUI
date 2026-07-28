@@ -172,7 +172,23 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public Property Barcode As String = ""
     <Category("LTFSWriter")>
-    Public Property StopFlag As Boolean = False
+    Public Property StopFlag As Boolean
+        Get
+            Return Volatile.Read(_stopFlagValue) <> 0
+        End Get
+        Set(value As Boolean)
+            Dim previous = Interlocked.Exchange(_stopFlagValue, If(value, 1, 0))
+            If value AndAlso previous = 0 Then
+                Dim fastProviderSnapshot = Volatile.Read(_activeFastReaderProvider)
+                If fastProviderSnapshot IsNot Nothing Then
+                    Try
+                        fastProviderSnapshot.Cancel()
+                    Catch
+                    End Try
+                End If
+            End If
+        End Set
+    End Property
     <Category("LTFSWriter")>
     Public Property Pause As Boolean = False
     <Category("LTFSWriter")>
@@ -4098,6 +4114,7 @@ Public Class LTFSWriter
     Public StartTime As Date
     Public Property IsWriting As Boolean = False
     Private _PipeBufferLength As Long = 0
+    Private _stopFlagValue As Integer = 0
     Private _activeFastReaderProvider As RustFastReaderProvider = Nothing
     Public Property PipeBufferLength As Long
         Get
@@ -5274,6 +5291,8 @@ Public Class LTFSWriter
                                                End Sub)
                                     End If
                                 End If
+                            Catch ex As OperationCanceledException When StopFlag
+                                Exit For
                             Catch ex As Exception
                                 Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                                 PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}{vbCrLf}{ex.StackTrace}")
@@ -5373,6 +5392,14 @@ Public Class LTFSWriter
                     Else
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
+                Catch ex As OperationCanceledException When StopFlag
+                    Try
+                        Dim fastProviderSnapshot = _activeFastReaderProvider
+                        _activeFastReaderProvider = Nothing
+                        PipeBufferLength = 0
+                        If fastProviderSnapshot IsNot Nothing Then fastProviderSnapshot.Dispose()
+                    Catch
+                    End Try
                 Catch ex As Exception
                     Try
                         Dim fastProviderSnapshot = _activeFastReaderProvider
