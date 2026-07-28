@@ -8,9 +8,10 @@ use std::ffi::OsStr;
 use std::io::{self, BufRead, Write};
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::{null, null_mut};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use windows_sys::Win32::Foundation::{
     CloseHandle, ERROR_IO_PENDING, ERROR_NOT_FOUND, GENERIC_READ, HANDLE, INVALID_HANDLE_VALUE,
     WAIT_OBJECT_0, WAIT_TIMEOUT,
@@ -42,6 +43,129 @@ const FLAG_ERROR: u32 = 2;
 const IO_QUEUE_DEPTH: usize = 16;
 const HASH_CHUNK_SIZE: usize = 4 * 1024 * 1024;
 const CANCEL_POLL_MS: u32 = 100;
+
+// C-FFI
+pub const LFR_ABI_VERSION: u32 = 2;
+pub const LFR_OK: i32 = 0;
+pub const LFR_TIMEOUT: i32 = 1;
+pub const LFR_DONE: i32 = 2;
+pub const LFR_INVALID: i32 = -1;
+pub const LFR_ERROR: i32 = -2;
+pub const LFR_CANCELLED: i32 = -3;
+pub const LFR_HASH_SHA1: u32 = 1 << 0;
+pub const LFR_HASH_SHA256: u32 = 1 << 1;
+pub const LFR_HASH_SHA512: u32 = 1 << 2;
+pub const LFR_HASH_MD5: u32 = 1 << 3;
+pub const LFR_HASH_CRC32: u32 = 1 << 4;
+pub const LFR_HASH_BLAKE3: u32 = 1 << 5;
+pub const LFR_HASH_XXH3: u32 = 1 << 6;
+pub const LFR_HASH_XXH128: u32 = 1 << 7;
+
+#[repr(C)]
+pub struct LfrConfig {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub slot_size: u32,
+    pub read_chunk_size: u32,
+    pub queue_depth: u32,
+    pub capacity_bytes: u64,
+    pub small_open_concurrency: u32,
+    pub small_active_files: u32,
+    pub small_inflight_bytes: u64,
+    pub small_threshold: u64,
+    pub hash_mask: u32,
+    pub next_file_prime_depth: u32,
+}
+
+#[repr(C)]
+pub struct LfrSlot {
+    pub token: u64,
+    pub file_index: i64,
+    pub file_offset: u64,
+    pub data: *const u8,
+    pub length: u32,
+    pub flags: u32,
+}
+
+#[repr(C)]
+pub struct LfrStats {
+    pub struct_size: u32,
+    pub abi_version: u32,
+    pub bytes_read: u64,
+    pub bytes_published: u64,
+    pub buffered_bytes: u64,
+    pub occupied_slots: u64,
+    pub read_wait_ns: u64,
+    pub hash_ns: u64,
+    pub publish_wait_ns: u64,
+}
+
+#[derive(Clone)]
+struct NativeFileTask {
+    index: u64,
+    len: u64,
+    path: String,
+    selected: bool,
+}
+
+struct NativeSlot {
+    buffer: Box<[u8]>,
+    token: u64,
+    file_index: u64,
+    file_offset: u64,
+    length: u32,
+    flags: u32,
+    full: bool,
+}
+
+struct NativeState {
+    slots: Vec<NativeSlot>,
+    files: Vec<NativeFileTask>,
+    write_index: u64,
+    read_index: u64,
+    buffered_bytes: u64,
+    occupied_slots: usize,
+    started: bool,
+    done: bool,
+    cancelled: bool,
+    error: String,
+    results: HashMap<u64, String>,
+}
+
+#[derive(Default)]
+struct NativeTelemetry {
+    bytes_read: AtomicU64,
+    bytes_published: AtomicU64,
+    read_wait_ns: Arc<AtomicU64>,
+    hash_ns: AtomicU64,
+    publish_wait_ns: AtomicU64,
+}
+
+struct NativeShared {
+    state: Mutex<NativeState>,
+    changed: Condvar,
+    telemetry: NativeTelemetry,
+}
+
+struct NativeConfig {
+    slot_size: usize,
+    read_chunk_size: usize,
+    queue_depth: usize,
+    capacity_bytes: u64,
+    small_open_concurrency: usize,
+    small_active_files: usize,
+    small_inflight_bytes: usize,
+    small_threshold: u64,
+    hash_mask: u32,
+    next_file_prime_depth: usize,
+}
+
+pub struct LfrContext {
+    shared: Arc<NativeShared>,
+    config: NativeConfig,
+    cancel_event: Handle,
+    worker: Mutex<Option<JoinHandle<()>>>,
+}
 
 fn cancelled_error() -> io::Error {
     io::Error::new(io::ErrorKind::Interrupted, "fastreader operation cancelled")
@@ -434,6 +558,7 @@ struct AsyncSequentialReader {
     next_consume: u64,
     outstanding: usize,
     cancel_event: HANDLE,
+    read_wait_counter: Option<Arc<AtomicU64>>,
 }
 
 fn completed_request_at(requests: &[ReadRequest], offset: u64) -> Option<usize> {
@@ -448,6 +573,16 @@ impl AsyncSequentialReader {
         expected_len: u64,
         chunk_size: usize,
         cancel_event: HANDLE,
+    ) -> io::Result<Self> {
+        Self::open_with_depth(path, expected_len, chunk_size, cancel_event, IO_QUEUE_DEPTH)
+    }
+
+    unsafe fn open_with_depth(
+        path: &str,
+        expected_len: u64,
+        chunk_size: usize,
+        cancel_event: HANDLE,
+        queue_depth: usize,
     ) -> io::Result<Self> {
         if is_cancelled(cancel_event) {
             return Err(cancelled_error());
@@ -495,10 +630,11 @@ impl AsyncSequentialReader {
         } else {
             expected_len
                 .div_ceil(chunk_size as u64)
-                .min(IO_QUEUE_DEPTH as u64) as usize
+                .min(queue_depth.clamp(1, 128) as u64) as usize
         };
+        let request_buffer_size = expected_len.min(chunk_size as u64) as usize;
         let requests = (0..request_count)
-            .map(|_| ReadRequest::new(chunk_size))
+            .map(|_| ReadRequest::new(request_buffer_size))
             .collect();
 
         Ok(Self {
@@ -511,6 +647,7 @@ impl AsyncSequentialReader {
             next_consume: 0,
             outstanding: 0,
             cancel_event,
+            read_wait_counter: None,
         })
     }
 
@@ -552,13 +689,26 @@ impl AsyncSequentialReader {
     }
 
     unsafe fn prime(&mut self) -> io::Result<()> {
+        self.prime_limit(self.requests.len())
+    }
+
+    unsafe fn prime_limit(&mut self, limit: usize) -> io::Result<()> {
+        let mut submitted = 0usize;
         for index in 0..self.requests.len() {
+            if submitted >= limit || self.next_submit >= self.file_len {
+                break;
+            }
+            if !matches!(self.requests[index].state, RequestState::Idle) {
+                continue;
+            }
             self.submit(index)?;
+            submitted += 1;
         }
         Ok(())
     }
 
     unsafe fn receive_completions(&mut self) -> io::Result<()> {
+        let wait_started = Instant::now();
         let mut entries = [OVERLAPPED_ENTRY::default(); IO_QUEUE_DEPTH];
         let mut removed = 0u32;
         if GetQueuedCompletionStatusEx(
@@ -570,6 +720,7 @@ impl AsyncSequentialReader {
             0,
         ) == 0
         {
+            self.record_read_wait(wait_started.elapsed());
             let error = io::Error::last_os_error();
             if error.raw_os_error() == Some(WAIT_TIMEOUT as i32) {
                 if is_cancelled(self.cancel_event) {
@@ -579,6 +730,7 @@ impl AsyncSequentialReader {
             }
             return Err(error);
         }
+        self.record_read_wait(wait_started.elapsed());
 
         for entry in &entries[..removed as usize] {
             let Some(request) = self
@@ -615,10 +767,25 @@ impl AsyncSequentialReader {
         Ok(())
     }
 
+    fn set_read_wait_counter(&mut self, counter: Arc<AtomicU64>) {
+        self.read_wait_counter = Some(counter);
+    }
+
+    fn record_read_wait(&self, elapsed: Duration) {
+        if let Some(counter) = self.read_wait_counter.as_ref() {
+            counter.fetch_add(
+                elapsed.as_nanos().min(u64::MAX as u128) as u64,
+                Ordering::Relaxed,
+            );
+        }
+    }
+
     unsafe fn run<F>(&mut self, mut consume: F) -> io::Result<()>
     where
         F: FnMut(u64, &[u8]) -> io::Result<()>,
     {
+        // A reader may already contain a few requests submitted while the
+        // preceding file is being consumed. Fill the rest of the queue here.
         self.prime()?;
         while self.next_consume < self.file_len {
             if is_cancelled(self.cancel_event) {
@@ -1631,6 +1798,830 @@ unsafe fn hash_file(
     Ok(())
 }
 
+fn native_lock(shared: &NativeShared) -> std::sync::MutexGuard<'_, NativeState> {
+    shared
+        .state
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
+
+fn native_hash_options(mask: u32) -> HashMap<String, bool> {
+    let mut enabled = HashMap::new();
+    enabled.insert("SHA1".to_string(), mask & LFR_HASH_SHA1 != 0);
+    enabled.insert("SHA256".to_string(), mask & LFR_HASH_SHA256 != 0);
+    enabled.insert("SHA512".to_string(), mask & LFR_HASH_SHA512 != 0);
+    enabled.insert("MD5".to_string(), mask & LFR_HASH_MD5 != 0);
+    enabled.insert("CRC32".to_string(), mask & LFR_HASH_CRC32 != 0);
+    enabled.insert("BLAKE3".to_string(), mask & LFR_HASH_BLAKE3 != 0);
+    enabled.insert("XxHash3".to_string(), mask & LFR_HASH_XXH3 != 0);
+    enabled.insert("XxHash128".to_string(), mask & LFR_HASH_XXH128 != 0);
+    enabled
+}
+
+fn native_set_error(shared: &NativeShared, error: impl ToString) {
+    let mut state = native_lock(shared);
+    if state.error.is_empty() {
+        state.error = error.to_string();
+    }
+    state.done = true;
+    shared.changed.notify_all();
+}
+
+fn native_publish(
+    shared: &NativeShared,
+    file_index: u64,
+    file_offset: u64,
+    data: &[u8],
+    flags: u32,
+) -> io::Result<()> {
+    let mut state = native_lock(shared);
+    loop {
+        if state.cancelled {
+            return Err(cancelled_error());
+        }
+        let slot_index = state.write_index as usize % state.slots.len();
+        if !state.slots[slot_index].full {
+            if data.len() > state.slots[slot_index].buffer.len() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "native slot is too small",
+                ));
+            }
+            let token = state.write_index + 1;
+            let slot = &mut state.slots[slot_index];
+            if !data.is_empty() {
+                slot.buffer[..data.len()].copy_from_slice(data);
+            }
+            slot.token = token;
+            slot.file_index = file_index;
+            slot.file_offset = file_offset;
+            slot.length = data.len() as u32;
+            slot.flags = flags;
+            slot.full = true;
+            state.write_index += 1;
+            state.buffered_bytes += data.len() as u64;
+            state.occupied_slots += 1;
+            if !data.is_empty() {
+                shared
+                    .telemetry
+                    .bytes_published
+                    .fetch_add(data.len() as u64, Ordering::Relaxed);
+            }
+            shared.changed.notify_all();
+            return Ok(());
+        }
+        let wait_started = Instant::now();
+        state = shared
+            .changed
+            .wait(state)
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        shared.telemetry.publish_wait_ns.fetch_add(
+            wait_started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+            Ordering::Relaxed,
+        );
+    }
+}
+
+fn native_publish_batch(
+    shared: &NativeShared,
+    file_index: u64,
+    file_offset: u64,
+    data: &[u8],
+    slot_size: usize,
+) -> io::Result<()> {
+    let mut consumed = 0usize;
+    while consumed < data.len() {
+        let mut state = native_lock(shared);
+        while state.occupied_slots == state.slots.len() {
+            if state.cancelled {
+                return Err(cancelled_error());
+            }
+            let wait_started = Instant::now();
+            state = shared
+                .changed
+                .wait(state)
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            shared.telemetry.publish_wait_ns.fetch_add(
+                wait_started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+                Ordering::Relaxed,
+            );
+        }
+        if state.cancelled {
+            return Err(cancelled_error());
+        }
+
+        let remaining_slots = data[consumed..].len().div_ceil(slot_size);
+        let batch_slots = remaining_slots.min(state.slots.len() - state.occupied_slots);
+        let first_write_index = state.write_index;
+        let mut batch_bytes = 0usize;
+        for batch_index in 0..batch_slots {
+            let start = consumed + batch_bytes;
+            let end = (start + slot_size).min(data.len());
+            let slice = &data[start..end];
+            let slot_index = (first_write_index as usize + batch_index) % state.slots.len();
+            let token = first_write_index + batch_index as u64 + 1;
+            let slot = &mut state.slots[slot_index];
+            debug_assert!(!slot.full);
+            slot.buffer[..slice.len()].copy_from_slice(slice);
+            slot.token = token;
+            slot.file_index = file_index;
+            slot.file_offset = file_offset + start as u64;
+            slot.length = slice.len() as u32;
+            slot.flags = 0;
+            slot.full = true;
+            batch_bytes += slice.len();
+        }
+        state.write_index += batch_slots as u64;
+        state.buffered_bytes += batch_bytes as u64;
+        state.occupied_slots += batch_slots;
+        shared
+            .telemetry
+            .bytes_published
+            .fetch_add(batch_bytes as u64, Ordering::Relaxed);
+        consumed += batch_bytes;
+        shared.changed.notify_all();
+    }
+    Ok(())
+}
+
+unsafe fn native_run_worker(
+    shared: Arc<NativeShared>,
+    config: NativeConfig,
+    cancel_event: HANDLE,
+    files: Vec<NativeFileTask>,
+) {
+    let enabled = native_hash_options(config.hash_mask);
+    let mut small_pool = match SmallFilePool::new(
+        config.small_open_concurrency,
+        config.small_active_files,
+        config.small_inflight_bytes,
+        64,
+        cancel_event,
+    ) {
+        Ok(pool) => pool,
+        Err(error) => {
+            native_set_error(&shared, error);
+            return;
+        }
+    };
+
+    for file in &files {
+        if file.len <= config.small_threshold {
+            small_pool.enqueue(
+                SmallFileTask {
+                    index: file.index,
+                    len: file.len,
+                    path: file.path.clone(),
+                },
+                false,
+            );
+        }
+    }
+
+    let run_result = (|| -> io::Result<()> {
+        let mut prepared_large: Option<(u64, AsyncSequentialReader)> = None;
+        for position in 0..files.len() {
+            let file = &files[position];
+            if is_cancelled(cancel_event) {
+                return Err(cancelled_error());
+            }
+
+            let mut current_reader = if file.len > config.small_threshold {
+                match prepared_large.take() {
+                    Some((index, reader)) if index == file.index => Some(reader),
+                    Some(_) => {
+                        return Err(io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            "native next-file reader order mismatch",
+                        ));
+                    }
+                    None => {
+                        let mut reader = AsyncSequentialReader::open_with_depth(
+                            &file.path,
+                            file.len,
+                            config.read_chunk_size,
+                            cancel_event,
+                            config.queue_depth,
+                        )?;
+                        reader.set_read_wait_counter(Arc::clone(&shared.telemetry.read_wait_ns));
+                        Some(reader)
+                    }
+                }
+            } else {
+                None
+            };
+
+            // Give the current file the full IOCP depth first, then submit a
+            // small head start for the next large file. Its I/O can complete
+            // while the current file is being hashed/published to tape.
+            if let Some(reader) = current_reader.as_mut() {
+                reader.prime()?;
+            }
+            let mut next_prepared = None;
+            if let Some(next) = files.get(position + 1) {
+                if next.len > config.small_threshold {
+                    let mut reader = AsyncSequentialReader::open_with_depth(
+                        &next.path,
+                        next.len,
+                        config.read_chunk_size,
+                        cancel_event,
+                        config.queue_depth,
+                    )?;
+                    reader.set_read_wait_counter(Arc::clone(&shared.telemetry.read_wait_ns));
+                    reader.prime_limit(config.next_file_prime_depth)?;
+                    next_prepared = Some((next.index, reader));
+                }
+            }
+
+            let mut hashes = HashSet::new(&enabled)?;
+            if file.len <= config.small_threshold {
+                let task = SmallFileTask {
+                    index: file.index,
+                    len: file.len,
+                    path: file.path.clone(),
+                };
+                let cached = small_pool.wait_take(task)?;
+                let hash_started = Instant::now();
+                hashes.update(&cached.data)?;
+                shared.telemetry.hash_ns.fetch_add(
+                    hash_started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+                    Ordering::Relaxed,
+                );
+                shared
+                    .telemetry
+                    .bytes_read
+                    .fetch_add(cached.data.len() as u64, Ordering::Relaxed);
+                native_publish_batch(&shared, file.index, 0, &cached.data, config.slot_size)?;
+                small_pool.release(file.index, cached);
+            } else {
+                let reader = current_reader.as_mut().unwrap();
+                reader.run(|offset, slice| {
+                    shared
+                        .telemetry
+                        .bytes_read
+                        .fetch_add(slice.len() as u64, Ordering::Relaxed);
+                    let hash_started = Instant::now();
+                    hashes.update(slice)?;
+                    shared.telemetry.hash_ns.fetch_add(
+                        hash_started.elapsed().as_nanos().min(u64::MAX as u128) as u64,
+                        Ordering::Relaxed,
+                    );
+                    native_publish_batch(&shared, file.index, offset, slice, config.slot_size)
+                })?;
+            }
+            let result = hashes.finish()?;
+            {
+                let mut state = native_lock(&shared);
+                state.results.insert(file.index, result);
+                shared.changed.notify_all();
+            }
+            native_publish(&shared, file.index, file.len, &[], FLAG_EOF)?;
+            prepared_large = next_prepared;
+        }
+        Ok(())
+    })();
+
+    small_pool.shutdown();
+    match run_result {
+        Ok(()) => {
+            let mut state = native_lock(&shared);
+            state.done = true;
+            shared.changed.notify_all();
+        }
+        Err(error) if error.kind() == io::ErrorKind::Interrupted => {
+            let mut state = native_lock(&shared);
+            state.cancelled = true;
+            state.done = true;
+            shared.changed.notify_all();
+        }
+        Err(error) => native_set_error(&shared, error),
+    }
+}
+
+unsafe fn native_context<'a>(context: *mut LfrContext) -> Result<&'a LfrContext, i32> {
+    context.as_ref().ok_or(LFR_INVALID)
+}
+
+fn native_copy_text(text: &str, buffer: *mut u8, capacity: u32, written: *mut u32) -> i32 {
+    unsafe {
+        if written.is_null() {
+            return LFR_INVALID;
+        }
+        *written = text.len() as u32;
+        if buffer.is_null() || capacity < text.len() as u32 + 1 {
+            return LFR_INVALID;
+        }
+        std::ptr::copy_nonoverlapping(text.as_ptr(), buffer, text.len());
+        *buffer.add(text.len()) = 0;
+    }
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub extern "system" fn lfr_abi_version() -> u32 {
+    LFR_ABI_VERSION
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_create(
+    config: *const LfrConfig,
+    output: *mut *mut LfrContext,
+) -> i32 {
+    if config.is_null() || output.is_null() {
+        return LFR_INVALID;
+    }
+    let config = &*config;
+    if config.struct_size as usize != std::mem::size_of::<LfrConfig>()
+        || config.abi_version != LFR_ABI_VERSION
+        || config.slot_size == 0
+        || config.read_chunk_size < config.slot_size
+        || config.read_chunk_size > 64 * 1024 * 1024
+        || config.read_chunk_size % config.slot_size != 0
+    {
+        return LFR_INVALID;
+    }
+    let slot_size = config.slot_size as usize;
+    let slot_count = (config.capacity_bytes / config.slot_size as u64).max(2) as usize;
+    let slots = (0..slot_count)
+        .map(|_| NativeSlot {
+            buffer: vec![0u8; slot_size].into_boxed_slice(),
+            token: 0,
+            file_index: 0,
+            file_offset: 0,
+            length: 0,
+            flags: 0,
+            full: false,
+        })
+        .collect();
+    let cancel_event = CreateEventW(null(), 1, 0, null());
+    if cancel_event.is_null() {
+        return LFR_ERROR;
+    }
+    let context = Box::new(LfrContext {
+        shared: Arc::new(NativeShared {
+            state: Mutex::new(NativeState {
+                slots,
+                files: Vec::new(),
+                write_index: 0,
+                read_index: 0,
+                buffered_bytes: 0,
+                occupied_slots: 0,
+                started: false,
+                done: false,
+                cancelled: false,
+                error: String::new(),
+                results: HashMap::new(),
+            }),
+            changed: Condvar::new(),
+            telemetry: NativeTelemetry::default(),
+        }),
+        config: NativeConfig {
+            slot_size,
+            read_chunk_size: config.read_chunk_size as usize,
+            queue_depth: (config.queue_depth as usize).clamp(1, 128),
+            capacity_bytes: slot_count as u64 * slot_size as u64,
+            small_open_concurrency: (config.small_open_concurrency as usize).clamp(1, 128),
+            small_active_files: (config.small_active_files as usize).clamp(1, 1024),
+            small_inflight_bytes: config.small_inflight_bytes.max(config.slot_size as u64) as usize,
+            small_threshold: config.small_threshold.clamp(64 * 1024, 4 * 1024 * 1024),
+            hash_mask: config.hash_mask,
+            next_file_prime_depth: (config.next_file_prime_depth as usize).clamp(1, 16),
+        },
+        cancel_event: Handle(cancel_event),
+        worker: Mutex::new(None),
+    });
+    *output = Box::into_raw(context);
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_add_file(
+    context: *mut LfrContext,
+    index: i64,
+    path: *const u16,
+    path_len: u32,
+    expected_len: u64,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    if index < 0 || path.is_null() {
+        return LFR_INVALID;
+    }
+    let path = match String::from_utf16(std::slice::from_raw_parts(path, path_len as usize)) {
+        Ok(value) => value,
+        Err(_) => return LFR_INVALID,
+    };
+    let mut state = native_lock(&context.shared);
+    if state.started || state.files.iter().any(|file| file.index == index as u64) {
+        return LFR_INVALID;
+    }
+    state.files.push(NativeFileTask {
+        index: index as u64,
+        len: expected_len,
+        path,
+        selected: false,
+    });
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_select_file(context: *mut LfrContext, index: i64) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let mut state = native_lock(&context.shared);
+    if state.started {
+        return LFR_INVALID;
+    }
+    match state
+        .files
+        .iter_mut()
+        .find(|file| file.index == index as u64)
+    {
+        Some(file) => {
+            file.selected = true;
+            LFR_OK
+        }
+        None => LFR_INVALID,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_start(context: *mut LfrContext) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let files = {
+        let mut state = native_lock(&context.shared);
+        if state.started {
+            return LFR_INVALID;
+        }
+        state.started = true;
+        state
+            .files
+            .iter()
+            .filter(|file| file.selected)
+            .cloned()
+            .collect::<Vec<_>>()
+    };
+    let shared = Arc::clone(&context.shared);
+    let config = NativeConfig {
+        slot_size: context.config.slot_size,
+        read_chunk_size: context.config.read_chunk_size,
+        queue_depth: context.config.queue_depth,
+        capacity_bytes: context.config.capacity_bytes,
+        small_open_concurrency: context.config.small_open_concurrency,
+        small_active_files: context.config.small_active_files,
+        small_inflight_bytes: context.config.small_inflight_bytes,
+        small_threshold: context.config.small_threshold,
+        hash_mask: context.config.hash_mask,
+        next_file_prime_depth: context.config.next_file_prime_depth,
+    };
+    let cancel_event = context.cancel_event.0 as usize;
+    let worker = thread::spawn(move || unsafe {
+        native_run_worker(shared, config, cancel_event as HANDLE, files)
+    });
+    let mut worker_slot = context.worker.lock().unwrap_or_else(|p| p.into_inner());
+    *worker_slot = Some(worker);
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_buffered_bytes(context: *mut LfrContext) -> u64 {
+    match native_context(context) {
+        Ok(context) => native_lock(&context.shared).buffered_bytes,
+        Err(_) => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_buffer_capacity(context: *mut LfrContext) -> u64 {
+    match native_context(context) {
+        Ok(context) => context.config.capacity_bytes,
+        Err(_) => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_occupied_slots(context: *mut LfrContext) -> u64 {
+    match native_context(context) {
+        Ok(context) => native_lock(&context.shared).occupied_slots as u64,
+        Err(_) => 0,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_get_stats(
+    context: *mut LfrContext,
+    output: *mut LfrStats,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    if output.is_null() || (*output).struct_size as usize != std::mem::size_of::<LfrStats>() {
+        return LFR_INVALID;
+    }
+    let state = native_lock(&context.shared);
+    *output = LfrStats {
+        struct_size: std::mem::size_of::<LfrStats>() as u32,
+        abi_version: LFR_ABI_VERSION,
+        bytes_read: context.shared.telemetry.bytes_read.load(Ordering::Relaxed),
+        bytes_published: context
+            .shared
+            .telemetry
+            .bytes_published
+            .load(Ordering::Relaxed),
+        buffered_bytes: state.buffered_bytes,
+        occupied_slots: state.occupied_slots as u64,
+        read_wait_ns: context
+            .shared
+            .telemetry
+            .read_wait_ns
+            .load(Ordering::Relaxed),
+        hash_ns: context.shared.telemetry.hash_ns.load(Ordering::Relaxed),
+        publish_wait_ns: context
+            .shared
+            .telemetry
+            .publish_wait_ns
+            .load(Ordering::Relaxed),
+    };
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_is_done(context: *mut LfrContext) -> i32 {
+    match native_context(context) {
+        Ok(context) => i32::from(native_lock(&context.shared).done),
+        Err(_) => 1,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_wait_until_buffered(
+    context: *mut LfrContext,
+    target: u64,
+    timeout_ms: u32,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let start = std::time::Instant::now();
+    let mut state = native_lock(&context.shared);
+    loop {
+        if state.cancelled {
+            return LFR_CANCELLED;
+        }
+        if !state.error.is_empty() {
+            return LFR_ERROR;
+        }
+        if state.buffered_bytes >= target || state.done || state.occupied_slots == state.slots.len()
+        {
+            return LFR_OK;
+        }
+        if timeout_ms == 0 {
+            return LFR_TIMEOUT;
+        }
+        if timeout_ms == u32::MAX {
+            state = context
+                .shared
+                .changed
+                .wait(state)
+                .unwrap_or_else(|p| p.into_inner());
+        } else {
+            let timeout = Duration::from_millis(timeout_ms as u64).saturating_sub(start.elapsed());
+            if timeout.is_zero() {
+                return LFR_TIMEOUT;
+            }
+            let (next, result) = context
+                .shared
+                .changed
+                .wait_timeout(state, timeout)
+                .unwrap_or_else(|p| p.into_inner());
+            state = next;
+            if result.timed_out() {
+                return LFR_TIMEOUT;
+            }
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_acquire_slot(
+    context: *mut LfrContext,
+    expected_file_index: i64,
+    timeout_ms: u32,
+    output: *mut LfrSlot,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    if output.is_null() {
+        return LFR_INVALID;
+    }
+    let start = std::time::Instant::now();
+    let mut state = native_lock(&context.shared);
+    loop {
+        let slot_index = state.read_index as usize % state.slots.len();
+        let slot = &state.slots[slot_index];
+        if slot.full {
+            if expected_file_index >= 0 && slot.file_index != expected_file_index as u64 {
+                return LFR_ERROR;
+            }
+            *output = LfrSlot {
+                token: slot.token,
+                file_index: slot.file_index as i64,
+                file_offset: slot.file_offset,
+                data: slot.buffer.as_ptr(),
+                length: slot.length,
+                flags: slot.flags,
+            };
+            return LFR_OK;
+        }
+        if state.cancelled {
+            return LFR_CANCELLED;
+        }
+        if !state.error.is_empty() {
+            return LFR_ERROR;
+        }
+        if state.done {
+            return LFR_DONE;
+        }
+        if timeout_ms == 0 {
+            return LFR_TIMEOUT;
+        }
+        if timeout_ms == u32::MAX {
+            state = context
+                .shared
+                .changed
+                .wait(state)
+                .unwrap_or_else(|p| p.into_inner());
+        } else {
+            let timeout = Duration::from_millis(timeout_ms as u64).saturating_sub(start.elapsed());
+            if timeout.is_zero() {
+                return LFR_TIMEOUT;
+            }
+            let (next, result) = context
+                .shared
+                .changed
+                .wait_timeout(state, timeout)
+                .unwrap_or_else(|p| p.into_inner());
+            state = next;
+            if result.timed_out() {
+                return LFR_TIMEOUT;
+            }
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_release_slot(context: *mut LfrContext, token: u64) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let mut state = native_lock(&context.shared);
+    let slot_index = state.read_index as usize % state.slots.len();
+    let slot = &state.slots[slot_index];
+    if !slot.full || slot.token != token {
+        return LFR_INVALID;
+    }
+    let length = slot.length as u64;
+    let slot = &mut state.slots[slot_index];
+    slot.full = false;
+    slot.length = 0;
+    slot.flags = 0;
+    state.read_index += 1;
+    state.buffered_bytes = state.buffered_bytes.saturating_sub(length);
+    state.occupied_slots = state.occupied_slots.saturating_sub(1);
+    context.shared.changed.notify_all();
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_hash_file(
+    context: *mut LfrContext,
+    index: i64,
+    buffer: *mut u8,
+    capacity: u32,
+    written: *mut u32,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let file = {
+        let state = native_lock(&context.shared);
+        match state.files.iter().find(|file| file.index == index as u64) {
+            Some(file) => file.clone(),
+            None => return LFR_INVALID,
+        }
+    };
+    let enabled = native_hash_options(context.config.hash_mask);
+    let mut hashes = match HashSet::new(&enabled) {
+        Ok(value) => value,
+        Err(error) => {
+            native_set_error(&context.shared, error);
+            return LFR_ERROR;
+        }
+    };
+    let result = read_file_overlapped(
+        &file.path,
+        file.len,
+        HASH_CHUNK_SIZE,
+        context.cancel_event.0,
+        |_offset, slice| hashes.update(slice),
+    )
+    .and_then(|_| hashes.finish());
+    match result {
+        Ok(text) => native_copy_text(&text, buffer, capacity, written),
+        Err(error) if error.kind() == io::ErrorKind::Interrupted => LFR_CANCELLED,
+        Err(error) => {
+            native_set_error(&context.shared, error);
+            LFR_ERROR
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_get_file_hashes(
+    context: *mut LfrContext,
+    index: i64,
+    buffer: *mut u8,
+    capacity: u32,
+    written: *mut u32,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let state = native_lock(&context.shared);
+    match state.results.get(&(index as u64)) {
+        Some(text) => native_copy_text(text, buffer, capacity, written),
+        None if state.cancelled => LFR_CANCELLED,
+        None if !state.error.is_empty() => LFR_ERROR,
+        None => LFR_TIMEOUT,
+    }
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_last_error(
+    context: *mut LfrContext,
+    buffer: *mut u8,
+    capacity: u32,
+    written: *mut u32,
+) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    let state = native_lock(&context.shared);
+    native_copy_text(&state.error, buffer, capacity, written)
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_cancel(context: *mut LfrContext) -> i32 {
+    let context = match native_context(context) {
+        Ok(value) => value,
+        Err(code) => return code,
+    };
+    {
+        let mut state = native_lock(&context.shared);
+        state.cancelled = true;
+        context.shared.changed.notify_all();
+    }
+    SetEvent(context.cancel_event.0);
+    LFR_OK
+}
+
+#[unsafe(no_mangle)]
+pub unsafe extern "system" fn lfr_destroy(context: *mut LfrContext) {
+    if context.is_null() {
+        return;
+    }
+    let context = Box::from_raw(context);
+    {
+        let mut state = native_lock(&context.shared);
+        state.cancelled = true;
+        context.shared.changed.notify_all();
+    }
+    SetEvent(context.cancel_event.0);
+    let worker = context
+        .worker
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .take();
+    if let Some(worker) = worker {
+        let _ = worker.join();
+    }
+}
+
 fn main() -> io::Result<()> {
     let mut init = String::new();
     if io::stdin().read_line(&mut init)? == 0 {
@@ -1930,6 +2921,143 @@ mod tests {
             assert!(state.max_reserved_bytes <= 2 * 1024 * 1024);
         }
         unsafe { pool.shutdown() };
+        Ok(())
+    }
+
+    #[test]
+    fn native_abi_streams_ordered_files_from_stable_native_slots() -> io::Result<()> {
+        let first_data = (0..(96 * 1024 + 37))
+            .map(|index| ((index * 13 + 5) % 251) as u8)
+            .collect::<Vec<_>>();
+        let second_data = (0..(80 * 1024 + 11))
+            .map(|index| ((index * 29 + 3) % 251) as u8)
+            .collect::<Vec<_>>();
+        let first = TempFile::create("native-abi-first-文件", &first_data)?;
+        let second = TempFile::create("native-abi-second-文件", &second_data)?;
+        let first_path = first.0.to_str().unwrap().encode_utf16().collect::<Vec<_>>();
+        let second_path = second
+            .0
+            .to_str()
+            .unwrap()
+            .encode_utf16()
+            .collect::<Vec<_>>();
+        let config = LfrConfig {
+            struct_size: std::mem::size_of::<LfrConfig>() as u32,
+            abi_version: LFR_ABI_VERSION,
+            slot_size: 4096,
+            read_chunk_size: 16 * 1024,
+            queue_depth: 16,
+            capacity_bytes: 32 * 1024,
+            small_open_concurrency: 4,
+            small_active_files: 8,
+            small_inflight_bytes: 2 * 1024 * 1024,
+            small_threshold: 64 * 1024,
+            hash_mask: LFR_HASH_CRC32,
+            next_file_prime_depth: 8,
+        };
+
+        unsafe {
+            let mut context = null_mut();
+            assert_eq!(lfr_create(&config, &mut context), LFR_OK);
+            assert!(!context.is_null());
+            assert_eq!(
+                lfr_add_file(
+                    context,
+                    0,
+                    first_path.as_ptr(),
+                    first_path.len() as u32,
+                    first_data.len() as u64,
+                ),
+                LFR_OK
+            );
+            assert_eq!(
+                lfr_add_file(
+                    context,
+                    1,
+                    second_path.as_ptr(),
+                    second_path.len() as u32,
+                    second_data.len() as u64,
+                ),
+                LFR_OK
+            );
+            assert_eq!(lfr_select_file(context, 0), LFR_OK);
+            assert_eq!(lfr_select_file(context, 1), LFR_OK);
+            assert_eq!(lfr_start(context), LFR_OK);
+
+            for (index, expected) in [(0i64, &first_data), (1i64, &second_data)] {
+                let mut actual = Vec::with_capacity(expected.len());
+                loop {
+                    let mut slot = LfrSlot {
+                        token: 0,
+                        file_index: -1,
+                        file_offset: 0,
+                        data: null(),
+                        length: 0,
+                        flags: 0,
+                    };
+                    assert_eq!(
+                        lfr_acquire_slot(context, index, u32::MAX, &mut slot),
+                        LFR_OK
+                    );
+                    assert_eq!(slot.file_index, index);
+                    if slot.flags & FLAG_EOF != 0 {
+                        assert_eq!(slot.file_offset, expected.len() as u64);
+                        assert_eq!(slot.length, 0);
+                        assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                        break;
+                    }
+                    assert!(!slot.data.is_null());
+                    assert_eq!(slot.file_offset, actual.len() as u64);
+                    actual.extend_from_slice(std::slice::from_raw_parts(
+                        slot.data,
+                        slot.length as usize,
+                    ));
+                    assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                }
+                assert_eq!(&actual, expected);
+
+                let mut hashes = [0u8; 256];
+                let mut written = 0u32;
+                assert_eq!(
+                    lfr_get_file_hashes(
+                        context,
+                        index,
+                        hashes.as_mut_ptr(),
+                        hashes.len() as u32,
+                        &mut written,
+                    ),
+                    LFR_OK
+                );
+                let hashes = std::str::from_utf8(&hashes[..written as usize]).unwrap();
+                assert!(hashes.starts_with("CRC32="));
+            }
+            assert_eq!(lfr_wait_until_buffered(context, u64::MAX, 1000), LFR_OK);
+            assert_eq!(lfr_is_done(context), 1);
+            let mut stats = LfrStats {
+                struct_size: std::mem::size_of::<LfrStats>() as u32,
+                abi_version: 0,
+                bytes_read: 0,
+                bytes_published: 0,
+                buffered_bytes: 0,
+                occupied_slots: u64::MAX,
+                read_wait_ns: 0,
+                hash_ns: 0,
+                publish_wait_ns: 0,
+            };
+            assert_eq!(lfr_get_stats(context, &mut stats), LFR_OK);
+            assert_eq!(stats.abi_version, LFR_ABI_VERSION);
+            assert_eq!(
+                stats.bytes_read,
+                (first_data.len() + second_data.len()) as u64
+            );
+            assert_eq!(
+                stats.bytes_published,
+                (first_data.len() + second_data.len()) as u64
+            );
+            assert_eq!(stats.buffered_bytes, 0);
+            assert_eq!(stats.occupied_slots, 0);
+            lfr_destroy(context);
+        }
         Ok(())
     }
 }

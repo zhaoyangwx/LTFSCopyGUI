@@ -1,5 +1,6 @@
 Imports System.Buffers
 Imports System.ComponentModel
+Imports System.Diagnostics
 Imports System.IO.Pipelines
 Imports System.Runtime
 Imports System.Runtime.InteropServices
@@ -4534,9 +4535,7 @@ Public Class LTFSWriter
         Return plans
     End Function
 
-    Private Sub WaitForFastReaderRefill(fastProvider As RustFastReaderProvider,
-                                        fileIndex As Integer,
-                                        Optional forceWait As Boolean = False)
+    Private Sub WaitForFastReaderRefill(fastProvider As RustFastReaderProvider)
         If Not My.Settings.LTFSWriter_WaitOnBufferEmpty OrElse StopFlag Then
             PipePause = False
             Return
@@ -4544,19 +4543,60 @@ Public Class LTFSWriter
 
         Dim buffered = fastProvider.BufferedBytes
         PipeBufferLength = buffered
-        Const lowWaterFraction As Double = 0.05
+        Const lowWaterFraction As Double = 0.15
         Const fillFraction As Double = 0.75
-        Const stagnantTimeoutMs As Integer = 10000
         Dim lowWater = CLng(Math.Ceiling(fastProvider.BufferCapacityBytes * lowWaterFraction))
-        If Not forceWait AndAlso Not PipePause AndAlso buffered > lowWater Then Return
+        If Not PipePause AndAlso buffered > lowWater Then Return
 
         PipePause = True
         Try
-            fastProvider.WaitForStreamFillFraction(fillFraction, stagnantTimeoutMs, Threading.CancellationToken.None)
+            Dim before = fastProvider.GetPerformanceStats()
+            Dim timer = Stopwatch.StartNew()
+            fastProvider.WaitForStreamFillFraction(fillFraction, Threading.CancellationToken.None)
+            timer.Stop()
+            LogFastReaderFillStats("refill", before, fastProvider.GetPerformanceStats(), timer.Elapsed)
         Finally
             PipeBufferLength = fastProvider.BufferedBytes
             PipePause = False
         End Try
+    End Sub
+
+    Private Sub WaitForInitialFastReaderFill(fastProvider As RustFastReaderProvider)
+        If Not My.Settings.LTFSWriter_WaitOnBufferEmpty OrElse StopFlag Then Return
+        PipePause = True
+        Try
+            Dim before = fastProvider.GetPerformanceStats()
+            Dim timer = Stopwatch.StartNew()
+            fastProvider.WaitForStreamFillFraction(0.75, Threading.CancellationToken.None)
+            timer.Stop()
+            LogFastReaderFillStats("initial fill", before, fastProvider.GetPerformanceStats(), timer.Elapsed)
+        Finally
+            PipeBufferLength = fastProvider.BufferedBytes
+            PipePause = False
+        End Try
+    End Sub
+
+    Private Sub LogFastReaderFillStats(operation As String,
+                                       before As RustFastReaderProvider.PerformanceStats,
+                                       after As RustFastReaderProvider.PerformanceStats,
+                                       elapsed As TimeSpan)
+        Dim readBytes = If(after.BytesRead >= before.BytesRead, after.BytesRead - before.BytesRead, 0UL)
+        Dim publishedBytes = If(after.BytesPublished >= before.BytesPublished, after.BytesPublished - before.BytesPublished, 0UL)
+        Dim seconds = Math.Max(0.000001, elapsed.TotalSeconds)
+        Dim readMiBs = readBytes / 1048576.0 / seconds
+        Dim publishMiBs = publishedBytes / 1048576.0 / seconds
+        Dim ioWaitMs = If(after.ReadWaitNanoseconds >= before.ReadWaitNanoseconds,
+                          (after.ReadWaitNanoseconds - before.ReadWaitNanoseconds) / 1000000.0,
+                          0.0)
+        Dim hashMs = If(after.HashNanoseconds >= before.HashNanoseconds,
+                        (after.HashNanoseconds - before.HashNanoseconds) / 1000000.0,
+                        0.0)
+        Dim publishWaitMs = If(after.PublishWaitNanoseconds >= before.PublishWaitNanoseconds,
+                               (after.PublishWaitNanoseconds - before.PublishWaitNanoseconds) / 1000000.0,
+                               0.0)
+        PrintMsg($"fastreader {operation}: elapsed={elapsed.TotalSeconds:F3}s read={readMiBs:F1}MiB/s published={publishMiBs:F1}MiB/s io_wait={ioWaitMs:F1}ms hash={hashMs:F1}ms publish_wait={publishWaitMs:F1}ms buffered={IOManager.FormatSize(CLng(after.BufferedBytes))} slots={after.OccupiedSlots}",
+                 LogOnly:=True,
+                 ForceLog:=True)
     End Sub
 
     Private Function WriteFileFromFastReader(fastProvider As RustFastReaderProvider,
@@ -4569,7 +4609,6 @@ Public Class LTFSWriter
         Dim lastWriteTask As Task = Nothing
         Dim lwte As New AutoResetEvent(False)
         Dim eofSeen As Boolean = False
-        Dim forceRefill As Boolean = True
         PrintMsg($"fastreader reading: {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
         fastProvider.QueueFile(fileIndex)
 
@@ -4582,8 +4621,7 @@ Public Class LTFSWriter
                 If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
             End If
 
-            WaitForFastReaderRefill(fastProvider, fileIndex, forceWait:=forceRefill)
-            forceRefill = False
+            WaitForFastReaderRefill(fastProvider)
 
             Dim slot As RustFastReaderProvider.Slot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
             If (slot.Flags And 1) <> 0 Then
@@ -4759,11 +4797,11 @@ Public Class LTFSWriter
                                     If fr IsNot Nothing Then fr.IsOpened = True
                                 Next
                             Catch ex As Exception
-                                PrintMsg($"fastreader unavailable, fallback to .NET reader: {ex.Message}", LogOnly:=True, ForceLog:=True)
+                                PrintMsg($"native fastreader unavailable: {ex.Message}", LogOnly:=True, ForceLog:=True)
                                 If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
                                 If fastProvider IsNot Nothing Then fastProvider.Dispose()
                                 fastProvider = Nothing
-                                useFastReader = False
+                                Throw New IO.IOException("External Reader is enabled, but the native fastreader could not be initialized. Managed fallback is disabled.", ex)
                             End Try
                         End If
                         If Not useFastReader Then
@@ -4828,8 +4866,6 @@ Public Class LTFSWriter
                         '    Next
                         'End If
                         Dim HashTaskAwaitNumber As Integer = 0
-                        Threading.ThreadPool.SetMaxThreads(1024, 1024)
-                        Threading.ThreadPool.SetMinThreads(256, 256)
                         Dim ExitForFlag As Boolean = False
                         'DeDupe
 
@@ -4861,6 +4897,7 @@ Public Class LTFSWriter
                                 Where(Function(index) writePlan(index).Kind = PlannedWriteKind.DataPartitionMaterial).
                                 Select(Function(index) CLng(index)).ToList()
                             fastProvider.ConfigureOrderedFiles(orderedDataFiles)
+                            WaitForInitialFastReaderFill(fastProvider)
                         End If
                         IndexLastUpdateTime = Now
                         Dim p As New TapeUtils.PositionData(driveHandle)
@@ -8922,9 +8959,6 @@ Public Class LTFSWriter
                         Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
                         Dim HashTaskAwaitNumber As Integer = 0
-                        Threading.ThreadPool.SetMaxThreads(1024, 1024)
-                        Threading.ThreadPool.SetMinThreads(256, 256)
-
                         Dim p As New TapeUtils.PositionData(driveHandle)
                         TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                         Try
@@ -10307,8 +10341,6 @@ Public Class LTFSWriter
                      Dim wBufferPtr As IntPtr = Marshal.AllocHGlobal(CInt(plabel.blocksize))
 
                      Dim HashTaskAwaitNumber As Integer = 0
-                     Threading.ThreadPool.SetMaxThreads(1024, 1024)
-                     Threading.ThreadPool.SetMinThreads(256, 256)
                      Dim ExitForFlag As Boolean = False
                      IndexLastUpdateTime = Now
                      Dim p As New TapeUtils.PositionData(driveHandle)
