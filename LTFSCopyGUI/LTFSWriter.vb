@@ -4606,21 +4606,16 @@ Public Class LTFSWriter
                                              p As TapeUtils.PositionData,
                                              Optional expectedDedupeHash As String = "") As Boolean
         Dim remainingInFile As Long = fr.File.length
-        Dim lastWriteTask As Task = Nothing
-        Dim lwte As New AutoResetEvent(False)
         Dim eofSeen As Boolean = False
+        Dim writeCallCount As Long = 0
+        Dim writeByteCount As Long = 0
+        Dim writeElapsedSeconds As Double = 0
+        Dim slowestWriteMiBs As Double = Double.PositiveInfinity
+        Dim minimumBufferedBytes As Long = Long.MaxValue
         PrintMsg($"fastreader reading: {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
         fastProvider.QueueFile(fileIndex)
 
         While Not StopFlag AndAlso remainingInFile > 0
-            If lastWriteTask IsNot Nothing Then
-                While Not (lastWriteTask.IsCompleted OrElse lastWriteTask.IsCanceled OrElse lastWriteTask.IsFaulted)
-                    lwte.WaitOne(10)
-                    PipeBufferLength = fastProvider.BufferedBytes
-                End While
-                If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
-            End If
-
             WaitForFastReaderRefill(fastProvider)
 
             Dim slot As RustFastReaderProvider.Slot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
@@ -4634,11 +4629,11 @@ Public Class LTFSWriter
                 Exit While
             End If
             PipeBufferLength = fastProvider.BufferedBytes
+            minimumBufferedBytes = Math.Min(minimumBufferedBytes, PipeBufferLength)
 
             Dim bytesReaded As Integer = slot.Length
-            lastWriteTask = Task.Factory.StartNew(
-                Sub(state)
-                    Dim currentSlot = DirectCast(state, RustFastReaderProvider.Slot)
+            Dim currentSlot = slot
+            Dim writeStarted = Stopwatch.GetTimestamp()
                     Try
                         CheckCount += 1
                         If CheckCount >= CheckCycle Then CheckCount = 0
@@ -4655,6 +4650,7 @@ Public Class LTFSWriter
                         While Not succ
                             Dim sense As Byte()
                             Try
+                                writeCallCount += 1
                                 sense = TapeUtils.Write(driveHandle, currentSlot.DataPtr, CUInt(currentSlot.Length), True)
                                 SyncLock p
                                     p.BlockNumber += 1
@@ -4714,18 +4710,25 @@ Public Class LTFSWriter
                         End If
                     Finally
                         fastProvider.AdvanceSlot(currentSlot)
-                        lwte.Set()
                     End Try
-                End Sub, slot)
+            Dim slotWriteSeconds = (Stopwatch.GetTimestamp() - writeStarted) / CDbl(Stopwatch.Frequency)
+            writeByteCount += bytesReaded
+            writeElapsedSeconds += slotWriteSeconds
+            If slotWriteSeconds > 0 Then
+                slowestWriteMiBs = Math.Min(slowestWriteMiBs, bytesReaded / 1048576.0 / slotWriteSeconds)
+            End If
             remainingInFile -= bytesReaded
         End While
 
-        If lastWriteTask IsNot Nothing Then
-            While Not (lastWriteTask.IsCompleted OrElse lastWriteTask.IsCanceled OrElse lastWriteTask.IsFaulted)
-                lwte.WaitOne(10)
-                PipeBufferLength = fastProvider.BufferedBytes
-            End While
-            If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
+        If writeCallCount > 0 Then
+            Dim averageWriteMiBs = If(writeElapsedSeconds > 0,
+                                      writeByteCount / 1048576.0 / writeElapsedSeconds,
+                                      0.0)
+            Dim minimumBuffer = If(minimumBufferedBytes = Long.MaxValue, 0, minimumBufferedBytes)
+            Dim slowestWrite = If(Double.IsPositiveInfinity(slowestWriteMiBs), 0.0, slowestWriteMiBs)
+            PrintMsg($"fastreader tape write: calls={writeCallCount} bytes={IOManager.FormatSize(writeByteCount)} elapsed={writeElapsedSeconds:F3}s average={averageWriteMiBs:F1}MiB/s slowest={slowestWrite:F1}MiB/s min_buffered={IOManager.FormatSize(minimumBuffer)}",
+                     LogOnly:=True,
+                     ForceLog:=True)
         End If
 
         If Not eofSeen Then fastProvider.DrainEof(fileIndex)
