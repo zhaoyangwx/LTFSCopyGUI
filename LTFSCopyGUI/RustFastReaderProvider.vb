@@ -12,14 +12,14 @@ Imports System.Threading
 Public Class RustFastReaderProvider
     Implements IDisposable
 
-    Public Class Slot
-        Public Property Index As ULong
+    Public Structure Slot
+        Public Property Token As ULong
         Public Property FileIndex As Long
         Public Property FileOffset As Long
         Public Property Length As Integer
         Public Property Flags As Integer
         Public Property DataPtr As IntPtr
-    End Class
+    End Structure
 
     <StructLayout(LayoutKind.Sequential)>
     Private Structure NativeConfig
@@ -346,7 +346,7 @@ Public Class RustFastReaderProvider
             Select Case result
                 Case ResultOk
                     Return New Slot With {
-                        .Index = native.Token,
+                        .Token = native.Token,
                         .FileIndex = native.FileIndex,
                         .FileOffset = CLng(native.FileOffset),
                         .Length = CInt(native.Length),
@@ -373,8 +373,8 @@ Public Class RustFastReaderProvider
     End Function
 
     Public Sub AdvanceSlot(slot As Slot)
-        If slot Is Nothing Then Return
-        CheckResult(NativeMethods.lfr_release_slot(Context, slot.Index), "release slot")
+        If slot.Token = 0 Then Return
+        CheckResult(NativeMethods.lfr_release_slot(Context, slot.Token), "release slot")
         If slot.Length > 0 Then Interlocked.Add(_remainingBytes, -CLng(slot.Length))
     End Sub
 

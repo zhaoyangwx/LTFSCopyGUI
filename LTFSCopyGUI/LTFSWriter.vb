@@ -4600,6 +4600,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Function WriteFileFromFastReader(fastProvider As RustFastReaderProvider,
+                                             writeSession As TapeUtils.FastSequentialWriteSession,
                                              fileIndex As Integer,
                                              fr As FileRecord,
                                              driveHandle As IntPtr,
@@ -4632,7 +4633,6 @@ Public Class LTFSWriter
             minimumBufferedBytes = Math.Min(minimumBufferedBytes, PipeBufferLength)
 
             Dim bytesReaded As Integer = slot.Length
-            Dim currentSlot = slot
             Dim writeStarted = Stopwatch.GetTimestamp()
                     Try
                         CheckCount += 1
@@ -4651,7 +4651,7 @@ Public Class LTFSWriter
                             Dim sense As Byte()
                             Try
                                 writeCallCount += 1
-                                sense = TapeUtils.Write(driveHandle, currentSlot.DataPtr, CUInt(currentSlot.Length), True)
+                                sense = writeSession.Write(slot.DataPtr, CUInt(slot.Length))
                                 SyncLock p
                                     p.BlockNumber += 1
                                 End SyncLock
@@ -4703,13 +4703,13 @@ Public Class LTFSWriter
                         End While
 
                         If Not StopFlag Then
-                            fr.File.WrittenBytes += currentSlot.Length
-                            TotalBytesProcessed += currentSlot.Length
-                            CurrentBytesProcessed += currentSlot.Length
-                            TotalBytesUnindexed += currentSlot.Length
+                            fr.File.WrittenBytes += slot.Length
+                            TotalBytesProcessed += slot.Length
+                            CurrentBytesProcessed += slot.Length
+                            TotalBytesUnindexed += slot.Length
                         End If
                     Finally
-                        fastProvider.AdvanceSlot(currentSlot)
+                        fastProvider.AdvanceSlot(slot)
                     End Try
             Dim slotWriteSeconds = (Stopwatch.GetTimestamp() - writeStarted) / CDbl(Stopwatch.Frequency)
             writeByteCount += bytesReaded
@@ -4753,6 +4753,7 @@ Public Class LTFSWriter
         Dim th As New Threading.Thread(
             Sub()
                 Dim OnWriteFinishMessage As String = ""
+                Dim fastWriteSession As TapeUtils.FastSequentialWriteSession = Nothing
                 Try
                     SetStatusLight(LWStatus.Busy)
                     StartTime = Now
@@ -4907,6 +4908,7 @@ Public Class LTFSWriter
 
                         Dim lastpos As New TapeUtils.PositionData(driveHandle)
                         TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
+                        If useFastReader Then fastWriteSession = New TapeUtils.FastSequentialWriteSession(driveHandle)
                         For i As Integer = 0 To WriteList.Count - 1
                             'If i < WriteList.Count - 1 Then
                             '    Dim CFNum As Integer = i
@@ -5019,7 +5021,7 @@ Public Class LTFSWriter
                                             CurrentFilesProcessed += 1
                                             TotalBytesUnindexed += fr.File.length
                                         ElseIf useFastReader AndAlso Not IsIndexPartition Then
-                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash) Then Exit For
+                                            If Not WriteFileFromFastReader(fastProvider, fastWriteSession, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash) Then Exit For
                                         ElseIf fr.File.length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData(fr.File.length - 1) As Byte
@@ -5637,6 +5639,8 @@ Public Class LTFSWriter
                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
                     SetStatusLight(LWStatus.Err)
+                Finally
+                    If fastWriteSession IsNot Nothing Then fastWriteSession.Dispose()
                 End Try
                 TapeUtils.Flush(driveHandle)
                 TapeUtils.ReleaseUnit(driveHandle)
