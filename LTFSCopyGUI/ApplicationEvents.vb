@@ -45,6 +45,7 @@ Namespace My
             End If
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            AppLogger.Initialize(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"), My.Settings.LTFSWriter_LogEnabled)
             If Not IO.Directory.Exists(My.Settings.cfgPath) Then IO.Directory.CreateDirectory(My.Settings.cfgPath)
             '旧设定迁移
             If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
@@ -851,16 +852,32 @@ dataDir:{dataDir}
         End Sub
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
-
+            AppLogger.Write(AppLogLevel.Info, "Application", "Application shutting down.", force:=True)
+            AppLogger.Shutdown(TimeSpan.FromSeconds(5))
         End Sub
 
         Private Sub MyApplication_UnhandledException(sender As Object, e As UnhandledExceptionEventArgs) Handles Me.UnhandledException
-            If Not IO.Directory.Exists(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log")) Then
-                IO.Directory.CreateDirectory(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"))
-            End If
-            Dim logFile As String = IO.Path.Combine(Windows.Forms.Application.StartupPath, $"log\LTFSWriter_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
-            IO.File.AppendAllText(logFile, e.Exception.ToString())
+            AppLogger.Write(AppLogLevel.Critical, "Application", "Unhandled exception.", e.Exception, force:=True)
+            If Not AppLogger.Flush(TimeSpan.FromSeconds(5)) Then WriteEmergencyCrashLog(e.Exception)
             MessageBox.Show(e.Exception.ToString())
+        End Sub
+
+        Private Shared Sub WriteEmergencyCrashLog(ex As Exception)
+            Dim contents = If(ex Is Nothing, "Unknown unhandled exception.", ex.ToString())
+            Dim directories = {
+                IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"),
+                IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LTFSCopyGUI", "log"),
+                IO.Path.Combine(IO.Path.GetTempPath(), "LTFSCopyGUI", "log")
+            }
+            For Each directory In directories
+                Try
+                    IO.Directory.CreateDirectory(directory)
+                    Dim path = IO.Path.Combine(directory, $"crash_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+                    IO.File.WriteAllText(path, contents, New Text.UTF8Encoding(False))
+                    Return
+                Catch
+                End Try
+            Next
         End Sub
     End Class
 End Namespace

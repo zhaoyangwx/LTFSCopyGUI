@@ -11,6 +11,9 @@ Public Class HashTaskWindow
     Public schPath As String = Form1.TextBox1.Text
     Public Event SHA1Changed(f As ltfsindex.file, msg As String)
     Public ProgressMsg As String = ""
+    Private ReadOnly _logSessionId As String = $"hash-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+    Private ReadOnly _pendingUiMessages As New Collections.Concurrent.ConcurrentQueue(Of String)()
+    Private _uiFlushScheduled As Integer
 
     Public Property ErrorCount As Integer = 0
     Public StartTime As String = Now.ToString("yyyyMMdd_HHmmss")
@@ -33,27 +36,49 @@ Public Class HashTaskWindow
         End Get
     End Property
     Public Sub PrintMsg(Message As String)
-        Try
-            Me.Invoke(Sub()
-                          If TextBox1.Text.Length > 20000 Then TextBox1.Text = Mid(TextBox1.Text, 18000)
-
-                          TextBox1.AppendText(Message & vbCrLf)
-                          'TextBox1.Select(TextBox1.Text.Length, 0)
-                          'TextBox1.ScrollToCaret()
-                          If LogEnabled Then
-                              If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
-                                  IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
-                              End If
-                              IO.File.AppendAllText(IO.Path.Combine(Application.StartupPath, $"log\log_{StartTime}.txt"), Message & vbCrLf)
-                          End If
-                      End Sub)
-        Catch ex As Exception
-
-        End Try
-
+        If Message Is Nothing Then Message = String.Empty
+        If LogEnabled Then AppLogger.Write(AppLogLevel.Info, "Hash", Message, sessionId:=_logSessionId)
+        _pendingUiMessages.Enqueue(Message)
+        ScheduleUiFlush()
     End Sub
 
+    Private Sub ScheduleUiFlush()
+        If IsDisposed OrElse Disposing OrElse Not IsHandleCreated Then Return
+        If Threading.Interlocked.CompareExchange(_uiFlushScheduled, 1, 0) <> 0 Then Return
+        Try
+            BeginInvoke(New MethodInvoker(AddressOf FlushUiMessages))
+        Catch
+            Threading.Interlocked.Exchange(_uiFlushScheduled, 0)
+        End Try
+    End Sub
+
+    Private Sub FlushUiMessages()
+        Try
+            If IsDisposed OrElse Disposing Then Return
+            Dim builder As New Text.StringBuilder()
+            Dim message As String = Nothing
+            Dim count As Integer = 0
+            While count < 200 AndAlso builder.Length < 64 * 1024 AndAlso _pendingUiMessages.TryDequeue(message)
+                builder.AppendLine(message)
+                count += 1
+            End While
+            If builder.Length > 0 Then
+                If TextBox1.TextLength > 20000 Then
+                    Dim keep = Math.Min(18000, TextBox1.TextLength)
+                    TextBox1.Text = TextBox1.Text.Substring(TextBox1.TextLength - keep)
+                End If
+                TextBox1.AppendText(builder.ToString())
+            End If
+        Catch ex As Exception
+            Diagnostics.Debug.WriteLine($"Hash log UI update failed: {ex}")
+        Finally
+            Threading.Interlocked.Exchange(_uiFlushScheduled, 0)
+            If Not _pendingUiMessages.IsEmpty Then ScheduleUiFlush()
+        End Try
+    End Sub
+    ' Flush messages that may have arrived before the form handle was created.
     Private Sub HashTaskWindow_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ScheduleUiFlush()
         CheckBox1.Checked = My.Settings.HashTaskWindow_ReHash
         If HashTask Is Nothing Then HashTask = New IOManager.HashTask With {.schema = schema, .BaseDirectory = BaseDirectory, .ReportSkip = Not DisableSkipInfo}
         If IO.File.Exists(Application.StartupPath & "\recovery.log") Then

@@ -213,8 +213,9 @@ Public Class LTFSWriter
     End Property
     <Category("LTFSWriter")>
     Public Property Session_Start_Time As Date = Now
-    <Category("LTFSWriter")>
-    Public Property logFile As String = IO.Path.Combine(Application.StartupPath, $"log\LTFSWriter_{Session_Start_Time.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
+    Private ReadOnly _logSessionId As String = $"writer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+    Private ReadOnly _messageStateLock As New Object()
+    Private _lastMessage As String = String.Empty
     <Category("LTFSWriter")>
     Public Property SilentMode As Boolean = False
     <Category("LTFSWriter")>
@@ -373,6 +374,7 @@ Public Class LTFSWriter
         ApplyWAStatus()
         My.Settings.LTFSWriter_AutoFlush = APToolStripMenuItem.Checked
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
+        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashOnWriting = 计算校验ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashAsync = 异步校验CPU占用高ToolStripMenuItem.Checked
@@ -404,18 +406,17 @@ Public Class LTFSWriter
         blinkcycle += 1
         blinkcycle = blinkcycle Mod (2 * blinkticks)
 
-        Static logcycle As Integer = 0
-        Const logticks As Integer = 5
-        logcycle += 1
-        logcycle = logcycle Mod logticks
-        If logcycle = 0 Then
-            logFlush = True
-        End If
-
-        ToolStripStatusLabel3.Text = Text3
-        ToolStripStatusLabel3.ToolTipText = TextT3
-        ToolStripStatusLabel5.Text = Text5
-        ToolStripStatusLabel5.ToolTipText = TextT5
+        Dim statusText3, statusText5, statusTooltip3, statusTooltip5 As String
+        SyncLock _messageStateLock
+            statusText3 = Text3
+            statusTooltip3 = TextT3
+            statusText5 = Text5
+            statusTooltip5 = TextT5
+        End SyncLock
+        ToolStripStatusLabel3.Text = statusText3
+        ToolStripStatusLabel3.ToolTipText = statusTooltip3
+        ToolStripStatusLabel5.Text = statusText5
+        ToolStripStatusLabel5.ToolTipText = statusTooltip5
         If TapeUtils.IsOpened(driveHandle) Then
             If IOCtlNum > 0 Then
                 If blinkcycle < blinkticks Then
@@ -488,48 +489,36 @@ Public Class LTFSWriter
                End Sub)
 
     End Sub
-    Public Property logFlush As Boolean = False
-    Public logBuffer As New StringBuilder
     Public Sub PrintMsg(s As String, Optional ByVal Warning As Boolean = False,
                         Optional ByVal TooltipText As String = "",
                         Optional ByVal LogOnly As Boolean = False,
                         Optional ByVal ForceLog As Boolean = False,
-                        Optional ByVal DeDupe As Boolean = False)
-        Static LastMsg As String = ""
-        Me.BeginInvoke(Sub()
-                           If DeDupe Then
-                               If s = LastMsg Then Exit Sub
-                           End If
-                           LastMsg = s
-                           If ForceLog OrElse My.Settings.LTFSWriter_LogEnabled Then
-                               Dim logType As String = "info"
-                               If Warning Then logType = "warn"
-                               Dim ExtraMsg As String = ""
-                               If TooltipText IsNot Nothing AndAlso TooltipText <> "" Then
-                                   ExtraMsg = $"({TooltipText})"
-                               End If
-                               logBuffer.Append($"{vbCrLf}{Now.ToString("yyyy-MM-dd HH:mm:ss")} {logType}> {s} {ExtraMsg}")
-                               If logFlush Then
-                                   logFlush = False
-                                   If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then
-                                       IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
-                                   End If
-                                   SyncLock logBuffer
-                                       IO.File.AppendAllText(logFile, logBuffer.ToString())
-                                       logBuffer.Clear()
-                                   End SyncLock
-                               End If
-                           End If
-                           If LogOnly Then Exit Sub
-                           If TooltipText IsNot Nothing AndAlso TooltipText = "" Then TooltipText = s
-                           If Not Warning Then
-                               Text3 = s
-                               If TooltipText IsNot Nothing Then TextT3 = TooltipText
-                           Else
-                               Text5 = s
-                               If TooltipText IsNot Nothing Then TextT5 = TooltipText
-                           End If
-                       End Sub)
+                        Optional ByVal DeDupe As Boolean = False,
+                        Optional ByVal Category As String = "LTFSWriter")
+        If s Is Nothing Then s = String.Empty
+        SyncLock _messageStateLock
+            If DeDupe AndAlso s = _lastMessage Then Return
+            _lastMessage = s
+            If Not LogOnly Then
+                Dim effectiveTooltip = TooltipText
+                If effectiveTooltip IsNot Nothing AndAlso effectiveTooltip = String.Empty Then effectiveTooltip = s
+                If Not Warning Then
+                    Text3 = s
+                    If effectiveTooltip IsNot Nothing Then TextT3 = effectiveTooltip
+                Else
+                    Text5 = s
+                    If effectiveTooltip IsNot Nothing Then TextT5 = effectiveTooltip
+                End If
+            End If
+        End SyncLock
+
+        Dim logMessage = s
+        If TooltipText IsNot Nothing AndAlso TooltipText <> String.Empty Then logMessage &= $" ({TooltipText})"
+        AppLogger.Write(If(Warning, AppLogLevel.Warning, AppLogLevel.Info),
+                        Category,
+                        logMessage,
+                        sessionId:=_logSessionId,
+                        force:=ForceLog)
     End Sub
     <Category("LTFSWriter")>
     Public Property DataCompressionLogPage As TapeUtils.PageData
@@ -5740,6 +5729,7 @@ Public Class LTFSWriter
     End Sub
     Private Sub 启用日志记录ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs) Handles 启用日志记录ToolStripMenuItem.CheckedChanged
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
+        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
     End Sub
     Private Sub 总是更新数据区索引ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs) Handles 总是更新数据区索引ToolStripMenuItem.CheckedChanged
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
@@ -8399,7 +8389,7 @@ Public Class LTFSWriter
         Dim svc As New FTPService()
         SetStatusLight(LWStatus.Busy)
         AddHandler svc.LogPrint, Sub(s As String)
-                                     PrintMsg($"FTPSVC> {s}")
+                                     PrintMsg($"FTPSVC> {s}", Category:="FTP")
                                  End Sub
         svc.port = 8021
         If DisplayHelper.ShowInputDialog("Port", "FTP Service", svc.port) <> DialogResult.OK Then Exit Sub
@@ -9776,7 +9766,7 @@ Public Class LTFSWriter
         Dim svc As New iSCSIService()
         SetStatusLight(LWStatus.Busy)
         AddHandler svc.LogPrint, Sub(s As String)
-                                     PrintMsg($"iSCSISVC> {s}")
+                                     PrintMsg($"iSCSISVC> {s}", Category:="iSCSI")
                                  End Sub
         svc.port = 3262
         If DisplayHelper.ShowInputDialog("Port", "iSCSI Service", svc.port) <> DialogResult.OK Then Exit Sub
@@ -9829,6 +9819,7 @@ Public Class LTFSWriter
 
     Private Sub 启用日志记录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启用日志记录ToolStripMenuItem.Click
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
+        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
     End Sub
 
     Private Sub 总是更新数据区索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 总是更新数据区索引ToolStripMenuItem.Click

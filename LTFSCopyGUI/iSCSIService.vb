@@ -13,6 +13,7 @@ Public Class iSCSIService
     Public svc As ISCSI.Server.ISCSIServer
     Public target As ISCSITarget
     Public Property LogCommand As Boolean = False
+    Private _traceSession As TraceLogSession
 
     Public Class SCSIDirectInterface
         Implements SCSITargetInterface
@@ -23,7 +24,7 @@ Public Class iSCSIService
         Public QueueTaskProcessor As Task
         Private Shared _DataDir As Dictionary(Of Byte(), Byte)
         Public Property LogCommand As Boolean
-        Public Property LogFile As String = IO.Path.Combine(Application.StartupPath, "log", $"iscsi_{Now.ToString("yyyyMMdd_HHmmss_fffffff")}.log")
+        Public Property TraceSession As TraceLogSession
         Public Shared ReadOnly Property DataDir As Dictionary(Of Byte(), Byte)
             Get
                 If _DataDir Is Nothing Then
@@ -375,9 +376,7 @@ Public Class iSCSIService
                                       logdata.AppendLine("SENSE")
                                       logdata.AppendLine(IOManager.Byte2Hex(sense))
                                       Dim result = logdata.ToString()
-                                      SyncLock LogFile
-                                          IO.File.AppendAllText(LogFile, result)
-                                      End SyncLock
+                                      If TraceSession IsNot Nothing Then TraceSession.Write(result)
                                   End If
                               End Sub)
 
@@ -416,15 +415,35 @@ Public Class iSCSIService
     End Sub
     Public Sub StartService(Optional ByVal TargetName As String = "iqn.2019-01.com.ltfscopygui:target1")
         svc = New ISCSIServer()
-        If LogCommand Then
-            If Not IO.Directory.Exists(IO.Path.Combine(Application.StartupPath, "log")) Then IO.Directory.CreateDirectory(IO.Path.Combine(Application.StartupPath, "log"))
-        End If
-        target = New ISCSITarget(TargetName, New SCSIDirectInterface(driveHandle) With {.LogCommand = LogCommand})
-        svc.AddTarget(target)
-        svc.Start(port)
+        If LogCommand Then _traceSession = AppLogger.CreateTraceSession("iscsi", AppLogger.RunId)
+        Try
+            Dim directInterface As New SCSIDirectInterface(driveHandle) With {
+                .LogCommand = LogCommand,
+                .TraceSession = _traceSession
+            }
+            target = New ISCSITarget(TargetName, directInterface)
+            svc.AddTarget(target)
+            svc.Start(port)
+            RaiseEvent LogPrint($"Started target={TargetName} port={port}")
+        Catch ex As Exception
+            If _traceSession IsNot Nothing Then
+                _traceSession.Dispose()
+                _traceSession = Nothing
+            End If
+            AppLogger.Write(AppLogLevel.Error, "iSCSI", "Failed to start service.", ex)
+            Throw
+        End Try
     End Sub
     Public Sub StopService()
-        svc.Stop()
+        Try
+            If svc IsNot Nothing Then svc.Stop()
+            RaiseEvent LogPrint("Stopped")
+        Finally
+            If _traceSession IsNot Nothing Then
+                _traceSession.Dispose()
+                _traceSession = Nothing
+            End If
+        End Try
     End Sub
 
 End Class
