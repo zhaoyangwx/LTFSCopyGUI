@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-16"?>
+<PageData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>Performance Data log page</Name>
+  <PageCode>52</PageCode>
+  <Items>
+    <DataItem>
+      <Name>Page Code</Name>
+      <StartByte>0</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>8</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+      <Type>Binary</Type>
+    </DataItem>
+    <DataItem>
+      <Name>Page Length</Name>
+      <StartByte>2</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>16</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+      <Type>Int16</Type>
+    </DataItem>
+    <DataItem>
+      <Name>Performance Data Log Parameter</Name>
+      <StartByte>4</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>0</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>16</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>3</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>8</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>4</DynamicParamDataStartByte>
+      <Type>DynamicPage</Type>
+      <EnumTranslator>
+        <item>
+          <key>
+            <long>0</long>
+          </key>
+          <value>
+            <string>Repositions per 100 MB</string>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>1</long>
+          </key>
+          <value>
+            <string>Data rate into buffer</string>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>2</long>
+          </key>
+          <value>
+            <string>Maximum data rate</string>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>3</long>
+          </key>
+          <value>
+            <string>Current data rate</string>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>4</long>
+          </key>
+          <value>
+            <string>Native data rate</string>
+          </value>
+        </item>
+      </EnumTranslator>
+      <DynamicParamType>
+        <item>
+          <key>
+            <long>0</long>
+          </key>
+          <value>
+            <DataType>Int16</DataType>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>1</long>
+          </key>
+          <value>
+            <DataType>Int16</DataType>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>2</long>
+          </key>
+          <value>
+            <DataType>Int16</DataType>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>3</long>
+          </key>
+          <value>
+            <DataType>Int16</DataType>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>4</long>
+          </key>
+          <value>
+            <DataType>Int16</DataType>
+          </value>
+        </item>
+      </DynamicParamType>
+    </DataItem>
+  </Items>
+</PageData>

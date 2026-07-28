@@ -1,0 +1,1508 @@
+<?xml version="1.0" encoding="utf-16"?>
+<PageData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Name>DT Device Error log page</Name>
+  <PageCode>53</PageCode>
+  <Items>
+    <DataItem>
+      <Name>Page Code</Name>
+      <StartByte>0</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>8</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+      <Type>Binary</Type>
+    </DataItem>
+    <DataItem>
+      <Name>Page Length</Name>
+      <StartByte>2</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>16</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+      <Type>Int16</Type>
+    </DataItem>
+    <DataItem>
+      <Name>DT Device Error Log Parameters</Name>
+      <StartByte>4</StartByte>
+      <BitOffset>0</BitOffset>
+      <TotalBits>0</TotalBits>
+      <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+      <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+      <DynamicParamCodeTotalBits>16</DynamicParamCodeTotalBits>
+      <DynamicParamLenStartByte>3</DynamicParamLenStartByte>
+      <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+      <DynamicParamLenTotalBits>8</DynamicParamLenTotalBits>
+      <DynamicParamDataStartByte>4</DynamicParamDataStartByte>
+      <Type>DynamicPage</Type>
+      <EnumTranslator>
+        <item>
+          <key>
+            <long>0</long>
+          </key>
+          <value>
+            <string>Hardware Error data</string>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>1</long>
+          </key>
+          <value>
+            <string>Media Error data</string>
+          </value>
+        </item>
+      </EnumTranslator>
+      <DynamicParamType>
+        <item>
+          <key>
+            <long>0</long>
+          </key>
+          <value>
+            <DataType>PageData</DataType>
+          </value>
+        </item>
+        <item>
+          <key>
+            <long>1</long>
+          </key>
+          <value>
+            <DataType>RawData</DataType>
+          </value>
+        </item>
+      </DynamicParamType>
+      <PageDataTemplate>
+        <item>
+          <key>
+            <long>0</long>
+          </key>
+          <value>
+            <PageData>
+              <Name>Hardware Error data log parameter</Name>
+              <PageCode>0</PageCode>
+              <Items>
+                <DataItem>
+                  <Name>Sense Key</Name>
+                  <StartByte>0</StartByte>
+                  <BitOffset>4</BitOffset>
+                  <TotalBits>4</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Enum</Type>
+                  <EnumTranslator>
+                    <item>
+                      <key>
+                        <long>0</long>
+                      </key>
+                      <value>
+                        <string>NO SENSE</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1</long>
+                      </key>
+                      <value>
+                        <string>RECOVERED ERROR</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>2</long>
+                      </key>
+                      <value>
+                        <string>NOT READY</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>3</long>
+                      </key>
+                      <value>
+                        <string>MEDIUM ERROR</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>4</long>
+                      </key>
+                      <value>
+                        <string>HARDWARE ERROR</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>5</long>
+                      </key>
+                      <value>
+                        <string>ILLEGAL REQUEST</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>6</long>
+                      </key>
+                      <value>
+                        <string>UNIT ATTENTION</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>7</long>
+                      </key>
+                      <value>
+                        <string>DATA PROTECT</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>8</long>
+                      </key>
+                      <value>
+                        <string>BLANK CHECK</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9</long>
+                      </key>
+                      <value>
+                        <string>VENDOR SPECIFIC</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10</long>
+                      </key>
+                      <value>
+                        <string>COPY ABORTED</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11</long>
+                      </key>
+                      <value>
+                        <string>ABORTED COMMAND</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12</long>
+                      </key>
+                      <value>
+                        <string>EQUAL</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>13</long>
+                      </key>
+                      <value>
+                        <string>VOLUME OVERFLOW</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>14</long>
+                      </key>
+                      <value>
+                        <string>MISCOMPARE</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>15</long>
+                      </key>
+                      <value>
+                        <string>RESERVED</string>
+                      </value>
+                    </item>
+                  </EnumTranslator>
+                </DataItem>
+                <DataItem>
+                  <Name>Additional Sense Code</Name>
+                  <StartByte>1</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>8</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Enum</Type>
+                  <EnumTranslator>
+                    <item>
+                      <key>
+                        <long>0</long>
+                      </key>
+                      <value>
+                        <string>No addition sense</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1</long>
+                      </key>
+                      <value>
+                        <string>Filemark detected</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>2</long>
+                      </key>
+                      <value>
+                        <string>End of Tape detected</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>4</long>
+                      </key>
+                      <value>
+                        <string>Beginning of Tape detected</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>5</long>
+                      </key>
+                      <value>
+                        <string>End of Data detected</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>22</long>
+                      </key>
+                      <value>
+                        <string>Operation in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>24</long>
+                      </key>
+                      <value>
+                        <string>Erase operation in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>25</long>
+                      </key>
+                      <value>
+                        <string>Locate operation in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>26</long>
+                      </key>
+                      <value>
+                        <string>Rewind operation in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1024</long>
+                      </key>
+                      <value>
+                        <string>LUN not ready, cause not reportable</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1025</long>
+                      </key>
+                      <value>
+                        <string>LUN in process of becoming ready</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1026</long>
+                      </key>
+                      <value>
+                        <string>LUN not ready, Initializing command required</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1028</long>
+                      </key>
+                      <value>
+                        <string>LUN not ready, format in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1031</long>
+                      </key>
+                      <value>
+                        <string>Command in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1033</long>
+                      </key>
+                      <value>
+                        <string>LUN not ready, self-test in progress</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1036</long>
+                      </key>
+                      <value>
+                        <string>LUN not accessible, port in unavailable state</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>1042</long>
+                      </key>
+                      <value>
+                        <string>Logical unit offline</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>2048</long>
+                      </key>
+                      <value>
+                        <string>Logical unit communication failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>2816</long>
+                      </key>
+                      <value>
+                        <string>Warning</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>2817</long>
+                      </key>
+                      <value>
+                        <string>Thermal limit exceeded</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>3072</long>
+                      </key>
+                      <value>
+                        <string>Write error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>3585</long>
+                      </key>
+                      <value>
+                        <string>Information unit too short</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>3586</long>
+                      </key>
+                      <value>
+                        <string>Information unit too long</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>3587</long>
+                      </key>
+                      <value>
+                        <string>SK Illegal Request</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>4097</long>
+                      </key>
+                      <value>
+                        <string>Logical block guard check failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>4352</long>
+                      </key>
+                      <value>
+                        <string>Unrecovered read error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>4370</long>
+                      </key>
+                      <value>
+                        <string>Media Auxiliary Memory read error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>5120</long>
+                      </key>
+                      <value>
+                        <string>Recorded entity not found</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>5123</long>
+                      </key>
+                      <value>
+                        <string>End of Data not found</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>6656</long>
+                      </key>
+                      <value>
+                        <string>Parameter list length error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>8192</long>
+                      </key>
+                      <value>
+                        <string>Invalid command operation code</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9216</long>
+                      </key>
+                      <value>
+                        <string>Invalid field in Command Descriptor Block</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9472</long>
+                      </key>
+                      <value>
+                        <string>LUN not supported</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9728</long>
+                      </key>
+                      <value>
+                        <string>Invalid field in parameter list</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9729</long>
+                      </key>
+                      <value>
+                        <string>Parameter not supported</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9730</long>
+                      </key>
+                      <value>
+                        <string>Parameter value invalid</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9732</long>
+                      </key>
+                      <value>
+                        <string>Invalid release of persistent reservation</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9744</long>
+                      </key>
+                      <value>
+                        <string>Data decryption key fail limit reached</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9856</long>
+                      </key>
+                      <value>
+                        <string>Invalid CA certificate</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9984</long>
+                      </key>
+                      <value>
+                        <string>Write-protected</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>9992</long>
+                      </key>
+                      <value>
+                        <string>Too many logical objects on partition to support operation</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10240</long>
+                      </key>
+                      <value>
+                        <string>Not ready to ready transition, medium may have changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10497</long>
+                      </key>
+                      <value>
+                        <string>Power-on reset</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10498</long>
+                      </key>
+                      <value>
+                        <string>SCSI bus reset</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10499</long>
+                      </key>
+                      <value>
+                        <string>Bus device reset</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10500</long>
+                      </key>
+                      <value>
+                        <string>Internal firmware reboot</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10503</long>
+                      </key>
+                      <value>
+                        <string>I_T nexus loss occurred</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10753</long>
+                      </key>
+                      <value>
+                        <string>Mode parameters changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10754</long>
+                      </key>
+                      <value>
+                        <string>Log parameters changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10755</long>
+                      </key>
+                      <value>
+                        <string>Reservations pre-empted</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10756</long>
+                      </key>
+                      <value>
+                        <string>Reservations released</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10757</long>
+                      </key>
+                      <value>
+                        <string>Registrations pre-empted</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10758</long>
+                      </key>
+                      <value>
+                        <string>Asymmetric access state changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10759</long>
+                      </key>
+                      <value>
+                        <string>Asymmetric access state transition failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10760</long>
+                      </key>
+                      <value>
+                        <string>Priority changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10765</long>
+                      </key>
+                      <value>
+                        <string>Data encryption capabilities changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10768</long>
+                      </key>
+                      <value>
+                        <string>Timestamp changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10769</long>
+                      </key>
+                      <value>
+                        <string>Data encryption parameters changed by another initiator</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10770</long>
+                      </key>
+                      <value>
+                        <string>Data encryption parameters changed by a vendor-specific event</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10771</long>
+                      </key>
+                      <value>
+                        <string>Data Encryption Key Instance Counter has changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10772</long>
+                      </key>
+                      <value>
+                        <string>SA creation capabilities data has changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10773</long>
+                      </key>
+                      <value>
+                        <string>Medium removal prevention pre-empted</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>10880</long>
+                      </key>
+                      <value>
+                        <string>Security configuration changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11264</long>
+                      </key>
+                      <value>
+                        <string>Command sequence invalid</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11271</long>
+                      </key>
+                      <value>
+                        <string>Previous busy status</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11272</long>
+                      </key>
+                      <value>
+                        <string>Previous task set full status</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11273</long>
+                      </key>
+                      <value>
+                        <string>Previous reservation conflict status</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>11275</long>
+                      </key>
+                      <value>
+                        <string>Not reserved</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12032</long>
+                      </key>
+                      <value>
+                        <string>Commands cleared by another initiator</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12288</long>
+                      </key>
+                      <value>
+                        <string>Incompatible medium installed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12289</long>
+                      </key>
+                      <value>
+                        <string>Cannot read media, unknown format</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12290</long>
+                      </key>
+                      <value>
+                        <string>Cannot read media: incompatible format</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12291</long>
+                      </key>
+                      <value>
+                        <string>Cleaning cartridge installed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12292</long>
+                      </key>
+                      <value>
+                        <string>Cannot write medium</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12293</long>
+                      </key>
+                      <value>
+                        <string>Cannot write medium, incompatible format</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12294</long>
+                      </key>
+                      <value>
+                        <string>Cannot format, incompatible medium</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12295</long>
+                      </key>
+                      <value>
+                        <string>Cleaning failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12300</long>
+                      </key>
+                      <value>
+                        <string>WORM medium—overwrite attempted</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12301</long>
+                      </key>
+                      <value>
+                        <string>WORM medium—integrity check failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>12544</long>
+                      </key>
+                      <value>
+                        <string>Medium format corrupted</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>14080</long>
+                      </key>
+                      <value>
+                        <string>Rounded parameter</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>14848</long>
+                      </key>
+                      <value>
+                        <string>Medium not present</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>14852</long>
+                      </key>
+                      <value>
+                        <string>Medium not present, Media Auxiliary Memory accessible</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>15104</long>
+                      </key>
+                      <value>
+                        <string>Sequential positioning error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>15116</long>
+                      </key>
+                      <value>
+                        <string>Position past BOM</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>15132</long>
+                      </key>
+                      <value>
+                        <string>Too many logical objects on partition to support operation.</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>15872</long>
+                      </key>
+                      <value>
+                        <string>Logical unit has not self-configured yet</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>16129</long>
+                      </key>
+                      <value>
+                        <string>Microcode has been changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>16131</long>
+                      </key>
+                      <value>
+                        <string>Inquiry data has changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>16133</long>
+                      </key>
+                      <value>
+                        <string>Device identifier changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>16142</long>
+                      </key>
+                      <value>
+                        <string>Reported LUNs data has changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>16143</long>
+                      </key>
+                      <value>
+                        <string>Echo buffer overwritten</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>17152</long>
+                      </key>
+                      <value>
+                        <string>Message error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>17408</long>
+                      </key>
+                      <value>
+                        <string>Internal target failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>17664</long>
+                      </key>
+                      <value>
+                        <string>Selection/reselection failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>18176</long>
+                      </key>
+                      <value>
+                        <string>SCSI parity error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>18432</long>
+                      </key>
+                      <value>
+                        <string>Initiator Detected Error message received</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>18688</long>
+                      </key>
+                      <value>
+                        <string>Invalid message</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19200</long>
+                      </key>
+                      <value>
+                        <string>Data phase error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19202</long>
+                      </key>
+                      <value>
+                        <string>Too much write data</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19203</long>
+                      </key>
+                      <value>
+                        <string>ACK/NAK timeout</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19204</long>
+                      </key>
+                      <value>
+                        <string>NAK received</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19205</long>
+                      </key>
+                      <value>
+                        <string>Data offset error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19206</long>
+                      </key>
+                      <value>
+                        <string>Initiator response timeout</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19712</long>
+                      </key>
+                      <value>
+                        <string>Tagged overlapped command</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>19968</long>
+                      </key>
+                      <value>
+                        <string>Overlapped commands</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>20480</long>
+                      </key>
+                      <value>
+                        <string>Write append error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>20992</long>
+                      </key>
+                      <value>
+                        <string>Cartridge fault</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21248</long>
+                      </key>
+                      <value>
+                        <string>Media load or eject failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21249</long>
+                      </key>
+                      <value>
+                        <string>Unload tape failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21250</long>
+                      </key>
+                      <value>
+                        <string>Medium removal prevented</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21251</long>
+                      </key>
+                      <value>
+                        <string>Insufficient resources</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21252</long>
+                      </key>
+                      <value>
+                        <string>Medium thread or unthread failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21764</long>
+                      </key>
+                      <value>
+                        <string>Insufficient registration resources</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>21766</long>
+                      </key>
+                      <value>
+                        <string>Media Auxiliary Memory full</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>23297</long>
+                      </key>
+                      <value>
+                        <string>Threshold condition met</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>23808</long>
+                      </key>
+                      <value>
+                        <string>Failure prediction threshold exceeded</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>24063</long>
+                      </key>
+                      <value>
+                        <string>Failure prediction threshold exceeded (false)</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>24065</long>
+                      </key>
+                      <value>
+                        <string>Idle condition activated by timer</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29696</long>
+                      </key>
+                      <value>
+                        <string>Security error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29697</long>
+                      </key>
+                      <value>
+                        <string>Unable to decrypt data</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29698</long>
+                      </key>
+                      <value>
+                        <string>Unencrypted data encountered while decrypting</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29699</long>
+                      </key>
+                      <value>
+                        <string>Incorrect data encryption key</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29700</long>
+                      </key>
+                      <value>
+                        <string>Cryptographic integrity validation failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29701</long>
+                      </key>
+                      <value>
+                        <string>Key-associated data descriptors changed.</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29704</long>
+                      </key>
+                      <value>
+                        <string>Digital signature validation failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29705</long>
+                      </key>
+                      <value>
+                        <string>Encryption mode mismatch on read</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29706</long>
+                      </key>
+                      <value>
+                        <string>Encrypted block not RAW read-enabled</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29707</long>
+                      </key>
+                      <value>
+                        <string>Incorrect encryption parameters</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29729</long>
+                      </key>
+                      <value>
+                        <string>Data encryption configuration prevented</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29760</long>
+                      </key>
+                      <value>
+                        <string>Authentication failed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29793</long>
+                      </key>
+                      <value>
+                        <string>External data encryption Key Manager access error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29794</long>
+                      </key>
+                      <value>
+                        <string>External data encryption Key Manager error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29795</long>
+                      </key>
+                      <value>
+                        <string>External data encryption management—key not found</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29796</long>
+                      </key>
+                      <value>
+                        <string>External data encryption management—request not authorized</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29806</long>
+                      </key>
+                      <value>
+                        <string>External data encryption control time-out</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29807</long>
+                      </key>
+                      <value>
+                        <string>External data encryption control unknown error</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29809</long>
+                      </key>
+                      <value>
+                        <string>Logical Unit access not authorized</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29824</long>
+                      </key>
+                      <value>
+                        <string>KAD changed</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>29826</long>
+                      </key>
+                      <value>
+                        <string>Crypto KAD in CM failure</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>33410</long>
+                      </key>
+                      <value>
+                        <string>Drive requires cleaning</string>
+                      </value>
+                    </item>
+                    <item>
+                      <key>
+                        <long>33411</long>
+                      </key>
+                      <value>
+                        <string>Bad microcode detected</string>
+                      </value>
+                    </item>
+                  </EnumTranslator>
+                </DataItem>
+                <DataItem>
+                  <Name>Additional Sense Code Qualifier</Name>
+                  <StartByte>2</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>8</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Byte</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Hardware Error</Name>
+                  <StartByte>3</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>16</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Int16</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Host Identification</Name>
+                  <StartByte>5</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>64</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Binary</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Power-on Count</Name>
+                  <StartByte>13</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>16</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Int16</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Power-on Time of Error (seconds)</Name>
+                  <StartByte>15</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>32</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Int32</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Library Time of Error Hour</Name>
+                  <StartByte>19</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>8</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Byte</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Library Time of Error Minutes</Name>
+                  <StartByte>20</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>8</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Byte</Type>
+                </DataItem>
+                <DataItem>
+                  <Name>Library Time of Error Seconds</Name>
+                  <StartByte>21</StartByte>
+                  <BitOffset>0</BitOffset>
+                  <TotalBits>8</TotalBits>
+                  <DynamicParamCodeStartByte>0</DynamicParamCodeStartByte>
+                  <DynamicParamCodeBitOffset>0</DynamicParamCodeBitOffset>
+                  <DynamicParamCodeTotalBits>0</DynamicParamCodeTotalBits>
+                  <DynamicParamLenStartByte>0</DynamicParamLenStartByte>
+                  <DynamicParamLenBitOffset>0</DynamicParamLenBitOffset>
+                  <DynamicParamLenTotalBits>0</DynamicParamLenTotalBits>
+                  <DynamicParamDataStartByte>0</DynamicParamDataStartByte>
+                  <Type>Byte</Type>
+                </DataItem>
+              </Items>
+            </PageData>
+          </value>
+        </item>
+      </PageDataTemplate>
+    </DataItem>
+  </Items>
+</PageData>

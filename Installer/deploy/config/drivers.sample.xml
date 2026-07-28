@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-16"?>
+<TapeUtils xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <BlockLenLimit>524288</BlockLenLimit>
+  <DriveAlias>
+    <item>
+      <key>
+        <string>HU12345678</string>
+      </key>
+      <value>
+        <string>DEMO</string>
+      </value>
+    </item>
+  </DriveAlias>
+</TapeUtils>
