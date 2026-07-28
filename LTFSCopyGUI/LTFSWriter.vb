@@ -4333,15 +4333,243 @@ Public Class LTFSWriter
         Return ""
     End Function
 
+    Private Enum PlannedWriteKind
+        ZeroLength
+        Duplicate
+        IndexPartitionMaterial
+        DataPartitionMaterial
+    End Enum
+
+    Private Class PlannedWrite
+        Public Kind As PlannedWriteKind
+        Public ExistingReference As ltfsindex.file
+        Public NewReferenceIndex As Integer = -1
+        Public ExpectedDedupeHash As String = ""
+        Public SourceLength As Long = -1
+        Public SourceLastWriteUtcTicks As Long = -1
+    End Class
+
+    Private Class DedupeCanonical
+        Public ExistingFile As ltfsindex.file
+        Public NewFileIndex As Integer = -1
+    End Class
+
+    Private Function GetFileDedupeHash(file As ltfsindex.file) As String
+        If file Is Nothing Then Return ""
+        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True)
+            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True)
+            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True)
+            Case ltfsindex.file.xattr.HashType.Available.MD5
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
+            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)
+            Case Else
+                Return file.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
+        End Select
+    End Function
+
+    Private Sub SetFileDedupeHash(file As ltfsindex.file, value As String)
+        If file Is Nothing OrElse String.IsNullOrEmpty(value) Then Return
+        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                file.SetXattr(ltfsindex.file.xattr.HashType.SHA256, value)
+            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                file.SetXattr(ltfsindex.file.xattr.HashType.SHA512, value)
+            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                file.SetXattr(ltfsindex.file.xattr.HashType.CRC32, value)
+            Case ltfsindex.file.xattr.HashType.Available.MD5
+                file.SetXattr(ltfsindex.file.xattr.HashType.MD5, value)
+            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                file.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, value)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                file.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, value)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                file.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, value)
+            Case Else
+                file.SetXattr(ltfsindex.file.xattr.HashType.SHA1, value)
+        End Select
+    End Sub
+
+    Private Function ComputeDedupeHash(path As String) As String
+        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
+            Case ltfsindex.file.xattr.HashType.Available.SHA256
+                Return IOManager.GetSHA256(path)
+            Case ltfsindex.file.xattr.HashType.Available.SHA512
+                Return IOManager.GetSHA512(path)
+            Case ltfsindex.file.xattr.HashType.Available.CRC32
+                Return IOManager.GetCRC32(path)
+            Case ltfsindex.file.xattr.HashType.Available.MD5
+                Return IOManager.GetMD5(path)
+            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
+                Return IOManager.GetBlake3(path)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash3
+                Return IOManager.GetXxHash3(path)
+            Case ltfsindex.file.xattr.HashType.Available.XxHash128
+                Return IOManager.GetXxHash128(path)
+            Case Else
+                Return IOManager.SHA1(path)
+        End Select
+    End Function
+
+    Private Function IsPlannedIndexPartition(fr As FileRecord) As Boolean
+        Return fr IsNot Nothing AndAlso fr.File IsNot Nothing AndAlso IndexPartition <> DataPartition AndAlso
+               fr.File.extentinfo IsNot Nothing AndAlso fr.File.extentinfo.Count > 0 AndAlso
+               fr.File.extentinfo(0).partition = IndexPartition
+    End Function
+
+    Private Sub SnapshotPlannedSource(fr As FileRecord, plan As PlannedWrite)
+        Dim info As New IO.FileInfo(fr.SourcePath)
+        plan.SourceLength = info.Length
+        plan.SourceLastWriteUtcTicks = info.LastWriteTimeUtc.Ticks
+    End Sub
+
+    Private Sub ValidatePlannedSource(fr As FileRecord, plan As PlannedWrite)
+        If plan Is Nothing OrElse plan.SourceLength < 0 Then Return
+        Dim info As New IO.FileInfo(fr.SourcePath)
+        If info.Length <> plan.SourceLength OrElse info.LastWriteTimeUtc.Ticks <> plan.SourceLastWriteUtcTicks Then
+            Throw New IO.IOException($"Source file changed after dedupe pre-scan: {fr.SourcePath}")
+        End If
+    End Sub
+
+    Private Sub CopyDedupeMetadata(target As ltfsindex.file, source As ltfsindex.file)
+        target.SetXattr(ltfsindex.file.xattr.HashType.SHA1, source.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.SHA256, source.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.SHA512, source.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.CRC32, source.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.MD5, source.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, source.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True), True)
+        target.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True), True)
+    End Sub
+
+    Private Function BuildWritePlan(writeList As List(Of FileRecord),
+                                    existingFiles As List(Of ltfsindex.file),
+                                    useFastReader As Boolean,
+                                    fastProvider As RustFastReaderProvider) As List(Of PlannedWrite)
+        Dim plans = Enumerable.Range(0, writeList.Count).Select(Function(index)
+                                                                    Dim fr = writeList(index)
+                                                                    Dim plan As New PlannedWrite()
+                                                                    If fr Is Nothing OrElse fr.File Is Nothing OrElse fr.File.length = 0 Then
+                                                                        plan.Kind = PlannedWriteKind.ZeroLength
+                                                                    ElseIf IsPlannedIndexPartition(fr) Then
+                                                                        plan.Kind = PlannedWriteKind.IndexPartitionMaterial
+                                                                    Else
+                                                                        plan.Kind = PlannedWriteKind.DataPartitionMaterial
+                                                                    End If
+                                                                    Return plan
+                                                                End Function).ToList()
+        If Not My.Settings.LTFSWriter_DeDupe Then Return plans
+
+        Dim newSizeCounts As New Dictionary(Of Long, Integer)
+        For Each fr In writeList
+            If fr IsNot Nothing AndAlso fr.File IsNot Nothing AndAlso fr.File.length > 0 Then
+                Dim count As Integer = 0
+                newSizeCounts.TryGetValue(fr.File.length, count)
+                newSizeCounts(fr.File.length) = count + 1
+            End If
+        Next
+
+        Dim catalog As New Dictionary(Of Long, Dictionary(Of String, DedupeCanonical))
+        For Each existing In existingFiles
+            If existing Is Nothing OrElse existing.length <= 0 Then Continue For
+            Dim hash = GetFileDedupeHash(existing)
+            If String.IsNullOrEmpty(hash) Then Continue For
+            Dim byHash As Dictionary(Of String, DedupeCanonical) = Nothing
+            If Not catalog.TryGetValue(existing.length, byHash) Then
+                byHash = New Dictionary(Of String, DedupeCanonical)(StringComparer.OrdinalIgnoreCase)
+                catalog(existing.length) = byHash
+            End If
+            If Not byHash.ContainsKey(hash) Then byHash(hash) = New DedupeCanonical With {.ExistingFile = existing}
+        Next
+
+        Dim candidates As New List(Of Long)
+        For index = 0 To writeList.Count - 1
+            Dim fr = writeList(index)
+            If fr Is Nothing OrElse fr.File Is Nothing OrElse fr.File.length <= 0 Then Continue For
+            Dim count As Integer = 0
+            newSizeCounts.TryGetValue(fr.File.length, count)
+            If count > 1 OrElse catalog.ContainsKey(fr.File.length) Then candidates.Add(index)
+        Next
+
+        For Each longIndex In candidates
+            SnapshotPlannedSource(writeList(CInt(longIndex)), plans(CInt(longIndex)))
+        Next
+
+        Dim fastHashes As Dictionary(Of Long, Dictionary(Of String, String)) = Nothing
+        If useFastReader AndAlso candidates.Count > 0 Then
+            fastHashes = fastProvider.HashFiles(candidates, Timeout.Infinite)
+        End If
+
+        For Each longIndex In candidates
+            Dim index = CInt(longIndex)
+            Dim fr = writeList(index)
+            PrintMsg($"{My.Resources.ResText_CHashing} {My.Settings.LTFSWriter_DedupeAlgorithm}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
+            Dim hash = If(useFastReader, GetFastReaderDedupeHash(fastHashes(longIndex)), ComputeDedupeHash(fr.SourcePath))
+            If String.IsNullOrEmpty(hash) Then Throw New IO.IOException($"Unable to calculate dedupe hash: {fr.SourcePath}")
+            ValidatePlannedSource(fr, plans(index))
+            plans(index).ExpectedDedupeHash = hash
+
+            Dim byHash As Dictionary(Of String, DedupeCanonical) = Nothing
+            If Not catalog.TryGetValue(fr.File.length, byHash) Then
+                byHash = New Dictionary(Of String, DedupeCanonical)(StringComparer.OrdinalIgnoreCase)
+                catalog(fr.File.length) = byHash
+            End If
+            Dim canonical As DedupeCanonical = Nothing
+            If byHash.TryGetValue(hash, canonical) Then
+                plans(index).Kind = PlannedWriteKind.Duplicate
+                plans(index).ExistingReference = canonical.ExistingFile
+                plans(index).NewReferenceIndex = canonical.NewFileIndex
+            Else
+                byHash(hash) = New DedupeCanonical With {.NewFileIndex = index}
+            End If
+        Next
+        Return plans
+    End Function
+
+    Private Sub WaitForFastReaderRefill(fastProvider As RustFastReaderProvider,
+                                        fileIndex As Integer,
+                                        Optional forceWait As Boolean = False)
+        If Not My.Settings.LTFSWriter_WaitOnBufferEmpty OrElse StopFlag Then
+            PipePause = False
+            Return
+        End If
+
+        Dim buffered = fastProvider.BufferedBytes
+        PipeBufferLength = buffered
+        Const lowWaterFraction As Double = 0.05
+        Const fillFraction As Double = 0.75
+        Const stagnantTimeoutMs As Integer = 10000
+        Dim lowWater = CLng(Math.Ceiling(fastProvider.BufferCapacityBytes * lowWaterFraction))
+        If Not forceWait AndAlso Not PipePause AndAlso buffered > lowWater Then Return
+
+        PipePause = True
+        Try
+            fastProvider.WaitForStreamFillFraction(fillFraction, stagnantTimeoutMs, Threading.CancellationToken.None)
+        Finally
+            PipeBufferLength = fastProvider.BufferedBytes
+            PipePause = False
+        End Try
+    End Sub
+
     Private Function WriteFileFromFastReader(fastProvider As RustFastReaderProvider,
                                              fileIndex As Integer,
                                              fr As FileRecord,
                                              driveHandle As IntPtr,
-                                             p As TapeUtils.PositionData) As Boolean
+                                             p As TapeUtils.PositionData,
+                                             Optional expectedDedupeHash As String = "") As Boolean
         Dim remainingInFile As Long = fr.File.length
         Dim lastWriteTask As Task = Nothing
         Dim lwte As New AutoResetEvent(False)
         Dim eofSeen As Boolean = False
+        Dim forceRefill As Boolean = True
         PrintMsg($"fastreader reading: {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
         fastProvider.QueueFile(fileIndex)
 
@@ -4354,11 +4582,8 @@ Public Class LTFSWriter
                 If lastWriteTask.IsFaulted Then Throw lastWriteTask.Exception
             End If
 
-            If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso PipePause Then
-                fastProvider.WaitForFillFraction(fileIndex, 0.75, 10000, Threading.CancellationToken.None)
-                PipeBufferLength = fastProvider.BufferedBytes
-                PipePause = False
-            End If
+            WaitForFastReaderRefill(fastProvider, fileIndex, forceWait:=forceRefill)
+            forceRefill = False
 
             Dim slot As RustFastReaderProvider.Slot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
             If (slot.Flags And 1) <> 0 Then
@@ -4371,7 +4596,6 @@ Public Class LTFSWriter
                 Exit While
             End If
             PipeBufferLength = fastProvider.BufferedBytes
-            If My.Settings.LTFSWriter_WaitOnBufferEmpty AndAlso PipeBufferLength <= My.Settings.LTFSWriter_MinimumSegmentSize * 2 Then PipePause = True
 
             Dim bytesReaded As Integer = slot.Length
             lastWriteTask = Task.Factory.StartNew(
@@ -4467,7 +4691,17 @@ Public Class LTFSWriter
         End If
 
         If Not eofSeen Then fastProvider.DrainEof(fileIndex)
-        If HashOnWrite AndAlso Not StopFlag Then ApplyFastReaderHashes(fr, fastProvider.WaitFileDone(fileIndex))
+        If Not StopFlag Then
+            Dim hashes = fastProvider.WaitFileDone(fileIndex, Timeout.Infinite)
+            If Not String.IsNullOrEmpty(expectedDedupeHash) Then
+                Dim actualDedupeHash = GetFastReaderDedupeHash(hashes)
+                If Not actualDedupeHash.Equals(expectedDedupeHash, StringComparison.OrdinalIgnoreCase) Then
+                    Throw New IO.IOException($"Source file changed after dedupe pre-scan: {fr.SourcePath}")
+                End If
+                SetFileDedupeHash(fr.File, actualDedupeHash)
+            End If
+            If HashOnWrite Then ApplyFastReaderHashes(fr, hashes)
+        End If
         TotalFilesProcessed += 1
         CurrentFilesProcessed += 1
         Return Not StopFlag
@@ -4621,6 +4855,13 @@ Public Class LTFSWriter
                                 q = q2
                             End While
                         End If
+                        Dim writePlan = BuildWritePlan(WriteList, AllFile, useFastReader, fastProvider)
+                        If useFastReader Then
+                            Dim orderedDataFiles = Enumerable.Range(0, writePlan.Count).
+                                Where(Function(index) writePlan(index).Kind = PlannedWriteKind.DataPartitionMaterial).
+                                Select(Function(index) CLng(index)).ToList()
+                            fastProvider.ConfigureOrderedFiles(orderedDataFiles)
+                        End If
                         IndexLastUpdateTime = Now
                         Dim p As New TapeUtils.PositionData(driveHandle)
 
@@ -4645,96 +4886,41 @@ Public Class LTFSWriter
                                 If fr.File Is Nothing Then Continue For
                                 fr.File.fileuid = schema.highestfileuid + 1
                                 schema.highestfileuid += 1
-                                Dim IsIndexPartition As Boolean = False
+                                Dim currentPlan = writePlan(i)
+                                ValidatePlannedSource(fr, currentPlan)
+                                Dim IsIndexPartition As Boolean = currentPlan.Kind = PlannedWriteKind.IndexPartitionMaterial
                                 If fr.File.length > 0 Then
                                     'p = New TapeUtils.PositionData(TapeDrive)
                                     'If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM.Text, True)
-                                    Dim dupe As Boolean = False
-                                    If My.Settings.LTFSWriter_DeDupe Then
-                                        Dim dupeFile As ltfsindex.file = Nothing
-                                        Dim checksumvalue As String = ""
-                                        For Each fref As ltfsindex.file In AllFile
-                                            If fref.length <> fr.File.length Then Continue For
-                                            Dim frefchecksum As String = ""
-                                            Select Case My.Settings.LTFSWriter_DedupeAlgorithm
-                                                Case ltfsindex.file.xattr.HashType.Available.SHA256
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.SHA512
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.CRC32
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.MD5
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.BLAKE3
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.XxHash3
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)
-                                                Case ltfsindex.file.xattr.HashType.Available.XxHash128
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)
-                                                Case Else
-                                                    frefchecksum = fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)
-                                            End Select
-                                            If frefchecksum <> "" Then
-                                                PrintMsg($"{My.Resources.ResText_CHashing} {My.Settings.LTFSWriter_DedupeAlgorithm.ToString()}: {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}")
-                                                If checksumvalue = "" Then
-                                                    If useFastReader Then
-                                                        checksumvalue = GetFastReaderDedupeHash(fastProvider.HashFile(i, Timeout.Infinite))
-                                                    Else
-                                                        Select Case My.Settings.LTFSWriter_DedupeAlgorithm
-                                                            Case ltfsindex.file.xattr.HashType.Available.SHA256
-                                                                checksumvalue = IOManager.GetSHA256(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.SHA512
-                                                                checksumvalue = IOManager.GetSHA512(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.CRC32
-                                                                checksumvalue = IOManager.GetCRC32(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.MD5
-                                                                checksumvalue = IOManager.GetMD5(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.BLAKE3
-                                                                checksumvalue = IOManager.GetBlake3(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.XxHash3
-                                                                checksumvalue = IOManager.GetXxHash3(fr.SourcePath)
-                                                            Case ltfsindex.file.xattr.HashType.Available.XxHash128
-                                                                checksumvalue = IOManager.GetXxHash128(fr.SourcePath)
-                                                            Case Else
-                                                                checksumvalue = IOManager.SHA1(fr.SourcePath)
-                                                        End Select
-                                                    End If
-                                                End If
-
-                                                If frefchecksum.Equals(checksumvalue) Then
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA256, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA512, fref.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.CRC32, fref.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, fref.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, fref.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True), True)
-                                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, fref.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True), True)
-                                                    dupe = True
-                                                    dupeFile = fref
-                                                End If
+                                    Dim dupe As Boolean = currentPlan.Kind = PlannedWriteKind.Duplicate
+                                    If dupe Then
+                                        Dim dupeFile = currentPlan.ExistingReference
+                                        If dupeFile Is Nothing AndAlso currentPlan.NewReferenceIndex >= 0 Then
+                                            dupeFile = WriteList(currentPlan.NewReferenceIndex).File
+                                            If dupeFile Is Nothing OrElse dupeFile.extentinfo Is Nothing OrElse dupeFile.extentinfo.Count = 0 Then
+                                                Throw New IO.IOException($"Dedupe reference was not written successfully: {fr.SourcePath}")
                                             End If
-                                            If dupe Then Exit For
+                                        End If
+                                        If dupeFile Is Nothing Then Throw New IO.IOException($"Missing dedupe reference: {fr.SourcePath}")
+                                        If dupeFile.extentinfo Is Nothing OrElse dupeFile.extentinfo.Count = 0 Then
+                                            Throw New IO.IOException($"Dedupe reference has no extent: {fr.SourcePath}")
+                                        End If
+                                        CopyDedupeMetadata(fr.File, dupeFile)
+                                        SetFileDedupeHash(fr.File, currentPlan.ExpectedDedupeHash)
+                                        fr.File.extentinfo.Clear()
+                                        For Each ext As ltfsindex.file.extent In dupeFile.extentinfo
+                                            fr.File.extentinfo.Add(ext)
                                         Next
-                                        If dupe AndAlso dupeFile IsNot Nothing Then
-                                            For Each ext As ltfsindex.file.extent In dupeFile.extentinfo
-                                                fr.File.extentinfo.Add(ext)
-                                            Next
-                                            If fr.fs IsNot Nothing Then fr.Close()
-                                            PrintMsg($"{My.Resources.ResText_Skip} {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}", False,
+                                        If fr.fs IsNot Nothing Then fr.Close()
+                                        PrintMsg($"{My.Resources.ResText_Skip} {fr.File.name}  {My.Resources.ResText_Size} {IOManager.FormatSize(fr.File.length)}", False,
                                                  $"{My.Resources.ResText_Skip}: {fr.SourcePath}{vbCrLf}{My.Resources.ResText_Size}: {IOManager.FormatSize(fr.File.length)}{vbCrLf _
                                                  }{My.Resources.ResText_WrittenTotal}: {IOManager.FormatSize(TotalBytesProcessed) _
                                                  } {My.Resources.ResText_Remaining}: {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed)) _
                                                  } -> {IOManager.FormatSize(Math.Max(0, UnwrittenSize - CurrentBytesProcessed - fr.File.length))}")
-                                            TotalBytesProcessed += fr.File.length
-                                            CurrentBytesProcessed += fr.File.length
-                                            TotalFilesProcessed += 1
-                                            CurrentFilesProcessed += 1
-                                        Else
-                                            AllFile.Add(fr.File)
-                                        End If
-                                    End If
-                                    If dupe Then
+                                        TotalBytesProcessed += fr.File.length
+                                        CurrentBytesProcessed += fr.File.length
+                                        TotalFilesProcessed += 1
+                                        CurrentFilesProcessed += 1
                                         If useFastReader Then
                                             'HASH pre-scan does not enqueue shared-memory data, so there is nothing to drain.
                                         ElseIf RingBufferEnabled Then
@@ -4743,15 +4929,13 @@ Public Class LTFSWriter
                                             PipeDrain(provider.Reader, fr.File.length)
                                         End If
                                     Else
-                                        IsIndexPartition = False
                                         Dim fileextent As New ltfsindex.file.extent With
                                             {.partition = DataPartition,
                                             .startblock = p.BlockNumber,
                                             .bytecount = fr.File.length,
                                             .byteoffset = 0,
                                             .fileoffset = 0}
-                                        If IndexPartition <> DataPartition AndAlso fr.File.extentinfo IsNot Nothing AndAlso fr.File.extentinfo.Count > 0 AndAlso fr.File.extentinfo(0).partition = IndexPartition Then
-                                            IsIndexPartition = True
+                                        If IsIndexPartition Then
                                             fr.File.extentinfo.Clear()
                                             Select Case fr.Open()
                                                 Case DialogResult.Ignore
@@ -4788,7 +4972,6 @@ Public Class LTFSWriter
                                             Threading.Thread.Sleep(1)
                                         End While
                                         If useFastReader AndAlso IsIndexPartition Then
-                                            fastProvider.Drain(i, fr.File.length)
                                             fr.File.WrittenBytes += fr.File.length
                                             TotalBytesProcessed += fr.File.length
                                             CurrentBytesProcessed += fr.File.length
@@ -4796,7 +4979,7 @@ Public Class LTFSWriter
                                             CurrentFilesProcessed += 1
                                             TotalBytesUnindexed += fr.File.length
                                         ElseIf useFastReader AndAlso Not IsIndexPartition Then
-                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p) Then Exit For
+                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash) Then Exit For
                                         ElseIf fr.File.length <= plabel.blocksize Then
                                             Dim succ As Boolean = False
                                             Dim FileData(fr.File.length - 1) As Byte
@@ -5236,6 +5419,9 @@ Public Class LTFSWriter
                                             End If
                                             TotalFilesProcessed += 1
                                             CurrentFilesProcessed += 1
+                                        End If
+                                        If Not String.IsNullOrEmpty(currentPlan.ExpectedDedupeHash) Then
+                                            SetFileDedupeHash(fr.File, currentPlan.ExpectedDedupeHash)
                                         End If
                                         p = New TapeUtils.PositionData(driveHandle)
                                         If Not IsIndexPartition Then

@@ -8,7 +8,7 @@ use std::ffi::OsStr;
 use std::io::{self, BufRead, Write};
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::{null, null_mut};
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{mpsc, Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 use windows_sys::Win32::Foundation::{
@@ -837,6 +837,40 @@ struct SmallFilePool {
     completion_thread: Option<JoinHandle<()>>,
 }
 
+#[derive(Clone)]
+struct SmallFilePoolControl {
+    shared: Arc<SmallShared>,
+}
+
+impl SmallFilePoolControl {
+    fn enqueue(&self, task: SmallFileTask, priority: bool) {
+        if small_buffer_capacity(task.len).is_none() {
+            return;
+        }
+        let mut state = self.shared.state.lock().unwrap();
+        if state.shutdown || state.fatal_error.is_some() || state.entries.contains_key(&task.index)
+        {
+            return;
+        }
+        let index = task.index;
+        state.entries.insert(
+            index,
+            SmallFileEntry {
+                task,
+                status: SmallFileStatus::Pending,
+                attempts: 0,
+                discard: false,
+            },
+        );
+        if priority {
+            state.queue.push_front(index);
+        } else {
+            state.queue.push_back(index);
+        }
+        self.shared.changed.notify_all();
+    }
+}
+
 fn small_buffer_capacity(len: u64) -> Option<usize> {
     if len == 0 {
         return Some(0);
@@ -1188,30 +1222,13 @@ impl SmallFilePool {
     }
 
     fn enqueue(&self, task: SmallFileTask, priority: bool) {
-        if small_buffer_capacity(task.len).is_none() {
-            return;
+        self.control().enqueue(task, priority);
+    }
+
+    fn control(&self) -> SmallFilePoolControl {
+        SmallFilePoolControl {
+            shared: Arc::clone(&self.shared),
         }
-        let mut state = self.shared.state.lock().unwrap();
-        if state.shutdown || state.fatal_error.is_some() || state.entries.contains_key(&task.index)
-        {
-            return;
-        }
-        let index = task.index;
-        state.entries.insert(
-            index,
-            SmallFileEntry {
-                task,
-                status: SmallFileStatus::Pending,
-                attempts: 0,
-                discard: false,
-            },
-        );
-        if priority {
-            state.queue.push_front(index);
-        } else {
-            state.queue.push_back(index);
-        }
-        self.shared.changed.notify_all();
     }
 
     fn discard_before(&self, index: u64) {
@@ -1370,6 +1387,73 @@ fn parse_file_task(rest: &str, kind: &str) -> io::Result<SmallFileTask> {
     Ok(SmallFileTask { index, len, path })
 }
 
+enum SessionCommand {
+    File(SmallFileTask),
+    Hash(SmallFileTask),
+    Done,
+    ProtocolError(String),
+}
+
+fn receive_commands(
+    sender: mpsc::Sender<SessionCommand>,
+    small_pool: SmallFilePoolControl,
+    small_threshold: u64,
+) {
+    for line in io::stdin().lock().lines() {
+        let line = match line {
+            Ok(line) => line,
+            Err(error) => {
+                let _ = sender.send(SessionCommand::ProtocolError(error.to_string()));
+                return;
+            }
+        };
+        if line == "DONE" {
+            let _ = sender.send(SessionCommand::Done);
+            return;
+        }
+        let parsed = if let Some(rest) = line.strip_prefix("PREFETCH\t") {
+            parse_file_task(rest, "prefetch").map(|task| {
+                if task.len <= small_threshold {
+                    small_pool.enqueue(task, false);
+                }
+                None
+            })
+        } else if let Some(rest) = line.strip_prefix("FILE\t") {
+            parse_file_task(rest, "file").map(|task| {
+                if task.len <= small_threshold {
+                    small_pool.enqueue(task.clone(), false);
+                }
+                Some(SessionCommand::File(task))
+            })
+        } else if let Some(rest) = line.strip_prefix("HASH\t") {
+            parse_file_task(rest, "hash").map(|task| {
+                if task.len <= small_threshold {
+                    small_pool.enqueue(task.clone(), false);
+                }
+                Some(SessionCommand::Hash(task))
+            })
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("unknown command: {line}"),
+            ))
+        };
+        match parsed {
+            Ok(Some(command)) => {
+                if sender.send(command).is_err() {
+                    return;
+                }
+            }
+            Ok(None) => {}
+            Err(error) => {
+                let _ = sender.send(SessionCommand::ProtocolError(error.to_string()));
+                return;
+            }
+        }
+    }
+    let _ = sender.send(SessionCommand::Done);
+}
+
 fn digest_bytes(data: &[u8], enabled: &HashMap<String, bool>) -> io::Result<String> {
     let mut hashes = HashSet::new(enabled)?;
     hashes.update(data)?;
@@ -1461,7 +1545,7 @@ fn hash_cached_file(
             digest
         }
     };
-    println!("FILE_DONE\t{}\t{}", task.index, digest);
+    println!("HASH_DONE\t{}\t{}", task.index, digest);
     io::stdout().flush().ok();
     pool.put_back(task.index, cached);
     Ok(())
@@ -1542,18 +1626,16 @@ unsafe fn hash_file(
         |_offset, slice| hashes.update(slice),
     )?;
     let digest = hashes.finish()?;
-    println!("FILE_DONE\t{}\t{}", file_index, digest);
+    println!("HASH_DONE\t{}\t{}", file_index, digest);
     io::stdout().flush().ok();
     Ok(())
 }
 
 fn main() -> io::Result<()> {
-    let stdin = io::stdin();
-    let mut lines = stdin.lock().lines();
-    let init = lines
-        .next()
-        .transpose()?
-        .ok_or_else(|| io::Error::new(io::ErrorKind::UnexpectedEof, "missing INIT"))?;
+    let mut init = String::new();
+    if io::stdin().read_line(&mut init)? == 0 {
+        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "missing INIT"));
+    }
     if !init.starts_with("INIT\t") {
         return Err(io::Error::new(io::ErrorKind::InvalidInput, "expected INIT"));
     }
@@ -1657,43 +1739,46 @@ fn main() -> io::Result<()> {
         );
         io::stdout().flush().ok();
 
+        let (command_sender, command_receiver) = mpsc::channel();
+        let command_pool = small_pool.control();
+        let command_thread =
+            thread::spawn(move || receive_commands(command_sender, command_pool, small_threshold));
         let session_result = (|| -> io::Result<()> {
-            for line in lines {
-                let line = line?;
-                if line == "DONE" {
-                    break;
-                }
-                if let Some(rest) = line.strip_prefix("PREFETCH\t") {
-                    let task = parse_file_task(rest, "prefetch")?;
-                    if task.len <= small_threshold {
-                        small_pool.enqueue(task, false);
+            loop {
+                match command_receiver.recv() {
+                    Ok(SessionCommand::Done) | Err(_) => break,
+                    Ok(SessionCommand::ProtocolError(message)) => {
+                        return Err(io::Error::new(io::ErrorKind::InvalidInput, message));
                     }
-                } else if let Some(rest) = line.strip_prefix("FILE\t") {
-                    let task = parse_file_task(rest, "file")?;
-                    small_pool.discard_before(task.index);
-                    let result = if task.len <= small_threshold {
-                        fill_cached_file(&small_pool, &mapping, events, task.clone(), &enabled)
-                    } else {
-                        fill_file(&mapping, events, task.index, task.len, &task.path, &enabled)
-                    };
-                    result.map_err(|error| {
-                        io::Error::new(error.kind(), format!("file {}: {error}", task.index))
-                    })?;
-                } else if let Some(rest) = line.strip_prefix("HASH\t") {
-                    let task = parse_file_task(rest, "hash")?;
-                    small_pool.discard_before(task.index);
-                    let result = if task.len <= small_threshold {
-                        hash_cached_file(&small_pool, task.clone(), &enabled)
-                    } else {
-                        hash_file(task.index, task.len, &task.path, cancel_event, &enabled)
-                    };
-                    result.map_err(|error| {
-                        io::Error::new(error.kind(), format!("hash {}: {error}", task.index))
-                    })?;
+                    Ok(SessionCommand::File(task)) => {
+                        small_pool.discard_before(task.index);
+                        let result = if task.len <= small_threshold {
+                            fill_cached_file(&small_pool, &mapping, events, task.clone(), &enabled)
+                        } else {
+                            fill_file(&mapping, events, task.index, task.len, &task.path, &enabled)
+                        };
+                        result.map_err(|error| {
+                            io::Error::new(error.kind(), format!("file {}: {error}", task.index))
+                        })?;
+                    }
+                    Ok(SessionCommand::Hash(task)) => {
+                        small_pool.discard_before(task.index);
+                        let result = if task.len <= small_threshold {
+                            hash_cached_file(&small_pool, task.clone(), &enabled)
+                        } else {
+                            hash_file(task.index, task.len, &task.path, cancel_event, &enabled)
+                        };
+                        result.map_err(|error| {
+                            io::Error::new(error.kind(), format!("hash {}: {error}", task.index))
+                        })?;
+                    }
                 }
             }
             Ok(())
         })();
+        if session_result.is_ok() {
+            let _ = command_thread.join();
+        }
         if let Err(error) = session_result {
             if error.kind() != io::ErrorKind::Interrupted || !is_cancelled(cancel_event) {
                 eprintln!("FILE_ERROR\t{error}");

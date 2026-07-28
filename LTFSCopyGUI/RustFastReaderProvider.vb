@@ -46,12 +46,13 @@ Public Class RustFastReaderProvider
     Private ReadOnly _dataEventName As String
     Private ReadOnly _spaceEventName As String
     Private ReadOnly _cancelEventName As String
-    Private ReadOnly _done As New ConcurrentDictionary(Of Long, Dictionary(Of String, String))
+    Private ReadOnly _hashDone As New ConcurrentDictionary(Of Long, Dictionary(Of String, String))
+    Private ReadOnly _fileDone As New ConcurrentDictionary(Of Long, Dictionary(Of String, String))
     Private ReadOnly _errors As New ConcurrentQueue(Of String)
     Private ReadOnly _stdoutDone As New ManualResetEvent(False)
     Private ReadOnly _inputLock As New Object()
-    Private ReadOnly _queuedFiles As New HashSet(Of Long)
-    Private ReadOnly _prefetchedFiles As New HashSet(Of Long)
+    Private ReadOnly _orderedFiles As New List(Of Long)
+    Private ReadOnly _activeOrderedFiles As New HashSet(Of Long)
 
     Private _proc As Process
     Private _mapHandle As IntPtr = IntPtr.Zero
@@ -66,6 +67,9 @@ Public Class RustFastReaderProvider
     Private _started As Boolean
     Private _disposed As Boolean
     Private _cancelRequested As Integer
+    Private _nextOrderedFile As Integer
+    Private _orderedConfigured As Boolean
+    Private _issuedRemainingBytes As Long
 
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord), blockSize As Integer, capacityBytes As Long)
         _writeList = writeList.ToList()
@@ -99,6 +103,15 @@ Public Class RustFastReaderProvider
     Public ReadOnly Property BufferCapacityBytes As Long
         Get
             Return CLng(_slotCount) * CLng(_slotSize)
+        End Get
+    End Property
+
+    Public ReadOnly Property OccupiedSlotCount As ULong
+        Get
+            If _basePtr = IntPtr.Zero Then Return 0
+            Dim writeIndex As ULong = ReadUInt64(32)
+            If writeIndex <= _readIndex Then Return 0
+            Return Math.Min(writeIndex - _readIndex, _slotCount)
         End Get
     End Property
 
@@ -233,8 +246,10 @@ Public Class RustFastReaderProvider
             While True
                 Dim line = _proc.StandardOutput.ReadLine()
                 If line Is Nothing Then Exit While
-                If line.StartsWith("FILE_DONE" & vbTab) Then
-                    ParseFileDone(line)
+                If line.StartsWith("HASH_DONE" & vbTab) Then
+                    ParseDone(line, _hashDone)
+                ElseIf line.StartsWith("FILE_DONE" & vbTab) Then
+                    ParseDone(line, _fileDone)
                 ElseIf line.StartsWith("FILE_ERROR" & vbTab) Then
                     _errors.Enqueue(line)
                 End If
@@ -246,7 +261,8 @@ Public Class RustFastReaderProvider
         End Try
     End Sub
 
-    Private Sub ParseFileDone(line As String)
+    Private Shared Sub ParseDone(line As String,
+                                 target As ConcurrentDictionary(Of Long, Dictionary(Of String, String)))
         Dim parts = line.Split({vbTab}, StringSplitOptions.None)
         If parts.Length < 2 Then Return
         Dim idx As Long
@@ -256,7 +272,7 @@ Public Class RustFastReaderProvider
             Dim kv = parts(i).Split({"="c}, 2)
             If kv.Length = 2 Then dict(kv(0)) = kv(1)
         Next
-        _done(idx) = dict
+        target(idx) = dict
     End Sub
 
     Public Function ReadSlot(expectedFileIndex As Long, ct As CancellationToken) As Slot
@@ -293,6 +309,13 @@ Public Class RustFastReaderProvider
         _readIndex = slot.Index + 1UL
         WriteUInt64(40, _readIndex)
         SetEvent(_spaceEvent)
+        If slot.Length > 0 Then Threading.Interlocked.Add(_issuedRemainingBytes, -CLng(slot.Length))
+        If (slot.Flags And FlagEof) <> 0 Then
+            SyncLock _inputLock
+                _activeOrderedFiles.Remove(slot.FileIndex)
+                FillOrderedWindowLocked()
+            End SyncLock
+        End If
     End Sub
 
     Public Sub Drain(fileIndex As Long, bytesToDrain As Long, Optional ct As CancellationToken = Nothing)
@@ -322,46 +345,66 @@ Public Class RustFastReaderProvider
     End Sub
 
     Public Function HashFile(fileIndex As Long, Optional timeoutMs As Integer = Timeout.Infinite) As Dictionary(Of String, String)
+        Dim results = HashFiles({fileIndex}, timeoutMs)
+        Return results(fileIndex)
+    End Function
+
+    Public Function HashFiles(fileIndices As IEnumerable(Of Long),
+                              Optional timeoutMs As Integer = Timeout.Infinite) As Dictionary(Of Long, Dictionary(Of String, String))
         ThrowIfFailed()
-        If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndex))
-        SyncLock _inputLock
-            If _queuedFiles.Contains(fileIndex) Then Throw New InvalidOperationException("fastreader file is already queued")
-            Dim ignored As Dictionary(Of String, String) = Nothing
-            _done.TryRemove(fileIndex, ignored)
-            Dim fr = _writeList(CInt(fileIndex))
-            If fr Is Nothing OrElse fr.File Is Nothing Then Return New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
-            QueueSmallRunLocked(fileIndex)
-            _proc.StandardInput.WriteLine($"HASH{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
-            _proc.StandardInput.Flush()
-        End SyncLock
-        Return WaitFileDone(fileIndex, timeoutMs)
+        Dim indices = fileIndices.Distinct().ToList()
+        Dim results As New Dictionary(Of Long, Dictionary(Of String, String))
+        Dim batchSize = Math.Max(1, _smallPrefetchWindow)
+        For batchStart = 0 To indices.Count - 1 Step batchSize
+            Dim batch = indices.Skip(batchStart).Take(batchSize).ToList()
+            SyncLock _inputLock
+                If _orderedConfigured Then Throw New InvalidOperationException("HASH scan must finish before the ordered FILE queue starts")
+                For Each fileIndex In batch
+                    If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndices))
+                    Dim ignored As Dictionary(Of String, String) = Nothing
+                    _hashDone.TryRemove(fileIndex, ignored)
+                    Dim fr = _writeList(CInt(fileIndex))
+                    If fr Is Nothing OrElse fr.File Is Nothing Then
+                        results(fileIndex) = New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+                    Else
+                        _proc.StandardInput.WriteLine($"HASH{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
+                    End If
+                Next
+                _proc.StandardInput.Flush()
+            End SyncLock
+            For Each fileIndex In batch
+                If Not results.ContainsKey(fileIndex) Then results(fileIndex) = WaitForDone(_hashDone, fileIndex, timeoutMs)
+            Next
+        Next
+        Return results
     End Function
 
     Public Function WaitFileDone(fileIndex As Long, Optional timeoutMs As Integer = 30000) As Dictionary(Of String, String)
+        Return WaitForDone(_fileDone, fileIndex, timeoutMs)
+    End Function
+
+    Private Function WaitForDone(source As ConcurrentDictionary(Of Long, Dictionary(Of String, String)),
+                                 fileIndex As Long,
+                                 timeoutMs As Integer) As Dictionary(Of String, String)
         Dim sw = Stopwatch.StartNew()
         While timeoutMs = Timeout.Infinite OrElse sw.ElapsedMilliseconds < timeoutMs
             ThrowIfFailed()
             Dim result As Dictionary(Of String, String) = Nothing
-            If _done.TryGetValue(fileIndex, result) Then Return result
+            If source.TryRemove(fileIndex, result) Then Return result
             Thread.Sleep(10)
         End While
         Return New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
     End Function
 
-    Public Sub WaitForFillFraction(fileIndex As Long, fraction As Double, stagnantTimeoutMs As Integer, ct As CancellationToken)
-        QueueFile(fileIndex)
-        Dim target = CLng(BufferCapacityBytes * fraction)
-        If fileIndex >= 0 AndAlso fileIndex < _writeList.Count Then
-            Dim fr = _writeList(CInt(fileIndex))
-            If fr IsNot Nothing AndAlso fr.File IsNot Nothing Then target = Math.Min(target, fr.File.length)
-        End If
-        If target <= 0 Then Return
+    Public Sub WaitForStreamFillFraction(fraction As Double, stagnantTimeoutMs As Integer, ct As CancellationToken)
         Dim last = BufferedBytes
         Dim stagnant = Stopwatch.StartNew()
-        While BufferedBytes < target
+        While True
             ct.ThrowIfCancellationRequested()
             ThrowIfFailed()
-            If HasBufferedEof(fileIndex) Then Exit While
+            Dim remaining = Math.Max(0L, Threading.Interlocked.Read(_issuedRemainingBytes))
+            Dim target = Math.Min(CLng(BufferCapacityBytes * fraction), remaining)
+            If target <= 0 OrElse BufferedBytes >= target OrElse OccupiedSlotCount >= _slotCount Then Exit While
             Dim cur = BufferedBytes
             If cur <> last Then
                 last = cur
@@ -412,31 +455,49 @@ Public Class RustFastReaderProvider
         ThrowIfFailed()
         If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndex))
         SyncLock _inputLock
-            If _queuedFiles.Contains(fileIndex) Then Return
-            Dim fr = _writeList(CInt(fileIndex))
-            If fr IsNot Nothing AndAlso fr.File IsNot Nothing Then
-                QueueSmallRunLocked(fileIndex)
-                _proc.StandardInput.WriteLine($"FILE{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
-                _proc.StandardInput.Flush()
+            If Not _orderedConfigured Then
+                ConfigureOrderedFilesLocked({fileIndex})
+            ElseIf Not _activeOrderedFiles.Contains(fileIndex) Then
+                Throw New InvalidOperationException($"fastreader file {fileIndex} is not active in the ordered queue")
             End If
-            _queuedFiles.Add(fileIndex)
         End SyncLock
     End Sub
 
-    Private Sub QueueSmallRunLocked(fileIndex As Long)
-        Dim sent As Integer = 0
-        Dim lastIndex As Long = Math.Min(CLng(_writeList.Count) - 1L, fileIndex + CLng(_smallPrefetchWindow) - 1L)
-        For index As Long = fileIndex To lastIndex
-            Dim fr = _writeList(CInt(index))
-            If fr Is Nothing OrElse fr.File Is Nothing Then Exit For
-            Dim length = fr.File.length
-            If length < 0 OrElse length > _smallFileThreshold Then Exit For
-            If _prefetchedFiles.Add(index) Then
-                _proc.StandardInput.WriteLine($"PREFETCH{vbTab}{index}{vbTab}{length}{vbTab}{EncodePath(fr.SourcePath)}")
-            End If
-            sent += 1
-            If sent >= _smallPrefetchWindow Then Exit For
+    Public Sub ConfigureOrderedFiles(fileIndices As IEnumerable(Of Long))
+        ThrowIfFailed()
+        SyncLock _inputLock
+            ConfigureOrderedFilesLocked(fileIndices)
+        End SyncLock
+    End Sub
+
+    Private Sub ConfigureOrderedFilesLocked(fileIndices As IEnumerable(Of Long))
+        If _orderedConfigured Then Throw New InvalidOperationException("fastreader ordered queue is already configured")
+        _orderedConfigured = True
+        Dim previous As Long = -1
+        For Each fileIndex In fileIndices
+            If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndices))
+            If fileIndex <= previous Then Throw New InvalidOperationException("fastreader ordered queue must contain unique ascending file indices")
+            Dim fr = _writeList(CInt(fileIndex))
+            If fr IsNot Nothing AndAlso fr.File IsNot Nothing AndAlso fr.File.length > 0 Then _orderedFiles.Add(fileIndex)
+            previous = fileIndex
         Next
+        FillOrderedWindowLocked()
+    End Sub
+
+    Private Sub FillOrderedWindowLocked()
+        Dim wrote As Boolean = False
+        While _activeOrderedFiles.Count < _smallPrefetchWindow AndAlso _nextOrderedFile < _orderedFiles.Count
+            Dim fileIndex = _orderedFiles(_nextOrderedFile)
+            _nextOrderedFile += 1
+            Dim fr = _writeList(CInt(fileIndex))
+            Dim ignored As Dictionary(Of String, String) = Nothing
+            _fileDone.TryRemove(fileIndex, ignored)
+            _proc.StandardInput.WriteLine($"FILE{vbTab}{fileIndex}{vbTab}{fr.File.length}{vbTab}{EncodePath(fr.SourcePath)}")
+            _activeOrderedFiles.Add(fileIndex)
+            Threading.Interlocked.Add(_issuedRemainingBytes, fr.File.length)
+            wrote = True
+        End While
+        If wrote Then _proc.StandardInput.Flush()
     End Sub
 
     Private Sub EnsureFileQueued(fileIndex As Long)
