@@ -3,11 +3,13 @@
 use md5::Md5;
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::ffi::OsStr;
 use std::io::{self, BufRead, Write};
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::{null, null_mut};
+use std::sync::{Arc, Condvar, Mutex};
+use std::thread::{self, JoinHandle};
 use windows_sys::Win32::Foundation::{
     CloseHandle, ERROR_IO_PENDING, ERROR_NOT_FOUND, GENERIC_READ, HANDLE, INVALID_HANDLE_VALUE,
     WAIT_OBJECT_0,
@@ -25,7 +27,7 @@ use windows_sys::Win32::System::Threading::{
 };
 use windows_sys::Win32::System::IO::{
     CancelIoEx, CreateIoCompletionPort, GetOverlappedResult, GetQueuedCompletionStatusEx,
-    OVERLAPPED, OVERLAPPED_ENTRY,
+    PostQueuedCompletionStatus, OVERLAPPED, OVERLAPPED_ENTRY,
 };
 
 const HEADER_SIZE: usize = 4096;
@@ -57,6 +59,8 @@ unsafe fn read_u64(base: *mut u8, off: usize) -> u64 {
 }
 
 struct Handle(HANDLE);
+unsafe impl Send for Handle {}
+
 impl Drop for Handle {
     fn drop(&mut self) {
         unsafe {
@@ -657,6 +661,710 @@ where
     reader.run(consume)
 }
 
+const SMALL_BUFFER_CLASSES: [usize; 7] = [
+    4 * 1024,
+    16 * 1024,
+    64 * 1024,
+    256 * 1024,
+    1024 * 1024,
+    2 * 1024 * 1024,
+    4 * 1024 * 1024,
+];
+
+#[derive(Clone)]
+struct SmallFileTask {
+    index: u64,
+    len: u64,
+    path: String,
+}
+
+enum SmallFileStatus {
+    Pending,
+    Opening,
+    InFlight,
+    Ready {
+        data: Vec<u8>,
+        digest: Option<String>,
+        reserved: usize,
+    },
+    Failed(String),
+    Borrowed,
+}
+
+struct SmallFileEntry {
+    task: SmallFileTask,
+    status: SmallFileStatus,
+    attempts: u8,
+    discard: bool,
+}
+
+struct SmallFileState {
+    entries: HashMap<u64, SmallFileEntry>,
+    queue: VecDeque<u64>,
+    buffers: HashMap<usize, Vec<Vec<u8>>>,
+    active_files: usize,
+    reserved_bytes: usize,
+    max_active_files: usize,
+    max_reserved_bytes: usize,
+    shutdown: bool,
+}
+
+impl SmallFileState {
+    fn new() -> Self {
+        Self {
+            entries: HashMap::new(),
+            queue: VecDeque::new(),
+            buffers: HashMap::new(),
+            active_files: 0,
+            reserved_bytes: 0,
+            max_active_files: 0,
+            max_reserved_bytes: 0,
+            shutdown: false,
+        }
+    }
+
+    fn take_buffer(&mut self, capacity: usize) -> Vec<u8> {
+        if capacity == 0 {
+            return Vec::new();
+        }
+        let mut buffer = self
+            .buffers
+            .get_mut(&capacity)
+            .and_then(Vec::pop)
+            .unwrap_or_else(|| vec![0u8; capacity]);
+        buffer.resize(capacity, 0);
+        buffer
+    }
+
+    fn return_buffer(&mut self, mut buffer: Vec<u8>, capacity: usize) {
+        if capacity == 0 {
+            return;
+        }
+        buffer.clear();
+        self.buffers.entry(capacity).or_default().push(buffer);
+    }
+}
+
+#[derive(Clone, Copy)]
+struct SharedHandle(HANDLE);
+
+unsafe impl Send for SharedHandle {}
+unsafe impl Sync for SharedHandle {}
+
+struct SmallOperation {
+    overlapped: OVERLAPPED,
+    file: Handle,
+    buffer: Vec<u8>,
+    index: u64,
+    expected: u32,
+    reserved: usize,
+}
+
+unsafe impl Send for SmallOperation {}
+
+struct SmallShared {
+    state: Mutex<SmallFileState>,
+    changed: Condvar,
+    operations: Mutex<HashMap<usize, Box<SmallOperation>>>,
+    completion_port: SharedHandle,
+    active_limit: usize,
+    inflight_byte_limit: usize,
+    completion_batch: usize,
+}
+
+struct CachedSmallFile {
+    data: Vec<u8>,
+    digest: Option<String>,
+    reserved: usize,
+}
+
+struct SmallFilePool {
+    shared: Arc<SmallShared>,
+    completion_port: Handle,
+    workers: Vec<JoinHandle<()>>,
+    completion_thread: Option<JoinHandle<()>>,
+}
+
+fn small_buffer_capacity(len: u64) -> Option<usize> {
+    if len == 0 {
+        return Some(0);
+    }
+    SMALL_BUFFER_CLASSES
+        .iter()
+        .copied()
+        .find(|capacity| len <= *capacity as u64)
+}
+
+fn small_failure(
+    shared: &SmallShared,
+    index: u64,
+    buffer: Vec<u8>,
+    reserved: usize,
+    message: String,
+) {
+    let mut state = shared.state.lock().unwrap();
+    state.active_files = state.active_files.saturating_sub(1);
+    state.reserved_bytes = state.reserved_bytes.saturating_sub(reserved);
+    state.return_buffer(buffer, reserved);
+    let discard = state.shutdown
+        || state
+            .entries
+            .get(&index)
+            .map(|entry| entry.discard)
+            .unwrap_or(true);
+    if discard {
+        state.entries.remove(&index);
+    } else if let Some(entry) = state.entries.get_mut(&index) {
+        entry.status = SmallFileStatus::Failed(message);
+    }
+    shared.changed.notify_all();
+}
+
+fn small_open_worker(shared: Arc<SmallShared>) {
+    loop {
+        let (task, reserved, buffer) = {
+            let mut state = shared.state.lock().unwrap();
+            loop {
+                if state.shutdown {
+                    return;
+                }
+                if state.active_files < shared.active_limit {
+                    let position = state.queue.iter().position(|index| {
+                        let Some(entry) = state.entries.get(index) else {
+                            return false;
+                        };
+                        let Some(capacity) = small_buffer_capacity(entry.task.len) else {
+                            return false;
+                        };
+                        matches!(entry.status, SmallFileStatus::Pending)
+                            && state.reserved_bytes + capacity <= shared.inflight_byte_limit
+                    });
+                    if let Some(position) = position {
+                        let index = state.queue.remove(position).unwrap();
+                        let (task, reserved) = {
+                            let entry = state.entries.get_mut(&index).unwrap();
+                            entry.status = SmallFileStatus::Opening;
+                            entry.attempts += 1;
+                            (
+                                entry.task.clone(),
+                                small_buffer_capacity(entry.task.len).unwrap(),
+                            )
+                        };
+                        state.active_files += 1;
+                        state.reserved_bytes += reserved;
+                        state.max_active_files = state.max_active_files.max(state.active_files);
+                        state.max_reserved_bytes =
+                            state.max_reserved_bytes.max(state.reserved_bytes);
+                        let buffer = state.take_buffer(reserved);
+                        break (task, reserved, buffer);
+                    }
+                }
+                state = shared.changed.wait(state).unwrap();
+            }
+        };
+
+        let path_w = wide(&task.path);
+        let raw_file = unsafe {
+            CreateFileW(
+                path_w.as_ptr(),
+                GENERIC_READ,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                null(),
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
+                null_mut(),
+            )
+        };
+        if raw_file == INVALID_HANDLE_VALUE {
+            small_failure(
+                &shared,
+                task.index,
+                buffer,
+                reserved,
+                io::Error::last_os_error().to_string(),
+            );
+            continue;
+        }
+        let file = Handle(raw_file);
+
+        if shared.state.lock().unwrap().shutdown {
+            small_failure(
+                &shared,
+                task.index,
+                buffer,
+                reserved,
+                "reader shutting down".into(),
+            );
+            drop(file);
+            continue;
+        }
+
+        if task.len == 0 {
+            let mut state = shared.state.lock().unwrap();
+            state.active_files = state.active_files.saturating_sub(1);
+            if let Some(entry) = state.entries.get_mut(&task.index) {
+                if entry.discard {
+                    state.entries.remove(&task.index);
+                } else {
+                    entry.status = SmallFileStatus::Ready {
+                        data: buffer,
+                        digest: None,
+                        reserved,
+                    };
+                }
+            }
+            shared.changed.notify_all();
+            continue;
+        }
+
+        let associated = unsafe {
+            CreateIoCompletionPort(raw_file, shared.completion_port.0, task.index as usize, 0)
+        };
+        if associated.is_null() {
+            small_failure(
+                &shared,
+                task.index,
+                buffer,
+                reserved,
+                io::Error::last_os_error().to_string(),
+            );
+            continue;
+        }
+
+        let mut operation = Box::new(SmallOperation {
+            overlapped: OVERLAPPED::default(),
+            file,
+            buffer,
+            index: task.index,
+            expected: task.len as u32,
+            reserved,
+        });
+        let operation_key = (&mut operation.overlapped as *mut OVERLAPPED) as usize;
+        {
+            let mut state = shared.state.lock().unwrap();
+            if let Some(entry) = state.entries.get_mut(&task.index) {
+                entry.status = SmallFileStatus::InFlight;
+            }
+        }
+        let mut operations = shared.operations.lock().unwrap();
+        operations.insert(operation_key, operation);
+        let operation = operations.get_mut(&operation_key).unwrap();
+        let ok = unsafe {
+            ReadFile(
+                operation.file.0,
+                operation.buffer.as_mut_ptr(),
+                operation.expected,
+                null_mut(),
+                &mut operation.overlapped,
+            )
+        };
+        if ok == 0 {
+            let error = io::Error::last_os_error();
+            if error.raw_os_error() != Some(ERROR_IO_PENDING as i32) {
+                let operation = operations.remove(&operation_key).unwrap();
+                drop(operations);
+                small_failure(
+                    &shared,
+                    task.index,
+                    operation.buffer,
+                    reserved,
+                    error.to_string(),
+                );
+            }
+        }
+    }
+}
+
+fn small_completion_worker(shared: Arc<SmallShared>) {
+    let mut entries = vec![OVERLAPPED_ENTRY::default(); shared.completion_batch];
+    loop {
+        let mut removed = 0u32;
+        let ok = unsafe {
+            GetQueuedCompletionStatusEx(
+                shared.completion_port.0,
+                entries.as_mut_ptr(),
+                entries.len() as u32,
+                &mut removed,
+                INFINITE,
+                0,
+            )
+        };
+        if ok == 0 {
+            if shared.state.lock().unwrap().shutdown {
+                return;
+            }
+            continue;
+        }
+
+        for completion in &entries[..removed as usize] {
+            if completion.lpOverlapped.is_null() {
+                continue;
+            }
+            let key = completion.lpOverlapped as usize;
+            let mut operation = {
+                let mut operations = shared.operations.lock().unwrap();
+                let Some(operation) = operations.remove(&key) else {
+                    continue;
+                };
+                operation
+            };
+            let mut transferred = 0u32;
+            let result = if unsafe {
+                GetOverlappedResult(operation.file.0, &operation.overlapped, &mut transferred, 0)
+            } != 0
+            {
+                if transferred == operation.expected {
+                    Ok(())
+                } else {
+                    Err(format!(
+                        "short asynchronous read: expected={} actual={transferred}",
+                        operation.expected
+                    ))
+                }
+            } else {
+                Err(io::Error::last_os_error().to_string())
+            };
+            operation.buffer.truncate(transferred as usize);
+
+            let mut state = shared.state.lock().unwrap();
+            state.active_files = state.active_files.saturating_sub(1);
+            let discard = state.shutdown
+                || state
+                    .entries
+                    .get(&operation.index)
+                    .map(|entry| entry.discard)
+                    .unwrap_or(true);
+            if discard {
+                state.reserved_bytes = state.reserved_bytes.saturating_sub(operation.reserved);
+                state.return_buffer(operation.buffer, operation.reserved);
+                state.entries.remove(&operation.index);
+            } else {
+                match result {
+                    Ok(()) => {
+                        if let Some(entry) = state.entries.get_mut(&operation.index) {
+                            entry.status = SmallFileStatus::Ready {
+                                data: operation.buffer,
+                                digest: None,
+                                reserved: operation.reserved,
+                            };
+                        }
+                    }
+                    Err(message) => {
+                        state.reserved_bytes =
+                            state.reserved_bytes.saturating_sub(operation.reserved);
+                        state.return_buffer(operation.buffer, operation.reserved);
+                        if let Some(entry) = state.entries.get_mut(&operation.index) {
+                            entry.status = SmallFileStatus::Failed(message);
+                        }
+                    }
+                }
+            }
+            shared.changed.notify_all();
+        }
+
+        if shared.state.lock().unwrap().shutdown && shared.operations.lock().unwrap().is_empty() {
+            return;
+        }
+    }
+}
+
+impl SmallFilePool {
+    unsafe fn new(
+        open_concurrency: usize,
+        active_limit: usize,
+        inflight_byte_limit: usize,
+        completion_batch: usize,
+    ) -> io::Result<Self> {
+        let raw_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null_mut(), 0, 0);
+        if raw_port.is_null() {
+            return Err(io::Error::last_os_error());
+        }
+        let completion_port = Handle(raw_port);
+        let shared = Arc::new(SmallShared {
+            state: Mutex::new(SmallFileState::new()),
+            changed: Condvar::new(),
+            operations: Mutex::new(HashMap::new()),
+            completion_port: SharedHandle(raw_port),
+            active_limit: active_limit.max(1),
+            inflight_byte_limit: inflight_byte_limit.max(64 * 1024),
+            completion_batch: completion_batch.clamp(1, 128),
+        });
+        let workers = (0..open_concurrency.max(1))
+            .map(|_| {
+                let shared = Arc::clone(&shared);
+                thread::spawn(move || small_open_worker(shared))
+            })
+            .collect();
+        let completion_shared = Arc::clone(&shared);
+        let completion_thread = Some(thread::spawn(move || {
+            small_completion_worker(completion_shared)
+        }));
+        Ok(Self {
+            shared,
+            completion_port,
+            workers,
+            completion_thread,
+        })
+    }
+
+    fn enqueue(&self, task: SmallFileTask, priority: bool) {
+        if small_buffer_capacity(task.len).is_none() {
+            return;
+        }
+        let mut state = self.shared.state.lock().unwrap();
+        if state.shutdown || state.entries.contains_key(&task.index) {
+            return;
+        }
+        let index = task.index;
+        state.entries.insert(
+            index,
+            SmallFileEntry {
+                task,
+                status: SmallFileStatus::Pending,
+                attempts: 0,
+                discard: false,
+            },
+        );
+        if priority {
+            state.queue.push_front(index);
+        } else {
+            state.queue.push_back(index);
+        }
+        self.shared.changed.notify_all();
+    }
+
+    fn discard_before(&self, index: u64) {
+        let mut state = self.shared.state.lock().unwrap();
+        let keys = state
+            .entries
+            .keys()
+            .copied()
+            .filter(|existing| *existing < index)
+            .collect::<Vec<_>>();
+        for key in keys {
+            let removable = matches!(
+                state.entries.get(&key).map(|entry| &entry.status),
+                Some(SmallFileStatus::Pending)
+                    | Some(SmallFileStatus::Ready { .. })
+                    | Some(SmallFileStatus::Failed(_))
+            );
+            if removable {
+                if let Some(entry) = state.entries.remove(&key) {
+                    if let SmallFileStatus::Ready { data, reserved, .. } = entry.status {
+                        state.reserved_bytes = state.reserved_bytes.saturating_sub(reserved);
+                        state.return_buffer(data, reserved);
+                    }
+                }
+                state.queue.retain(|queued| *queued != key);
+            } else if let Some(entry) = state.entries.get_mut(&key) {
+                entry.discard = true;
+            }
+        }
+        self.shared.changed.notify_all();
+    }
+
+    fn wait_take(&self, task: SmallFileTask) -> io::Result<CachedSmallFile> {
+        self.enqueue(task.clone(), true);
+        let mut state = self.shared.state.lock().unwrap();
+        loop {
+            let Some(entry) = state.entries.get_mut(&task.index) else {
+                drop(state);
+                self.enqueue(task.clone(), true);
+                state = self.shared.state.lock().unwrap();
+                continue;
+            };
+            match &entry.status {
+                SmallFileStatus::Ready { .. } => {
+                    let status = std::mem::replace(&mut entry.status, SmallFileStatus::Borrowed);
+                    if let SmallFileStatus::Ready {
+                        data,
+                        digest,
+                        reserved,
+                    } = status
+                    {
+                        return Ok(CachedSmallFile {
+                            data,
+                            digest,
+                            reserved,
+                        });
+                    }
+                }
+                SmallFileStatus::Failed(message) if entry.attempts >= 2 => {
+                    return Err(io::Error::other(message.clone()));
+                }
+                SmallFileStatus::Failed(_) => {
+                    entry.status = SmallFileStatus::Pending;
+                    state.queue.push_front(task.index);
+                    self.shared.changed.notify_all();
+                }
+                _ => {
+                    state = self.shared.changed.wait(state).unwrap();
+                }
+            }
+        }
+    }
+
+    fn put_back(&self, index: u64, cached: CachedSmallFile) {
+        let mut state = self.shared.state.lock().unwrap();
+        if let Some(entry) = state.entries.get_mut(&index) {
+            entry.status = SmallFileStatus::Ready {
+                data: cached.data,
+                digest: cached.digest,
+                reserved: cached.reserved,
+            };
+        }
+        self.shared.changed.notify_all();
+    }
+
+    fn release(&self, index: u64, cached: CachedSmallFile) {
+        let mut state = self.shared.state.lock().unwrap();
+        state.entries.remove(&index);
+        state.reserved_bytes = state.reserved_bytes.saturating_sub(cached.reserved);
+        state.return_buffer(cached.data, cached.reserved);
+        self.shared.changed.notify_all();
+    }
+
+    unsafe fn shutdown(&mut self) {
+        {
+            let mut state = self.shared.state.lock().unwrap();
+            state.shutdown = true;
+            self.shared.changed.notify_all();
+        }
+        for worker in self.workers.drain(..) {
+            let _ = worker.join();
+        }
+        {
+            let operations = self.shared.operations.lock().unwrap();
+            for operation in operations.values() {
+                CancelIoEx(operation.file.0, null());
+            }
+        }
+        PostQueuedCompletionStatus(self.completion_port.0, 0, 0, null());
+        if let Some(completion_thread) = self.completion_thread.take() {
+            let _ = completion_thread.join();
+        }
+    }
+}
+
+impl Drop for SmallFilePool {
+    fn drop(&mut self) {
+        unsafe { self.shutdown() }
+    }
+}
+
+fn parse_file_task(rest: &str, kind: &str) -> io::Result<SmallFileTask> {
+    let mut parts = rest.splitn(3, '\t');
+    let index = parts
+        .next()
+        .and_then(|value| value.parse().ok())
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, format!("bad {kind} index")))?;
+    let len = parts
+        .next()
+        .and_then(|value| value.parse().ok())
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, format!("bad {kind} length")))?;
+    let path = decode_path_hex(parts.next().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, format!("missing {kind} path"))
+    })?)?;
+    Ok(SmallFileTask { index, len, path })
+}
+
+fn digest_bytes(data: &[u8], enabled: &HashMap<String, bool>) -> io::Result<String> {
+    let mut hashes = HashSet::new(enabled)?;
+    hashes.update(data)?;
+    hashes.finish()
+}
+
+unsafe fn publish_error_slot(
+    mapping: &Mapping,
+    data_event: HANDLE,
+    space_event: HANDLE,
+    file_index: u64,
+    file_offset: u64,
+) -> io::Result<()> {
+    let idx = mapping.wait_free_slot(space_event)?;
+    let meta = mapping.slot_meta(idx);
+    write_u32(meta, 4, FLAG_ERROR);
+    write_u64(meta, 8, file_index);
+    write_u64(meta, 16, file_offset);
+    write_u32(meta, 24, 0);
+    write_u32(meta, 0, STATUS_FULL);
+    write_u64(mapping.base, 32, idx + 1);
+    SetEvent(data_event);
+    Ok(())
+}
+
+unsafe fn fill_cached_file(
+    pool: &SmallFilePool,
+    mapping: &Mapping,
+    data_event: HANDLE,
+    space_event: HANDLE,
+    task: SmallFileTask,
+    enabled: &HashMap<String, bool>,
+) -> io::Result<()> {
+    let mut cached = match pool.wait_take(task.clone()) {
+        Ok(cached) => cached,
+        Err(error) => {
+            publish_error_slot(mapping, data_event, space_event, task.index, 0)?;
+            return Err(error);
+        }
+    };
+    let result = (|| -> io::Result<()> {
+        let digest = match cached.digest.take() {
+            Some(digest) => digest,
+            None => digest_bytes(&cached.data, enabled)?,
+        };
+        let mut file_offset = 0u64;
+        for slice in cached.data.chunks(mapping.slot_size) {
+            let idx = mapping.wait_free_slot(space_event)?;
+            let meta = mapping.slot_meta(idx);
+            let data = mapping.slot_data(idx);
+            std::ptr::copy_nonoverlapping(slice.as_ptr(), data, slice.len());
+            write_u32(meta, 4, 0);
+            write_u64(meta, 8, task.index);
+            write_u64(meta, 16, file_offset);
+            write_u32(meta, 24, slice.len() as u32);
+            write_u32(meta, 0, STATUS_FULL);
+            file_offset += slice.len() as u64;
+            write_u64(mapping.base, 32, idx + 1);
+            SetEvent(data_event);
+        }
+        println!("FILE_DONE\t{}\t{}", task.index, digest);
+        io::stdout().flush().ok();
+        let idx = mapping.wait_free_slot(space_event)?;
+        let meta = mapping.slot_meta(idx);
+        write_u32(meta, 4, FLAG_EOF);
+        write_u64(meta, 8, task.index);
+        write_u64(meta, 16, task.len);
+        write_u32(meta, 24, 0);
+        write_u32(meta, 0, STATUS_FULL);
+        write_u64(mapping.base, 32, idx + 1);
+        SetEvent(data_event);
+        Ok(())
+    })();
+    pool.release(task.index, cached);
+    result
+}
+
+fn hash_cached_file(
+    pool: &SmallFilePool,
+    task: SmallFileTask,
+    enabled: &HashMap<String, bool>,
+) -> io::Result<()> {
+    let mut cached = pool.wait_take(task.clone())?;
+    let digest = match cached.digest.clone() {
+        Some(digest) => digest,
+        None => {
+            let digest = digest_bytes(&cached.data, enabled)?;
+            cached.digest = Some(digest.clone());
+            digest
+        }
+    };
+    println!("FILE_DONE\t{}\t{}", task.index, digest);
+    io::stdout().flush().ok();
+    pool.put_back(task.index, cached);
+    Ok(())
+}
+
 unsafe fn fill_file(
     mapping: &Mapping,
     data_event: HANDLE,
@@ -692,15 +1400,7 @@ unsafe fn fill_file(
             Ok(())
         });
     if let Err(error) = read_result {
-        let idx = mapping.wait_free_slot(space_event)?;
-        let meta = mapping.slot_meta(idx);
-        write_u32(meta, 4, FLAG_ERROR);
-        write_u64(meta, 8, file_index);
-        write_u64(meta, 16, file_offset);
-        write_u32(meta, 24, 0);
-        write_u32(meta, 0, STATUS_FULL);
-        write_u64(mapping.base, 32, idx + 1);
-        SetEvent(data_event);
+        publish_error_slot(mapping, data_event, space_event, file_index, file_offset)?;
         return Err(error);
     }
     let digest = hashes.finish()?;
@@ -765,6 +1465,28 @@ fn main() -> io::Result<()> {
         .get("slot_size")
         .and_then(|s| s.parse().ok())
         .unwrap_or(1048576);
+    let default_small_inflight = capacity.min(128 * 1024 * 1024);
+    let small_inflight_bytes: usize = cfg
+        .get("small_inflight_bytes")
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(default_small_inflight as usize);
+    let small_threshold: u64 = cfg
+        .get("small_threshold")
+        .and_then(|value| value.parse().ok())
+        .unwrap_or_else(|| (default_small_inflight / 64).clamp(64 * 1024, 4 * 1024 * 1024))
+        .clamp(64 * 1024, 4 * 1024 * 1024);
+    let small_open_concurrency: usize = cfg
+        .get("small_open_concurrency")
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(32);
+    let small_active_files: usize = cfg
+        .get("small_active_files")
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(64);
+    let small_iocp_batch: usize = cfg
+        .get("small_iocp_batch")
+        .and_then(|value| value.parse().ok())
+        .unwrap_or(64);
     let mut enabled = HashMap::new();
     for name in [
         "SHA1",
@@ -791,9 +1513,19 @@ fn main() -> io::Result<()> {
             return Err(io::Error::last_os_error());
         }
         let _space_event = Handle(space_event);
+        let small_pool = SmallFilePool::new(
+            small_open_concurrency,
+            small_active_files,
+            small_inflight_bytes,
+            small_iocp_batch,
+        )?;
         println!(
-            "READY\tslot_count={}\tdata_offset={}\tmap_size={}",
-            mapping.slot_count, mapping.data_offset, mapping.size
+            "READY\tslot_count={}\tdata_offset={}\tmap_size={}\tsmall_threshold={}\tsmall_inflight_bytes={}",
+            mapping.slot_count,
+            mapping.data_offset,
+            mapping.size,
+            small_threshold,
+            small_inflight_bytes
         );
         io::stdout().flush().ok();
 
@@ -802,40 +1534,50 @@ fn main() -> io::Result<()> {
             if line == "DONE" {
                 break;
             }
-            if let Some(rest) = line.strip_prefix("FILE\t") {
-                let mut parts = rest.splitn(3, '\t');
-                let idx: u64 = parts
-                    .next()
-                    .and_then(|s| s.parse().ok())
-                    .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "bad file index"))?;
-                let len: u64 = parts.next().and_then(|s| s.parse().ok()).ok_or_else(|| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "bad file length")
-                })?;
-                let path =
-                    decode_path_hex(parts.next().ok_or_else(|| {
-                        io::Error::new(io::ErrorKind::InvalidInput, "missing path")
-                    })?)?;
-                if let Err(e) =
-                    fill_file(&mapping, data_event, space_event, idx, len, &path, &enabled)
-                {
-                    eprintln!("FILE_ERROR\t{}\t{}", idx, e);
+            if let Some(rest) = line.strip_prefix("PREFETCH\t") {
+                let task = parse_file_task(rest, "prefetch")?;
+                if task.len <= small_threshold {
+                    small_pool.enqueue(task, false);
+                }
+            } else if let Some(rest) = line.strip_prefix("FILE\t") {
+                let task = parse_file_task(rest, "file")?;
+                small_pool.discard_before(task.index);
+                let result = if task.len <= small_threshold {
+                    fill_cached_file(
+                        &small_pool,
+                        &mapping,
+                        data_event,
+                        space_event,
+                        task.clone(),
+                        &enabled,
+                    )
+                } else {
+                    fill_file(
+                        &mapping,
+                        data_event,
+                        space_event,
+                        task.index,
+                        task.len,
+                        &task.path,
+                        &enabled,
+                    )
+                };
+                if let Err(e) = result {
+                    eprintln!("FILE_ERROR\t{}\t{}", task.index, e);
                     write_u32(mapping.base, 52, 1);
                     SetEvent(data_event);
                     break;
                 }
             } else if let Some(rest) = line.strip_prefix("HASH\t") {
-                let mut parts = rest.splitn(3, '\t');
-                let idx: u64 = parts.next().and_then(|s| s.parse().ok()).ok_or_else(|| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "bad hash file index")
-                })?;
-                let len: u64 = parts.next().and_then(|s| s.parse().ok()).ok_or_else(|| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "bad hash file length")
-                })?;
-                let path = decode_path_hex(parts.next().ok_or_else(|| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "missing hash path")
-                })?)?;
-                if let Err(e) = hash_file(idx, len, &path, &enabled) {
-                    eprintln!("FILE_ERROR\t{}\t{}", idx, e);
+                let task = parse_file_task(rest, "hash")?;
+                small_pool.discard_before(task.index);
+                let result = if task.len <= small_threshold {
+                    hash_cached_file(&small_pool, task.clone(), &enabled)
+                } else {
+                    hash_file(task.index, task.len, &task.path, &enabled)
+                };
+                if let Err(e) = result {
+                    eprintln!("FILE_ERROR\t{}\t{}", task.index, e);
                     write_u32(mapping.base, 52, 1);
                     SetEvent(data_event);
                     break;
@@ -933,6 +1675,52 @@ mod tests {
             read_file_overlapped(file.0.to_str().unwrap(), 5, 4096, |_offset, _slice| Ok(()))
         };
         assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidData);
+        Ok(())
+    }
+
+    #[test]
+    fn small_file_pool_prefetches_once_within_limits() -> io::Result<()> {
+        let mut pool = unsafe { SmallFilePool::new(8, 12, 2 * 1024 * 1024, 16)? };
+        let mut files = Vec::new();
+        let mut tasks = Vec::new();
+        let mut expected = Vec::new();
+        for index in 0..24u64 {
+            let len = 1000 + index as usize * 317;
+            let data = (0..len)
+                .map(|offset| ((offset * 17 + index as usize) % 251) as u8)
+                .collect::<Vec<_>>();
+            let file = TempFile::create(&format!("small-pool-文件-{index}"), &data)?;
+            let task = SmallFileTask {
+                index,
+                len: len as u64,
+                path: file.0.to_str().unwrap().to_string(),
+            };
+            pool.enqueue(task.clone(), false);
+            files.push(file);
+            tasks.push(task);
+            expected.push(data);
+        }
+
+        for index in 0..tasks.len() {
+            let cached = pool.wait_take(tasks[index].clone())?;
+            assert_eq!(cached.data, expected[index]);
+            if index == 0 {
+                pool.put_back(tasks[index].index, cached);
+                fs::remove_file(&files[index].0)?;
+                let cached_again = pool.wait_take(tasks[index].clone())?;
+                assert_eq!(cached_again.data, expected[index]);
+                pool.release(tasks[index].index, cached_again);
+            } else {
+                pool.release(tasks[index].index, cached);
+            }
+        }
+
+        {
+            let state = pool.shared.state.lock().unwrap();
+            assert!(state.max_active_files <= 12);
+            assert!(state.max_reserved_bytes <= 2 * 1024 * 1024);
+        }
+        unsafe { pool.shutdown() };
         Ok(())
     }
 }
