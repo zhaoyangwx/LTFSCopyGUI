@@ -71,7 +71,7 @@ Partial Class LTFSConfigurator
         Me.CheckBoxParseCMData = New System.Windows.Forms.CheckBox()
         Me.NumericUpDownPartitionNum = New System.Windows.Forms.NumericUpDown()
         Me.ButtonDebugFormat = New System.Windows.Forms.Button()
-        Me.ButtonDebugAllowMediaRemoval = New System.Windows.Forms.Button()
+        Me.ButtonDebugAllowMediumRemoval = New System.Windows.Forms.Button()
         Me.ButtonDebugReadInfo = New System.Windows.Forms.Button()
         Me.ContextMenuStripCMReader = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.BrowseBinaryFileToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -104,6 +104,8 @@ Partial Class LTFSConfigurator
         Me.ComboBoxBufferPage = New System.Windows.Forms.ComboBox()
         Me.LabelBufferID = New System.Windows.Forms.Label()
         Me.TabPageMAM = New System.Windows.Forms.TabPage()
+        Me.NumericUpDownRAPartition = New System.Windows.Forms.NumericUpDown()
+        Me.Label2 = New System.Windows.Forms.Label()
         Me.LabelBarcode = New System.Windows.Forms.Label()
         Me.TextBoxBarcode = New System.Windows.Forms.TextBox()
         Me.ButtonDebugWriteBarcode = New System.Windows.Forms.Button()
@@ -181,8 +183,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.Label2 = New System.Windows.Forms.Label()
-        Me.NumericUpDownRAPartition = New System.Windows.Forms.NumericUpDown()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -199,6 +199,7 @@ Partial Class LTFSConfigurator
         Me.TabPageBuffer.SuspendLayout()
         CType(Me.NumericUpDownRBMode, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageMAM.SuspendLayout()
+        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownPCHigh, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownPCLow, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TabPageLog.SuspendLayout()
@@ -214,7 +215,6 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
-        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -499,7 +499,7 @@ Partial Class LTFSConfigurator
         Me.TabPageCommand.Controls.Add(Me.CheckBoxParseCMData)
         Me.TabPageCommand.Controls.Add(Me.NumericUpDownPartitionNum)
         Me.TabPageCommand.Controls.Add(Me.ButtonDebugFormat)
-        Me.TabPageCommand.Controls.Add(Me.ButtonDebugAllowMediaRemoval)
+        Me.TabPageCommand.Controls.Add(Me.ButtonDebugAllowMediumRemoval)
         Me.TabPageCommand.Controls.Add(Me.ButtonDebugReadInfo)
         Me.TabPageCommand.Controls.Add(Me.ButtonDebugLocate)
         Me.TabPageCommand.Controls.Add(Me.LabelPartialErase)
@@ -561,9 +561,9 @@ Partial Class LTFSConfigurator
         '
         'ButtonDebugAllowMediaRemoval
         '
-        resources.ApplyResources(Me.ButtonDebugAllowMediaRemoval, "ButtonDebugAllowMediaRemoval")
-        Me.ButtonDebugAllowMediaRemoval.Name = "ButtonDebugAllowMediaRemoval"
-        Me.ButtonDebugAllowMediaRemoval.UseVisualStyleBackColor = True
+        resources.ApplyResources(Me.ButtonDebugAllowMediumRemoval, "ButtonDebugAllowMediaRemoval")
+        Me.ButtonDebugAllowMediumRemoval.Name = "ButtonDebugAllowMediaRemoval"
+        Me.ButtonDebugAllowMediumRemoval.UseVisualStyleBackColor = True
         '
         'ButtonDebugReadInfo
         '
@@ -778,6 +778,17 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.TabPageMAM, "TabPageMAM")
         Me.TabPageMAM.Name = "TabPageMAM"
         Me.TabPageMAM.UseVisualStyleBackColor = True
+        '
+        'NumericUpDownRAPartition
+        '
+        resources.ApplyResources(Me.NumericUpDownRAPartition, "NumericUpDownRAPartition")
+        Me.NumericUpDownRAPartition.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
+        Me.NumericUpDownRAPartition.Name = "NumericUpDownRAPartition"
+        '
+        'Label2
+        '
+        resources.ApplyResources(Me.Label2, "Label2")
+        Me.Label2.Name = "Label2"
         '
         'LabelBarcode
         '
@@ -1270,17 +1281,6 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
-        'Label2
-        '
-        resources.ApplyResources(Me.Label2, "Label2")
-        Me.Label2.Name = "Label2"
-        '
-        'NumericUpDownRAPartition
-        '
-        resources.ApplyResources(Me.NumericUpDownRAPartition, "NumericUpDownRAPartition")
-        Me.NumericUpDownRAPartition.Maximum = New Decimal(New Integer() {255, 0, 0, 0})
-        Me.NumericUpDownRAPartition.Name = "NumericUpDownRAPartition"
-        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1310,6 +1310,7 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownRBMode, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPageMAM.ResumeLayout(False)
         Me.TabPageMAM.PerformLayout()
+        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownPCHigh, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownPCLow, System.ComponentModel.ISupportInitialize).EndInit()
         Me.TabPageLog.ResumeLayout(False)
@@ -1328,7 +1329,6 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
-        CType(Me.NumericUpDownRAPartition, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1399,7 +1399,7 @@ Partial Class LTFSConfigurator
     Friend WithEvents ButtonDebugFormat As Button
     Friend WithEvents ButtonLTFSWriter As Button
     Friend WithEvents ButtonDebugReleaseUnit As Button
-    Friend WithEvents ButtonDebugAllowMediaRemoval As Button
+    Friend WithEvents ButtonDebugAllowMediumRemoval As Button
     Friend WithEvents ButtonFileSorter As Button
     Friend WithEvents CheckBoxAutoRefresh As CheckBox
     Friend WithEvents CheckBoxParseCMData As CheckBox

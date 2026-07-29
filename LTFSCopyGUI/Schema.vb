@@ -329,7 +329,7 @@ Public Class ltfsindex
         Private _TotalFiles, _TotalDirectories, _TotalFilesUnwritten As Long
         <Xml.Serialization.XmlIgnore>
         <Category("Internal")>
-        Public ReadOnly Property TotalFiles
+        Public ReadOnly Property TotalFiles As Long
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -342,7 +342,7 @@ Public Class ltfsindex
         End Property
         <Xml.Serialization.XmlIgnore>
         <Category("Internal")>
-        Public ReadOnly Property TotalFilesUnwritten
+        Public ReadOnly Property TotalFilesUnwritten As Long
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -358,7 +358,7 @@ Public Class ltfsindex
         End Property
         <Xml.Serialization.XmlIgnore>
         <Category("Internal")>
-        Public ReadOnly Property TotalDirectories
+        Public ReadOnly Property TotalDirectories As Long
             Get
                 If _TotalDirectories = 0 AndAlso contents._directory IsNot Nothing AndAlso contents._directory.Count > 0 Then
                     RefreshCount()
@@ -792,9 +792,9 @@ Public Class ltfslabel
     <Category("LTFSIndex")>
     Public Property volumeuuid As Guid
     <Serializable>
-    Public Enum PartitionLabel
-        a
-        b
+    Public Enum PartitionLabel As Byte
+        a = 0
+        b = 1
     End Enum
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Public Class PartitionLocation
@@ -846,7 +846,7 @@ Public Class ltfslabel
                 sline = sline.Replace("</_file>", "")
                 sline = sline.Replace("<_directory>", "")
                 sline = sline.Replace("</_directory>", "")
-                sline = sline.TrimEnd(" ")
+                sline = sline.TrimEnd(" "c)
             End If
             If sline.Length > 0 Then sout.AppendLine(sline)
         End While
@@ -877,7 +877,7 @@ Public Class Vol1Label
         End Get
     End Property
     <Category("LTFSIndex")>
-    Public Property label_number As Char = "1"
+    Public Property label_number As Char = "1"c
     Private _volume_identifier As String = "".PadRight(6)
     <Category("LTFSIndex")>
     Public Property volume_identifier As String
@@ -889,7 +889,7 @@ Public Class Vol1Label
         End Get
     End Property
     <Category("LTFSIndex")>
-    Public Property volume_accessibility As Char = "L"
+    Public Property volume_accessibility As Char = "L"c
     Private _implementation_identifier As String = "LTFS".PadRight(13)
     <Category("LTFSIndex")>
     Public Property implementation_identifier As String
@@ -911,7 +911,7 @@ Public Class Vol1Label
         End Get
     End Property
     <Category("LTFSIndex")>
-    Public Property label_standard_version As Char = "4"
+    Public Property label_standard_version As Char = "4"c
 
     Public Function GenerateRawData(Optional ByVal Barcode As String = "") As Byte()
         If Barcode <> "" Then volume_identifier = Barcode.ToUpper().Substring(0, Math.Min(6, Barcode.Length))

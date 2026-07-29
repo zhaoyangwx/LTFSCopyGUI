@@ -141,7 +141,7 @@ Namespace My
                 Dim param() As String = e.CommandLine.ToArray()
                 Dim IndexRead As Boolean = True
                 For i As Integer = 0 To param.Count - 1
-                    If param(i).StartsWith("/") Then param(i) = "-" & param(i).TrimStart("/")
+                    If param(i).StartsWith("/") Then param(i) = "-" & param(i).TrimStart("/"c)
 
                     Select Case param(i)
                         Case "-s"
@@ -170,7 +170,7 @@ Namespace My
                             End If
                         Case "-f"
                             If i < param.Count - 1 Then
-                                Dim indexFile As String = param(i + 1).TrimStart("""").TrimEnd("""")
+                                Dim indexFile As String = param(i + 1).TrimStart(""""c).TrimEnd(""""c)
 
                                 If IO.File.Exists(indexFile) Then
                                     Dim LWF As New LTFSWriter With {.Barcode = Resources.StrIndexView, .TapeDrive = "", .OfflineMode = True}
@@ -253,10 +253,10 @@ Namespace My
                                 End If
                                 Dim cdb As Byte() = IOManager.HexStringToByteArray(param(i + 2))
                                 Dim data As Byte() = IOManager.HexStringToByteArray(param(i + 3))
-                                Dim dataDir As Byte = Val(param(i + 4))
+                                Dim dataDir As Byte = Byte.Parse(param(i + 4))
                                 Dim TimeOut As Integer = 60000
                                 If i + 5 <= param.Length - 1 Then
-                                    TimeOut = Val(param(i + 5))
+                                    TimeOut = Integer.Parse(param(i + 5))
                                 End If
                                 Dim sense As Byte() = {}
 

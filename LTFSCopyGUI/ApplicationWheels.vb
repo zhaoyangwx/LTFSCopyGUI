@@ -369,7 +369,7 @@ Public Class ListTypeDescriptor(Of TColl As IList, TItem)
                 Dim myprops As New List(Of Reflection.PropertyInfo)(myType.GetProperties)
                 'If myprops.Count > 0 Then Name = $": {myprops(0).GetValue(obj)}"
             End If
-            props(i) = New ListPropertyDescriptor(Of TColl, TItem)($"Item{CStr(i).PadLeft(digits, "0")}{Name}")
+            props(i) = New ListPropertyDescriptor(Of TColl, TItem)($"Item{CStr(i).PadLeft(digits, "0"c)}{Name}")
         Next
         Return New PropertyDescriptorCollection(props)
     End Function
@@ -1072,7 +1072,7 @@ Partial Public Class ApplicationWheels
                     succ = True
                     Exit While
                 End If
-            ElseIf sense(2) And &HF <> 0 Then
+            ElseIf (sense(2) And &HF) <> 0 Then
                 Try
                     Throw New Exception("SCSI sense error")
                 Catch ex As Exception

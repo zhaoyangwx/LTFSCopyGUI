@@ -132,7 +132,7 @@ Public Class IOManager
 
             Return LogFile(Array.IndexOf(LogFile, LogFile.First(Function(s As String) As Boolean
                                                                     Return s = "[hash] " & filename
-                                                                End Function)) + 1).TrimStart(" ").Substring(0, 40)
+                                                                End Function)) + 1).TrimStart(" "c).Substring(0, 40)
         End If
         Return ""
     End Function
@@ -405,7 +405,7 @@ Public Class IOManager
 
         Public Property TargetDirectory As String
             Set(value As String)
-                _TargetDirectory = value.TrimEnd("\") & "\"
+                _TargetDirectory = value.TrimEnd("\"c) & "\"
             End Set
             Get
                 Return _TargetDirectory
@@ -417,7 +417,7 @@ Public Class IOManager
 
         Public Property BaseDirectory As String
             Set(value As String)
-                _BaseDirectory = value.TrimEnd("\") & "\"
+                _BaseDirectory = value.TrimEnd("\"c) & "\"
             End Set
             Get
                 Return _BaseDirectory
@@ -492,13 +492,13 @@ Public Class IOManager
                                 For Each f As ltfsindex.file In d.contents._file
                                     If Not f.Selected Then Continue For
                                     f.fullpath = d.fullpath & "\" & d.name & "\" & f.name
-                                    f.fullpath = f.fullpath.TrimStart("\")
+                                    f.fullpath = f.fullpath.TrimStart("\"c)
                                     flist.Add(f)
                                 Next
                                 For Each d2 As ltfsindex.directory In d.contents._directory
                                     If Not d2.Selected Then Continue For
                                     d2.fullpath = d.fullpath & "\" & d.name
-                                    d2.fullpath = d2.fullpath.TrimStart("\")
+                                    d2.fullpath = d2.fullpath.TrimStart("\"c)
                                     qtmp.Add(d2)
                                 Next
                             Next

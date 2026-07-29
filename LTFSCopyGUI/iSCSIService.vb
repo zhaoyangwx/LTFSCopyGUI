@@ -327,7 +327,7 @@ Public Class iSCSIService
                                   Dim responsedata(datalen - 1) As Byte
                                   Select Case My.Settings.TapeUtils_DriverType
                                       Case TapeUtils.DriverType.TapeStream
-                                          Dim vt As TapeImage
+                                          Dim vt As TapeImage = Nothing
                                           TapeStreamMapping.MappingTable.TryGetValue(driveHandle, vt)
                                           If vt IsNot Nothing Then
                                               vt.HandleSCSICommand(commandBytes, data, cmddir, datalen, responsedata, sense)

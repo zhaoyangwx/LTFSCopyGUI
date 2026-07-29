@@ -26,7 +26,7 @@ Public Class HashTaskWindow
     Private _TargetDirectory As String
     Public Property TargetDirectory As String
         Set(value As String)
-            _TargetDirectory = value.TrimEnd("\") & "\"
+            _TargetDirectory = value.TrimEnd("\"c) & "\"
         End Set
         Get
             Return _TargetDirectory
@@ -259,7 +259,7 @@ Public Class HashTaskWindow
 
     Public Class ldirStack
         Private ldir As New List(Of ltfsindex.directory)
-        Public ReadOnly Property IsEmpty
+        Public ReadOnly Property IsEmpty As Boolean
             Get
                 Return ldir.Count = 0
             End Get

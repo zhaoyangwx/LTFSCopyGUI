@@ -638,7 +638,7 @@ Public Class TapeUtils
             DEVICE,
             COMMAND,
             0, 0}
-        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, T_DIR, timeoutValue, senseBuffer)
+        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, CByte(T_DIR), timeoutValue, senseBuffer)
         RaiseEvent IOCtlFinished()
         Return result
     End Function
@@ -664,7 +664,7 @@ Public Class TapeUtils
             DEVICE,
             COMMAND,
             0}
-        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, T_DIR, timeoutValue, senseBuffer)
+        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, CByte(T_DIR), timeoutValue, senseBuffer)
         RaiseEvent IOCtlFinished()
         Return result
     End Function
@@ -695,7 +695,7 @@ Public Class TapeUtils
             0,
             ICC,
             (AUXILIARY >> 24) And &HFF, (AUXILIARY >> 16) And &HFF, (AUXILIARY >> 8) And &HFF, AUXILIARY}
-        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, T_DIR, timeoutValue, senseBuffer)
+        Dim result As Boolean = IOCtl.IOCtlDirect(handle, cdb, dataBuffer, bufferLength, CByte(T_DIR), timeoutValue, senseBuffer)
         RaiseEvent IOCtlFinished()
         Return result
     End Function
@@ -961,13 +961,13 @@ Public Class TapeUtils
             Select Case DriverTypeSetting
                 Case DriverType.SLR1
                     Dim BlockCount As Integer = Math.Ceiling(BlockSizeLimit / 512)
-                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 1, BlockCount >> 16 And &HFF, BlockCount >> 8 And &HFF, BlockCount And &HFF, 0},
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 1, (BlockCount >> 16) And &HFF, (BlockCount >> 8) And &HFF, BlockCount And &HFF, 0},
                                               paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                          senseRaw = senseData
                                                                                          Return True
                                                                                      End Function)
                 Case Else
-                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, BlockSizeLimit >> 16 And &HFF, BlockSizeLimit >> 8 And &HFF, BlockSizeLimit And &HFF, 0},
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, (BlockSizeLimit >> 16) And &HFF, (BlockSizeLimit >> 8) And &HFF, BlockSizeLimit And &HFF, 0},
                                               paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                          senseRaw = senseData
                                                                                          Return True
@@ -1067,7 +1067,7 @@ Public Class TapeUtils
             Dim result As New List(Of Byte)
             While Remain > 0
                 Dim seglen As Integer = Math.Min(Seg, Remain)
-                Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, (Offset >> 16) And &HFF, (Offset >> 8) And &HFF, Offset And &HFF, (seglen >> 16) And &HFF, (seglen >> 8 And &HFF), seglen And &HFF, 0}
+                Dim cdbD1 As Byte() = {&H3C, Mode, BufferID, (Offset >> 16) And &HFF, (Offset >> 8) And &HFF, Offset And &HFF, (seglen >> 16) And &HFF, (seglen >> 8) And &HFF, seglen And &HFF, 0}
                 Offset += seglen
                 Remain -= seglen
                 Dim dumpData(seglen - 1) As Byte
@@ -1349,15 +1349,15 @@ Public Class TapeUtils
                     If AllowPartition OrElse DestType <> 0 Then
                         Dim CP As Byte = 0
                         If ReadPosition(handle).PartitionNumber <> Partition Then CP = 1
-                        SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3 Or CP << 1, 0, Partition,
-                                                        BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
-                                                        BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                        SCSIReadParam(handle:=handle, cdbData:={&H92, (DestType << 3) Or (CP << 1), 0, Partition,
+                                                        (BlockAddress >> 56) And &HFF, (BlockAddress >> 48) And &HFF, (BlockAddress >> 40) And &HFF, (BlockAddress >> 32) And &HFF,
+                                                        (BlockAddress >> 24) And &HFF, (BlockAddress >> 16) And &HFF, (BlockAddress >> 8) And &HFF, BlockAddress And &HFF,
                                                         0, 0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                    sense = senseData
                                                                                                    Return True
                                                                                                End Function)
                     Else
-                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, (BlockAddress >> 24) And &HFF, (BlockAddress >> 16) And &HFF, (BlockAddress >> 8) And &HFF, BlockAddress And &HFF,
                                                         0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                 sense = senseData
                                                                                                 Return True
@@ -1366,7 +1366,7 @@ Public Class TapeUtils
             End Select
 
 
-            Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+            Dim Add_Code As UInt16 = (CInt(sense(12)) << 8) Or sense(13)
             If Add_Code <> 0 AndAlso ((sense(2) And &HF) <> 8) Then
                 If DestType = LocateDestType.EOD Then
                     If Not ReadPosition(handle).EOD Then
@@ -1381,8 +1381,8 @@ Public Class TapeUtils
                 Else
 
                     SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3, 0, 0,
-                                            BlockAddress >> 56 And &HFF, BlockAddress >> 48 And &HFF, BlockAddress >> 40 And &HFF, BlockAddress >> 32 And &HFF,
-                                            BlockAddress >> 24 And &HFF, BlockAddress >> 16 And &HFF, BlockAddress >> 8 And &HFF, BlockAddress And &HFF,
+                                            (BlockAddress >> 56) And &HFF, (BlockAddress >> 48) And &HFF, (BlockAddress >> 40) And &HFF, (BlockAddress >> 32) And &HFF,
+                                            (BlockAddress >> 24) And &HFF, (BlockAddress >> 16) And &HFF, (BlockAddress >> 8) And &HFF, BlockAddress And &HFF,
                                             0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                         sense = senseData
                                                                                         Return True
@@ -1420,12 +1420,12 @@ Public Class TapeUtils
     End Function
     Public Shared Function Space6(handle As IntPtr, Count As Integer, Code As LocateDestType) As UInt16
         Dim sense(63) As Byte
-        SCSIReadParam(handle:=handle, cdbData:={&H11, Code, Count >> 16 And &HFF, Count >> 8 And &HFF, Count And &HFF,
+        SCSIReadParam(handle:=handle, cdbData:={&H11, Code, (Count >> 16) And &HFF, (Count >> 8) And &HFF, Count And &HFF,
                                             0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                sense = senseData
                                                                                Return True
                                                                            End Function)
-        Dim Add_Code As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+        Dim Add_Code As UInt16 = (CInt(sense(12)) << 8) Or sense(13)
         Return Add_Code
     End Function
     Public Shared Function Space6(TapeDrive As String, Count As Integer) As UInt16
@@ -1533,7 +1533,7 @@ Public Class TapeUtils
                     PageLen <<= 8
                     PageLen = PageLen Or Header(3)
                     Dim Result(PageLen + 4 - 1) As Byte
-                    ts.HandleSCSICommand({&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, {}, 1, PageLen + 4, Result, sense)
+                    ts.HandleSCSICommand({&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, ((PageLen + 4) >> 8) And &HFF, (PageLen + 4) And &HFF, 0}, {}, 1, PageLen + 4, Result, sense)
                     If senseReport IsNot Nothing Then
                         senseReport(sense)
                     End If
@@ -1543,12 +1543,12 @@ Public Class TapeUtils
                 End If
             Case Else
                 SyncLock SCSIOperationLock
-                    Dim Header As Byte() = SCSIReadParam(handle, {&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, 0, 4, 0}, 4)
+                    Dim Header As Byte() = SCSIReadParam(handle, {&H4D, 0, (PageControl << 6) Or PageCode, SubPageCode, 0, 0, 0, 0, 4, 0}, 4)
                     If Header.Length < 4 Then Return {0, 0, 0, 0}
                     Dim PageLen As Integer = Header(2)
                     PageLen <<= 8
                     PageLen = PageLen Or Header(3)
-                    Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, PageControl << 6 Or PageCode, SubPageCode, 0, 0, 0, (PageLen + 4) >> 8 And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
+                    Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, (PageControl << 6) Or PageCode, SubPageCode, 0, 0, 0, ((PageLen + 4) >> 8) And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
                 End SyncLock
         End Select
 
@@ -1612,7 +1612,7 @@ Public Class TapeUtils
                                          End Function)
         Else
             data = (New Byte() {0, 0, 0, &H10, 0, 0, 0, 0}).Concat(PageData).ToArray()
-            SendSCSICommand(handle:=handle, cdbData:={&H55, &H10, 0, 0, 0, 0, 0, data.Length >> 8 And &HFF, data.Length And &HFF, 0}, Data:=data, DataIn:=0,
+            SendSCSICommand(handle:=handle, cdbData:={&H55, &H10, 0, 0, 0, 0, 0, (data.Length >> 8) And &HFF, data.Length And &HFF, 0}, Data:=data, DataIn:=0,
                            senseReport:=Function(senseData As Byte()) As Boolean
                                             sense = senseData
                                             Return True
@@ -1742,10 +1742,10 @@ Public Class TapeUtils
     Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim Param_LEN As UInt64 = Data.Length + 9
         Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
-                                     Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF, 0, 0}
-        Dim param As Byte() = {Param_LEN >> 24 And &HFF, Param_LEN >> 16 And &HFF, Param_LEN >> 8 And &HFF, Param_LEN And &HFF,
-                                       PageID >> 8 And &HFF, PageID And &HFF, Format,
-                                       Data.Length >> 8 And &HFF, Data.Length And &HFF}
+                                     (Param_LEN >> 24) And &HFF, (Param_LEN >> 16) And &HFF, (Param_LEN >> 8) And &HFF, Param_LEN And &HFF, 0, 0}
+        Dim param As Byte() = {(Param_LEN >> 24) And &HFF, (Param_LEN >> 16) And &HFF, (Param_LEN >> 8) And &HFF, Param_LEN And &HFF,
+                                       (PageID >> 8) And &HFF, PageID And &HFF, Format,
+                                       (Data.Length >> 8) And &HFF, Data.Length And &HFF}
         param = param.Concat(Data).ToArray()
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
@@ -6982,8 +6982,8 @@ Public Class TapeUtils
             Case DriverType.M2488
             Case DriverType.SLR3
                 param = SCSIReadParam(handle, {&H34, 1, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
-                result.BOP = param(0) >> 7 And &H1
-                result.EOP = param(0) >> 6 And &H1
+                result.BOP = (param(0) >> 7) And &H1
+                result.EOP = (param(0) >> 6) And &H1
                 For i As Integer = 0 To 3
                     result.BlockNumber <<= 8
                     result.BlockNumber = result.BlockNumber Or param(4 + i)
@@ -7008,9 +7008,9 @@ Public Class TapeUtils
                                                                                              sense = sdata
                                                                                              Return True
                                                                                          End Function)
-                    result.BOP = param(0) >> 7 And &H1
-                    result.EOP = param(0) >> 6 And &H1
-                    result.MPU = param(0) >> 3 And &H1
+                    result.BOP = (param(0) >> 7) And &H1
+                    result.EOP = (param(0) >> 6) And &H1
+                    result.MPU = (param(0) >> 3) And &H1
                     For i As Integer = 0 To 3
                         result.PartitionNumber <<= 8
                         result.PartitionNumber = result.PartitionNumber Or param(4 + i)
@@ -7025,8 +7025,8 @@ Public Class TapeUtils
                     Next
                 Else
                     param = SCSIReadParam(handle, {&H34, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 32)
-                    result.BOP = param(0) >> 7 And &H1
-                    result.EOP = param(0) >> 6 And &H1
+                    result.BOP = (param(0) >> 7) And &H1
+                    result.EOP = (param(0) >> 6) And &H1
                     For i As Integer = 0 To 3
                         result.BlockNumber <<= 8
                         result.BlockNumber = result.BlockNumber Or param(4 + i)
@@ -7062,7 +7062,7 @@ Public Class TapeUtils
         Select Case TapeUtils.DriverTypeSetting
             Case DriverType.SLR3
                 Dim succ As Boolean =
-            SendSCSICommandUnmanaged(handle, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+            SendSCSICommandUnmanaged(handle, {&HA, 0, (Data.Length >> 16) And &HFF, (Data.Length >> 8) And &HFF, Data.Length And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -7075,7 +7075,7 @@ Public Class TapeUtils
             Case DriverType.SLR1
                 Dim BlockCount As Integer = Math.Ceiling(Data.Length / 512)
                 Dim succ As Boolean =
-            SendSCSICommandUnmanaged(handle, {&HA, 1, BlockCount >> 16 And &HFF, BlockCount >> 8 And &HFF, BlockCount And &HFF, 0}, Data, 0,
+            SendSCSICommandUnmanaged(handle, {&HA, 1, (BlockCount >> 16) And &HFF, (BlockCount >> 8) And &HFF, BlockCount And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -7096,7 +7096,7 @@ Public Class TapeUtils
                 End If
             Case Else
                 Dim succ As Boolean =
-            SendSCSICommandUnmanaged(handle, {&HA, 0, Data.Length >> 16 And &HFF, Data.Length >> 8 And &HFF, Data.Length And &HFF, 0}, Data, 0,
+            SendSCSICommandUnmanaged(handle, {&HA, 0, (Data.Length >> 16) And &HFF, (Data.Length >> 8) And &HFF, Data.Length And &HFF, 0}, Data, 0,
                         Function(senseData As Byte()) As Boolean
                             sense = senseData
                             Return True
@@ -7245,7 +7245,7 @@ Public Class TapeUtils
         Dim succ As Boolean
 
         While DataLen > 0
-            Dim cdbData As Byte() = {&HA, 0, DataLen >> 16 And &HFF, DataLen >> 8 And &HFF, DataLen And &HFF, 0}
+            Dim cdbData As Byte() = {&HA, 0, (DataLen >> 16) And &HFF, (DataLen >> 8) And &HFF, DataLen And &HFF, 0}
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do
                 Select Case DriverTypeSetting
@@ -7327,7 +7327,7 @@ Public Class TapeUtils
                     succ = True
                 Case Else
                     Do
-                        Dim cdbData As Byte() = {&HA, 0, DataLen >> 16 And &HFF, DataLen >> 8 And &HFF, DataLen And &HFF, 0}
+                        Dim cdbData As Byte() = {&HA, 0, (DataLen >> 16) And &HFF, (DataLen >> 8) And &HFF, DataLen And &HFF, 0}
                         Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
                         succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, DataPtr, DataLen, 0, 60000, sense)
                         If succ Then
@@ -7408,9 +7408,9 @@ Public Class TapeUtils
         Dim cdbData As Byte() = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
                     PageCode_H,
                     PageCode_L,
-                    (DATA_LEN + 9) >> 24 And &HFF,
-                    (DATA_LEN + 9) >> 16 And &HFF,
-                    (DATA_LEN + 9) >> 8 And &HFF,
+                    ((DATA_LEN + 9) >> 24) And &HFF,
+                    ((DATA_LEN + 9) >> 16) And &HFF,
+                    ((DATA_LEN + 9) >> 8) And &HFF,
                     (DATA_LEN + 9) And &HFF, 0, 0}
         Dim Result As Byte() = {}
         Select Case DriverTypeSetting
@@ -7426,9 +7426,9 @@ Public Class TapeUtils
                         cdbData = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
                                 PageCode_H,
                                 PageCode_L,
-                                (DATA_LEN + 9) >> 24 And &HFF,
-                                (DATA_LEN + 9) >> 16 And &HFF,
-                                (DATA_LEN + 9) >> 8 And &HFF,
+                                ((DATA_LEN + 9) >> 24) And &HFF,
+                                ((DATA_LEN + 9) >> 16) And &HFF,
+                                ((DATA_LEN + 9) >> 8) And &HFF,
                                 (DATA_LEN + 9) And &HFF, 0, 0}
                         ts.HandleSCSICommand(cdbData, Nothing, 1, DATA_LEN + 9, BCArray2, sense)
                         Result = BCArray2.Skip(9).ToArray()
@@ -7461,9 +7461,9 @@ Public Class TapeUtils
                             cdbData = {&H8C, 0, 0, 0, 0, 0, 0, PartitionNumber,
                                 PageCode_H,
                                 PageCode_L,
-                                (DATA_LEN + 9) >> 24 And &HFF,
-                                (DATA_LEN + 9) >> 16 And &HFF,
-                                (DATA_LEN + 9) >> 8 And &HFF,
+                                ((DATA_LEN + 9) >> 24) And &HFF,
+                                ((DATA_LEN + 9) >> 16) And &HFF,
+                                ((DATA_LEN + 9) >> 8) And &HFF,
                                 (DATA_LEN + 9) And &HFF, 0, 0}
                             succ = False
                             Try
@@ -8998,8 +8998,8 @@ Public Class TapeUtils
                             Dim e As Element = Element.FromRaw(pagedata, New Element With {
                                 .LUN = LUN,
                                 .ElementTypeCode = PageHeader(0) And &HF,
-                                .PVolTag = PageHeader(1) >> 7 And 1,
-                                .AVolTag = PageHeader(1) >> 6 And 1,
+                                .PVolTag = (PageHeader(1) >> 7) And 1,
+                                .AVolTag = (PageHeader(1) >> 6) And 1,
                                 .ElementDescriptorLength = dlen,
                                 .ByteCountofDescriptorDataAvailable = totallen
                                 })
@@ -9241,21 +9241,21 @@ Public Class TapeUtils
                     Try
                         Dim DOffset As Byte = 0
                         .ElementAddress = CInt(RawData(DOffset + 0)) << 8 Or RawData(DOffset + 1)
-                        .OIR = RawData(DOffset + 2) >> 7 And 1
-                        .CMC = RawData(DOffset + 2) >> 6 And 1
-                        .InEnab = RawData(DOffset + 2) >> 5 And 1
-                        .ExEnab = RawData(DOffset + 2) >> 4 And 1
-                        .Access = RawData(DOffset + 2) >> 3 And 1
-                        .Except = RawData(DOffset + 2) >> 2 And 1
-                        .ImpExp = RawData(DOffset + 2) >> 1 And 1
-                        .Full = RawData(DOffset + 2) >> 0 And 1
+                        .OIR = (RawData(DOffset + 2) >> 7) And 1
+                        .CMC = (RawData(DOffset + 2) >> 6) And 1
+                        .InEnab = (RawData(DOffset + 2) >> 5) And 1
+                        .ExEnab = (RawData(DOffset + 2) >> 4) And 1
+                        .Access = (RawData(DOffset + 2) >> 3) And 1
+                        .Except = (RawData(DOffset + 2) >> 2) And 1
+                        .ImpExp = (RawData(DOffset + 2) >> 1) And 1
+                        .Full = (RawData(DOffset + 2) >> 0) And 1
                         .ASC = RawData(DOffset + 4)
                         .ASCQ = RawData(DOffset + 5)
-                        .SValid = RawData(DOffset + 9) >> 7 And 1
-                        .Invert = RawData(DOffset + 9) >> 6 And 1
-                        .ED = RawData(DOffset + 9) >> 3 And 1
+                        .SValid = (RawData(DOffset + 9) >> 7) And 1
+                        .Invert = (RawData(DOffset + 9) >> 6) And 1
+                        .ED = (RawData(DOffset + 9) >> 3) And 1
                         .MediumType = RawData(DOffset + 9) And &B111
-                        .SourceStorageElementAddress = CInt(RawData(DOffset + 10)) << 8 Or RawData(DOffset + 11)
+                        .SourceStorageElementAddress = CInt((RawData(DOffset + 10)) << 8) Or RawData(DOffset + 11)
                         If .PVolTag Then
                             .PrimaryVolumeTagInformation = Encoding.ASCII.GetString(RawData, DOffset + 12, 36).TrimEnd(Chr(0)).TrimEnd(" ")
                             DOffset += 36
@@ -10586,9 +10586,9 @@ Public Class TapeUtils
                             'check if any encrypted data (LTO4+ only) by checking if the First Encrypted Logical Object field is all 1's
                             If CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).IsLTO4Plus Then
                                 If g_GetWord(a_Buffer, 22) = &HFFFF AndAlso g_GetWord(a_Buffer, 24) = &HFFFF AndAlso g_GetWord(a_Buffer, 26) = &HFFFF Then
-                                    .EncryptedData = 0
+                                    .EncryptedData = False
                                 Else
-                                    .EncryptedData = 1
+                                    .EncryptedData = True
                                 End If
                             End If
 
@@ -10611,7 +10611,7 @@ Public Class TapeUtils
                 Else
                     a_CleanLength = 5.5
                 End If
-                If CType(g_CM(gtype.status, False), TapeStatus).LastLocation >= 0 AndAlso CType(g_CM(gtype.cartridge_mfg, False), Cartridge_mfg).TapeLength >= 0 Then
+                If CType(g_CM(gtype.status, createNew:=False), TapeStatus).LastLocation >= 0 AndAlso CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).TapeLength >= 0 Then
                     a_CleansRemaining = CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).TapeLength / 4 - 11
                     a_CleansRemaining -= CType(g_CM(gtype.status, createNew:=False), TapeStatus).LastLocation / 4
                     a_CleansRemaining /= a_CleanLength
@@ -10670,7 +10670,7 @@ Public Class TapeUtils
                             With CType(g_CM(gtype.cartridge_content), CartridgeContent)
                                 .Drive_Id = Encoding.ASCII.GetString(substr(a_Buffer, 12, 16)).TrimEnd
                                 .Cartridge_Content = g_GetWord(a_Buffer, 28)
-                                .PartitionedCartridge = a_Buffer(28) >> 3 And 1
+                                .PartitionedCartridge = (a_Buffer(28) >> 3) And 1
                                 If CType(g_CM(gtype.cartridge_mfg, createNew:=False), Cartridge_mfg).IsLTO7Plus Then
                                     .Type_M_Cartridge = a_Buffer(28) And 1
                                 End If
@@ -11590,7 +11590,7 @@ Public Class TapeUtils
                                 Next
                                 Return result.ToString
                             Case DataType.Boolean
-                                If rawdata.Last = 0 Then Return "False" Else Return True
+                                If rawdata.Last = 0 Then Return "False" Else Return "True"
                             Case DataType.Text
                                 Return ByteArrayToString(rawdata, True)
                             Case DataType.Enum
@@ -11771,7 +11771,7 @@ Public Class TapeUtils
                             Next
                             Return result.ToString
                         Case DataType.Boolean
-                            If rawdata.Last = 0 Then Return "False" Else Return True
+                            If rawdata.Last = 0 Then Return "False" Else Return "True"
                         Case DataType.Text
                             Return ByteArrayToString(rawdata, True)
                         Case DataType.Enum

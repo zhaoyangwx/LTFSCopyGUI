@@ -96,22 +96,22 @@ Public Class ChangerTool
             ComboBox1.Items.Clear()
             ComboBox2.Items.Clear()
             For Each e As MediumChanger.Element In FullElement
-                Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0")} LUN{e.LUN}"
+                Dim ctext As String = $"{e.PrimaryVolumeTagInformation} @0x{Hex(e.ElementAddress).PadLeft(4, "0"c)} LUN{e.LUN}"
                 Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
                 Dim ttext As String = e.ElementTypeCode.ToString()
                 If itext.Length > 0 Then itext &= " "
                 itext &= ttext
-                itext = itext.TrimEnd(" ")
+                itext = itext.TrimEnd(" "c)
                 If itext.Length > 0 Then ctext = $"{ctext}({itext})"
                 ComboBox1.Items.Add(ctext)
             Next
             For Each e As MediumChanger.Element In EmptyElement
-                Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0")} LUN{e.LUN}"
+                Dim ctext As String = $"0x{Hex(e.ElementAddress).PadLeft(4, "0"c)} LUN{e.LUN}"
                 Dim itext As String = e.Identifier.Replace("  ", " ").Replace("  ", " ").Replace("  ", " ")
                 Dim ttext As String = e.ElementTypeCode.ToString()
                 If itext.Length > 0 Then itext &= " "
                 itext &= ttext
-                itext = itext.TrimEnd(" ")
+                itext = itext.TrimEnd(" "c)
                 If itext.Length > 0 Then ctext = $"{ctext}({itext})"
                 ComboBox2.Items.Add(ctext)
             Next
@@ -258,7 +258,7 @@ Public Class ChangerTool
                             Dim j As Integer = 0
                             For j = 0 To srcList.Count - 1
                                 If srcList(j).PrimaryVolumeTagInformation = TLList(i) Then
-                                    Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0")} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0")}{vbCrLf}"
+                                    Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0"c)} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0"c)}{vbCrLf}"
                                     Invoke(Sub() TextBox1.AppendText(info))
                                     While True
                                         Dim sense(63) As Byte
@@ -298,7 +298,7 @@ Public Class ChangerTool
                             If Not srcList(i).Full Then
                                 For j As Integer = 0 To TLList.Count - 1
                                     If srcList(j).Full AndAlso srcList(j).PrimaryVolumeTagInformation <> TLList(j) Then
-                                        Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0")} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0")}{vbCrLf}"
+                                        Dim info As String = $"0x{Hex(srcList(j).ElementAddress).PadLeft(4, "0"c)} {srcList(j).PrimaryVolumeTagInformation} -> 0x{Hex(srcList(i).ElementAddress).PadLeft(4, "0"c)}{vbCrLf}"
                                         Invoke(Sub() TextBox1.AppendText(info))
                                         While True
                                             Dim sense(63) As Byte
@@ -386,7 +386,7 @@ Public Class ChangerTool
                          For Each d As BlockDevice In drvList
                              If drv.Identifier.EndsWith(d.SerialNumber) Then
                                  found = True
-                                 Invoke(Sub() TextBox1.AppendText($"Find drive [0x{Hex(drv.ElementAddress).PadLeft(4, "0")}]{drv.Identifier} <=> {d.SerialNumber} {d.DevicePath}{vbCrLf}"))
+                                 Invoke(Sub() TextBox1.AppendText($"Find drive [0x{Hex(drv.ElementAddress).PadLeft(4, "0"c)}]{drv.Identifier} <=> {d.SerialNumber} {d.DevicePath}{vbCrLf}"))
                                  drvMapping.Add(drv, d)
                                  Exit For
                              End If

@@ -593,7 +593,7 @@ Public Class TapeImage
                 LocateByBlock(0, sense)
             Case &H34 'READ POSITION
                 Dim currpos = ReadPosition()
-                Dim ServiceAction As Byte = commandBytes(1) And &H11111
+                Dim ServiceAction As Byte = commandBytes(1) And &B11111
                 Dim AllocLen As Integer = commandBytes(7)
                 AllocLen <<= 8
                 AllocLen = AllocLen Or commandBytes(8)
@@ -601,7 +601,7 @@ Public Class TapeImage
                 Dim currentpos = ReadPosition()
                 Select Case ServiceAction
                     Case 0
-                        Response = {currentpos.BOP << 7 Or &B110000,
+                        Response = {CByte((CByte(currentpos.BOP) << 7) Or &B110000),
                             currentpos.PartitionNumber,
                             0, 0,
                             (currentpos.BlockNumber >> 24) And &HFF,
@@ -638,7 +638,7 @@ Public Class TapeImage
                             currentpos.FileNumber And &HFF,
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case 8
-                        Response = {currentpos.BOP << 7 Or &B11000,
+                        Response = {(currentpos.BOP << 7) Or &B11000,
                             currentpos.PartitionNumber, 0, &H1C,
                             0, 0, 0, 0,
                             (currentpos.BlockNumber >> 56) And &HFF,

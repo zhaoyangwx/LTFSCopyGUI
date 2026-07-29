@@ -1186,13 +1186,13 @@ Public Class LTFSConfigurator
                  End Sub)
     End Sub
 
-    Private Sub ButtonDebugAllowMediaRemoval_Click(sender As Object, e As EventArgs) Handles ButtonDebugAllowMediaRemoval.Click
+    Private Sub ButtonDebugAllowMediumRemoval_Click(sender As Object, e As EventArgs) Handles ButtonDebugAllowMediumRemoval.Click
         Panel1.Enabled = False
         Task.Run(Sub()
-                     TapeUtils.AllowMediaRemoval(ConfTapeDrive,
+                     TapeUtils.AllowMediumRemoval(ConfTapeDrive,
                               Function(sense As Byte()) As Boolean
                                   Invoke(Sub()
-                                             TextBoxDebugOutput.Text = "ALLOW MEDIA REMOVAL" & vbCrLf
+                                             TextBoxDebugOutput.Text = "ALLOW MEDIUM REMOVAL" & vbCrLf
                                              TextBoxDebugOutput.AppendText(TapeUtils.ParseSenseData(sense))
                                          End Sub)
                                   Return True

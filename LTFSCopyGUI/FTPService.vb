@@ -23,7 +23,7 @@ Public Class FTPService
         Public AccMode As New Generic.GenericAccessMode(True, False, True)
         Public ReadOnly Property FileInfo As ltfsindex.file
         Public ReadOnly Property DirectoryInfo As ltfsindex.directory
-        Public ReadOnly Property Info
+        Public ReadOnly Property Info As Object
             Get
                 If FileInfo IsNot Nothing Then Return FileInfo
                 If DirectoryInfo IsNot Nothing Then Return DirectoryInfo

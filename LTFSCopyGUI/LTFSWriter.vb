@@ -253,7 +253,7 @@ Public Class LTFSWriter
         <TypeConverter(GetType(ListTypeDescriptor(Of List(Of ltfsindex.file), ltfsindex.file)))>
         Public Property File As New List(Of ltfsindex.file)
         Public ContentChanged As Action
-        Public ReadOnly Property IsEmpty
+        Public ReadOnly Property IsEmpty As Boolean
             Get
                 Return Directory.Count + File.Count = 0
             End Get
@@ -682,21 +682,21 @@ Public Class LTFSWriter
     End Property
     <Category("Application")>
     <TypeConverter(GetType(ExpandableObjectConverter))>
-    Public ReadOnly Property Computer
+    Public ReadOnly Property Computer As Object
         Get
             Return My.Computer
         End Get
     End Property
     <TypeConverter(GetType(ExpandableObjectConverter))>
     <Category("Application")>
-    Public ReadOnly Property Forms
+    Public ReadOnly Property Forms As Object
         Get
             Return My.Forms
         End Get
     End Property
     <TypeConverter(GetType(ExpandableObjectConverter))>
     <Category("Application")>
-    Public ReadOnly Property Settings
+    Public ReadOnly Property Settings As Object
         Get
             Return My.Settings
         End Get
@@ -721,13 +721,13 @@ Public Class LTFSWriter
     'End Property
     <TypeConverter(GetType(ExpandableObjectConverter))>
     <Category("Application")>
-    Public ReadOnly Property User
+    Public ReadOnly Property User As Object
         Get
             Return My.User
         End Get
     End Property
     <Category("Application")>
-    Public ReadOnly Property WebServices
+    Public ReadOnly Property WebServices As Object
         Get
             Return My.WebServices
         End Get
@@ -778,7 +778,7 @@ Public Class LTFSWriter
         Dim result As Double = Double.NegativeInfinity
         Dim debuginfo As New StringBuilder
         Dim WERLHeader As Byte()
-        Dim WERLPage As Byte()
+        Dim WERLPage As Byte() = Nothing
         If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
             Try
                 If Not PageValid Then
@@ -795,6 +795,7 @@ Public Class LTFSWriter
                 WERLHeader = TapeUtils.SCSIReadParam(driveHandle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4,
                                                         Function(senseData As Byte()) As Boolean
                                                             PrintMsg(TapeUtils.ParseSenseData(senseData), LogOnly:=True)
+                                                            Return True
                                                         End Function, 1)
                 If WERLHeader.Length <> 4 Then
                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
@@ -992,7 +993,7 @@ Public Class LTFSWriter
                     Dim eteTotalCost As Double = totalTimeCost / CurrentBytesProcessed * USize
                     Dim RemainTicks As Long = Math.Min(Long.MaxValue, eteTotalCost) - totalTimeCost
                     Dim remainTime As New TimeSpan(RemainTicks)
-                    ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0")}:{remainTime.Minutes.ToString().PadLeft(2, "0")}:{remainTime.Seconds.ToString().PadLeft(2, "0")}"
+                    ToolStripStatusLabel6.Text = $"{My.Resources.ResText_Remaining} {Math.Truncate(remainTime.TotalHours).ToString().PadLeft(2, "0"c)}:{remainTime.Minutes.ToString().PadLeft(2, "0"c)}:{remainTime.Seconds.ToString().PadLeft(2, "0"c)}"
                     ToolStripProgressBar1.ToolTipText &= vbCrLf & ToolStripStatusLabel6.Text
                 End If
             End If
@@ -1473,9 +1474,9 @@ Public Class LTFSWriter
                                                 For Each item As TapeUtils.PageData.DataItem In DevStatusBits.Items
                                                     Select Case item.Name.ToLower
                                                         Case "cleaning required flag"
-                                                            CleanFlag = CleanFlag Or item.RawData(0)
+                                                            CleanFlag = CleanFlag Or (item.RawData(0) <> 0)
                                                         Case "cleaning requested flag"
-                                                            CleanFlag = CleanFlag Or item.RawData(0)
+                                                            CleanFlag = CleanFlag Or (item.RawData(0) <> 0)
                                                         Case "device status"
                                                             DriveFlag = (item.RawData(0) > 1)
                                                         Case "medium status"
@@ -2581,7 +2582,7 @@ Public Class LTFSWriter
                     succ = True
                     Exit While
                 End If
-            ElseIf sense(2) And &HF <> 0 Then
+            ElseIf (sense(2) And &HF) <> 0 Then
                 PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
                 Try
                     Throw New Exception("SCSI sense error")
@@ -3676,7 +3677,7 @@ Public Class LTFSWriter
                             Dim ReadedSize As Long = 0
                             While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                                 Dim CurrentBlockLen As UInteger = Math.Min(plabel.blocksize, TotalBytes + ByteOffset - ReadedSize)
-                                Dim Data As Byte()
+                                Dim Data As Byte() = Nothing
                                 Dim readsucc As Boolean = False
                                 Dim ignored As Boolean = False
                                 While Not readsucc
@@ -3707,7 +3708,7 @@ Public Class LTFSWriter
                                             readsucc = True
                                             Exit While
                                         End If
-                                    ElseIf sense(2) And &HF <> 0 Then
+                                    ElseIf (sense(2) And &HF) <> 0 Then
                                         PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
                                         Dim AutoIgnore As Boolean = False
                                         If My.Settings.LTFSWriter_IgnoreILI Then
@@ -4036,13 +4037,13 @@ Public Class LTFSWriter
     End Sub
     Public Function LocateToWritePosition() As Boolean
         If schema.location.partition = ltfsindex.PartitionLabel.a Then
-            Dim p As TapeUtils.PositionData
+            Dim p As TapeUtils.PositionData = Nothing
             While True
                 Dim add_code As UShort = TapeUtils.Locate(driveHandle, schema.previousgenerationlocation.startblock, DataPartition, TapeUtils.LocateDestType.Block)
                 p = GetPos
                 If p.PartitionNumber <> CByte(schema.previousgenerationlocation.partition) OrElse (p.BlockNumber <> schema.previousgenerationlocation.startblock) Then
                     Dim result As DialogResult
-                    Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                    Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{schema.previousgenerationlocation.partition} B{schema.previousgenerationlocation.startblock}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0"c)} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                     Select Case result
                         Case DialogResult.Ignore
                             Exit While
@@ -4083,7 +4084,7 @@ Public Class LTFSWriter
                     p = GetPos
                     If p.PartitionNumber <> DataPartition OrElse p.BlockNumber <> CULng(CurrentHeight) Then
                         Dim result As DialogResult
-                        Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0")} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Current: P{p.PartitionNumber} B{p.BlockNumber}{vbCrLf}Expected: P{DataPartition} B{CULng(CurrentHeight)}{vbCrLf}Additional sense code: 0x{Hex(add_code).ToUpper.PadLeft(4, "0"c)} {TapeUtils.ParseAdditionalSenseCode(add_code)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                         Select Case result
                             Case DialogResult.Ignore
                                 Exit While
@@ -4177,7 +4178,7 @@ Public Class LTFSWriter
             Dim segLen As Integer = Math.Min(rom.Length, maxBytes - copied)
             If segLen <= 0 Then Continue While
 
-            Dim seg As ArraySegment(Of Byte)
+            Dim seg As ArraySegment(Of Byte) = Nothing
             If MemoryMarshal.TryGetArray(rom, seg) AndAlso seg.Array IsNot Nothing Then
                 Buffer.BlockCopy(seg.Array, seg.Offset, dest, destOffset + copied, segLen)
                 copied += segLen
@@ -4634,83 +4635,83 @@ Public Class LTFSWriter
 
             Dim bytesReaded As Integer = slot.Length
             Dim writeStarted = Stopwatch.GetTimestamp()
-                    Try
-                        CheckCount += 1
-                        If CheckCount >= CheckCycle Then CheckCount = 0
-                        If SpeedLimit > 0 AndAlso CheckCount = 0 Then
-                            Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
-                            While SpeedLimit > 0 AndAlso ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
-                                Threading.Thread.Sleep(0)
-                                ts = (Now - SpeedLimitLastTriggerTime).TotalSeconds
-                            End While
-                            SpeedLimitLastTriggerTime = Now
-                        End If
+            Try
+                CheckCount += 1
+                If CheckCount >= CheckCycle Then CheckCount = 0
+                If SpeedLimit > 0 AndAlso CheckCount = 0 Then
+                    Dim ts As Double = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                    While SpeedLimit > 0 AndAlso ts > 0 AndAlso ((plabel.blocksize * CheckCycle / 1048576) / ts) > SpeedLimit
+                        Threading.Thread.Sleep(0)
+                        ts = (Now - SpeedLimitLastTriggerTime).TotalSeconds
+                    End While
+                    SpeedLimitLastTriggerTime = Now
+                End If
 
-                        Dim succ As Boolean = False
-                        While Not succ
-                            Dim sense As Byte()
-                            Try
-                                writeCallCount += 1
-                                sense = writeSession.Write(slot.DataPtr, CUInt(slot.Length))
-                                SyncLock p
-                                    p.BlockNumber += 1
-                                End SyncLock
-                            Catch ex As Exception
-                                Dim dResult As DialogResult
-                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
-                                Select Case dResult
-                                    Case DialogResult.Abort
-                                        StopFlag = True
-                                        Throw
-                                    Case DialogResult.Retry
-                                        succ = False
-                                    Case DialogResult.Ignore
-                                        succ = True
-                                        Exit While
-                                End Select
-                                p = New TapeUtils.PositionData(driveHandle)
-                                Continue While
-                            End Try
-                            If (((sense(2) >> 6) And &H1) = 1) Then
-                                If ((sense(2) And &HF) = 13) AndAlso (Not My.Settings.LTFSWriter_IgnoreVolumeOverflow) Then
-                                    PrintMsg(My.Resources.ResText_VOF)
-                                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
-                                    StopFlag = True
-                                    Exit While
-                                Else
-                                    PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
-                                    succ = True
-                                    Exit While
-                                End If
-                            ElseIf sense(2) And &HF <> 0 Then
-                                Dim dResult As DialogResult
-                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
-                                Select Case dResult
-                                    Case DialogResult.Abort
-                                        StopFlag = True
-                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                    Case DialogResult.Retry
-                                        succ = False
-                                    Case DialogResult.Ignore
-                                        succ = True
-                                        Exit While
-                                End Select
-                                p = New TapeUtils.PositionData(driveHandle)
-                            Else
+                Dim succ As Boolean = False
+                While Not succ
+                    Dim sense As Byte()
+                    Try
+                        writeCallCount += 1
+                        sense = writeSession.Write(slot.DataPtr, CUInt(slot.Length))
+                        SyncLock p
+                            p.BlockNumber += 1
+                        End SyncLock
+                    Catch ex As Exception
+                        Dim dResult As DialogResult
+                        Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Select Case dResult
+                            Case DialogResult.Abort
+                                StopFlag = True
+                                Throw
+                            Case DialogResult.Retry
+                                succ = False
+                            Case DialogResult.Ignore
                                 succ = True
                                 Exit While
-                            End If
-                        End While
-
-                        If Not StopFlag Then
-                            fr.File.WrittenBytes += slot.Length
-                            TotalBytesProcessed += slot.Length
-                            CurrentBytesProcessed += slot.Length
-                            TotalBytesUnindexed += slot.Length
-                        End If
-                    Finally
-                        fastProvider.AdvanceSlot(slot)
+                        End Select
+                        p = New TapeUtils.PositionData(driveHandle)
+                        Continue While
                     End Try
+                    If (((sense(2) >> 6) And &H1) = 1) Then
+                        If ((sense(2) And &HF) = 13) AndAlso (Not My.Settings.LTFSWriter_IgnoreVolumeOverflow) Then
+                            PrintMsg(My.Resources.ResText_VOF)
+                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_VOF))
+                            StopFlag = True
+                            Exit While
+                        Else
+                            PrintMsg(If(((sense(2) And &HF) = 13), My.Resources.ResText_VOF, My.Resources.ResText_EWEOM), True, DeDupe:=True)
+                            succ = True
+                            Exit While
+                        End If
+                    ElseIf (sense(2) And &HF) <> 0 Then
+                        Dim dResult As DialogResult
+                        Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
+                        Select Case dResult
+                            Case DialogResult.Abort
+                                StopFlag = True
+                                Throw New Exception(TapeUtils.ParseSenseData(sense))
+                            Case DialogResult.Retry
+                                succ = False
+                            Case DialogResult.Ignore
+                                succ = True
+                                Exit While
+                        End Select
+                        p = New TapeUtils.PositionData(driveHandle)
+                    Else
+                        succ = True
+                        Exit While
+                    End If
+                End While
+
+                If Not StopFlag Then
+                    fr.File.WrittenBytes += slot.Length
+                    TotalBytesProcessed += slot.Length
+                    CurrentBytesProcessed += slot.Length
+                    TotalBytesUnindexed += slot.Length
+                End If
+            Finally
+                fastProvider.AdvanceSlot(slot)
+            End Try
             Dim slotWriteSeconds = (Stopwatch.GetTimestamp() - writeStarted) / CDbl(Stopwatch.Frequency)
             writeByteCount += bytesReaded
             writeElapsedSeconds += slotWriteSeconds
@@ -5091,7 +5092,7 @@ Public Class LTFSWriter
                                                         succ = True
                                                         Exit While
                                                     End If
-                                                ElseIf sense(2) And &HF <> 0 Then
+                                                ElseIf (sense(2) And &HF) <> 0 Then
                                                     PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
                                                     Try
                                                         Throw New Exception("SCSI sense error")
@@ -5170,8 +5171,8 @@ Public Class LTFSWriter
                                             Dim ExitWhileFlag As Boolean = False
                                             'Dim tstart As Date = Now
                                             'Dim tsub As Double = 0
-                                            Dim RingBufferReader As SpscRingBuffer
-                                            Dim PipeReader As System.IO.Pipelines.PipeReader
+                                            Dim RingBufferReader As SpscRingBuffer = Nothing
+                                            Dim PipeReader As System.IO.Pipelines.PipeReader = Nothing
                                             If RingBufferEnabled Then
                                                 RingBufferReader = provider.RingBuffer
                                             Else
@@ -5317,7 +5318,7 @@ Public Class LTFSWriter
                                                                     succ = True
                                                                     Exit While
                                                                 End If
-                                                            ElseIf sense(2) And &HF <> 0 Then
+                                                            ElseIf (sense(2) And &HF) <> 0 Then
                                                                 Try
                                                                     Throw New Exception("SCSI sense error")
                                                                 Catch ex As Exception
@@ -5615,7 +5616,7 @@ Public Class LTFSWriter
                     Modified = True
                     If Not StopFlag Then
                         Dim TimeCost As TimeSpan = Now - StartTime
-                        OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
+                        OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0"c)}:{TimeCost.Minutes.ToString().PadLeft(2, "0"c)}:{TimeCost.Seconds.ToString().PadLeft(2, "0"c)} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
                         OnWriteFinished()
                     Else
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
@@ -5860,7 +5861,7 @@ Public Class LTFSWriter
                     End If
                     TapeUtils.Locate(driveHandle, 0UL, Math.Min(ExtraPartitionCount, IndexPartition), TapeUtils.LocateDestType.Block)
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
-                    Dim senseData As Byte()
+                    Dim senseData As Byte() = Nothing
                     Dim header As String = Encoding.ASCII.GetString(TapeUtils.ReadBlock(driveHandle, senseData))
                     PrintMsg($"Position = {GetPos.ToString()}", LogOnly:=True)
                     Dim VOL1LabelLegal As Boolean = False
@@ -5905,7 +5906,7 @@ Public Class LTFSWriter
 
                     Barcode = TapeUtils.ReadBarcode(driveHandle)
                     If Barcode Is Nothing OrElse Barcode = "" Then
-                        Barcode = header.Substring(4, 6).TrimEnd(" ") & GenAbbr
+                        Barcode = header.Substring(4, 6).TrimEnd(" "c) & GenAbbr
                     End If
                     PrintMsg($"Barcode = {Barcode}", LogOnly:=True)
                     PrintMsg(My.Resources.ResText_Locating)
@@ -6001,7 +6002,7 @@ Public Class LTFSWriter
                     End Try
                     Me.Invoke(Sub()
                                   MaxCapacity = 0
-                                  ToolStripStatusLabel1.Text = Barcode.TrimEnd(" ")
+                                  ToolStripStatusLabel1.Text = Barcode.TrimEnd(" "c)
                                   ToolStripStatusLabel1.ToolTipText = $"{My.Resources.ResText_Barcode}:{ToolStripStatusLabel1.Text}{vbCrLf}{My.Resources.ResText_BlkSize}:{plabel.blocksize}"
                               End Sub)
                     RefreshDisplay()
@@ -6796,7 +6797,7 @@ Public Class LTFSWriter
                     End If
                 End If
                 Dim TotalBytesToRead As Long = fe.bytecount
-                Dim blk As Byte()
+                Dim blk As Byte() = Nothing
                 Dim sense As Byte() = {}
                 If blk0 IsNot Nothing Then
                     blk = blk0
@@ -6808,7 +6809,7 @@ Public Class LTFSWriter
                         If ((sense(2) >> 6) And &H1) = 1 Then
                             succ = True
                             Exit While
-                        ElseIf sense(2) And &HF <> 0 Then
+                        ElseIf (sense(2) And &HF) <> 0 Then
                             PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
                             Try
                                 Throw New Exception("SCSI sense error")
@@ -6846,7 +6847,7 @@ Public Class LTFSWriter
                         If ((sense(2) >> 6) And &H1) = 1 Then
                             succ = True
                             Exit While
-                        ElseIf sense(2) And &HF <> 0 Then
+                        ElseIf (sense(2) And &HF) <> 0 Then
                             PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
                             Try
                                 Throw New Exception("SCSI sense error")
@@ -8018,7 +8019,6 @@ Public Class LTFSWriter
 
             Catch ex As Exception
                 Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
-                Dim dResult As DialogResult
                 ActiveFrm.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
             End Try
             Return STATUS_SUCCESS
@@ -8515,7 +8515,7 @@ Public Class LTFSWriter
                                              succ = True
                                              Exit While
                                          End If
-                                     ElseIf sense(2) And &HF <> 0 Then
+                                     ElseIf (sense(2) And &HF) <> 0 Then
                                          Try
                                              Throw New Exception("SCSI sense error")
                                          Catch ex As Exception
@@ -9079,7 +9079,7 @@ Public Class LTFSWriter
                                                     succ = True
                                                     Exit While
                                                 End If
-                                            ElseIf sense(2) And &HF <> 0 Then
+                                            ElseIf (sense(2) And &HF) <> 0 Then
                                                 Try
                                                     Throw New Exception("SCSI sense error")
                                                 Catch ex As Exception
@@ -9205,7 +9205,7 @@ Public Class LTFSWriter
                     Modified = True
                     If Not StopFlag Then
                         Dim TimeCost As TimeSpan = Now - StartTime
-                        OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
+                        OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0"c)}:{TimeCost.Minutes.ToString().PadLeft(2, "0"c)}:{TimeCost.Seconds.ToString().PadLeft(2, "0"c)} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
                         OnWriteFinished()
                     Else
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
@@ -9376,7 +9376,7 @@ Public Class LTFSWriter
                 End If
             End If
         End If
-        SearchStart = SearchStart.TrimStart("\")
+        SearchStart = SearchStart.TrimStart("\"c)
         If SearchStart = "" Then SearchStart = "\"
         Dim dirIndexStack As New List(Of Integer)
         Dim dirStack As New List(Of ltfsindex.directory)
@@ -9424,7 +9424,7 @@ Public Class LTFSWriter
                          If dirIndexStack.Last <= dirStack(dirStack.Count - 2).contents._directory.Count - 1 Then
                              Do
                                  If fileindex > dirStack.Last.contents._file.Count - 1 Then Exit Do
-                                 If (FIDMode AndAlso ((fileindex = -1 AndAlso dirStack.Last.fileuid = FID) OrElse
+                                 If (FIDMode AndAlso ((fileindex = -1 AndAlso dirStack.Last.fileuid.ToString() = FID) OrElse
                                                       (fileindex <> -1 AndAlso dirStack.Last.contents._file(fileindex).fileuid.ToString = FID))) OrElse
                                     (fileindex = -1 AndAlso If(My.Settings.Application_CaseSensitiveSearch,
                                                                dirStack.Last.name.Contains(KW),
@@ -9523,7 +9523,7 @@ Public Class LTFSWriter
             Case Keys.V
                 If Not AllowOperation Then Exit Sub
                 If e.Control Then
-                    Dim Paths As String()
+                    Dim Paths As String() = Nothing
                     If Clipboard.ContainsText Then
                         Paths = Clipboard.GetText().Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
                     ElseIf Clipboard.ContainsFileDropList Then
@@ -10382,8 +10382,8 @@ Public Class LTFSWriter
                          Dim sh As IOManager.CheckSumBlockwiseCalculator = Nothing
                          If HashOnWrite Then sh = New IOManager.CheckSumBlockwiseCalculator
                          Dim ExitWhileFlag As Boolean = False
-                         Dim RingBufferReader As SpscRingBuffer
-                         Dim PipeReader As System.IO.Pipelines.PipeReader
+                         Dim RingBufferReader As SpscRingBuffer = Nothing
+                         Dim PipeReader As System.IO.Pipelines.PipeReader = Nothing
                          If RingBufferEnabled Then
                              RingBufferReader = provider.RingBuffer
                          Else
@@ -10528,7 +10528,7 @@ Public Class LTFSWriter
                                                      succ = True
                                                      Exit While
                                                  End If
-                                             ElseIf sense(2) And &HF <> 0 Then
+                                             ElseIf (sense(2) And &HF) <> 0 Then
                                                  Try
                                                      Throw New Exception("SCSI sense error")
                                                  Catch ex As Exception
@@ -10755,7 +10755,7 @@ Public Class LTFSWriter
                      Dim OnWriteFinishMessage As String = ""
                      If Not StopFlag Then
                          Dim TimeCost As TimeSpan = Now - StartTime
-                         OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0")}:{TimeCost.Minutes.ToString().PadLeft(2, "0")}:{TimeCost.Seconds.ToString().PadLeft(2, "0")} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
+                         OnWriteFinishMessage = ($"{My.Resources.ResText_WFTime}{(Math.Floor(TimeCost.TotalHours)).ToString().PadLeft(2, "0"c)}:{TimeCost.Minutes.ToString().PadLeft(2, "0"c)}:{TimeCost.Seconds.ToString().PadLeft(2, "0"c)} {My.Resources.ResText_AvgS}{IOManager.FormatSize(TotalBytesWritten \ Math.Max(1, TimeCost.TotalSeconds))}/s")
                          OnWriteFinished()
                      Else
                          OnWriteFinishMessage = (My.Resources.ResText_WCnd)
