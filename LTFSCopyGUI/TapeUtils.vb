@@ -961,14 +961,14 @@ Public Class TapeUtils
             Select Case DriverTypeSetting
                 Case DriverType.SLR1
                     Dim BlockCount As Integer = CInt(Math.Ceiling(BlockSizeLimit / 512))
-                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 1, (BlockCount >> 16) And &HFF, (BlockCount >> 8) And &HFF, BlockCount And &HFF, 0},
-                                              paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 1, CByte((BlockCount >> 16) And &HFF), CByte((BlockCount >> 8) And &HFF), CByte(BlockCount And &HFF), 0},
+                                              paramLen:=CInt(BlockSizeLimit), senseReport:=Function(senseData As Byte()) As Boolean
                                                                                          senseRaw = senseData
                                                                                          Return True
                                                                                      End Function)
                 Case Else
-                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, (BlockSizeLimit >> 16) And &HFF, (BlockSizeLimit >> 8) And &HFF, BlockSizeLimit And &HFF, 0},
-                                              paramLen:=BlockSizeLimit, senseReport:=Function(senseData As Byte()) As Boolean
+                    RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:={8, 0, CByte((BlockSizeLimit >> 16) And &HFF), CByte((BlockSizeLimit >> 8) And &HFF), CByte(BlockSizeLimit And &HFF), 0},
+                                              paramLen:=CInt(BlockSizeLimit), senseReport:=Function(senseData As Byte()) As Boolean
                                                                                          senseRaw = senseData
                                                                                          Return True
                                                                                      End Function)
@@ -984,13 +984,13 @@ Public Class TapeUtils
             If Not Truncate AndAlso DiffBytes < 0 AndAlso (BlockSizeLimit - DiffBytes) < GlobalBlockLimit Then
                 Marshal.FreeHGlobal(RawDataU)
                 Dim p As New PositionData(handle:=handle)
-                Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
-                Return ReadBlock(handle:=handle, sense:=sense, BlockSizeLimit:=(BlockSizeLimit - DiffBytes), Truncate:=Truncate)
+                Locate(handle:=handle, BlockAddress:=CULng(p.BlockNumber - 1), Partition:=p.PartitionNumber)
+                Return ReadBlock(handle:=handle, sense:=sense, BlockSizeLimit:=CUInt(BlockSizeLimit - DiffBytes), Truncate:=Truncate)
             End If
 
         End SyncLock
         Dim RawData(DataLen - 1) As Byte
-        Marshal.Copy(RawDataU, RawData, 0, Math.Min(BlockSizeLimit, DataLen))
+        Marshal.Copy(RawDataU, RawData, 0, CInt(Math.Min(BlockSizeLimit, DataLen)))
         Marshal.FreeHGlobal(RawDataU)
         Return RawData
     End Function
@@ -1177,7 +1177,7 @@ Public Class TapeUtils
             If Not TapeUtils.AllowPartition Then
                 Space6(handle:=handle, Count:=-1, Code:=LocateDestType.Block)
             Else
-                Locate(handle:=handle, BlockAddress:=p.BlockNumber - 1, Partition:=p.PartitionNumber)
+                Locate(handle:=handle, BlockAddress:=CULng(p.BlockNumber - 1), Partition:=p.PartitionNumber)
             End If
             Return False
         End SyncLock
@@ -1271,7 +1271,7 @@ Public Class TapeUtils
         len <<= 8
         len = len Or lenData(1)
         len = CUShort(len + 2)
-        Dim rawParam As Byte() = SCSIReadParam(TapeDrive:=TapeDrive, cdbData:={&HA3, &H1F, &H45, 2, 0, 0, 0, 0, len >> 8, len And &HFF, 0, 0}, paramLen:=len)
+        Dim rawParam As Byte() = SCSIReadParam(TapeDrive:=TapeDrive, cdbData:={&HA3, &H1F, &H45, 2, 0, 0, 0, 0, CByte(len >> 8), CByte(len And &HFF), 0, 0}, paramLen:=len)
         Return rawParam.Skip(4).ToArray()
     End Function
     Public Enum LocateDestType
@@ -1292,14 +1292,14 @@ Public Class TapeUtils
                 Case DriverType.SLR3
                     Select Case DestType
                         Case LocateDestType.Block
-                            SCSIReadParam(handle:=handle, cdbData:={&H2B, 4, 0, CLng(BlockAddress >> 24) And &HFF, CLng(BlockAddress >> 16) And &HFF, CLng(BlockAddress >> 8) And &HFF, CLng(BlockAddress) And &HFF,
+                            SCSIReadParam(handle:=handle, cdbData:={&H2B, 4, 0, CByte(BlockAddress >> 24 And &HFFUL), CByte(BlockAddress >> 16 And &HFFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                                                  0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                          sense = senseData
                                                                                                          Return True
                                                                                                      End Function)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
-                            Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
+                            Space6(handle:=handle, Count:=CInt(BlockAddress), Code:=LocateDestType.FileMark)
                         Case LocateDestType.EOD
                             If Not ReadPosition(handle).EOD Then
                                 SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
@@ -1311,14 +1311,14 @@ Public Class TapeUtils
                 Case DriverType.SLR1
                     Select Case DestType
                         Case LocateDestType.Block
-                            SCSIReadParam(handle:=handle, cdbData:={&HC, 0, CLng(BlockAddress >> 16) And &HF, CLng(BlockAddress >> 8) And &HFF, CLng(BlockAddress) And &HFF,
+                            SCSIReadParam(handle:=handle, cdbData:={&HC, 0, CByte(BlockAddress >> 16 And &HFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                                             0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                               sense = senseData
                                                                                               Return True
                                                                                           End Function)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
-                            Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
+                            Space6(handle:=handle, Count:=CInt(BlockAddress), Code:=LocateDestType.FileMark)
                         Case LocateDestType.EOD
                             If Not ReadPosition(handle).EOD Then
                                 SendSCSICommand(handle:=handle, cdbData:={&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
@@ -1349,15 +1349,15 @@ Public Class TapeUtils
                     If AllowPartition OrElse DestType <> 0 Then
                         Dim CP As Byte = 0
                         If ReadPosition(handle).PartitionNumber <> Partition Then CP = 1
-                        SCSIReadParam(handle:=handle, cdbData:={&H92, (DestType << 3) Or (CP << 1), 0, Partition,
-                                                        CLng((BlockAddress >> 56)) And &HFF, CLng((BlockAddress >> 48)) And &HFF, CLng((BlockAddress >> 40)) And &HFF, CLng((BlockAddress >> 32)) And &HFF,
-                                                        CLng((BlockAddress >> 24)) And &HFF, CLng((BlockAddress >> 16)) And &HFF, CLng((BlockAddress >> 8)) And &HFF, CLng(BlockAddress) And &HFF,
+                        SCSIReadParam(handle:=handle, cdbData:={&H92, CByte((DestType << 3) Or (CP << 1)), 0, Partition,
+                                                        CByte(BlockAddress >> 56 And &HFFUL), CByte(BlockAddress >> 48 And &HFFUL), CByte(BlockAddress >> 40 And &HFFUL), CByte(BlockAddress >> 32 And &HFFUL),
+                                                        CByte(BlockAddress >> 24 And &HFFUL), CByte(BlockAddress >> 16 And &HFFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                                         0, 0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                    sense = senseData
                                                                                                    Return True
                                                                                                End Function)
                     Else
-                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, CLng((BlockAddress >> 24)) And &HFF, CLng((BlockAddress >> 16)) And &HFF, CLng((BlockAddress >> 8)) And &HFF, CLng(BlockAddress) And &HFF,
+                        SCSIReadParam(handle:=handle, cdbData:={&H2B, 0, 0, CByte(BlockAddress >> 24 And &HFFUL), CByte(BlockAddress >> 16 And &HFFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                                         0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                 sense = senseData
                                                                                                 Return True
@@ -1377,12 +1377,12 @@ Public Class TapeUtils
                     End If
                 ElseIf DestType = LocateDestType.FileMark Then
                     Locate(handle, 0, 0)
-                    Space6(handle:=handle, Count:=BlockAddress, Code:=LocateDestType.FileMark)
+                    Space6(handle:=handle, Count:=CInt(BlockAddress), Code:=LocateDestType.FileMark)
                 Else
 
-                    SCSIReadParam(handle:=handle, cdbData:={&H92, DestType << 3, 0, 0,
-                                            CLng((BlockAddress >> 56)) And &HFF, CLng((BlockAddress >> 48)) And &HFF, CLng((BlockAddress >> 40)) And &HFF, CLng((BlockAddress >> 32)) And &HFF,
-                                            CLng((BlockAddress >> 24)) And &HFF, CLng((BlockAddress >> 16)) And &HFF, CLng((BlockAddress >> 8)) And &HFF, CLng(BlockAddress) And &HFF,
+                    SCSIReadParam(handle:=handle, cdbData:={&H92, CByte(DestType << 3), 0, 0,
+                                            CByte(BlockAddress >> 56 And &HFFUL), CByte(BlockAddress >> 48 And &HFFUL), CByte(BlockAddress >> 40 And &HFFUL), CByte(BlockAddress >> 32 And &HFFUL),
+                                            CByte(BlockAddress >> 24 And &HFFUL), CByte(BlockAddress >> 16 And &HFFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                             0, 0, 0, 0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                         sense = senseData
                                                                                         Return True
@@ -1420,7 +1420,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function Space6(handle As IntPtr, Count As Integer, Code As LocateDestType) As UInt16
         Dim sense(63) As Byte
-        SCSIReadParam(handle:=handle, cdbData:={&H11, Code, (Count >> 16) And &HFF, (Count >> 8) And &HFF, Count And &HFF,
+        SCSIReadParam(handle:=handle, cdbData:={&H11, CByte(Code), CByte((Count >> 16) And &HFF), CByte((Count >> 8) And &HFF), CByte(Count And &HFF),
                                             0}, paramLen:=64, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                sense = senseData
                                                                                Return True
@@ -1548,7 +1548,7 @@ Public Class TapeUtils
                     Dim PageLen As Integer = Header(2)
                     PageLen <<= 8
                     PageLen = PageLen Or Header(3)
-                    Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, (PageControl << 6) Or PageCode, SubPageCode, 0, 0, 0, ((PageLen + 4) >> 8) And &HFF, (PageLen + 4) And &HFF, 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
+                    Return SCSIReadParam(handle:=handle, cdbData:={&H4D, 0, CByte((PageControl << 6) Or PageCode), SubPageCode, 0, 0, 0, CByte(((PageLen + 4) >> 8) And &HFF), CByte((PageLen + 4) And &HFF), 0}, paramLen:=PageLen + 4, senseReport:=senseReport)
                 End SyncLock
         End Select
 
@@ -1585,9 +1585,9 @@ Public Class TapeUtils
                     If PageLen = 0 Then Return {0, 0, 0, 0}
                     Dim DescriptorLen As Byte = Header(3)
                     If SkipHeader Then
-                        Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).Skip(4 + DescriptorLen).ToArray()
+                        Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, CByte(PageLen + 1), 0}, paramLen:=PageLen + 1, senseReport:=senseReport).Skip(4 + DescriptorLen).ToArray()
                     Else
-                        Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, PageLen + 1, 0}, paramLen:=PageLen + 1, senseReport:=senseReport).ToArray()
+                        Return SCSIReadParam(handle:=handle, cdbData:={&H1A, 0, PageID, 0, CByte(PageLen + 1), 0}, paramLen:=PageLen + 1, senseReport:=senseReport).ToArray()
                     End If
                 End SyncLock
         End Select
@@ -1605,14 +1605,14 @@ Public Class TapeUtils
         Dim data As Byte() = (New Byte() {0, 0, &H10, 0}).Concat(PageData).ToArray()
         Dim sense(63) As Byte
         If data.Length < 256 Then
-            SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, data.Length, 0}, Data:=data, DataIn:=0,
+            SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, CByte(data.Length), 0}, Data:=data, DataIn:=0,
                             senseReport:=Function(senseData As Byte()) As Boolean
                                              sense = senseData
                                              Return True
                                          End Function)
         Else
             data = (New Byte() {0, 0, 0, &H10, 0, 0, 0, 0}).Concat(PageData).ToArray()
-            SendSCSICommand(handle:=handle, cdbData:={&H55, &H10, 0, 0, 0, 0, 0, (data.Length >> 8) And &HFF, data.Length And &HFF, 0}, Data:=data, DataIn:=0,
+            SendSCSICommand(handle:=handle, cdbData:={&H55, &H10, 0, 0, 0, 0, 0, CByte((data.Length >> 8) And &HFF), CByte(data.Length And &HFF), 0}, Data:=data, DataIn:=0,
                            senseReport:=Function(senseData As Byte()) As Boolean
                                             sense = senseData
                                             Return True
@@ -1657,7 +1657,7 @@ Public Class TapeUtils
                 ModeSelect(handle, mode23, senseReport)
                 Return True
             Case Else
-                Return SendSCSICommand(handle:=handle, cdbData:={&HB, 0, 0, (Capacity >> 8) And &HFF, Capacity And &HFF, 0}, senseReport:=senseReport)
+                Return SendSCSICommand(handle:=handle, cdbData:={&HB, 0, 0, CByte((Capacity >> 8) And &HFF), CByte(Capacity And &HFF), 0}, senseReport:=senseReport)
         End Select
     End Function
     Public Shared Function SetBarcode(handle As IntPtr, barcode As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
@@ -1709,7 +1709,7 @@ Public Class TapeUtils
                     Dim DensityCode As Byte = ReadDensityCode(handle:=handle)
                     BlockSize = CULng(Math.Min(BlockSize, GlobalBlockLimit))
                     SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &HC, 0},
-                                     Data:={0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, CLng(BlockSize >> 16) And &HFF, CLng(BlockSize >> 8) And &HFF, CLng(BlockSize) And &HFF}, DataIn:=0,
+                                     Data:={0, 0, &H10, 8, DensityCode, 0, 0, 0, 0, CByte(BlockSize >> 16 And &HFFUL), CByte(BlockSize >> 8 And &HFFUL), CByte(BlockSize And &HFFUL)}, DataIn:=0,
                                     senseReport:=Function(senseData As Byte()) As Boolean
                                                      sense = senseData
                                                      Return True
@@ -7126,7 +7126,7 @@ Public Class TapeUtils
                     sense = TapeImage.SenseData.NotPresent
                 Else
                     Dim dataArr(CInt(Length - 1)) As Byte
-                    Marshal.Copy(Data, dataArr, 0, Length)
+                    Marshal.Copy(Data, dataArr, 0, CInt(Length))
                     ts.WriteBlock(dataArr)
                     sense = TapeImage.SenseData.NoSense
                 End If
@@ -7190,11 +7190,11 @@ Public Class TapeUtils
                 Case Else
                     cdbData = {&HA, 0, CByte(TransferLen >> 16 And &HFF), CByte(TransferLen >> 8 And &HFF), CByte(TransferLen And &HFF), 0}
             End Select
-            Marshal.Copy(Data, i, dataBuffer, TransferLen)
+            Marshal.Copy(Data, i, dataBuffer, CInt(TransferLen))
             Select Case DriverTypeSetting
                 Case DriverType.TapeStream
                     Dim dataArr(CInt(TransferLen - 1)) As Byte
-                    Marshal.Copy(dataBuffer, dataArr, 0, TransferLen)
+                    Marshal.Copy(dataBuffer, dataArr, 0, CInt(TransferLen))
                     ts.WriteBlock(dataArr)
                     sense = TapeImage.SenseData.NoSense
                 Case Else
@@ -7692,7 +7692,7 @@ Public Class TapeUtils
             Return New MAMAttribute With {.ID = (CUShort(PageCode_H) << 8) Or PageCode_L, .RawData = RawData}
         End Function
         Public Shared Function FromTapeDrive(TapeDrive As String, PageCode As UInt16, Optional ByVal PartitionNumber As Byte = 0) As MAMAttribute
-            Return FromTapeDrive(TapeDrive:=TapeDrive, PageCode_H:=(PageCode >> 8) And &HFF, PageCode_L:=PageCode And &HFF, PartitionNumber:=PartitionNumber)
+            Return FromTapeDrive(TapeDrive:=TapeDrive, PageCode_H:=CByte((PageCode >> 8) And &HFF), PageCode_L:=CByte(PageCode And &HFF), PartitionNumber:=PartitionNumber)
         End Function
 
         Public Function GetSerializedText(Optional ByVal ReduceSize As Boolean = True) As String
@@ -8392,7 +8392,7 @@ Public Class TapeUtils
                         ProgressReport("MODE SELECT - Partition mode page..")
                         If DriverTypeSetting <> DriverType.TapeStream Then
                             'Mode Select:1st Partition to Minimum 
-                            If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, MaxExtraPartitionAllowed, 1, ModeData(4), ModeData(5), 9, ModeData(7), (P0Size >> 8) And &HFF, P0Size And &HFF, (P1Size >> 8) And &HFF, P1Size And &HFF}, DataIn:=0, senseReport:=senseReportFunc) Then
+                            If TapeUtils.SendSCSICommand(handle:=handle, cdbData:={&H15, &H10, 0, 0, &H10, 0}, Data:={0, 0, &H10, 0, &H11, &HA, CByte(MaxExtraPartitionAllowed), 1, ModeData(4), ModeData(5), 9, ModeData(7), CByte((P0Size >> 8) And &HFF), CByte(P0Size And &HFF), CByte((P1Size >> 8) And &HFF), CByte(P1Size And &HFF)}, DataIn:=0, senseReport:=senseReportFunc) Then
                                 ProgressReport("MODE SELECT 11h OK" & vbCrLf)
                             Else
                                 OnError("MODE SELECT 11h Fail" & vbCrLf)
@@ -8732,7 +8732,7 @@ Public Class TapeUtils
                 ReleaseUnit(handle)
                 Return False
             End If
-            If Locate(handle:=handle, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=LocateDestType.Block) <> 0 Then
+            If Locate(handle:=handle, BlockAddress:=CULng(BlockAddress), Partition:=CByte(Partition), DestType:=LocateDestType.Block) <> 0 Then
                 If LockDrive Then
                     AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
@@ -8763,7 +8763,7 @@ Public Class TapeUtils
                 Dim ReadedSize As Long = 0
                 While (ReadedSize < TotalBytes + ByteOffset) And Not StopFlag
                     Dim len As Integer = CInt(Math.Min(BlockSize, TotalBytes + ByteOffset - ReadedSize))
-                    Dim Data As Byte() = ReadBlock(handle:=handle, BlockSizeLimit:=len)
+                    Dim Data As Byte() = ReadBlock(handle:=handle, BlockSizeLimit:=CUInt(len))
                     If Data.Length <> len OrElse len = 0 Then
                         If LockDrive Then
                             AllowMediumRemoval(handle)
@@ -8958,7 +8958,7 @@ Public Class TapeUtils
             End If
         End Function
         Public Shared Sub MoveMedium(Changer As String, src As UInt32, dest As UInt32, Optional ByVal sense As Byte() = Nothing, Optional ByVal LUN As Byte = 0)
-            SCSIReadParam(TapeDrive:=Changer, cdbData:={&HA5, LUN << 5, 0, 0, src >> 8 And &HFF, src And &HFF, dest >> 8 And &HFF, dest And &HFF, 0, 0, 0, 0}, paramLen:=12,
+            SCSIReadParam(TapeDrive:=Changer, cdbData:={&HA5, CByte(LUN << 5), 0, 0, CByte(src >> 8 And &HFFUI), CByte(src And &HFFUI), CByte(dest >> 8 And &HFFUI), CByte(dest And &HFFUI), 0, 0, 0, 0}, paramLen:=12,
                 senseReport:=Function(s As Byte()) As Boolean
                                  If sense IsNot Nothing AndAlso sense.Length >= 64 Then
                                      Array.Copy(s, sense, Math.Min(64, s.Length))

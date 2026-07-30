@@ -1416,7 +1416,7 @@ Public Class LTFSConfigurator
             Dim pc As Integer = ComboBox5.SelectedIndex
             Panel1.Enabled = False
             Task.Run(Sub()
-                         Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=PageItem(index).PageCode, SubPageCode:=0, PageControl:=pc)
+                Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=CByte(PageItem(index).PageCode), SubPageCode:=0, PageControl:=CByte(pc))
                          Invoke(Sub()
                                     PageItem(index).RawData = logdata
                                     TextBoxDebugOutput.Text = PageItem(index).GetSummary()
@@ -1547,7 +1547,7 @@ Public Class LTFSConfigurator
                                         WERLPageLen = WERLPageLen Or WERLHeader(3)
                                         If WERLPageLen = 0 Then Exit Try
                                         WERLPageLen += 4
-                                        WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+            WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
                                     End SyncLock
                                     Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                                     info = ""
@@ -1667,14 +1667,14 @@ Public Class LTFSConfigurator
                              WERLPageLen = WERLPageLen Or WERLHeader(3)
                              If WERLPageLen = 0 Then Exit Try
                              WERLPageLen += 4
-                             WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, (WERLPageLen >> 8) And &HFF, WERLPageLen And &HFF, &H0}, paramLen:=WERLPageLen)
+            WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
 
                              Dim RERLPageLen As Integer = RERLHeader(2)
                              RERLPageLen <<= 8
                              RERLPageLen = RERLPageLen Or RERLHeader(3)
                              If RERLPageLen = 0 Then Exit Try
                              RERLPageLen += 4
-                             RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, (RERLPageLen >> 8) And &HFF, RERLPageLen And &HFF, &H0}, paramLen:=RERLPageLen)
+            RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
                          End SyncLock
                          Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                          Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)

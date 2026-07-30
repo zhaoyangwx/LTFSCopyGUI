@@ -1443,7 +1443,7 @@ Public Class IOManager
                     Dim fByteOffset As Integer = CInt((ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize)
                     Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
                     Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive:=TapeDrive,
-                                                             BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
+                                                             BlockSizeLimit:=CUInt(Math.Min(BlockSize, BytesRemaining)))
                     Dim bytesReaded As Integer = data.Length - fByteOffset
                     Dim destIndex As Integer = offset + rBytes
                     Array.Copy(data, fByteOffset, buffer, destIndex, Math.Min(bytesReaded, buffer.Length - destIndex))

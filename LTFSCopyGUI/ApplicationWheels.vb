@@ -990,7 +990,7 @@ Public Class RichMenuStrip
 
             Dim rect = New Rectangle(e.ImageRectangle.X, e.ImageRectangle.Y, size, size)
             Dim rect2 As New Rectangle(CInt(rect.X + rect.Width / 8), CInt(rect.Y + rect.Height / 8), CInt(rect.Width * 0.75), CInt(rect.Height * 0.75))
-            Using pen As New Pen(Color.Black, 1.5 * DisplayHelper.ScreenScale)
+            Using pen As New Pen(Color.Black, CSng(1.5 * DisplayHelper.ScreenScale))
                 g.FillRectangle(New SolidBrush(Color.FromArgb(181, 215, 243)), rect)
                 g.DrawRectangle(New Pen(Color.FromArgb(36, 138, 220)), rect)
                 g.DrawLines(pen, {
