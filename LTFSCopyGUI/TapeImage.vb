@@ -103,7 +103,7 @@ Public Class TapeImage
     <Xml.Serialization.XmlIgnore>
     Public ReadOnly Property CurrentFileOffset As Long
         Get
-            Return DatesetLength * Position.SetNumber + CurrentIntraSetBlockOffset
+            Return CLng(DatesetLength * Position.SetNumber + CurrentIntraSetBlockOffset)
         End Get
     End Property
 
@@ -143,7 +143,7 @@ Public Class TapeImage
     End Function
     Public ReadOnly Property CurrentSetResidueBytes As Integer
         Get
-            Return DatesetLength - CurrentIntraSetBlockOffset
+            Return CInt(DatesetLength - CurrentIntraSetBlockOffset)
         End Get
     End Property
 
@@ -222,9 +222,9 @@ Public Class TapeImage
         Next
         If idx.Position.PartitionNumber <> 0 Then
             ChangePartition(idx.Position.PartitionNumber, Nothing)
-            LocateByBlock(idx.Position.BlockNumber, Nothing)
+            LocateByBlock(CLng(idx.Position.BlockNumber), Nothing)
         ElseIf Position.PartitionNumber <> 0 OrElse idx.Position.BlockNumber <> 0 Then
-            LocateByBlock(idx.Position.BlockNumber, Nothing)
+            LocateByBlock(CLng(idx.Position.BlockNumber), Nothing)
         End If
     End Sub
     Public Sub OpenStream(idx As TapeImage, partitions As List(Of Stream))
@@ -241,9 +241,9 @@ Public Class TapeImage
         Next
         If Position.PartitionNumber <> 0 Then
             ChangePartition(Position.PartitionNumber, Nothing)
-            LocateByBlock(Position.BlockNumber, Nothing)
+            LocateByBlock(CLng(Position.BlockNumber), Nothing)
         ElseIf Position.PartitionNumber <> 0 OrElse Position.BlockNumber <> 0 Then
-            LocateByBlock(Position.BlockNumber, Nothing)
+            LocateByBlock(CLng(Position.BlockNumber), Nothing)
         End If
     End Sub
     Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = False)
@@ -316,7 +316,7 @@ Public Class TapeImage
         Try
             If VolumeChanged Then
                 VolumeChanged = False
-                VCR += 1
+                VCR = CUInt(VCR + 1)
             End If
             IO.File.WriteAllText(idxFile.FullName, Me.GetSerializedString())
             For i As Integer = 0 To PartitionCount - 1
@@ -604,59 +604,59 @@ Public Class TapeImage
                         Response = {CByte((CByte(currentpos.BOP) << 7) Or &B110000),
                             currentpos.PartitionNumber,
                             0, 0,
-                            CByte((currentpos.BlockNumber >> 24) And &HFF),
-                            CByte((currentpos.BlockNumber >> 16) And &HFF),
-                            CByte((currentpos.BlockNumber >> 8) And &HFF),
-                            CByte(currentpos.BlockNumber And &HFF),
-                            CByte((currentpos.BlockNumber >> 24) And &HFF),
-                            CByte((currentpos.BlockNumber >> 16) And &HFF),
-                            CByte((currentpos.BlockNumber >> 8) And &HFF),
-                            CByte(currentpos.BlockNumber And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.BlockNumber) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.BlockNumber) And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case 6
-                        Response = {CByte(currentpos.BOP << 7),
+                        Response = {CByte(CShort(currentpos.BOP) << 7),
                             0, 0, 0,
                             CByte((currentpos.PartitionNumber >> 24) And &HFF),
                             CByte((currentpos.PartitionNumber >> 16) And &HFF),
                             CByte((currentpos.PartitionNumber >> 8) And &HFF),
                             CByte(currentpos.PartitionNumber And &HFF),
-                            CByte((currentpos.BlockNumber >> 56) And &HFF),
-                            CByte((currentpos.BlockNumber >> 48) And &HFF),
-                            CByte((currentpos.BlockNumber >> 40) And &HFF),
-                            CByte((currentpos.BlockNumber >> 32) And &HFF),
-                            CByte((currentpos.BlockNumber >> 24) And &HFF),
-                            CByte((currentpos.BlockNumber >> 16) And &HFF),
-                            CByte((currentpos.BlockNumber >> 8) And &HFF),
-                            CByte(currentpos.BlockNumber And &HFF),
-                            CByte((currentpos.FileNumber >> 56) And &HFF),
-                            CByte((currentpos.FileNumber >> 48) And &HFF),
-                            CByte((currentpos.FileNumber >> 40) And &HFF),
-                            CByte((currentpos.FileNumber >> 32) And &HFF),
-                            CByte((currentpos.FileNumber >> 24) And &HFF),
-                            CByte((currentpos.FileNumber >> 16) And &HFF),
-                            CByte((currentpos.FileNumber >> 8) And &HFF),
-                            CByte(currentpos.FileNumber And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 56)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 48)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 40)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 32)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.BlockNumber) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 56)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 48)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 40)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 32)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.FileNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.FileNumber) And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case 8
-                        Response = {CByte((currentpos.BOP << 7) Or &B11000),
+                        Response = {CByte((CShort(currentpos.BOP) << 7) Or &B11000),
                             currentpos.PartitionNumber, 0, &H1C,
                             0, 0, 0, 0,
-                            CByte((currentpos.BlockNumber >> 56) And &HFF),
-                            CByte((currentpos.BlockNumber >> 48) And &HFF),
-                            CByte((currentpos.BlockNumber >> 40) And &HFF),
-                            CByte((currentpos.BlockNumber >> 32) And &HFF),
-                            CByte((currentpos.BlockNumber >> 24) And &HFF),
-                            CByte((currentpos.BlockNumber >> 16) And &HFF),
-                            CByte((currentpos.BlockNumber >> 8) And &HFF),
-                            CByte(currentpos.BlockNumber And &HFF),
-                            CByte((currentpos.BlockNumber >> 56) And &HFF),
-                            CByte((currentpos.BlockNumber >> 48) And &HFF),
-                            CByte((currentpos.BlockNumber >> 40) And &HFF),
-                            CByte((currentpos.BlockNumber >> 32) And &HFF),
-                            CByte((currentpos.BlockNumber >> 24) And &HFF),
-                            CByte((currentpos.BlockNumber >> 16) And &HFF),
-                            CByte((currentpos.BlockNumber >> 8) And &HFF),
-                            CByte(currentpos.BlockNumber And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 56)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 48)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 40)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 32)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.BlockNumber) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 56)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 48)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 40)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 32)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 24)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 16)) And &HFF),
+                            CByte(CLng((currentpos.BlockNumber >> 8)) And &HFF),
+                            CByte(CLng(currentpos.BlockNumber) And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case Else
                         sense = SenseData.IllegalOpCode
@@ -721,9 +721,9 @@ Public Class TapeImage
                 End If
                 Select Case Code
                     Case 0 'block
-                        If Count <> 0 Then LocateByBlock(ReadPosition().BlockNumber + Count, sense)
+                        If Count <> 0 Then LocateByBlock(CLng(ReadPosition().BlockNumber + Count), sense)
                     Case 1 'filemark
-                        If Count <> 0 Then LocateByFilemark(ReadPosition().FileNumber + Count, sense)
+                        If Count <> 0 Then LocateByFilemark(CLng(ReadPosition().FileNumber + Count), sense)
                     Case 3 'eod
                         LocateToEOD(sense)
                     Case Else
@@ -1153,7 +1153,7 @@ Public Class TapeImage
                 Dim paddingdata(CurrentSetResidueBytes - 1) As Byte
                 CurrentStream.Write(paddingdata, 0, CurrentSetResidueBytes)
             End If
-            Position.SetNumber += 1
+            Position.SetNumber = CULng(Position.SetNumber + 1)
             CurrentIntraSetBlockOffset = 0
         End If
         If blocklen = 0 Then
@@ -1165,9 +1165,9 @@ Public Class TapeImage
             While FilemarkBlockIndex(Position.PartitionNumber).Count > 0 AndAlso FilemarkBlockIndex(Position.PartitionNumber).Last >= Position.BlockNumber
                 FilemarkBlockIndex(Position.PartitionNumber).RemoveAt(FilemarkBlockIndex(Position.PartitionNumber).Count - 1)
             End While
-            FilemarkBlockIndex(Position.PartitionNumber).Add(Position.BlockNumber)
-            Position.BlockNumber += 1
-            Position.FileNumber += 1
+            FilemarkBlockIndex(Position.PartitionNumber).Add(CLng(Position.BlockNumber))
+            Position.BlockNumber = CULng(Position.BlockNumber + 1)
+            Position.FileNumber = CULng(Position.FileNumber + 1)
             CurrentIntraSetBlockOffset += BlockHeaderLen
         Else
             Dim residue As Integer = blocklen
@@ -1179,7 +1179,7 @@ Public Class TapeImage
                         Dim paddingdata(CurrentSetResidueBytes - 1) As Byte
                         CurrentStream.Write(paddingdata, 0, CurrentSetResidueBytes)
                     End If
-                    Position.SetNumber += 1
+                    Position.SetNumber = CULng(Position.SetNumber + 1)
                     CurrentIntraSetBlockOffset = 0
                 End If
                 Dim writelen As Integer = Math.Min(residue, CurrentSetResidueBytes - BlockHeaderLen)
@@ -1194,9 +1194,9 @@ Public Class TapeImage
                 End If
                 residue -= writelen
             End While
-            Position.BlockNumber += 1
+            Position.BlockNumber = CULng(Position.BlockNumber + 1)
         End If
-        PartitionEOD(Position.PartitionNumber) = Position.BlockNumber
+        PartitionEOD(Position.PartitionNumber) = CLng(Position.BlockNumber)
         VolumeChanged = True
     End Sub
     Public Sub WriteFilemark(Optional ByVal count As Integer = 1)
@@ -1219,7 +1219,7 @@ Public Class TapeImage
             Return {}
         End If
         If CurrentSetResidueBytes < BlockHeaderLen Then
-            Position.SetNumber += 1
+            Position.SetNumber = CULng(Position.SetNumber + 1)
             CurrentIntraSetBlockOffset = 0
         End If
         If CurrentFileOffset <> CurrentStream.Position Then
@@ -1238,10 +1238,10 @@ Public Class TapeImage
                 Return {}
             End If
         End If
-        Position.BlockNumber = blocknum + 1
+        Position.BlockNumber = CULng(blocknum + 1)
         If blocklen = 0 Then
             sense = SenseData.FileMark
-            Position.FileNumber += 1
+            Position.FileNumber = CULng(Position.FileNumber + 1)
             Return {}
         End If
         Dim result(blocklen - 1) As Byte
@@ -1250,14 +1250,14 @@ Public Class TapeImage
         While residue > 0
             If HeaderReaded Then
                 If CurrentSetResidueBytes = 0 Then
-                    Position.SetNumber += 1
+                    Position.SetNumber = CULng(Position.SetNumber + 1)
                     CurrentIntraSetBlockOffset = BlockHeaderLen
                     CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
                 End If
                 HeaderReaded = False
             Else
                 If CurrentSetResidueBytes <= BlockHeaderLen Then
-                    Position.SetNumber += 1
+                    Position.SetNumber = CULng(Position.SetNumber + 1)
                     CurrentIntraSetBlockOffset = BlockHeaderLen
                 Else
                     CurrentIntraSetBlockOffset += BlockHeaderLen
@@ -1300,7 +1300,7 @@ Public Class TapeImage
             sense = SenseData.NotFound
             Exit Sub
         End If
-        Dim currset As Long = Position.SetNumber
+        Dim currset As Long = CLng(Position.SetNumber)
         Dim currblock As ULong = GetHeaderBlockNumber(currset)
         While currset > 0 AndAlso currblock = 0
             currset -= 1
@@ -1308,8 +1308,8 @@ Public Class TapeImage
         End While
         Dim nextset As Long = currset
         Dim nextblock As ULong = currblock
-        Dim lastset As Long = Math.Ceiling(CurrentStreamValidLength / DatesetLength) - 1
-        Dim lastblock As ULong = PartitionEOD(Position.PartitionNumber)
+        Dim lastset As Long = CLng(Math.Ceiling(CurrentStreamValidLength / DatesetLength) - 1)
+        Dim lastblock As ULong = CULng(PartitionEOD(Position.PartitionNumber))
         If blockIndex = lastblock Then
             LocateToEOD(sense)
             Exit Sub
@@ -1329,7 +1329,7 @@ Public Class TapeImage
                                                        End Sub)
         While (currblock >= blockIndex) OrElse (nextblock < blockIndex AndAlso nextset < lastset) OrElse nextset - currset > 1
             While currblock > blockIndex
-                Dim delta As Integer = currset - currset \ 2
+                Dim delta As Integer = CInt(currset - currset \ 2)
                 If delta = 0 Then
                     currset = 0
                     currblock = 0
@@ -1340,18 +1340,18 @@ Public Class TapeImage
                 DebugLog($"L1340 currblock={currblock}, currset={currset}, blockindex={blockIndex}", False)
             End While
             While nextblock <= blockIndex
-                Dim delta As Integer = nextset - Math.Ceiling((nextset + lastset) / 2)
+                Dim delta As Integer = CInt(nextset - Math.Ceiling((nextset + lastset) / 2))
                 If delta = 0 Then
                     nextset = lastset
                     nextblock = GetHeaderBlockNumber(nextset)
                     Exit While
                 End If
-                nextset = Math.Ceiling((nextset + lastset) / 2)
+                nextset = CLng(Math.Ceiling((nextset + lastset) / 2))
                 nextblock = GetHeaderBlockNumber(nextset)
                 DebugLog($"L1351 currblock={currblock}, nextblock={nextblock}, currset={currset}, nextset={nextset}, lastset={lastset}", False)
             End While
             If nextset - currset < 5 Then
-                For i As Integer = nextset To currset + 1 Step -1
+                For i As Integer = CInt(nextset) To CInt(currset + 1) Step -1
                     If GetHeaderBlockNumber(i) >= blockIndex Then
                         nextset = i
                     End If
@@ -1389,15 +1389,15 @@ Public Class TapeImage
             If nextset - currset <= 1 Then Exit While
         End While
         Dim iofs As Long = 0
-        Position.SetNumber = currset
+        Position.SetNumber = CULng(currset)
         Position.FileNumber = 0
         While currblock <> blockIndex
             If iofs > DatesetLength - BlockHeaderLen Then
-                Position.SetNumber = nextset
+                Position.SetNumber = CULng(nextset)
                 Position.BlockNumber = nextblock
                 iofs = 0
             End If
-            Dim header As Byte() = GetHeaderBlock(Position.SetNumber, iofs)
+            Dim header As Byte() = GetHeaderBlock(CLng(Position.SetNumber), iofs)
             currblock = GetULong(header.Take(8).ToArray())
             If currblock = 0 AndAlso (Position.SetNumber > 0 OrElse iofs > 0) Then
                 sense = SenseData.NotFound
@@ -1407,11 +1407,11 @@ Public Class TapeImage
             Dim datalen As Integer = GetInteger(header.Skip(12).Take(4).ToArray())
             iofs += BlockHeaderLen + datalen
         End While
-        CurrentIntraSetBlockOffset = iofs
-        Position.BlockNumber = blockIndex
+        CurrentIntraSetBlockOffset = CInt(iofs)
+        Position.BlockNumber = CULng(blockIndex)
         For i As Integer = 0 To FilemarkBlockIndex(Position.PartitionNumber).Count - 1
             If FilemarkBlockIndex(Position.PartitionNumber)(i) < Position.BlockNumber Then
-                Position.FileNumber = i + 1
+                Position.FileNumber = CULng(i + 1)
             End If
         Next
     End Sub
@@ -1442,7 +1442,7 @@ Public Class TapeImage
             Exit Sub
         End If
         If FilemarkBlockIndex(Position.PartitionNumber).Count > filemarkIndex Then
-            LocateByBlock(FilemarkBlockIndex(Position.PartitionNumber)(filemarkIndex - 1), sense)
+            LocateByBlock(FilemarkBlockIndex(Position.PartitionNumber)(CInt(filemarkIndex - 1)), sense)
         Else
             sense = SenseData.NotFound
         End If
@@ -1455,7 +1455,7 @@ Public Class TapeImage
             Position.FileNumber = 0
             Exit Sub
         End If
-        Position.SetNumber = (CurrentStreamValidLength - BlockHeaderLen) \ DatesetLength
+        Position.SetNumber = CULng((CurrentStreamValidLength - BlockHeaderLen) \ DatesetLength)
         Dim BlockHeader(BlockHeaderLen - 1) As Byte
         Dim blocknum As ULong, blocklen As Integer, blockfraglen As Integer
         CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
@@ -1473,7 +1473,7 @@ Public Class TapeImage
                 Exit Sub
             End If
         Else
-            Position.BlockNumber = blocknum + 1
+            Position.BlockNumber = CULng(blocknum + 1)
             ReadBlock(sense)
             blocknum = Position.BlockNumber
         End If
@@ -1493,11 +1493,11 @@ Public Class TapeImage
             blockfraglen = GetInteger(BlockHeader.Skip(12).Take(4).ToArray())
             CurrentIntraSetBlockOffset += blockfraglen
         End While
-        Position.BlockNumber += 1
+        Position.BlockNumber = CULng(Position.BlockNumber + 1)
         ReadBlock(sense)
         For i As Integer = 0 To FilemarkBlockIndex(Position.PartitionNumber).Count - 1
             If FilemarkBlockIndex(Position.PartitionNumber)(i) < Position.BlockNumber Then
-                Position.FileNumber = i + 1
+                Position.FileNumber = CULng(i + 1)
             End If
         Next
     End Sub

@@ -43,7 +43,7 @@ Public Class TreeViewEx
                 it.mask = TVIF_HANDLE Or TVIF_STATE
                 it.hItem = node.Handle
                 it.stateMask = TVIS_STATEIMAGEMASK
-                it.state = INDEXTOSTATEIMAGEMASK(3) 'indeterminate
+                it.state = CUInt(INDEXTOSTATEIMAGEMASK(3)) 'indeterminate
                 SendMessage(Me.Handle, TVM_SETITEM, IntPtr.Zero, it)
             Else
                 node.Checked = False

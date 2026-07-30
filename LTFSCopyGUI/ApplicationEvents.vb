@@ -319,24 +319,24 @@ dataDir:{dataDir}
 
                                 Dim Partition As Byte = 1
                                 If i + 4 <= param.Length - 1 Then
-                                    Partition = CByte(Partition And Val(param(i + 4)))
+                                    Partition = CByte(Partition And CLng(Val(param(i + 4))))
                                 End If
 
                                 Dim Capacity As UInt16 = &HFFFF
                                 If i + 5 <= param.Length - 1 Then
-                                    Capacity = Capacity And Val(param(i + 5))
+                                    Capacity = CUShort(CLng(Capacity) And CLng(Val(param(i + 5))))
                                 End If
                                 Dim BlockLen As Integer = 524288
                                 If i + 6 <= param.Length - 1 Then
-                                    BlockLen = Val(param(i + 6))
+                                    BlockLen = CInt(Val(param(i + 6)))
                                 End If
                                 Dim P0Size As UInt16 = 1
                                 If i + 7 <= param.Length - 1 Then
-                                    P0Size = &HFFFF And Val(param(i + 7))
+                                    P0Size = CUShort(&HFFFFL And CLng(Val(param(i + 7))))
                                 End If
                                 Dim P1Size As UInt16 = &HFFFF
                                 If i + 8 <= param.Length - 1 Then
-                                    P1Size = &HFFFF And Val(param(i + 8))
+                                    P1Size = CUShort(&HFFFFL And CLng(Val(param(i + 8))))
                                 End If
 
                                 Dim sense As Byte() = {}
@@ -470,7 +470,7 @@ dataDir:{dataDir}
                                                     Dim paramPtr As IntPtr = Marshal.AllocHGlobal(paramdata.Length)
                                                     If paramdata.Length > 0 Then Marshal.Copy(paramdata, 0, paramPtr, paramdata.Length)
                                                     Dim sensedata(63) As Byte
-                                                    Dim succ As Boolean = TapeUtils.IOCtlDirect(devpath, cdbdata, paramPtr, paramdata.Length, datadir, timeout, sensedata)
+                                                    Dim succ As Boolean = TapeUtils.IOCtlDirect(devpath, cdbdata, paramPtr, CUInt(paramdata.Length), datadir, CUInt(timeout), sensedata)
                                                     Marshal.Copy(paramPtr, paramdata, 0, paramdata.Length)
                                                     Marshal.FreeHGlobal(paramPtr)
                                                     result.PayLoad.Add(paramdata)
@@ -558,14 +558,14 @@ dataDir:{dataDir}
                                                                                     ElseIf TypeOf c Is Label Then
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is Panel Then
-                                                                                        q.AddRange(CType(c, Panel).Controls)
+                                                                                        q.AddRange((CType(c, Panel).Controls).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is MenuStrip Then
-                                                                                        q.AddRange(CType(c, MenuStrip).Items)
+                                                                                        q.AddRange((CType(c, MenuStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStrip Then
-                                                                                        q.AddRange(CType(c, ToolStrip).Items)
+                                                                                        q.AddRange((CType(c, ToolStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStripMenuItem Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, ToolStripMenuItem).DropDownItems)
+                                                                                        q.AddRange((CType(c, ToolStripMenuItem).DropDownItems).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStripDropDownButton Then
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is ToolStripButton Then
@@ -573,9 +573,9 @@ dataDir:{dataDir}
                                                                                     ElseIf TypeOf c Is ToolStripStatusLabel Then
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is ContextMenuStrip Then
-                                                                                        q.AddRange(CType(c, ContextMenuStrip).Items)
+                                                                                        q.AddRange((CType(c, ContextMenuStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is StatusStrip Then
-                                                                                        q.AddRange(CType(c, StatusStrip).Items)
+                                                                                        q.AddRange((CType(c, StatusStrip).Items).Cast(Of Object)())
                                                                                     End If
                                                                                 Next
                                                                                 FilterList = q
@@ -653,16 +653,16 @@ dataDir:{dataDir}
                                                                                     ElseIf TypeOf c Is Label Then
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is Panel Then
-                                                                                        q.AddRange(CType(c, Panel).Controls)
+                                                                                        q.AddRange((CType(c, Panel).Controls).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is MenuStrip Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, MenuStrip).Items)
+                                                                                        q.AddRange((CType(c, MenuStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStrip Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, ToolStrip).Items)
+                                                                                        q.AddRange((CType(c, ToolStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStripMenuItem Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, ToolStripMenuItem).DropDownItems)
+                                                                                        q.AddRange((CType(c, ToolStripMenuItem).DropDownItems).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is ToolStripDropDownButton Then
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is ToolStripButton Then
@@ -671,10 +671,10 @@ dataDir:{dataDir}
                                                                                         objSearchList.Add(c)
                                                                                     ElseIf TypeOf c Is ContextMenuStrip Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, ContextMenuStrip).Items)
+                                                                                        q.AddRange((CType(c, ContextMenuStrip).Items).Cast(Of Object)())
                                                                                     ElseIf TypeOf c Is StatusStrip Then
                                                                                         objSearchList.Add(c)
-                                                                                        q.AddRange(CType(c, StatusStrip).Items)
+                                                                                        q.AddRange((CType(c, StatusStrip).Items).Cast(Of Object)())
                                                                                     End If
                                                                                 Next
                                                                                 FilterList = q
@@ -790,7 +790,7 @@ dataDir:{dataDir}
                                 Dim dataDir As Byte = CByte(Val(param(i + 6)))
                                 Dim TimeOut As Integer = 60000
                                 If i + 7 <= param.Length - 1 Then
-                                    TimeOut = Val(param(i + 7))
+                                    TimeOut = CInt(Val(param(i + 7)))
                                 End If
                                 Dim sense As Byte() = {}
                                 Dim pl As New List(Of Byte())

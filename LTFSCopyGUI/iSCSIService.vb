@@ -152,7 +152,7 @@ Public Class iSCSIService
                     Dim devdata As TapeUtils.BlockDevice = TapeUtils.Inquiry(driveHandle)
                     If devdata Is Nothing Then devdata = New TapeUtils.BlockDevice
                     With e.Data
-                        .DriveSerialNumber = devdata.SerialNumber
+                        .DriveSerialNumber = CULng(devdata.SerialNumber)
                         .VendorIdentification = devdata.VendorId
                         .ProductIdentification = devdata.ProductId
                     End With
@@ -199,7 +199,7 @@ Public Class iSCSIService
                                               datalen = 6
                                               cdblen = 6
                                           Case &H8 'READ
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 2, 4)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 2, 4))
                                               cdblen = 6
                                           Case &HB 'SET CAPACITY
                                               cdblen = 6
@@ -208,7 +208,7 @@ Public Class iSCSIService
                                           Case &H11 'SPACE
                                               cdblen = 6
                                           Case &H12 'INQUIRY
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 3, 4)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 3, 4))
                                               cdblen = 6
                                           Case &H13 'VERIFY
                                               cdblen = 6
@@ -224,7 +224,7 @@ Public Class iSCSIService
                                           Case &H1B 'LOAD/UNLOAD
                                               cdblen = 6
                                           Case &H1C 'RECEIVE DIAGNOSTIC RESULTS
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 3, 4)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 3, 4))
                                               cdblen = 6
                                           Case &H1E 'PREVENT/ALLOW MEDIUM REMOVAL 
                                               cdblen = 6
@@ -232,7 +232,7 @@ Public Class iSCSIService
                                               datalen = 8
                                               cdblen = 10
                                           Case &H28 'READ 10
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 7, 8))
                                               cdblen = 10
                                           Case &H2B 'LOCATE 10
                                               cdblen = 10
@@ -244,59 +244,59 @@ Public Class iSCSIService
                                               End If
                                               cdblen = 10
                                           Case &H3C 'READ BUFFER
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 8))
                                               cdblen = 10
                                           Case &H43 'READ TOC
-                                              datalen = Math.Max(BigEndianConverter.GetValue(commandBytes, 7, 8), 20)
+                                              datalen = CInt(Math.Max(BigEndianConverter.GetValue(commandBytes, 7, 8), 20))
                                               cdblen = 10
                                           Case &H44 'REPORT DENSITY SUPPORT
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 7, 8))
                                               cdblen = 10
                                           Case &H4D 'LOG SENSE
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 7, 8))
                                               cdblen = 10
                                           Case &H56 'RESERVE UNIT
                                               cdblen = 10
                                           Case &H57 'RELEASE UNIT
                                               cdblen = 10
                                           Case &H5A 'MODE SENSE
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 7, 8))
                                               cdblen = 10
                                           Case &H5E 'PERSISTENT RESERVE IN
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 7, 8)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 7, 8))
                                               cdblen = 10
                                           Case &H8C 'READ ATTRIBUTE
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 10, 13)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 10, 13))
                                               cdblen = 16
                                           Case &H91 'SPACE 16
                                               cdblen = 16
                                           Case &H92 'LOCATE 16
                                               cdblen = 16
                                           Case &HA0 'REPORT LUNS
-                                              datalen = Math.Min(32, BigEndianConverter.GetValue(commandBytes, 6, 9))
+                                              datalen = CInt(Math.Min(32, BigEndianConverter.GetValue(commandBytes, 6, 9)))
                                               cdblen = 16
                                           Case &HA2 'SECURITY PROTOCOL IN
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 9))
                                               cdblen = 16
                                           Case &HA3
                                               Select Case commandBytes(1)
                                                   Case &H5, &HA, &HC, &HD, &HF
-                                                      datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                                      datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 9))
                                                   Case &H1F
                                                       Select Case commandBytes(2)
                                                           Case &H6, &H10, &H12, &H15
-                                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 9))
                                                           Case &H7, &HA, &HB, &HD, &HE, &H18
-                                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 7)
+                                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 7))
                                                           Case &H8, &H9
-                                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 8)
+                                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 8))
                                                           Case &H14
                                                               datalen = commandBytes(9)
                                                       End Select
                                               End Select
                                               cdblen = 16
                                           Case &HAB
-                                              datalen = BigEndianConverter.GetValue(commandBytes, 6, 9)
+                                              datalen = CInt(BigEndianConverter.GetValue(commandBytes, 6, 9))
                                               cdblen = 16
                                       End Select
                                   Else
@@ -343,7 +343,7 @@ Public Class iSCSIService
                                           Else
                                               Marshal.Copy(responsedata, 0, databuffer, datalen)
                                           End If
-                                          TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, datalen, cmddir, 24 * 3600, sense)
+                                          TapeUtils.TapeSCSIIOCtlUnmanaged(driveHandle, commandBytes, databuffer, CUInt(datalen), cmddir, 24 * 3600, sense)
                                           If cmddir <> 0 Then Marshal.Copy(databuffer, responsedata, 0, datalen)
                                           Marshal.FreeHGlobal(databuffer)
                                   End Select

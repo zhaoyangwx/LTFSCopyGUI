@@ -347,8 +347,8 @@ Public Class LTFSConfigurator
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length,
-                                                           CByte(CInt(TextBoxDataDir.Text)), CInt(TextBoxTimeoutValue.Text), senseBuffer,
+                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, CUInt(dataData.Length),
+                                                           CByte(CInt(TextBoxDataDir.Text)), CUInt(CInt(TextBoxTimeoutValue.Text)), senseBuffer,
                                                            CByte(TextBoxTargetID.Text), CByte(TextBoxLUN.Text), BytesReturned)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
@@ -489,7 +489,7 @@ Public Class LTFSConfigurator
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
                                     Exit Try
                                 End If
-                                For i As Integer = 1 To NumericUpDownEraseCycle.Value
+                                For i As Integer = 1 To CInt(NumericUpDownEraseCycle.Value)
                                     'Unthread
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
                                     If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
@@ -867,7 +867,7 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugReadBlock_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBlock.Click
         Me.Enabled = False
-        Dim ReadLen As UInteger = NumericUpDownBlockLen.Value
+        Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
         Task.Run(Sub()
                      Dim sense(63) As Byte
                      Dim readData As Byte()
@@ -879,7 +879,7 @@ Public Class LTFSConfigurator
                                         DiffBytes <<= 8
                                         DiffBytes = DiffBytes Or sense(i)
                                     Next
-                                    Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                                    Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
                                     TextBoxDebugOutput.Text = TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf & vbCrLf & "Raw data:" & vbCrLf
                                     TextBoxDebugOutput.Text &= "Length: " & readData.Length & vbCrLf
                                     If DiffBytes < 0 Then
@@ -934,9 +934,9 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
-        Dim blk As ULong = NumericUpDownBlockNum.Value
+        Dim blk As ULong = CULng(NumericUpDownBlockNum.Value)
         Dim partition As Byte = CByte(NumericUpDownPartitionNum.Value)
-        Dim dest As TapeUtils.LocateDestType = System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBoxLocateType.SelectedItem)
+        Dim dest As TapeUtils.LocateDestType = CType(System.Enum.Parse(GetType(TapeUtils.LocateDestType), CStr(ComboBoxLocateType.SelectedItem)), TapeUtils.LocateDestType)
         Task.Run(Sub()
                      Dim result As String = ""
                      Try
@@ -1005,28 +1005,28 @@ Public Class LTFSConfigurator
             Dim log As Boolean = CheckBoxEnableDumpLog.Checked
             Dim thprog As New Threading.Thread(
                 Sub()
-                    Dim ReadLen As UInteger = NumericUpDownBlockLen.Value
+                    Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
                     Dim FileNum As Integer = 0
 
                     'Position
                     Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
 
                     Dim Partition As Byte = pos.PartitionNumber
-                    Dim Block As UInteger = pos.BlockNumber
-                    Dim BlkNum As Integer = Block
+                    Dim Block As UInteger = CUInt(pos.BlockNumber)
+                    Dim BlkNum As Integer = CInt(Block)
                     While True
                         Dim sense(63) As Byte
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
-                        Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                        Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
                         If readData.Length > 0 Then
                             My.Computer.FileSystem.WriteAllBytes($"{FolderBrowserDialog1.SelectedPath}\FM{FileNum}_BLK{BlkNum}.bin", readData, True)
                             If Not readData.Length = ReadLen Then
-                                BlkNum = Block
+                                BlkNum = CInt(Block)
                             End If
                         End If
                         If Add_Key <> 0 Then
                             FileNum += 1
-                            BlkNum = Block
+                            BlkNum = CInt(Block)
                         End If
                         If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
                             MessageBox.Show(TapeUtils.ParseSenseData(sense))
@@ -1040,7 +1040,7 @@ Public Class LTFSConfigurator
                                        TextBoxDebugOutput.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
                                    End Sub)
                         End If
-                        Block += 1
+                        Block = CUInt(Block + 1)
                     End While
                     Invoke(Sub()
                                For Each c As Control In Panel1.Controls
@@ -1107,8 +1107,8 @@ Public Class LTFSConfigurator
                 param.Barcode = TapeUtils.ReadBarcode(driveHandle)
                 Dim Confirm As Boolean = False
                 Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"MKLTFS"}
-                msDialog.Top = Me.Top + Me.Height / 2 - msDialog.Height / 2
-                msDialog.Left = Me.Left + Me.Width / 2 - msDialog.Width / 2
+                msDialog.Top = CInt(Me.Top + Me.Height / 2 - msDialog.Height / 2)
+                msDialog.Left = CInt(Me.Left + Me.Width / 2 - msDialog.Width / 2)
                 While Not Confirm
                     If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
                     If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
@@ -1446,8 +1446,8 @@ Public Class LTFSConfigurator
             Dim info As String = ""
             Dim running As Boolean = True
             Dim randomNum As Boolean = RadioButtonTest1.Checked
-            Dim blkLen As Integer = NumericUpDownTestBlkSize.Value
-            Dim blkNum As Long = NumericUpDownTestBlkNum.Value
+            Dim blkLen As Integer = CInt(NumericUpDownTestBlkSize.Value)
+            Dim blkNum As Long = CLng(NumericUpDownTestBlkNum.Value)
             progmax = blkNum * blkLen
             Dim sec As Integer = -1
             Dim SenseMsg As String = ""
@@ -1470,7 +1470,7 @@ Public Class LTFSConfigurator
                         If randomNum Then
                             r.NextBytes(b)
                         End If
-                        blist.Add(b.Clone())
+                        blist.Add(DirectCast(b.Clone(), Byte()))
                     Next
                 End If
 
@@ -1502,12 +1502,12 @@ Public Class LTFSConfigurator
                                                           CByte(zbcLBAWritten >> 8 And &HFF),
                                                           CByte(zbcLBAWritten And &HFF), &H0}
                                 TapeUtils.SendSCSICommand(handle, cdb,
-                                                          blist(i Mod 1000), 0, Function(sensedata As Byte())
+                                                          blist(CInt(i Mod 1000)), 0, Function(sensedata As Byte())
                                                                                     sense = sensedata
                                                                                     Return True
                                                                                 End Function)
                             Case Else
-                                sense = TapeUtils.Write(handle, blist(i Mod 1000), blkLen)
+                                sense = TapeUtils.Write(handle, blist(CInt(i Mod 1000)), blkLen)
                         End Select
                         If ((sense(2) >> 6) And &H1) = 1 Then
                             If (sense(2) And &HF) = 13 Then
@@ -1516,7 +1516,7 @@ Public Class LTFSConfigurator
                             Else
                                 SenseMsg = My.Resources.ResText_EWEOM
                             End If
-                        ElseIf sense(2) And &HF <> 0 Then
+                        ElseIf (sense(2) And &HF) <> 0 Then
                             SenseMsg = TapeUtils.ParseSenseData(sense)
                             Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                                 Case DialogResult.Abort
@@ -2028,7 +2028,7 @@ Public Class LTFSConfigurator
         If Not My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.LTO OrElse Not MessageBox.Show(New Form With {.TopMost = True}, "Diagnostic write will corrupt data near target position. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.OK Then
             Exit Sub
         End If
-        Dim Sets As UInteger = NumericUpDownTestSets.Value, Speed As Integer = NumericUpDownTestSpeed.Value, StartLen As Integer = NumericUpDownTestStartLen.Value, Wrap As Integer = NumericUpDownTestWrap.Value
+        Dim Sets As UInteger = CUInt(NumericUpDownTestSets.Value), Speed As Integer = CInt(NumericUpDownTestSpeed.Value), StartLen As Integer = CInt(NumericUpDownTestStartLen.Value), Wrap As Integer = CInt(NumericUpDownTestWrap.Value)
         Dim th As New Threading.Thread(
             Sub()
                 Try
@@ -2062,7 +2062,7 @@ Public Class LTFSConfigurator
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, dataData.Length, 0, CInt(TextBoxTimeoutValue.Text), senseBuffer)
+                        succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, CUInt(dataData.Length), 0, CUInt(CInt(TextBoxTimeoutValue.Text)), senseBuffer)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
@@ -2099,7 +2099,7 @@ Public Class LTFSConfigurator
                                    End Sub)
                         Else
                             Invoke(Sub() TextBoxDebugOutput.Text = $"Writing: {fname}")
-                            Dim buffer(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1)) As Byte
+                            Dim buffer(CInt(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1))) As Byte
                             While fs.Read(buffer, 0, buffer.Length) > 0
                                 TapeUtils.Write(ConfTapeDrive, buffer)
                             End While
@@ -2152,15 +2152,15 @@ Public Class LTFSConfigurator
         Dim log As Boolean = CheckBoxEnableDumpLog.Checked
         Dim thprog As New Threading.Thread(
                 Sub()
-                    Dim ReadLen As UInteger = NumericUpDownBlockLen.Value
+                    Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
                     Dim FileNum As Integer = 0
 
                     'Position
                     Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
 
                     Dim Partition As Byte = pos.PartitionNumber
-                    Dim Block As UInteger = pos.BlockNumber
-                    Dim BlkNum As Integer = Block
+                    Dim Block As UInteger = CUInt(pos.BlockNumber)
+                    Dim BlkNum As Integer = CInt(Block)
                     Dim player As New IOManager.StreamPcmPlayer()
                     Dim HeaderReaded As Boolean = False
                     Dim HeaderChanged As Boolean = False
@@ -2172,7 +2172,7 @@ Public Class LTFSConfigurator
                         Dim sense(63) As Byte
                         pos = TapeUtils.ReadPosition(ConfTapeDrive)
                         Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
-                        Dim Add_Key As UInt16 = CInt(sense(12)) << 8 Or sense(13)
+                        Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
                         If readData.Length > 0 Then
                             Dim len0 As Integer = readData.Length
                             readData = IOManager.WaveFileHelper.AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, isFloat, HeaderChanged)
@@ -2196,11 +2196,11 @@ Public Class LTFSConfigurator
                                        TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0"c)}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0"c)}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0"c)}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}")
                                    End Sub)
                             player.AddData(readData, isFloat)
-                            TotalPlayTime += New TimeSpan(CLng(readData.Length) * 8 / bitsPerSample / channels / sampleRate * 10000000)
+                            TotalPlayTime += New TimeSpan(CLng(CLng(readData.Length) * 8 / bitsPerSample / channels / sampleRate * 10000000))
                         End If
                         If Add_Key <> 0 Then
                             FileNum += 1
-                            BlkNum = Block
+                            BlkNum = CInt(Block)
                         End If
                         If Me Is Nothing OrElse Me.Visible = False OrElse (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
                             Exit While
@@ -2212,7 +2212,7 @@ Public Class LTFSConfigurator
                                        TextBoxDebugOutput.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
                                    End Sub)
                         End If
-                        Block += 1
+                        Block = CUInt(Block + 1)
                     End While
                     If Operation_Cancel_Flag Then player.StopPlayback()
                     While player.IsPlaying And Not Operation_Cancel_Flag
@@ -2297,7 +2297,7 @@ Public Class LTFSConfigurator
                                    End Sub)
                         Else
                             Invoke(Sub() TextBoxDebugOutput.Text = $"Writing: {fname}")
-                            Dim buffer(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1)) As Byte
+                            Dim buffer(CInt(Math.Min(NumericUpDownBlockLen.Value - 1, fs.Length - 1))) As Byte
                             While fs.Read(buffer, 0, buffer.Length) > 0
                                 TapeUtils.Write(ConfTapeDrive, buffer)
                             End While
@@ -2409,7 +2409,7 @@ Public Class LTFSConfigurator
         Dim testdata(4095) As Byte
         testdata(0) = &H7F
         testdata(4095) = &HFF
-        Dim FirstSMRLBA As ULong = disk.CMREndLBA + 1
+        Dim FirstSMRLBA As ULong = CULng(disk.CMREndLBA + 1)
         disk.WriteBytes(testdata, FirstSMRLBA, 0, False)
         Dim readout As Byte() = disk.ReadBytes(FirstSMRLBA, 0, 4096)
         MessageBox.Show("OK")
@@ -2434,7 +2434,7 @@ Public Class LTFSConfigurator
                      TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
                      Dim disk As New ZBCDeviceHelper With {.handle = drvhandle}
                      Dim MP03 As Byte() = TapeUtils.ModeSense(drvhandle, 3)
-                     disk.SectorLength = BigEndianConverter.ToUInt16(MP03, 12)
+                     disk.SectorLength = CUShort(BigEndianConverter.ToUInt16(MP03, 12))
                      Invoke(Sub() NumericUpDownSectorSize.Value = If(disk.SectorLength > 0, disk.SectorLength, NumericUpDownSectorSize.Value))
                      disk.ReportZones(opt)
                      Dim output As New StringBuilder
@@ -2482,16 +2482,16 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonReadLBA_Click(sender As Object, e As EventArgs) Handles ButtonReadLBA.Click
         Me.Enabled = False
-        Dim StartLBA As ULong = NumericUpDownLBA.Value
-        Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+        Dim StartLBA As ULong = CULng(NumericUpDownLBA.Value)
+        Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim result As Byte() = {}
                      Dim cdb As Byte() = {&H28, 0,
-                        CByte((StartLBA >> 24) And &HFF),
-                        CByte((StartLBA >> 16) And &HFF),
-                        CByte((StartLBA >> 8) And &HFF),
-                        CByte((StartLBA >> 0) And &HFF),
+                        CByte(CLng((StartLBA >> 24)) And &HFF),
+                        CByte(CLng((StartLBA >> 16)) And &HFF),
+                        CByte(CLng((StartLBA >> 8)) And &HFF),
+                        CByte(CLng((StartLBA >> 0)) And &HFF),
                         0, 0, 1, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
@@ -2510,22 +2510,22 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonReportZone_Click(sender As Object, e As EventArgs) Handles ButtonReportZone.Click
-        Dim StartLBA As ULong = NumericUpDownLBA.Value
+        Dim StartLBA As ULong = CULng(NumericUpDownLBA.Value)
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim drvhandle As IntPtr
                      TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
                      Dim cdb As Byte() = {&H95, 0,
-                             CByte((StartLBA >> 56) And &HFF),
-                             CByte((StartLBA >> 48) And &HFF),
-                             CByte((StartLBA >> 40) And &HFF),
-                             CByte((StartLBA >> 32) And &HFF),
-                             CByte((StartLBA >> 24) And &HFF),
-                             CByte((StartLBA >> 16) And &HFF),
-                             CByte((StartLBA >> 8) And &HFF),
-                             CByte((StartLBA >> 0) And &HFF),
+                             CByte(CLng((StartLBA >> 56)) And &HFF),
+                             CByte(CLng((StartLBA >> 48)) And &HFF),
+                             CByte(CLng((StartLBA >> 40)) And &HFF),
+                             CByte(CLng((StartLBA >> 32)) And &HFF),
+                             CByte(CLng((StartLBA >> 24)) And &HFF),
+                             CByte(CLng((StartLBA >> 16)) And &HFF),
+                             CByte(CLng((StartLBA >> 8)) And &HFF),
+                             CByte(CLng((StartLBA >> 0)) And &HFF),
                              0, 0, 0, 128, &H80, 0}
                      Dim data1 As Byte() = TapeUtils.SCSIReadParam(drvhandle, cdb, 128, Function(s As Byte()) As Boolean
                                                                                             senseData = s
@@ -2559,18 +2559,18 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonOpenZone_Click(sender As Object, e As EventArgs) Handles ButtonOpenZone.Click
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {&H94, &H3,
-                                          CByte((LBA >> 56) And &HFF),
-                                          CByte((LBA >> 48) And &HFF),
-                                          CByte((LBA >> 40) And &HFF),
-                                          CByte((LBA >> 32) And &HFF),
-                                          CByte((LBA >> 24) And &HFF),
-                                          CByte((LBA >> 16) And &HFF),
-                                          CByte((LBA >> 8) And &HFF),
-                                          CByte((LBA >> 0) And &HFF),
+                                          CByte(CLng((LBA >> 56)) And &HFF),
+                                          CByte(CLng((LBA >> 48)) And &HFF),
+                                          CByte(CLng((LBA >> 40)) And &HFF),
+                                          CByte(CLng((LBA >> 32)) And &HFF),
+                                          CByte(CLng((LBA >> 24)) And &HFF),
+                                          CByte(CLng((LBA >> 16)) And &HFF),
+                                          CByte(CLng((LBA >> 8)) And &HFF),
+                                          CByte(CLng((LBA >> 0)) And &HFF),
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
@@ -2588,18 +2588,18 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonCloseZone_Click(sender As Object, e As EventArgs) Handles ButtonCloseZone.Click
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {&H94, &H1,
-                                          CByte((LBA >> 56) And &HFF),
-                                          CByte((LBA >> 48) And &HFF),
-                                          CByte((LBA >> 40) And &HFF),
-                                          CByte((LBA >> 32) And &HFF),
-                                          CByte((LBA >> 24) And &HFF),
-                                          CByte((LBA >> 16) And &HFF),
-                                          CByte((LBA >> 8) And &HFF),
-                                          CByte((LBA >> 0) And &HFF),
+                                          CByte(CLng((LBA >> 56)) And &HFF),
+                                          CByte(CLng((LBA >> 48)) And &HFF),
+                                          CByte(CLng((LBA >> 40)) And &HFF),
+                                          CByte(CLng((LBA >> 32)) And &HFF),
+                                          CByte(CLng((LBA >> 24)) And &HFF),
+                                          CByte(CLng((LBA >> 16)) And &HFF),
+                                          CByte(CLng((LBA >> 8)) And &HFF),
+                                          CByte(CLng((LBA >> 0)) And &HFF),
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
@@ -2617,18 +2617,18 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonFinishZone_Click(sender As Object, e As EventArgs) Handles ButtonFinishZone.Click
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {&H94, &H2,
-                                          CByte((LBA >> 56) And &HFF),
-                                          CByte((LBA >> 48) And &HFF),
-                                          CByte((LBA >> 40) And &HFF),
-                                          CByte((LBA >> 32) And &HFF),
-                                          CByte((LBA >> 24) And &HFF),
-                                          CByte((LBA >> 16) And &HFF),
-                                          CByte((LBA >> 8) And &HFF),
-                                          CByte((LBA >> 0) And &HFF),
+                                          CByte(CLng((LBA >> 56)) And &HFF),
+                                          CByte(CLng((LBA >> 48)) And &HFF),
+                                          CByte(CLng((LBA >> 40)) And &HFF),
+                                          CByte(CLng((LBA >> 32)) And &HFF),
+                                          CByte(CLng((LBA >> 24)) And &HFF),
+                                          CByte(CLng((LBA >> 16)) And &HFF),
+                                          CByte(CLng((LBA >> 8)) And &HFF),
+                                          CByte(CLng((LBA >> 0)) And &HFF),
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
@@ -2646,18 +2646,18 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonResetWritePointer_Click(sender As Object, e As EventArgs) Handles ButtonResetWritePointer.Click
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {&H94, &H4,
-                                          CByte((LBA >> 56) And &HFF),
-                                          CByte((LBA >> 48) And &HFF),
-                                          CByte((LBA >> 40) And &HFF),
-                                          CByte((LBA >> 32) And &HFF),
-                                          CByte((LBA >> 24) And &HFF),
-                                          CByte((LBA >> 16) And &HFF),
-                                          CByte((LBA >> 8) And &HFF),
-                                          CByte((LBA >> 0) And &HFF),
+                                          CByte(CLng((LBA >> 56)) And &HFF),
+                                          CByte(CLng((LBA >> 48)) And &HFF),
+                                          CByte(CLng((LBA >> 40)) And &HFF),
+                                          CByte(CLng((LBA >> 32)) And &HFF),
+                                          CByte(CLng((LBA >> 24)) And &HFF),
+                                          CByte(CLng((LBA >> 16)) And &HFF),
+                                          CByte(CLng((LBA >> 8)) And &HFF),
+                                          CByte(CLng((LBA >> 0)) And &HFF),
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
@@ -2675,9 +2675,9 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonWriteRandom_Click(sender As Object, e As EventArgs) Handles ButtonWriteRandom.Click
         Me.Enabled = False
-        Dim LBA As ULong = NumericUpDownLBA.Value
-        Dim sectorSize As Integer = NumericUpDownSectorSize.Value
-        Dim count As Integer = NumericUpDownWriteLBACount.Value
+        Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
+        Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
+        Dim count As Integer = CInt(NumericUpDownWriteLBACount.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim toSend(sectorSize - 1) As Byte
@@ -2688,10 +2688,10 @@ Public Class LTFSConfigurator
                      For i As Integer = 1 To count
                          r.NextBytes(toSend)
                          cdb = {&H2A, 0,
-                                          CByte(((LBA + i - 1) >> 24) And &HFF),
-                                          CByte(((LBA + i - 1) >> 16) And &HFF),
-                                          CByte(((LBA + i - 1) >> 8) And &HFF),
-                                          CByte(((LBA + i - 1) >> 0) And &HFF),
+                                          CByte((CLng((LBA + i - 1)) >> 24) And &HFF),
+                                          CByte((CLng((LBA + i - 1)) >> 16) And &HFF),
+                                          CByte((CLng((LBA + i - 1)) >> 8) And &HFF),
+                                          CByte((CLng((LBA + i - 1)) >> 0) And &HFF),
                                           0, 0, 1, 0}
 
                          TapeUtils.SendSCSICommand(drvhandle, cdb, toSend, 0, Function(s As Byte()) As Boolean
@@ -2712,12 +2712,12 @@ Public Class LTFSConfigurator
     Private Sub ButtonDumpLBA_Click(sender As Object, e As EventArgs) Handles ButtonDumpLBA.Click
         If SaveFileDialog2.ShowDialog() = DialogResult.OK Then
             Me.Enabled = False
-            Dim LBA As ULong = NumericUpDownLBA.Value
-            Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+            Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
+            Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
             Dim blocklim As Integer = 524288
             Dim batch As Integer = blocklim \ sectorSize
             blocklim = batch * sectorSize
-            Dim count As Integer = NumericUpDownWriteLBACount.Value
+            Dim count As Integer = CInt(NumericUpDownWriteLBACount.Value)
             Dim progmsg As String = ""
             Dim fin As Boolean = False
             Task.Run(Sub()
@@ -2733,25 +2733,25 @@ Public Class LTFSConfigurator
                              Dim handle As IntPtr
                              TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                              Dim stopflag As Boolean = False
-                             For i As ULong = LBA To LBA + count - 1 Step batch
+                             For i As ULong = LBA To CULng(LBA + count - 1) Step CULng(batch)
                                  If stopflag Then Exit For
-                                 Dim readsize As ULong = blocklim
+                                 Dim readsize As ULong = CULng(blocklim)
                                  If i + batch > LBA + count Then
-                                     readsize = (LBA + count - i) * sectorSize
+                                     readsize = CULng((LBA + count - i) * sectorSize)
                                  End If
 
-                                 Dim result As Byte() = ArrayPool(Of Byte).Shared.Rent(readsize)
+                                 Dim result As Byte() = ArrayPool(Of Byte).Shared.Rent(CInt(readsize))
                                  Dim cdb As Byte() = {&H28, 0,
-                                        CByte((i >> 24) And &HFF),
-                                        CByte((i >> 16) And &HFF),
-                                        CByte((i >> 8) And &HFF),
-                                        CByte((i >> 0) And &HFF),
+                                        CByte(CLng((i >> 24)) And &HFF),
+                                        CByte(CLng((i >> 16)) And &HFF),
+                                        CByte(CLng((i >> 8)) And &HFF),
+                                        CByte(CLng((i >> 0)) And &HFF),
                                         0,
                                         CByte((batch >> 8) And &HFF),
                                         CByte((batch >> 0) And &HFF), 0}
                                  Dim readsucc As Boolean = False
                                  While Not readsucc
-                                     result = TapeUtils.SCSIReadParam(handle, cdb, readsize, Function(s As Byte()) As Boolean
+                                     result = TapeUtils.SCSIReadParam(handle, cdb, CInt(readsize), Function(s As Byte()) As Boolean
                                                                                                  senseData = s
                                                                                                  Return True
                                                                                              End Function, 30)
@@ -2777,7 +2777,7 @@ Public Class LTFSConfigurator
                                      End If
                                  End While
                                  progmsg = $"LBA {LBA}>{i}>{LBA + count - 1}"
-                                 Await WriteAndFree(fs, result, 0, readsize, ArrayPool(Of Byte).Shared)
+                                 Await WriteAndFree(fs, result, 0, CInt(readsize), ArrayPool(Of Byte).Shared)
                              Next
                              progmsg = $"LBA {LBA}>{LBA + count - 1}>{LBA + count - 1}"
                              TapeUtils.CloseTapeDrive(handle)
@@ -2795,8 +2795,8 @@ Public Class LTFSConfigurator
     Private Sub ButtonRestoreLBA_Click(sender As Object, e As EventArgs) Handles ButtonRestoreLBA.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
             Me.Enabled = False
-            Dim LBA As ULong = NumericUpDownLBA.Value
-            Dim sectorSize As Integer = NumericUpDownSectorSize.Value
+            Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
+            Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
             Dim blocklim As Integer = 524288
             Dim batch As Integer = blocklim \ sectorSize
             blocklim = batch * sectorSize
@@ -2818,17 +2818,17 @@ Public Class LTFSConfigurator
                              TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                              Dim writeLBACount As Integer
                              Dim stopflag As Boolean = False
-                             For i As ULong = LBA To LBA + count - 1 Step batch
+                             For i As ULong = LBA To CULng(LBA + count - 1) Step CULng(batch)
                                  If stopflag Then Exit For
                                  Dim writeData As Byte() = ArrayPool(Of Byte).Shared.Rent(blocklim)
-                                 Dim readsize As ULong = fs.Read(writeData, 0, blocklim)
-                                 writeLBACount = Math.Ceiling(readsize / sectorSize)
+                                 Dim readsize As ULong = CULng(fs.Read(writeData, 0, blocklim))
+                                 writeLBACount = CInt(Math.Ceiling(readsize / sectorSize))
                                  Dim writeSize As Integer = writeLBACount * sectorSize
                                  Dim cdb As Byte() = {&H2A, 0,
-                                        CByte((i >> 24) And &HFF),
-                                        CByte((i >> 16) And &HFF),
-                                        CByte((i >> 8) And &HFF),
-                                        CByte((i >> 0) And &HFF),
+                                        CByte(CLng((i >> 24)) And &HFF),
+                                        CByte(CLng((i >> 16)) And &HFF),
+                                        CByte(CLng((i >> 8)) And &HFF),
+                                        CByte(CLng((i >> 0)) And &HFF),
                                         0,
                                         CByte((writeLBACount >> 8) And &HFF),
                                         CByte((writeLBACount >> 0) And &HFF), 0}
@@ -2911,11 +2911,11 @@ Public Class LTFSConfigurator
                                             If .LP1 > 0 AndAlso .LP3 > .LP1 AndAlso .LP5 > .LP3 Then
                                                 Select Case CMInfo.CartridgeMfgData.CartridgeTypeAbbr
                                                     Case "L1", "L2"
-                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 7100 + 100)
+                                                        NumericUpDownTestStartLen.Value = CDec(Math.Round((.LP3 - .LP1) * 7.2 + 7100 + 100))
                                                     Case "L3"
-                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 8100 + 100)
+                                                        NumericUpDownTestStartLen.Value = CDec(Math.Round((.LP3 - .LP1) * 7.2 + 8100 + 100))
                                                     Case "L4", "L5", "L6"
-                                                        NumericUpDownTestStartLen.Value = Math.Round((.LP3 - .LP1) * 7.2 + 9600 + 100)
+                                                        NumericUpDownTestStartLen.Value = CDec(Math.Round((.LP3 - .LP1) * 7.2 + 9600 + 100))
                                                 End Select
                                             End If
                                         End With
@@ -2944,7 +2944,7 @@ Public Class LTFSConfigurator
                                             If .LP1 > 0 AndAlso .LP3 > .LP1 AndAlso .LP5 > .LP3 Then
                                                 Select Case CMInfo.CartridgeMfgData.CartridgeTypeAbbr
                                                     Case "L1", "L2", "L3", "L4", "L5", "L6"
-                                                        NumericUpDownTestStartLen.Value = Math.Round(.LP5 - .LP3) * 7.2
+                                                        NumericUpDownTestStartLen.Value = CDec(Math.Round(.LP5 - .LP3) * 7.2)
                                                 End Select
                                             End If
                                         End With

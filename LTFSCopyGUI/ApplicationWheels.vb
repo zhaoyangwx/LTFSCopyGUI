@@ -187,7 +187,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is String Then
-                Return result
+                Return CStr(result)
             Else
                 Return Nothing
             End If
@@ -202,7 +202,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is Boolean Then
-                Return result
+                Return CBool(result)
             Else
                 Return Nothing
             End If
@@ -232,7 +232,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is Short Then
-                Return result
+                Return CShort(result)
             Else
                 Return Nothing
             End If
@@ -247,7 +247,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is Integer Then
-                Return result
+                Return CInt(result)
             Else
                 Return Nothing
             End If
@@ -262,7 +262,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is Long Then
-                Return result
+                Return CLng(result)
             Else
                 Return Nothing
             End If
@@ -277,7 +277,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is SByte Then
-                Return result
+                Return CSByte(result)
             Else
                 Return Nothing
             End If
@@ -292,7 +292,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is UShort Then
-                Return result
+                Return CUShort(result)
             Else
                 Return Nothing
             End If
@@ -307,7 +307,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is UInteger Then
-                Return result
+                Return CUInt(result)
             Else
                 Return Nothing
             End If
@@ -322,7 +322,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is ULong Then
-                Return result
+                Return CULng(result)
             Else
                 Return Nothing
             End If
@@ -844,25 +844,25 @@ Public Class DisplayHelper
                 Reflection.BindingFlags.Instance Or
                 Reflection.BindingFlags.Static)
             Dim o As Object = f.GetValue(frm)
-            If TypeOf o Is ContextMenuStrip Then clist.Add(o)
+            If TypeOf o Is ContextMenuStrip Then clist.Add(DirectCast(o, Control))
         Next
 
         For Each c As Control In clist
             If TypeOf c Is ListView Then
                 For Each col As ColumnHeader In DirectCast(c, ListView).Columns
-                    col.Width *= ScreenScale
+                    col.Width = CInt(col.Width * ScreenScale)
                 Next
             ElseIf TypeOf c Is ToolStrip Then
                 If ScreenScale <> 1 AndAlso TypeOf c Is MenuStrip OrElse TypeOf c Is ContextMenuStrip Then DirectCast(c, ToolStrip).Renderer = New RichMenuStrip.HiDPIRenderer()
-                DirectCast(c, ToolStrip).ImageScalingSize = New Size(16 * ScreenScale, 16 * ScreenScale)
+                DirectCast(c, ToolStrip).ImageScalingSize = New Size(CInt(16 * ScreenScale), CInt(16 * ScreenScale))
                 Dim items As New List(Of ToolStripMenuItem)
                 Dim icd As New List(Of ToolStripMenuItem)
                 For Each itm As ToolStripItem In DirectCast(c, ToolStrip).Items
                     If TypeOf itm Is ToolStripMenuItem Then
-                        icd.Add(itm)
+                        icd.Add(CType(itm, ToolStripMenuItem))
                     ElseIf TypeOf itm Is ToolStripButton Then
-                        itm.Width *= DisplayHelper.ScreenScale
-                        itm.Height *= DisplayHelper.ScreenScale
+                        itm.Width = CInt(itm.Width * DisplayHelper.ScreenScale)
+                        itm.Height = CInt(itm.Height * DisplayHelper.ScreenScale)
                     End If
                 Next
                 While icd.Count > 0
@@ -870,10 +870,10 @@ Public Class DisplayHelper
                     For Each itm As ToolStripMenuItem In icd
                         For Each ditm As ToolStripItem In itm.DropDownItems
                             If TypeOf ditm Is ToolStripMenuItem Then
-                                icd2.Add(ditm)
+                                icd2.Add(CType(ditm, ToolStripMenuItem))
                             ElseIf TypeOf ditm Is ToolStripButton Then
-                                ditm.Width *= DisplayHelper.ScreenScale
-                                ditm.Height *= DisplayHelper.ScreenScale
+                                ditm.Width = CInt(ditm.Width * DisplayHelper.ScreenScale)
+                                ditm.Height = CInt(ditm.Height * DisplayHelper.ScreenScale)
                             End If
                         Next
                     Next
@@ -882,7 +882,7 @@ Public Class DisplayHelper
                 End While
                 For Each itm As ToolStripMenuItem In items
                     If itm.DropDown IsNot Nothing Then
-                        itm.DropDown.ImageScalingSize = New Size(16 * ScreenScale, 16 * ScreenScale)
+                        itm.DropDown.ImageScalingSize = New Size(CInt(16 * ScreenScale), CInt(16 * ScreenScale))
                     End If
                 Next
             End If
@@ -929,32 +929,32 @@ Public Class DisplayHelper
         inputDialog.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         inputDialog.MinimizeBox = False
         inputDialog.MaximizeBox = False
-        inputDialog.ClientSize = New Size(size.Width * ScreenScale, size.Height * ScreenScale)
+        inputDialog.ClientSize = New Size(CInt(size.Width * ScreenScale), CInt(size.Height * ScreenScale))
         inputDialog.AutoScaleMode = AutoScaleMode.Font
         inputDialog.Text = Title
         Dim promptLabel As Label = New Label()
-        promptLabel.Location = New Point(5 * ScreenScale, 5 * ScreenScale)
+        promptLabel.Location = New Point(CInt(5 * ScreenScale), CInt(5 * ScreenScale))
         promptLabel.Text = Prompt
         promptLabel.AutoSize = True
         inputDialog.Controls.Add(promptLabel)
         Dim textBox As System.Windows.Forms.TextBox = New TextBox()
-        textBox.Size = New System.Drawing.Size((size.Width - 10) * ScreenScale, 23 * ScreenScale)
-        textBox.Location = New System.Drawing.Point(5 * ScreenScale, 25 * ScreenScale)
+        textBox.Size = New System.Drawing.Size(CInt((size.Width - 10) * ScreenScale), CInt(23 * ScreenScale))
+        textBox.Location = New System.Drawing.Point(CInt(5 * ScreenScale), CInt(25 * ScreenScale))
         textBox.Text = Response
         inputDialog.Controls.Add(textBox)
         Dim okButton As Button = New Button()
         okButton.DialogResult = System.Windows.Forms.DialogResult.OK
         okButton.Name = "okButton"
-        okButton.Size = New System.Drawing.Size(75 * ScreenScale, 23 * ScreenScale)
+        okButton.Size = New System.Drawing.Size(CInt(75 * ScreenScale), CInt(23 * ScreenScale))
         okButton.Text = $"&OK"
-        okButton.Location = New System.Drawing.Point((size.Width - 80 - 80) * ScreenScale, 59 * ScreenScale)
+        okButton.Location = New System.Drawing.Point(CInt((size.Width - 80 - 80) * ScreenScale), CInt(59 * ScreenScale))
         inputDialog.Controls.Add(okButton)
         Dim cancelButton As Button = New Button()
         cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
         cancelButton.Name = "cancelButton"
-        cancelButton.Size = New System.Drawing.Size(75 * ScreenScale, 23 * ScreenScale)
+        cancelButton.Size = New System.Drawing.Size(CInt(75 * ScreenScale), CInt(23 * ScreenScale))
         cancelButton.Text = $"&Cancel"
-        cancelButton.Location = New System.Drawing.Point((size.Width - 80) * ScreenScale, 59 * ScreenScale)
+        cancelButton.Location = New System.Drawing.Point(CInt((size.Width - 80) * ScreenScale), CInt(59 * ScreenScale))
         inputDialog.Controls.Add(cancelButton)
         inputDialog.AcceptButton = okButton
         inputDialog.CancelButton = cancelButton
@@ -989,14 +989,14 @@ Public Class RichMenuStrip
             Dim size = CInt(16 * DisplayHelper.ScreenScale)
 
             Dim rect = New Rectangle(e.ImageRectangle.X, e.ImageRectangle.Y, size, size)
-            Dim rect2 As New Rectangle(rect.X + rect.Width / 8, rect.Y + rect.Height / 8, rect.Width * 0.75, rect.Height * 0.75)
+            Dim rect2 As New Rectangle(CInt(rect.X + rect.Width / 8), CInt(rect.Y + rect.Height / 8), CInt(rect.Width * 0.75), CInt(rect.Height * 0.75))
             Using pen As New Pen(Color.Black, 1.5 * DisplayHelper.ScreenScale)
                 g.FillRectangle(New SolidBrush(Color.FromArgb(181, 215, 243)), rect)
                 g.DrawRectangle(New Pen(Color.FromArgb(36, 138, 220)), rect)
                 g.DrawLines(pen, {
-                    New Point(rect2.Left + size * 0.75 * 0.2, rect2.Top + size * 0.75 * 0.55),
-                    New Point(rect2.Left + size * 0.75 * 0.45, rect2.Top + size * 0.75 * 0.8),
-                    New Point(rect2.Left + size * 0.75 * 0.85, rect2.Top + size * 0.75 * 0.2)
+                    New Point(CInt(rect2.Left + size * 0.75 * 0.2), CInt(rect2.Top + size * 0.75 * 0.55)),
+                    New Point(CInt(rect2.Left + size * 0.75 * 0.45), CInt(rect2.Top + size * 0.75 * 0.8)),
+                    New Point(CInt(rect2.Left + size * 0.75 * 0.85), CInt(rect2.Top + size * 0.75 * 0.2))
                 })
             End Using
         End Sub
@@ -1008,13 +1008,13 @@ Public Class ErrRateHelper
         If val <= min Then Return col1
         If val >= max Then Return col2
         Dim ratio As Double = (val - min) / (max - min)
-        Return Color.FromArgb(col1.R * (1 - ratio) + col2.R * ratio, col1.G * (1 - ratio) + col2.G * ratio, col1.B * (1 - ratio) + col2.B * ratio)
+        Return Color.FromArgb(CInt(col1.R * (1 - ratio) + col2.R * ratio), CInt(col1.G * (1 - ratio) + col2.G * ratio), CInt(col1.B * (1 - ratio) + col2.B * ratio))
     End Function
     Public Shared Function GetColor(segvalue As String, Optional ByVal colorCoeff As Double = 1) As Color
-        Static col1 As Color = Color.FromArgb(101 * colorCoeff, 225 * colorCoeff, 111 * colorCoeff)
-        Static col2 As Color = Color.FromArgb(237 * colorCoeff, 208 * colorCoeff, 120 * colorCoeff)
-        Static col3 As Color = Color.FromArgb(251 * colorCoeff, 145 * colorCoeff, 85 * colorCoeff)
-        Static col4 As Color = Color.FromArgb(255 * colorCoeff, 71 * colorCoeff, 73 * colorCoeff)
+        Static col1 As Color = Color.FromArgb(CInt(101 * colorCoeff), CInt(225 * colorCoeff), CInt(111 * colorCoeff))
+        Static col2 As Color = Color.FromArgb(CInt(237 * colorCoeff), CInt(208 * colorCoeff), CInt(120 * colorCoeff))
+        Static col3 As Color = Color.FromArgb(CInt(251 * colorCoeff), CInt(145 * colorCoeff), CInt(85 * colorCoeff))
+        Static col4 As Color = Color.FromArgb(CInt(255 * colorCoeff), CInt(71 * colorCoeff), CInt(73 * colorCoeff))
 
         If segvalue.Length > 0 Then
             Dim errratelog As Double = 0
@@ -1223,16 +1223,16 @@ Public NotInheritable Class FileDropHandler
         If (m.Msg = WM_DROPFILES) Then
             Dim handle = m.WParam
             Dim fileCount = DragQueryFile(handle, GetIndexCount, Nothing, 0)
-            Dim fileNames((fileCount) - 1) As String
+            Dim fileNames(CInt((fileCount) - 1)) As String
             Dim sb = New StringBuilder(262)
             Dim charLength = sb.Capacity
             Dim i As UInteger = 0
             Do While (i < fileCount)
                 If (DragQueryFile(handle, i, sb, charLength) > 0) Then
-                    fileNames(i) = sb.ToString
+                    fileNames(CInt(i)) = sb.ToString
                 End If
 
-                i = (i + 1)
+                i = CUInt((i + 1))
             Loop
 
             DragFinish(handle)

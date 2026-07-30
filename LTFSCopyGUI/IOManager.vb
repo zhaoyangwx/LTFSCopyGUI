@@ -374,11 +374,11 @@ Public Class IOManager
         Dim outputh As Integer = input.Height
         If outputw > outputsize.Width Then
             outputw = outputsize.Width
-            outputh = input.Height / input.Width * outputsize.Width
+            outputh = CInt(input.Height / input.Width * outputsize.Width)
         End If
         If outputh > outputsize.Height Then
             outputh = outputsize.Height
-            outputw = input.Width / input.Height * outputsize.Height
+            outputw = CInt(input.Width / input.Height * outputsize.Height)
         End If
         g.FillRectangle(Brushes.White, New Rectangle(0, 0, result.Width, result.Height))
         g.DrawImage(input, outputsize.Width \ 2 - outputw \ 2, outputsize.Height \ 2 - outputh \ 2, outputw, outputh)
@@ -481,7 +481,7 @@ Public Class IOManager
                         Dim dnlist As New List(Of String)
                         For Each d As ltfsindex.directory In schema._directory
                             If Not d.Selected Then Continue For
-                            dnlist.Add(d.name.Clone())
+                            dnlist.Add(CStr(d.name.Clone()))
                             d.fullpath = ""
                             d.name = ""
                             q.Add(d)
@@ -577,7 +577,7 @@ Public Class IOManager
                                                 action_writefile =
                                                  Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
                                                      fout.Write(args.Buffer, args.Offset,
-                                                                Math.Min(args.Count, st.Length - fout.Position))
+                                                                CInt(Math.Min(args.Count, st.Length - fout.Position)))
                                                  End Sub
                                             Catch ex As Exception
                                                 RaiseEvent ErrorOccured(ex.ToString)
@@ -1385,7 +1385,7 @@ Public Class IOManager
                     If value >= FileInfo.length Then value = FileInfo.length - 1
                     Dim ext As ltfsindex.file.extent = GetExtent(value)
                     Dim p As New TapeUtils.PositionData(TapeDrive)
-                    Dim targetBlock As ULong = ext.startblock + (value - ext.fileoffset) \ BlockSize
+                    Dim targetBlock As ULong = CULng(ext.startblock + (value - ext.fileoffset) \ BlockSize)
                     Dim targetPartition As Byte = CByte(Math.Min(ExtraPartitionCount, ext.partition))
                     If p.BlockNumber <> targetBlock OrElse p.PartitionNumber <> targetPartition Then
                         RaiseEvent _
@@ -1440,7 +1440,7 @@ Public Class IOManager
                     End If
                     If ext Is Nothing Then Exit While
                     Dim fStartBlock As Long = ext.startblock + (fCurrentPos - ext.fileoffset + ext.byteoffset) \ BlockSize
-                    Dim fByteOffset As Integer = (ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize
+                    Dim fByteOffset As Integer = CInt((ext.byteoffset + fCurrentPos - ext.fileoffset) Mod BlockSize)
                     Dim BytesRemaining As Long = ext.bytecount - (fCurrentPos - ext.fileoffset)
                     Dim data As Byte() = TapeUtils.ReadBlock(TapeDrive:=TapeDrive,
                                                              BlockSizeLimit:=Math.Min(BlockSize, BytesRemaining))
@@ -1591,7 +1591,7 @@ Public Class IOManager
                     Dim outValue As New List(Of Byte)
                     For i As Integer = 0 To ((pcmBytes.Length \ 4) * 4 - 1) Step 4
                         Dim fvalue As Single = BitConverter.ToSingle(pcmBytes, i)
-                        Dim intvalue As Int16 = Math.Min(32767.0, Math.Max(-32768.0, fvalue * 32767.0))
+                        Dim intvalue As Int16 = CShort(Math.Min(32767.0, Math.Max(-32768.0, fvalue * 32767.0)))
                         outValue.AddRange(BitConverter.GetBytes(intvalue))
                     Next
                     pcmBytes = outValue.ToArray()
@@ -1690,9 +1690,9 @@ Public Class IOManager
                 If bitsPerSample <> value Then ResultChanged = True
                 bitsPerSample = value
                 Dim wFormatTag As Short = BitConverter.ToInt16(data, 20)
-                value = (wFormatTag = &H3)
-                If isFloat <> value Then ResultChanged = True
-                isFloat = value
+                value = CInt((wFormatTag = &H3))
+                If CInt(isFloat) <> value Then ResultChanged = True
+                isFloat = ((value) <> 0)
                 ' 拷贝纯 PCM 数据
                 Dim pcmLength As Integer = data.Length - 28 - subChunkSize
                 Dim pcmData(pcmLength - 1) As Byte
@@ -1751,7 +1751,7 @@ Public Class ZBCDeviceHelper
     End Property
     Public ReadOnly Property CMREndLBA As ULong
         Get
-            Return CMRStartLBA + CMRLBACount - 1
+            Return CULng(CMRStartLBA + CMRLBACount - 1)
         End Get
     End Property
     Public Class Zone
@@ -1781,7 +1781,7 @@ Public Class ZBCDeviceHelper
         Public Property ZoneStartLBA As ULong
         Public ReadOnly Property ZoneEndLBA As ULong
             Get
-                Return Math.Max(0, ZoneStartLBA + ZoneLength - 1)
+                Return CULng(Math.Max(0, ZoneStartLBA + ZoneLength - 1))
             End Get
         End Property
         Public Property ZoneWritePointerLBA As ULong
@@ -1790,10 +1790,10 @@ Public Class ZBCDeviceHelper
         End Sub
         Public Sub New(RawData As Byte(), Optional ByVal StartByte As Integer = 0)
             If RawData.Length < StartByte + 64 Then Exit Sub
-            ZoneType = RawData(StartByte + 0) And &HF
-            ZoneCondition = RawData(StartByte + 1) >> 4 And &HF
-            NON_SEQ = RawData(StartByte + 1) >> 1 And 1
-            RESET = RawData(StartByte + 1) >> 0 And 1
+            ZoneType = CType(RawData(StartByte + 0) And &HF, ZBCDeviceHelper.Zone.ZoneTypeDef)
+            ZoneCondition = CType(RawData(StartByte + 1) >> 4 And &HF, ZBCDeviceHelper.Zone.ZoneConditionDef)
+            NON_SEQ = ((RawData(StartByte + 1) >> 1 And 1) <> 0)
+            RESET = ((RawData(StartByte + 1) >> 0 And 1) <> 0)
             ZoneLength = BigEndianConverter.ToUInt64(RawData, StartByte + 8)
             ZoneStartLBA = BigEndianConverter.ToUInt64(RawData, StartByte + 16)
             ZoneWritePointerLBA = BigEndianConverter.ToUInt64(RawData, StartByte + 24)
@@ -1804,7 +1804,7 @@ Public Class ZBCDeviceHelper
     Public Sub InitDevice()
         TapeUtils.LoadEject(handle, TapeUtils.LoadOption.LoadThreaded)
         Dim MP03 As Byte() = TapeUtils.ModeSense(handle, 3)
-        SectorLength = BigEndianConverter.ToUInt16(MP03, 12)
+        SectorLength = CUShort(BigEndianConverter.ToUInt16(MP03, 12))
         ReportZones()
         LoadData()
     End Sub
@@ -1821,14 +1821,14 @@ Public Class ZBCDeviceHelper
         ZoneLBAMap.Clear()
         While True
             Dim data1 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
-                                                          CByte((currLBA >> 56) And &HFF),
-                                                          CByte((currLBA >> 48) And &HFF),
-                                                          CByte((currLBA >> 40) And &HFF),
-                                                          CByte((currLBA >> 32) And &HFF),
-                                                          CByte((currLBA >> 24) And &HFF),
-                                                          CByte((currLBA >> 16) And &HFF),
-                                                          CByte((currLBA >> 8) And &HFF),
-                                                          CByte((currLBA >> 0) And &HFF),
+                                                          CByte(CLng((currLBA >> 56)) And &HFF),
+                                                          CByte(CLng((currLBA >> 48)) And &HFF),
+                                                          CByte(CLng((currLBA >> 40)) And &HFF),
+                                                          CByte(CLng((currLBA >> 32)) And &HFF),
+                                                          CByte(CLng((currLBA >> 24)) And &HFF),
+                                                          CByte(CLng((currLBA >> 16)) And &HFF),
+                                                          CByte(CLng((currLBA >> 8)) And &HFF),
+                                                          CByte(CLng((currLBA >> 0)) And &HFF),
                                                           CByte((CommandLengthLimit >> 24) And &HFF),
                                                           CByte((CommandLengthLimit >> 16) And &HFF),
                                                           CByte((CommandLengthLimit >> 8) And &HFF),
@@ -1838,7 +1838,7 @@ Public Class ZBCDeviceHelper
             If ZoneListLen = 0 Then Exit While
             ZoneCount = ZoneListLen \ 64UI
             Dim readed As Zone = Nothing
-            For i As Integer = 0 To ZoneCount - 1
+            For i As Integer = 0 To CInt(ZoneCount - 1)
                 readed = New Zone(data1, 64 + 64 * i)
                 ZoneList.Add(readed)
                 ZoneLBAMap.Add(readed.ZoneStartLBA, readed)
@@ -1864,7 +1864,7 @@ Public Class ZBCDeviceHelper
                     Dim found As Boolean = False
                     For j As Integer = i + 1 To Math.Min(i + idstep1 - 1, ZoneList.Count - 1)
                         If ZoneList(j).ZoneType <> Zone.ZoneTypeDef.Conventional Then
-                            _CMRLBACount = ZoneList(j - 1).ZoneEndLBA - CMRStartLBA + 1
+                            _CMRLBACount = CULng(ZoneList(j - 1).ZoneEndLBA - CMRStartLBA + 1)
                             found = True
                             Exit For
                         End If
@@ -1876,14 +1876,14 @@ Public Class ZBCDeviceHelper
     End Sub
     Public Sub RefreshZoneCondition(ToRefresh As Zone)
         Dim data1 As Byte() = TapeUtils.SCSIReadParam(handle, {&H95, 0,
-                                                          CByte((ToRefresh.ZoneStartLBA >> 56) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 48) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 40) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 32) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 24) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 16) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 8) And &HFF),
-                                                          CByte((ToRefresh.ZoneStartLBA >> 0) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 56)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 48)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 40)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 32)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 24)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 16)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 8)) And &HFF),
+                                                          CByte(CLng((ToRefresh.ZoneStartLBA >> 0)) And &HFF),
                                                           0, 0, 0, 128,
                                                           &H80, 0}, CommandLengthLimit)
         Dim readed As New Zone(data1, 64)
@@ -1942,14 +1942,14 @@ Public Class ZBCDeviceHelper
         Dim senseresult As Byte()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H4,
-            CByte((LowestLBA >> 56) And &HFF),
-            CByte((LowestLBA >> 48) And &HFF),
-            CByte((LowestLBA >> 40) And &HFF),
-            CByte((LowestLBA >> 32) And &HFF),
-            CByte((LowestLBA >> 24) And &HFF),
-            CByte((LowestLBA >> 16) And &HFF),
-            CByte((LowestLBA >> 8) And &HFF),
-            CByte((LowestLBA >> 0) And &HFF),
+            CByte(CLng((LowestLBA >> 56)) And &HFF),
+            CByte(CLng((LowestLBA >> 48)) And &HFF),
+            CByte(CLng((LowestLBA >> 40)) And &HFF),
+            CByte(CLng((LowestLBA >> 32)) And &HFF),
+            CByte(CLng((LowestLBA >> 24)) And &HFF),
+            CByte(CLng((LowestLBA >> 16)) And &HFF),
+            CByte(CLng((LowestLBA >> 8)) And &HFF),
+            CByte(CLng((LowestLBA >> 0)) And &HFF),
             0, 0, 0, 0, 0, 0}, Nothing, 1,
                                          Function(sdata As Byte())
                                              senseresult = sdata
@@ -1969,14 +1969,14 @@ Public Class ZBCDeviceHelper
         Dim senseresult As Byte()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H3,
-            CByte((LowestLBA >> 56) And &HFF),
-            CByte((LowestLBA >> 48) And &HFF),
-            CByte((LowestLBA >> 40) And &HFF),
-            CByte((LowestLBA >> 32) And &HFF),
-            CByte((LowestLBA >> 24) And &HFF),
-            CByte((LowestLBA >> 16) And &HFF),
-            CByte((LowestLBA >> 8) And &HFF),
-            CByte((LowestLBA >> 0) And &HFF),
+            CByte(CLng((LowestLBA >> 56)) And &HFF),
+            CByte(CLng((LowestLBA >> 48)) And &HFF),
+            CByte(CLng((LowestLBA >> 40)) And &HFF),
+            CByte(CLng((LowestLBA >> 32)) And &HFF),
+            CByte(CLng((LowestLBA >> 24)) And &HFF),
+            CByte(CLng((LowestLBA >> 16)) And &HFF),
+            CByte(CLng((LowestLBA >> 8)) And &HFF),
+            CByte(CLng((LowestLBA >> 0)) And &HFF),
             0, 0, 0, 0, 0, 0}, Nothing, 1,
                                          Function(sdata As Byte())
                                              senseresult = sdata
@@ -1996,14 +1996,14 @@ Public Class ZBCDeviceHelper
         Dim senseresult As Byte()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H1,
-            CByte((LowestLBA >> 56) And &HFF),
-            CByte((LowestLBA >> 48) And &HFF),
-            CByte((LowestLBA >> 40) And &HFF),
-            CByte((LowestLBA >> 32) And &HFF),
-            CByte((LowestLBA >> 24) And &HFF),
-            CByte((LowestLBA >> 16) And &HFF),
-            CByte((LowestLBA >> 8) And &HFF),
-            CByte((LowestLBA >> 0) And &HFF),
+            CByte(CLng((LowestLBA >> 56)) And &HFF),
+            CByte(CLng((LowestLBA >> 48)) And &HFF),
+            CByte(CLng((LowestLBA >> 40)) And &HFF),
+            CByte(CLng((LowestLBA >> 32)) And &HFF),
+            CByte(CLng((LowestLBA >> 24)) And &HFF),
+            CByte(CLng((LowestLBA >> 16)) And &HFF),
+            CByte(CLng((LowestLBA >> 8)) And &HFF),
+            CByte(CLng((LowestLBA >> 0)) And &HFF),
             0, 0, 0, 0, 0, 0}, Nothing, 1,
                                          Function(sdata As Byte())
                                              senseresult = sdata
@@ -2023,14 +2023,14 @@ Public Class ZBCDeviceHelper
         Dim senseresult As Byte()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H2,
-            CByte((LowestLBA >> 56) And &HFF),
-            CByte((LowestLBA >> 48) And &HFF),
-            CByte((LowestLBA >> 40) And &HFF),
-            CByte((LowestLBA >> 32) And &HFF),
-            CByte((LowestLBA >> 24) And &HFF),
-            CByte((LowestLBA >> 16) And &HFF),
-            CByte((LowestLBA >> 8) And &HFF),
-            CByte((LowestLBA >> 0) And &HFF),
+            CByte(CLng((LowestLBA >> 56)) And &HFF),
+            CByte(CLng((LowestLBA >> 48)) And &HFF),
+            CByte(CLng((LowestLBA >> 40)) And &HFF),
+            CByte(CLng((LowestLBA >> 32)) And &HFF),
+            CByte(CLng((LowestLBA >> 24)) And &HFF),
+            CByte(CLng((LowestLBA >> 16)) And &HFF),
+            CByte(CLng((LowestLBA >> 8)) And &HFF),
+            CByte(CLng((LowestLBA >> 0)) And &HFF),
             0, 0, 0, 0, 0, 0}, Nothing, 1,
                                          Function(sdata As Byte())
                                              senseresult = sdata
@@ -2048,15 +2048,15 @@ Public Class ZBCDeviceHelper
     Public Function ReadBytes(StartLBA As ULong, ByVal ByteOffset As UInt16, ReadLen As ULong) As Byte()
         Dim result As New List(Of Byte)
         Dim remain As ULong = ReadLen
-        Dim oncereadsectorcount As Integer = Math.Truncate(CommandLengthLimit / SectorLength)
+        Dim oncereadsectorcount As Integer = CInt(Math.Truncate(CommandLengthLimit / SectorLength))
         Dim currentLBA As ULong = StartLBA
         While remain > 0
             Dim data As Byte() = TapeUtils.SCSIReadParam(handle, {
                 &H28, 0,
-                CByte((StartLBA >> 24) And &HFF),
-                CByte((StartLBA >> 16) And &HFF),
-                CByte((StartLBA >> 8) And &HFF),
-                CByte((StartLBA >> 0) And &HFF),
+                CByte(CLng((StartLBA >> 24)) And &HFF),
+                CByte(CLng((StartLBA >> 16)) And &HFF),
+                CByte(CLng((StartLBA >> 8)) And &HFF),
+                CByte(CLng((StartLBA >> 0)) And &HFF),
                 0,
                 CByte((oncereadsectorcount >> 8) And &HFF),
                 CByte((oncereadsectorcount >> 0) And &HFF),
@@ -2064,20 +2064,20 @@ Public Class ZBCDeviceHelper
             If currentLBA = StartLBA AndAlso ByteOffset > 0 Then
                 data = data.Skip(ByteOffset).ToArray()
             End If
-            If data.Length > remain Then data = data.Take(remain).ToArray()
+            If data.Length > remain Then data = data.Take(CInt(remain)).ToArray()
             result.AddRange(data)
-            remain -= data.Length
-            currentLBA += oncereadsectorcount
+            remain = CULng(remain - data.Length)
+            currentLBA = CULng(currentLBA + oncereadsectorcount)
         End While
         Return result.ToArray()
     End Function
     Public Function WriteBytes(ByVal source As Byte(), StartLBA As ULong, ByVal ByteOffset As UInt16, Optional ByVal Conventional As Boolean = True) As Boolean
         Dim result As New List(Of Byte)
         Dim remain As Integer = source.Length
-        Dim oncewritesectorcount As Integer = Math.Truncate(CommandLengthLimit / SectorLength)
+        Dim oncewritesectorcount As Integer = CInt(Math.Truncate(CommandLengthLimit / SectorLength))
         Dim currentLBA As ULong = StartLBA
-        Dim totalSector As ULong = Math.Ceiling((source.Length + ByteOffset) / SectorLength)
-        Dim EndLBA As ULong = StartLBA + totalSector - 1
+        Dim totalSector As ULong = CULng(Math.Ceiling((source.Length + ByteOffset) / SectorLength))
+        Dim EndLBA As ULong = CULng(StartLBA + totalSector - 1)
         Dim tempData As New Dictionary(Of ULong, Byte())
         Dim zone0, zone1 As Zone
         If ByteOffset > 0 Then
@@ -2092,24 +2092,24 @@ Public Class ZBCDeviceHelper
                     'empty
                     Dim empty(SectorLength - 1) As Byte
                     OpenZone(zone0.ZoneStartLBA)
-                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                    For lba As ULong = zone0.ZoneStartLBA To CULng(StartLBA - 1)
                         WriteBytes(empty, lba, 0, True)
                     Next
                 ElseIf (Not zone0.WRITER_POINTER_LBA_INVALID) AndAlso zone0.ZoneWritePointerLBA <= StartLBA Then
                     'data end < write position
                     If zone0.ZoneCondition = Zone.ZoneConditionDef.CLOSED Then OpenZone(zone0.ZoneStartLBA)
                     Dim empty(SectorLength - 1) As Byte
-                    For lba As ULong = zone0.ZoneWritePointerLBA To StartLBA - 1
+                    For lba As ULong = zone0.ZoneWritePointerLBA To CULng(StartLBA - 1)
                         WriteBytes(empty, lba, 0, True)
                     Next
                 ElseIf ((Not zone0.WRITER_POINTER_LBA_INVALID) AndAlso zone0.ZoneWritePointerLBA > StartLBA) OrElse zone0.ZoneCondition = Zone.ZoneConditionDef.FULL Then
                     'data end >= write position
-                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                    For lba As ULong = zone0.ZoneStartLBA To CULng(StartLBA - 1)
                         tempData.Add(lba, ReadBytes(lba, 0, SectorLength))
                     Next
                     ResetWritePointer(zone0.ZoneStartLBA)
                     OpenZone(zone0.ZoneStartLBA)
-                    For lba As ULong = zone0.ZoneStartLBA To StartLBA - 1
+                    For lba As ULong = zone0.ZoneStartLBA To CULng(StartLBA - 1)
                         WriteBytes(tempData(lba), lba, 0, True)
                     Next
                 Else
@@ -2117,7 +2117,7 @@ Public Class ZBCDeviceHelper
                 End If
             End If
             If zone1.ZoneEndLBA > EndLBA Then
-                For lba As ULong = EndLBA + 1 To zone1.ZoneEndLBA
+                For lba As ULong = CULng(EndLBA + 1) To zone1.ZoneEndLBA
                     tempData.Add(lba, ReadBytes(lba, 0, SectorLength))
                 Next
                 ResetWritePointer(zone1.ZoneStartLBA)
@@ -2127,8 +2127,8 @@ Public Class ZBCDeviceHelper
         Dim currentEndZone As Zone
         While remain > 0
             Dim sendlen As Integer = Math.Min(oncewritesectorcount * SectorLength, remain)
-            Dim currentsendsectorcount As Integer = Math.Ceiling(sendlen / SectorLength)
-            currentEndZone = GetZoneByLBA(currentLBA + currentsendsectorcount - 1)
+            Dim currentsendsectorcount As Integer = CInt(Math.Ceiling(sendlen / SectorLength))
+            currentEndZone = GetZoneByLBA(CULng(currentLBA + currentsendsectorcount - 1))
             For i As Integer = ZoneList.IndexOf(currentZone) + 1 To ZoneList.IndexOf(currentEndZone)
                 OpenZone(ZoneList(i).ZoneStartLBA)
             Next
@@ -2136,17 +2136,17 @@ Public Class ZBCDeviceHelper
             Array.Copy(source, source.Length - remain, toSend, 0, sendlen)
             TapeUtils.SendSCSICommand(handle, {
                 &H2A, 0,
-                CByte((currentLBA >> 24) And &HFF),
-                CByte((currentLBA >> 16) And &HFF),
-                CByte((currentLBA >> 8) And &HFF),
-                CByte((currentLBA >> 0) And &HFF),
+                CByte(CLng((currentLBA >> 24)) And &HFF),
+                CByte(CLng((currentLBA >> 16)) And &HFF),
+                CByte(CLng((currentLBA >> 8)) And &HFF),
+                CByte(CLng((currentLBA >> 0)) And &HFF),
                 0,
                 CByte((currentsendsectorcount >> 8) And &HFF),
                 CByte((currentsendsectorcount >> 0) And &HFF),
                  0}, toSend, 0)
 
             remain -= sendlen
-            currentLBA += currentsendsectorcount
+            currentLBA = CULng(currentLBA + currentsendsectorcount)
             If Not Conventional Then
                 Dim nextZone As Zone = GetZoneByLBA(currentLBA)
                 If nextZone.ZoneStartLBA > currentEndZone.ZoneStartLBA Then
@@ -2184,9 +2184,9 @@ Public Class ZBCDeviceHelper
         Dim vol1 As Byte() = ReadBytes(0, 0, SectorLength)
         Dim header As String = BitConverter.ToString(vol1, &H163, 16)
         If Not header.StartsWith("LCGZBC") Then Exit Sub
-        DataStartLBA = BigEndianConverter.ToUInt64(vol1, &H1CE + 8) And &HFFFFFF
-        Dim ZBCDataLen As ULong = (BigEndianConverter.ToUInt64(vol1, &H1CE + 12) And &HFFFFFF) * SectorLength
-        DataEndLBA = DataStartLBA + Math.Ceiling(ZBCDataLen / SectorLength) - 1
+        DataStartLBA = CULng(BigEndianConverter.ToUInt64(vol1, &H1CE + 8) And &HFFFFFF)
+        Dim ZBCDataLen As ULong = CULng((BigEndianConverter.ToUInt64(vol1, &H1CE + 12) And &HFFFFFF) * SectorLength)
+        DataEndLBA = CULng(DataStartLBA + Math.Ceiling(ZBCDataLen / SectorLength) - 1)
         Data = ZBCDataHelper.FromXML(BitConverter.ToString(ReadBytes(DataStartLBA, 0, ZBCDataLen)).TrimEnd(CChar(vbNullChar)))
     End Sub
     Public Sub SaveData()
@@ -2207,7 +2207,7 @@ Public Class ZBCDeviceHelper
         Public Property CMRDataStartLBA As ULong
         Public Property CMRDataLength As ULong
         Public Sub WriteCMRData(toWrite As Byte())
-            CMRDataLength = toWrite.Length
+            CMRDataLength = CULng(toWrite.Length)
             Device.WriteBytes(toWrite, CMRDataStartLBA, 0, True)
         End Sub
         Public Function ReadCMRData() As Byte()
@@ -2257,7 +2257,7 @@ Public Class ZBCDeviceHelper
             End Property
             Public ReadOnly Property CurrentLBA As ULong
                 Get
-                    Return BytePosToLBA(Position)
+                    Return BytePosToLBA(CULng(Position))
                 End Get
             End Property
             Public ReadOnly Property CurrentZone As Zone
@@ -2289,18 +2289,18 @@ Public Class ZBCDeviceHelper
                 Dim currZone As Zone = CurrentZone
                 Dim currLBA As ULong = CurrentLBA
                 Dim currWP As ULong = currZone.ZoneWritePointerLBA
-                Dim residueBytes As Integer = BytePosToSectorOffset(Position)
+                Dim residueBytes As Integer = BytePosToSectorOffset(CULng(Position))
                 If currWP <> currLBA + 1 Then
-                    Dim ZoneRewriteBuffer(Parent.Device.SectorLength * (currLBA - currZone.ZoneStartLBA) - 1) As Byte
-                    ZoneRewriteBuffer = Parent.Device.ReadBytes(currZone.ZoneStartLBA, 0, ZoneRewriteBuffer.Length)
+                    Dim ZoneRewriteBuffer(CInt(Parent.Device.SectorLength * (currLBA - currZone.ZoneStartLBA) - 1)) As Byte
+                    ZoneRewriteBuffer = Parent.Device.ReadBytes(currZone.ZoneStartLBA, 0, CULng(ZoneRewriteBuffer.Length))
                 End If
 
             End Sub
 
             Public Overrides Function Read(buffer() As Byte, offset As Integer, count As Integer) As Integer
-                count = Math.Min(count, Length - Position)
+                count = CInt(Math.Min(count, Length - Position))
                 If count > 0 Then
-                    Dim result As Byte() = Parent.Device.ReadBytes(BytePosToLBA(Position), BytePosToSectorOffset(Position), count)
+                    Dim result As Byte() = Parent.Device.ReadBytes(BytePosToLBA(CULng(Position)), CUShort(BytePosToSectorOffset(CULng(Position))), CULng(count))
                     Array.Copy(result, 0, buffer, offset, count)
                 End If
                 Return count
@@ -2329,7 +2329,7 @@ Public Class ZBCDeviceHelper
                     '写零
                 Else
                     Flush()
-                    _Position = target
+                    _Position = CULng(target)
                     '重建缓存
 
                 End If
@@ -2337,16 +2337,16 @@ Public Class ZBCDeviceHelper
         End Class
 
         Public Sub CreateLTFSDefault(Optional ByVal SinglePartition As Boolean = False)
-            CMRDataStartLBA = Device.DataStartLBA + 1024
+            CMRDataStartLBA = CULng(Device.DataStartLBA + 1024)
             DataStreamList.Clear()
-            Dim indexpartition As New DataStream With {.StartLBA = Device.CMREndLBA + 1}
+            Dim indexpartition As New DataStream With {.StartLBA = CULng(Device.CMREndLBA + 1)}
             DataStreamList.Add(indexpartition)
             If SinglePartition Then
-                indexpartition.MaxLength = (Device.MaximumLBA - indexpartition.StartLBA + 1) * Device.SectorLength
+                indexpartition.MaxLength = CULng((Device.MaximumLBA - indexpartition.StartLBA + 1) * Device.SectorLength)
             Else
-                indexpartition.MaxLength = Math.Ceiling(107374182400 / Device.SectorLength) * Device.SectorLength
-                Dim datapartition As New DataStream With {.StartLBA = Device.CMREndLBA + 1 + Math.Ceiling(107374182400 / Device.SectorLength)}
-                datapartition.MaxLength = (Device.MaximumLBA - datapartition.StartLBA + 1) * Device.SectorLength
+                indexpartition.MaxLength = CULng(Math.Ceiling(107374182400 / Device.SectorLength) * Device.SectorLength)
+                Dim datapartition As New DataStream With {.StartLBA = CULng(Device.CMREndLBA + 1 + Math.Ceiling(107374182400 / Device.SectorLength))}
+                datapartition.MaxLength = CULng((Device.MaximumLBA - datapartition.StartLBA + 1) * Device.SectorLength)
                 DataStreamList.Add(datapartition)
             End If
         End Sub
@@ -2406,8 +2406,8 @@ Public Class DiskQuery
                 IntPtr.Zero,
                 0,
                 outPtr,
-                outSize,
-                bytesReturned,
+                CUInt(outSize),
+                CUInt(bytesReturned),
                 IntPtr.Zero)
 
             If Not ok Then Throw New System.ComponentModel.Win32Exception()
@@ -2456,10 +2456,10 @@ Public Class DiskQuery
                 hDevice,
                 IOCTL_STORAGE_QUERY_PROPERTY,
                 inPtr,
-                querySize,
+                CUInt(querySize),
                 outPtr,
-                outSize,
-                bytesReturned,
+                CUInt(outSize),
+                CUInt(bytesReturned),
                 IntPtr.Zero)
 
             If Not ok Then Throw New System.ComponentModel.Win32Exception()
@@ -2594,7 +2594,7 @@ Public Class BigEndianConverter
     Public Shared Function GetBytes(ByVal input As UInt64) As Byte()
         Dim result(7) As Byte
         For i As Integer = result.Length - 1 To 0 Step -1
-            result(i) = CByte(input And &HFF)
+            result(i) = CByte(CLng(input) And &HFF)
             input >>= 8
         Next
         Return result

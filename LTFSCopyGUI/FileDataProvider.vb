@@ -430,24 +430,24 @@ Public Class HardDriveDataProvider
                 SectorLength = .SectorSize
                 batchSize = 65536 \ SectorLength
                 If SectorCount < 0 Then
-                    SectorCount = .LBACount - StartLBA
+                    SectorCount = CLng(.LBACount - StartLBA)
                 End If
                 Me.SectorCount = SectorCount
                 SectorLenUpdated = True
             End With
             Dim LBA As ULong = StartLBA
-            Dim EndLBA As ULong = StartLBA + SectorCount - 1
+            Dim EndLBA As ULong = CULng(StartLBA + SectorCount - 1)
             If _ringBufferEnabled Then
                 Dim minChunk As Integer = sectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
-                    Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim batch As Integer = CInt(Math.Min(batchSize, EndLBA - LBA + 1))
                     Dim totalBytes As Integer = batch * SectorLength
                     Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
-                    CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
-                    CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
+                    CByte(CLng((LBA >> 24)) And &HFF), CByte(CLng((LBA >> 16)) And &HFF),
+                    CByte(CLng((LBA >> 8)) And &HFF), CByte(CLng((LBA >> 0)) And &HFF),
                     0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, totalBytes)
-                    LBA += batch
+                    LBA = CULng(LBA + batch)
 
                     Dim remaining As Integer = totalBytes
                     Dim srcOffset As Integer = 0
@@ -466,13 +466,13 @@ Public Class HardDriveDataProvider
                 Dim minSize As Integer = sectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
-                    Dim batch As Integer = Math.Min(batchSize, EndLBA - LBA + 1)
+                    Dim batch As Integer = CInt(Math.Min(batchSize, EndLBA - LBA + 1))
                     Dim totalBytes As Integer = batch * SectorLength
                     Dim dataPtr As IntPtr = TapeUtils.SCSIReadParamUnmanaged(driveHandle, {&H28, 0,
-                    CByte((LBA >> 24) And &HFF), CByte((LBA >> 16) And &HFF),
-                    CByte((LBA >> 8) And &HFF), CByte((LBA >> 0) And &HFF),
+                    CByte(CLng((LBA >> 24)) And &HFF), CByte(CLng((LBA >> 16)) And &HFF),
+                    CByte(CLng((LBA >> 8)) And &HFF), CByte(CLng((LBA >> 0)) And &HFF),
                     0, CByte((batch >> 8) And &HFF), CByte((batch >> 0) And &HFF), 0}, totalBytes)
-                    LBA += batch
+                    LBA = CULng(LBA + batch)
 
                     Dim remaining As Integer = totalBytes
                     Dim srcOffset As Integer = 0

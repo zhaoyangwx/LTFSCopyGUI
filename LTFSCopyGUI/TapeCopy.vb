@@ -19,7 +19,7 @@
     End Sub
 
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
-        Dim progsnap As Integer = progval
+        Dim progsnap As Integer = CInt(progval)
         lastIncVal = Math.Max(0, progsnap - progLastVal)
         progLastVal = progsnap
 
@@ -65,8 +65,8 @@
                 TapeUtils.DriverTypeSetting = drivertype
             End If
             TapeUtils.OpenTapeDrive(TapeB, handleB)
-            Dim BlockCount As Integer = NumericUpDown1.Value
-            Dim BlockLen As UInteger = NumericUpDown2.Value
+            Dim BlockCount As Integer = CInt(NumericUpDown1.Value)
+            Dim BlockLen As UInteger = CUInt(NumericUpDown2.Value)
             progval = 0
             progLastVal = 0
             Dim running As Boolean = True
@@ -98,7 +98,7 @@
                                 TapeUtils.DriverTypeSetting = drivertype
                             End If
                             readData = TapeUtils.ReadBlock(handleA, sense, BlockLen)
-                            Add_Key = CInt(sense(12)) << 8 Or sense(13)
+                            Add_Key = CUShort(CInt(sense(12)) << 8 Or sense(13))
                             Dim succ As Boolean = False
                             While Not succ
                                 Dim sense2 As Byte() = Nothing
@@ -178,7 +178,7 @@
             Dim thprog As New Threading.Thread(
                 Sub()
                     While running
-                        Dim prog As Integer = Math.Min(10000, Math.Max(0, progval * 10000 / Math.Max(1, BlockCount)))
+                        Dim prog As Integer = CInt(Math.Min(10000, Math.Max(0, progval * 10000 / Math.Max(1, BlockCount))))
                         Invoke(Sub() ProgressBar1.Value = prog)
                         PrintMsg($"{progval}/{maxStr} (+ {(lastIncVal * (BlockLen / 1048576)).ToString("F2")}MiB/s)")
                         Threading.Thread.Sleep(100)

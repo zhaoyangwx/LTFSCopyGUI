@@ -17,11 +17,11 @@ Public Class Form1
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(0))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(0)))
                     Dim s As String = ""
                     If ReloadFile Or schema Is Nothing Then s = IO.File.ReadAllText(TextBox1.Text)
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(1))
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(2))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(1)))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(2)))
 
                     If ReloadFile Or schema Is Nothing Then
                         If s.Contains("XMLSchema") Then
@@ -35,7 +35,7 @@ Public Class Form1
                     ScanFile(contents, flist, "")
                     Dim alist As New List(Of TapeFileInfo)
                     Dim blist As New List(Of TapeFileInfo)
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(3))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(3)))
                     Parallel.ForEach(flist,
                         Sub(f As TapeFileInfo)
                             If f.Partition = ltfsindex.PartitionLabel.a Then
@@ -48,7 +48,7 @@ Public Class Form1
                                 End SyncLock
                             End If
                         End Sub)
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(4))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(4)))
                     Parallel.ForEach({alist, blist},
                         Sub(nlist As List(Of TapeFileInfo))
                             If nlist Is alist Then
@@ -70,7 +70,7 @@ Public Class Form1
                             End If
                         End Sub)
                     filelist = New List(Of String)
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(5))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(5)))
                     Dim counter As Integer = 0
                     Dim total As Integer = alist.Count + blist.Count
                     Dim ran As New Random
@@ -110,7 +110,7 @@ Public Class Form1
                             End If
                         Next
                     End If
-                    Invoke(Sub() Label4.Text = SchemaLoadText.Items(6))
+                    Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(6)))
                     Invoke(Sub() TextBox2.Text = p.ToString)
                 Catch ex As Exception
                     Invoke(Sub() TextBox2.Text = ex.Message)
@@ -139,13 +139,13 @@ Public Class Form1
         th.Start()
     End Sub
     Public Function LookforXMLEndPosition(ByRef s As String, ByVal Target As String, ByVal StartPos As String) As Long
-        Dim i As Integer = StartPos
+        Dim i As Integer = CInt(StartPos)
         Dim TargetBra As String = $"<{Target}>"
         Dim TargetKet As String = $"</{Target}>"
         While i < s.Length - 1
             i += 1
             If s.Substring(i, TargetBra.Length).Equals(TargetBra) Then
-                i = LookforXMLEndPosition(s, Target, i)
+                i = CInt(LookforXMLEndPosition(s, Target, CStr(i)))
                 Continue While
             End If
             If s.Substring(i, TargetKet.Length).Equals(TargetKet) Then

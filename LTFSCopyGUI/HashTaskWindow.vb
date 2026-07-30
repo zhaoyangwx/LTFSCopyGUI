@@ -368,7 +368,7 @@ Public Class HashTaskWindow
 
     Private Sub NumericUpDown1_ValueChanged(sender As Object, e As EventArgs) Handles NumericUpDown1.ValueChanged
         If HashTask Is Nothing Then Exit Sub
-        If NumericUpDown1.Value >= 1 Then HashTask.BufferWrite = NumericUpDown1.Value
+        If NumericUpDown1.Value >= 1 Then HashTask.BufferWrite = CInt(NumericUpDown1.Value)
     End Sub
 
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
@@ -413,11 +413,11 @@ Public Class HashTaskWindow
                IOManager.FormatSize(ddelta) & "/s) Total: " &
                IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
             If smax <> 0 Then
-                ProgressBar1.Value = Math.Min((ssum + dval) / smax * ProgressBar1.Maximum, ProgressBar1.Maximum)
+                ProgressBar1.Value = CInt(Math.Min((ssum + dval) / smax * ProgressBar1.Maximum, ProgressBar1.Maximum))
             End If
             d_last = pnow
             If TextBox1.Text.Length > TextBox1.MaxLength Then
-                TextBox1.Text = Mid(TextBox1.Text, TextBox1.Text.Length - TextBox1.MaxLength / 3 * 2)
+                TextBox1.Text = Mid(TextBox1.Text, CInt(TextBox1.Text.Length - TextBox1.MaxLength / 3 * 2))
                 TextBox1.Select(TextBox1.Text.Length, 0)
                 TextBox1.ScrollToCaret()
             End If
@@ -429,7 +429,7 @@ Public Class HashTaskWindow
                                        IOManager.FormatSize(ddelta) & "/s) Total: " &
                                        IOManager.FormatSize(ssum + dval) & "/" & IOManager.FormatSize(smax)
                     If smax <> 0 Then
-                        ProgressBar1.Value = (ssum + dval) / smax * ProgressBar1.Maximum
+                        ProgressBar1.Value = CInt((ssum + dval) / smax * ProgressBar1.Maximum)
                     End If
                 Catch ex As Exception
 

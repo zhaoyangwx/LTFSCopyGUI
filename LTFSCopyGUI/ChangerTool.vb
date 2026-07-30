@@ -216,10 +216,10 @@ Public Class ChangerTool
         If Not LoadComplete Then Exit Sub
         SuspendLayout()
         Dim sample As New ChangerTool
-        ComboBox1.Width = (Width - sample.Width) / 2 + sample.ComboBox1.Width
-        ComboBox2.Width = (Width - sample.Width) / 2 + sample.ComboBox2.Width
-        ComboBox2.Left = (Width - sample.Width) / 2 + sample.ComboBox2.Left
-        Label1.Left = (Width - sample.Width) / 2 + sample.Label1.Left
+        ComboBox1.Width = CInt((Width - sample.Width) / 2 + sample.ComboBox1.Width)
+        ComboBox2.Width = CInt((Width - sample.Width) / 2 + sample.ComboBox2.Width)
+        ComboBox2.Left = CInt((Width - sample.Width) / 2 + sample.ComboBox2.Left)
+        Label1.Left = CInt((Width - sample.Width) / 2 + sample.Label1.Left)
         ResumeLayout()
     End Sub
 

@@ -25,8 +25,8 @@ Public NotInheritable Class SpscRingBuffer
         End If
 
         _capacity = capacityBytes
-        _mask = capacityBytes - 1
-        _buffer = New Byte(capacityBytes - 1) {}
+        _mask = CInt(capacityBytes - 1)
+        _buffer = New Byte(CInt(capacityBytes - 1)) {}
     End Sub
 
     Public ReadOnly Property Capacity As Long
@@ -92,7 +92,7 @@ Public NotInheritable Class SpscRingBuffer
         If free <= 0 Then Return New ArraySegment(Of Byte)(_buffer, 0, 0)
 
         Dim tailIdx As Integer = CInt(tail And _mask)
-        Dim contiguous As Integer = Math.Min(free, _capacity - tailIdx) ' to end of array
+        Dim contiguous As Integer = CInt(Math.Min(free, _capacity - tailIdx)) ' to end of array
 
         Return New ArraySegment(Of Byte)(_buffer, tailIdx, contiguous)
     End Function
@@ -141,7 +141,7 @@ Public NotInheritable Class SpscRingBuffer
 
         Dim avail As Integer = CInt(Math.Min(availLong, CLng(Integer.MaxValue)))
         Dim headIdx As Integer = CInt(head And _mask)
-        Dim contiguous As Integer = Math.Min(avail, _capacity - headIdx)
+        Dim contiguous As Integer = CInt(Math.Min(avail, _capacity - headIdx))
 
         Return New ArraySegment(Of Byte)(_buffer, headIdx, contiguous)
     End Function
