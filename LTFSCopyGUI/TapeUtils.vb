@@ -6846,14 +6846,14 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-    Public Shared Function AllowMediaRemoval(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function AllowMediumRemoval(handle As IntPtr, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Return SendSCSICommand(handle, {&H1E, 0, 0, 0, 0, 0}, Nothing, 1, senseReport)
     End Function
-    Public Shared Function AllowMediaRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function AllowMediumRemoval(TapeDrive As String, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As Boolean = AllowMediaRemoval(handle, senseReport)
+            Dim result As Boolean = AllowMediumRemoval(handle, senseReport)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
@@ -6870,7 +6870,7 @@ Public Class TapeUtils
     Public Shared Function DoReload(handle As IntPtr, Lock As Boolean, EncryptionKey As Byte()) As Boolean
         SyncLock SCSIOperationLock
             Dim Loc As New PositionData(handle)
-            AllowMediaRemoval(handle)
+            AllowMediumRemoval(handle)
             LoadEject(handle:=handle, LoadOption:=LoadOption.Unthread)
             LoadEject(handle:=handle, LoadOption:=LoadOption.LoadThreaded, EncryptionKey:=EncryptionKey)
             If Lock Then PreventMediaRemoval(handle)
@@ -8734,7 +8734,7 @@ Public Class TapeUtils
             End If
             If Locate(handle:=handle, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=LocateDestType.Block) <> 0 Then
                 If LockDrive Then
-                    AllowMediaRemoval(handle)
+                    AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
                 End If
                 Return False
@@ -8743,7 +8743,7 @@ Public Class TapeUtils
                 If CreateNew Then IO.File.WriteAllBytes(OutputFile, {})
             Catch ex As Exception
                 If LockDrive Then
-                    AllowMediaRemoval(handle)
+                    AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
                 End If
                 Return False
@@ -8753,7 +8753,7 @@ Public Class TapeUtils
                 fs = New IO.FileStream(OutputFile, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.SequentialScan)
             Catch ex As Exception
                 If LockDrive Then
-                    AllowMediaRemoval(handle)
+                    AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
                 End If
                 Return False
@@ -8766,7 +8766,7 @@ Public Class TapeUtils
                     Dim Data As Byte() = ReadBlock(handle:=handle, BlockSizeLimit:=len)
                     If Data.Length <> len OrElse len = 0 Then
                         If LockDrive Then
-                            AllowMediaRemoval(handle)
+                            AllowMediumRemoval(handle)
                             ReleaseUnit(handle)
                         End If
                         Return False
@@ -8777,7 +8777,7 @@ Public Class TapeUtils
                     ByteOffset = 0
                 End While
                 If LockDrive Then
-                    AllowMediaRemoval(handle)
+                    AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
                 End If
                 If StopFlag Then
@@ -8791,7 +8791,7 @@ Public Class TapeUtils
                 fs.Close()
                 IO.File.Delete(OutputFile)
                 If LockDrive Then
-                    AllowMediaRemoval(handle)
+                    AllowMediumRemoval(handle)
                     ReleaseUnit(handle)
                 End If
                 Return False

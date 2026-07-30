@@ -2769,7 +2769,7 @@ Public Class LTFSWriter
         RefreshIndexPartition()
         AutoDump()
         TapeUtils.ReleaseUnit(driveHandle)
-        TapeUtils.AllowMediaRemoval(driveHandle)
+        TapeUtils.AllowMediumRemoval(driveHandle)
         PrintMsg(My.Resources.ResText_IUd)
         If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then Me.Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = False)
         If SilentMode Then
@@ -3886,7 +3886,7 @@ Public Class LTFSWriter
                             PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
                             SetStatusLight(LWStatus.Err)
                         End Try
-                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.AllowMediumRemoval(driveHandle)
                         TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
@@ -3991,7 +3991,7 @@ Public Class LTFSWriter
                         End Try
                         SyncLock OperationLock
                             SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediaRemoval(driveHandle)
+                                TapeUtils.AllowMediumRemoval(driveHandle)
                                 TapeUtils.ReleaseUnit(driveHandle)
                             End SyncLock
                         End SyncLock
@@ -5634,7 +5634,7 @@ Public Class LTFSWriter
                 End Try
                 TapeUtils.Flush(driveHandle)
                 TapeUtils.ReleaseUnit(driveHandle)
-                TapeUtils.AllowMediaRemoval(driveHandle)
+                TapeUtils.AllowMediumRemoval(driveHandle)
                 If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
                     Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
                                   .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}",
@@ -6981,7 +6981,7 @@ Public Class LTFSWriter
                         PrintMsg(My.Resources.ResText_UI)
                         RefreshIndexPartition()
                         TapeUtils.ReleaseUnit(driveHandle)
-                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.AllowMediumRemoval(driveHandle)
                         PrintMsg(My.Resources.ResText_IUd)
                         If schema IsNot Nothing AndAlso schema.location.partition = ltfsindex.PartitionLabel.a Then Invoke(Sub() 更新数据区索引ToolStripMenuItem.Enabled = False)
                         SetStatusLight(LWStatus.Busy)
@@ -8561,7 +8561,7 @@ Public Class LTFSWriter
                          SetStatusLight(LWStatus.Succ)
                          TapeUtils.Flush(driveHandle)
                          TapeUtils.ReleaseUnit(driveHandle)
-                         TapeUtils.AllowMediaRemoval(driveHandle)
+                         TapeUtils.AllowMediumRemoval(driveHandle)
                          Invoke(Sub() TreeView1.SelectedNode = TreeView1.SelectedNode.Parent)
                          RefreshDisplay()
                          RefreshCapacity()
@@ -8664,7 +8664,7 @@ Public Class LTFSWriter
                             SetStatusLight(LWStatus.Err)
                             PrintMsg(My.Resources.ResText_RestoreErr)
                         End Try
-                        TapeUtils.AllowMediaRemoval(driveHandle)
+                        TapeUtils.AllowMediumRemoval(driveHandle)
                         TapeUtils.ReleaseUnit(driveHandle)
                         StopFlag = False
                         UnwrittenSizeOverrideValue = 0
@@ -9206,7 +9206,7 @@ Public Class LTFSWriter
                 End Try
                 TapeUtils.Flush(driveHandle)
                 TapeUtils.ReleaseUnit(driveHandle)
-                TapeUtils.AllowMediaRemoval(driveHandle)
+                TapeUtils.AllowMediumRemoval(driveHandle)
                 LockGUI(False)
                 RefreshDisplay()
                 RefreshCapacity()
@@ -10152,7 +10152,7 @@ Public Class LTFSWriter
                         End Try
                         SyncLock OperationLock
                             SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediaRemoval(driveHandle)
+                                TapeUtils.AllowMediumRemoval(driveHandle)
                                 TapeUtils.ReleaseUnit(driveHandle)
                             End SyncLock
                         End SyncLock
@@ -10248,7 +10248,7 @@ Public Class LTFSWriter
                         End Try
                         SyncLock OperationLock
                             SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediaRemoval(driveHandle)
+                                TapeUtils.AllowMediumRemoval(driveHandle)
                                 TapeUtils.ReleaseUnit(driveHandle)
                             End SyncLock
                         End SyncLock
@@ -10268,7 +10268,7 @@ Public Class LTFSWriter
         Task.Run(Sub()
                      SetStatusLight(LWStatus.Busy)
                      TapeUtils.ReleaseUnit(driveHandle)
-                     TapeUtils.AllowMediaRemoval(driveHandle)
+                     TapeUtils.AllowMediumRemoval(driveHandle)
                      TapeUtils.LoadEject(driveHandle, TapeUtils.LoadOption.Eject)
                      PrintMsg(My.Resources.ResText_Ejd)
                      Invoke(Sub()
@@ -10753,7 +10753,7 @@ Public Class LTFSWriter
                      End If
                      TapeUtils.Flush(driveHandle)
                      TapeUtils.ReleaseUnit(driveHandle)
-                     TapeUtils.AllowMediaRemoval(driveHandle)
+                     TapeUtils.AllowMediumRemoval(driveHandle)
                      If My.Settings.LTFSWriter_PowerPolicyOnWriteEnd <> Guid.Empty Then
                          Process.Start(New ProcessStartInfo With {.FileName = "powercfg",
                               .Arguments = $"/s {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}",
