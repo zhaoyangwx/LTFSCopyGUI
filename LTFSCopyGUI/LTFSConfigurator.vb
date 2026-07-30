@@ -82,7 +82,7 @@ Public Class LTFSConfigurator
             If CurDrive.DriveLetter <> "" Then
                 If Not ComboBoxDriveLetter.Items.Contains(CurDrive.DriveLetter) Then ComboBoxDriveLetter.Items.Add(CurDrive.DriveLetter)
                 ComboBoxDriveLetter.SelectedItem = CurDrive.DriveLetter
-                TextBoxMsg.AppendText(TapeUtils.CheckTapeMedia(CurDrive.DriveLetter) & vbCrLf)
+                TextBoxMsg.AppendText(TapeUtils.CheckTapeMedia(CChar(CurDrive.DriveLetter)) & vbCrLf)
             End If
             ComboBoxDriveLetter.Enabled = (CurDrive.DriveLetter = "")
             ButtonAssign.Enabled = (CurDrive.DriveLetter = "")
@@ -213,7 +213,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBoxDriveLetter.Text <> "" Then
-                Dim result As String = TapeUtils.MapTapeDrive(ComboBoxDriveLetter.Text, CurDrive.DeviceType & CurDrive.DevIndex)
+                Dim result As String = TapeUtils.MapTapeDrive(CChar(ComboBoxDriveLetter.Text), CurDrive.DeviceType & CurDrive.DevIndex)
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> " & ComboBoxDriveLetter.Text & ":"
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
@@ -227,7 +227,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" Then
-                Dim result As String = TapeUtils.UnMapTapeDrive(ComboBoxDriveLetter.Text)
+                Dim result As String = TapeUtils.UnMapTapeDrive(CChar(ComboBoxDriveLetter.Text))
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> ---" & ComboBoxDriveLetter.Text
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
@@ -242,7 +242,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
-            Dim dL As Char = ComboBoxDriveLetter.Text
+            Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String
@@ -277,7 +277,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
-            Dim dL As Char = ComboBoxDriveLetter.Text
+            Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String
@@ -308,7 +308,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" And ComboBoxDriveLetter.Text <> "" Then
-                Dim result As String = TapeUtils.MountTapeDrive(ComboBoxDriveLetter.Text)
+                Dim result As String = TapeUtils.MountTapeDrive(CChar(ComboBoxDriveLetter.Text))
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " mounted"
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
@@ -383,7 +383,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
-            Dim dL As Char = ComboBoxDriveLetter.Text
+            Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String
@@ -417,7 +417,7 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
             Panel1.Enabled = False
-            Dim dL As Char = ComboBoxDriveLetter.Text
+            Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
                 Sub()
                     Dim result As String
@@ -449,7 +449,7 @@ Public Class LTFSConfigurator
         If Not LoadComplete Then Exit Sub
         If MessageBox.Show(New Form With {.TopMost = True}, "Data will be cleared on this tape. Continue?", "Warning", MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Panel1.Enabled = False
-        Dim dL As Char = ComboBoxDriveLetter.Text
+        Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
         Dim th As New Threading.Thread(
                 Sub()
                     Invoke(Sub() TextBoxDebugOutput.Text = "Start erase ..." & vbCrLf)
@@ -1400,7 +1400,7 @@ Public Class LTFSConfigurator
                     Try
                         Dim pdata As TapeUtils.PageData = TapeUtils.PageData.FromXML(IO.File.ReadAllText(f.FullName))
                         PageItem.Add(pdata)
-                        ComboBox4.Items.Add($"0x{Hex(pdata.PageCode).PadLeft(2, "0")} - {pdata.Name}")
+                        ComboBox4.Items.Add($"0x{Hex(pdata.PageCode).PadLeft(2, "0"c)} - {pdata.Name}")
                         ComboBox5.SelectedIndex = 1
                     Catch ex As Exception
 
@@ -1421,7 +1421,7 @@ Public Class LTFSConfigurator
                                     PageItem(index).RawData = logdata
                                     TextBoxDebugOutput.Text = PageItem(index).GetSummary()
                                     If CheckBoxShowRawLogPageData.Checked Then
-                                        TextBoxDebugOutput.AppendText("Raw Data".PadLeft(41, "=").PadRight(75, "="))
+                                        TextBoxDebugOutput.AppendText("Raw Data".PadLeft(41, "="c).PadRight(75, "="c))
                                         TextBoxDebugOutput.AppendText(vbCrLf)
                                         TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(PageItem(index).RawData, True))
                                     End If
@@ -1697,15 +1697,15 @@ Public Class LTFSConfigurator
                              result.Append("   ")
                              result.Append(chan.ToString.PadLeft(5))
                              result.Append("   | ")
-                             result.Append(WERLData(i + 4).PadLeft(8, "0"))
+                             result.Append(WERLData(i + 4).PadLeft(8, "0"c))
                              result.Append(" | ")
-                             result.Append(WERLData(i + 0).PadLeft(8, "0"))
+                             result.Append(WERLData(i + 0).PadLeft(8, "0"c))
                              result.Append(" |   ")
-                             result.Append(WERLData(i + 1).PadLeft(8, "0"))
+                             result.Append(WERLData(i + 1).PadLeft(8, "0"c))
                              result.Append("    | ")
-                             result.Append(WERLData(i + 2).PadLeft(8, "0"))
+                             result.Append(WERLData(i + 2).PadLeft(8, "0"c))
                              result.Append(" |  ")
-                             result.Append(WERLData(i + 3).PadLeft(8, "0"))
+                             result.Append(WERLData(i + 3).PadLeft(8, "0"c))
                              result.Append("  |  ")
                              If NoCCPs > 0 Then
                                  result.Append((C1err / NoCCPs / 2).ToString("E3"))
@@ -1746,15 +1746,15 @@ Public Class LTFSConfigurator
                              result.Append("   ")
                              result.Append(chan.ToString.PadLeft(5))
                              result.Append("   | ")
-                             result.Append(RERLData(i + 4).PadLeft(8, "0"))
+                             result.Append(RERLData(i + 4).PadLeft(8, "0"c))
                              result.Append(" | ")
-                             result.Append(RERLData(i + 0).PadLeft(8, "0"))
+                             result.Append(RERLData(i + 0).PadLeft(8, "0"c))
                              result.Append(" |   ")
-                             result.Append(RERLData(i + 1).PadLeft(8, "0"))
+                             result.Append(RERLData(i + 1).PadLeft(8, "0"c))
                              result.Append("    | ")
-                             result.Append(RERLData(i + 2).PadLeft(8, "0"))
+                             result.Append(RERLData(i + 2).PadLeft(8, "0"c))
                              result.Append(" |  ")
-                             result.Append(RERLData(i + 3).PadLeft(8, "0"))
+                             result.Append(RERLData(i + 3).PadLeft(8, "0"c))
                              result.Append("  |  ")
                              If NoCCPs > 0 Then
                                  result.Append((C1err / NoCCPs / 2).ToString("E3"))
@@ -2193,7 +2193,7 @@ Public Class LTFSConfigurator
                                 HeaderChanged = False
                             End If
                             Invoke(Sub()
-                                       TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0")}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0")}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}")
+                                       TextBoxDebugOutput.AppendText($"[{Math.Truncate(TotalPlayTime.TotalHours).ToString().PadLeft(2, "0"c)}:{Math.Truncate(TotalPlayTime.Minutes).ToString().PadLeft(2, "0"c)}:{Math.Truncate(TotalPlayTime.Seconds).ToString().PadLeft(2, "0"c)}] {readData.Length} bytes readed at P{pos.PartitionNumber} B{pos.BlockNumber}.{vbCrLf}")
                                    End Sub)
                             player.AddData(readData, isFloat)
                             TotalPlayTime += New TimeSpan(CLng(readData.Length) * 8 / bitsPerSample / channels / sampleRate * 10000000)

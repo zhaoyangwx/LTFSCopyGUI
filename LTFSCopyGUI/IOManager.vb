@@ -2187,7 +2187,7 @@ Public Class ZBCDeviceHelper
         DataStartLBA = BigEndianConverter.ToUInt64(vol1, &H1CE + 8) And &HFFFFFF
         Dim ZBCDataLen As ULong = (BigEndianConverter.ToUInt64(vol1, &H1CE + 12) And &HFFFFFF) * SectorLength
         DataEndLBA = DataStartLBA + Math.Ceiling(ZBCDataLen / SectorLength) - 1
-        Data = ZBCDataHelper.FromXML(BitConverter.ToString(ReadBytes(DataStartLBA, 0, ZBCDataLen)).TrimEnd(vbNullChar))
+        Data = ZBCDataHelper.FromXML(BitConverter.ToString(ReadBytes(DataStartLBA, 0, ZBCDataLen)).TrimEnd(CChar(vbNullChar)))
     End Sub
     Public Sub SaveData()
         Dim vol1 As Byte() = ReadBytes(0, 0, SectorLength)

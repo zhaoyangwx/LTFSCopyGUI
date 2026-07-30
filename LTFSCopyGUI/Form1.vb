@@ -78,10 +78,10 @@ Public Class Form1
 
                     Dim p As New System.Text.StringBuilder()
                     Dim fdir As String = TextBox3.Text
-                    If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\")
+                    If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\"c)
                     fdir &= "\"
                     Dim tdir As String = TextBox4.Text
-                    If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\")
+                    If tdir.EndsWith("\") Then tdir = tdir.TrimEnd("\"c)
                     tdir &= "\"
                     If Not CheckBox1.Checked Then
                         p.Append($"Partition{vbTab}Startblock{vbTab}Length{vbTab}Path{vbCrLf}")

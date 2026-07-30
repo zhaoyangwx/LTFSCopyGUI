@@ -831,17 +831,17 @@ Public Class TapeUtils
         'TC_MAM_APPLICATION_VENDOR = 0x0800 LEN = 8
         'TC_MAM_APPLICATION_NAME = 0x0801 = 0x0800 LEN = 32
         'TC_MAM_APPLICATION_VERSION = 0x0802 = 0x0800 LEN = 8
-        Return ReadMAMAttributeString(TapeDrive, 8, 0).TrimEnd(" ") &
-            " " & ReadMAMAttributeString(TapeDrive, 8, 1).TrimEnd(" ") &
-            " " & ReadMAMAttributeString(TapeDrive, 8, 2).TrimEnd(" ")
+        Return ReadMAMAttributeString(TapeDrive, 8, 0).TrimEnd(" "c) &
+            " " & ReadMAMAttributeString(TapeDrive, 8, 1).TrimEnd(" "c) &
+            " " & ReadMAMAttributeString(TapeDrive, 8, 2).TrimEnd(" "c)
     End Function
     Public Shared Function ReadBarcode(TapeDrive As String) As String
         'TC_MAM_BARCODE = 0x0806 LEN = 32
-        Return ReadMAMAttributeString(TapeDrive, 8, 6).TrimEnd(" ")
+        Return ReadMAMAttributeString(TapeDrive, 8, 6).TrimEnd(" "c)
     End Function
     Public Shared Function ReadBarcode(handle As IntPtr) As String
         'TC_MAM_BARCODE = 0x0806 LEN = 32
-        Return ReadMAMAttributeString(handle, 8, 6).TrimEnd(" ")
+        Return ReadMAMAttributeString(handle, 8, 6).TrimEnd(" "c)
     End Function
     Public Shared Function ReadRemainingCapacity(TapeDrive As String, Optional ByVal Partition As Byte = 0) As UInt64
         Return MAMAttribute.FromTapeDrive(TapeDrive, &H0, Partition).AsNumeric
@@ -905,19 +905,19 @@ Public Class TapeUtils
             Dim PageLen As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, 4, 0}, paramLen:=4, senseReport:=Nothing, timeout:=10)(3) + 4
             If PageLen <> 4 Then
                 Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 1, &H80, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
-                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
                 PageData = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, &H60, 0}, paramLen:=&H60, senseReport:=Nothing, timeout:=10)
-                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
-                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
+                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
                 Return New BlockDevice With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
             Else
                 PageLen = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, 5, 0}, paramLen:=5, senseReport:=Nothing, timeout:=10)(4) + 4
                 If PageLen = 4 Then Return Nothing
                 Dim PageData() As Byte = SCSIReadParam(handle:=handle, cdbData:={&H12, 0, 0, 0, PageLen, 0}, paramLen:=PageLen, senseReport:=Nothing, timeout:=10)
-                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(36).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
-                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
-                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
-                Product &= " " & Encoding.ASCII.GetString(PageData.Skip(32).Take(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" ").TrimStart(" ")
+                Dim SN As String = Encoding.ASCII.GetString(PageData.Skip(36).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
+                Dim Vendor As String = Encoding.ASCII.GetString(PageData.Skip(8).Take(8).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
+                Dim Product As String = Encoding.ASCII.GetString(PageData.Skip(16).Take(16).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
+                Product &= " " & Encoding.ASCII.GetString(PageData.Skip(32).Take(4).ToArray()).Replace(vbNullChar, "").TrimEnd(" "c).TrimStart(" "c)
                 Return New BlockDevice With {.SerialNumber = SN, .VendorId = Vendor, .ProductId = Product}
             End If
         End SyncLock
@@ -8822,11 +8822,11 @@ Public Class TapeUtils
 
         End Sub
         Public Sub New(DevIndex As String, SerialNumber As String, VendorId As String, ProductId As String, Optional ByVal DriveLetter As String = "")
-            Me.DevIndex = DevIndex.TrimEnd(" ")
-            Me.SerialNumber = SerialNumber.TrimEnd(" ")
-            Me.VendorId = VendorId.TrimEnd(" ")
-            Me.ProductId = ProductId.TrimEnd(" ")
-            Me.DriveLetter = DriveLetter.TrimEnd(" ")
+            Me.DevIndex = DevIndex.TrimEnd(" "c)
+            Me.SerialNumber = SerialNumber.TrimEnd(" "c)
+            Me.VendorId = VendorId.TrimEnd(" "c)
+            Me.ProductId = ProductId.TrimEnd(" "c)
+            Me.DriveLetter = DriveLetter.TrimEnd(" "c)
         End Sub
         Public Overrides Function ToString() As String
             Dim o As String = DeviceType & DevIndex & ":"
@@ -8875,10 +8875,10 @@ Public Class TapeUtils
 
         End Sub
         Public Sub New(DevIndex As String, SerialNumber As String, VendorId As String, ProductId As String)
-            Me.DevIndex = DevIndex.TrimEnd(" ")
-            Me.SerialNumber = SerialNumber.TrimEnd(" ")
-            Me.VendorId = VendorId.TrimEnd(" ")
-            Me.ProductId = ProductId.TrimEnd(" ")
+            Me.DevIndex = DevIndex.TrimEnd(" "c)
+            Me.SerialNumber = SerialNumber.TrimEnd(" "c)
+            Me.VendorId = VendorId.TrimEnd(" "c)
+            Me.ProductId = ProductId.TrimEnd(" "c)
         End Sub
         Public Overrides Function ToString() As String
             Dim o As String = "CHANGER" & DevIndex & ":"
@@ -9257,14 +9257,14 @@ Public Class TapeUtils
                         .MediumType = RawData(DOffset + 9) And &B111
                         .SourceStorageElementAddress = CInt((RawData(DOffset + 10)) << 8) Or RawData(DOffset + 11)
                         If .PVolTag Then
-                            .PrimaryVolumeTagInformation = Encoding.ASCII.GetString(RawData, DOffset + 12, 36).TrimEnd(Chr(0)).TrimEnd(" ")
+                            .PrimaryVolumeTagInformation = Encoding.ASCII.GetString(RawData, DOffset + 12, 36).TrimEnd(Chr(0)).TrimEnd(" "c)
                             DOffset += 36
                         End If
                         .CodeSet = RawData(DOffset + 12) And &HF
                         .IdentifierType = RawData(DOffset + 13) And &HF
                         .IdentifierLength = RawData(DOffset + 15)
                         If .IdentifierLength > 0 Then
-                            .Identifier = Encoding.ASCII.GetString(RawData, DOffset + 16, .IdentifierLength).TrimEnd(Chr(0)).TrimEnd(" ")
+                            .Identifier = Encoding.ASCII.GetString(RawData, DOffset + 16, .IdentifierLength).TrimEnd(Chr(0)).TrimEnd(" "c)
                             DOffset += 32
                         End If
                         .MediaDomain = RawData(DOffset + 16)
@@ -9272,7 +9272,7 @@ Public Class TapeUtils
                         .TransportDomain = RawData(DOffset + 18)
                         .TransportType = RawData(DOffset + 19)
                         If RawData.Length - 1 >= DOffset + 51 Then
-                            .TransportSerialNumber = Encoding.ASCII.GetString(RawData, DOffset + 20, 32).TrimEnd(Chr(0)).TrimEnd(" ")
+                            .TransportSerialNumber = Encoding.ASCII.GetString(RawData, DOffset + 20, 32).TrimEnd(Chr(0)).TrimEnd(" "c)
                         End If
                     Catch ex As Exception
 
@@ -11831,12 +11831,12 @@ Public Class TapeUtils
         <Xml.Serialization.XmlIgnore> Private _RawData As Byte()
         Public Function GetSummary(Optional ByVal ShowTitle As Boolean = True) As String
             Dim sb As New StringBuilder
-            If ShowTitle Then sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "=").PadRight(64, "="))
+            If ShowTitle Then sb.AppendLine($"{Name}".PadLeft(Math.Max(0, 32 + Name.Length \ 2), "="c).PadRight(64, "="c))
             For Each it As DataItem In Items
                 Dim result As String = it.GetString()
                 If result IsNot Nothing AndAlso result.Length > 0 Then sb.AppendLine($"{it.Name} = {result}")
             Next
-            If ShowTitle Then sb.AppendLine("".PadRight(64, "="))
+            If ShowTitle Then sb.AppendLine("".PadRight(64, "="c))
             Return sb.ToString()
         End Function
 
@@ -12823,7 +12823,7 @@ Public Class TapeUtils
                             If TapeAlertFlag.TryGetValue(i * 8 + j, TAFValue) Then TAFValue = $" {TAFValue}"
                             pdata.Items.Add(New TapeUtils.PageData.DataItem With {
                                                     .Parent = pdata,
-                                                    .Name = $"Flag {Hex(i * 8 + j).ToUpper().PadLeft(2, "0")}h{TAFValue}",
+                                                    .Name = $"Flag {Hex(i * 8 + j).ToUpper().PadLeft(2, "0"c)}h{TAFValue}",
                                                     .StartByte = i + 8,
                                                     .BitOffset = j,
                                                     .TotalBits = 1,
@@ -13077,14 +13077,14 @@ Public Class TapeUtils
                                     .Type = TapeUtils.PageData.DataItem.DataType.DynamicPage})
                     For i As Integer = 0 To 59
                         With pdata.Items.Last.EnumTranslator
-                            .Add(i, $"Parameter Code {Hex(i).ToUpper().PadLeft(4, "0")}h")
+                            .Add(i, $"Parameter Code {Hex(i).ToUpper().PadLeft(4, "0"c)}h")
                         End With
                         With pdata.Items.Last.DynamicParamType
                             .Add(i, TapeUtils.PageData.DataItem.DataType.PageData)
                         End With
                         With pdata.Items.Last.PageDataTemplate
                             Dim subPage As TapeUtils.PageData
-                            subPage = New TapeUtils.PageData With {.PageCode = i, .Name = $"Parameter Code {Hex(i).ToUpper().PadLeft(4, "0")}h"}
+                            subPage = New TapeUtils.PageData With {.PageCode = i, .Name = $"Parameter Code {Hex(i).ToUpper().PadLeft(4, "0"c)}h"}
                             subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Density Code", .StartByte = 2, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Byte})
                             subPage.Items.Add(New TapeUtils.PageData.DataItem With {.Parent = subPage, .Name = "Density Code Representation", .StartByte = 2, .BitOffset = 0, .TotalBits = 8, .Type = TapeUtils.PageData.DataItem.DataType.Enum})
                             subPage.Items.Last.EnumTranslator = DensityCodeTranslator
