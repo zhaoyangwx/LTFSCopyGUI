@@ -1352,7 +1352,7 @@ Public Class IOManager
 
         Private _Position As Long
 
-        Public Function GetExtent(offset As Long)
+        Public Function GetExtent(offset As Long) As ltfsindex.file.extent
             SyncLock OperationLock
                 For i As Integer = 0 To FileInfo.extentinfo.Count - 1
                     With FileInfo.extentinfo(i)

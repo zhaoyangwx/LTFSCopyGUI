@@ -263,7 +263,7 @@ Public Class Form1
     End Class
     Public Class ldirStack
         Private ldir As New List(Of ltfsindex.directory)
-        Public ReadOnly Property IsEmpty
+        Public ReadOnly Property IsEmpty As Boolean
             Get
                 Return ldir.Count = 0
             End Get

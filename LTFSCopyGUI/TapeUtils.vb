@@ -1403,7 +1403,7 @@ Public Class TapeUtils
     Public Shared Function Locate(TapeDrive As String, BlockAddress As Int64, Partition As Byte, ByVal DestType As LocateDestType) As UInt16
         Return Locate(TapeDrive, CULng(BlockAddress), Partition, DestType)
     End Function
-    Public Shared Function Locate(TapeDrive As String, BlockAddress As ULong, Partition As ltfsindex.PartitionLabel, DestType As LocateDestType)
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As ULong, Partition As ltfsindex.PartitionLabel, DestType As LocateDestType) As UInt16
         Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=CByte(Partition), DestType:=DestType)
     End Function
     Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType, Optional ByRef sensereturn As Byte() = Nothing) As UInt16
@@ -1739,7 +1739,7 @@ Public Class TapeUtils
         Text = &H2
         Reserved = &H3
     End Enum
-    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = AttributeFormat.Binary, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim Param_LEN As UInt64 = Data.Length + 9
         Dim cdb As Byte() = {&H8D, 0, 0, 0, 0, 0, 0, PartitionNumber, 0, 0,
                                      (Param_LEN >> 24) And &HFF, (Param_LEN >> 16) And &HFF, (Param_LEN >> 8) And &HFF, Param_LEN And &HFF, 0, 0}
@@ -1763,7 +1763,7 @@ Public Class TapeUtils
                 Return SendSCSICommand(handle, cdb, param, 0, SenseReport)
         End Select
     End Function
-    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = 0, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As Byte(), Optional ByVal Format As AttributeFormat = AttributeFormat.Binary, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
@@ -1772,10 +1772,10 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SetMAMAttribute(handle As IntPtr, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = AttributeFormat.Ascii, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Return SetMAMAttribute(handle, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber, SenseReport)
     End Function
-    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = 1, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
+    Public Shared Function SetMAMAttribute(TapeDrive As String, PageID As UInt16, Data As String, Optional ByVal Format As AttributeFormat = AttributeFormat.Ascii, Optional ByVal PartitionNumber As Byte = 0, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Return SetMAMAttribute(TapeDrive, PageID, Encoding.UTF8.GetBytes(Data), Format, PartitionNumber, SenseReport)
     End Function
     Public Shared Function WriteVCI(TapeDrive As String, Generation As UInt64, block0 As UInt64, block1 As UInt64,
