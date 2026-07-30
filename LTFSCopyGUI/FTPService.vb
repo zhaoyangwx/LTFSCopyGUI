@@ -88,7 +88,7 @@ Public Class FTPService
             MyBase.New(info)
             FileInfo = info
         End Sub
-        Public ReadOnly Property FileInfo As ltfsindex.file
+        Public Overloads ReadOnly Property FileInfo As ltfsindex.file
         Public ReadOnly Property Size As Long Implements IUnixFileEntry.Size
             Get
                 Return FileInfo.length
@@ -104,7 +104,7 @@ Public Class FTPService
             DirectoryInfo = dirInfo
         End Sub
         Public ReadOnly Property IsRoot As Boolean Implements IUnixDirectoryEntry.IsRoot
-        Public ReadOnly Property DirectoryInfo As ltfsindex.directory
+        Public Overloads ReadOnly Property DirectoryInfo As ltfsindex.directory
         Public ReadOnly Property IsDeletable As Boolean Implements IUnixDirectoryEntry.IsDeletable
             Get
                 Return False
@@ -259,8 +259,9 @@ Public Class FTPService
         Return builder
     End Function
     Public Class NoPasswdMembershipProvider
+        Inherits AnonymousMembershipProvider
         Implements AccountManagement.IMembershipProviderAsync
-        Public Shared Function CreateAnonymousPrincipal(email As String) As ClaimsPrincipal
+        Public Overloads Shared Function CreateAnonymousPrincipal(email As String) As ClaimsPrincipal
             Dim anonymousClaims As List(Of Claim) =
                {New Claim(ClaimsIdentity.DefaultNameClaimType, "anonymous"),
                 New Claim(ClaimTypes.Anonymous, String.Empty),
@@ -272,15 +273,11 @@ Public Class FTPService
             Dim principal As New ClaimsPrincipal(identity)
             Return principal
         End Function
-        Public Function ValidateUserAsync(username As String, password As String, Optional cancellationToken As CancellationToken = Nothing) As Task(Of MemberValidationResult) Implements IMembershipProviderAsync.ValidateUserAsync
+        Public Shadows Function ValidateUserAsync(username As String, password As String, Optional cancellationToken As CancellationToken = Nothing) As Task(Of MemberValidationResult) Implements IMembershipProviderAsync.ValidateUserAsync
             Return Task.FromResult(New MemberValidationResult(MemberValidationStatus.Anonymous, CreateAnonymousPrincipal(password)))
         End Function
 
-        Public Function ValidateUserAsync(username As String, password As String) As Task(Of MemberValidationResult) Implements IMembershipProvider.ValidateUserAsync
-            Return ValidateUserAsync(username, password, CancellationToken.None)
-        End Function
-
-        Public Function LogOutAsync(principal As ClaimsPrincipal, Optional cancellationToken As CancellationToken = Nothing) As Task Implements IMembershipProviderAsync.LogOutAsync
+        Public Shadows Function LogOutAsync(principal As ClaimsPrincipal, Optional cancellationToken As CancellationToken = Nothing) As Task Implements IMembershipProviderAsync.LogOutAsync
             Return Task.CompletedTask
         End Function
     End Class
@@ -301,7 +298,7 @@ Public Class FTPService
             Services.AddFtpServer(
             Sub(builder As IFtpServerBuilder)
                 UseLTFSFileSystem(builder)
-                builder.Services.AddSingleton(Of IMembershipProvider, NoPasswdMembershipProvider)()
+                builder.Services.AddSingleton(Of IMembershipProviderAsync, NoPasswdMembershipProvider)()
             End Sub)
 
 

@@ -404,8 +404,10 @@ Public Class ChangerTool
                              For i As Integer = 0 To drvMapping.Keys.Count - 1
                                  If ToErase.Count = 0 Then Exit For
 
-                                 Invoke(Sub() TextBox1.AppendText($"Assign drive [0x{Hex(drvMapping.Keys(i).ElementAddress).PadLeft(4, "0"c)}]{drvMapping.Keys(i).Identifier} <=> [0x{Hex(ToErase(0).ElementAddress).PadLeft(4, "0"c)}]Element {ToErase(0).PrimaryVolumeTagInformation}{vbCrLf}"))
-                                 eraseMapping.Add(drvMapping.Keys(i), ToErase(0))
+                                 Dim currentDrive As MediumChanger.Element = drvMapping.Keys(i)
+                                 Dim currentSlot As MediumChanger.Element = ToErase(0)
+                                 Invoke(Sub() TextBox1.AppendText($"Assign drive [0x{Hex(currentDrive.ElementAddress).PadLeft(4, "0"c)}]{currentDrive.Identifier} <=> [0x{Hex(currentSlot.ElementAddress).PadLeft(4, "0"c)}]Element {currentSlot.PrimaryVolumeTagInformation}{vbCrLf}"))
+                                 eraseMapping.Add(currentDrive, currentSlot)
                                  ToErase.RemoveAt(0)
                              Next
                              Dim finList As New List(Of MediumChanger.Element)

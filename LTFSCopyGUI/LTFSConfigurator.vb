@@ -455,7 +455,7 @@ Public Class LTFSConfigurator
                     Invoke(Sub() TextBoxDebugOutput.Text = "Start erase ..." & vbCrLf)
                     Try
                         Select Case My.Settings.TapeUtils_DriverType
-                            Case My.Settings.TapeUtils_DriverType.LTO
+                            Case TapeUtils.DriverType.LTO
                                 'result = TapeUtils.LoadTapeDrive(dL, True)
                                 'Load and Thread
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Loading.."))
@@ -490,6 +490,7 @@ Public Class LTFSConfigurator
                                     Exit Try
                                 End If
                                 For i As Integer = 1 To CInt(NumericUpDownEraseCycle.Value)
+                                    Dim currentCycle As Integer = i
                                     'Unthread
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("Unthreading.."))
                                     If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H1B, 0, 0, 0, &HA, 0}) Then
@@ -507,7 +508,7 @@ Public Class LTFSConfigurator
                                         Exit Try
                                     End If
                                     'Erase
-                                    Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing " & i & "/" & NumericUpDownEraseCycle.Value & ".."))
+                                    Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing " & currentCycle & "/" & NumericUpDownEraseCycle.Value & ".."))
                                     If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=320) Then
                                         Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
                                     Else
@@ -548,7 +549,7 @@ Public Class LTFSConfigurator
                                     Exit Try
                                 End If
 
-                            Case My.Settings.TapeUtils_DriverType.SLR3
+                            Case TapeUtils.DriverType.SLR3
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
                                 If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
@@ -563,7 +564,7 @@ Public Class LTFSConfigurator
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     Fail" & vbCrLf))
                                     Exit Try
                                 End If
-                            Case My.Settings.TapeUtils_DriverType.SLR1
+                            Case TapeUtils.DriverType.SLR1
                                 Invoke(Sub() TextBoxDebugOutput.AppendText("Erasing.."))
                                 If TapeUtils.SendSCSICommand(ConfTapeDrive, {&H19, 1, 0, 0, 0, 0}, TimeOut:=240) Then
                                     Invoke(Sub() TextBoxDebugOutput.AppendText("     OK" & vbCrLf))
@@ -747,7 +748,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
         Me.Enabled = False
         Select Case TapeUtils.DriverTypeSetting
-            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
+            Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
@@ -790,7 +791,7 @@ Public Class LTFSConfigurator
                                         Me.Enabled = True
                                     End Sub)
                          End Sub)
-            Case My.Settings.TapeUtils_DriverType.SLR3
+            Case TapeUtils.DriverType.SLR3
                 TextBoxDebugOutput.Text = ""
                 Task.Run(Sub()
                              Invoke(Sub() TextBoxDebugOutput.AppendText("SLR Tape is NOT supported with ReadInfo function.".PadRight(74) & vbCrLf))
@@ -1489,7 +1490,7 @@ Public Class LTFSConfigurator
                     Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
                     For i As Long = 0 To blkNum
                         If Not TestEnabled Then Exit For
-                        Dim sense As Byte()
+                        Dim sense(63) As Byte
                         Dim zbcLBAWritten As Long = 0
                         Select Case My.Settings.TapeUtils_DriverType
                             Case TapeUtils.DriverType.ZBCDevice
@@ -2127,10 +2128,6 @@ Public Class LTFSConfigurator
     <Category("AudioPlayer")>
     Public Property isFloat As Boolean = False
     Private Sub PlayPCMToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles PlayPCMToolStripMenuItem.Click
-        Const SND_MEMORY As Integer = 4
-        Const SND_ASYNC As Integer = 1
-
-
         For Each c As Control In Panel1.Controls
             c.Enabled = False
         Next
@@ -2683,7 +2680,7 @@ Public Class LTFSConfigurator
                      Dim toSend(sectorSize - 1) As Byte
                      Dim drvhandle As IntPtr
                      TapeUtils.OpenTapeDrive(ConfTapeDrive, drvhandle)
-                     Dim cdb As Byte()
+                     Dim cdb As Byte() = Array.Empty(Of Byte)()
                      Dim r As New Random
                      For i As Integer = 1 To count
                          r.NextBytes(toSend)
@@ -2820,6 +2817,7 @@ Public Class LTFSConfigurator
                              Dim stopflag As Boolean = False
                              For i As ULong = LBA To CULng(LBA + count - 1) Step CULng(batch)
                                  If stopflag Then Exit For
+                                 Dim currentLBA As ULong = i
                                  Dim writeData As Byte() = ArrayPool(Of Byte).Shared.Rent(blocklim)
                                  Dim readsize As ULong = CULng(fs.Read(writeData, 0, blocklim))
                                  writeLBACount = CInt(Math.Ceiling(readsize / sectorSize))
@@ -2881,7 +2879,7 @@ Public Class LTFSConfigurator
                                                         End If
                                                     End While
                                                     ArrayPool(Of Byte).Shared.Return(writeData)
-                                                    progmsg = $"LBA {LBA}>{i}>{LBA + writeLBACount - 1}"
+                                                    progmsg = $"LBA {LBA}>{currentLBA}>{LBA + writeLBACount - 1}"
                                                 End Sub)
 
                              Next
@@ -2897,7 +2895,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonBOT_Click(sender As Object, e As EventArgs) Handles ButtonBOT.Click
         Me.Enabled = False
         Select Case TapeUtils.DriverTypeSetting
-            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
+            Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
                 Task.Run(Sub()
                              Try
@@ -2930,7 +2928,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonEOT_Click(sender As Object, e As EventArgs) Handles ButtonEOT.Click
         Me.Enabled = False
         Select Case TapeUtils.DriverTypeSetting
-            Case My.Settings.TapeUtils_DriverType.LTO, TapeUtils.DriverType.IBM3592
+            Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
                 Task.Run(Sub()
                              Try

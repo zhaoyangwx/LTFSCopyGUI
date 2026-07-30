@@ -114,7 +114,7 @@ Public Class FileDataProvider
         _nextFileSignal.Set()
     End Sub
 
-    Public Async Function CompleteAsync() As Task
+    Public Function CompleteAsync() As Task
         Try
             _cts.Cancel()
             _nextFileSignal.Set()
@@ -129,6 +129,7 @@ Public Class FileDataProvider
             Catch
             End Try
         End Try
+        Return Task.CompletedTask
     End Function
 
     Private Async Function ProducerLoopAsync() As Task
@@ -231,6 +232,7 @@ Public Class FileDataProvider
                 End Try
             End While
         End Try
+        Return Array.Empty(Of Byte)()
     End Function
     Private Async Function StreamFileToPipeAsync(fr As LTFSWriter.FileRecord, ct As CancellationToken) As Task
         Dim fs As FileStream = Nothing
@@ -274,7 +276,7 @@ Public Class FileDataProvider
                 Dim minSize As Integer = 64 * 1024
                 While Not ct.IsCancellationRequested
                     Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
-                    Dim seg As ArraySegment(Of Byte)
+                    Dim seg As New ArraySegment(Of Byte)
                     If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
                         Throw New Exception("TryGetArray failed")
                     End If
@@ -371,7 +373,7 @@ Public Class HardDriveDataProvider
         _cts.Cancel()
     End Sub
 
-    Public Async Function CompleteAsync() As Task
+    Public Function CompleteAsync() As Task
         Try
             _cts.Cancel()
         Finally
@@ -385,6 +387,7 @@ Public Class HardDriveDataProvider
             Catch
             End Try
         End Try
+        Return Task.CompletedTask
     End Function
 
     Private Async Function ProducerLoopAsync() As Task
@@ -478,7 +481,7 @@ Public Class HardDriveDataProvider
                     Dim srcOffset As Integer = 0
                     While remaining > 0
                         Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
-                        Dim seg As ArraySegment(Of Byte)
+                        Dim seg As New ArraySegment(Of Byte)
                         If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
                             Throw New Exception("TryGetArray failed")
                         End If

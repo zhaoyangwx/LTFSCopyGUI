@@ -78,7 +78,7 @@ Public Class TapeUtils
             <MarshalAs(UnmanagedType.ByValTStr, SizeConst:=256)>
             Public ProviderName As String
 
-            Public DriverDate As FILETIME
+            Public DriverDate As System.Runtime.InteropServices.ComTypes.FILETIME
 
             Public DriverVersion As System.UInt64
         End Structure
@@ -755,7 +755,7 @@ Public Class TapeUtils
             Dim result As Boolean
             Select Case DriverTypeSetting
                 Case DriverType.TapeStream
-                    Dim ts As TapeImage
+                    Dim ts As TapeImage = Nothing
                     TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                     If ts IsNot Nothing Then
                         ts.CloseFile()
@@ -798,6 +798,7 @@ Public Class TapeUtils
                 Return False
             End If
         End SyncLock
+        Return False
     End Function
 
 
@@ -849,7 +850,7 @@ Public Class TapeUtils
     Public Shared Function TestUnitReady(handle As IntPtr) As Byte()
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 Return If(ts IsNot Nothing, TapeImage.SenseData.NoSense, TapeImage.SenseData.NotPresent)
             Case Else
@@ -942,7 +943,7 @@ Public Class TapeUtils
 #Region "SCSIOP_READ"
     Public Shared Function ReadBlock(handle As IntPtr, Optional ByRef sense As Byte() = Nothing, Optional ByVal BlockSizeLimit As UInteger = &H80000, Optional ByVal Truncate As Boolean = False) As Byte()
         If DriverTypeSetting = DriverType.TapeStream Then
-            Dim vt As TapeImage
+            Dim vt As TapeImage = Nothing
             TapeStreamMapping.MappingTable.TryGetValue(handle, vt)
             If vt IsNot Nothing Then
                 Return vt.ReadBlock(sense)
@@ -1328,7 +1329,7 @@ Public Class TapeUtils
                             End If
                     End Select
                 Case DriverType.TapeStream
-                    Dim ts As TapeImage
+                    Dim ts As TapeImage = Nothing
                     TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                     If ts Is Nothing Then
 
@@ -1522,7 +1523,7 @@ Public Class TapeUtils
     Public Shared Function LogSense(handle As IntPtr, PageCode As Byte, SubPageCode As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional PageControl As Byte = &H1) As Byte()
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 Dim sense(63) As Byte
                 If ts IsNot Nothing Then
@@ -1556,7 +1557,7 @@ Public Class TapeUtils
     Public Shared Function ModeSense(handle As IntPtr, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal SkipHeader As Boolean = True) As Byte()
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 Dim sense(63) As Byte
                 If ts IsNot Nothing Then
@@ -1591,6 +1592,7 @@ Public Class TapeUtils
                     End If
                 End SyncLock
         End Select
+        Return Array.Empty(Of Byte)()
     End Function
     Public Shared Function ModeSense(TapeDrive As String, PageID As Byte, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal SkipHeader As Boolean = True) As Byte()
         SyncLock SCSIOperationLock
@@ -1670,7 +1672,7 @@ Public Class TapeUtils
         Next
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts IsNot Nothing Then
                     Dim sense() As Byte = {}
@@ -1749,7 +1751,7 @@ Public Class TapeUtils
         param = param.Concat(Data).ToArray()
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts IsNot Nothing Then
                     Dim sense As Byte() = {}
@@ -6977,7 +6979,7 @@ Public Class TapeUtils
         If DriverTypeSetting <> DriverType.LTO Then DriverType = DriverTypeSetting
         Dim param As Byte()
         Dim result As New PositionData
-        Dim sense As Byte()
+        Dim sense As Byte() = Array.Empty(Of Byte)()
         Select Case DriverType
             Case DriverType.M2488
             Case DriverType.SLR3
@@ -6995,7 +6997,7 @@ Public Class TapeUtils
                     result.BlockNumber = result.BlockNumber Or param(0 + i)
                 Next
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts IsNot Nothing Then
                     result = ts.ReadPosition()
@@ -7086,7 +7088,7 @@ Public Class TapeUtils
                     Throw New Exception($"SCSI Failure. {vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
                 End If
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts Is Nothing Then
                     sense = TapeImage.SenseData.NotPresent
@@ -7120,7 +7122,7 @@ Public Class TapeUtils
         If senseEnabled Then ReDim sense(63)
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts Is Nothing Then
                     sense = TapeImage.SenseData.NotPresent
@@ -7171,7 +7173,7 @@ Public Class TapeUtils
             Return Write(handle, Data)
         End If
         Dim sense(63) As Byte
-        Dim ts As TapeImage
+        Dim ts As TapeImage = Nothing
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
@@ -7229,7 +7231,7 @@ Public Class TapeUtils
     End Function
     Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean, Optional ByVal ProgressReport As Action(Of Long) = Nothing) As Byte()
         Dim sense(63) As Byte
-        Dim ts As TapeImage
+        Dim ts As TapeImage = Nothing
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
@@ -7311,7 +7313,7 @@ Public Class TapeUtils
         Dim fs As New IO.FileStream(sourceFile, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
         Dim DataLen As Integer = fs.Read(DataBuffer, 0, BlockLen)
         Dim succ As Boolean
-        Dim ts As TapeImage
+        Dim ts As TapeImage = Nothing
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
@@ -7382,7 +7384,7 @@ Public Class TapeUtils
         Dim sense(63) As Byte
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts Is Nothing Then
                     sense = TapeImage.SenseData.NotPresent
@@ -7415,7 +7417,7 @@ Public Class TapeUtils
         Dim Result As Byte() = {}
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts IsNot Nothing Then
                     Dim sense() As Byte = {}
@@ -8075,11 +8077,11 @@ Public Class TapeUtils
         Eject = 0
     End Enum
     Public Shared Function LoadEject(handle As IntPtr, LoadOption As LoadOption, Optional ByVal EncryptionKey As Byte() = Nothing, Optional ByVal senseReport As Func(Of Byte(), Boolean) = Nothing, Optional ByVal TimeOut As Integer = 600) As Boolean
-        Dim sensedata As Byte()
+        Dim sensedata As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = False
         Select Case DriverTypeSetting
             Case DriverType.TapeStream
-                Dim ts As TapeImage
+                Dim ts As TapeImage = Nothing
                 TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
                 If ts Is Nothing Then
                     If senseReport IsNot Nothing Then senseReport(TapeImage.SenseData.NotPresent)
@@ -8697,6 +8699,7 @@ Public Class TapeUtils
                     Return True
                 Catch ex As Exception
                     OnError(ex.ToString())
+                    Return False
                 End Try
 
             End Function
@@ -11611,7 +11614,7 @@ Public Class TapeUtils
                             Case DataType.Binary
                                 Return $"0x{BitConverter.ToString(rawdata).Replace("-", "").ToUpper}"
                             Case DataType.PageData
-                                Dim pagedata As PageData
+                                Dim pagedata As PageData = Nothing
                                 If Parent.PageDataTemplate.TryGetValue(ParamCode, pagedata) Then
                                     pagedata.RawData = rawdata
                                     Return pagedata.GetSummary(False)
@@ -11638,7 +11641,7 @@ Public Class TapeUtils
                 Public ReadOnly Property GetPage As PageData
                     Get
                         If Type = DataType.PageData Then
-                            Dim pagedata As PageData
+                            Dim pagedata As PageData = Nothing
                             If Parent.PageDataTemplate.TryGetValue(ParamCode, pagedata) Then
                                 pagedata.RawData = RawData
                                 Return pagedata

@@ -426,6 +426,7 @@ Public Class IOManager
 
         Public OperationLock As New Object
         Private thHash As Threading.Thread
+        Private ReadOnly pauseGate As New Threading.ManualResetEventSlim(True)
         Private fout As IO.FileStream = Nothing
         Private fob As IO.BufferedStream = Nothing
         Dim f_outpath As String
@@ -439,6 +440,7 @@ Public Class IOManager
                 If Status <> TaskStatus.Idle Then
                     Exit Sub
                 End If
+                pauseGate.Set()
                 fs = New fsReport()
                 Dim thProg As New Threading.Thread(
                     Sub()
@@ -535,6 +537,7 @@ Public Class IOManager
                         RaiseEvent ProgressReport("#tmax" & flist.Count)
                         Dim progval As Integer = 0
                         For Each f As ltfsindex.file In flist
+                            pauseGate.Wait()
                             Dim SkipCurrent As Boolean = False
                             Try
                                 If TargetDirectory <> "" AndAlso TargetDirectory <> "\" Then _
@@ -549,6 +552,11 @@ Public Class IOManager
                                         Dim action_writefile _
                                                 As Action(Of EventedStream.ReadStreamEventArgs, EventedStream) =
                                                 Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
+                                                    pauseGate.Wait()
+                                                    If fout IsNot Nothing Then
+                                                        fout.Write(args.Buffer, args.Offset,
+                                                                   CInt(Math.Min(args.Count, st.Length - fout.Position)))
+                                                    End If
                                                 End Sub
 
                                         If (TargetDirectory <> "" AndAlso TargetDirectory <> "\") Then
@@ -574,11 +582,6 @@ Public Class IOManager
                                                 'fout = IO.File.OpenWrite(f_outpath)
 
                                                 'fob = New IO.BufferedStream(fout, 1024 * 1024)
-                                                action_writefile =
-                                                 Sub(args As EventedStream.ReadStreamEventArgs, st As EventedStream)
-                                                     fout.Write(args.Buffer, args.Offset,
-                                                                CInt(Math.Min(args.Count, st.Length - fout.Position)))
-                                                 End Sub
                                             Catch ex As Exception
                                                 RaiseEvent ErrorOccured(ex.ToString)
                                             End Try
@@ -689,7 +692,7 @@ Public Class IOManager
             SyncLock OperationLock
                 Try
                     If Status = TaskStatus.Paused Then
-                        thHash.Resume()
+                        pauseGate.Set()
                         RaiseEvent TaskResumed("Resumed")
                     End If
                     Try
@@ -723,7 +726,7 @@ Public Class IOManager
         Public Sub Pause()
             SyncLock OperationLock
                 Try
-                    thHash.Suspend()
+                    pauseGate.Reset()
                     _Status = TaskStatus.Paused
                     RaiseEvent TaskPaused("Paused")
                 Catch ex As Exception
@@ -735,7 +738,7 @@ Public Class IOManager
         Public Sub [Resume]()
             SyncLock OperationLock
                 Try
-                    thHash.Resume()
+                    pauseGate.Set()
                     _Status = TaskStatus.Running
                     RaiseEvent TaskResumed("Resumed")
                 Catch ex As Exception
@@ -960,27 +963,27 @@ Public Class IOManager
                             End SyncLock
                             With blk
                                 If .Len = -1 Then .Len = .block.Length
-                                Dim md5task As Task
+                                Dim md5task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task = Task.Run(
                                 Sub()
                                     md5.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim sha1task As Task
+                                Dim sha1task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task = Task.Run(
                                 Sub()
                                     sha1.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim sha256task As Task
+                                Dim sha256task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task = Task.Run(
                                 Sub()
                                     sha256.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim sha512task As Task
+                                Dim sha512task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task = Task.Run(
                                 Sub()
                                     sha512.TransformBlock(.block, 0, .Len, .block, 0)
                                 End Sub)
-                                Dim blaketask As Task
+                                Dim blaketask As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                                 Sub()
                                     'BlakeStream.Write(.block, WrittenBlakeBlock1, .Len)
@@ -992,7 +995,7 @@ Public Class IOManager
 
                                     End Try
                                 End Sub)
-                                Dim crc32task As Task
+                                Dim crc32task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task = Task.Run(
                                 Sub()
                                     Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
@@ -1002,7 +1005,7 @@ Public Class IOManager
 
                                     End Try
                                 End Sub)
-                                Dim xxhash3task As Task
+                                Dim xxhash3task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task = Task.Run(
                                 Sub()
                                     Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
@@ -1012,7 +1015,7 @@ Public Class IOManager
 
                                     End Try
                                 End Sub)
-                                Dim xxhash128task As Task
+                                Dim xxhash128task As Task = Task.CompletedTask
                                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task = Task.Run(
                                 Sub()
                                     Dim segment As New ArraySegment(Of Byte)(.block, 0, .Len)
@@ -1068,27 +1071,27 @@ Public Class IOManager
             End While
             SyncLock Lock
                 If Len = -1 Then Len = block.Length
-                Dim sha1task As Task
+                Dim sha1task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then sha1task = Task.Run(
                     Sub()
                         sha1.TransformBlock(block, 0, Len, block, 0)
                     End Sub)
-                Dim sha256task As Task
+                Dim sha256task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then sha256task = Task.Run(
                     Sub()
                         sha256.TransformBlock(block, 0, Len, block, 0)
                     End Sub)
-                Dim sha512task As Task
+                Dim sha512task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then sha512task = Task.Run(
                     Sub()
                         sha512.TransformBlock(block, 0, Len, block, 0)
                     End Sub)
-                Dim md5task As Task
+                Dim md5task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then md5task = Task.Run(
                     Sub()
                         md5.TransformBlock(block, 0, Len, block, 0)
                     End Sub)
-                Dim blaketask As Task
+                Dim blaketask As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then blaketask = Task.Run(
                     Sub()
                         Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
@@ -1098,7 +1101,7 @@ Public Class IOManager
 
                         End Try
                     End Sub)
-                Dim crc32task As Task
+                Dim crc32task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then crc32task = Task.Run(
                     Sub()
                         Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
@@ -1108,7 +1111,7 @@ Public Class IOManager
 
                         End Try
                     End Sub)
-                Dim xxhash3task As Task
+                Dim xxhash3task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then xxhash3task = Task.Run(
                     Sub()
                         Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
@@ -1118,7 +1121,7 @@ Public Class IOManager
 
                         End Try
                     End Sub)
-                Dim xxhash128task As Task
+                Dim xxhash128task As Task = Task.CompletedTask
                 If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then xxhash128task = Task.Run(
                     Sub()
                         Dim segment As New ArraySegment(Of Byte)(block, 0, Len)
@@ -1587,7 +1590,6 @@ Public Class IOManager
                         LastExtraBytes = {}
                     End If
 
-                    Dim newValues As Byte()
                     Dim outValue As New List(Of Byte)
                     For i As Integer = 0 To ((pcmBytes.Length \ 4) * 4 - 1) Step 4
                         Dim fvalue As Single = BitConverter.ToSingle(pcmBytes, i)
@@ -1898,7 +1900,7 @@ Public Class ZBCDeviceHelper
         End With
     End Sub
     Public Function GetZoneByLBA(LBA As ULong) As Zone
-        Dim result As Zone
+        Dim result As Zone = Nothing
         If ZoneList Is Nothing OrElse ZoneList.Count = 0 Then ReportZones()
         If ZoneList Is Nothing OrElse ZoneList.Count = 0 Then Return Nothing
         If ZoneLBAMap.TryGetValue(LBA, result) Then Return result
@@ -1923,7 +1925,7 @@ Public Class ZBCDeviceHelper
     End Function
     Public Function CloseAllZones(Optional ByRef sense As Byte() = Nothing) As Boolean
         Dim senseFin As Boolean = False
-        Dim senseresult As Byte()
+        Dim senseresult As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = TapeUtils.SendSCSICommand(handle, {&H94, &H1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}, Nothing, 1,
                                          Function(sdata As Byte())
                                              senseresult = sdata
@@ -1939,7 +1941,7 @@ Public Class ZBCDeviceHelper
     End Function
     Public Function ResetWritePointer(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
         Dim senseFin As Boolean = False
-        Dim senseresult As Byte()
+        Dim senseresult As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H4,
             CByte(CLng((LowestLBA >> 56)) And &HFF),
@@ -1966,7 +1968,7 @@ Public Class ZBCDeviceHelper
     End Function
     Public Function OpenZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
         Dim senseFin As Boolean = False
-        Dim senseresult As Byte()
+        Dim senseresult As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H3,
             CByte(CLng((LowestLBA >> 56)) And &HFF),
@@ -1993,7 +1995,7 @@ Public Class ZBCDeviceHelper
     End Function
     Public Function CloseZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
         Dim senseFin As Boolean = False
-        Dim senseresult As Byte()
+        Dim senseresult As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H1,
             CByte(CLng((LowestLBA >> 56)) And &HFF),
@@ -2020,7 +2022,7 @@ Public Class ZBCDeviceHelper
     End Function
     Public Function FinishZone(LowestLBA As ULong, Optional ByRef sense As Byte() = Nothing) As Boolean
         Dim senseFin As Boolean = False
-        Dim senseresult As Byte()
+        Dim senseresult As Byte() = Array.Empty(Of Byte)()
         Dim result As Boolean = TapeUtils.SendSCSICommand(
             handle, {&H94, &H2,
             CByte(CLng((LowestLBA >> 56)) And &HFF),
@@ -2079,7 +2081,7 @@ Public Class ZBCDeviceHelper
         Dim totalSector As ULong = CULng(Math.Ceiling((source.Length + ByteOffset) / SectorLength))
         Dim EndLBA As ULong = CULng(StartLBA + totalSector - 1)
         Dim tempData As New Dictionary(Of ULong, Byte())
-        Dim zone0, zone1 As Zone
+        Dim zone0 As Zone = Nothing, zone1 As Zone = Nothing
         If ByteOffset > 0 Then
             source = ReadBytes(StartLBA, 0, ByteOffset).Concat(source).ToArray()
         End If
@@ -2124,7 +2126,7 @@ Public Class ZBCDeviceHelper
             End If
         End If
         Dim currentZone As Zone = zone0
-        Dim currentEndZone As Zone
+        Dim currentEndZone As Zone = Nothing
         While remain > 0
             Dim sendlen As Integer = Math.Min(oncewritesectorcount * SectorLength, remain)
             Dim currentsendsectorcount As Integer = CInt(Math.Ceiling(sendlen / SectorLength))
@@ -2211,7 +2213,7 @@ Public Class ZBCDeviceHelper
             Device.WriteBytes(toWrite, CMRDataStartLBA, 0, True)
         End Sub
         Public Function ReadCMRData() As Byte()
-            Device.ReadBytes(CMRDataStartLBA, 0, CMRDataLength)
+            Return Device.ReadBytes(CMRDataStartLBA, 0, CMRDataLength)
         End Function
         Public Property DataStreamList As New List(Of DataStream)
 
@@ -2333,6 +2335,7 @@ Public Class ZBCDeviceHelper
                     '重建缓存
 
                 End If
+                Return Position
             End Function
         End Class
 
