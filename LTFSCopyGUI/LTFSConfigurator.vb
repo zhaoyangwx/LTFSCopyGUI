@@ -348,7 +348,7 @@ Public Class LTFSConfigurator
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                         succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, dataData.Length,
-                                                           CInt(TextBoxDataDir.Text), CInt(TextBoxTimeoutValue.Text), senseBuffer,
+                                                           CByte(CInt(TextBoxDataDir.Text)), CInt(TextBoxTimeoutValue.Text), senseBuffer,
                                                            CByte(TextBoxTargetID.Text), CByte(TextBoxLUN.Text), BytesReturned)
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
@@ -632,9 +632,9 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadMAM_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadMAM.Click
         If Not LoadComplete Then Exit Sub
         Panel1.Enabled = False
-        Dim PCH As Byte = NumericUpDownPCHigh.Value
-        Dim PCL As Byte = NumericUpDownPCLow.Value
-        Dim PN As Byte = NumericUpDownRAPartition.Value
+        Dim PCH As Byte = CByte(NumericUpDownPCHigh.Value)
+        Dim PCL As Byte = CByte(NumericUpDownPCLow.Value)
+        Dim PN As Byte = CByte(NumericUpDownRAPartition.Value)
         Task.Run(Sub()
                      Dim ResultB As Byte() = TapeUtils.GetMAMAttributeBytes(ConfTapeDrive, PCH, PCL, PN)
                      Dim Result As String = ""
@@ -823,7 +823,7 @@ Public Class LTFSConfigurator
                                 If (i And &H7F) = 0 Then
                                     Dim i2 As UInt16 = i
                                     Me.Invoke(Sub()
-                                                  TextBoxDebugOutput.Text = IOManager.Byte2Hex({i2 >> 8 And &HFF, i2 And &HFF}) & " LEN=0"
+                                                  TextBoxDebugOutput.Text = IOManager.Byte2Hex({CByte(i2 >> 8 And &HFF), CByte(i2 And &HFF)}) & " LEN=0"
                                               End Sub)
                                 End If
 
@@ -904,7 +904,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBuffer.Click
         Me.Enabled = False
         Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
-        Dim Mode As Byte = NumericUpDownRBMode.Value
+        Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
         Task.Run(Sub()
                      Dim DumpData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, BufferID, Mode)
                      Invoke(Sub()
@@ -935,7 +935,7 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
         Me.Enabled = False
         Dim blk As ULong = NumericUpDownBlockNum.Value
-        Dim partition As Byte = NumericUpDownPartitionNum.Value
+        Dim partition As Byte = CByte(NumericUpDownPartitionNum.Value)
         Dim dest As TapeUtils.LocateDestType = System.Enum.Parse(GetType(TapeUtils.LocateDestType), ComboBoxLocateType.SelectedItem)
         Task.Run(Sub()
                      Dim result As String = ""
@@ -2960,7 +2960,7 @@ Public Class LTFSConfigurator
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
             Me.Enabled = False
             Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
-            Dim Mode As Byte = NumericUpDownRBMode.Value
+            Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
             Task.Run(Sub()
                          Dim BufferData As Byte() = IO.File.ReadAllBytes(OpenFileDialog1.FileName)
                          TapeUtils.WriteBuffer(ConfTapeDrive, BufferID, Mode, BufferData)

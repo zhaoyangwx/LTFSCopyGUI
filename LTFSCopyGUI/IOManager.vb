@@ -1386,7 +1386,7 @@ Public Class IOManager
                     Dim ext As ltfsindex.file.extent = GetExtent(value)
                     Dim p As New TapeUtils.PositionData(TapeDrive)
                     Dim targetBlock As ULong = ext.startblock + (value - ext.fileoffset) \ BlockSize
-                    Dim targetPartition As Byte = Math.Min(ExtraPartitionCount, ext.partition)
+                    Dim targetPartition As Byte = CByte(Math.Min(ExtraPartitionCount, ext.partition))
                     If p.BlockNumber <> targetBlock OrElse p.PartitionNumber <> targetPartition Then
                         RaiseEvent _
                             LogPrint($"LOCATE {TapeDrive} B{targetBlock}P{targetPartition} (File position {value})")

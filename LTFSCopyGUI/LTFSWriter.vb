@@ -5827,7 +5827,7 @@ Public Class LTFSWriter
                     Dim PModeData As Byte() = TapeUtils.ModeSense(driveHandle, &H11)
                     If PModeData.Length >= 4 Then ExtraPartitionCount = PModeData(3)
                     If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
-                        ExtraPartitionCount = TapeStreamMapping.MappingTable(driveHandle).PartitionCount - 1
+                        ExtraPartitionCount = CByte(TapeStreamMapping.MappingTable(driveHandle).PartitionCount - 1)
                     End If
                     TapeUtils.GlobalBlockLimit = TapeUtils.ReadBlockLimits(driveHandle).MaximumBlockLength
                     TapeUtils.FromFile(My.Settings.driveSettingFile)
@@ -5877,7 +5877,7 @@ Public Class LTFSWriter
                     TapeUtils.SetBlockSize(driveHandle, plabel.blocksize)
                     If plabel.location.partition = plabel.partitions.data Then
                         DataPartition = GetPos().PartitionNumber
-                        IndexPartition = (DataPartition + 1) Mod 2
+                        IndexPartition = CByte((DataPartition + 1) Mod 2)
                         If ExtraPartitionCount > 0 Then
                             IndexPartition = 255
                             PrintMsg($"Data partition detected. Switching to index partition", LogOnly:=True)
@@ -5891,7 +5891,7 @@ Public Class LTFSWriter
                         End If
                     Else
                         IndexPartition = GetPos().PartitionNumber
-                        DataPartition = (IndexPartition + 1) Mod 2
+                        DataPartition = CByte((IndexPartition + 1) Mod 2)
                     End If
 
                     Barcode = TapeUtils.ReadBarcode(driveHandle)
@@ -6159,7 +6159,7 @@ Public Class LTFSWriter
                     Exit While
                 End SyncLock
             End While
-            ExtraPartitionCount = schema.location.partition
+            ExtraPartitionCount = CByte(schema.location.partition)
             Dim stopflag As Boolean = False
             ShowXAttr_Barcode = False
             ltfsindex.WSort(schema._directory, Sub(f As ltfsindex.file)

@@ -346,10 +346,10 @@ Public Class TapeImage
                     'sense ILI
                     sense(0) = &HF0
                     sense(2) = &H20
-                    sense(3) = &HFF And (diffbyte >> 24)
-                    sense(4) = &HFF And (diffbyte >> 16)
-                    sense(5) = &HFF And (diffbyte >> 8)
-                    sense(6) = &HFF And diffbyte
+                    sense(3) = CByte(&HFF And (diffbyte >> 24))
+                    sense(4) = CByte(&HFF And (diffbyte >> 16))
+                    sense(5) = CByte(&HFF And (diffbyte >> 8))
+                    sense(6) = CByte(&HFF And diffbyte)
                     sense(7) = &H10
                     sense(16) = &H2C
                     If diffbyte > 0 Then sense(17) = &H73 Else sense(17) = &H72
@@ -377,7 +377,7 @@ Public Class TapeImage
                 End If
             Case &H12 'INQUIRY
                 ReDim Response(dataLen - 1)
-                Dim EVPD As Byte = &H1 And commandBytes(1)
+                Dim EVPD As Byte = CByte(&H1 And commandBytes(1))
                 Dim PageCode As Byte = commandBytes(2)
                 Dim AllocLen As Integer = commandBytes(3)
                 AllocLen <<= 8
@@ -503,7 +503,7 @@ Public Class TapeImage
                     sense = SenseData.NoSense
                 End If
             Case &H15, &H55 'MODE SELECT
-                Dim PF As Byte = (commandBytes(1) >> 4) And 1
+                Dim PF As Byte = CByte((commandBytes(1) >> 4) And 1)
                 Dim ParamLen As Integer = 0
 
                 If commandBytes(0) = &H15 Then
@@ -547,9 +547,9 @@ Public Class TapeImage
                     End While
                 End If
             Case &H1A, &H5A 'MODE SENSE
-                Dim DBD As Byte = (commandBytes(1) >> 3) And 1
-                Dim PC As Byte = (commandBytes(2) >> 6) And &B11
-                Dim PageCode As Byte = commandBytes(2) And &B111111
+                Dim DBD As Byte = CByte((commandBytes(1) >> 3) And 1)
+                Dim PC As Byte = CByte((commandBytes(2) >> 6) And &B11)
+                Dim PageCode As Byte = CByte(commandBytes(2) And &B111111)
                 Dim SubCode As Byte = commandBytes(3)
                 Dim AllocLen As Integer = 0
                 If commandBytes(0) = &H1A Then
@@ -569,9 +569,9 @@ Public Class TapeImage
                     Case &H11
                         Dim availLen As Integer = (255 - result.Count + 1 - 8) \ 2
                         availLen = 4
-                        Dim pCount As Byte = Math.Min(availLen, PartitionCount)
+                        Dim pCount As Byte = CByte(Math.Min(availLen, PartitionCount))
                         Dim PSize(pCount - 1) As UInt16
-                        result.AddRange({&H11, (pCount * 2) + 6, availLen - 1, pCount - 1, &H3C, 3, 9, 0})
+                        result.AddRange({&H11, CByte((pCount * 2) + 6), CByte(availLen - 1), CByte(pCount - 1), &H3C, 3, 9, 0})
                         For i As Integer = 0 To pCount - 1
                             PSize(i) = CUShort(Math.Min(UInt16.MaxValue, GetTotalDiskSpace(i) \ 1000000000))
                             result.AddRange({CByte(PSize(i) >> 8 And &HFF), CByte(PSize(i) And &HFF)})
@@ -585,7 +585,7 @@ Public Class TapeImage
                                  &H0, &H2, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0}
                         Return True
                 End Select
-                result(0) = result.Count - 1
+                result(0) = CByte(result.Count - 1)
                 Response = result.ToArray()
                 ReDim Preserve Response(AllocLen - 1)
                 sense = SenseData.NoSense
@@ -593,7 +593,7 @@ Public Class TapeImage
                 LocateByBlock(0, sense)
             Case &H34 'READ POSITION
                 Dim currpos = ReadPosition()
-                Dim ServiceAction As Byte = commandBytes(1) And &B11111
+                Dim ServiceAction As Byte = CByte(commandBytes(1) And &B11111)
                 Dim AllocLen As Integer = commandBytes(7)
                 AllocLen <<= 8
                 AllocLen = AllocLen Or commandBytes(8)
@@ -604,59 +604,59 @@ Public Class TapeImage
                         Response = {CByte((CByte(currentpos.BOP) << 7) Or &B110000),
                             currentpos.PartitionNumber,
                             0, 0,
-                            (currentpos.BlockNumber >> 24) And &HFF,
-                            (currentpos.BlockNumber >> 16) And &HFF,
-                            (currentpos.BlockNumber >> 8) And &HFF,
-                            currentpos.BlockNumber And &HFF,
-                            (currentpos.BlockNumber >> 24) And &HFF,
-                            (currentpos.BlockNumber >> 16) And &HFF,
-                            (currentpos.BlockNumber >> 8) And &HFF,
-                            currentpos.BlockNumber And &HFF,
+                            CByte((currentpos.BlockNumber >> 24) And &HFF),
+                            CByte((currentpos.BlockNumber >> 16) And &HFF),
+                            CByte((currentpos.BlockNumber >> 8) And &HFF),
+                            CByte(currentpos.BlockNumber And &HFF),
+                            CByte((currentpos.BlockNumber >> 24) And &HFF),
+                            CByte((currentpos.BlockNumber >> 16) And &HFF),
+                            CByte((currentpos.BlockNumber >> 8) And &HFF),
+                            CByte(currentpos.BlockNumber And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case 6
-                        Response = {currentpos.BOP << 7,
+                        Response = {CByte(currentpos.BOP << 7),
                             0, 0, 0,
-                            (currentpos.PartitionNumber >> 24) And &HFF,
-                            (currentpos.PartitionNumber >> 16) And &HFF,
-                            (currentpos.PartitionNumber >> 8) And &HFF,
-                            currentpos.PartitionNumber And &HFF,
-                            (currentpos.BlockNumber >> 56) And &HFF,
-                            (currentpos.BlockNumber >> 48) And &HFF,
-                            (currentpos.BlockNumber >> 40) And &HFF,
-                            (currentpos.BlockNumber >> 32) And &HFF,
-                            (currentpos.BlockNumber >> 24) And &HFF,
-                            (currentpos.BlockNumber >> 16) And &HFF,
-                            (currentpos.BlockNumber >> 8) And &HFF,
-                            currentpos.BlockNumber And &HFF,
-                            (currentpos.FileNumber >> 56) And &HFF,
-                            (currentpos.FileNumber >> 48) And &HFF,
-                            (currentpos.FileNumber >> 40) And &HFF,
-                            (currentpos.FileNumber >> 32) And &HFF,
-                            (currentpos.FileNumber >> 24) And &HFF,
-                            (currentpos.FileNumber >> 16) And &HFF,
-                            (currentpos.FileNumber >> 8) And &HFF,
-                            currentpos.FileNumber And &HFF,
+                            CByte((currentpos.PartitionNumber >> 24) And &HFF),
+                            CByte((currentpos.PartitionNumber >> 16) And &HFF),
+                            CByte((currentpos.PartitionNumber >> 8) And &HFF),
+                            CByte(currentpos.PartitionNumber And &HFF),
+                            CByte((currentpos.BlockNumber >> 56) And &HFF),
+                            CByte((currentpos.BlockNumber >> 48) And &HFF),
+                            CByte((currentpos.BlockNumber >> 40) And &HFF),
+                            CByte((currentpos.BlockNumber >> 32) And &HFF),
+                            CByte((currentpos.BlockNumber >> 24) And &HFF),
+                            CByte((currentpos.BlockNumber >> 16) And &HFF),
+                            CByte((currentpos.BlockNumber >> 8) And &HFF),
+                            CByte(currentpos.BlockNumber And &HFF),
+                            CByte((currentpos.FileNumber >> 56) And &HFF),
+                            CByte((currentpos.FileNumber >> 48) And &HFF),
+                            CByte((currentpos.FileNumber >> 40) And &HFF),
+                            CByte((currentpos.FileNumber >> 32) And &HFF),
+                            CByte((currentpos.FileNumber >> 24) And &HFF),
+                            CByte((currentpos.FileNumber >> 16) And &HFF),
+                            CByte((currentpos.FileNumber >> 8) And &HFF),
+                            CByte(currentpos.FileNumber And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case 8
-                        Response = {(currentpos.BOP << 7) Or &B11000,
+                        Response = {CByte((currentpos.BOP << 7) Or &B11000),
                             currentpos.PartitionNumber, 0, &H1C,
                             0, 0, 0, 0,
-                            (currentpos.BlockNumber >> 56) And &HFF,
-                            (currentpos.BlockNumber >> 48) And &HFF,
-                            (currentpos.BlockNumber >> 40) And &HFF,
-                            (currentpos.BlockNumber >> 32) And &HFF,
-                            (currentpos.BlockNumber >> 24) And &HFF,
-                            (currentpos.BlockNumber >> 16) And &HFF,
-                            (currentpos.BlockNumber >> 8) And &HFF,
-                            currentpos.BlockNumber And &HFF,
-                            (currentpos.BlockNumber >> 56) And &HFF,
-                            (currentpos.BlockNumber >> 48) And &HFF,
-                            (currentpos.BlockNumber >> 40) And &HFF,
-                            (currentpos.BlockNumber >> 32) And &HFF,
-                            (currentpos.BlockNumber >> 24) And &HFF,
-                            (currentpos.BlockNumber >> 16) And &HFF,
-                            (currentpos.BlockNumber >> 8) And &HFF,
-                            currentpos.BlockNumber And &HFF,
+                            CByte((currentpos.BlockNumber >> 56) And &HFF),
+                            CByte((currentpos.BlockNumber >> 48) And &HFF),
+                            CByte((currentpos.BlockNumber >> 40) And &HFF),
+                            CByte((currentpos.BlockNumber >> 32) And &HFF),
+                            CByte((currentpos.BlockNumber >> 24) And &HFF),
+                            CByte((currentpos.BlockNumber >> 16) And &HFF),
+                            CByte((currentpos.BlockNumber >> 8) And &HFF),
+                            CByte(currentpos.BlockNumber And &HFF),
+                            CByte((currentpos.BlockNumber >> 56) And &HFF),
+                            CByte((currentpos.BlockNumber >> 48) And &HFF),
+                            CByte((currentpos.BlockNumber >> 40) And &HFF),
+                            CByte((currentpos.BlockNumber >> 32) And &HFF),
+                            CByte((currentpos.BlockNumber >> 24) And &HFF),
+                            CByte((currentpos.BlockNumber >> 16) And &HFF),
+                            CByte((currentpos.BlockNumber >> 8) And &HFF),
+                            CByte(currentpos.BlockNumber And &HFF),
                             0, 0, 0, 0, 0, 0, 0, 0}
                     Case Else
                         sense = SenseData.IllegalOpCode
@@ -665,7 +665,7 @@ Public Class TapeImage
             Case &H2B, &H92 'LOCATE
                 Response = {}
                 sense = SenseData.NoSense
-                Dim CP As Byte = (commandBytes(1) >> 1) And 1
+                Dim CP As Byte = CByte((commandBytes(1) >> 1) And 1)
                 Dim DestType As Byte = 0
                 Dim LI As Long = 0
                 Dim Partition As Byte
@@ -676,7 +676,7 @@ Public Class TapeImage
                     Next
                     Partition = commandBytes(8)
                 Else
-                    DestType = (commandBytes(1) >> 3) And &B111
+                    DestType = CByte((commandBytes(1) >> 3) And &B111)
                     Partition = commandBytes(3)
                     For i As Integer = 4 To 11
                         LI <<= 8
@@ -705,7 +705,7 @@ Public Class TapeImage
             Case &H11, &H91 'SPACE
                 Response = {}
                 sense = SenseData.NoSense
-                Dim Code As Byte = commandBytes(1) And &B111
+                Dim Code As Byte = CByte(commandBytes(1) And &B111)
                 Dim Count As Long = 0
                 If commandBytes(0) = &H11 Then
                     If (commandBytes(2) >> 7) = 1 Then Count = -1
@@ -731,7 +731,7 @@ Public Class TapeImage
                 End Select
             Case &H8C 'READ ATTRIBUTE
                 ReDim Response(dataLen - 1)
-                Dim ServiceAction As Byte = commandBytes(1) And &B11111
+                Dim ServiceAction As Byte = CByte(commandBytes(1) And &B11111)
                 Dim Partition As Byte = commandBytes(7)
                 If Partition >= PartitionCount Then
                     sense = SenseData.IllegalOpCode
@@ -751,24 +751,24 @@ Public Class TapeImage
                         Dim paramData As New List(Of Byte())
                         Dim remain As Long = GetAvailableDiskSpace(Partition) \ 1000000
                         paramData.Add({0, 0, &H80, 0, 8,
-                                    (remain >> 52) And &HFF,
-                                    (remain >> 48) And &HFF,
-                                    (remain >> 40) And &HFF,
-                                    (remain >> 32) And &HFF,
-                                    (remain >> 24) And &HFF,
-                                    (remain >> 16) And &HFF,
-                                    (remain >> 8) And &HFF,
-                                    remain And &HFF})
+                                    CByte((remain >> 52) And &HFF),
+                                    CByte((remain >> 48) And &HFF),
+                                    CByte((remain >> 40) And &HFF),
+                                    CByte((remain >> 32) And &HFF),
+                                    CByte((remain >> 24) And &HFF),
+                                    CByte((remain >> 16) And &HFF),
+                                    CByte((remain >> 8) And &HFF),
+                                    CByte(remain And &HFF)})
                         Dim cap As Long = GetTotalDiskSpace(Partition) \ 1000000
                         paramData.Add({0, 1, &H80, 0, 8,
-                                    (cap >> 52) And &HFF,
-                                    (cap >> 48) And &HFF,
-                                    (cap >> 40) And &HFF,
-                                    (cap >> 32) And &HFF,
-                                    (cap >> 24) And &HFF,
-                                    (cap >> 16) And &HFF,
-                                    (cap >> 8) And &HFF,
-                                    cap And &HFF})
+                                    CByte((cap >> 52) And &HFF),
+                                    CByte((cap >> 48) And &HFF),
+                                    CByte((cap >> 40) And &HFF),
+                                    CByte((cap >> 32) And &HFF),
+                                    CByte((cap >> 24) And &HFF),
+                                    CByte((cap >> 16) And &HFF),
+                                    CByte((cap >> 8) And &HFF),
+                                    CByte(cap And &HFF)})
                         paramData.Add({0, 2, &H80, 0, 8, 0, 0, 0, 0, 0, 0, &H80, 0})
                         paramData.Add({0, 3, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
                         paramData.Add({0, 4, &H80, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0})
@@ -777,10 +777,10 @@ Public Class TapeImage
                         paramData.Add({0, 7, &H80, 0, 2, 0, 1})
                         paramData.Add({0, 8, &H81, 0, 0})
                         paramData.Add({0, 9, &H80, 0, 4,
-                                      (VolumeChangeReference >> 24) And &HFF,
-                                      (VolumeChangeReference >> 16) And &HFF,
-                                      (VolumeChangeReference >> 8) And &HFF,
-                                      VolumeChangeReference And &HFF})
+                                      CByte((VolumeChangeReference >> 24) And &HFF),
+                                      CByte((VolumeChangeReference >> 16) And &HFF),
+                                      CByte((VolumeChangeReference >> 8) And &HFF),
+                                      CByte(VolumeChangeReference And &HFF)})
                         Dim DeviceSN As Byte() = Encoding.ASCII.GetBytes($"LT{ApplicationWheels.Build}".PadRight(&H28).Substring(0, &H28))
                         paramData.Add((New Byte() {&H2, &HA, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
                         paramData.Add((New Byte() {&H2, &HB, &H81, 0, &H28}).Concat(DeviceSN).ToArray())
@@ -815,7 +815,7 @@ Public Class TapeImage
                         paramData.Add((New Byte() {8, 9, &H1, 0, 16}).Concat(Encoding.ASCII.GetBytes(MAM0809(Partition).PadRight(16).Substring(0, 16))).ToArray())
                         paramData.Add((New Byte() {8, &HB, &H1, 0, 16}).Concat(Encoding.ASCII.GetBytes(MAM080B.PadRight(16).Substring(0, 16))).ToArray())
                         If Not MAM080C.ContainsKey(Partition) Then MAM080C.Add(Partition, {})
-                        paramData.Add((New Byte() {8, &HC, &H0, 0, MAM080C(Partition).Length And &HFF}).Concat(MAM080C(Partition)).ToArray())
+                        paramData.Add((New Byte() {8, &HC, &H0, 0, CByte(MAM080C(Partition).Length And &HFF)}).Concat(MAM080C(Partition)).ToArray())
                         paramData.Add((New Byte() {&H10, 0, &H80, 0, &H1C}).Concat(
                                       Encoding.ASCII.GetBytes(MediumSN.PadRight(4).Substring(0, 4) & ApplicationWheels.Build.PadRight(8).Substring(0, 8) & "LCGVT   ")).Concat(
                                       {0, 0, 0, 0, 0, &H10, 0, 0}).ToArray())
@@ -828,10 +828,10 @@ Public Class TapeImage
                                 respData.AddRange(paramData(i))
                             End If
                         Next
-                        Response = {(respData.Count << 24) And &HFF,
-                            (respData.Count << 16) And &HFF,
-                            (respData.Count << 8) And &HFF,
-                            respData.Count And &HFF}
+                        Response = {CByte((respData.Count << 24) And &HFF),
+                            CByte((respData.Count << 16) And &HFF),
+                            CByte((respData.Count << 8) And &HFF),
+                            CByte(respData.Count And &HFF)}
                         Response = Response.Concat(respData).ToArray()
                         ReDim Preserve Response(dataLen - 1)
                     Case Else
@@ -906,8 +906,8 @@ Public Class TapeImage
                 Response = {}
                 sense = SenseData.NoSense
             Case &H4D 'LOG SENSE
-                Dim PC As Byte = (commandBytes(2) >> 5) And &B11
-                Dim PageCode As Byte = commandBytes(2) And &B111111
+                Dim PC As Byte = CByte((commandBytes(2) >> 5) And &B11)
+                Dim PageCode As Byte = CByte(commandBytes(2) And &B111111)
                 Dim ParamPointer As Integer = commandBytes(5)
                 ParamPointer <<= 8
                 ParamPointer = ParamPointer Or commandBytes(6)
@@ -940,21 +940,21 @@ Public Class TapeImage
                         paramData.Add({&H0, &H15, &H3, &H8, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0})
                         Dim PRemain(3) As UInteger
                         Dim PSize(3) As UInteger
-                        Dim pCount As Byte = Math.Min(2, PartitionCount)
+                        Dim pCount As Byte = CByte(Math.Min(2, PartitionCount))
                         For i As Integer = 0 To pCount - 1
                             PRemain(i) = CUInt(Math.Min(UInteger.MaxValue, GetAvailableDiskSpace(i) \ 1000000))
                             PSize(i) = CUInt(Math.Min(UInteger.MaxValue, GetTotalDiskSpace(i) \ 1000000))
                         Next
                         paramData.Add({&H0, &H16, &H3, &H4,
-                                      (PSize(0) >> 24) And &HFF,
-                                      (PSize(0) >> 16) And &HFF,
-                                      (PSize(0) >> 8) And &HFF,
-                                      PSize(0) And &HFF})
+                                      CByte((PSize(0) >> 24) And &HFF),
+                                      CByte((PSize(0) >> 16) And &HFF),
+                                      CByte((PSize(0) >> 8) And &HFF),
+                                      CByte(PSize(0) And &HFF)})
                         paramData.Add({&H0, &H17, &H3, &H4,
-                                      ((PSize(0) - PRemain(0)) >> 24) And &HFF,
-                                      ((PSize(0) - PRemain(0)) >> 16) And &HFF,
-                                      ((PSize(0) - PRemain(0)) >> 8) And &HFF,
-                                      (PSize(0) - PRemain(0)) And &HFF})
+                                      CByte(((PSize(0) - PRemain(0)) >> 24) And &HFF),
+                                      CByte(((PSize(0) - PRemain(0)) >> 16) And &HFF),
+                                      CByte(((PSize(0) - PRemain(0)) >> 8) And &HFF),
+                                      CByte((PSize(0) - PRemain(0)) And &HFF)})
                         paramData.Add({&H0, &H40, &H1, &HA, &H30, &H30, &H30, &H30, &H30, &H30, &H30, &H30, &H30, &H30})
                         paramData.Add({&H0, &H41, &H1, &H8, &H30, &H30, &H30, &H30, &H30, &H30, &H30, &H30})
                         paramData.Add({&H0, &H42, &H1, &H20, &H56, &H54, &H30, &H30, &H30, &H31, &H4C, &H36, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20, &H20})
@@ -971,26 +971,26 @@ Public Class TapeImage
                         paramData.Add({&H2, &H1, &H3, &H18, &HB, &H0, &H0, &H0, &H0, &H0, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF, &HB, &H0, &H0, &H1, &H0, &H0, &HFF, &HFF, &HFF, &HFF, &HFF, &HFF})
                         paramData.Add({&H2, &H2, &H3, &H10,
                                       &H7, &H0, &H0, &H0,
-                                      (PSize(0) >> 24) And &HFF,
-                                      (PSize(0) >> 16) And &HFF,
-                                      (PSize(0) >> 8) And &HFF,
-                                      PSize(0) And &HFF,
+                                      CByte((PSize(0) >> 24) And &HFF),
+                                      CByte((PSize(0) >> 16) And &HFF),
+                                      CByte((PSize(0) >> 8) And &HFF),
+                                      CByte(PSize(0) And &HFF),
                                       &H7, &H0, &H0, &H1,
-                                      (PSize(1) >> 24) And &HFF,
-                                      (PSize(1) >> 16) And &HFF,
-                                      (PSize(1) >> 8) And &HFF,
-                                      PSize(1) And &HFF})
+                                      CByte((PSize(1) >> 24) And &HFF),
+                                      CByte((PSize(1) >> 16) And &HFF),
+                                      CByte((PSize(1) >> 8) And &HFF),
+                                      CByte(PSize(1) And &HFF)})
                         paramData.Add({&H2, &H3, &H3, &H10,
                                       &H7, &H0, &H0, &H0,
-                                      ((PSize(0) - PRemain(0)) >> 24) And &HFF,
-                                      ((PSize(0) - PRemain(0)) >> 16) And &HFF,
-                                      ((PSize(0) - PRemain(0)) >> 8) And &HFF,
-                                      (PSize(0) - PRemain(0)) And &HFF,
+                                      CByte(((PSize(0) - PRemain(0)) >> 24) And &HFF),
+                                      CByte(((PSize(0) - PRemain(0)) >> 16) And &HFF),
+                                      CByte(((PSize(0) - PRemain(0)) >> 8) And &HFF),
+                                      CByte((PSize(0) - PRemain(0)) And &HFF),
                                       &H7, &H0, &H0, &H1,
-                                      ((PSize(1) - PRemain(1)) >> 24) And &HFF,
-                                      ((PSize(1) - PRemain(1)) >> 16) And &HFF,
-                                      ((PSize(1) - PRemain(1)) >> 8) And &HFF,
-                                      (PSize(1) - PRemain(1)) And &HFF})
+                                      CByte(((PSize(1) - PRemain(1)) >> 24) And &HFF),
+                                      CByte(((PSize(1) - PRemain(1)) >> 16) And &HFF),
+                                      CByte(((PSize(1) - PRemain(1)) >> 8) And &HFF),
+                                      CByte((PSize(1) - PRemain(1)) And &HFF)})
                         paramData.Add({&H3, &H0, &H3, &H0})
                         paramData.Add({&HF0, &H0, &H3, &H2, &H0, &H1})
                         Dim RespList As New List(Of Byte)
@@ -1002,65 +1002,65 @@ Public Class TapeImage
                             If ParamPointer > Code Then Continue For
                             RespList.AddRange(paramData(i))
                         Next
-                        RespList(2) = ((RespList.Count - 4) >> 8) And &HFF
-                        RespList(3) = (RespList.Count - 4) And &HFF
+                        RespList(2) = CByte(((RespList.Count - 4) >> 8) And &HFF)
+                        RespList(3) = CByte((RespList.Count - 4) And &HFF)
                         Response = RespList.ToArray()
                     Case &H31 'Capacity
                         Dim PRemain(3) As UInteger
                         Dim PSize(3) As UInteger
-                        Dim pCount As Byte = Math.Min(4, PartitionCount)
+                        Dim pCount As Byte = CByte(Math.Min(4, PartitionCount))
                         For i As Integer = 0 To pCount - 1
                             PRemain(i) = CUInt(Math.Min(UInteger.MaxValue, GetAvailableDiskSpace(i) \ 1048576))
                             PSize(i) = CUInt(Math.Min(UInteger.MaxValue, GetTotalDiskSpace(i) \ 1048576))
                         Next
                         Response = {&H31, 0, 0, &H40,
                             0, 1, &H60, 4,
-                            (PRemain(0) >> 24) And &HFF,
-                            (PRemain(0) >> 16) And &HFF,
-                            (PRemain(0) >> 8) And &HFF,
-                             PRemain(0) And &HFF,
+                            CByte((PRemain(0) >> 24) And &HFF),
+                            CByte((PRemain(0) >> 16) And &HFF),
+                            CByte((PRemain(0) >> 8) And &HFF),
+                             CByte(PRemain(0) And &HFF),
                             0, 2, &H60, 4,
-                            (PRemain(1) >> 24) And &HFF,
-                            (PRemain(1) >> 16) And &HFF,
-                            (PRemain(1) >> 8) And &HFF,
-                             PRemain(1) And &HFF,
+                            CByte((PRemain(1) >> 24) And &HFF),
+                            CByte((PRemain(1) >> 16) And &HFF),
+                            CByte((PRemain(1) >> 8) And &HFF),
+                             CByte(PRemain(1) And &HFF),
                             0, 3, &H60, 4,
-                            (PSize(0) >> 24) And &HFF,
-                            (PSize(0) >> 16) And &HFF,
-                            (PSize(0) >> 8) And &HFF,
-                             PSize(0) And &HFF,
+                            CByte((PSize(0) >> 24) And &HFF),
+                            CByte((PSize(0) >> 16) And &HFF),
+                            CByte((PSize(0) >> 8) And &HFF),
+                             CByte(PSize(0) And &HFF),
                             0, 4, &H60, 4,
-                            (PSize(1) >> 24) And &HFF,
-                            (PSize(1) >> 16) And &HFF,
-                            (PSize(1) >> 8) And &HFF,
-                             PSize(1) And &HFF,
+                            CByte((PSize(1) >> 24) And &HFF),
+                            CByte((PSize(1) >> 16) And &HFF),
+                            CByte((PSize(1) >> 8) And &HFF),
+                             CByte(PSize(1) And &HFF),
                             0, 5, &H60, 4,
-                            (PRemain(2) >> 24) And &HFF,
-                            (PRemain(2) >> 16) And &HFF,
-                            (PRemain(2) >> 8) And &HFF,
-                             PRemain(2) And &HFF,
+                            CByte((PRemain(2) >> 24) And &HFF),
+                            CByte((PRemain(2) >> 16) And &HFF),
+                            CByte((PRemain(2) >> 8) And &HFF),
+                             CByte(PRemain(2) And &HFF),
                             0, 6, &H60, 4,
-                            (PRemain(3) >> 24) And &HFF,
-                            (PRemain(3) >> 16) And &HFF,
-                            (PRemain(3) >> 8) And &HFF,
-                             PRemain(3) And &HFF,
+                            CByte((PRemain(3) >> 24) And &HFF),
+                            CByte((PRemain(3) >> 16) And &HFF),
+                            CByte((PRemain(3) >> 8) And &HFF),
+                             CByte(PRemain(3) And &HFF),
                             0, 7, &H60, 4,
-                            (PSize(2) >> 24) And &HFF,
-                            (PSize(2) >> 16) And &HFF,
-                            (PSize(2) >> 8) And &HFF,
-                             PSize(2) And &HFF,
+                            CByte((PSize(2) >> 24) And &HFF),
+                            CByte((PSize(2) >> 16) And &HFF),
+                            CByte((PSize(2) >> 8) And &HFF),
+                             CByte(PSize(2) And &HFF),
                             0, 8, &H60, 4,
-                            (PSize(3) >> 24) And &HFF,
-                            (PSize(3) >> 16) And &HFF,
-                            (PSize(3) >> 8) And &HFF,
-                             PSize(3) And &HFF}
+                            CByte((PSize(3) >> 24) And &HFF),
+                            CByte((PSize(3) >> 16) And &HFF),
+                            CByte((PSize(3) >> 8) And &HFF),
+                             CByte(PSize(3) And &HFF)}
 
                     Case Else
                         sense = SenseData.IllegalOpCode
                 End Select
                 ReDim Preserve Response(allocLen - 1)
             Case &H44 'REPORT DENSITY SUPPORT
-                Dim Opt As Byte = commandBytes(1) And &B11
+                Dim Opt As Byte = CByte(commandBytes(1) And &B11)
                 Dim allocLen As Integer = commandBytes(7)
                 allocLen <<= 8
                 allocLen = allocLen Or commandBytes(8)

@@ -319,7 +319,7 @@ dataDir:{dataDir}
 
                                 Dim Partition As Byte = 1
                                 If i + 4 <= param.Length - 1 Then
-                                    Partition = Partition And Val(param(i + 4))
+                                    Partition = CByte(Partition And Val(param(i + 4)))
                                 End If
 
                                 Dim Capacity As UInt16 = &HFFFF
@@ -787,7 +787,7 @@ dataDir:{dataDir}
                                 End If
                                 Dim cdb As Byte() = IOManager.HexStringToByteArray(param(i + 4))
                                 Dim data As Byte() = IOManager.HexStringToByteArray(param(i + 5))
-                                Dim dataDir As Byte = Val(param(i + 6))
+                                Dim dataDir As Byte = CByte(Val(param(i + 6)))
                                 Dim TimeOut As Integer = 60000
                                 If i + 7 <= param.Length - 1 Then
                                     TimeOut = Val(param(i + 7))

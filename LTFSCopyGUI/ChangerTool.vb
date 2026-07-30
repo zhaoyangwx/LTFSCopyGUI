@@ -264,7 +264,7 @@ Public Class ChangerTool
                                         Dim sense(63) As Byte
                                         Try
                                             MediumChanger.MoveMedium(drv, srcList(j).ElementAddress, srcList(i).ElementAddress, sense, LUN:=srcList(j).LUN)
-                                            Dim sensekey As Byte = sense(2) And &HF
+                                            Dim sensekey As Byte = CByte(sense(2) And &HF)
                                             If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                         Catch ex As Exception
                                             Dim result As DialogResult
@@ -304,7 +304,7 @@ Public Class ChangerTool
                                             Dim sense(63) As Byte
                                             Try
                                                 MediumChanger.MoveMedium(drv, srcList(j).ElementAddress, srcList(i).ElementAddress, sense, LUN:=srcList(j).LUN)
-                                                Dim sensekey As Byte = sense(2) And &HF
+                                                Dim sensekey As Byte = CByte(sense(2) And &HF)
                                                 If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                             Catch ex As Exception
                                                 Dim result As DialogResult

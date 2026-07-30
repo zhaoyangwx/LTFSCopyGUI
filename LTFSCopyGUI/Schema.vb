@@ -920,20 +920,20 @@ Public Class Vol1Label
             RawData(i) = &H20
         Next
         For i As Integer = 0 To 2
-            RawData(i + 0) = Asc(label_identifier(i))
+            RawData(i + 0) = CByte(Asc(label_identifier(i)))
         Next
-        RawData(3) = Asc(label_number)
+        RawData(3) = CByte(Asc(label_number))
         For i As Integer = 0 To 5
-            RawData(i + 4) = Asc(volume_identifier(i))
+            RawData(i + 4) = CByte(Asc(volume_identifier(i)))
         Next
-        RawData(10) = Asc(volume_accessibility)
+        RawData(10) = CByte(Asc(volume_accessibility))
         For i As Integer = 0 To 12
-            RawData(i + 24) = Asc(implementation_identifier(i))
+            RawData(i + 24) = CByte(Asc(implementation_identifier(i)))
         Next
         For i As Integer = 0 To 13
-            RawData(i + 37) = Asc(owner_identifier(i))
+            RawData(i + 37) = CByte(Asc(owner_identifier(i)))
         Next
-        RawData(79) = Asc(label_standard_version)
+        RawData(79) = CByte(Asc(label_standard_version))
         Return RawData
     End Function
 End Class

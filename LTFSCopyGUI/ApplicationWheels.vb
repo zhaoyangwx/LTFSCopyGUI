@@ -217,7 +217,7 @@ Public Class NamedObject
         Get
             Dim result As Object = Value
             If TypeOf result Is Byte Then
-                Return result
+                Return CByte(result)
             Else
                 Return Nothing
             End If

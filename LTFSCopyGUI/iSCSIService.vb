@@ -360,7 +360,7 @@ Public Class iSCSIService
                                       End If
                                   Else
                                       status = SCSIStatusCodeName.CheckCondition
-                                      response = {sense.Length And &HFF, (sense.Length >> 8) And &HFF}
+                                      response = {CByte(sense.Length And &HFF), CByte((sense.Length >> 8) And &HFF)}
                                       response = response.Concat(sense).Concat(responsedata).ToArray()
                                   End If
                                   OnCommandCompleted(status, response, task)
