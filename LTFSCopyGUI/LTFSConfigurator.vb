@@ -598,6 +598,7 @@ Public Class LTFSConfigurator
         Panel1.Enabled = False
         Dim barcode As String = TextBoxBarcode.Text
         Dim th As New Threading.Thread(
+                New Threading.ThreadStart(
                 Sub()
                     Dim result As String = ""
                     Dim sense(63) As Byte
@@ -622,7 +623,7 @@ Public Class LTFSConfigurator
                                Panel1.Enabled = True
                                RefreshUI(False)
                            End Sub)
-                End Sub)
+                End Sub))
         th.Start()
         If Panel1.Enabled Then RefreshUI(False)
     End Sub
@@ -904,13 +905,14 @@ Public Class LTFSConfigurator
 
     Private Sub ButtonDebugReadBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBuffer.Click
         Me.Enabled = False
-        Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
+        Dim selectedBufferPage As String = Convert.ToString(ComboBoxBufferPage.SelectedItem)
+        Dim BufferID As Byte = Convert.ToByte(selectedBufferPage.Substring(0, 2), 16)
         Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
         Task.Run(Sub()
                      Dim DumpData As Byte() = TapeUtils.ReadBuffer(ConfTapeDrive, BufferID, Mode)
                      Invoke(Sub()
                                 TextBoxDebugOutput.Text = "Buffer len=" & DumpData.Length & vbCrLf
-                                SaveFileDialog2.FileName = ComboBoxBufferPage.SelectedItem & ".bin"
+                                SaveFileDialog2.FileName = selectedBufferPage & ".bin"
                                 If SaveFileDialog2.ShowDialog = DialogResult.OK Then
                                     IO.File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
                                 End If
@@ -1548,7 +1550,7 @@ Public Class LTFSConfigurator
                                         WERLPageLen = WERLPageLen Or WERLHeader(3)
                                         If WERLPageLen = 0 Then Exit Try
                                         WERLPageLen += 4
-            WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:={&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
+            WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
                                     End SyncLock
                                     Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                                     info = ""
@@ -1668,14 +1670,14 @@ Public Class LTFSConfigurator
                              WERLPageLen = WERLPageLen Or WERLHeader(3)
                              If WERLPageLen = 0 Then Exit Try
                              WERLPageLen += 4
-            WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
+            WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
 
                              Dim RERLPageLen As Integer = RERLHeader(2)
                              RERLPageLen <<= 8
                              RERLPageLen = RERLPageLen Or RERLHeader(3)
                              If RERLPageLen = 0 Then Exit Try
                              RERLPageLen += 4
-            RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:={&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
+            RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
                          End SyncLock
                          Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                          Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
@@ -2172,7 +2174,11 @@ Public Class LTFSConfigurator
                         Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
                         If readData.Length > 0 Then
                             Dim len0 As Integer = readData.Length
-                            readData = IOManager.WaveFileHelper.AnalyzeAndRemoveWavHeader(readData, sampleRate, channels, bitsPerSample, isFloat, HeaderChanged)
+                            Dim analyzedChannels As Integer = channels
+                            Dim analyzedBitsPerSample As Integer = bitsPerSample
+                            readData = IOManager.WaveFileHelper.AnalyzeAndRemoveWavHeader(readData, sampleRate, analyzedChannels, analyzedBitsPerSample, isFloat, HeaderChanged)
+                            channels = CShort(analyzedChannels)
+                            bitsPerSample = CShort(analyzedBitsPerSample)
                             If len0 <> readData.Length Then
                                 player.Flush()
                                 While player.IsPlaying
@@ -2957,7 +2963,8 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugWriteBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBuffer.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
             Me.Enabled = False
-            Dim BufferID = Convert.ToByte(ComboBoxBufferPage.SelectedItem.Substring(0, 2), 16)
+            Dim selectedBufferPage As String = Convert.ToString(ComboBoxBufferPage.SelectedItem)
+            Dim BufferID As Byte = Convert.ToByte(selectedBufferPage.Substring(0, 2), 16)
             Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
             Task.Run(Sub()
                          Dim BufferData As Byte() = IO.File.ReadAllBytes(OpenFileDialog1.FileName)

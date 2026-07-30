@@ -336,7 +336,9 @@ Public Class NamedObject
     Public Property AsCollection As List(Of Object)
         Get
             Dim result As New List(Of Object)
-            For Each o As Object In Value
+            Dim collection As System.Collections.IEnumerable = TryCast(Value, System.Collections.IEnumerable)
+            If collection Is Nothing Then Return result
+            For Each o As Object In collection
                 result.Add(o)
             Next
             Return result

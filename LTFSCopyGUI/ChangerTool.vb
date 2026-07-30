@@ -365,7 +365,7 @@ Public Class ChangerTool
                      End If
                      Dim changerPath As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
                      If CurrentChanger.device IsNot Nothing Then changerPath = CurrentChanger.device.DevicePath
-                     Dim sense As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=changerPath, cdbData:={3, 0, 0, 0, &H12, 0}, paramLen:=18)
+                     Dim sense As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=changerPath, cdbData:=New Byte() {3, 0, 0, 0, &H12, 0}, paramLen:=18)
                      Dim ToErase As New List(Of MediumChanger.Element)
                      For Each fe As MediumChanger.Element In FullElement
                          If fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.StorageElement OrElse fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.ImportExportElement Then

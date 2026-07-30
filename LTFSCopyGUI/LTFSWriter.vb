@@ -818,7 +818,7 @@ Public Class LTFSWriter
                     Return 0
                 End If
                 WERLPageLen += 4
-                WERLPage = TapeUtils.SCSIReadParam(handle:=driveHandle, cdbData:={&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
+                WERLPage = TapeUtils.SCSIReadParam(handle:=driveHandle, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
             Catch ex As Exception
                 PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
             End Try
@@ -2341,7 +2341,7 @@ Public Class LTFSWriter
                                 If f.extentinfo IsNot Nothing Then
                                     If f.extentinfo.Count > 0 Then
                                         Try
-                                            s.Add((f.extentinfo(0).startblock.ToString())）
+                                            s.Add(f.extentinfo(0).startblock.ToString())
                                         Catch ex As Exception
                                             s.Add(("-"))
                                         End Try
@@ -9931,7 +9931,7 @@ Public Class LTFSWriter
                                                             If caps(3) > 0 Then cap1 = caps(2) Else cap1 = caps(0)
                                                             Dim keepindex As Integer = -1
                                                             Dim CapRemain As Long = LastRemainCapValue
-                                                            While (keepindex >= pathlist.Count - 1） OrElse (CapRemain > (4 << 30))
+                                                            While (keepindex >= pathlist.Count - 1) OrElse (CapRemain > (4 << 30))
                                                                 Dim size As Long = 0
                                                                 If IO.File.Exists(pathlist(keepindex + 1)) Then
                                                                     size = (New IO.FileInfo(pathlist(keepindex + 1))).Length

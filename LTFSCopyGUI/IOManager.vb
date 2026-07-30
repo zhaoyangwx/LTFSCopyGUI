@@ -401,7 +401,7 @@ Public Class IOManager
         Public Property IgnoreExisting As Boolean = True
         Public Property ReportSkip As Boolean = True
         Private _TargetDirectory As String
-        Public Property LogFile As String() = {}
+        Public Property LogFile As String() = Array.Empty(Of String)()
 
         Public Property TargetDirectory As String
             Set(value As String)

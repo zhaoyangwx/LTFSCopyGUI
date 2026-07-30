@@ -501,8 +501,10 @@ dataDir:{dataDir}
                                                         Else
                                                             Select Case ItemType.ToLower
                                                                 Case "ltfswriter"
-                                                                    Dim LWF As LTFSWriter = Nothing
-                                                                    If Not objList.TryGetValue(ItemGuid, LWF) Then Exit Select
+                                                                    Dim item As Object = Nothing
+                                                                    If Not objList.TryGetValue(ItemGuid, item) Then Exit Select
+                                                                    Dim LWF As LTFSWriter = TryCast(item, LTFSWriter)
+                                                                    If LWF Is Nothing Then Exit Select
                                                                     Dim Command As String = Text.Encoding.UTF8.GetString(cmd.PayLoad(2))
 
                                                                     Select Case Command
