@@ -132,7 +132,7 @@
                                 End If
                             End While
 
-                            If (Add_Key > 1 And Add_Key <> 4) Then
+                            If (Add_Key > 1 And Add_Key <> 4) AndAlso readData.Length = 0 Then
                                 running = False
                                 Threading.Thread.Sleep(200)
                                 PrintMsg($"EOD detected. {i} blocks transferred.")

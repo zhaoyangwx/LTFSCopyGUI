@@ -839,15 +839,15 @@ Public Class TapeUtils
                     Dim BlockCount As Integer = CInt(Math.Ceiling(BlockSizeLimit / 512))
                     RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:=New Byte() {8, 1, CByte((BlockCount >> 16) And &HFF), CByte((BlockCount >> 8) And &HFF), CByte(BlockCount And &HFF), 0},
                                               paramLen:=CInt(BlockSizeLimit), senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                         senseRaw = senseData
-                                                                                         Return True
-                                                                                     End Function)
+                                                                                               senseRaw = senseData
+                                                                                               Return True
+                                                                                           End Function)
                 Case Else
                     RawDataU = SCSIReadParamUnmanaged(handle:=handle, cdbData:=New Byte() {8, 0, CByte((BlockSizeLimit >> 16) And &HFF), CByte((BlockSizeLimit >> 8) And &HFF), CByte(BlockSizeLimit And &HFF), 0},
                                               paramLen:=CInt(BlockSizeLimit), senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                         senseRaw = senseData
-                                                                                         Return True
-                                                                                     End Function)
+                                                                                               senseRaw = senseData
+                                                                                               Return True
+                                                                                           End Function)
 
             End Select
             sense = senseRaw
@@ -1179,9 +1179,9 @@ Public Class TapeUtils
                         Case LocateDestType.EOD
                             If Not ReadPosition(handle).EOD Then
                                 SendSCSICommand(handle:=handle, cdbData:=New Byte() {&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                                                            sense = senseData
-                                                                                                                            Return True
-                                                                                                                        End Function)
+                                                                                                                                       sense = senseData
+                                                                                                                                       Return True
+                                                                                                                                   End Function)
                             End If
                     End Select
                 Case DriverType.SLR1
@@ -1198,9 +1198,9 @@ Public Class TapeUtils
                         Case LocateDestType.EOD
                             If Not ReadPosition(handle).EOD Then
                                 SendSCSICommand(handle:=handle, cdbData:=New Byte() {&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                                                            sense = senseData
-                                                                                                                            Return True
-                                                                                                                        End Function)
+                                                                                                                                       sense = senseData
+                                                                                                                                       Return True
+                                                                                                                                   End Function)
                             End If
                     End Select
                 Case DriverType.TapeStream
@@ -1247,9 +1247,9 @@ Public Class TapeUtils
                 If DestType = LocateDestType.EOD Then
                     If Not ReadPosition(handle).EOD Then
                         SendSCSICommand(handle:=handle, cdbData:=New Byte() {&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
-                                                                                                                    sense = senseData
-                                                                                                                    Return True
-                                                                                                                End Function)
+                                                                                                                               sense = senseData
+                                                                                                                               Return True
+                                                                                                                           End Function)
                     End If
                 ElseIf DestType = LocateDestType.FileMark Then
                     Locate(handle, 0, 0)
@@ -8203,7 +8203,7 @@ Public Class TapeUtils
             Function()
                 Try
                     Dim senseReportFunc As Func(Of Byte(), Boolean) = Function(sense As Byte()) As Boolean
-                                                                           If (sense(2) And &HF) = 0 Then Return True
+                                                                          If (sense(2) And &HF) = 0 Then Return True
                                                                           ProgressReport($"{ParseSenseData(sense)}")
                                                                           Return False
                                                                       End Function
