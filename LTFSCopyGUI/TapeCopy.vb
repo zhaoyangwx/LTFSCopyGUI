@@ -177,11 +177,14 @@
             If BlockCount > 0 Then maxStr = BlockCount.ToString Else maxStr = "unlimited"
             Dim thprog As New Threading.Thread(
                 Sub()
-                    While running
-                        Dim prog As Integer = CInt(Math.Min(10000, Math.Max(0, progval * 10000 / Math.Max(1, BlockCount))))
+                    Dim prog As Integer
+                    While True
+                        Dim exitflag = Not running
+                        prog = CInt(Math.Min(10000, Math.Max(0, progval * 10000 / Math.Max(1, BlockCount))))
                         Invoke(Sub() ProgressBar1.Value = prog)
                         PrintMsg($"{progval}/{maxStr} (+ {(lastIncVal * (BlockLen / 1048576)).ToString("F2")}MiB/s)")
                         Threading.Thread.Sleep(100)
+                        If exitflag Then Exit While
                     End While
                 End Sub)
             Button1.Enabled = False

@@ -964,20 +964,28 @@ Public Class LTFSConfigurator
     Private Sub ButtonDebugReadPosition_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadPosition.Click
         Panel1.Enabled = False
         Task.Run(Sub()
-                     TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
-                     Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
-                     Invoke(Sub()
-                                TextBoxDebugOutput.Text = ""
-                                TextBoxDebugOutput.Text &= "Partition " & pos.PartitionNumber & vbCrLf
-                                TextBoxDebugOutput.Text &= "Block " & pos.BlockNumber & vbCrLf
-                                TextBoxDebugOutput.Text &= "FileMark " & pos.FileNumber & vbCrLf
-                                TextBoxDebugOutput.Text &= "Set " & pos.SetNumber & vbCrLf
-                                TextBoxDebugOutput.Text &= vbCrLf
-                                If pos.BOP Then TextBoxDebugOutput.Text &= "BOM - Beginning of media" & vbCrLf
-                                If pos.EOP Then TextBoxDebugOutput.Text &= "EW-EOM - Early warning" & vbCrLf
-                                If pos.EOD Then TextBoxDebugOutput.Text &= "End of Data detected" & vbCrLf
-                                Panel1.Enabled = True
-                            End Sub)
+                     Try
+                         TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
+                         Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
+                         Invoke(Sub()
+                                    TextBoxDebugOutput.Text = ""
+                                    TextBoxDebugOutput.Text &= "Partition " & pos.PartitionNumber & vbCrLf
+                                    TextBoxDebugOutput.Text &= "Block " & pos.BlockNumber & vbCrLf
+                                    TextBoxDebugOutput.Text &= "FileMark " & pos.FileNumber & vbCrLf
+                                    TextBoxDebugOutput.Text &= "Set " & pos.SetNumber & vbCrLf
+                                    TextBoxDebugOutput.Text &= vbCrLf
+                                    If pos.BOP Then TextBoxDebugOutput.Text &= "BOM - Beginning of media" & vbCrLf
+                                    If pos.EOP Then TextBoxDebugOutput.Text &= "EW-EOM - Early warning" & vbCrLf
+                                    If pos.EOD Then TextBoxDebugOutput.Text &= "End of Data detected" & vbCrLf
+                                    Panel1.Enabled = True
+                                End Sub)
+                     Catch ex As Exception
+                         Invoke(Sub()
+                                    TextBoxDebugOutput.Text = ex.ToString()
+                                    Panel1.Enabled = True
+                                End Sub)
+                     End Try
+
                  End Sub)
     End Sub
     Public Operation_Cancel_Flag As Boolean = False
@@ -1419,7 +1427,7 @@ Public Class LTFSConfigurator
             Dim pc As Integer = ComboBox5.SelectedIndex
             Panel1.Enabled = False
             Task.Run(Sub()
-                Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=CByte(PageItem(index).PageCode), SubPageCode:=0, PageControl:=CByte(pc))
+                         Dim logdata As Byte() = TapeUtils.LogSense(TapeDrive:=ConfTapeDrive, PageCode:=CByte(PageItem(index).PageCode), SubPageCode:=0, PageControl:=CByte(pc))
                          Invoke(Sub()
                                     PageItem(index).RawData = logdata
                                     TextBoxDebugOutput.Text = PageItem(index).GetSummary()
@@ -1506,9 +1514,9 @@ Public Class LTFSConfigurator
                                                           CByte(zbcLBAWritten And &HFF), &H0}
                                 TapeUtils.SendSCSICommand(handle, cdb,
                                                           blist(CInt(i Mod 1000)), 0, Function(sensedata As Byte())
-                                                                                    sense = sensedata
-                                                                                    Return True
-                                                                                End Function)
+                                                                                          sense = sensedata
+                                                                                          Return True
+                                                                                      End Function)
                             Case Else
                                 sense = TapeUtils.Write(handle, blist(CInt(i Mod 1000)), blkLen)
                         End Select
@@ -1550,7 +1558,7 @@ Public Class LTFSConfigurator
                                         WERLPageLen = WERLPageLen Or WERLHeader(3)
                                         If WERLPageLen = 0 Then Exit Try
                                         WERLPageLen += 4
-            WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
+                                        WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
                                     End SyncLock
                                     Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                                     info = ""
@@ -1670,14 +1678,14 @@ Public Class LTFSConfigurator
                              WERLPageLen = WERLPageLen Or WERLHeader(3)
                              If WERLPageLen = 0 Then Exit Try
                              WERLPageLen += 4
-            WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
+                             WERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
 
                              Dim RERLPageLen As Integer = RERLHeader(2)
                              RERLPageLen <<= 8
                              RERLPageLen = RERLPageLen Or RERLHeader(3)
                              If RERLPageLen = 0 Then Exit Try
                              RERLPageLen += 4
-            RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
+                             RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
                          End SyncLock
                          Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                          Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
@@ -2755,9 +2763,9 @@ Public Class LTFSConfigurator
                                  Dim readsucc As Boolean = False
                                  While Not readsucc
                                      result = TapeUtils.SCSIReadParam(handle, cdb, CInt(readsize), Function(s As Byte()) As Boolean
-                                                                                                 senseData = s
-                                                                                                 Return True
-                                                                                             End Function, 30)
+                                                                                                       senseData = s
+                                                                                                       Return True
+                                                                                                   End Function, 30)
                                      If (senseData(2) And &HF) <> 0 Then
                                          progmsg = $"sense err {TapeUtils.Byte2Hex(senseData, True)}{vbCrLf}"
                                          Try

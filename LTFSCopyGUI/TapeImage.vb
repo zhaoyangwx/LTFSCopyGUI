@@ -1310,7 +1310,7 @@ Public Class TapeImage
         Dim nextblock As ULong = currblock
         Dim lastset As Long = CLng(Math.Ceiling(CurrentStreamValidLength / DatesetLength) - 1)
         Dim lastblock As ULong = CULng(PartitionEOD(Position.PartitionNumber))
-        If blockIndex = lastblock Then
+        If blockIndex >= lastblock Then
             LocateToEOD(sense)
             Exit Sub
         End If
@@ -1458,13 +1458,12 @@ Public Class TapeImage
         Position.SetNumber = CULng((CurrentStreamValidLength - BlockHeaderLen) \ DatesetLength)
         Dim BlockHeader(BlockHeaderLen - 1) As Byte
         Dim blocknum As ULong, blocklen As Integer, blockfraglen As Integer
+        Dim setHeaderPosition = CurrentFileOffset
         CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
         CurrentStream.Read(BlockHeader, 0, BlockHeaderLen)
-        CurrentIntraSetBlockOffset += BlockHeaderLen
         blocknum = GetULong(BlockHeader.Take(8).ToArray())
         blocklen = GetInteger(BlockHeader.Skip(8).Take(4).ToArray())
         blockfraglen = GetInteger(BlockHeader.Skip(12).Take(4).ToArray())
-        CurrentIntraSetBlockOffset += blockfraglen
         If blocknum = 0 AndAlso blocklen = 0 AndAlso blockfraglen = 0 Then
             If Position.SetNumber <> 0 OrElse CurrentIntraSetBlockOffset <> BlockHeaderLen Then
                 sense = SenseData.NoSense
@@ -1473,27 +1472,35 @@ Public Class TapeImage
                 Exit Sub
             End If
         Else
-            Position.BlockNumber = CULng(blocknum + 1)
+            If blockfraglen < blocklen Then
+                Position.BlockNumber = blocknum + 1UL
+                CurrentIntraSetBlockOffset += blockfraglen + BlockHeaderLen
+            Else
+                Position.BlockNumber = blocknum
+            End If
             ReadBlock(sense)
             blocknum = Position.BlockNumber
         End If
         While blocknum > 0
-            Position.BlockNumber = blocknum
             If CurrentSetResidueBytes < BlockHeaderLen Then Exit Sub
             CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
-            If CurrentStream.Read(BlockHeader, 0, BlockHeaderLen) < BlockHeaderLen Then Exit While
+            If CurrentStream.Read(BlockHeader, 0, BlockHeaderLen) < BlockHeaderLen Then
+                Exit While
+            End If
             CurrentIntraSetBlockOffset += BlockHeaderLen
             blocknum = GetULong(BlockHeader.Take(8).ToArray())
             If blocknum = 0 Then
                 CurrentIntraSetBlockOffset -= BlockHeaderLen
                 CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
                 Exit While
+            Else
+                Position.BlockNumber = CULng(blocknum + 1)
             End If
             blocklen = GetInteger(BlockHeader.Skip(8).Take(4).ToArray())
             blockfraglen = GetInteger(BlockHeader.Skip(12).Take(4).ToArray())
             CurrentIntraSetBlockOffset += blockfraglen
         End While
-        Position.BlockNumber = CULng(Position.BlockNumber + 1)
+        'Position.BlockNumber = CULng(Position.BlockNumber + 1)
         ReadBlock(sense)
         For i As Integer = 0 To FilemarkBlockIndex(Position.PartitionNumber).Count - 1
             If FilemarkBlockIndex(Position.PartitionNumber)(i) < Position.BlockNumber Then
