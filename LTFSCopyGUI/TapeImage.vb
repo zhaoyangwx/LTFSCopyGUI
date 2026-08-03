@@ -1138,8 +1138,8 @@ Public Class TapeImage
     End Sub
 
     Public Sub SetLengthIfNeeded(st As Stream, TargetLength As Long)
+        If ValidLength(ValidLengthLookupTable(st)) > TargetLength Then st.SetLength(TargetLength)
         ValidLength(ValidLengthLookupTable(st)) = TargetLength
-        If st.Length > TargetLength Then st.SetLength(TargetLength)
     End Sub
 
     Public Sub WriteBlock(data As Byte(), Optional ByVal len As Integer = -1)

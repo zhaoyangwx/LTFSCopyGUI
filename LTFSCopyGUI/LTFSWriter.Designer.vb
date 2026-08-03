@@ -260,8 +260,9 @@ Partial Class LTFSWriter
         Me.从文件添加ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.提取为空文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.按索引删除硬盘文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         Me.创建磁盘镜像ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
+        Me.清除指定大小范围的待写文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -1451,7 +1452,7 @@ Partial Class LTFSWriter
         '
         'TestToolStripMenuItem
         '
-        Me.TestToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.停止等待缓存ToolStripMenuItem, Me.选中二级目录ToolStripMenuItem, Me.导出待写列表ToolStripMenuItem, Me.监控写入ToolStripMenuItem, Me.自适应限速ToolStripMenuItem, Me.从文件添加ToolStripMenuItem, Me.提取为空文件ToolStripMenuItem, Me.按索引删除硬盘文件ToolStripMenuItem, Me.创建磁盘镜像ToolStripMenuItem})
+        Me.TestToolStripMenuItem.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.停止等待缓存ToolStripMenuItem, Me.选中二级目录ToolStripMenuItem, Me.导出待写列表ToolStripMenuItem, Me.监控写入ToolStripMenuItem, Me.自适应限速ToolStripMenuItem, Me.从文件添加ToolStripMenuItem, Me.提取为空文件ToolStripMenuItem, Me.按索引删除硬盘文件ToolStripMenuItem, Me.创建磁盘镜像ToolStripMenuItem, Me.清除指定大小范围的待写文件ToolStripMenuItem})
         Me.TestToolStripMenuItem.Name = "TestToolStripMenuItem"
         resources.ApplyResources(Me.TestToolStripMenuItem, "TestToolStripMenuItem")
         '
@@ -1495,6 +1496,11 @@ Partial Class LTFSWriter
         Me.按索引删除硬盘文件ToolStripMenuItem.Name = "按索引删除硬盘文件ToolStripMenuItem"
         resources.ApplyResources(Me.按索引删除硬盘文件ToolStripMenuItem, "按索引删除硬盘文件ToolStripMenuItem")
         '
+        '创建磁盘镜像ToolStripMenuItem
+        '
+        Me.创建磁盘镜像ToolStripMenuItem.Name = "创建磁盘镜像ToolStripMenuItem"
+        resources.ApplyResources(Me.创建磁盘镜像ToolStripMenuItem, "创建磁盘镜像ToolStripMenuItem")
+        '
         'ToolTipChanErrLog
         '
         Me.ToolTipChanErrLog.AutoPopDelay = 3600000
@@ -1504,10 +1510,10 @@ Partial Class LTFSWriter
         Me.ToolTipChanErrLog.UseAnimation = False
         Me.ToolTipChanErrLog.UseFading = False
         '
-        '创建磁盘镜像ToolStripMenuItem
+        '清除指定大小范围的待写文件ToolStripMenuItem
         '
-        Me.创建磁盘镜像ToolStripMenuItem.Name = "创建磁盘镜像ToolStripMenuItem"
-        resources.ApplyResources(Me.创建磁盘镜像ToolStripMenuItem, "创建磁盘镜像ToolStripMenuItem")
+        Me.清除指定大小范围的待写文件ToolStripMenuItem.Name = "清除指定大小范围的待写文件ToolStripMenuItem"
+        resources.ApplyResources(Me.清除指定大小范围的待写文件ToolStripMenuItem, "清除指定大小范围的待写文件ToolStripMenuItem")
         '
         'LTFSWriter
         '
@@ -1756,4 +1762,5 @@ Partial Class LTFSWriter
     Friend WithEvents 按索引删除硬盘文件ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripButton7 As ToolStripButton
     Friend WithEvents 创建磁盘镜像ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 清除指定大小范围的待写文件ToolStripMenuItem As ToolStripMenuItem
 End Class

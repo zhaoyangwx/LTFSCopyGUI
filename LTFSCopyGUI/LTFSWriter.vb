@@ -9066,7 +9066,7 @@ Public Class LTFSWriter
                                                         Exit While
                                                 End Select
                                                 p = New TapeUtils.PositionData(driveHandle)
-                                                           Continue While
+                                                Continue While
                                             End Try
                                             If (((sense(2) >> 6) And &H1) = 1) Then
                                                 If ((sense(2) And &HF) = 13) Then
@@ -9089,14 +9089,14 @@ Public Class LTFSWriter
                                                     Select Case dResult
                                                         Case DialogResult.Abort
                                                             fr.Close()
-                                                                       StopFlag = True
-                                                                       Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                                                   Case DialogResult.Retry
-                                                                       succ = False
-                                                                   Case DialogResult.Ignore
-                                                                       succ = True
-                                                                       Exit While
-                                                               End Select
+                                                            StopFlag = True
+                                                            Throw New Exception(TapeUtils.ParseSenseData(sense))
+                                                        Case DialogResult.Retry
+                                                            succ = False
+                                                        Case DialogResult.Ignore
+                                                            succ = True
+                                                            Exit While
+                                                    End Select
                                                 End Try
 
                                                 p = New TapeUtils.PositionData(driveHandle)
@@ -10783,6 +10783,24 @@ Public Class LTFSWriter
                             End Sub)
                      IsWriting = False
                  End Sub)
+    End Sub
+
+    Private Sub 清除指定大小范围的待写文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 清除指定大小范围的待写文件ToolStripMenuItem.Click
+        If UnwrittenFiles.Count > 0 Then
+            Static range As String = "268435456-10000000000000"
+            If DisplayHelper.ShowInputDialog("Range (bytes)", "Input", range) = DialogResult.OK Then
+                Dim rangelim() As String = range.Split({",", "-", " ", vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                If rangelim.Count < 2 Then Exit Sub
+                Dim dlim As Long = Long.Parse(rangelim(0))
+                Dim ulim As Long = Long.Parse(rangelim(1))
+                For i As Integer = UnwrittenFiles.Count - 1 To 1 Step -1
+                    If UnwrittenFiles(i).File.length < dlim OrElse UnwrittenFiles(i).File.length > ulim Then Continue For
+                    UnwrittenFiles(i).ParentDirectory.UnwrittenFiles.Remove(UnwrittenFiles(i).File)
+                    UnwrittenFiles.RemoveAt(i)
+                Next
+                MessageBox.Show(My.Resources.ResText_Succ)
+            End If
+        End If
     End Sub
 
     Public Function FileExists(path As String) As Boolean

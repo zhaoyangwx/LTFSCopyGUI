@@ -152,7 +152,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAAE
-        CwAAAk1TRnQBSQFMAgEBBAEAAQQBEAEEAhABAAEQAQAE/wEJAQAI/wFCAU0BNgEEBgABNgEEAgABKAMA
+        CwAAAk1TRnQBSQFMAgEBBAEAAQwBEAEMAhABAAEQAQAE/wEJAQAI/wFCAU0BNgEEBgABNgEEAgABKAMA
         AUADAAEgAwABAQEAAQgGAAEIGAABgAIAAYADAAKAAQABgAMAAYABAAGAAQACgAIAA8ABAAHAAdwBwAEA
         AfABygGmAQABMwUAATMBAAEzAQABMwEAAjMCAAMWAQADHAEAAyIBAAMpAQADVQEAA00BAANCAQADOQEA
         AYABfAH/AQACUAH/AQABkwEAAdYBAAH/AewBzAEAAcYB1gHvAQAB1gLnAQABkAGpAa0CAAH/ATMDAAFm
@@ -2013,6 +2013,12 @@
   </data>
   <data name="创建磁盘镜像ToolStripMenuItem.Text" xml:space="preserve">
     <value>创建磁盘镜像</value>
+  </data>
+  <data name="清除指定大小范围的待写文件ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>232, 22</value>
+  </data>
+  <data name="清除指定大小范围的待写文件ToolStripMenuItem.Text" xml:space="preserve">
+    <value>清除指定大小范围的待写文件</value>
   </data>
   <data name="TestToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>180, 22</value>
@@ -4352,16 +4358,22 @@
   <data name="&gt;&gt;按索引删除硬盘文件ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;创建磁盘镜像ToolStripMenuItem.Name" xml:space="preserve">
+    <value>创建磁盘镜像ToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;创建磁盘镜像ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;ToolTipChanErrLog.Name" xml:space="preserve">
     <value>ToolTipChanErrLog</value>
   </data>
   <data name="&gt;&gt;ToolTipChanErrLog.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;创建磁盘镜像ToolStripMenuItem.Name" xml:space="preserve">
-    <value>创建磁盘镜像ToolStripMenuItem</value>
+  <data name="&gt;&gt;清除指定大小范围的待写文件ToolStripMenuItem.Name" xml:space="preserve">
+    <value>清除指定大小范围的待写文件ToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;创建磁盘镜像ToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;清除指定大小范围的待写文件ToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
