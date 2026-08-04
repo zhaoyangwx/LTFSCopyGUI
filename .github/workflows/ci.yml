@@ -39,6 +39,9 @@ jobs:
                     throw "The nightly Rust toolchain does not provide x86_64-win7-windows-msvc."
                   }
 
+            - name: Test FastReader
+              run: cargo test --manifest-path LtfsFastReader/Cargo.toml
+
             - name: Build LTFSCopyGUI and FastReader
               run: msbuild LTFSCopyGUI.sln /m /t:Build /p:Configuration=Release /p:Platform=x64
 
