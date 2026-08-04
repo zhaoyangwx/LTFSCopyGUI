@@ -4625,14 +4625,34 @@ Public Class LTFSWriter
             WaitForFastReaderRefill(fastProvider)
 
             Dim slot As RustFastReaderProvider.Slot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
+            Dim expectedOffset = fr.File.length - remainingInFile
+            If slot.FileIndex <> fileIndex OrElse slot.FileOffset <> expectedOffset Then
+                fastProvider.AdvanceSlot(slot)
+                Throw New IO.InvalidDataException($"Native fast reader slot order mismatch for {fr.SourcePath}: expected file={fileIndex} offset={expectedOffset}, actual file={slot.FileIndex} offset={slot.FileOffset}")
+            End If
             If (slot.Flags And 1) <> 0 Then
                 fastProvider.AdvanceSlot(slot)
+                If slot.Flags <> 1 OrElse slot.Length <> 0 OrElse remainingInFile <> 0 Then
+                    Throw New IO.EndOfStreamException($"Native fast reader published early EOF for {fr.SourcePath}: remaining={remainingInFile} length={slot.Length}")
+                End If
                 eofSeen = True
                 Exit While
             End If
+            If slot.Flags <> 0 Then
+                fastProvider.AdvanceSlot(slot)
+                Throw New IO.InvalidDataException($"Native fast reader published unsupported slot flags for {fr.SourcePath}: flags={slot.Flags}")
+            End If
             If slot.Length <= 0 Then
                 fastProvider.AdvanceSlot(slot)
-                Exit While
+                Throw New IO.InvalidDataException($"Native fast reader published an empty data slot for {fr.SourcePath} at offset {slot.FileOffset}")
+            End If
+            If slot.DataPtr = IntPtr.Zero Then
+                fastProvider.AdvanceSlot(slot)
+                Throw New IO.InvalidDataException($"Native fast reader published a null data pointer for {fr.SourcePath} at offset {slot.FileOffset}")
+            End If
+            If CLng(slot.Length) > remainingInFile Then
+                fastProvider.AdvanceSlot(slot)
+                Throw New IO.InvalidDataException($"Native fast reader slot exceeds the declared length for {fr.SourcePath}: remaining={remainingInFile} length={slot.Length}")
             End If
             PipeBufferLength = fastProvider.BufferedBytes
             minimumBufferedBytes = Math.Min(minimumBufferedBytes, PipeBufferLength)
@@ -4736,9 +4756,24 @@ Public Class LTFSWriter
                      ForceLog:=True)
         End If
 
-        If Not eofSeen Then fastProvider.DrainEof(fileIndex)
+        If StopFlag Then Return False
+        If remainingInFile <> 0 Then
+            Throw New IO.EndOfStreamException($"Native fast reader ended before all bytes were written for {fr.SourcePath}: remaining={remainingInFile}")
+        End If
+        If Not eofSeen Then
+            Dim eofSlot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
+            Dim validEof = eofSlot.FileIndex = fileIndex AndAlso
+                           eofSlot.FileOffset = fr.File.length AndAlso
+                           eofSlot.Length = 0 AndAlso
+                           eofSlot.Flags = 1
+            fastProvider.AdvanceSlot(eofSlot)
+            If Not validEof Then
+                Throw New IO.InvalidDataException($"Native fast reader did not publish the expected EOF for {fr.SourcePath}: file={eofSlot.FileIndex} offset={eofSlot.FileOffset} length={eofSlot.Length} flags={eofSlot.Flags}")
+            End If
+            eofSeen = True
+        End If
         If Not StopFlag Then
-            Dim hashes = fastProvider.WaitFileDone(fileIndex, Timeout.Infinite)
+            Dim hashes = fastProvider.GetCompletedFileHashes(fileIndex)
             If Not String.IsNullOrEmpty(expectedDedupeHash) Then
                 Dim actualDedupeHash = GetFastReaderDedupeHash(hashes)
                 If Not actualDedupeHash.Equals(expectedDedupeHash, StringComparison.OrdinalIgnoreCase) Then

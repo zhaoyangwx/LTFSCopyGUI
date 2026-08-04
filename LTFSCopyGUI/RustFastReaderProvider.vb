@@ -200,6 +200,7 @@ Public Class RustFastReaderProvider
     Private Const SmallMaximumThreshold As Long = 4L * 1024L * 1024L
     Private Const SmallMaximumInflightBytes As Long = 128L * 1024L * 1024L
     Private Const NativeWaitSliceMs As UInteger = 50UI
+    Private Const RefillNoChangeMs As UInteger = 10000UI
 
     Private ReadOnly _writeList As List(Of LTFSWriter.FileRecord)
     Private ReadOnly _requestedCapacityBytes As Long
@@ -446,6 +447,20 @@ Public Class RustFastReaderProvider
         Return EmptyHashes()
     End Function
 
+    Public Function GetCompletedFileHashes(fileIndex As Long) As Dictionary(Of String, String)
+        EnsureStarted()
+        Dim text As String = Nothing
+        Dim result = TryGetText(Function(buffer As Byte(), capacity As UInteger, ByRef written As UInteger) As Integer
+                                    Return NativeMethods.lfr_get_file_hashes(Context, fileIndex, buffer, capacity, written)
+                                End Function,
+                                text)
+        If result = ResultTimeout Then
+            Throw New InvalidDataException($"Native fast reader published EOF before hashes for file {fileIndex}")
+        End If
+        If result <> ResultOk Then ThrowNative(result, $"get completed file {fileIndex} hashes")
+        Return ParseHashes(text)
+    End Function
+
     Public Sub WaitForStreamFillFraction(fraction As Double, ct As CancellationToken)
         ThrowIfFailed()
         Dim boundedFraction = Math.Max(0.0, Math.Min(1.0, fraction))
@@ -455,7 +470,7 @@ Public Class RustFastReaderProvider
             Dim remaining = Math.Max(0L, Interlocked.Read(_remainingBytes))
             Dim target = Math.Min(CLng(Math.Ceiling(BufferCapacityBytes * boundedFraction)), remaining)
             If target <= 0 OrElse BufferedBytes >= target Then Return
-            Dim result = NativeMethods.lfr_wait_until_buffered(Context, CULng(target), NativeWaitSliceMs)
+            Dim result = NativeMethods.lfr_wait_until_buffered(Context, CULng(target), RefillNoChangeMs)
             If result = ResultOk Then Return
             If result <> ResultTimeout Then ThrowNative(result, "wait for native buffer fill")
         End While

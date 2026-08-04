@@ -125,6 +125,7 @@ struct NativeState {
     read_index: u64,
     buffered_bytes: u64,
     occupied_slots: usize,
+    selected_bytes: u64,
     started: bool,
     done: bool,
     cancelled: bool,
@@ -2081,8 +2082,7 @@ unsafe fn native_run_worker(
         Ok(())
     })();
 
-    small_pool.shutdown();
-    match run_result {
+    match &run_result {
         Ok(()) => {
             let mut state = native_lock(&shared);
             state.done = true;
@@ -2096,6 +2096,7 @@ unsafe fn native_run_worker(
         }
         Err(error) => native_set_error(&shared, error),
     }
+    small_pool.shutdown();
 }
 
 unsafe fn native_context<'a>(context: *mut LfrContext) -> Result<&'a LfrContext, i32> {
@@ -2166,6 +2167,7 @@ pub unsafe extern "system" fn lfr_create(
                 read_index: 0,
                 buffered_bytes: 0,
                 occupied_slots: 0,
+                selected_bytes: 0,
                 started: false,
                 done: false,
                 cancelled: false,
@@ -2261,12 +2263,16 @@ pub unsafe extern "system" fn lfr_start(context: *mut LfrContext) -> i32 {
             return LFR_INVALID;
         }
         state.started = true;
-        state
+        let files = state
             .files
             .iter()
             .filter(|file| file.selected)
             .cloned()
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>();
+        state.selected_bytes = files
+            .iter()
+            .fold(0u64, |total, file| total.saturating_add(file.len));
+        files
     };
     let shared = Arc::clone(&context.shared);
     let config = NativeConfig {
@@ -2371,8 +2377,11 @@ pub unsafe extern "system" fn lfr_wait_until_buffered(
         Ok(value) => value,
         Err(code) => return code,
     };
-    let start = std::time::Instant::now();
     let mut state = native_lock(&context.shared);
+    let stagnant_limit = Duration::from_millis(timeout_ms as u64);
+    let mut unchanged_since = Instant::now();
+    let mut last_buffered_bytes = state.buffered_bytes;
+    let mut last_occupied_slots = state.occupied_slots;
     loop {
         if state.cancelled {
             return LFR_CANCELLED;
@@ -2394,9 +2403,22 @@ pub unsafe extern "system" fn lfr_wait_until_buffered(
                 .wait(state)
                 .unwrap_or_else(|p| p.into_inner());
         } else {
-            let timeout = Duration::from_millis(timeout_ms as u64).saturating_sub(start.elapsed());
+            if state.buffered_bytes != last_buffered_bytes
+                || state.occupied_slots != last_occupied_slots
+            {
+                last_buffered_bytes = state.buffered_bytes;
+                last_occupied_slots = state.occupied_slots;
+                unchanged_since = Instant::now();
+            }
+            let timeout = stagnant_limit.saturating_sub(unchanged_since.elapsed());
             if timeout.is_zero() {
-                return LFR_TIMEOUT;
+                return if context.shared.telemetry.bytes_read.load(Ordering::Acquire)
+                    >= state.selected_bytes
+                {
+                    LFR_OK
+                } else {
+                    LFR_TIMEOUT
+                };
             }
             let (next, result) = context
                 .shared
@@ -2405,7 +2427,21 @@ pub unsafe extern "system" fn lfr_wait_until_buffered(
                 .unwrap_or_else(|p| p.into_inner());
             state = next;
             if result.timed_out() {
-                return LFR_TIMEOUT;
+                if state.buffered_bytes != last_buffered_bytes
+                    || state.occupied_slots != last_occupied_slots
+                {
+                    last_buffered_bytes = state.buffered_bytes;
+                    last_occupied_slots = state.occupied_slots;
+                    unchanged_since = Instant::now();
+                    continue;
+                }
+                return if context.shared.telemetry.bytes_read.load(Ordering::Acquire)
+                    >= state.selected_bytes
+                {
+                    LFR_OK
+                } else {
+                    LFR_TIMEOUT
+                };
             }
         }
     }
@@ -2788,6 +2824,7 @@ mod tests {
     use super::*;
     use std::fs;
     use std::path::PathBuf;
+    use std::thread;
     use std::time::{SystemTime, UNIX_EPOCH};
 
     struct TempFile(PathBuf);
@@ -2811,6 +2848,30 @@ mod tests {
         fn drop(&mut self) {
             let _ = fs::remove_file(&self.0);
         }
+    }
+
+    fn native_test_config(slot_size: u32, capacity_bytes: u64) -> LfrConfig {
+        LfrConfig {
+            struct_size: std::mem::size_of::<LfrConfig>() as u32,
+            abi_version: LFR_ABI_VERSION,
+            slot_size,
+            read_chunk_size: slot_size.max(16 * 1024),
+            queue_depth: 4,
+            capacity_bytes,
+            small_open_concurrency: 4,
+            small_active_files: 8,
+            small_inflight_bytes: 2 * 1024 * 1024,
+            small_threshold: 64 * 1024,
+            hash_mask: LFR_HASH_CRC32,
+            next_file_prime_depth: 1,
+        }
+    }
+
+    unsafe fn create_native_test_context(config: &LfrConfig) -> *mut LfrContext {
+        let mut context = null_mut();
+        assert_eq!(lfr_create(config, &mut context), LFR_OK);
+        assert!(!context.is_null());
+        context
     }
 
     #[test]
@@ -2921,6 +2982,294 @@ mod tests {
             assert!(state.max_reserved_bytes <= 2 * 1024 * 1024);
         }
         unsafe { pool.shutdown() };
+        Ok(())
+    }
+
+    #[test]
+    fn refill_wait_only_accepts_a_stagnant_short_tail_after_all_input_is_read() {
+        let config = native_test_config(4096, 32 * 1024);
+        unsafe {
+            let context = create_native_test_context(&config);
+            let shared = Arc::clone(&(*context).shared);
+            {
+                let mut state = native_lock(&shared);
+                state.started = true;
+                state.selected_bytes = 8192;
+                state.buffered_bytes = 4096;
+                state.occupied_slots = 1;
+            }
+
+            assert_eq!(lfr_wait_until_buffered(context, 8192, 20), LFR_TIMEOUT);
+
+            shared.telemetry.bytes_read.store(8192, Ordering::Release);
+            assert_eq!(lfr_wait_until_buffered(context, 8192, 20), LFR_OK);
+            lfr_destroy(context);
+        }
+    }
+
+    #[test]
+    fn refill_wait_restarts_its_no_change_window_when_slots_change() {
+        let config = native_test_config(4096, 32 * 1024);
+        unsafe {
+            let context = create_native_test_context(&config);
+            let shared = Arc::clone(&(*context).shared);
+            {
+                let mut state = native_lock(&shared);
+                state.started = true;
+                state.selected_bytes = 8192;
+                state.buffered_bytes = 4096;
+                state.occupied_slots = 1;
+            }
+            shared.telemetry.bytes_read.store(8192, Ordering::Release);
+
+            let notifier = Arc::clone(&shared);
+            let update = thread::spawn(move || {
+                thread::sleep(Duration::from_millis(15));
+                let mut state = native_lock(&notifier);
+                // EOF changes slot occupancy without changing buffered bytes.
+                state.occupied_slots = 2;
+                notifier.changed.notify_all();
+            });
+            let started = Instant::now();
+            assert_eq!(lfr_wait_until_buffered(context, 8192, 30), LFR_OK);
+            assert!(started.elapsed() >= Duration::from_millis(35));
+            update.join().unwrap();
+            lfr_destroy(context);
+        }
+    }
+
+    #[test]
+    fn refill_wait_is_woken_by_error_and_cancellation() {
+        let config = native_test_config(4096, 32 * 1024);
+        unsafe {
+            let error_context = create_native_test_context(&config);
+            {
+                let shared = &(*error_context).shared;
+                let mut state = native_lock(shared);
+                state.started = true;
+                state.selected_bytes = 8192;
+                state.error = "injected read failure".into();
+            }
+            assert_eq!(
+                lfr_wait_until_buffered(error_context, 8192, 1000),
+                LFR_ERROR
+            );
+            lfr_destroy(error_context);
+
+            let cancel_context = create_native_test_context(&config);
+            {
+                let shared = &(*cancel_context).shared;
+                let mut state = native_lock(shared);
+                state.started = true;
+                state.selected_bytes = 8192;
+            }
+            let context_address = cancel_context as usize;
+            let waiter = thread::spawn(move || {
+                lfr_wait_until_buffered(context_address as *mut LfrContext, 8192, 1000)
+            });
+            thread::sleep(Duration::from_millis(10));
+            assert_eq!(lfr_cancel(cancel_context), LFR_OK);
+            assert_eq!(waiter.join().unwrap(), LFR_CANCELLED);
+            lfr_destroy(cancel_context);
+        }
+    }
+
+    #[test]
+    fn final_file_below_prefill_target_streams_all_bytes_and_hash_before_eof() -> io::Result<()> {
+        let expected = (0..(3 * 4096 + 37))
+            .map(|index| ((index * 19 + 11) % 251) as u8)
+            .collect::<Vec<_>>();
+        let file = TempFile::create("short-final-tail", &expected)?;
+        let path = file.0.to_str().unwrap().encode_utf16().collect::<Vec<_>>();
+        let config = native_test_config(4096, 64 * 1024);
+
+        unsafe {
+            let context = create_native_test_context(&config);
+            assert_eq!(
+                lfr_add_file(
+                    context,
+                    0,
+                    path.as_ptr(),
+                    path.len() as u32,
+                    expected.len() as u64,
+                ),
+                LFR_OK
+            );
+            assert_eq!(lfr_select_file(context, 0), LFR_OK);
+            assert_eq!(lfr_start(context), LFR_OK);
+            assert_eq!(lfr_wait_until_buffered(context, 48 * 1024, 1000), LFR_OK);
+
+            let mut actual = Vec::new();
+            loop {
+                let mut slot = LfrSlot {
+                    token: 0,
+                    file_index: -1,
+                    file_offset: 0,
+                    data: null(),
+                    length: 0,
+                    flags: 0,
+                };
+                assert_eq!(lfr_acquire_slot(context, 0, 1000, &mut slot), LFR_OK);
+                assert_eq!(slot.file_offset, actual.len() as u64);
+                if slot.flags & FLAG_EOF != 0 {
+                    assert_eq!(slot.length, 0);
+                    let mut hashes = [0u8; 128];
+                    let mut written = 0;
+                    assert_eq!(
+                        lfr_get_file_hashes(
+                            context,
+                            0,
+                            hashes.as_mut_ptr(),
+                            hashes.len() as u32,
+                            &mut written,
+                        ),
+                        LFR_OK
+                    );
+                    assert!(std::str::from_utf8(&hashes[..written as usize])
+                        .unwrap()
+                        .starts_with("CRC32="));
+                    assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                    break;
+                }
+                actual
+                    .extend_from_slice(std::slice::from_raw_parts(slot.data, slot.length as usize));
+                assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+            }
+            assert_eq!(actual, expected);
+            lfr_destroy(context);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn eof_is_published_after_data_fills_every_slot() -> io::Result<()> {
+        const SLOT_SIZE: usize = 4096;
+        const SLOT_COUNT: usize = 8;
+        let expected = (0..(SLOT_SIZE * SLOT_COUNT))
+            .map(|index| ((index * 23 + 3) % 251) as u8)
+            .collect::<Vec<_>>();
+        let file = TempFile::create("full-ring-before-eof", &expected)?;
+        let path = file.0.to_str().unwrap().encode_utf16().collect::<Vec<_>>();
+        let config = native_test_config(SLOT_SIZE as u32, expected.len() as u64);
+
+        unsafe {
+            let context = create_native_test_context(&config);
+            assert_eq!(
+                lfr_add_file(
+                    context,
+                    0,
+                    path.as_ptr(),
+                    path.len() as u32,
+                    expected.len() as u64,
+                ),
+                LFR_OK
+            );
+            assert_eq!(lfr_select_file(context, 0), LFR_OK);
+            assert_eq!(lfr_start(context), LFR_OK);
+            assert_eq!(lfr_wait_until_buffered(context, u64::MAX, 1000), LFR_OK);
+            assert_eq!(lfr_occupied_slots(context), SLOT_COUNT as u64);
+
+            let mut actual = Vec::new();
+            let mut eof_count = 0;
+            loop {
+                let mut slot = LfrSlot {
+                    token: 0,
+                    file_index: -1,
+                    file_offset: 0,
+                    data: null(),
+                    length: 0,
+                    flags: 0,
+                };
+                assert_eq!(lfr_acquire_slot(context, 0, 1000, &mut slot), LFR_OK);
+                assert_eq!(slot.file_offset, actual.len() as u64);
+                if slot.flags & FLAG_EOF != 0 {
+                    eof_count += 1;
+                    assert_eq!(slot.length, 0);
+                    assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                    break;
+                }
+                actual
+                    .extend_from_slice(std::slice::from_raw_parts(slot.data, slot.length as usize));
+                assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+            }
+            assert_eq!(actual, expected);
+            assert_eq!(eof_count, 1);
+            lfr_destroy(context);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn multiple_small_files_keep_data_and_eof_order_when_slots_wrap() -> io::Result<()> {
+        let expected = (0..5u64)
+            .map(|file_index| {
+                (0..(700 + file_index as usize * 113))
+                    .map(|offset| ((offset * 31 + file_index as usize * 7) % 251) as u8)
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let files = expected
+            .iter()
+            .enumerate()
+            .map(|(index, data)| TempFile::create(&format!("wrapped-small-{index}"), data))
+            .collect::<io::Result<Vec<_>>>()?;
+        let paths = files
+            .iter()
+            .map(|file| file.0.to_str().unwrap().encode_utf16().collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        let config = native_test_config(4096, 4 * 4096);
+
+        unsafe {
+            let context = create_native_test_context(&config);
+            for index in 0..expected.len() {
+                assert_eq!(
+                    lfr_add_file(
+                        context,
+                        index as i64,
+                        paths[index].as_ptr(),
+                        paths[index].len() as u32,
+                        expected[index].len() as u64,
+                    ),
+                    LFR_OK
+                );
+                assert_eq!(lfr_select_file(context, index as i64), LFR_OK);
+            }
+            assert_eq!(lfr_start(context), LFR_OK);
+
+            for (index, expected_file) in expected.iter().enumerate() {
+                let mut actual = Vec::new();
+                let mut eof_count = 0;
+                loop {
+                    let mut slot = LfrSlot {
+                        token: 0,
+                        file_index: -1,
+                        file_offset: 0,
+                        data: null(),
+                        length: 0,
+                        flags: 0,
+                    };
+                    assert_eq!(
+                        lfr_acquire_slot(context, index as i64, 1000, &mut slot),
+                        LFR_OK
+                    );
+                    assert_eq!(slot.file_offset, actual.len() as u64);
+                    if slot.flags & FLAG_EOF != 0 {
+                        eof_count += 1;
+                        assert_eq!(slot.length, 0);
+                        assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                        break;
+                    }
+                    actual.extend_from_slice(std::slice::from_raw_parts(
+                        slot.data,
+                        slot.length as usize,
+                    ));
+                    assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
+                }
+                assert_eq!(&actual, expected_file);
+                assert_eq!(eof_count, 1);
+            }
+            lfr_destroy(context);
+        }
         Ok(())
     }
 
