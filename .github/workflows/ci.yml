@@ -56,13 +56,36 @@ jobs:
                     }
                   }
 
+            - name: Download Simplified Chinese Inno Setup translation
+              shell: pwsh
+              run: |
+                  $translationUri = "https://raw.githubusercontent.com/kira-96/Inno-Setup-Chinese-Simplified-Translation/refs/heads/main/ChineseSimplified.isl"
+                  $translationPath = "Installer/ChineseSimplified.isl"
+
+                  Invoke-RestMethod -Uri $translationUri -OutFile $translationPath
+
+                  if (-not (Test-Path -LiteralPath $translationPath -PathType Leaf)) {
+                    throw "Failed to download the Simplified Chinese Inno Setup translation."
+                  }
+
             - name: Prepare installer script
               shell: pwsh
               run: |
                   $sourcePath = "Installer/LCG.iss"
                   $ciPath = "Installer/LCG.ci.iss"
                   $sourceLines = @(Get-Content -LiteralPath $sourcePath)
-                  $ciLines = @($sourceLines | Where-Object { $_ -notmatch '^\s*SetupIconFile\s*=' })
+                  $languagePattern = 'compiler:Languages\\ChineseSimplified\.isl'
+                  $languageLines = @($sourceLines | Where-Object { $_ -match $languagePattern })
+
+                  if ($languageLines.Count -ne 1) {
+                    throw "Expected exactly one ChineseSimplified.isl language reference in $sourcePath."
+                  }
+
+                  $ciLines = @(
+                    $sourceLines |
+                      Where-Object { $_ -notmatch '^\s*SetupIconFile\s*=' } |
+                      ForEach-Object { $_ -replace $languagePattern, 'ChineseSimplified.isl' }
+                  )
 
                   if ($ciLines.Count -eq $sourceLines.Count) {
                     throw "SetupIconFile was not found in $sourcePath."
@@ -72,6 +95,10 @@ jobs:
 
                   if (Select-String -LiteralPath $ciPath -Pattern '^\s*SetupIconFile\s*=') {
                     throw "The CI installer script still specifies a custom setup icon."
+                  }
+
+                  if (-not (Select-String -LiteralPath $ciPath -SimpleMatch 'MessagesFile: "ChineseSimplified.isl"')) {
+                    throw "The CI installer script does not reference the downloaded Chinese translation."
                   }
 
             - name: Compile Inno Setup installer
