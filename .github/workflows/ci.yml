@@ -1,0 +1,95 @@
+name: Build installer
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        name: Build LTFSCopyGUI installer
+        runs-on: windows-latest
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Set up MSBuild
+              uses: microsoft/setup-msbuild@v2
+
+            - name: Set up NuGet
+              uses: NuGet/setup-nuget@v2
+
+            - name: Restore NuGet packages
+              run: nuget restore LTFSCopyGUI.sln -PackagesDirectory packages -NonInteractive
+
+            - name: Install Rust nightly for the Windows 7 target
+              shell: pwsh
+              run: |
+                  rustup toolchain install nightly --profile minimal --component rust-src
+                  $target = rustc +nightly --print target-list | Select-String -SimpleMatch "x86_64-win7-windows-msvc"
+                  if (-not $target) {
+                    throw "The nightly Rust toolchain does not provide x86_64-win7-windows-msvc."
+                  }
+
+            - name: Build LTFSCopyGUI and FastReader
+              run: msbuild LTFSCopyGUI.sln /m /t:Build /p:Configuration=Release /p:Platform=x64
+
+            - name: Verify build output
+              shell: pwsh
+              run: |
+                  $requiredFiles = @(
+                    "LTFSCopyGUI/bin/x64/Release/LTFSCopyGUI.exe",
+                    "LTFSCopyGUI/bin/x64/Release/ltfscopy_fastreader.dll"
+                  )
+
+                  foreach ($requiredFile in $requiredFiles) {
+                    if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
+                      throw "Required build output is missing: $requiredFile"
+                    }
+                  }
+
+            - name: Prepare installer script
+              shell: pwsh
+              run: |
+                  $sourcePath = "Installer/LCG.iss"
+                  $ciPath = "Installer/LCG.ci.iss"
+                  $sourceLines = @(Get-Content -LiteralPath $sourcePath)
+                  $ciLines = @($sourceLines | Where-Object { $_ -notmatch '^\s*SetupIconFile\s*=' })
+
+                  if ($ciLines.Count -eq $sourceLines.Count) {
+                    throw "SetupIconFile was not found in $sourcePath."
+                  }
+
+                  Set-Content -LiteralPath $ciPath -Value $ciLines -Encoding utf8
+
+                  if (Select-String -LiteralPath $ciPath -Pattern '^\s*SetupIconFile\s*=') {
+                    throw "The CI installer script still specifies a custom setup icon."
+                  }
+
+            - name: Compile Inno Setup installer
+              uses: Minionguyjpro/Inno-Setup-Action@v1.2.7
+              with:
+                  path: Installer/LCG.ci.iss
+
+            - name: Verify installer output
+              shell: pwsh
+              run: |
+                  $installers = @(Get-ChildItem -Path "Installer/LTFSCopyGUI-*.exe" -File)
+                  if ($installers.Count -ne 1) {
+                    throw "Expected exactly one installer, found $($installers.Count)."
+                  }
+
+            - name: Upload installer artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: LTFSCopyGUI-installer
+                  path: Installer/LTFSCopyGUI-*.exe
+                  if-no-files-found: error
