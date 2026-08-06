@@ -36,6 +36,31 @@
         End If
     End Sub
 
+    Private Sub SetLengthToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles SetLengthToolStripMenuItem.Click
+        If CheckBox3.Checked Then
+            Dim targetLen As String = ""
+            TapeB = TextBox2.Text
+            Dim handleB As IntPtr
+            Dim drivertype As TapeUtils.DriverType = TapeUtils.DriverTypeSetting
+            TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
+            If Not IO.File.Exists(TapeB) Then
+                IO.File.Create(TapeB).Close()
+            End If
+            TapeUtils.OpenTapeDrive(TapeB, handleB)
+            Dim vt As TapeImage = Nothing
+            TapeStreamMapping.MappingTable.TryGetValue(handleB, vt)
+            If vt IsNot Nothing Then
+                targetLen = vt.CurrentStreamValidLength.ToString()
+                If DisplayHelper.ShowInputDialog("Length", "", targetLen) = DialogResult.OK Then
+                    Dim LenValue = Long.Parse(targetLen)
+                    vt.CurrentStream.SetLength(Math.Max(vt.CurrentStreamValidLength, LenValue))
+                End If
+            End If
+            TapeUtils.CloseTapeDrive(handleB)
+            TapeUtils.DriverTypeSetting = drivertype
+        End If
+    End Sub
+
     Public Sub PrintMsg(s As String)
         Invoke(Sub() Label4.Text = $"Status: {s}")
     End Sub

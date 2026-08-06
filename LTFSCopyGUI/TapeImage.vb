@@ -214,7 +214,7 @@ Public Class TapeImage
                 ToAdd = New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open), 9, leaveOpen:=False)
             Else
                 Compressed = False
-                ToAdd = New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open)
+                ToAdd = New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1024 * 1024, FileOptions.SequentialScan)
             End If
             PartitionMappingStream.Add(id, ToAdd)
             If ValidLength(id) = 0 Then ValidLength(id) = ToAdd.Length
@@ -1138,8 +1138,16 @@ Public Class TapeImage
     End Sub
 
     Public Sub SetLengthIfNeeded(st As Stream, TargetLength As Long)
-        If ValidLength(ValidLengthLookupTable(st)) > TargetLength Then st.SetLength(TargetLength)
+        If ValidLength(ValidLengthLookupTable(st)) > TargetLength Then
+            st.SetLength(TargetLength)
+        End If
         ValidLength(ValidLengthLookupTable(st)) = TargetLength
+    End Sub
+
+    Public Sub CurrentStream_SeekIfNeeded(offset As Long)
+        If CurrentStream.Position <> offset Then
+            CurrentStream.Seek(offset, SeekOrigin.Begin)
+        End If
     End Sub
 
     Public Sub WriteBlock(data As Byte(), Optional ByVal len As Integer = -1)
@@ -1147,8 +1155,8 @@ Public Class TapeImage
         If len = -1 Then len = data.Length
         Dim blocklen As Integer = Math.Min(data.Length, len)
         If CurrentSetResidueBytes < BlockHeaderLen Then
-            SetLengthIfNeeded(CurrentStream, CurrentFileOffset + CurrentSetResidueBytes + DatesetLength)
-            CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+            'SetLengthIfNeeded(CurrentStream, CurrentFileOffset + CurrentSetResidueBytes + DatesetLength)
+            CurrentStream_SeekIfNeeded(CurrentFileOffset)
             If CurrentSetResidueBytes > 0 Then
                 Dim paddingdata(CurrentSetResidueBytes - 1) As Byte
                 CurrentStream.Write(paddingdata, 0, CurrentSetResidueBytes)
@@ -1157,11 +1165,11 @@ Public Class TapeImage
             CurrentIntraSetBlockOffset = 0
         End If
         If blocklen = 0 Then
-            SetLengthIfNeeded(CurrentStream, CurrentFileOffset + BlockHeaderLen)
-            CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+            CurrentStream_SeekIfNeeded(CurrentFileOffset)
             CurrentStream.Write(GetByteArray(Position.BlockNumber), 0, 8)
             CurrentStream.Write(GetByteArray(0I), 0, 4)
             CurrentStream.Write(GetByteArray(0I), 0, 4)
+            'SetLengthIfNeeded(CurrentStream, CurrentFileOffset + BlockHeaderLen)
             While FilemarkBlockIndex(Position.PartitionNumber).Count > 0 AndAlso FilemarkBlockIndex(Position.PartitionNumber).Last >= Position.BlockNumber
                 FilemarkBlockIndex(Position.PartitionNumber).RemoveAt(FilemarkBlockIndex(Position.PartitionNumber).Count - 1)
             End While
@@ -1173,8 +1181,8 @@ Public Class TapeImage
             Dim residue As Integer = blocklen
             While residue > 0
                 If CurrentSetResidueBytes < BlockHeaderLen Then
-                    SetLengthIfNeeded(CurrentStream, CurrentFileOffset + CurrentSetResidueBytes + DatesetLength)
-                    CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+                    'SetLengthIfNeeded(CurrentStream, CurrentFileOffset + CurrentSetResidueBytes + DatesetLength)
+                    CurrentStream_SeekIfNeeded(CurrentFileOffset)
                     If CurrentSetResidueBytes > 0 Then
                         Dim paddingdata(CurrentSetResidueBytes - 1) As Byte
                         CurrentStream.Write(paddingdata, 0, CurrentSetResidueBytes)
@@ -1183,8 +1191,8 @@ Public Class TapeImage
                     CurrentIntraSetBlockOffset = 0
                 End If
                 Dim writelen As Integer = Math.Min(residue, CurrentSetResidueBytes - BlockHeaderLen)
-                SetLengthIfNeeded(CurrentStream, CurrentFileOffset + BlockHeaderLen + writelen)
-                CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+                'SetLengthIfNeeded(CurrentStream, CurrentFileOffset + BlockHeaderLen + writelen)
+                CurrentStream_SeekIfNeeded(CurrentFileOffset)
                 CurrentStream.Write(GetByteArray(Position.BlockNumber), 0, 8)
                 CurrentStream.Write(GetByteArray(blocklen), 0, 4)
                 CurrentStream.Write(GetByteArray(writelen), 0, 4)
@@ -1196,6 +1204,7 @@ Public Class TapeImage
             End While
             Position.BlockNumber = CULng(Position.BlockNumber + 1)
         End If
+        SetLengthIfNeeded(CurrentStream, CurrentFileOffset)
         PartitionEOD(Position.PartitionNumber) = CLng(Position.BlockNumber)
         VolumeChanged = True
     End Sub
@@ -1252,7 +1261,7 @@ Public Class TapeImage
                 If CurrentSetResidueBytes = 0 Then
                     Position.SetNumber = CULng(Position.SetNumber + 1)
                     CurrentIntraSetBlockOffset = BlockHeaderLen
-                    CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+                    CurrentStream_SeekIfNeeded(CurrentFileOffset)
                 End If
                 HeaderReaded = False
             Else
@@ -1262,7 +1271,7 @@ Public Class TapeImage
                 Else
                     CurrentIntraSetBlockOffset += BlockHeaderLen
                 End If
-                CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+                CurrentStream_SeekIfNeeded(CurrentFileOffset)
             End If
             Dim readlen As Integer = Math.Min(residue, CurrentSetResidueBytes)
             CurrentStream.Read(result, blocklen - residue, readlen)
@@ -1417,18 +1426,18 @@ Public Class TapeImage
     End Sub
     Public Function GetHeaderBlockNumber(setnum As Long, Optional ByVal offset As Long = 0) As ULong
         Dim streampos As Long = CurrentStream.Position
-        CurrentStream.Seek(setnum * DatesetLength + offset, SeekOrigin.Begin)
+        CurrentStream_SeekIfNeeded(setnum * DatesetLength + offset)
         Dim blkdata(7) As Byte
         CurrentStream.Read(blkdata, 0, 8)
-        CurrentStream.Seek(streampos, SeekOrigin.Begin)
+        CurrentStream_SeekIfNeeded(streampos)
         Return GetULong(blkdata)
     End Function
     Public Function GetHeaderBlock(setnum As Long, Optional ByVal offset As Long = 0) As Byte()
         Dim streampos As Long = CurrentStream.Position
-        CurrentStream.Seek(setnum * DatesetLength + offset, SeekOrigin.Begin)
+        CurrentStream_SeekIfNeeded(setnum * DatesetLength + offset)
         Dim blkdata(15) As Byte
         CurrentStream.Read(blkdata, 0, 16)
-        CurrentStream.Seek(streampos, SeekOrigin.Begin)
+        CurrentStream_SeekIfNeeded(streampos)
         Return blkdata
     End Function
 
@@ -1459,7 +1468,7 @@ Public Class TapeImage
         Dim BlockHeader(BlockHeaderLen - 1) As Byte
         Dim blocknum As ULong, blocklen As Integer, blockfraglen As Integer
         Dim setHeaderPosition = CurrentFileOffset
-        CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+        CurrentStream_SeekIfNeeded(CurrentFileOffset)
         CurrentStream.Read(BlockHeader, 0, BlockHeaderLen)
         blocknum = GetULong(BlockHeader.Take(8).ToArray())
         blocklen = GetInteger(BlockHeader.Skip(8).Take(4).ToArray())
@@ -1483,7 +1492,7 @@ Public Class TapeImage
         End If
         While blocknum > 0
             If CurrentSetResidueBytes < BlockHeaderLen Then Exit Sub
-            CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+            CurrentStream_SeekIfNeeded(CurrentFileOffset)
             If CurrentStream.Read(BlockHeader, 0, BlockHeaderLen) < BlockHeaderLen Then
                 Exit While
             End If
@@ -1491,7 +1500,7 @@ Public Class TapeImage
             blocknum = GetULong(BlockHeader.Take(8).ToArray())
             If blocknum = 0 Then
                 CurrentIntraSetBlockOffset -= BlockHeaderLen
-                CurrentStream.Seek(CurrentFileOffset, SeekOrigin.Begin)
+                CurrentStream_SeekIfNeeded(CurrentFileOffset)
                 Exit While
             Else
                 Position.BlockNumber = CULng(blocknum + 1)

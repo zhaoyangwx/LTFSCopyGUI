@@ -40,8 +40,11 @@ Partial Class TapeCopy
         Me.CheckBox1 = New System.Windows.Forms.CheckBox()
         Me.CheckBox2 = New System.Windows.Forms.CheckBox()
         Me.CheckBox3 = New System.Windows.Forms.CheckBox()
+        Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.SetLengthToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).BeginInit()
+        Me.ContextMenuStrip1.SuspendLayout()
         Me.SuspendLayout()
         '
         'Label1
@@ -103,6 +106,7 @@ Partial Class TapeCopy
         'Button1
         '
         Me.Button1.Anchor = CType((System.Windows.Forms.AnchorStyles.Top Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
+        Me.Button1.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Button1.Location = New System.Drawing.Point(387, 66)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(75, 23)
@@ -195,6 +199,18 @@ Partial Class TapeCopy
         Me.CheckBox3.Text = "TapeImage"
         Me.CheckBox3.UseVisualStyleBackColor = True
         '
+        'ContextMenuStrip1
+        '
+        Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.SetLengthToolStripMenuItem})
+        Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
+        Me.ContextMenuStrip1.Size = New System.Drawing.Size(134, 26)
+        '
+        'SetLengthToolStripMenuItem
+        '
+        Me.SetLengthToolStripMenuItem.Name = "SetLengthToolStripMenuItem"
+        Me.SetLengthToolStripMenuItem.Size = New System.Drawing.Size(133, 22)
+        Me.SetLengthToolStripMenuItem.Text = "SetLength"
+        '
         'TapeCopy
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -222,6 +238,7 @@ Partial Class TapeCopy
         Me.Text = "TapeCopy"
         CType(Me.NumericUpDown1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDown2, System.ComponentModel.ISupportInitialize).EndInit()
+        Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout()
 
@@ -251,4 +268,7 @@ Partial Class TapeCopy
         ' 在 InitializeComponent() 调用之后添加任何初始化。
         DisplayHelper.AfterInitializeComponent(Me)
     End Sub
+
+    Friend WithEvents ContextMenuStrip1 As ContextMenuStrip
+    Friend WithEvents SetLengthToolStripMenuItem As ToolStripMenuItem
 End Class
