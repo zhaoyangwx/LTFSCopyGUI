@@ -939,13 +939,14 @@ Public Class LTFSConfigurator
         Me.Enabled = False
         Dim blk As ULong = CULng(NumericUpDownBlockNum.Value)
         Dim partition As Byte = CByte(NumericUpDownPartitionNum.Value)
+        Dim timeout As Integer = Integer.Parse(TextBoxTimeoutValue.Text)
         Dim dest As TapeUtils.LocateDestType = CType(System.Enum.Parse(GetType(TapeUtils.LocateDestType), CStr(ComboBoxLocateType.SelectedItem)), TapeUtils.LocateDestType)
         Task.Run(Sub()
                      Dim result As String = ""
                      Try
                          TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
                          Dim sense As Byte() = {}
-                         TapeUtils.Locate(ConfTapeDrive, blk, partition, dest, sense)
+                         TapeUtils.Locate(ConfTapeDrive, blk, partition, dest, sense, timeout)
                          result = TapeUtils.ParseSenseData(sense) & vbCrLf & IOManager.Byte2Hex(sense, True)
                      Catch ex As Exception
 
@@ -1491,14 +1492,14 @@ Public Class LTFSConfigurator
                 Dim bH(7) As Byte
                 If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show(New Form With {.TopMost = True}, "False")
                 If blkLen = 0 Then
-                    For i As Long = 0 To blkNum
+                    For i As Long = 0 To blkNum - 1
                         If Not TestEnabled Then Exit For
                         TapeUtils.WriteFileMark(handle)
                         progval = i * blkLen
                     Next
                 Else
                     Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
-                    For i As Long = 0 To blkNum
+                    For i As Long = 0 To blkNum - 1
                         If Not TestEnabled Then Exit For
                         Dim sense(63) As Byte
                         Dim zbcLBAWritten As Long = 0

@@ -1158,7 +1158,7 @@ Public Class TapeUtils
     Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte) As UInt16
         Return Locate(handle:=handle, BlockAddress:=BlockAddress, Partition:=Partition, DestType:=0)
     End Function
-    Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType, Optional ByRef sensereturn As Byte() = Nothing) As UInt16
+    Public Shared Function Locate(handle As IntPtr, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType, Optional ByRef sensereturn As Byte() = Nothing, Optional ByVal timeout As Integer = 1800) As UInt16
         SyncLock SCSIOperationLock
             Dim sense(63) As Byte
             Select Case DriverTypeSetting
@@ -1172,7 +1172,7 @@ Public Class TapeUtils
                                                                  0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                          sense = senseData
                                                                                                          Return True
-                                                                                                     End Function)
+                                                                                                     End Function, timeout:=timeout)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
                             Space6(handle:=handle, Count:=CInt(BlockAddress), Code:=LocateDestType.FileMark)
@@ -1181,7 +1181,7 @@ Public Class TapeUtils
                                 SendSCSICommand(handle:=handle, cdbData:=New Byte() {&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                                                        sense = senseData
                                                                                                                                        Return True
-                                                                                                                                   End Function)
+                                                                                                                                   End Function, TimeOut:=timeout)
                             End If
                     End Select
                 Case DriverType.SLR1
@@ -1191,7 +1191,7 @@ Public Class TapeUtils
                                                             0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                               sense = senseData
                                                                                               Return True
-                                                                                          End Function)
+                                                                                          End Function, timeout:=timeout)
                         Case LocateDestType.FileMark
                             Locate(handle, 0, 0)
                             Space6(handle:=handle, Count:=CInt(BlockAddress), Code:=LocateDestType.FileMark)
@@ -1200,7 +1200,7 @@ Public Class TapeUtils
                                 SendSCSICommand(handle:=handle, cdbData:=New Byte() {&H11, 3, 0, 0, 0, 0}, DataIn:=1, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                                                        sense = senseData
                                                                                                                                        Return True
-                                                                                                                                   End Function)
+                                                                                                                                   End Function, TimeOut:=timeout)
                             End If
                     End Select
                 Case DriverType.TapeStream
@@ -1231,13 +1231,13 @@ Public Class TapeUtils
                                                         0, 0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                    sense = senseData
                                                                                                    Return True
-                                                                                               End Function)
+                                                                                               End Function, timeout:=timeout)
                     Else
                         SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H2B, 0, 0, CByte(BlockAddress >> 24 And &HFFUL), CByte(BlockAddress >> 16 And &HFFUL), CByte(BlockAddress >> 8 And &HFFUL), CByte(BlockAddress And &HFFUL),
                                                         0, 0, 0}, paramLen:=0, senseReport:=Function(senseData As Byte()) As Boolean
                                                                                                 sense = senseData
                                                                                                 Return True
-                                                                                            End Function)
+                                                                                            End Function, timeout:=timeout)
                     End If
             End Select
 
@@ -1282,11 +1282,11 @@ Public Class TapeUtils
     Public Shared Function Locate(TapeDrive As String, BlockAddress As ULong, Partition As ltfsindex.PartitionLabel, DestType As LocateDestType) As UInt16
         Return Locate(TapeDrive:=TapeDrive, BlockAddress:=BlockAddress, Partition:=CByte(Partition), DestType:=DestType)
     End Function
-    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType, Optional ByRef sensereturn As Byte() = Nothing) As UInt16
+    Public Shared Function Locate(TapeDrive As String, BlockAddress As UInt64, Partition As Byte, ByVal DestType As LocateDestType, Optional ByRef sensereturn As Byte() = Nothing, Optional ByVal timeout As Integer = 1800) As UInt16
         SyncLock SCSIOperationLock
             Dim handle As IntPtr
             If Not OpenTapeDrive(TapeDrive, handle) Then Throw New Exception($"Cannot open {TapeDrive}")
-            Dim result As UInt16 = Locate(handle, BlockAddress, Partition, DestType, sensereturn)
+            Dim result As UInt16 = Locate(handle, BlockAddress, Partition, DestType, sensereturn, timeout)
             If Not CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {TapeDrive}")
             Return result
         End SyncLock
