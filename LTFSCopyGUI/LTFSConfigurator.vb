@@ -946,8 +946,22 @@ Public Class LTFSConfigurator
                      Try
                          TapeUtils.AllowPartition = Not My.Settings.LTFSWriter_DisablePartition
                          Dim sense As Byte() = {}
-                         TapeUtils.Locate(ConfTapeDrive, blk, partition, dest, sense, timeout)
-                         result = TapeUtils.ParseSenseData(sense) & vbCrLf & IOManager.Byte2Hex(sense, True)
+                         Dim handle As IntPtr
+                         If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then Throw New Exception($"Cannot open {ConfTapeDrive}")
+                         TapeUtils.Locate(handle, blk, partition, dest, sense, timeout)
+                         If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                             Dim ts As TapeImage = Nothing
+                             TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
+                             If ts IsNot Nothing Then
+                                 result = $"Dataset={ts.CurrentDatasetID}
+FileOffset={ts.CurrentFileOffset} 0x{ts.CurrentFileOffset.ToString("X")}h
+IntrasetOffset = {ts.CurrentIntraSetBlockOffset} 0x{ts.CurrentIntraSetBlockOffset.ToString("X")}h
+DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
+                             End If
+                         End If
+                         If Not TapeUtils.CloseTapeDrive(handle) Then Throw New Exception($"Cannot close {ConfTapeDrive}")
+
+                         result &= TapeUtils.ParseSenseData(sense) & vbCrLf & IOManager.Byte2Hex(sense, True)
                      Catch ex As Exception
 
                      End Try

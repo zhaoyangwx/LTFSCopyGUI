@@ -110,8 +110,8 @@ Public Class TapeImage
     Public Property Compressed As Boolean = True
     Public Property WriteProtect As Boolean = False
     Private PartitionMappingStream As New Dictionary(Of Integer, IO.Stream)
-    Private CurrentDatasetID As Integer = 0
-    Private CurrentIntraSetBlockOffset As Integer = 0
+    Public CurrentDatasetID As Integer = 0
+    Public CurrentIntraSetBlockOffset As Integer = 0
     Public Const BlockHeaderLen As Integer = 16
     Public Function GetAvailableDiskSpace(Partition As Integer) As Long
         If PartitionMappingFile.ContainsKey(Partition) Then
