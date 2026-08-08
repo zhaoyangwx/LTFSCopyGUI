@@ -183,6 +183,7 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.ButtonVerify = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -559,10 +560,10 @@ Partial Class LTFSConfigurator
         Me.ButtonDebugFormat.Name = "ButtonDebugFormat"
         Me.ButtonDebugFormat.UseVisualStyleBackColor = True
         '
-        'ButtonDebugAllowMediaRemoval
+        'ButtonDebugAllowMediumRemoval
         '
-        resources.ApplyResources(Me.ButtonDebugAllowMediumRemoval, "ButtonDebugAllowMediaRemoval")
-        Me.ButtonDebugAllowMediumRemoval.Name = "ButtonDebugAllowMediaRemoval"
+        resources.ApplyResources(Me.ButtonDebugAllowMediumRemoval, "ButtonDebugAllowMediumRemoval")
+        Me.ButtonDebugAllowMediumRemoval.Name = "ButtonDebugAllowMediumRemoval"
         Me.ButtonDebugAllowMediumRemoval.UseVisualStyleBackColor = True
         '
         'ButtonDebugReadInfo
@@ -903,6 +904,7 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
+        Me.TabPageTest.Controls.Add(Me.ButtonVerify)
         Me.TabPageTest.Controls.Add(Me.ButtonEOT)
         Me.TabPageTest.Controls.Add(Me.ButtonBOT)
         Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSets)
@@ -1281,6 +1283,12 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'ButtonVerify
+        '
+        resources.ApplyResources(Me.ButtonVerify, "ButtonVerify")
+        Me.ButtonVerify.Name = "ButtonVerify"
+        Me.ButtonVerify.UseVisualStyleBackColor = True
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1502,4 +1510,5 @@ Partial Class LTFSConfigurator
     Friend WithEvents LabelLUN As Label
     Friend WithEvents Label2 As Label
     Friend WithEvents NumericUpDownRAPartition As NumericUpDown
+    Friend WithEvents ButtonVerify As Button
 End Class

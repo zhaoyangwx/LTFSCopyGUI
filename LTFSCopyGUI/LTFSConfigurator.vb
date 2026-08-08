@@ -3030,4 +3030,166 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
         LoadComplete = True
         SelectedIndex = ListBox1.SelectedIndex
     End Sub
+
+    Private Sub ButtonVerify_Click(sender As Object, e As EventArgs) Handles ButtonVerify.Click
+        If TestEnabled Then
+            ButtonTest.Enabled = False
+            TestEnabled = False
+            Exit Sub
+        End If
+        Dim progmax As Long
+        If MessageBox.Show(New Form With {.TopMost = True}, "Start verify?", "Info", MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            TestEnabled = True
+            Dim progval As Long = 0
+            Dim info As String = ""
+            Dim running As Boolean = True
+            Dim randomNum As Boolean = RadioButtonTest1.Checked
+            Dim blkLen As Integer = CInt(NumericUpDownTestBlkSize.Value)
+            Dim blkNum As Long = CLng(NumericUpDownTestBlkNum.Value)
+            progmax = blkNum * blkLen
+            Dim sec As Integer = -1
+            Dim SenseMsg As String = ""
+            Dim zbcstartblk As Long = 0
+            Dim zbcsectorlen As Integer = 4096
+            Select Case My.Settings.TapeUtils_DriverType
+                Case TapeUtils.DriverType.ZBCDevice
+                    DisplayHelper.ShowInputDialog("Start LBA", "ZBC test verify param", zbcstartblk)
+                    DisplayHelper.ShowInputDialog("Sector length", "ZBC test verify param", zbcsectorlen)
+                Case Else
+
+            End Select
+            Dim th As New Threading.Thread(
+            Sub()
+
+                Invoke(Sub() TextBoxDebugOutput.AppendText($"Start{vbCrLf}"))
+                sec = 0
+                Dim handle As IntPtr
+                Dim bH(7) As Byte
+                If Not TapeUtils.OpenTapeDrive(ConfTapeDrive, handle) Then MessageBox.Show(New Form With {.TopMost = True}, "False")
+
+                Dim LastC1Err(31) As Integer, LastNoCCPs(31) As Integer
+                For i As Long = 0 To blkNum - 1
+                    If Not TestEnabled Then Exit For
+                    Dim sense(63) As Byte
+                    Dim zbcLBAWritten As Long = 0
+                    Dim cdb As Byte()
+                    Select Case My.Settings.TapeUtils_DriverType
+                        Case TapeUtils.DriverType.ZBCDevice
+                            zbcLBAWritten = blkLen \ zbcsectorlen
+                            cdb = {&H2F, &H0,
+                                                      CByte((zbcstartblk >> 24) And &HFF),
+                                                      CByte((zbcstartblk >> 16) And &HFF),
+                                                      CByte((zbcstartblk >> 8) And &HFF),
+                                                      CByte(zbcstartblk And &HFF), &H0,
+                                                      CByte(zbcLBAWritten >> 8 And &HFF),
+                                                      CByte(zbcLBAWritten And &HFF), &H0}
+                        Case Else
+                            cdb = {&H13, 0, CByte((blkLen >> 16) And &HFF), CByte((blkLen >> 8) And &HFF), CByte(blkLen And &HFF), 0}
+                    End Select
+                    TapeUtils.SCSIReadParam(handle, cdb, 0, Function(sensedata As Byte())
+                                                                sense = sensedata
+                                                                Return True
+                                                            End Function)
+                    If (sense(2) And &HF) <> 0 Then
+                        SenseMsg = TapeUtils.ParseSenseData(sense)
+                        If (sense(2) And &HFF) = 8 Then Exit For
+                        Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                            Case DialogResult.Abort
+                                Exit For
+                            Case DialogResult.Retry
+                                i -= 1
+                                Continue For
+                            Case DialogResult.Ignore
+                                Continue For
+                        End Select
+                    Else
+                        SenseMsg = ""
+                    End If
+                    If My.Settings.TapeUtils_DriverType = TapeUtils.DriverType.ZBCDevice Then
+                        Threading.Interlocked.Add(zbcstartblk, zbcLBAWritten)
+                    Else
+                        Try
+                            If i Mod 200 = 0 Then
+                                Dim result As New StringBuilder
+                                Dim RERLHeader As Byte()
+                                Dim RERLPage As Byte()
+                                Dim RERLPageLen As Integer
+                                SyncLock TapeUtils.SCSIOperationLock
+                                    RERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
+                                    If RERLHeader.Length <> 4 Then Exit Try
+                                    RERLPageLen = RERLHeader(2)
+                                    RERLPageLen <<= 8
+                                    RERLPageLen = RERLPageLen Or RERLHeader(3)
+                                    If RERLPageLen = 0 Then Exit Try
+                                    RERLPageLen += 4
+                                    RERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
+                                End SyncLock
+                                Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                info = ""
+                                Try
+                                    For ch As Integer = 5 To RERLData.Length - 5 Step 5
+                                        Dim chan As Integer = (ch - 4) \ 5
+                                        Dim C1err As Integer = Integer.Parse(RERLData(ch + 0), Globalization.NumberStyles.HexNumber)
+                                        Dim NoCCPs As Integer = Integer.Parse(RERLData(ch + 4), Globalization.NumberStyles.HexNumber)
+
+                                        If NoCCPs - LastNoCCPs(chan) > 0 Then
+                                            Dim resulttxt As String = (Math.Round(Math.Log10((C1err - LastC1Err(chan)) / (NoCCPs - LastNoCCPs(chan)) / 2 / 1920), 2).ToString("f2"))
+                                            resulttxt = resulttxt.Replace("∞", "Inf")
+                                            result.Append(resulttxt.PadLeft(6).PadRight(7))
+                                            LastC1Err(chan) = C1err
+                                            LastNoCCPs(chan) = NoCCPs
+                                        Else
+                                            result.Append("-".PadLeft(4).PadRight(7))
+                                        End If
+                                    Next
+                                Catch
+                                End Try
+                                info = result.ToString()
+                            End If
+                        Catch ex As Exception
+                            info = ex.ToString()
+                        End Try
+                    End If
+
+                    progval = i * blkLen
+                Next
+                TapeUtils.CloseTapeDrive(handle)
+
+                running = False
+                TestEnabled = False
+                Invoke(Sub()
+                           ButtonTest.Enabled = True
+                           ButtonTest.Text = "Start"
+                       End Sub)
+            End Sub)
+            Dim thprog As New Threading.Thread(
+            Sub()
+                Dim lastval As Long = 0
+                Dim len1 As Integer = progmax.ToString().Length
+                While running
+                    Threading.Thread.Sleep(1000)
+                    Dim prognow As Long = progval
+                    Invoke(Sub()
+                               Dim texta As String = ($"{sec.ToString().PadLeft(4)}: {prognow.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(prognow - lastval).PadLeft(10)})")
+                               Dim infostart As Integer = texta.Length
+                               TextBoxDebugOutput.AppendText($"{texta}{info} {SenseMsg}{vbCrLf}")
+                               If info.Length > 0 Then FormatLogRateColor(TextBoxDebugOutput, infostart, info)
+                           End Sub)
+                    If sec >= 0 Then sec += 1
+                    lastval = prognow
+                End While
+                Invoke(Sub()
+                           Dim texta As String = ($"{sec.ToString().PadLeft(4)}: {progval.ToString().PadLeft(Math.Max(15, len1))} (+{IOManager.FormatSize(progval - lastval).PadLeft(10)})")
+                           Dim infostart As Integer = texta.Length
+                           TextBoxDebugOutput.AppendText($"{texta}{info} {SenseMsg}{vbCrLf}")
+                           If info.Length > 0 Then FormatLogRateColor(TextBoxDebugOutput, infostart, info)
+                           TextBoxDebugOutput.AppendText($"End")
+                       End Sub)
+            End Sub)
+            TextBoxDebugOutput.Clear()
+            thprog.Start()
+            ButtonTest.Text = "Stop"
+            th.Start()
+        End If
+    End Sub
 End Class
