@@ -367,7 +367,7 @@ Public Class TapeImage
                 Dim FMCount As Integer = 0
                 For i As Integer = 2 To 4
                     FMCount <<= 8
-                    FMCount = FMCount Or Param(i)
+                    FMCount = FMCount Or commandBytes(i)
                 Next
                 WriteFilemark(FMCount)
                 If WriteProtect AndAlso FMCount > 0 Then
@@ -1133,7 +1133,9 @@ Public Class TapeImage
     End Function
     Public Sub [Erase]()
         If WriteProtect Then Exit Sub
+        PartitionEOD(Position.PartitionNumber) = CLng(Position.BlockNumber)
         CurrentStream.SetLength(CurrentFileOffset)
+        ValidLength(ValidLengthLookupTable(CurrentStream)) = CurrentFileOffset
         VolumeChanged = True
     End Sub
 

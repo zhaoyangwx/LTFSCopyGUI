@@ -327,39 +327,49 @@ Public Class LTFSConfigurator
         Dim th As New Threading.Thread(
             Sub()
                 Try
-                    Dim cdbData() As Byte = IOManager.HexStringToByteArray(TextBoxCDBData.Text)
-                    Dim dataData() As Byte = {}
-                    Dim cdb As IntPtr = Marshal.AllocHGlobal(cdbData.Length)
-                    Marshal.Copy(cdbData, 0, cdb, cdbData.Length)
-                    Dim dataBufferPtr As IntPtr
+                    Dim cdb() As Byte = IOManager.HexStringToByteArray(TextBoxCDBData.Text)
+                    Dim param() As Byte = {}
                     If TextBoxParamData.Text.Length >= 2 Then
-                        dataData = IOManager.HexStringToByteArray(TextBoxParamData.Text)
-                        dataBufferPtr = Marshal.AllocHGlobal(dataData.Length)
-                        Marshal.Copy(dataData, 0, dataBufferPtr, dataData.Length)
-                    Else
-                        dataBufferPtr = IntPtr.Zero
+                        param = IOManager.HexStringToByteArray(TextBoxParamData.Text)
                     End If
-                    Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
 
-                    Dim senseBuffer(63) As Byte
-                    Marshal.Copy(senseBuffer, 0, senseBufferPtr, 64)
+                    Dim sense(63) As Byte
                     Dim succ As Boolean, BytesReturned As UInteger
                     SyncLock TapeUtils.SCSIOperationLock
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
-                        succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdbData, dataBufferPtr, CUInt(dataData.Length),
-                                                           CByte(CInt(TextBoxDataDir.Text)), CUInt(CInt(TextBoxTimeoutValue.Text)), senseBuffer,
+                        If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
+                            Dim ts As TapeImage = Nothing
+                            TapeStreamMapping.MappingTable.TryGetValue(handle, ts)
+                            If ts IsNot Nothing Then
+                                succ = ts.HandleSCSICommand(cdb, param, CByte(CInt(TextBoxDataDir.Text)), param.Length, param, sense)
+                            End If
+                        Else
+                            Dim cdbPtr As IntPtr = Marshal.AllocHGlobal(cdb.Length)
+                            Marshal.Copy(cdb, 0, cdbPtr, cdb.Length)
+                            Dim dataBufferPtr As IntPtr
+                            If param.Length > 0 Then
+                                dataBufferPtr = Marshal.AllocHGlobal(param.Length)
+                                Marshal.Copy(param, 0, dataBufferPtr, param.Length)
+                            Else
+                                dataBufferPtr = IntPtr.Zero
+                            End If
+                            Dim senseBufferPtr As IntPtr = Marshal.AllocHGlobal(64)
+                            Marshal.Copy(sense, 0, senseBufferPtr, 64)
+                            succ = TapeUtils.IOCtl.IOCtlDirect(handle, cdb, dataBufferPtr, CUInt(param.Length),
+                                                           CByte(CInt(TextBoxDataDir.Text)), CUInt(CInt(TextBoxTimeoutValue.Text)), sense,
                                                            CByte(TextBoxTargetID.Text), CByte(TextBoxLUN.Text), BytesReturned)
+                            Marshal.FreeHGlobal(cdbPtr)
+                            If param.Length > 0 Then Marshal.Copy(dataBufferPtr, param, 0, param.Length)
+                            Marshal.FreeHGlobal(dataBufferPtr)
+                            Marshal.Copy(senseBufferPtr, sense, 0, sense.Length)
+                            Marshal.FreeHGlobal(senseBufferPtr)
+                        End If
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
-                    If dataData.Length > 0 Then Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
-                    'Marshal.Copy(senseBufferPtr, senseBuffer, 0, senseBuffer.Length)
                     Me.Invoke(Sub()
-                                  PrintCommandResult(cdbData, dataData, senseBuffer)
+                                  PrintCommandResult(cdb, param, sense)
                               End Sub)
-                    Marshal.FreeHGlobal(cdb)
-                    Marshal.FreeHGlobal(dataBufferPtr)
-                    Marshal.FreeHGlobal(senseBufferPtr)
                     If succ Then
                         Me.Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}OK{vbCrLf}Bytesreturned = {BytesReturned}")
                     Else
