@@ -981,4 +981,7 @@ Enable only when memory usage is abnormally high</value>
   <data name="PropertyDescription_LTFSWriter_ExternalReaderEnabled" xml:space="preserve">
     <value>Enable external high-performance reader (Windows 10+ required)</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ModernIcon" xml:space="preserve">
+    <value>Use vector icons</value>
+  </data>
 </root>

@@ -206,49 +206,82 @@ Public Class ModernCommandButton
 
             Select Case CommandIcon
                 Case ModernCommandIcon.ImportFiles
-                    g.DrawLines(pen, {New PointF(1.5F, 5.0F), New PointF(1.5F, 13.5F), New PointF(14.5F, 13.5F), New PointF(14.5F, 5.0F), New PointF(8.0F, 5.0F), New PointF(6.5F, 3.0F), New PointF(1.5F, 3.0F)})
-                    g.DrawLine(pen, 8.0F, 6.5F, 8.0F, 11.0F)
-                    g.DrawLines(pen, {New PointF(5.9F, 9.0F), New PointF(8.0F, 11.1F), New PointF(10.1F, 9.0F)})
-
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawLines(pen, {New PointF(1.5F, 5.0F), New PointF(1.5F, 13.5F), New PointF(14.5F, 13.5F), New PointF(14.5F, 5.0F), New PointF(8.0F, 5.0F), New PointF(6.5F, 3.0F), New PointF(1.5F, 3.0F)})
+                        g.DrawLine(pen, 8.0F, 6.5F, 8.0F, 11.0F)
+                        g.DrawLines(pen, {New PointF(5.9F, 9.0F), New PointF(8.0F, 11.1F), New PointF(10.1F, 9.0F)})
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_Open, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
                 Case ModernCommandIcon.WriteTape
-                    Dim playColor = If(Enabled, Color.FromArgb(28, 145, 70), color)
-                    Using ringPen As New Pen(color, 3.8F),
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        Dim playColor = If(Enabled, Color.FromArgb(28, 145, 70), color)
+                        Using ringPen As New Pen(color, 3.8F),
                           playBrush As New SolidBrush(playColor)
-                        g.DrawEllipse(ringPen, 1.9F, 1.9F, 10.2F, 10.2F)
-                        g.FillPolygon(playBrush, {New PointF(8.0F, 7.2F), New PointF(15.5F, 11.6F), New PointF(8.0F, 16.0F)})
-                    End Using
-
+                            g.DrawEllipse(ringPen, 1.9F, 1.9F, 10.2F, 10.2F)
+                            g.FillPolygon(playBrush, {New PointF(8.0F, 7.2F), New PointF(15.5F, 11.6F), New PointF(8.0F, 16.0F)})
+                        End Using
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_Copy, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
                 Case ModernCommandIcon.BackupIndex
-                    g.DrawLines(pen, {New PointF(3.0F, 1.5F), New PointF(9.5F, 1.5F), New PointF(13.0F, 5.0F), New PointF(13.0F, 14.5F), New PointF(3.0F, 14.5F), New PointF(3.0F, 1.5F)})
-                    g.DrawLines(pen, {New PointF(9.5F, 1.5F), New PointF(9.5F, 5.0F), New PointF(13.0F, 5.0F)})
-                    g.DrawLine(pen, 5.5F, 8.0F, 10.5F, 8.0F)
-                    g.DrawLine(pen, 5.5F, 10.5F, 9.0F, 10.5F)
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawLines(pen, {New PointF(3.0F, 1.5F), New PointF(9.5F, 1.5F), New PointF(13.0F, 5.0F), New PointF(13.0F, 14.5F), New PointF(3.0F, 14.5F), New PointF(3.0F, 1.5F)})
+                        g.DrawLines(pen, {New PointF(9.5F, 1.5F), New PointF(9.5F, 5.0F), New PointF(13.0F, 5.0F)})
+                        g.DrawLine(pen, 5.5F, 8.0F, 10.5F, 8.0F)
+                        g.DrawLine(pen, 5.5F, 10.5F, 9.0F, 10.5F)
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_SaveIndex, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
 
                 Case ModernCommandIcon.MergeHash
-                    g.DrawLine(pen, 5.5F, 2.0F, 3.8F, 14.0F)
-                    g.DrawLine(pen, 10.2F, 2.0F, 8.5F, 14.0F)
-                    g.DrawLine(pen, 2.0F, 6.0F, 13.0F, 6.0F)
-                    g.DrawLine(pen, 1.5F, 10.0F, 12.5F, 10.0F)
-                    g.DrawLines(pen, {New PointF(12.0F, 8.0F), New PointF(14.0F, 10.0F), New PointF(12.0F, 12.0F)})
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawLine(pen, 5.5F, 2.0F, 3.8F, 14.0F)
+                        g.DrawLine(pen, 10.2F, 2.0F, 8.5F, 14.0F)
+                        g.DrawLine(pen, 2.0F, 6.0F, 13.0F, 6.0F)
+                        g.DrawLine(pen, 1.5F, 10.0F, 12.5F, 10.0F)
+                        g.DrawLines(pen, {New PointF(12.0F, 8.0F), New PointF(14.0F, 10.0F), New PointF(12.0F, 12.0F)})
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_MergeSHA1, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
 
                 Case ModernCommandIcon.VerifySource
-                    g.DrawLines(pen, {New PointF(3.0F, 1.5F), New PointF(9.5F, 1.5F), New PointF(13.0F, 5.0F), New PointF(13.0F, 8.0F)})
-                    g.DrawLines(pen, {New PointF(9.5F, 1.5F), New PointF(9.5F, 5.0F), New PointF(13.0F, 5.0F)})
-                    g.DrawLine(pen, 3.0F, 1.5F, 3.0F, 14.5F)
-                    g.DrawLine(pen, 3.0F, 14.5F, 7.0F, 14.5F)
-                    g.DrawLines(pen, {New PointF(7.0F, 11.5F), New PointF(9.5F, 14.0F), New PointF(14.5F, 9.0F)})
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawLines(pen, {New PointF(3.0F, 1.5F), New PointF(9.5F, 1.5F), New PointF(13.0F, 5.0F), New PointF(13.0F, 8.0F)})
+                        g.DrawLines(pen, {New PointF(9.5F, 1.5F), New PointF(9.5F, 5.0F), New PointF(13.0F, 5.0F)})
+                        g.DrawLine(pen, 3.0F, 1.5F, 3.0F, 14.5F)
+                        g.DrawLine(pen, 3.0F, 14.5F, 7.0F, 14.5F)
+                        g.DrawLines(pen, {New PointF(7.0F, 11.5F), New PointF(9.5F, 14.0F), New PointF(14.5F, 9.0F)})
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_CheckSum, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
 
                 Case ModernCommandIcon.SafeEject
-                    g.DrawPolygon(pen, {New PointF(8.0F, 2.0F), New PointF(13.0F, 10.0F), New PointF(3.0F, 10.0F)})
-                    g.DrawLine(pen, 3.0F, 13.5F, 13.0F, 13.5F)
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawPolygon(pen, {New PointF(8.0F, 2.0F), New PointF(13.0F, 10.0F), New PointF(3.0F, 10.0F)})
+                        g.DrawLine(pen, 3.0F, 13.5F, 13.0F, 13.5F)
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_Eject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
 
                 Case ModernCommandIcon.ForceEject
-                    g.DrawPolygon(pen, {New PointF(8.0F, 2.0F), New PointF(13.0F, 10.0F), New PointF(3.0F, 10.0F)})
-                    g.DrawLine(pen, 3.0F, 13.5F, 13.0F, 13.5F)
-                    g.DrawLine(pen, 8.0F, 4.2F, 8.0F, 7.0F)
-                    Using brush As New SolidBrush(color)
-                        g.FillEllipse(brush, 7.35F, 8.0F, 1.3F, 1.3F)
-                    End Using
+                    If My.Settings.LTFSWriter_ModernIcon Then
+                        g.DrawPolygon(pen, {New PointF(8.0F, 2.0F), New PointF(13.0F, 10.0F), New PointF(3.0F, 10.0F)})
+                        g.DrawLine(pen, 3.0F, 13.5F, 13.0F, 13.5F)
+                        g.DrawLine(pen, 8.0F, 4.2F, 8.0F, 7.0F)
+                        Using brush As New SolidBrush(color)
+                            g.FillEllipse(brush, 7.35F, 8.0F, 1.3F, 1.3F)
+                        End Using
+                    Else
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor
+                        g.DrawImage(My.Resources.Icon_ForceEject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                    End If
             End Select
         End Using
     End Sub

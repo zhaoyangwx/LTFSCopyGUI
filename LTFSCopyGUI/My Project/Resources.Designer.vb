@@ -80,6 +80,106 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_Blank() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_Blank", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_CheckSum() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_CheckSum", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_Copy() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_Copy", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_Eject() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_Eject", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_ForceEject() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_ForceEject", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_MergeSHA1() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_MergeSHA1", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_Open() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_Open", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_Save() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_Save", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_SaveAs() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_SaveAs", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找 System.Drawing.Bitmap 类型的本地化资源。
+        '''</summary>
+        Friend ReadOnly Property Icon_SaveIndex() As System.Drawing.Bitmap
+            Get
+                Dim obj As Object = ResourceManager.GetObject("Icon_SaveIndex", resourceCulture)
+                Return CType(obj,System.Drawing.Bitmap)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 许可证无效 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property LicenseInvalid() As String
@@ -186,15 +286,6 @@ Namespace My.Resources
                 Return ResourceManager.GetString("PropertyDescription_LTFSConf_AutoRefresh", resourceCulture)
             End Get
         End Property
-
-        '''<summary>
-        '''  查找类似 SCSI Console 输出字体 的本地化字符串。
-        '''</summary>
-        Friend ReadOnly Property PropertyDescription_LTFSConf_SCSIConsoleFont() As String
-            Get
-                Return ResourceManager.GetString("PropertyDescription_LTFSConf_SCSIConsoleFont", resourceCulture)
-            End Get
-        End Property
         
         '''<summary>
         '''  查找类似 快捷指令 的本地化字符串。
@@ -202,6 +293,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSConf_CMDList() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSConf_CMDList", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 SCSI Console 输出字体 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSConf_SCSIConsoleFont() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSConf_SCSIConsoleFont", resourceCulture)
             End Get
         End Property
         
@@ -521,6 +621,15 @@ Namespace My.Resources
         Friend ReadOnly Property PropertyDescription_LTFSWriter_MinimumSegmentSize() As String
             Get
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_MinimumSegmentSize", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
+        '''  查找类似 使用矢量图标 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ModernIcon() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ModernIcon", resourceCulture)
             End Get
         End Property
         

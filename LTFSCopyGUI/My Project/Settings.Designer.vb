@@ -836,6 +836,20 @@ Namespace My
             End Set
         End Property
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("使用矢量图标"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ModernIcon")>
+        Public Property LTFSWriter_ModernIcon() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ModernIcon"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ModernIcon") = Value
+            End Set
+        End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("字体"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
