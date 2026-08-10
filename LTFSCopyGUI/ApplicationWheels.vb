@@ -840,6 +840,12 @@ Public NotInheritable Class DisplayHelper
         If frm Is Nothing Then Throw New ArgumentNullException(NameOf(frm))
         frm.Font = DisplayFont
         frm.AutoScaleDimensions = New SizeF(LogicalDpi, LogicalDpi)
+
+        ' Force WinForms to finish accessibility/handle initialization before
+        ' AutoScaleMode.Set reads the current DPI state.  Removing this access
+        ' can distort dynamically-created forms on some high-DPI systems.
+        GC.KeepAlive(frm.AccessibilityObject)
+
         frm.AutoScaleMode = AutoScaleMode.Dpi
     End Sub
 
