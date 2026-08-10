@@ -12,15 +12,15 @@ Namespace My
     ' NetworkAvailabilityChanged:在连接或断开网络连接时引发。
     <TypeConverter(GetType(ExpandableObjectConverter))>
     Partial Friend Class MyApplication
-        <System.Runtime.InteropServices.DllImport("kernel32.dll")>
+        <DllImport("kernel32.dll")>
         Public Shared Function AllocConsole() As Boolean
 
         End Function
-        <System.Runtime.InteropServices.DllImport("kernel32.dll")>
+        <DllImport("kernel32.dll")>
         Shared Function FreeConsole() As Boolean
 
         End Function
-        <System.Runtime.InteropServices.DllImport("kernel32.dll")>
+        <DllImport("kernel32.dll")>
         Shared Function AttachConsole(pid As Integer) As Boolean
 
         End Function
@@ -35,7 +35,7 @@ Namespace My
             End If
         End Sub
         Public Sub CloseConsole()
-            System.Windows.Forms.SendKeys.SendWait("{ENTER}")
+            SendKeys.SendWait("{ENTER}")
             FreeConsole()
         End Sub
         Public Sub CheckUAC(e As StartupEventArgs)
@@ -45,67 +45,67 @@ Namespace My
             End If
         End Sub
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            AppLogger.Initialize(IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"), My.Settings.LTFSWriter_LogEnabled)
-            If Not IO.Directory.Exists(My.Settings.cfgPath) Then IO.Directory.CreateDirectory(My.Settings.cfgPath)
+            AppLogger.Initialize(Path.Combine(Windows.Forms.Application.StartupPath, "log"), Settings.LTFSWriter_LogEnabled)
+            If Not Directory.Exists(Settings.cfgPath) Then Directory.CreateDirectory(Settings.cfgPath)
             '旧设定迁移
-            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini")) Then
+            If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "lang.ini")) Then
                 Try
-                    IO.File.Move(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "lang.ini"), My.Settings.langcfgFile)
+                    File.Move(Path.Combine(Windows.Forms.Application.StartupPath, "lang.ini"), Settings.langcfgFile)
                 Catch
                 End Try
             End If
-            If IO.File.Exists(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key")) Then
+            If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "license.key")) Then
                 Try
-                    IO.File.Move(Path.Combine(System.Windows.Forms.Application.StartupPath, "license.key"), My.Settings.licenseFile)
+                    File.Move(Path.Combine(Windows.Forms.Application.StartupPath, "license.key"), Settings.licenseFile)
                 Catch
                 End Try
             End If
             Dim drvSettingUpdated As Boolean = False
-            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt")) Then
+            If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "driver.txt")) Then
                 Try
-                    Dim driverTags As String() = IO.File.ReadAllLines(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
+                    Dim driverTags As String() = File.ReadAllLines(Path.Combine(Windows.Forms.Application.StartupPath, "driver.txt"))
                     For Each line As String In driverTags
                         Dim result = line.Split({";", ",", vbTab}, StringSplitOptions.None)
                         TapeUtils.TagDictionary.Add(result(0), result(1))
                     Next
                     drvSettingUpdated = True
-                    IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "driver.txt"))
+                    File.Delete(Path.Combine(Windows.Forms.Application.StartupPath, "driver.txt"))
                 Catch
                 End Try
             End If
-            If IO.File.Exists(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini")) Then
-                Dim blval As Integer = Integer.Parse(IO.File.ReadAllText(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini")))
+            If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "blocklen.ini")) Then
+                Dim blval As Integer = Integer.Parse(File.ReadAllText(Path.Combine(Windows.Forms.Application.StartupPath, "blocklen.ini")))
                 If blval > 0 Then TapeUtils.GlobalBlockLimit = blval
                 drvSettingUpdated = True
-                IO.File.Delete(IO.Path.Combine(System.Windows.Forms.Application.StartupPath, "blocklen.ini"))
+                File.Delete(Path.Combine(Windows.Forms.Application.StartupPath, "blocklen.ini"))
             End If
-            If drvSettingUpdated Then IO.File.WriteAllText(My.Settings.driveSettingFile, (New TapeUtils()).GetSerializedText())
+            If drvSettingUpdated Then File.WriteAllText(Settings.driveSettingFile, (New TapeUtils()).GetSerializedText())
             '读取独立配置文件
-            If IO.File.Exists(My.Settings.langcfgFile) Then
+            If File.Exists(Settings.langcfgFile) Then
                 Try
-                    Dim lang As String = IO.File.ReadAllText(My.Settings.langcfgFile)
+                    Dim lang As String = File.ReadAllText(Settings.langcfgFile)
                     Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
                     Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
                 Catch
                 End Try
             End If
-            If IO.File.Exists(My.Settings.driveSettingFile) Then
+            If File.Exists(Settings.driveSettingFile) Then
                 Try
-                    TapeUtils.FromFile(My.Settings.driveSettingFile)
+                    TapeUtils.FromFile(Settings.driveSettingFile)
                 Catch
                 End Try
             End If
-            TapeUtils.DriverTypeSetting = My.Settings.TapeUtils_DriverType
-            My.Settings.Application_License = Resources.StrDefaultLicense
-            If IO.File.Exists(My.Settings.licenseFile) Then
-                Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
+            TapeUtils.DriverTypeSetting = Settings.TapeUtils_DriverType
+            Settings.Application_License = Resources.StrDefaultLicense
+            If File.Exists(Settings.licenseFile) Then
+                Dim rsa As New Security.Cryptography.RSACryptoServiceProvider()
 
-                If IO.File.Exists(My.Settings.licKeyFile) Then
-                    rsa.FromXmlString(IO.File.ReadAllText(My.Settings.licKeyFile))
+                If File.Exists(Settings.licKeyFile) Then
+                    rsa.FromXmlString(File.ReadAllText(Settings.licKeyFile))
                 Else
                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                 End If
-                Dim lic_string = IO.File.ReadAllText(My.Settings.licenseFile)
+                Dim lic_string = File.ReadAllText(Settings.licenseFile)
 
                 Try
                     Dim LicStr As String() = lic_string.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
@@ -115,7 +115,7 @@ Namespace My
                     Dim bLicStr As Byte() = Convert.FromBase64String(strBody)
                     'lic_string = System.Text.Encoding.UTF8.GetString(rsa.Decrypt(key, False))
                     If rsa.VerifyData(bLicStr, "SHA256", bSign) Then
-                        My.Settings.Application_License = System.Text.Encoding.UTF8.GetString(bLicStr)
+                        Settings.Application_License = Text.Encoding.UTF8.GetString(bLicStr)
                     Else
                         Throw New Exception()
                     End If
@@ -123,16 +123,16 @@ Namespace My
                     If rsa.PublicOnly Then
                         MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                     Else
-                        My.Settings.Application_License = lic_string
-                        Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(lic_string)
+                        Settings.Application_License = lic_string
+                        Dim bLicStr As Byte() = Text.Encoding.UTF8.GetBytes(lic_string)
                         Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                         Dim strBody As String = Convert.ToBase64String(bLicStr)
                         Dim strSign As String = Convert.ToBase64String(bSign)
-                        IO.File.WriteAllText(My.Settings.licenseFile, $"{strBody}{vbCrLf}{strSign}")
+                        File.WriteAllText(Settings.licenseFile, $"{strBody}{vbCrLf}{strSign}")
                     End If
                 End Try
             End If
-            With My.Settings.Application_BaseFont
+            With Settings.Application_BaseFont
                 DisplayHelper.DisplayFont = New Font(.FontFamily, .Size, .Style, .Unit)
             End With
             If e.CommandLine.Count = 0 Then
@@ -165,14 +165,14 @@ Namespace My
                                                                 TapeUtils.CloseTapeDrive(LWF.driveHandle)
                                                                 LWF.SetStatusLight(LTFSWriter.LWStatus.NotReady)
                                                             End Sub
-                                Me.MainForm = LWF
+                                MainForm = LWF
                                 Exit For
                             End If
                         Case "-f"
                             If i < param.Count - 1 Then
                                 Dim indexFile As String = param(i + 1).TrimStart(""""c).TrimEnd(""""c)
 
-                                If IO.File.Exists(indexFile) Then
+                                If File.Exists(indexFile) Then
                                     Dim LWF As New LTFSWriter With {.Barcode = Resources.StrIndexView, .TapeDrive = "", .OfflineMode = True}
                                     Dim OnLWFLoad As New EventHandler(Sub()
                                                                           LWF.Invoke(Sub()
@@ -183,17 +183,17 @@ Namespace My
                                                                       End Sub
                                         )
                                     AddHandler LWF.Load, OnLWFLoad
-                                    Me.MainForm = LWF
+                                    MainForm = LWF
                                 End If
                                 Exit For
                             End If
                         Case "-c"
                             CheckUAC(e)
-                            Me.MainForm = LTFSConfigurator
+                            MainForm = LTFSConfigurator
                             Exit For
                         Case "-l"
                             CheckUAC(e)
-                            Me.MainForm = ChangerTool
+                            MainForm = ChangerTool
                             Exit For
                         Case "-rb"
                             CheckUAC(e)
@@ -361,7 +361,7 @@ dataDir:{dataDir}
                             End If
                         Case "-copy"
                             CheckUAC(e)
-                            Me.MainForm = New TapeCopy()
+                            MainForm = New TapeCopy()
                         Case "-gt"
                             If i < param.Count - 2 Then
                                 Dim Num1 As Byte = Byte.Parse(param(i + 1))
@@ -374,11 +374,11 @@ dataDir:{dataDir}
                         Case "-crc"
                             If i < param.Count - 1 Then
                                 Dim Num1 As Byte()
-                                If IO.File.Exists(param(i + 1)) Then
+                                If File.Exists(param(i + 1)) Then
                                     If param(i + 1).ToLower.EndsWith(".txt") OrElse param(i + 1).ToLower.EndsWith(".csv") OrElse param(i + 1).ToLower.EndsWith(".tsv") Then
-                                        Num1 = IOManager.HexStringToByteArray(IO.File.ReadAllText(param(i + 1)).Replace(" ", "").Replace(vbCr, "").Replace(vbLf, "").Replace(vbTab, "").Replace(",", ""))
+                                        Num1 = IOManager.HexStringToByteArray(File.ReadAllText(param(i + 1)).Replace(" ", "").Replace(vbCr, "").Replace(vbLf, "").Replace(vbTab, "").Replace(",", ""))
                                     Else
-                                        Num1 = IO.File.ReadAllBytes(param(i + 1))
+                                        Num1 = File.ReadAllBytes(param(i + 1))
                                     End If
                                 Else
                                     Num1 = IOManager.HexStringToByteArray(param(i + 1))
@@ -395,18 +395,18 @@ dataDir:{dataDir}
                                     ltext = ltext.Substring(1, ltext.Length - 2)
                                 End If
                                 InitConsole()
-                                Dim rsa As New System.Security.Cryptography.RSACryptoServiceProvider()
+                                Dim rsa As New Security.Cryptography.RSACryptoServiceProvider()
 
-                                If IO.File.Exists(My.Settings.licKeyFile) Then
-                                    rsa.FromXmlString(IO.File.ReadAllText(My.Settings.licKeyFile))
+                                If File.Exists(Settings.licKeyFile) Then
+                                    rsa.FromXmlString(File.ReadAllText(Settings.licKeyFile))
                                 Else
                                     rsa.FromXmlString("<RSAKeyValue><Modulus>4q9IKAIqJVyJteY0L7mCVnuBvNv+ciqlJ79X8RdTOzAOsuwTrmdlXIJn0dNsY0EdTNQrJ+idmAcMzIDX65ZnQzMl9x2jfvLZfeArqzNYERkq0jpa/vwdk3wfqEUKhBrGzy14gt/tawRXp3eBGZSEN++Wllh8Zqf8Huiu6U+ZO9k=</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>")
                                 End If
                                 If rsa.PublicOnly Then
                                     MessageBox.Show(New Form With {.TopMost = True}, Resources.StrLicenseInvalid)
                                 Else
-                                    My.Settings.Application_License = ltext
-                                    Dim bLicStr As Byte() = System.Text.Encoding.UTF8.GetBytes(ltext)
+                                    Settings.Application_License = ltext
+                                    Dim bLicStr As Byte() = Text.Encoding.UTF8.GetBytes(ltext)
                                     Dim bSign As Byte() = rsa.SignData(bLicStr, "SHA256")
                                     Dim strBody As String = Convert.ToBase64String(bLicStr)
                                     Dim strSign As String = Convert.ToBase64String(bSign)
@@ -865,16 +865,13 @@ dataDir:{dataDir}
 
         Private Shared Sub WriteEmergencyCrashLog(ex As Exception)
             Dim contents = If(ex Is Nothing, "Unknown unhandled exception.", ex.ToString())
-            Dim directories = {
-                IO.Path.Combine(Windows.Forms.Application.StartupPath, "log"),
-                IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LTFSCopyGUI", "log"),
-                IO.Path.Combine(IO.Path.GetTempPath(), "LTFSCopyGUI", "log")
+            Dim directories = {Path.Combine(Windows.Forms.Application.StartupPath, "log"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LTFSCopyGUI", "log"), Path.Combine(Path.GetTempPath(), "LTFSCopyGUI", "log")
             }
             For Each directory In directories
                 Try
                     IO.Directory.CreateDirectory(directory)
                     Dim path = IO.Path.Combine(directory, $"crash_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
-                    IO.File.WriteAllText(path, contents, New Text.UTF8Encoding(False))
+                    File.WriteAllText(path, contents, New Text.UTF8Encoding(False))
                     Return
                 Catch
                 End Try

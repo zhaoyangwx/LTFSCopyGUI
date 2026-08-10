@@ -1,4 +1,4 @@
-﻿Public Class TapeCopy
+Public Class TapeCopy
     Public TapeA As String, TapeB As String, Operation_Cancel_Flag As Boolean = False
     Public FlushFlag As Boolean = False
     Public progval As Long = 0
@@ -12,7 +12,7 @@
     Private Sub TapeCopy_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-copy"})
-            Me.Close()
+            Close()
             Exit Sub
         End If
         FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
@@ -98,7 +98,7 @@
             Dim th As New Threading.Thread(
                 Sub()
                     Dim sense(63) As Byte
-                    Me.Invoke(Sub() Button1.Enabled = True)
+                    Invoke(Sub() Button1.Enabled = True)
                     Dim readData As Byte()
                     Dim Add_Key As UInt16
                     Dim i As Integer = 0

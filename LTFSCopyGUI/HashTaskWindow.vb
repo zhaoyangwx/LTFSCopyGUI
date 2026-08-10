@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 
 Public Class HashTaskWindow
     Public schema As ltfsindex
@@ -12,7 +12,7 @@ Public Class HashTaskWindow
     Public Event SHA1Changed(f As ltfsindex.file, msg As String)
     Public ProgressMsg As String = ""
     Private ReadOnly _logSessionId As String = $"hash-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
-    Private ReadOnly _pendingUiMessages As New Collections.Concurrent.ConcurrentQueue(Of String)()
+    Private ReadOnly _pendingUiMessages As New Concurrent.ConcurrentQueue(Of String)()
     Private _uiFlushScheduled As Integer
 
     Public Property ErrorCount As Integer = 0
@@ -70,7 +70,7 @@ Public Class HashTaskWindow
                 TextBox1.AppendText(builder.ToString())
             End If
         Catch ex As Exception
-            Diagnostics.Debug.WriteLine($"Hash log UI update failed: {ex}")
+            Debug.WriteLine($"Hash log UI update failed: {ex}")
         Finally
             Threading.Interlocked.Exchange(_uiFlushScheduled, 0)
             If Not _pendingUiMessages.IsEmpty Then ScheduleUiFlush()
@@ -86,41 +86,41 @@ Public Class HashTaskWindow
         End If
         AddHandler HashTask.TaskStarted, Sub(s As String)
                                              PrintMsg(s)
-                                             Me.Invoke(Sub() Button1.Text = "Pause")
+                                             Invoke(Sub() Button1.Text = "Pause")
                                          End Sub
         AddHandler HashTask.TaskPaused, Sub(s As String)
                                             PrintMsg(s)
-                                            Me.Invoke(Sub() Button1.Text = "Resume")
+                                            Invoke(Sub() Button1.Text = "Resume")
                                         End Sub
         AddHandler HashTask.TaskResumed, Sub(s As String)
                                              PrintMsg(s)
-                                             Me.Invoke(Sub() Button1.Text = "Pause")
+                                             Invoke(Sub() Button1.Text = "Pause")
                                          End Sub
         AddHandler HashTask.TaskCancelled, Sub(s As String)
                                                PrintMsg(s)
-                                               Me.Invoke(Sub() Button1.Text = "Start")
+                                               Invoke(Sub() Button1.Text = "Start")
                                            End Sub
         AddHandler HashTask.TaskFinished, Sub(s As String)
                                               PrintMsg(s)
-                                              Me.Invoke(Sub()
-                                                            Button1.Text = "Start"
-                                                            ProgressBar1.Value = ProgressBar1.Maximum
-                                                            ProgressBar2.Value = ProgressBar2.Maximum
-                                                            Dim thEject As New Threading.Thread(
-                                                                Sub()
-                                                                    Dim result As String
-                                                                    Try
-                                                                        result = TapeUtils.EjectTapeDrive(BaseDirectory(0))
-                                                                    Catch ex As Exception
-                                                                        result = ex.ToString
-                                                                    End Try
-                                                                    If result = "" Then result = "Tape Ejected."
-                                                                    Me.Invoke(Sub() PrintMsg(result))
-                                                                    If ErrorCount > 0 Then PrintMsg($"{ErrorCount} errors occured.")
-                                                                End Sub)
-                                                            If CheckBox3.Checked Then thEject.Start()
-                                                            Button3_Click(Nothing, Nothing)
-                                                        End Sub)
+                                              Invoke(Sub()
+                                                         Button1.Text = "Start"
+                                                         ProgressBar1.Value = ProgressBar1.Maximum
+                                                         ProgressBar2.Value = ProgressBar2.Maximum
+                                                         Dim thEject As New Threading.Thread(
+                                                             Sub()
+                                                                 Dim result As String
+                                                                 Try
+                                                                     result = TapeUtils.EjectTapeDrive(BaseDirectory(0))
+                                                                 Catch ex As Exception
+                                                                     result = ex.ToString
+                                                                 End Try
+                                                                 If result = "" Then result = "Tape Ejected."
+                                                                 Invoke(Sub() PrintMsg(result))
+                                                                 If ErrorCount > 0 Then PrintMsg($"{ErrorCount} errors occured.")
+                                                             End Sub)
+                                                         If CheckBox3.Checked Then thEject.Start()
+                                                         Button3_Click(Nothing, Nothing)
+                                                     End Sub)
                                           End Sub
         AddHandler HashTask.SHA1Changed, Sub(f As ltfsindex.file, s As String)
                                              PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {s} {f.fullpath}")
@@ -356,11 +356,11 @@ Public Class HashTaskWindow
                     PrintMsg("Finished")
                     Invoke(Sub()
                                TextBox1.Visible = True
-                               Me.Enabled = True
+                               Enabled = True
                            End Sub)
                 End Sub)
             TextBox1.Visible = False
-            Me.Enabled = False
+            Enabled = False
             th.Start()
         End If
 

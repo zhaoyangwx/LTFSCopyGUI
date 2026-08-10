@@ -1,4 +1,4 @@
-﻿Imports System.Runtime.InteropServices
+Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
 Imports ISCSI
@@ -10,7 +10,7 @@ Public Class iSCSIService
     Public ExtraPartitionCount As Integer = 1
     Public port As UShort = 3261
     Public Event LogPrint(s As String)
-    Public svc As ISCSI.Server.ISCSIServer
+    Public svc As ISCSIServer
     Public target As ISCSITarget
     Public Property LogCommand As Boolean = False
     Private _traceSession As TraceLogSession
@@ -147,7 +147,7 @@ Public Class iSCSIService
             tstop.Wait()
         End Sub
         Public Sub New(handle As IntPtr)
-            AddHandler Me.OnStandardInquiry,
+            AddHandler OnStandardInquiry,
                 Sub(sender As Object, e As StandardInquiryEventArgs)
                     Dim devdata As TapeUtils.BlockDevice = TapeUtils.Inquiry(driveHandle)
                     If devdata Is Nothing Then devdata = New TapeUtils.BlockDevice
@@ -157,7 +157,7 @@ Public Class iSCSIService
                         .ProductIdentification = devdata.ProductId
                     End With
                 End Sub
-            AddHandler Me.OnUnitSerialNumberInquiry,
+            AddHandler OnUnitSerialNumberInquiry,
                 Sub(sender As Object, e As UnitSerialNumberInquiryEventArgs)
                     Dim devdata As TapeUtils.BlockDevice = TapeUtils.Inquiry(driveHandle)
                     If devdata Is Nothing Then devdata = New TapeUtils.BlockDevice

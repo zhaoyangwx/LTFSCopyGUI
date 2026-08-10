@@ -11,8 +11,8 @@ Imports NAudio.MediaFoundation
 Public Class ChangerTool
     Public LoadComplete As Boolean = False
     '<TypeConverter(GetType(ExpandableObjectConverter))>
-    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.MediumChanger), TapeUtils.MediumChanger)))>
-    Public Property LastDeviceList As List(Of TapeUtils.MediumChanger)
+    <TypeConverter(GetType(ListTypeDescriptor(Of List(Of MediumChanger), MediumChanger)))>
+    Public Property LastDeviceList As List(Of MediumChanger)
     Public ReadOnly Property CurrentChanger As MediumChanger
         Get
             If LastDeviceList Is Nothing Then Return Nothing
@@ -28,13 +28,13 @@ Public Class ChangerTool
             If Not LoadComplete Then Exit Property
             If CheckBox1.Checked Then
                 SetUILock(True)
-                Threading.Tasks.Task.Run(Sub()
-                                             RefreshCurrentChanger()
-                                             Me.Invoke(Sub()
-                                                           SwitchChanger()
-                                                           SetUILock(False)
-                                                       End Sub)
-                                         End Sub)
+                Task.Run(Sub()
+                             RefreshCurrentChanger()
+                             Invoke(Sub()
+                                        SwitchChanger()
+                                        SetUILock(False)
+                                    End Sub)
+                         End Sub)
             Else
                 SwitchChanger()
             End If
@@ -46,29 +46,29 @@ Public Class ChangerTool
     Private Sub ChangerTool_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-l"})
-            Me.Close()
+            Close()
             Exit Sub
         End If
         Text = $"ChangerTool - {ApplicationWheels.ApplicationInfo}"
         RefreshMCList()
         SetUILock(True)
-        Threading.Tasks.Task.Run(Sub()
-                                     RefreshCurrentChanger()
-                                     Me.Invoke(Sub()
-                                                   SwitchChanger()
-                                                   SetUILock(False)
-                                               End Sub)
-                                 End Sub)
+        Task.Run(Sub()
+                     RefreshCurrentChanger()
+                     Invoke(Sub()
+                                SwitchChanger()
+                                SetUILock(False)
+                            End Sub)
+                 End Sub)
         LoadComplete = True
     End Sub
     Public Sub RefreshMCList()
         Dim DeviceList As List(Of MediumChanger) = GetMediumChangerList()
         LoadComplete = False
         ListBox1.Items.Clear()
-        Dim DevList As List(Of TapeUtils.MediumChanger)
+        Dim DevList As List(Of MediumChanger)
         DevList = DeviceList
         LastDeviceList = DeviceList
-        For Each D As TapeUtils.MediumChanger In DevList
+        For Each D As MediumChanger In DevList
             ListBox1.Items.Add(D.ToString())
         Next
         ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
@@ -152,7 +152,7 @@ Public Class ChangerTool
             destElement.PrimaryVolumeTagInformation = srcElement.PrimaryVolumeTagInformation
             srcElement.PrimaryVolumeTagInformation = ""
             SetUILock(True)
-            Dim th As New Threading.Thread(
+            Dim th As New Thread(
                 Sub()
                     Dim sense(63) As Byte
                     Dim succ As Boolean = False
@@ -164,28 +164,28 @@ Public Class ChangerTool
                     Finally
                         succ = True
                     End Try
-                    Me.Invoke(Sub()
-                                  If CheckBox1.Checked Then
-                                      Threading.Tasks.Task.Run(
-                                      Sub()
-                                          RefreshCurrentChanger()
-                                          Me.Invoke(Sub()
-                                                        SwitchChanger()
-                                                        SetUILock(False)
-                                                    End Sub)
-                                      End Sub)
-                                  Else
-                                      Me.Invoke(Sub()
-                                                    SwitchChanger()
-                                                    SetUILock(False)
-                                                End Sub)
-                                  End If
-                                  If succ Then
-                                      MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}")
-                                  Else
-                                      MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}")
-                                  End If
-                              End Sub)
+                    Invoke(Sub()
+                               If CheckBox1.Checked Then
+                                   Task.Run(
+                                   Sub()
+                                       RefreshCurrentChanger()
+                                       Invoke(Sub()
+                                                  SwitchChanger()
+                                                  SetUILock(False)
+                                              End Sub)
+                                   End Sub)
+                               Else
+                                   Invoke(Sub()
+                                              SwitchChanger()
+                                              SetUILock(False)
+                                          End Sub)
+                               End If
+                               If succ Then
+                                   MessageBox.Show(New Form With {.TopMost = True}, $"Finished{vbCrLf}{ParseSenseData(sense)}")
+                               Else
+                                   MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}")
+                               End If
+                           End Sub)
                 End Sub)
             th.Start()
         End If
@@ -194,22 +194,22 @@ Public Class ChangerTool
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         SetUILock(True)
-        Threading.Tasks.Task.Run(
+        Task.Run(
             Sub()
                 RefreshCurrentChanger()
-                Me.Invoke(Sub()
-                              SwitchChanger()
-                              SetUILock(False)
-                          End Sub)
+                Invoke(Sub()
+                           SwitchChanger()
+                           SetUILock(False)
+                       End Sub)
             End Sub)
     End Sub
 
     Public Sub SetUILock(Lock As Boolean)
-        Me.Invoke(Sub()
-                      For Each c As Control In Me.Controls
-                          c.Enabled = Not Lock
-                      Next
-                  End Sub)
+        Invoke(Sub()
+                   For Each c As Control In Controls
+                       c.Enabled = Not Lock
+                   Next
+               End Sub)
     End Sub
 
     Private Sub ChangerTool_SizeChanged(sender As Object, e As EventArgs) Handles Me.SizeChanged
@@ -225,7 +225,7 @@ Public Class ChangerTool
 
     Private Sub 排序ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 排序ToolStripMenuItem.Click
         SetUILock(True)
-        Threading.Tasks.Task.Run(
+        Task.Run(
             Sub()
                 RefreshCurrentChanger()
                 Dim drv As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
@@ -268,14 +268,14 @@ Public Class ChangerTool
                                             If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                         Catch ex As Exception
                                             Dim result As DialogResult
-                                            Me.Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
+                                            Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
                                             Select Case result
                                                 Case DialogResult.Ignore
                                                     Exit While
                                                 Case DialogResult.Cancel
-                                                    Me.Invoke(Sub()
-                                                                  SetUILock(False)
-                                                              End Sub)
+                                                    Invoke(Sub()
+                                                               SetUILock(False)
+                                                           End Sub)
                                                     Exit Sub
                                                 Case DialogResult.Retry
                                                     Continue While
@@ -308,14 +308,14 @@ Public Class ChangerTool
                                                 If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                             Catch ex As Exception
                                                 Dim result As DialogResult
-                                                Me.Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
+                                                Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
                                                 Select Case result
                                                     Case DialogResult.Ignore
                                                         Exit While
                                                     Case DialogResult.Cancel
-                                                        Me.Invoke(Sub()
-                                                                      SetUILock(False)
-                                                                  End Sub)
+                                                        Invoke(Sub()
+                                                                   SetUILock(False)
+                                                               End Sub)
                                                         Exit Sub
                                                     Case DialogResult.Retry
                                                         Continue While
@@ -337,9 +337,9 @@ Public Class ChangerTool
                     End If
                     If movecount = 0 Then Exit While
                 End While
-                Me.Invoke(Sub()
-                              SetUILock(False)
-                          End Sub)
+                Invoke(Sub()
+                           SetUILock(False)
+                       End Sub)
             End Sub)
     End Sub
 
@@ -365,7 +365,7 @@ Public Class ChangerTool
                      End If
                      Dim changerPath As String = $"\\.\CHANGER{CurrentChanger.DevIndex}"
                      If CurrentChanger.device IsNot Nothing Then changerPath = CurrentChanger.device.DevicePath
-                     Dim sense As Byte() = TapeUtils.SCSIReadParam(TapeDrive:=changerPath, cdbData:=New Byte() {3, 0, 0, 0, &H12, 0}, paramLen:=18)
+                     Dim sense As Byte() = SCSIReadParam(TapeDrive:=changerPath, cdbData:=New Byte() {3, 0, 0, 0, &H12, 0}, paramLen:=18)
                      Dim ToErase As New List(Of MediumChanger.Element)
                      For Each fe As MediumChanger.Element In FullElement
                          If fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.StorageElement OrElse fe.ElementTypeCode = MediumChanger.Element.ElementTypeCodes.ImportExportElement Then
@@ -420,7 +420,7 @@ Public Class ChangerTool
                                                                   MediumChanger.MoveMedium(changerPath, slot.ElementAddress, drv.ElementAddress, senseReturn, slot.LUN)
                                                                   Return senseReturn
                                                               End Function)
-                                 Threading.Interlocked.Increment(eraseTaskCount)
+                                 Interlocked.Increment(eraseTaskCount)
                                  Task.Run(Sub()
                                               Invoke(Sub() TextBox1.AppendText($"Erase {drvMapping(drv).DevicePath}{vbCrLf}"))
                                               ApplicationWheels.TryExecute(Function() As Byte()
@@ -442,7 +442,7 @@ Public Class ChangerTool
                                               SyncLock finList
                                                   finList.Add(drv)
                                               End SyncLock
-                                              Threading.Interlocked.Decrement(eraseTaskCount)
+                                              Interlocked.Decrement(eraseTaskCount)
                                               eraseFinEvent.Set()
                                           End Sub)
                              Next

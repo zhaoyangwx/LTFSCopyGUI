@@ -425,7 +425,7 @@ Public Class HardDriveDataProvider
     Private Async Function StreamDiskToPipeAsync(path As String, StartLBA As ULong, SectorCount As Long, ct As CancellationToken) As Task
         Dim driveHandle As IntPtr
         If Not TapeUtils.OpenTapeDrive(path, driveHandle) Then
-            Throw New System.ComponentModel.Win32Exception(TapeUtils.GetLastError())
+            Throw New ComponentModel.Win32Exception(TapeUtils.GetLastError())
         End If
         Try
             Dim batchSize As Integer = 128

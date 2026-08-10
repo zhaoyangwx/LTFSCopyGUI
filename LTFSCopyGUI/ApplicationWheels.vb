@@ -10,13 +10,13 @@ Imports Microsoft.Extensions.FileSystemGlobbing
 Imports stdole
 Public Class SerializationHelper
     Public Shared Function GetSerializeString(ByVal c As Object) As String
-        Dim s As New IO.MemoryStream
+        Dim s As New MemoryStream
         Dim b As Formatters.Binary.BinaryFormatter = New Formatters.Binary.BinaryFormatter
         b.Serialize(s, c)
         Return Convert.ToBase64String(s.ToArray())
     End Function
     Public Shared Function FromSerializeString(ByVal d As String) As Object
-        Dim s As New IO.MemoryStream(Convert.FromBase64String(d))
+        Dim s As New MemoryStream(Convert.FromBase64String(d))
         Dim b As Formatters.Binary.BinaryFormatter = New Formatters.Binary.BinaryFormatter
         Return b.Deserialize(s)
     End Function
@@ -27,7 +27,7 @@ Public Class LocalizedDescriptionAttribute
         Return My.Resources.ResourceManager.GetString(key)
     End Function
     Public Sub New(ByVal key As String)
-        MyBase.New(LocalizedDescriptionAttribute.Localize(key))
+        MyBase.New(Localize(key))
     End Sub
 End Class
 
@@ -50,18 +50,18 @@ Public Class SettingImportExport
         End Set
     End Property
     Public Shared Function GetSerializedText() As String
-        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(SettingImportExport))
-        Dim sb As New Text.StringBuilder
-        Dim t As New IO.StringWriter(sb)
+        Dim writer As New XmlSerializer(GetType(SettingImportExport))
+        Dim sb As New StringBuilder
+        Dim t As New StringWriter(sb)
         writer.Serialize(t, New SettingImportExport())
         Return sb.ToString()
     End Function
     Public Shared Sub LoadFromFile(FileName As String)
-        Dim s As SettingImportExport = SettingImportExport.FromXML(IO.File.ReadAllText(FileName))
+        Dim s As SettingImportExport = FromXML(File.ReadAllText(FileName))
     End Sub
     Public Shared Function FromXML(s As String) As SettingImportExport
-        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(SettingImportExport))
-        Dim t As IO.TextReader = New IO.StringReader(s)
+        Dim reader As New XmlSerializer(GetType(SettingImportExport))
+        Dim t As TextReader = New StringReader(s)
         Return CType(reader.Deserialize(t), SettingImportExport)
     End Function
 End Class
@@ -109,7 +109,7 @@ Public Class SerializableDictionary(Of TKey, TValue)
 #End Region
 #Region "IXmlSerializable Members   "
 
-    Public Function GetSchema() As System.Xml.Schema.XmlSchema Implements IXmlSerializable.GetSchema
+    Public Function GetSchema() As Xml.Schema.XmlSchema Implements IXmlSerializable.GetSchema
         Return Nothing
     End Function
 
@@ -117,7 +117,7 @@ Public Class SerializableDictionary(Of TKey, TValue)
     ''' 从对象的 XML 表示形式生成该对象  
     ''' </summary>   
     ''' <param name="reader"></param>   
-    Public Sub ReadXml(ByVal reader As System.Xml.XmlReader) Implements IXmlSerializable.ReadXml
+    Public Sub ReadXml(ByVal reader As Xml.XmlReader) Implements IXmlSerializable.ReadXml
         Dim keySerializer As XmlSerializer = New XmlSerializer(GetType(TKey))
         Dim valueSerializer As XmlSerializer = New XmlSerializer(GetType(TValue))
         Dim wasEmpty As Boolean = reader.IsEmptyElement
@@ -128,7 +128,7 @@ Public Class SerializableDictionary(Of TKey, TValue)
         End If
 
 
-        While (reader.NodeType <> System.Xml.XmlNodeType.EndElement)
+        While (reader.NodeType <> Xml.XmlNodeType.EndElement)
             reader.ReadStartElement("item")
             reader.ReadStartElement("key")
             Dim key As TKey = CType(keySerializer.Deserialize(reader), TKey)
@@ -136,7 +136,7 @@ Public Class SerializableDictionary(Of TKey, TValue)
             reader.ReadStartElement("value")
             Dim value As TValue = CType(valueSerializer.Deserialize(reader), TValue)
             reader.ReadEndElement()
-            Me.Add(key, value)
+            Add(key, value)
             reader.ReadEndElement()
             reader.MoveToContent()
 
@@ -145,10 +145,10 @@ Public Class SerializableDictionary(Of TKey, TValue)
         reader.ReadEndElement()
     End Sub
 
-    Public Sub WriteXml(ByVal writer As System.Xml.XmlWriter) Implements IXmlSerializable.WriteXml
+    Public Sub WriteXml(ByVal writer As Xml.XmlWriter) Implements IXmlSerializable.WriteXml
         Dim keySerializer As XmlSerializer = New XmlSerializer(GetType(TKey))
         Dim valueSerializer As XmlSerializer = New XmlSerializer(GetType(TValue))
-        For Each key As TKey In Me.Keys
+        For Each key As TKey In Keys
             writer.WriteStartElement("item")
             writer.WriteStartElement("key")
             keySerializer.Serialize(writer, key)
@@ -167,7 +167,7 @@ End Class
 Public Class NamedObject
     Public Property Name As String
     <Category("Edit")>
-    Public ReadOnly Property Type As System.Type
+    Public ReadOnly Property Type As Type
         Get
             Return Value.GetType()
         End Get
@@ -336,7 +336,7 @@ Public Class NamedObject
     Public Property AsCollection As List(Of Object)
         Get
             Dim result As New List(Of Object)
-            Dim collection As System.Collections.IEnumerable = TryCast(Value, System.Collections.IEnumerable)
+            Dim collection As IEnumerable = TryCast(Value, IEnumerable)
             If collection Is Nothing Then Return result
             For Each o As Object In collection
                 result.Add(o)
@@ -348,8 +348,8 @@ Public Class NamedObject
         End Set
     End Property
     Public Property Instance As Object
-    Public Property FieldInfo As Reflection.FieldInfo
-    Public Sub New(Name As String, ByVal f As Reflection.FieldInfo, ByVal Instance As Object)
+    Public Property FieldInfo As FieldInfo
+    Public Sub New(Name As String, ByVal f As FieldInfo, ByVal Instance As Object)
         Me.Name = Name
         FieldInfo = f
         Me.Instance = Instance
@@ -368,7 +368,7 @@ Public Class ListTypeDescriptor(Of TColl As IList, TItem)
             If i < coll.Count AndAlso coll(i) IsNot Nothing Then
                 Dim obj As Object = coll(i)
                 Dim myType As Type = obj.GetType()
-                Dim myprops As New List(Of Reflection.PropertyInfo)(myType.GetProperties)
+                Dim myprops As New List(Of PropertyInfo)(myType.GetProperties)
                 'If myprops.Count > 0 Then Name = $": {myprops(0).GetValue(obj)}"
             End If
             props(i) = New ListPropertyDescriptor(Of TColl, TItem)($"Item{CStr(i).PadLeft(digits, "0"c)}{Name}")
@@ -387,7 +387,7 @@ Public Class ListPropertyDescriptor(Of TColl, TItem)
 
     Public Sub New(name As String)
         MyBase.New(name, Nothing)
-        Dim indexStr = System.Text.RegularExpressions.Regex.Match(name, "\d+$").Value
+        Dim indexStr = RegularExpressions.Regex.Match(name, "\d+$").Value
         _index = CInt(indexStr)
     End Sub
 
@@ -486,8 +486,8 @@ Public Class GlobHelper
         Dim b As String
         Dim f As String
         Try
-            b = NormalizePath(System.IO.Path.GetFullPath(basePath))
-            f = NormalizePath(System.IO.Path.GetFullPath(fullPath))
+            b = NormalizePath(Path.GetFullPath(basePath))
+            f = NormalizePath(Path.GetFullPath(fullPath))
         Catch
             Return Nothing
         End Try
@@ -532,8 +532,8 @@ Public Class GlobHelper
             Next
 
             If found Is Nothing Then
-                Dim info As IO.DirectoryInfo = Nothing
-                Try : info = New IO.DirectoryInfo(absPath)
+                Dim info As DirectoryInfo = Nothing
+                Try : info = New DirectoryInfo(absPath)
                 Catch : info = Nothing
                 End Try
 
@@ -800,13 +800,13 @@ Public Module GlobCollector
 End Module
 
 Public NotInheritable Class DisplayHelper
-    Private Shared _font As System.Drawing.Font
-    Public Shared Property DisplayFont As System.Drawing.Font
+    Private Shared _font As Drawing.Font
+    Public Shared Property DisplayFont As Drawing.Font
         Get
             If _font Is Nothing Then Return New Drawing.Font("SimSun", 12.0F, GraphicsUnit.Pixel)
             Return _font
         End Get
-        Set(value As System.Drawing.Font)
+        Set(value As Drawing.Font)
             _font = value
         End Set
     End Property
@@ -848,12 +848,12 @@ Public NotInheritable Class DisplayHelper
         Return result
     End Function
     Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As String) As DialogResult
-        Dim size As System.Drawing.Size = New System.Drawing.Size(200, 90)
+        Dim size As Size = New Size(200, 90)
         Dim inputDialog As Form = New Form()
         inputDialog.StartPosition = FormStartPosition.CenterParent
         inputDialog.AutoScaleMode = AutoScaleMode.Font
         inputDialog.Font = DisplayFont
-        inputDialog.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
+        inputDialog.FormBorderStyle = FormBorderStyle.FixedDialog
         inputDialog.MinimizeBox = False
         inputDialog.MaximizeBox = False
         inputDialog.ClientSize = size
@@ -863,24 +863,24 @@ Public NotInheritable Class DisplayHelper
         promptLabel.Text = Prompt
         promptLabel.AutoSize = True
         inputDialog.Controls.Add(promptLabel)
-        Dim textBox As System.Windows.Forms.TextBox = New TextBox()
-        textBox.Size = New System.Drawing.Size(size.Width - 10, 23)
-        textBox.Location = New System.Drawing.Point(5, 25)
+        Dim textBox As TextBox = New TextBox()
+        textBox.Size = New Size(size.Width - 10, 23)
+        textBox.Location = New Point(5, 25)
         textBox.Text = Response
         inputDialog.Controls.Add(textBox)
         Dim okButton As Button = New Button()
-        okButton.DialogResult = System.Windows.Forms.DialogResult.OK
+        okButton.DialogResult = DialogResult.OK
         okButton.Name = "okButton"
-        okButton.Size = New System.Drawing.Size(75, 23)
+        okButton.Size = New Size(75, 23)
         okButton.Text = $"&OK"
-        okButton.Location = New System.Drawing.Point(size.Width - 80 - 80, 59)
+        okButton.Location = New Point(size.Width - 80 - 80, 59)
         inputDialog.Controls.Add(okButton)
         Dim cancelButton As Button = New Button()
-        cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
+        cancelButton.DialogResult = DialogResult.Cancel
         cancelButton.Name = "cancelButton"
-        cancelButton.Size = New System.Drawing.Size(75, 23)
+        cancelButton.Size = New Size(75, 23)
         cancelButton.Text = $"&Cancel"
-        cancelButton.Location = New System.Drawing.Point(size.Width - 80, 59)
+        cancelButton.Location = New Point(size.Width - 80, 59)
         inputDialog.Controls.Add(cancelButton)
         inputDialog.AcceptButton = okButton
         inputDialog.CancelButton = cancelButton
@@ -901,8 +901,8 @@ End Class
 Public Class DpiAwareListView
     Inherits ListView
 
-    Protected Overrides Sub ScaleControl(factor As System.Drawing.SizeF,
-                                         specified As System.Windows.Forms.BoundsSpecified)
+    Protected Overrides Sub ScaleControl(factor As SizeF,
+                                         specified As BoundsSpecified)
         MyBase.ScaleControl(factor, specified)
 
         If factor.Width = 1.0F Then Return
@@ -930,8 +930,8 @@ Public Class DpiAwareToolStrip
         MyBase.New()
     End Sub
 
-    Protected Overrides Sub ScaleControl(factor As System.Drawing.SizeF,
-                                         specified As System.Windows.Forms.BoundsSpecified)
+    Protected Overrides Sub ScaleControl(factor As SizeF,
+                                         specified As BoundsSpecified)
         MyBase.ScaleControl(factor, specified)
 
         If factor.Width = 1.0F AndAlso factor.Height = 1.0F Then Return
@@ -944,9 +944,9 @@ Public Class DpiAwareToolStrip
         Next
     End Sub
 
-    Private Shared Function ScaleSize(value As System.Drawing.Size,
-                                      factor As System.Drawing.SizeF) As System.Drawing.Size
-        Return New System.Drawing.Size(
+    Private Shared Function ScaleSize(value As Size,
+                                      factor As SizeF) As Size
+        Return New Size(
             Math.Max(1, CInt(Math.Round(value.Width * factor.Width))),
             Math.Max(1, CInt(Math.Round(value.Height * factor.Height))))
     End Function
@@ -1000,7 +1000,7 @@ Partial Public Class ApplicationWheels
             Try
                 sense = command()
             Catch ex As Exception
-                Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                Dim ActiveFrm = GetActiveWindow()
                 Dim dResult As DialogResult
                 ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_Error}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                 Select Case dResult
@@ -1029,7 +1029,7 @@ Partial Public Class ApplicationWheels
                         AutoRetryCount -= 1
                         succ = False
                     Else
-                        Dim ActiveFrm = ApplicationWheels.GetActiveWindow()
+                        Dim ActiveFrm = GetActiveWindow()
                         Dim dResult As DialogResult
                         ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                         Select Case dResult
@@ -1142,7 +1142,7 @@ Public NotInheritable Class FileDropHandler
             Throw New ObjectDisposedException("control")
         End If
 
-        Me._DisposeControl = releaseControl
+        _DisposeControl = releaseControl
         Dim status = New ChangeFilterStruct With {.CbSize = 8}
         If Not ChangeWindowMessageFilterEx(containerControl.Handle, WM_DROPFILES, ChangeFilterAction.MSGFLT_ALLOW, Nothing) Then
             Throw New Win32Exception(Marshal.GetLastWin32Error)
@@ -1161,11 +1161,11 @@ Public NotInheritable Class FileDropHandler
     End Sub
 
     Public Function PreFilterMessage(ByRef m As Message) As Boolean Implements IMessageFilter.PreFilterMessage
-        If ((Me._ContainerControl Is Nothing) OrElse Me._ContainerControl.IsDisposed) Then
+        If ((_ContainerControl Is Nothing) OrElse _ContainerControl.IsDisposed) Then
             Return False
         End If
 
-        If Me._ContainerControl.AllowDrop Then
+        If _ContainerControl.AllowDrop Then
             _ContainerControl.AllowDrop = False
             Return False
         End If
@@ -1185,9 +1185,9 @@ Public NotInheritable Class FileDropHandler
             Loop
 
             DragFinish(handle)
-            Me._ContainerControl.AllowDrop = True
-            Me._ContainerControl.DoDragDrop(fileNames, DragDropEffects.All)
-            Me._ContainerControl.AllowDrop = False
+            _ContainerControl.AllowDrop = True
+            _ContainerControl.DoDragDrop(fileNames, DragDropEffects.All)
+            _ContainerControl.AllowDrop = False
             Return True
         End If
 
@@ -1195,13 +1195,13 @@ Public NotInheritable Class FileDropHandler
     End Function
 
     Public Sub Dispose() Implements IDisposable.Dispose
-        If (Me._ContainerControl Is Nothing) Then
-            If (Me._DisposeControl AndAlso Not Me._ContainerControl.IsDisposed) Then
-                Me._ContainerControl.Dispose()
+        If (_ContainerControl Is Nothing) Then
+            If (_DisposeControl AndAlso Not _ContainerControl.IsDisposed) Then
+                _ContainerControl.Dispose()
             End If
 
             Application.RemoveMessageFilter(Me)
-            Me._ContainerControl = Nothing
+            _ContainerControl = Nothing
         End If
 
     End Sub

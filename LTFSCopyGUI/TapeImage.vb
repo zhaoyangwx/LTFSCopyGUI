@@ -1,4 +1,4 @@
-﻿Imports System.IO
+Imports System.IO
 Imports System.Text
 Public Class TapeStreamMapping
     Public Shared MappingTable As New SerializableDictionary(Of IntPtr, TapeImage)
@@ -19,7 +19,7 @@ Public Class TapeImage
         Public Shared IllegalOpCode As Byte() = {&H70, 0, 5, 0, 0, 0, 0, &H10, 0, 0, 0, 0, &H20, 0, 0, 0, &H94, &H10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     End Class
     <Xml.Serialization.XmlIgnore>
-    Public Property idxFile As IO.FileInfo
+    Public Property idxFile As FileInfo
     <Xml.Serialization.XmlIgnore>
     Public ReadOnly Property idxPath As String
         Get
@@ -89,7 +89,7 @@ Public Class TapeImage
     Public Property PartitionCountOverrideValue As Integer = 0
 
     <Xml.Serialization.XmlIgnore>
-    Public ReadOnly Property CurrentStream As IO.Stream
+    Public ReadOnly Property CurrentStream As Stream
         Get
             Return PartitionMappingStream(Position.PartitionNumber)
         End Get
@@ -109,7 +109,7 @@ Public Class TapeImage
 
     Public Property Compressed As Boolean = True
     Public Property WriteProtect As Boolean = False
-    Private PartitionMappingStream As New Dictionary(Of Integer, IO.Stream)
+    Private PartitionMappingStream As New Dictionary(Of Integer, Stream)
     Public CurrentDatasetID As Integer = 0
     Public CurrentIntraSetBlockOffset As Integer = 0
     Public Const BlockHeaderLen As Integer = 16
@@ -148,33 +148,33 @@ Public Class TapeImage
     End Property
 
     Public Function GetSerializedString() As String
-        Dim writer As New System.Xml.Serialization.XmlSerializer(GetType(TapeImage))
-        Dim sb As New Text.StringBuilder
-        Dim t As New IO.StringWriter(sb)
+        Dim writer As New Xml.Serialization.XmlSerializer(GetType(TapeImage))
+        Dim sb As New StringBuilder
+        Dim t As New StringWriter(sb)
         writer.Serialize(t, Me)
         Return sb.ToString()
     End Function
     Public Shared Function FromXML(s As String) As TapeImage
-        Dim reader As New System.Xml.Serialization.XmlSerializer(GetType(TapeImage))
-        Dim t As IO.TextReader = New IO.StringReader(s)
+        Dim reader As New Xml.Serialization.XmlSerializer(GetType(TapeImage))
+        Dim t As TextReader = New StringReader(s)
         Return CType(reader.Deserialize(t), TapeImage)
     End Function
     Public Sub New()
 
     End Sub
     Public Sub New(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = False)
-        If IO.File.Exists(filename) AndAlso (New IO.FileInfo(filename)).Length = 0 Then
-            IO.File.Delete(filename)
+        If File.Exists(filename) AndAlso (New FileInfo(filename)).Length = 0 Then
+            File.Delete(filename)
         End If
-        If IO.File.Exists(filename) Then
+        If File.Exists(filename) Then
             OpenFile(filename)
         Else
             CreateNewFile(filename, PartitionCount, Compressed)
         End If
     End Sub
     Public Sub OpenFile(filename As String)
-        Dim idx As TapeImage = TapeImage.FromXML(IO.File.ReadAllText(filename))
-        idxFile = New IO.FileInfo(filename)
+        Dim idx As TapeImage = FromXML(File.ReadAllText(filename))
+        idxFile = New FileInfo(filename)
         With idx
             DatesetLength = .DatesetLength
             PartitionMappingFile = .PartitionMappingFile
@@ -211,10 +211,10 @@ Public Class TapeImage
             Dim ToAdd As Stream
             If PartitionMappingFile(id).ToLower().EndsWith(".lcgimg.zst") Then
                 Compressed = True
-                ToAdd = New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open), 9, leaveOpen:=False)
+                ToAdd = New ZstdSharp.CompressionStream(New FileStream(Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open), 9, leaveOpen:=False)
             Else
                 Compressed = False
-                ToAdd = New FileStream(IO.Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1024 * 1024, FileOptions.SequentialScan)
+                ToAdd = New FileStream(Path.Combine(idxPath, PartitionMappingFile(id)), FileMode.Open, FileAccess.ReadWrite, FileShare.None, 1024 * 1024, FileOptions.SequentialScan)
             End If
             PartitionMappingStream.Add(id, ToAdd)
             If ValidLength(id) = 0 Then ValidLength(id) = ToAdd.Length
@@ -247,7 +247,7 @@ Public Class TapeImage
         End If
     End Sub
     Public Sub CreateNewFile(filename As String, Optional ByVal PartitionCount As Integer = 1, Optional ByVal Compressed As Boolean = False)
-        idxFile = New IO.FileInfo(filename)
+        idxFile = New FileInfo(filename)
         Dim name As String = idxFile.Name.Substring(0, idxFile.Name.Length - idxFile.Extension.Length)
         Me.Compressed = Compressed
         PartitionMappingFile = New SerializableDictionary(Of Integer, String)
@@ -262,12 +262,12 @@ Public Class TapeImage
         For i As Integer = 0 To PartitionCount - 1
             Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
-            IO.File.Create(IO.Path.Combine(idxPath, imgfilename)).Close()
+            File.Create(Path.Combine(idxPath, imgfilename)).Close()
             Dim streamtoadd As Stream
             If Me.Compressed Then
-                streamtoadd = New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False)
+                streamtoadd = New ZstdSharp.CompressionStream(New FileStream(Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False)
             Else
-                streamtoadd = New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open)
+                streamtoadd = New FileStream(Path.Combine(idxPath, imgfilename), FileMode.Open)
             End If
             PartitionMappingStream.Add(i, streamtoadd)
             ValidLength.Add(i, 0)
@@ -280,7 +280,7 @@ Public Class TapeImage
         VCR = 0
         MediumSN = $"LV{(New Guid()).ToString().ToUpper().Substring(0, 8)}"
         MediumMFDate = Now.ToString("yyyyMMdd")
-        IO.File.WriteAllText(filename, Me.GetSerializedString())
+        File.WriteAllText(filename, GetSerializedString())
     End Sub
 
     Public Sub ResetPartitionNumber(PartitionCount As Integer)
@@ -295,13 +295,13 @@ Public Class TapeImage
         PartitionEOD = New SerializableDictionary(Of Integer, Long)
         Position = New TapeUtils.PositionData()
         For i As Integer = 0 To PartitionCount - 1
-            Dim imgfilename As String = If(Me.Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
+            Dim imgfilename As String = If(Compressed, $"{name}.{i}.lcgimg.zst", $"{name}.{i}.lcgimg")
             PartitionMappingFile.Add(i, imgfilename)
-            IO.File.Create(IO.Path.Combine(idxPath, imgfilename)).Close()
+            File.Create(Path.Combine(idxPath, imgfilename)).Close()
             If Compressed Then
-                PartitionMappingStream.Add(i, New ZstdSharp.CompressionStream(New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False))
+                PartitionMappingStream.Add(i, New ZstdSharp.CompressionStream(New FileStream(Path.Combine(idxPath, imgfilename), FileMode.Open), 9, leaveOpen:=False))
             Else
-                PartitionMappingStream.Add(i, New FileStream(IO.Path.Combine(idxPath, imgfilename), FileMode.Open))
+                PartitionMappingStream.Add(i, New FileStream(Path.Combine(idxPath, imgfilename), FileMode.Open))
             End If
             FilemarkBlockIndex.Add(i, New List(Of Long))
             PartitionEOD.Add(i, 0)
@@ -318,7 +318,7 @@ Public Class TapeImage
                 VolumeChanged = False
                 VCR = CUInt(VCR + 1)
             End If
-            IO.File.WriteAllText(idxFile.FullName, Me.GetSerializedString())
+            File.WriteAllText(idxFile.FullName, GetSerializedString())
             For i As Integer = 0 To PartitionCount - 1
                 PartitionMappingStream(i).Close()
             Next

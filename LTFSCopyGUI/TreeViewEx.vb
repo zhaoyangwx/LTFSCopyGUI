@@ -1,4 +1,4 @@
-﻿Public Structure TV_ITEM
+Public Structure TV_ITEM
     Public mask As UInteger
     Public hItem As IntPtr
     Public state As UInteger
@@ -30,21 +30,21 @@ Public Class TreeViewEx
         Return i << 12
     End Function
 
-    Protected Overrides Sub OnHandleCreated(e As System.EventArgs)
+    Protected Overrides Sub OnHandleCreated(e As EventArgs)
         Dim style As UInteger = TVS_EX_DOUBLEBUFFER Or TVS_EX_PARTIALCHECKBOXES
-        SendMessage(Me.Handle, TVM_SETEXTENDEDSTYLE, New IntPtr(style), New IntPtr(style))
+        SendMessage(Handle, TVM_SETEXTENDEDSTYLE, New IntPtr(style), New IntPtr(style))
         MyBase.OnHandleCreated(e)
     End Sub
 
     Public Sub SetNodeCheckState(node As TreeNode, state As CheckState)
         If state = CheckState.Indeterminate Then
-            If System.Environment.OSVersion.Version.Major >= 6 Then
+            If Environment.OSVersion.Version.Major >= 6 Then
                 Dim it As TV_ITEM = Nothing
                 it.mask = TVIF_HANDLE Or TVIF_STATE
                 it.hItem = node.Handle
                 it.stateMask = TVIS_STATEIMAGEMASK
                 it.state = CUInt(INDEXTOSTATEIMAGEMASK(3)) 'indeterminate
-                SendMessage(Me.Handle, TVM_SETITEM, IntPtr.Zero, it)
+                SendMessage(Handle, TVM_SETITEM, IntPtr.Zero, it)
             Else
                 node.Checked = False
             End If

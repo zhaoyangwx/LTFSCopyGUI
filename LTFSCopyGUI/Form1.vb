@@ -1,4 +1,4 @@
-﻿Imports System.ComponentModel
+Imports System.ComponentModel
 
 Public Class Form1
     Public schema As ltfsindex
@@ -76,7 +76,7 @@ Public Class Form1
                     Dim ran As New Random
                     Dim stepval As Integer = ran.Next(100, 1000)
 
-                    Dim p As New System.Text.StringBuilder()
+                    Dim p As New Text.StringBuilder()
                     Dim fdir As String = TextBox3.Text
                     If fdir.EndsWith("\") Then fdir = fdir.TrimEnd("\"c)
                     fdir &= "\"
@@ -396,7 +396,7 @@ Public Class Form1
         If patt <> "" Then
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
-            Dim result As New System.Text.StringBuilder
+            Dim result As New Text.StringBuilder
 
             If Not IO.Directory.Exists(dir) Then Exit Sub
             Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
@@ -425,7 +425,7 @@ Public Class Form1
                     While True
                         Threading.Thread.Sleep(200)
                         Dim exitflag As Boolean = (progval >= progmax)
-                        Me.Invoke(
+                        Invoke(
                             Sub()
                                 TextBox2.Text = "Search for " & patt & " in file "
                                 TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
@@ -444,7 +444,7 @@ Public Class Form1
     Private Sub 错误检查ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 错误检查ToolStripMenuItem.Click
         Enabled = False
         Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
-        Dim result As New System.Text.StringBuilder
+        Dim result As New Text.StringBuilder
 
         If Not IO.Directory.Exists(dir) Then Exit Sub
         Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
@@ -490,7 +490,7 @@ Public Class Form1
                 While True
                     Threading.Thread.Sleep(200)
                     Dim exitflag As Boolean = (progval >= progmax)
-                    Me.Invoke(
+                    Invoke(
                         Sub()
                             TextBox2.Text = "Checking files..."
                             TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
@@ -514,7 +514,7 @@ Public Class Form1
             Dim result As New ltfsindex
             result._directory = New List(Of ltfsindex.directory)
             result._directory.Add(New ltfsindex.directory With {.name = $"Search_{patt}"})
-            Dim infoText As New System.Text.StringBuilder
+            Dim infoText As New Text.StringBuilder
             If Not IO.Directory.Exists(dir) Then Exit Sub
             Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
             Dim progmax As Integer = f.Length
@@ -602,7 +602,7 @@ Public Class Form1
                     While True
                         Threading.Thread.Sleep(200)
                         Dim exitflag As Boolean = (progval >= progmax)
-                        Me.Invoke(
+                        Invoke(
                             Sub()
                                 TextBox2.Text = "Search for " & patt & " in file "
                                 TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
@@ -624,7 +624,7 @@ Public Class Form1
         If patt <> "" Then
             Enabled = False
             Dim dir As String = TextBox1.Text.Substring(0, TextBox1.Text.LastIndexOf("\"))
-            Dim infoText As New System.Text.StringBuilder
+            Dim infoText As New Text.StringBuilder
             If Not IO.Directory.Exists(dir) Then Exit Sub
             Dim f() As IO.FileInfo = New IO.DirectoryInfo(dir).GetFiles("*.schema")
             Dim progmax As Integer = f.Length
@@ -672,7 +672,7 @@ Public Class Form1
                     While True
                         Threading.Thread.Sleep(200)
                         Dim exitflag As Boolean = (progval >= progmax)
-                        Me.Invoke(
+                        Invoke(
                             Sub()
                                 TextBox2.Text = "Search for " & patt & " in file "
                                 TextBox2.AppendText(progval & "/" & progmax & vbCrLf)
@@ -727,7 +727,7 @@ Public Class Form1
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas"})
-            Me.Close()
+            Close()
             Exit Sub
         End If
         RefreshDeviceList()

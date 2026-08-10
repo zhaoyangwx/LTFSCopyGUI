@@ -260,7 +260,7 @@ Public Class FTPService
     End Function
     Public Class NoPasswdMembershipProvider
         Inherits AnonymousMembershipProvider
-        Implements AccountManagement.IMembershipProviderAsync
+        Implements IMembershipProviderAsync
         Public Overloads Shared Function CreateAnonymousPrincipal(email As String) As ClaimsPrincipal
             Dim anonymousClaims As List(Of Claim) =
                {New Claim(ClaimsIdentity.DefaultNameClaimType, "anonymous"),
@@ -317,12 +317,12 @@ Public Class FTPService
 
         With Services.BuildServiceProvider
             ftpServerHost = .GetRequiredService(Of IFtpServerHost)
-            ftpServerHost.StartAsync(Threading.CancellationToken.None)
+            ftpServerHost.StartAsync(CancellationToken.None)
         End With
     End Sub
 
     Public Sub StopService()
-        ftpServerHost.StopAsync(Threading.CancellationToken.None).Wait()
+        ftpServerHost.StopAsync(CancellationToken.None).Wait()
     End Sub
     Public Shared Function ParseTimeStamp(t As String) As Date
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z

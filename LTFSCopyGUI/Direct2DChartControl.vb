@@ -119,7 +119,7 @@ Public Class Direct2DChartControl
 
         BackColor = SystemColors.Window
         ForeColor = SystemColors.ControlText
-        Font = New Font(DefaultFontFamily, 9.0F, System.Drawing.FontStyle.Regular, GraphicsUnit.Point)
+        Font = New Font(DefaultFontFamily, 9.0F, Drawing.FontStyle.Regular, GraphicsUnit.Point)
         TabStop = False
 
         ReallocateDataBuffers(DefaultMaxSamples)
@@ -461,7 +461,7 @@ Public Class Direct2DChartControl
             _renderTarget.BeginDraw()
             _renderTarget.SetDpi(_dpiX, _dpiY)
             _renderTarget.AntialiasMode = AntialiasMode.PerPrimitive
-            _renderTarget.TextAntialiasMode = Vortice.Direct2D1.TextAntialiasMode.Grayscale
+            _renderTarget.TextAntialiasMode = Direct2D1.TextAntialiasMode.Grayscale
             _renderTarget.Clear(ToColor4(BackColor))
             DrawChart()
 
@@ -506,10 +506,10 @@ Public Class Direct2DChartControl
 
     Private Sub EnsureDeviceResources()
         If _factory Is Nothing Then
-            _factory = D2D1.D2D1CreateFactory(Of ID2D1Factory)(Vortice.Direct2D1.FactoryType.SingleThreaded)
+            _factory = D2D1.D2D1CreateFactory(Of ID2D1Factory)(Direct2D1.FactoryType.SingleThreaded)
         End If
         If _writeFactory Is Nothing Then
-            _writeFactory = DWrite.DWriteCreateFactory(Of IDWriteFactory)(Vortice.DirectWrite.FactoryType.Shared)
+            _writeFactory = DWrite.DWriteCreateFactory(Of IDWriteFactory)(DirectWrite.FactoryType.Shared)
         End If
         If _axisLabelLeftFormat Is Nothing Then CreateTextFormats()
     End Sub
@@ -520,7 +520,7 @@ Public Class Direct2DChartControl
         Dim pixelSize As Size = GetClientPixelSize()
         If pixelSize.Width <= 0 OrElse pixelSize.Height <= 0 Then Return
 
-        Dim pixelFormat = New PixelFormat(Format.B8G8R8A8_UNorm, Vortice.DCommon.AlphaMode.Ignore)
+        Dim pixelFormat = New PixelFormat(Format.B8G8R8A8_UNorm, DCommon.AlphaMode.Ignore)
         Dim renderProperties = New RenderTargetProperties(pixelFormat)
         renderProperties.DpiX = _dpiX
         renderProperties.DpiY = _dpiY
@@ -534,7 +534,7 @@ Public Class Direct2DChartControl
         _renderTarget = _factory.CreateHwndRenderTarget(renderProperties, hwndProperties)
         _renderTarget.SetDpi(_dpiX, _dpiY)
         _renderTarget.AntialiasMode = AntialiasMode.PerPrimitive
-        _renderTarget.TextAntialiasMode = Vortice.Direct2D1.TextAntialiasMode.Grayscale
+        _renderTarget.TextAntialiasMode = Direct2D1.TextAntialiasMode.Grayscale
         _clientPixelSize = pixelSize
         CreateBrushes()
     End Sub
@@ -548,27 +548,27 @@ Public Class Direct2DChartControl
         If Font IsNot Nothing Then sizeInDips = Math.Max(8.0F, Font.SizeInPoints * DipsPerInch / 72.0F)
         Dim weight As FontWeight = If(Font IsNot Nothing AndAlso Font.Bold, FontWeight.Bold, FontWeight.Normal)
 
-        _axisLabelLeftFormat = _writeFactory.CreateTextFormat(familyName, weight, Vortice.DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisLabelLeftFormat = _writeFactory.CreateTextFormat(familyName, weight, DirectWrite.FontStyle.Normal, sizeInDips)
         _axisLabelLeftFormat.TextAlignment = TextAlignment.Trailing
         _axisLabelLeftFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisLabelLeftFormat.WordWrapping = WordWrapping.NoWrap
 
-        _axisLabelRightFormat = _writeFactory.CreateTextFormat(familyName, weight, Vortice.DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisLabelRightFormat = _writeFactory.CreateTextFormat(familyName, weight, DirectWrite.FontStyle.Normal, sizeInDips)
         _axisLabelRightFormat.TextAlignment = TextAlignment.Leading
         _axisLabelRightFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisLabelRightFormat.WordWrapping = WordWrapping.NoWrap
 
-        _axisTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, Vortice.DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
         _axisTitleFormat.TextAlignment = TextAlignment.Center
         _axisTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisTitleFormat.WordWrapping = WordWrapping.NoWrap
 
-        _chartTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, Vortice.DirectWrite.FontStyle.Normal, sizeInDips)
+        _chartTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
         _chartTitleFormat.TextAlignment = TextAlignment.Center
         _chartTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _chartTitleFormat.WordWrapping = WordWrapping.NoWrap
 
-        _xTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, Vortice.DirectWrite.FontStyle.Normal, sizeInDips)
+        _xTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
         _xTitleFormat.TextAlignment = TextAlignment.Center
         _xTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _xTitleFormat.WordWrapping = WordWrapping.NoWrap

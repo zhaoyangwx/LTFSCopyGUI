@@ -111,9 +111,9 @@ Public Class LTFSConfigurator
     Public ReadOnly Property AvailableDriveLetters As List(Of Char)
         Get
             Dim Result As New List(Of Char)
-            Dim drv() As IO.DriveInfo = System.IO.DriveInfo.GetDrives()
+            Dim drv() As DriveInfo = DriveInfo.GetDrives()
             Dim UsedList As New List(Of Integer)
-            For Each d As IO.DriveInfo In drv
+            For Each d As DriveInfo In drv
                 UsedList.Add(Asc(d.Name(0)))
             Next
             For c As Integer = Asc("D") To Asc("Z")
@@ -171,7 +171,7 @@ Public Class LTFSConfigurator
     Private Sub LTFSConfigurator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-c"})
-            Me.Close()
+            Close()
             Exit Sub
         End If
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
@@ -367,20 +367,20 @@ Public Class LTFSConfigurator
                         End If
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
-                    Me.Invoke(Sub()
-                                  PrintCommandResult(cdb, param, sense)
-                              End Sub)
+                    Invoke(Sub()
+                               PrintCommandResult(cdb, param, sense)
+                           End Sub)
                     If succ Then
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}OK{vbCrLf}Bytesreturned = {BytesReturned}")
+                        Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}OK{vbCrLf}Bytesreturned = {BytesReturned}")
                     Else
                         Dim ErrCode As Integer = TapeUtils.GetLastError()
-                        Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}FAIL{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
+                        Dim win32ex As New Win32Exception(ErrCode)
+                        Invoke(Sub() TextBoxDebugOutput.Text &= $"{vbCrLf}FAIL{vbCrLf}ErrCode: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}")
                     End If
                 Catch ex As Exception
                     MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
                 End Try
-                Me.Invoke(Sub() Panel2.Enabled = True)
+                Invoke(Sub() Panel2.Enabled = True)
             End Sub)
         Panel2.Enabled = False
         th.Start()
@@ -653,7 +653,7 @@ Public Class LTFSConfigurator
                      If ResultB.Length = 0 Then
 
                      Else
-                         Result = System.Text.Encoding.UTF8.GetString(ResultB)
+                         Result = Encoding.UTF8.GetString(ResultB)
                      End If
 
                      Invoke(Sub()
@@ -757,7 +757,7 @@ Public Class LTFSConfigurator
 
     End Function
     Private Sub ButtonDebugReadInfo_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadInfo.Click
-        Me.Enabled = False
+        Enabled = False
         Select Case TapeUtils.DriverTypeSetting
             Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
@@ -788,18 +788,18 @@ Public Class LTFSConfigurator
                                         End Try
                                         TextBoxDebugOutput.Select(0, 0)
                                         TextBoxDebugOutput.ScrollToCaret()
-                                        If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+                                        If Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
                                             Dim fn As String
                                             Try
                                                 fn = CMInfo.ApplicationSpecificData.Barcode
                                                 If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
                                                 If fn Is Nothing Then fn = ""
-                                                IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
+                                                File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
                                             Catch ex As Exception
 
                                             End Try
                                         End If
-                                        Me.Enabled = True
+                                        Enabled = True
                                     End Sub)
                          End Sub)
             Case TapeUtils.DriverType.SLR3
@@ -807,7 +807,7 @@ Public Class LTFSConfigurator
                 Task.Run(Sub()
                              Invoke(Sub() TextBoxDebugOutput.AppendText("SLR Tape is NOT supported with ReadInfo function.".PadRight(74) & vbCrLf))
                          End Sub)
-                Me.Enabled = True
+                Enabled = True
         End Select
 
     End Sub
@@ -824,19 +824,19 @@ Public Class LTFSConfigurator
                         Try
                             Dim Attr As TapeUtils.MAMAttribute = TapeUtils.MAMAttribute.FromTapeDrive(ConfTapeDrive, i, CByte(NumericUpDownPartitionNum.Value))
                             If Attr IsNot Nothing Then
-                                Me.Invoke(Sub()
-                                              TextBoxDebugOutput.Text = IOManager.Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
-                                              TextBoxDebugOutput.AppendText(Attr.AsNumeric & vbCrLf & vbCrLf)
-                                              TextBoxDebugOutput.AppendText(Attr.AsString & vbCrLf & vbCrLf)
-                                              TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(Attr.RawData) & vbCrLf)
-                                          End Sub)
+                                Invoke(Sub()
+                                           TextBoxDebugOutput.Text = IOManager.Byte2Hex({Attr.ID_MSB, Attr.ID_LSB}) & " LEN=" & Attr.RawData.Length & vbCrLf & vbCrLf
+                                           TextBoxDebugOutput.AppendText(Attr.AsNumeric & vbCrLf & vbCrLf)
+                                           TextBoxDebugOutput.AppendText(Attr.AsString & vbCrLf & vbCrLf)
+                                           TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(Attr.RawData) & vbCrLf)
+                                       End Sub)
                                 MAMData.Content.Add(Attr)
                             Else
                                 If (i And &H7F) = 0 Then
                                     Dim i2 As UInt16 = i
-                                    Me.Invoke(Sub()
-                                                  TextBoxDebugOutput.Text = IOManager.Byte2Hex({CByte(i2 >> 8 And &HFF), CByte(i2 And &HFF)}) & " LEN=0"
-                                              End Sub)
+                                    Invoke(Sub()
+                                               TextBoxDebugOutput.Text = IOManager.Byte2Hex({CByte(i2 >> 8 And &HFF), CByte(i2 And &HFF)}) & " LEN=0"
+                                           End Sub)
                                 End If
 
                             End If
@@ -847,14 +847,14 @@ Public Class LTFSConfigurator
                     Next
                     MessageBox.Show(New Form With {.TopMost = True}, "Dump Complete")
                     MAMData.SaveSerializedText(SaveFileDialog1.FileName)
-                    Me.Invoke(Sub() ButtonDebugDumpMAM.Enabled = True)
+                    Invoke(Sub() ButtonDebugDumpMAM.Enabled = True)
                 End Sub)
             th.Start()
         End If
     End Sub
 
     Private Sub ButtonDebugRewind_Click(sender As Object, e As EventArgs) Handles ButtonDebugRewind.Click
-        Me.Enabled = False
+        Enabled = False
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {1, 0, 0, 0, 0, 0}
@@ -872,13 +872,13 @@ Public Class LTFSConfigurator
                      End If
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
 
     End Sub
 
     Private Sub ButtonDebugReadBlock_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBlock.Click
-        Me.Enabled = False
+        Enabled = False
         Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
         Task.Run(Sub()
                      Dim sense(63) As Byte
@@ -914,7 +914,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonDebugReadBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugReadBuffer.Click
-        Me.Enabled = False
+        Enabled = False
         Dim selectedBufferPage As String = Convert.ToString(ComboBoxBufferPage.SelectedItem)
         Dim BufferID As Byte = Convert.ToByte(selectedBufferPage.Substring(0, 2), 16)
         Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
@@ -924,10 +924,10 @@ Public Class LTFSConfigurator
                                 TextBoxDebugOutput.Text = "Buffer len=" & DumpData.Length & vbCrLf
                                 SaveFileDialog2.FileName = selectedBufferPage & ".bin"
                                 If SaveFileDialog2.ShowDialog = DialogResult.OK Then
-                                    IO.File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
+                                    File.WriteAllBytes(SaveFileDialog2.FileName, DumpData)
                                 End If
                                 TextBoxDebugOutput.AppendText(IOManager.Byte2Hex(DumpData, True))
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
     End Sub
@@ -946,7 +946,7 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub ButtonDebugLocate_Click(sender As Object, e As EventArgs) Handles ButtonDebugLocate.Click
-        Me.Enabled = False
+        Enabled = False
         Dim blk As ULong = CULng(NumericUpDownBlockNum.Value)
         Dim partition As Byte = CByte(NumericUpDownPartitionNum.Value)
         Dim timeout As Integer = Integer.Parse(TextBoxTimeoutValue.Text)
@@ -978,7 +978,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
                      Invoke(Sub()
                                 TextBoxDebugOutput.Text = result
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
 
@@ -1016,7 +1016,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     Public Operation_Cancel_Flag As Boolean = False
     Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            If New IO.DirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", IO.SearchOption.TopDirectoryOnly).Length > 0 Then
+            If New DirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", SearchOption.TopDirectoryOnly).Length > 0 Then
                 MessageBox.Show(New Form With {.TopMost = True}, "File exist: *.bin; Cancelled.")
                 Exit Sub
             End If
@@ -1103,18 +1103,18 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub ButtonDebugDumpIndex_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpIndex.Click
-        Me.Enabled = False
+        Enabled = False
         Task.Run(Sub()
                      Try
                          TapeUtils.Locate(ConfTapeDrive, 3, 0, TapeUtils.LocateDestType.FileMark)
                          TapeUtils.ReadBlock(ConfTapeDrive)
                          Dim data As Byte() = TapeUtils.ReadToFileMark(ConfTapeDrive)
                          Dim outputfile As String = "LTFSIndex_" & Now.ToString("yyyyMMdd_HHmmss.fffffff") & ".schema"
-                         If Not IO.Directory.Exists(My.Settings.schemaPath) Then
-                             IO.Directory.CreateDirectory(My.Settings.schemaPath)
+                         If Not Directory.Exists(My.Settings.schemaPath) Then
+                             Directory.CreateDirectory(My.Settings.schemaPath)
                          End If
-                         outputfile = IO.Path.Combine(My.Settings.schemaPath, outputfile)
-                         IO.File.WriteAllBytes(outputfile, data)
+                         outputfile = Path.Combine(My.Settings.schemaPath, outputfile)
+                         File.WriteAllBytes(outputfile, data)
                          Form1.Invoke(Sub()
                                           Form1.TextBox1.Text = outputfile
                                           Form1.LoadSchemaFile()
@@ -1143,8 +1143,8 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                 param.Barcode = TapeUtils.ReadBarcode(driveHandle)
                 Dim Confirm As Boolean = False
                 Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"MKLTFS"}
-                msDialog.Top = CInt(Me.Top + Me.Height / 2 - msDialog.Height / 2)
-                msDialog.Left = CInt(Me.Left + Me.Width / 2 - msDialog.Width / 2)
+                msDialog.Top = CInt(Top + Height / 2 - msDialog.Height / 2)
+                msDialog.Left = CInt(Left + Width / 2 - msDialog.Width / 2)
                 While Not Confirm
                     If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
                     If msDialog.ShowDialog() = DialogResult.Cancel Then Exit Sub
@@ -1183,7 +1183,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                    TextBoxDebugOutput.AppendText("Format failed.")
                                    Panel1.Enabled = True
                                End Sub)
-                        Me.Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_FmtFail}{vbCrLf}{Message}"))
                     End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey, param.WORMMode)
             Catch ex As Exception
                 TapeUtils.CloseTapeDrive(driveHandle)
@@ -1196,9 +1196,9 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles ButtonLTFSWriter.Click
         Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {ConfTapeDrive}"
-        Dim psexecpath As String = IO.Path.Combine(Application.StartupPath, "PsExec64.exe")
+        Dim psexecpath As String = Path.Combine(Application.StartupPath, "PsExec64.exe")
         Try
-            If IO.File.Exists(psexecpath) Then
+            If File.Exists(psexecpath) Then
                 Process.Start(psexecpath, $"-accepteula -s -i -d {appcmd}")
             Else
                 Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {ConfTapeDrive}"})
@@ -1271,155 +1271,155 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H0, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_SupportedLogPagesPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x00.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x00.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x02"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H2, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_WriteErrorCountersLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x02.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x02.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x03"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H3, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ReadErrorCountersLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x03.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x03.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x0C"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &HC, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_SequentialAccessDeviceLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x0C.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x0C.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x0D"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &HD, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TemperatureLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x0D.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x0D.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x11"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H11, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataTransferDeviceStatusLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x11.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x11.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x12"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H12, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeAlertResponseLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x12.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x12.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x13"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H13, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_RequestedRecoveryLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x13.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x13.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x14"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H14, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatisticsLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x14.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x14.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x15"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H15, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ServiceBuffersInformationLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x15.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x15.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x16"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H16, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeDiagnosticLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x16.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x16.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x17"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H17, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_VolumeStatisticsLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x17.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x17.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x18"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H18, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_ProtocolSpecificPortLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x18.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x18.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x1B"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H1B, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x1B.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x1B.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x2E"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H2E, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeAlertLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x2E.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x2E.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x30"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H30, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeUsageLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x30.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x30.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x31"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H31, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_TapeCapacityLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x31.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x31.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x32"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H32, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DataCompressionHPLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x32.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x32.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x33"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H33, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceWellnessLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x33.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x33.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x34"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H34, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_PerformanceDataLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x34.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x34.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x35"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H35, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DTDeviceErrorLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x35.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x35.xml"), pdata.GetSerializedText())
 #End Region
 #Region "0x3E"
                      logdata = TapeUtils.LogSense(ConfTapeDrive, &H3E, 0, PageControl:=1)
                      pdata = TapeUtils.PageData.CreateDefault(TapeUtils.PageData.DefaultPages.HPLTO6_DeviceStatusLogPage, logdata)
                      Invoke(Sub() TextBoxDebugOutput.AppendText(pdata.GetSummary()))
-                     If Not IO.Directory.Exists(My.Settings.logPagesPath) Then IO.Directory.CreateDirectory(My.Settings.logPagesPath)
-                     IO.File.WriteAllText(IO.Path.Combine(My.Settings.logPagesPath, "0x3E.xml"), pdata.GetSerializedText())
+                     If Not Directory.Exists(My.Settings.logPagesPath) Then Directory.CreateDirectory(My.Settings.logPagesPath)
+                     File.WriteAllText(Path.Combine(My.Settings.logPagesPath, "0x3E.xml"), pdata.GetSerializedText())
 #End Region
                      Invoke(Sub() Panel1.Enabled = True)
                  End Sub)
@@ -1429,12 +1429,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     Public PageItem As New List(Of TapeUtils.PageData)
     Private Sub TabControl1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles TabControl1.SelectedIndexChanged
         If TabControl1.SelectedTab Is TabPageLog Then
-            If IO.Directory.Exists(My.Settings.logPagesPath) Then
+            If Directory.Exists(My.Settings.logPagesPath) Then
                 ComboBox4.Items.Clear()
                 PageItem.Clear()
-                For Each f As IO.FileInfo In New IO.DirectoryInfo(My.Settings.logPagesPath).GetFiles
+                For Each f As FileInfo In New DirectoryInfo(My.Settings.logPagesPath).GetFiles
                     Try
-                        Dim pdata As TapeUtils.PageData = TapeUtils.PageData.FromXML(IO.File.ReadAllText(f.FullName))
+                        Dim pdata As TapeUtils.PageData = TapeUtils.PageData.FromXML(File.ReadAllText(f.FullName))
                         PageItem.Add(pdata)
                         ComboBox4.Items.Add($"0x{Hex(pdata.PageCode).PadLeft(2, "0"c)} - {pdata.Name}")
                         ComboBox5.SelectedIndex = 1
@@ -1585,7 +1585,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                         WERLPageLen += 4
                                         WERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H88, CByte((WERLPageLen >> 8) And &HFF), CByte(WERLPageLen And &HFF), &H0}, paramLen:=WERLPageLen)
                                     End SyncLock
-                                    Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                    Dim WERLData As String() = Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                                     info = ""
                                     Try
                                         For ch As Integer = 4 To WERLData.Length - 5 Step 5
@@ -1712,8 +1712,8 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                              RERLPageLen += 4
                              RERLPage = TapeUtils.SCSIReadParam(TapeDrive:=ConfTapeDrive, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
                          End SyncLock
-                         Dim WERLData As String() = System.Text.Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
-                         Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                         Dim WERLData As String() = Encoding.ASCII.GetString(WERLPage, 4, WERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                         Dim RERLData As String() = Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                          result.AppendLine($"Write Error Rate Log")
                          result.AppendLine($"  Datasets Written     : {WERLData(0)}")
                          result.AppendLine($"  CWI-4 Sets Written   : {WERLData(1)}")
@@ -1834,10 +1834,10 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
     Private Sub BrowseBinaryFileToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles BrowseBinaryFileToolStripMenuItem.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-            Me.Enabled = False
+            Enabled = False
             Dim CMInfo As TapeUtils.CMParser = Nothing
             Try
-                CMInfo = New TapeUtils.CMParser() With {.a_CMBuffer = IO.File.ReadAllBytes(OpenFileDialog1.FileName)}
+                CMInfo = New TapeUtils.CMParser() With {.a_CMBuffer = File.ReadAllBytes(OpenFileDialog1.FileName)}
                 CMInfo.RunParse()
             Catch ex As Exception
                 TextBoxDebugOutput.AppendText("CM Data Parsing Failed." & vbCrLf)
@@ -1858,12 +1858,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
             End Try
             TextBoxDebugOutput.Select(0, 0)
             TextBoxDebugOutput.ScrollToCaret()
-            Me.Enabled = True
+            Enabled = True
         End If
     End Sub
 
     Private Sub ReadThroughDiagnosticCommandToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ReadThroughDiagnosticCommandToolStripMenuItem.Click
-        Me.Enabled = False
+        Enabled = False
         TextBoxDebugOutput.Text = ""
         Task.Run(Sub()
                      Dim CMInfo As TapeUtils.CMParser = Nothing
@@ -1895,18 +1895,18 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                          End Try
                          TextBoxDebugOutput.Select(0, 0)
                          TextBoxDebugOutput.ScrollToCaret()
-                         If IO.Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
+                         If Directory.Exists(My.Application.Info.DirectoryPath & "\Info") Then
                              Dim fn As String
                              Try
                                  fn = CMInfo.ApplicationSpecificData.Barcode
                                  If fn Is Nothing OrElse fn.Length = 0 Then fn = CMInfo.CartridgeMfgData.CartridgeSN
                                  If fn Is Nothing Then fn = ""
-                                 IO.File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
+                                 File.WriteAllText($"{My.Application.Info.DirectoryPath}\Info\{fn}.txt", TextBoxDebugOutput.Text)
                              Catch ex As Exception
 
                              End Try
                          End If
-                         Me.Enabled = True
+                         Enabled = True
                      End Sub)
                  End Sub)
     End Sub
@@ -2009,7 +2009,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub ReInitializeToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ReInitializeToolStripMenuItem.Click
-        Me.Enabled = False
+        Enabled = False
         Task.Run(Sub()
                      Dim cdbData As Byte() = {4, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
@@ -2023,13 +2023,13 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
                      Invoke(Sub()
                                 PrintCommandResult(cdbData, Nothing, senseData)
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
     End Sub
 
     Private Sub QuickEraseToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles QuickEraseToolStripMenuItem.Click
-        Me.Enabled = False
+        Enabled = False
         Task.Run(Sub()
                      Dim cdbData As Byte() = {&H19, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
@@ -2043,7 +2043,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
                      Invoke(Sub()
                                 PrintCommandResult(cdbData, Nothing, senseData)
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
     End Sub
@@ -2102,19 +2102,19 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                         TapeUtils.CloseTapeDrive(handle)
                     End SyncLock
                     Marshal.Copy(dataBufferPtr, dataData, 0, dataData.Length)
-                    Me.Invoke(Sub()
-                                  PrintCommandResult(cdbData, dataData, senseBuffer)
-                              End Sub)
+                    Invoke(Sub()
+                               PrintCommandResult(cdbData, dataData, senseBuffer)
+                           End Sub)
                     Marshal.FreeHGlobal(dataBufferPtr)
                     If succ Then
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "OK")
+                        Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "OK")
                     Else
-                        Me.Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "FAIL")
+                        Invoke(Sub() TextBoxDebugOutput.Text &= vbCrLf & "FAIL")
                     End If
                 Catch ex As Exception
                     MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
                 End Try
-                Me.Invoke(Sub() Panel2.Enabled = True)
+                Invoke(Sub() Panel2.Enabled = True)
             End Sub)
         Panel2.Enabled = False
         th.Start()
@@ -2126,7 +2126,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                 Dim fname As String = OpenFileDialog1.FileName
                 Dim th As New Threading.Thread(
                     Sub()
-                        Dim fs As New IO.FileStream(fname, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                        Dim fs As New FileStream(fname, FileMode.Open, FileAccess.Read, FileShare.Read)
                         If fs.Length = 0 Then
                             TapeUtils.WriteFileMark(ConfTapeDrive)
                             Invoke(Sub()
@@ -2238,7 +2238,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                             FileNum += 1
                             BlkNum = CInt(Block)
                         End If
-                        If Me Is Nothing OrElse Me.Visible = False OrElse (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                        If Me Is Nothing OrElse Visible = False OrElse (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
                             Exit While
                         End If
                         If log Then
@@ -2283,8 +2283,8 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
         Dim addfrm As New SettingPanel With {.SelectedObject = newdev}
         If addfrm.ShowDialog = DialogResult.OK Then
             If newdev.DevicePath = "" Then newdev.DevicePath = $"\\.\{newdev.DeviceType}{newdev.DevIndex}"
-            If Not IO.Directory.Exists(My.Settings.customDevicePath) Then IO.Directory.CreateDirectory(My.Settings.customDevicePath)
-            IO.File.WriteAllText(IO.Path.Combine(My.Settings.customDevicePath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
+            If Not Directory.Exists(My.Settings.customDevicePath) Then Directory.CreateDirectory(My.Settings.customDevicePath)
+            File.WriteAllText(Path.Combine(My.Settings.customDevicePath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
         End If
     End Sub
     Public Class devListBrowser
@@ -2305,26 +2305,26 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                 Dim fname As String = OpenFileDialog1.FileName
                 Dim th As New Threading.Thread(
                     Sub()
-                        Dim finfo As New IO.FileInfo(fname)
-                        Dim reader As NAudio.Wave.WaveStream
+                        Dim finfo As New FileInfo(fname)
+                        Dim reader As WaveStream
                         Select Case finfo.Extension.ToLower()
                             Case ".mp3"
-                                reader = New NAudio.Wave.Mp3FileReader(fname)
+                                reader = New Mp3FileReader(fname)
                             Case ".aiff"
-                                reader = New NAudio.Wave.AiffFileReader(fname)
+                                reader = New AiffFileReader(fname)
                             Case ".flac"
                                 reader = New NAudio.Flac.FlacReader(fname)
                             Case Else
                                 Try
-                                    reader = New NAudio.Wave.MediaFoundationReader(fname)
+                                    reader = New MediaFoundationReader(fname)
                                 Catch ex As Exception
-                                    reader = New NAudio.Wave.AudioFileReader(fname)
+                                    reader = New AudioFileReader(fname)
                                 End Try
                         End Select
                         Dim tempfile As String = My.Computer.FileSystem.GetTempFileName()
                         WaveFileWriter.CreateWaveFile(tempfile, reader)
 
-                        Dim fs As New IO.FileStream(tempfile, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read)
+                        Dim fs As New FileStream(tempfile, FileMode.Open, FileAccess.Read, FileShare.Read)
                         If fs.Length = 0 Then
                             TapeUtils.WriteFileMark(ConfTapeDrive)
                             Invoke(Sub()
@@ -2343,7 +2343,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                    End Sub)
                         End If
                         fs.Close()
-                        IO.File.Delete(tempfile)
+                        File.Delete(tempfile)
                     End Sub)
                 Panel1.Enabled = False
                 th.Start()
@@ -2457,13 +2457,13 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
         Dim addfrm As New SettingPanel With {.SelectedObject = newdev}
         If addfrm.ShowDialog = DialogResult.OK Then
             If newdev.DevicePath = "" Then newdev.DevicePath = $"\\.\{newdev.DeviceType}{newdev.DevIndex}"
-            If Not IO.Directory.Exists(My.Settings.customDevicePath) Then IO.Directory.CreateDirectory(My.Settings.customDevicePath)
-            IO.File.WriteAllText(IO.Path.Combine(My.Settings.customDevicePath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
+            If Not Directory.Exists(My.Settings.customDevicePath) Then Directory.CreateDirectory(My.Settings.customDevicePath)
+            File.WriteAllText(Path.Combine(My.Settings.customDevicePath, $"{newdev.DevicePath.Replace("\", "_").Replace("/", "_").Replace(":", "_")}.xml"), newdev.GetSerializedText())
         End If
     End Sub
 
     Private Sub ButtonReportZones_Click(sender As Object, e As EventArgs) Handles ButtonReportZones.Click
-        Me.Enabled = False
+        Enabled = False
         Dim opt As Byte = IOManager.HexStringToByteArray(ComboBoxReportOptions.Text.Substring(0, 2))(0)
         Task.Run(Sub()
                      Dim drvhandle As IntPtr
@@ -2491,14 +2491,14 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      TapeUtils.CloseTapeDrive(drvhandle)
                      Invoke(Sub()
                                 TextBoxDebugOutput.Text = output.ToString()
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
 
     End Sub
 
     Private Sub ButtonCloseAllZones_Click(sender As Object, e As EventArgs) Handles ButtonCloseAllZones.Click
-        Me.Enabled = False
+        Enabled = False
         Task.Run(Sub()
                      Dim senseData(63) As Byte
                      Dim cdb As Byte() = {&H94, &H1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}
@@ -2512,12 +2512,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonReadLBA_Click(sender As Object, e As EventArgs) Handles ButtonReadLBA.Click
-        Me.Enabled = False
+        Enabled = False
         Dim StartLBA As ULong = CULng(NumericUpDownLBA.Value)
         Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
         Task.Run(Sub()
@@ -2541,13 +2541,13 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      End SyncLock
                      Marshal.FreeHGlobal(data)
                      PrintCommandResult(cdb, result, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonReportZone_Click(sender As Object, e As EventArgs) Handles ButtonReportZone.Click
         Dim StartLBA As ULong = CULng(NumericUpDownLBA.Value)
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
@@ -2587,14 +2587,14 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Invoke(Sub()
                                 PrintCommandResult(cdb, data1, senseData)
                                 TextBoxDebugOutput.Text = output.ToString() & TextBoxDebugOutput.Text
-                                Me.Enabled = True
+                                Enabled = True
                             End Sub)
                  End Sub)
 
     End Sub
 
     Private Sub ButtonOpenZone_Click(sender As Object, e As EventArgs) Handles ButtonOpenZone.Click
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
@@ -2618,12 +2618,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonCloseZone_Click(sender As Object, e As EventArgs) Handles ButtonCloseZone.Click
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
@@ -2647,12 +2647,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonFinishZone_Click(sender As Object, e As EventArgs) Handles ButtonFinishZone.Click
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
@@ -2676,12 +2676,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonResetWritePointer_Click(sender As Object, e As EventArgs) Handles ButtonResetWritePointer.Click
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Task.Run(Sub()
                      Dim senseData(63) As Byte
@@ -2705,12 +2705,12 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Marshal.FreeHGlobal(data)
 
                      PrintCommandResult(cdb, Nothing, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
     End Sub
 
     Private Sub ButtonWriteRandom_Click(sender As Object, e As EventArgs) Handles ButtonWriteRandom.Click
-        Me.Enabled = False
+        Enabled = False
         Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
         Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
         Dim count As Integer = CInt(NumericUpDownWriteLBACount.Value)
@@ -2739,7 +2739,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
 
                      PrintCommandResult(cdb, toSend, senseData)
-                     Invoke(Sub() Me.Enabled = True)
+                     Invoke(Sub() Enabled = True)
                  End Sub)
 
 
@@ -2747,7 +2747,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
     Private Sub ButtonDumpLBA_Click(sender As Object, e As EventArgs) Handles ButtonDumpLBA.Click
         If SaveFileDialog2.ShowDialog() = DialogResult.OK Then
-            Me.Enabled = False
+            Enabled = False
             Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
             Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
             Dim blocklim As Integer = 524288
@@ -2764,7 +2764,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                          Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
                      End Sub)
             Task.Run(Async Function()
-                         Using fs As New IO.FileStream(SaveFileDialog2.FileName, IO.FileMode.Create)
+                         Using fs As New FileStream(SaveFileDialog2.FileName, FileMode.Create)
                              Dim senseData(63) As Byte
                              Dim handle As IntPtr
                              TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
@@ -2819,7 +2819,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                              TapeUtils.CloseTapeDrive(handle)
                          End Using
                          fin = True
-                         Invoke(Sub() Me.Enabled = True)
+                         Invoke(Sub() Enabled = True)
                      End Function)
         End If
     End Sub
@@ -2830,7 +2830,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
     Private Sub ButtonRestoreLBA_Click(sender As Object, e As EventArgs) Handles ButtonRestoreLBA.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-            Me.Enabled = False
+            Enabled = False
             Dim LBA As ULong = CULng(NumericUpDownLBA.Value)
             Dim sectorSize As Integer = CInt(NumericUpDownSectorSize.Value)
             Dim blocklim As Integer = 524288
@@ -2847,7 +2847,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                          Invoke(Sub() TextBoxDebugOutput.Text = progmsg)
                      End Sub)
             Task.Run(Async Function()
-                         Using fs As New IO.FileStream(OpenFileDialog1.FileName, IO.FileMode.Open)
+                         Using fs As New FileStream(OpenFileDialog1.FileName, FileMode.Open)
 
                              Dim senseData(63) As Byte
                              Dim handle As IntPtr
@@ -2877,7 +2877,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                                                                                                                    Return True
                                                                                                                                End Function, 30) Then
                                                             Dim ErrCode As Integer = TapeUtils.GetLastError()
-                                                            Dim win32ex As New System.ComponentModel.Win32Exception(ErrCode)
+                                                            Dim win32ex As New Win32Exception(ErrCode)
                                                             Select Case MessageBox.Show($"WinError{vbCrLf}Code: 0x{ErrCode.ToString("X8")}h{vbCrLf}{win32ex.Message}",
                                                                                         My.Resources.ResText_Warning,
                                                                                         MessageBoxButtons.AbortRetryIgnore,
@@ -2926,13 +2926,13 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                              TapeUtils.CloseTapeDrive(handle)
                          End Using
                          fin = True
-                         Invoke(Sub() Me.Enabled = True)
+                         Invoke(Sub() Enabled = True)
                      End Function)
         End If
     End Sub
 
     Private Sub ButtonBOT_Click(sender As Object, e As EventArgs) Handles ButtonBOT.Click
-        Me.Enabled = False
+        Enabled = False
         Select Case TapeUtils.DriverTypeSetting
             Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
@@ -2940,7 +2940,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                              Try
                                  CMInfo = New TapeUtils.CMParser(ConfTapeDrive)
                              Catch
-                                 Me.Enabled = True
+                                 Enabled = True
                                  Exit Sub
                              End Try
                              Invoke(Sub()
@@ -2956,16 +2956,16 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                                 End Select
                                             End If
                                         End With
-                                        Me.Enabled = True
+                                        Enabled = True
                                     End Sub)
                          End Sub)
             Case Else
-                Me.Enabled = True
+                Enabled = True
         End Select
     End Sub
 
     Private Sub ButtonEOT_Click(sender As Object, e As EventArgs) Handles ButtonEOT.Click
-        Me.Enabled = False
+        Enabled = False
         Select Case TapeUtils.DriverTypeSetting
             Case TapeUtils.DriverType.LTO, TapeUtils.DriverType.IBM3592
                 Dim CMInfo As TapeUtils.CMParser = Nothing
@@ -2973,7 +2973,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                              Try
                                  CMInfo = New TapeUtils.CMParser(ConfTapeDrive)
                              Catch
-                                 Me.Enabled = True
+                                 Enabled = True
                                  Exit Sub
                              End Try
                              Invoke(Sub()
@@ -2985,27 +2985,27 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                                 End Select
                                             End If
                                         End With
-                                        Me.Enabled = True
+                                        Enabled = True
                                     End Sub)
                          End Sub)
             Case Else
-                Me.Enabled = True
+                Enabled = True
         End Select
     End Sub
 
     Private Sub ButtonDebugWriteBuffer_Click(sender As Object, e As EventArgs) Handles ButtonDebugWriteBuffer.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-            Me.Enabled = False
+            Enabled = False
             Dim selectedBufferPage As String = Convert.ToString(ComboBoxBufferPage.SelectedItem)
             Dim BufferID As Byte = Convert.ToByte(selectedBufferPage.Substring(0, 2), 16)
             Dim Mode As Byte = CByte(NumericUpDownRBMode.Value)
             Task.Run(Sub()
-                         Dim BufferData As Byte() = IO.File.ReadAllBytes(OpenFileDialog1.FileName)
+                         Dim BufferData As Byte() = File.ReadAllBytes(OpenFileDialog1.FileName)
                          TapeUtils.WriteBuffer(ConfTapeDrive, BufferID, Mode, BufferData)
                          Invoke(Sub()
                                     TextBoxDebugOutput.Text = "Buffer len=" & BufferData.Length & vbCrLf
                                     TextBoxDebugOutput.Text &= IOManager.Byte2Hex(BufferData, True)
-                                    Me.Enabled = True
+                                    Enabled = True
                                 End Sub)
                      End Sub)
         End If
@@ -3134,7 +3134,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                     RERLPageLen += 4
                                     RERLPage = TapeUtils.SCSIReadParam(handle:=handle, cdbData:=New Byte() {&H1C, &H1, &H87, CByte((RERLPageLen >> 8) And &HFF), CByte(RERLPageLen And &HFF), &H0}, paramLen:=RERLPageLen)
                                 End SyncLock
-                                Dim RERLData As String() = System.Text.Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
+                                Dim RERLData As String() = Encoding.ASCII.GetString(RERLPage, 4, RERLPage.Length - 4).Split({vbCr, vbLf, vbTab}, StringSplitOptions.RemoveEmptyEntries)
                                 info = ""
                                 Try
                                     For ch As Integer = 5 To RERLData.Length - 5 Step 5
