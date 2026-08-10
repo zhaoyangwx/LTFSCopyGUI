@@ -437,7 +437,7 @@
     <value>Chart1</value>
   </data>
   <data name="&gt;&gt;Chart1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.DataVisualization.Charting.Chart, System.Windows.Forms.DataVisualization, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35</value>
+    <value>LTFSCopyGUI.Direct2DChartControl, LTFSCopyGUI</value>
   </data>
   <data name="&gt;&gt;Chart1.Parent" xml:space="preserve">
     <value>SplitContainer2.Panel2</value>

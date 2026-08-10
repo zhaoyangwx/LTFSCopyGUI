@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.microsoft.com/packaging/2010/07/manifest" Target="/SharpGen.Runtime.nuspec" Id="RF96F24B3A69B7B8F" />
+  <Relationship Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="/package/services/metadata/core-properties/60699f6c8b674fde989afee90218627e.psmdcp" Id="R0D189D552DACB7A1" />
+</Relationships>

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config id="SharpGen.Runtime.COM" xmlns="urn:SharpGen.Config">
+  <assembly />
+  <include-prolog>
+    // Use unicode
+    #define UNICODE
+
+    // for SAL annotations
+    #define _PREFAST_
+
+    // To force GUID to be declared
+    #define INITGUID
+
+    #define _ALLOW_KEYWORD_MACROS
+
+    // Wrap all declspec for code-gen
+    #define __declspec(x) __attribute__((annotate(#x)))
+  
+</include-prolog>
+  <naming />
+  <extension>
+    <define struct="SharpGen.Runtime.Result" sizeof="4" primitive="true" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" primitive="true" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" primitive="true" />
+    <define struct="SharpGen.Runtime.NativeLong" sizeof="8" primitive="true" />
+    <define struct="SharpGen.Runtime.NativeULong" sizeof="8" primitive="true" />
+    <define struct="SharpGen.Runtime.RawBool" sizeof="4" />
+    <define interface="SharpGen.Runtime.IUnknown" native="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectVtbl" />
+    <define interface="SharpGen.Runtime.IInspectable" native="SharpGen.Runtime.WinRTObject" shadow="SharpGen.Runtime.InspectableShadow" vtbl="SharpGen.Runtime.InspectableVtbl" />
+    <define enum="System.IO.SeekOrigin" underlying="System.UInt32" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.VariantFullType" sizeof="2" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" />
+    <define struct="SharpGen.Runtime.NativeLong" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.NativeULong" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.FunctionCallback" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define interface="SharpGen.Runtime.IUnknown" native="SharpGen.Runtime.ComObject" shadow="SharpGen.Runtime.ComObjectShadow" vtbl="SharpGen.Runtime.ComObjectVtbl" callback="true" />
+    <define interface="SharpGen.Runtime.IInspectable" native="SharpGen.Runtime.WinRTObject" shadow="SharpGen.Runtime.InspectableShadow" vtbl="SharpGen.Runtime.InspectableVtbl" callback="true" />
+    <define enum="System.IO.SeekOrigin" underlying="uint" sizeof="4" />
+    <define struct="SharpGen.Runtime.RawBool" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Result" sizeof="4" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.PointerSize" sizeof="8" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="true" />
+    <define struct="SharpGen.Runtime.Win32.VariantFullType" sizeof="2" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.Variant" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define enum="SharpGen.Runtime.Win32.LockType" underlying="int" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.CommitFlags" underlying="int" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.StorageStatisticsFlags" underlying="int" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.PropertyBagMetadataType" underlying="int" sizeof="4" />
+    <define enum="SharpGen.Runtime.Win32.ErrorCode" underlying="int" sizeof="4" />
+    <define struct="SharpGen.Runtime.Win32.SecurityAttributes" sizeof="16" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.StorageStatistics" sizeof="80" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.PropertyKey" sizeof="20" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.PropertyBagMetadata" sizeof="36" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define struct="SharpGen.Runtime.Win32.ExceptionInfo" sizeof="52" align="0" marshal="false" static-marshal="false" custom-new="false" primitive="false" />
+    <define interface="SharpGen.Runtime.Win32.IClassFactory" vtbl="SharpGen.Runtime.Win32.IClassFactoryVtbl" callback="false" />
+    <define interface="SharpGen.Runtime.Win32.IEnumUnknown" vtbl="SharpGen.Runtime.Win32.IEnumUnknownVtbl" callback="false" />
+    <define interface="SharpGen.Runtime.Win32.IEnumString" vtbl="SharpGen.Runtime.Win32.IEnumStringVtbl" callback="false" />
+    <define interface="SharpGen.Runtime.Win32.IStreamBase" native="SharpGen.Runtime.Win32.ComStreamBase" vtbl="SharpGen.Runtime.Win32.IStreamBaseVtbl" callback="true" />
+    <define interface="SharpGen.Runtime.Win32.IStream" native="SharpGen.Runtime.Win32.ComStream" vtbl="SharpGen.Runtime.Win32.IStreamVtbl" callback="true" />
+    <define interface="SharpGen.Runtime.Win32.IPropertyBag2" vtbl="SharpGen.Runtime.Win32.IPropertyBag2Vtbl" callback="false" />
+    <define interface="SharpGen.Runtime.Win32.IErrorLog" vtbl="SharpGen.Runtime.Win32.IErrorLogVtbl" callback="false" />
+    <define interface="SharpGen.Runtime.Win32.IPropertyStore" vtbl="SharpGen.Runtime.Win32.IPropertyStoreVtbl" callback="false" />
+  </extension>
+  <bindings>
+    <bind from="void" to="void" source="SharpGen.Runtime" />
+    <bind from="int" to="int" source="SharpGen.Runtime" />
+    <bind from="unsigned int" to="uint" source="SharpGen.Runtime" />
+    <bind from="short" to="short" source="SharpGen.Runtime" />
+    <bind from="unsigned short" to="ushort" source="SharpGen.Runtime" />
+    <bind from="unsigned char" to="byte" source="SharpGen.Runtime" />
+    <bind from="long" to="SharpGen.Runtime.NativeLong" source="SharpGen.Runtime" />
+    <bind from="unsigned long" to="SharpGen.Runtime.NativeULong" source="SharpGen.Runtime" />
+    <bind from="long long" to="long" source="SharpGen.Runtime" />
+    <bind from="longlong" to="long" source="SharpGen.Runtime" />
+    <bind from="unsigned long long" to="ulong" source="SharpGen.Runtime" />
+    <bind from="unsigned longlong" to="ulong" source="SharpGen.Runtime" />
+    <bind from="float" to="float" source="SharpGen.Runtime" />
+    <bind from="double" to="double" source="SharpGen.Runtime" />
+    <bind from="size_t" to="SharpGen.Runtime.PointerSize" source="SharpGen.Runtime" />
+    <bind from="ptrdiff_t" to="SharpGen.Runtime.PointerSize" source="SharpGen.Runtime" />
+    <bind from="bool" to="bool" marshal="byte" source="SharpGen.Runtime" />
+    <bind from="__function__stdcall" to="SharpGen.Runtime.FunctionCallback" source="SharpGen.Runtime" />
+    <bind from="GUID" to="System.Guid" source="SharpGen.Runtime" />
+    <bind from="HSTRING" to="System.IntPtr" source="SharpGen.Runtime" />
+    <bind from="IUnknown" to="SharpGen.Runtime.IUnknown" source="SharpGen.Runtime" />
+    <bind from="IInspectable" to="SharpGen.Runtime.IInspectable" source="SharpGen.Runtime" />
+    <bind from="SHARPGEN_RUNTIME_SEEKORIGIN" to="System.IO.SeekOrigin" source="sharpgen-runtime-com" />
+    <bind from="INT_PTR" to="System.IntPtr" source="sharpgen-runtime-com" />
+    <bind from="UINT_PTR" to="System.UIntPtr" source="sharpgen-runtime-com" />
+    <bind from="LONG_PTR" to="System.IntPtr" source="sharpgen-runtime-com" />
+    <bind from="ULONG_PTR" to="System.UIntPtr" source="sharpgen-runtime-com" />
+    <bind from="HANDLE_PTR" to="System.IntPtr" source="sharpgen-runtime-com" />
+    <bind from="BOOL" to="SharpGen.Runtime.RawBool" source="sharpgen-runtime-com" />
+    <bind from="HANDLE" to="System.IntPtr" source="sharpgen-runtime-com" />
+    <bind from="HRESULT" to="SharpGen.Runtime.Result" source="sharpgen-runtime-com" />
+    <bind from="SIZE_T" to="SharpGen.Runtime.PointerSize" source="sharpgen-runtime-com" />
+    <bind from="SSIZE_T" to="SharpGen.Runtime.PointerSize" source="sharpgen-runtime-com" />
+    <bind from="ULARGE_INTEGER" to="ulong" source="sharpgen-runtime-com" />
+    <bind from="LARGE_INTEGER" to="long" source="sharpgen-runtime-com" />
+    <bind from="FILETIME" to="long" source="sharpgen-runtime-com" />
+    <bind from="DWORD" to="int" source="sharpgen-runtime-com" />
+    <bind from="ULONG" to="uint" source="sharpgen-runtime-com" />
+    <bind from="LONG" to="int" source="sharpgen-runtime-com" />
+    <bind from="VARTYPE" to="SharpGen.Runtime.Win32.VariantFullType" source="sharpgen-runtime-com" />
+    <bind from="VARIANT" to="SharpGen.Runtime.Win32.Variant" source="sharpgen-runtime-com" />
+    <bind from="PROPVARIANT" to="SharpGen.Runtime.Win32.Variant" source="sharpgen-runtime-com" />
+    <bind from="DISPPARAMS" to="System.Runtime.InteropServices.ComTypes.DISPPARAMS" source="sharpgen-runtime-com" />
+    <bind from="LOCKTYPE" to="SharpGen.Runtime.Win32.LockType" source="Objidlbase" />
+    <bind from="STGC" to="SharpGen.Runtime.Win32.CommitFlags" source="wtypes" />
+    <bind from="STATFLAG" to="SharpGen.Runtime.Win32.StorageStatisticsFlags" source="wtypes" />
+    <bind from="PROPBAG2_TYPE" to="SharpGen.Runtime.Win32.PropertyBagMetadataType" source="ocidl" />
+    <bind from="SHARPGEN_RUNTIME_COM_ERRORCODE" to="SharpGen.Runtime.Win32.ErrorCode" source="sharpgen-runtime-com-ext" />
+    <bind from="SECURITY_ATTRIBUTES" to="SharpGen.Runtime.Win32.SecurityAttributes" source="minwinbase" />
+    <bind from="STATSTG" to="SharpGen.Runtime.Win32.StorageStatistics" source="Objidlbase" />
+    <bind from="PROPERTYKEY" to="SharpGen.Runtime.Win32.PropertyKey" source="wtypes" />
+    <bind from="PROPBAG2" to="SharpGen.Runtime.Win32.PropertyBagMetadata" source="ocidl" />
+    <bind from="EXCEPINFO" to="SharpGen.Runtime.Win32.ExceptionInfo" source="oaidl" />
+    <bind from="IClassFactory" to="SharpGen.Runtime.Win32.IClassFactory" source="Unknwnbase" />
+    <bind from="IEnumUnknown" to="SharpGen.Runtime.Win32.IEnumUnknown" source="Objidlbase" />
+    <bind from="IEnumString" to="SharpGen.Runtime.Win32.IEnumString" source="Objidlbase" />
+    <bind from="ISequentialStream" to="SharpGen.Runtime.Win32.IStreamBase" source="Objidlbase" />
+    <bind from="IStream" to="SharpGen.Runtime.Win32.IStream" source="Objidlbase" />
+    <bind from="IPropertyBag2" to="SharpGen.Runtime.Win32.IPropertyBag2" source="ocidl" />
+    <bind from="IErrorLog" to="SharpGen.Runtime.Win32.IErrorLog" source="oaidl" />
+    <bind from="IPropertyStore" to="SharpGen.Runtime.Win32.IPropertyStore" source="propsys" />
+  </bindings>
+  <mapping>
+    <map doc="void" name="void" />
+    <map doc="int" name="int" />
+    <map doc="unsigned int" name="uint" />
+    <map doc="short" name="short" />
+    <map doc="unsigned short" name="ushort" />
+    <map doc="unsigned char" name="byte" />
+    <map doc="long" name="SharpGen.Runtime.NativeLong" />
+    <map doc="unsigned long" name="SharpGen.Runtime.NativeULong" />
+    <map doc="long long" name="long" />
+    <map doc="longlong" name="long" />
+    <map doc="unsigned long long" name="ulong" />
+    <map doc="unsigned longlong" name="ulong" />
+    <map doc="float" name="float" />
+    <map doc="double" name="double" />
+    <map doc="size_t" name="SharpGen.Runtime.PointerSize" />
+    <map doc="ptrdiff_t" name="SharpGen.Runtime.PointerSize" />
+    <map doc="bool" name="bool" />
+    <map doc="__function__stdcall" name="SharpGen.Runtime.FunctionCallback" />
+    <map doc="GUID" name="System.Guid" />
+    <map doc="HSTRING" name="System.IntPtr" />
+    <map doc="IUnknown" name="SharpGen.Runtime.IUnknown" />
+    <map doc="IInspectable" name="SharpGen.Runtime.IInspectable" />
+    <map doc="SHARPGEN_RUNTIME_SEEKORIGIN" name="System.IO.SeekOrigin" />
+    <map doc="INT_PTR" name="System.IntPtr" />
+    <map doc="UINT_PTR" name="System.UIntPtr" />
+    <map doc="LONG_PTR" name="System.IntPtr" />
+    <map doc="ULONG_PTR" name="System.UIntPtr" />
+    <map doc="HANDLE_PTR" name="System.IntPtr" />
+    <map doc="BOOL" name="SharpGen.Runtime.RawBool" />
+    <map doc="HANDLE" name="System.IntPtr" />
+    <map doc="HRESULT" name="SharpGen.Runtime.Result" />
+    <map doc="SIZE_T" name="SharpGen.Runtime.PointerSize" />
+    <map doc="SSIZE_T" name="SharpGen.Runtime.PointerSize" />
+    <map doc="ULARGE_INTEGER" name="ulong" />
+    <map doc="LARGE_INTEGER" name="long" />
+    <map doc="FILETIME" name="long" />
+    <map doc="DWORD" name="int" />
+    <map doc="ULONG" name="uint" />
+    <map doc="LONG" name="int" />
+    <map doc="VARTYPE" name="SharpGen.Runtime.Win32.VariantFullType" />
+    <map doc="VARIANT" name="SharpGen.Runtime.Win32.Variant" />
+    <map doc="PROPVARIANT" name="SharpGen.Runtime.Win32.Variant" />
+    <map doc="DISPPARAMS" name="System.Runtime.InteropServices.ComTypes.DISPPARAMS" />
+    <map doc="S_OK" name="SharpGen.Runtime.Result.Ok" />
+    <map doc="FALSE" name="SharpGen.Runtime.Result.False" />
+    <map doc="NULL" name="&lt;c&gt;null&lt;/c&gt;" />
+    <map doc="LOCKTYPE" name="SharpGen.Runtime.Win32.LockType" />
+    <map doc="STGC" name="SharpGen.Runtime.Win32.CommitFlags" />
+    <map doc="STATFLAG" name="SharpGen.Runtime.Win32.StorageStatisticsFlags" />
+    <map doc="PROPBAG2_TYPE" name="SharpGen.Runtime.Win32.PropertyBagMetadataType" />
+    <map doc="SHARPGEN_RUNTIME_COM_ERRORCODE" name="SharpGen.Runtime.Win32.ErrorCode" />
+    <map doc="SECURITY_ATTRIBUTES" name="SharpGen.Runtime.Win32.SecurityAttributes" />
+    <map doc="STATSTG" name="SharpGen.Runtime.Win32.StorageStatistics" />
+    <map doc="PROPERTYKEY" name="SharpGen.Runtime.Win32.PropertyKey" />
+    <map doc="PROPBAG2" name="SharpGen.Runtime.Win32.PropertyBagMetadata" />
+    <map doc="EXCEPINFO" name="SharpGen.Runtime.Win32.ExceptionInfo" />
+    <map doc="IClassFactory" name="SharpGen.Runtime.Win32.IClassFactory" />
+    <map doc="IEnumUnknown" name="SharpGen.Runtime.Win32.IEnumUnknown" />
+    <map doc="IEnumString" name="SharpGen.Runtime.Win32.IEnumString" />
+    <map doc="ISequentialStream" name="SharpGen.Runtime.Win32.IStreamBase" />
+    <map doc="IStream" name="SharpGen.Runtime.Win32.IStream" />
+    <map doc="IPropertyBag2" name="SharpGen.Runtime.Win32.IPropertyBag2" />
+    <map doc="IErrorLog" name="SharpGen.Runtime.Win32.IErrorLog" />
+    <map doc="IPropertyStore" name="SharpGen.Runtime.Win32.IPropertyStore" />
+  </mapping>
+</config>

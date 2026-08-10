@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Vortice.DXGI</id>
+    <version>2.4.2</version>
+    <authors>Amer Koleci</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <description>A .NET bindings for DXGI</description>
+    <copyright>Copyright © Amer Koleci and Contributors</copyright>
+    <tags>Vortice.Windows Vortice Graphics gamedev Direct3D DirectX Core Standard Game Direct3D11 Direct3D12 XAudio2 XInput Dxc DirectML</tags>
+    <repository type="git" url="https://github.com/amerkoleci/Vortice.Windows" commit="2feee0fc9c67a8335e8d2129c2654f3f00b58366" />
+    <dependencies>
+      <group targetFramework="net6.0">
+        <dependency id="Vortice.DirectX" version="2.4.2" exclude="Build,Analyzers" />
+        <dependency id="SharpGen.Runtime" version="2.0.0-beta.13" exclude="Build,Analyzers" />
+        <dependency id="SharpGen.Runtime.COM" version="2.0.0-beta.13" exclude="Build,Analyzers" />
+        <dependency id="Vortice.Mathematics" version="1.4.25" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Vortice.DirectX" version="2.4.2" exclude="Build,Analyzers" />
+        <dependency id="SharpGen.Runtime" version="2.0.0-beta.13" exclude="Build,Analyzers" />
+        <dependency id="SharpGen.Runtime.COM" version="2.0.0-beta.13" exclude="Build,Analyzers" />
+        <dependency id="Vortice.Mathematics" version="1.4.25" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

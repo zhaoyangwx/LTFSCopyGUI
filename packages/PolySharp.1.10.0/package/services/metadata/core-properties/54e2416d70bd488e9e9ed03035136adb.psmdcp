@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<coreProperties xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.openxmlformats.org/package/2006/metadata/core-properties">
+  <dc:creator>Sergio Pedri</dc:creator>
+  <dc:description>PolySharp provides generated, source-only polyfills for C# language features, to easily use all runtime-agnostic features downlevel</dc:description>
+  <dc:identifier>PolySharp</dc:identifier>
+  <version>1.10.0</version>
+  <keywords>dotnet net netcore netstandard csharp library generator polyfill roslyn</keywords>
+  <lastModifiedBy>NuGet.Packaging, Version=6.3.0.131, Culture=neutral, PublicKeyToken=31bf3856ad364e35;</lastModifiedBy>
+</coreProperties>

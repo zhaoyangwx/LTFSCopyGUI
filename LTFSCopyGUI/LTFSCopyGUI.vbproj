@@ -110,6 +110,9 @@
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Bcl.HashCode, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
     <Reference Include="Blake3.Retro">
       <HintPath>..\packages\Blake3.Retro\Blake3.Retro.dll</HintPath>
     </Reference>
@@ -272,6 +275,10 @@
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.0\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Security.Cryptography.Algorithms, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Security.Cryptography.Algorithms.4.3.1\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
       <Private>True</Private>
@@ -311,6 +318,24 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="SharpGen.Runtime, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a7c0d43f556c6402, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpGen.Runtime.2.0.0-beta.13\lib\net461\SharpGen.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpGen.Runtime.COM, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a7c0d43f556c6402, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpGen.Runtime.COM.2.0.0-beta.13\lib\net461\SharpGen.Runtime.COM.dll</HintPath>
+    </Reference>
+    <Reference Include="Vortice.Direct2D1, Version=2.4.2.0, Culture=neutral, PublicKeyToken=5431ec61a7e925da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vortice.Direct2D1.2.4.2\lib\netstandard2.0\Vortice.Direct2D1.dll</HintPath>
+    </Reference>
+    <Reference Include="Vortice.DirectX, Version=2.4.2.0, Culture=neutral, PublicKeyToken=5431ec61a7e925da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vortice.DirectX.2.4.2\lib\netstandard2.0\Vortice.DirectX.dll</HintPath>
+    </Reference>
+    <Reference Include="Vortice.DXGI, Version=2.4.2.0, Culture=neutral, PublicKeyToken=5431ec61a7e925da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vortice.DXGI.2.4.2\lib\netstandard2.0\Vortice.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="Vortice.Mathematics, Version=1.4.0.0, Culture=neutral, PublicKeyToken=5431ec61a7e925da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Vortice.Mathematics.1.4.25\lib\netstandard2.0\Vortice.Mathematics.dll</HintPath>
+    </Reference>
     <Reference Include="WindowsFormsIntegration, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WindowsAPICodePack.7.0.3\lib\net48\WindowsFormsIntegration.dll</HintPath>
     </Reference>
@@ -338,6 +363,9 @@
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="AppLogging.vb" />
     <Compile Include="Build.vb" />
+    <Compile Include="Direct2DChartControl.vb">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ChangerTool.Designer.vb">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </Compile>
@@ -508,6 +536,10 @@
   <ItemGroup>
     <Content Include="configure.ico" />
     <Content Include="LTFSCopyGUIIcon.ico" />
+    <Content Include="..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll">
+      <Link>System.Runtime.InteropServices.RuntimeInformation.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="res\dragdrop.png" />
   </ItemGroup>
   <ItemGroup>

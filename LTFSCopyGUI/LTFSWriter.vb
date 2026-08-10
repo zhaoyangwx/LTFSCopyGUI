@@ -365,9 +365,10 @@ Public Class LTFSWriter
                 其他ToolStripMenuItem1.Checked = True
                 其他ToolStripMenuItem1.Text = $"{My.Resources.ResText_Other}: {My.Settings.LTFSWriter_PowerPolicyOnWriteEnd.ToString()}"
         End Select
-        Chart1.Titles(1).Text = If(My.Settings.Application_UseDecimalUnit, My.Resources.ResText_SpeedBTD, My.Resources.ResText_SpeedBT)
-        Chart1.Titles(2).Text = My.Resources.ResText_FileRateBT
-        Chart1.Titles(0).Text = Min10ToolStripMenuItem.Text
+        Chart1.PrimaryAxisTitle = If(My.Settings.Application_UseDecimalUnit, My.Resources.ResText_SpeedBTD, My.Resources.ResText_SpeedBT)
+        Chart1.SecondaryAxisTitle = My.Resources.ResText_FileRateBT
+        Chart1.ChartTitle = Min10ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
         TapeUtils.AllowPartition = Not DisablePartition
         CleanCycle = CleanCycle
         IndexWriteInterval = IndexWriteInterval
@@ -881,8 +882,6 @@ Public Class LTFSWriter
     Public TickCount As Long = 0
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
         Try
-            Dim i As Integer
-
             Dim pnow As Long = TotalBytesProcessed
             If pnow = 0 Then d_last = 0
             If pnow >= d_last Then
@@ -944,18 +943,7 @@ Public Class LTFSWriter
                 Threading.Monitor.Exit(OperationLock)
             End If
 
-            i = 0
-            Chart1.Series(0).Points.Clear()
-            For Each val As Double In SpeedHistory.GetRange(SpeedHistory.Count - SMaxNum, SMaxNum)
-                Chart1.Series(0).Points.AddXY(i, val)
-                i += 1
-            Next
-            i = 0
-            Chart1.Series(1).Points.Clear()
-            For Each val As Double In FileRateHistory.GetRange(FileRateHistory.Count - SMaxNum, SMaxNum)
-                Chart1.Series(1).Points.AddXY(i, val)
-                i += 1
-            Next
+            Chart1.AppendSample(ddelta / 1048576, fdelta)
             Dim USize As Long = CLng(UnwrittenSize)
             Dim UFile As Long = CLng(UnwrittenCount)
             Dim fastProviderSnapshot = _activeFastReaderProvider
@@ -6663,31 +6651,38 @@ Public Class LTFSWriter
     End Sub
     Private Sub S60ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles S60ToolStripMenuItem.Click
         SMaxNum = 60
-        Chart1.Titles(0).Text = S60ToolStripMenuItem.Text
+        Chart1.ChartTitle = S60ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min5ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min5ToolStripMenuItem.Click
         SMaxNum = 300
-        Chart1.Titles(0).Text = Min5ToolStripMenuItem.Text
+        Chart1.ChartTitle = Min5ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min10ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min10ToolStripMenuItem.Click
         SMaxNum = 600
-        Chart1.Titles(0).Text = Min10ToolStripMenuItem.Text
+        Chart1.ChartTitle = Min10ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min30ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min30ToolStripMenuItem.Click
         SMaxNum = 1800
-        Chart1.Titles(0).Text = Min30ToolStripMenuItem.Text
+        Chart1.ChartTitle = Min30ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H1ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H1ToolStripMenuItem.Click
         SMaxNum = 3600
-        Chart1.Titles(0).Text = H1ToolStripMenuItem.Text
+        Chart1.ChartTitle = H1ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H3ToolStripMenuItem.Click
         SMaxNum = 3600 * 3
-        Chart1.Titles(0).Text = H3ToolStripMenuItem.Text
+        Chart1.ChartTitle = H3ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H6ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H6ToolStripMenuItem.Click
         SMaxNum = 3600 * 6
-        Chart1.Titles(0).Text = H6ToolStripMenuItem.Text
+        Chart1.ChartTitle = H6ToolStripMenuItem.Text
+        Chart1.VisibleSamples = SMaxNum
     End Sub
     Public LRHistory As Double
     Public Function CheckFlush() As Boolean
@@ -6733,12 +6728,12 @@ Public Class LTFSWriter
         End If
     End Sub
     Private Sub LinearToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LinearToolStripMenuItem.Click
-        Chart1.ChartAreas(0).AxisY.IsLogarithmic = False
+        Chart1.IsLogarithmic = False
         LinearToolStripMenuItem.Checked = True
         LogarithmicToolStripMenuItem.Checked = False
     End Sub
     Private Sub LogrithmToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles LogarithmicToolStripMenuItem.Click
-        Chart1.ChartAreas(0).AxisY.IsLogarithmic = True
+        Chart1.IsLogarithmic = True
         LinearToolStripMenuItem.Checked = False
         LogarithmicToolStripMenuItem.Checked = True
     End Sub
