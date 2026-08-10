@@ -1,4 +1,4 @@
-﻿Imports System.IO
+Imports System.IO
 Imports System.Security.Claims
 Imports System.Threading
 Imports FubarDev.FtpServer
@@ -282,24 +282,24 @@ Public Class FTPService
         End Function
     End Class
     Public Sub StartService()
-            If schema Is Nothing Then Exit Sub
-            Services = New ServiceCollection()
-            Services.Configure(
-            Sub(opt As LTFSFileSystemOptions)
-                opt.Root = schema._directory(0)
-                opt.TapeDrive = TapeDrive
-                opt.BlockSize = BlockSize
-                opt.ExtraPartitionCount = ExtraPartitionCount
-                opt.LogHandler = Sub(s As String)
-                                     RaiseEvent LogPrint(s)
-                                 End Sub
-            End Sub)
+        If schema Is Nothing Then Exit Sub
+        Services = New ServiceCollection()
+        Services.Configure(
+        Sub(opt As LTFSFileSystemOptions)
+            opt.Root = schema._directory(0)
+            opt.TapeDrive = TapeDrive
+            opt.BlockSize = BlockSize
+            opt.ExtraPartitionCount = ExtraPartitionCount
+            opt.LogHandler = Sub(s As String)
+                                 RaiseEvent LogPrint(s)
+                             End Sub
+        End Sub)
 
-            Services.AddFtpServer(
-            Sub(builder As IFtpServerBuilder)
-                UseLTFSFileSystem(builder)
-                builder.Services.AddSingleton(Of IMembershipProviderAsync, NoPasswdMembershipProvider)()
-            End Sub)
+        Services.AddFtpServer(
+        Sub(builder As IFtpServerBuilder)
+            UseLTFSFileSystem(builder)
+            builder.Services.AddSingleton(Of IMembershipProviderAsync, NoPasswdMembershipProvider)()
+        End Sub)
 
 
         Services.Configure(
@@ -316,10 +316,10 @@ Public Class FTPService
             End Sub)
 
         With Services.BuildServiceProvider
-                ftpServerHost = .GetRequiredService(Of IFtpServerHost)
-                ftpServerHost.StartAsync(Threading.CancellationToken.None)
-            End With
-        End Sub
+            ftpServerHost = .GetRequiredService(Of IFtpServerHost)
+            ftpServerHost.StartAsync(Threading.CancellationToken.None)
+        End With
+    End Sub
 
     Public Sub StopService()
         ftpServerHost.StopAsync(Threading.CancellationToken.None).Wait()

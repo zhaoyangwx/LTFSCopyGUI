@@ -441,7 +441,7 @@ Public Class HardDriveDataProvider
             Dim LBA As ULong = StartLBA
             Dim EndLBA As ULong = CULng(StartLBA + SectorCount - 1)
             If _ringBufferEnabled Then
-                Dim minChunk As Integer = sectorLength * batchSize
+                Dim minChunk As Integer = SectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
                     Dim batch As Integer = CInt(Math.Min(batchSize, EndLBA - LBA + 1))
@@ -466,7 +466,7 @@ Public Class HardDriveDataProvider
                     Marshal.FreeHGlobal(dataPtr)
                 End While
             Else
-                Dim minSize As Integer = sectorLength * batchSize
+                Dim minSize As Integer = SectorLength * batchSize
                 While Not ct.IsCancellationRequested
                     If LBA > EndLBA Then Exit While
                     Dim batch As Integer = CInt(Math.Min(batchSize, EndLBA - LBA + 1))
