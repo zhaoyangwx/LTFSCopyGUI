@@ -891,6 +891,7 @@ Public NotInheritable Class DisplayHelper
         Dim textBox As TextBox = New TextBox()
         textBox.Size = New Size(size.Width - 10, 23)
         textBox.Location = New Point(5, 25)
+        textBox.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         textBox.Text = Response
         inputDialog.Controls.Add(textBox)
         Dim okButton As Button = New Button()
@@ -899,6 +900,7 @@ Public NotInheritable Class DisplayHelper
         okButton.Size = New Size(75, 23)
         okButton.Text = $"&OK"
         okButton.Location = New Point(size.Width - 80 - 80, 59)
+        okButton.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
         inputDialog.Controls.Add(okButton)
         Dim cancelButton As Button = New Button()
         cancelButton.DialogResult = DialogResult.Cancel
@@ -906,6 +908,7 @@ Public NotInheritable Class DisplayHelper
         cancelButton.Size = New Size(75, 23)
         cancelButton.Text = $"&Cancel"
         cancelButton.Location = New Point(size.Width - 80, 59)
+        cancelButton.Anchor = AnchorStyles.Right Or AnchorStyles.Bottom
         inputDialog.Controls.Add(cancelButton)
         inputDialog.AcceptButton = okButton
         inputDialog.CancelButton = cancelButton
