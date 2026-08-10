@@ -204,6 +204,26 @@ Namespace My
                 Me("LTFSConf_AutoRefresh") = Value
             End Set
         End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute(Nothing),
+         Category("LTFSConfigurator"),
+         LocalizedDescription("PropertyDescription_LTFSConf_SCSIConsoleFont")>
+        Public Property LTFSConf_SCSIConsoleFont() As Font
+            Get
+                Dim result As Font = CType(Me("LTFSConf_SCSIConsoleFont"), Font)
+                If result IsNot Nothing Then
+                    Return result
+                Else
+                    Return New Font("SimSun", 9.0F, FontStyle.Regular, GraphicsUnit.Point)
+                End If
+            End Get
+            Set
+                Me("LTFSConf_SCSIConsoleFont") = Value
+            End Set
+        End Property
+
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute(Nothing),

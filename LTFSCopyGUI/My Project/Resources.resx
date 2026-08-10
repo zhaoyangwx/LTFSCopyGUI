@@ -753,6 +753,9 @@
   <data name="PropertyDescription_LTFSConf_AutoRefresh" xml:space="preserve">
     <value>自动刷新设备列表</value>
   </data>
+  <data name="PropertyDescription_LTFSConf_SCSIConsoleFont" xml:space="preserve">
+    <value>SCSI Console 输出字体</value>
+  </data>
   <data name="PropertyDescription_LTFSWriter_AutoCleanDownLim" xml:space="preserve">
     <value>容量损失判定速度下限</value>
   </data>

@@ -746,6 +746,9 @@
   <data name="PropertyDescription_LTFSConf_AutoRefresh" xml:space="preserve">
     <value>Automatically refresh device list</value>
   </data>
+  <data name="PropertyDescription_LTFSConf_SCSIConsoleFont" xml:space="preserve">
+    <value>SCSI Console output font</value>
+  </data>
   <data name="PropertyDescription_LTFSWriter_AutoCleanDownLim" xml:space="preserve">
     <value>Auto clean speed down limit</value>
   </data>

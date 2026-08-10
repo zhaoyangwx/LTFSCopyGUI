@@ -186,6 +186,15 @@ Namespace My.Resources
                 Return ResourceManager.GetString("PropertyDescription_LTFSConf_AutoRefresh", resourceCulture)
             End Get
         End Property
+
+        '''<summary>
+        '''  查找类似 SCSI Console 输出字体 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSConf_SCSIConsoleFont() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSConf_SCSIConsoleFont", resourceCulture)
+            End Get
+        End Property
         
         '''<summary>
         '''  查找类似 快捷指令 的本地化字符串。

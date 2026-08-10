@@ -1476,6 +1476,7 @@ Partial Class LTFSConfigurator
         InitializeComponent()
         ' 在 InitializeComponent() 调用之后添加任何初始化。
         DisplayHelper.ApplyApplicationFont(Me)
+        TextBoxDebugOutput.Font = My.Settings.LTFSConf_SCSIConsoleFont
     End Sub
 
     Friend WithEvents AddImageToolStripMenuItem As ToolStripMenuItem
