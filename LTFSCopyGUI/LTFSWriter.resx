@@ -1040,13 +1040,13 @@
   <data name="自动化ToolStripMenuItem1.Text" xml:space="preserve">
     <value>自动化</value>
   </data>
-  <data name="ToolStripTextBox2.Enabled" type="System.Boolean, mscorlib">
+  <data name="写入完成后标题ToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <data name="ToolStripTextBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 16</value>
+  <data name="写入完成后标题ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
   </data>
-  <data name="ToolStripTextBox2.Text" xml:space="preserve">
+  <data name="写入完成后标题ToolStripMenuItem.Text" xml:space="preserve">
     <value>---------写入完成后---------</value>
   </data>
   <data name="WA0ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -1123,13 +1123,13 @@
   <data name="其他ToolStripMenuItem1.Text" xml:space="preserve">
     <value>其他</value>
   </data>
-  <data name="ToolStripTextBox1.Enabled" type="System.Boolean, mscorlib">
+  <data name="写入时标题ToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
-  <data name="ToolStripTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>160, 16</value>
+  <data name="写入时标题ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>220, 22</value>
   </data>
-  <data name="ToolStripTextBox1.Text" xml:space="preserve">
+  <data name="写入时标题ToolStripMenuItem.Text" xml:space="preserve">
     <value>-----------写入时------------</value>
   </data>
   <data name="计算校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
@@ -3776,11 +3776,11 @@
   <data name="&gt;&gt;自动化ToolStripMenuItem1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ToolStripTextBox2.Name" xml:space="preserve">
-    <value>ToolStripTextBox2</value>
+  <data name="&gt;&gt;写入完成后标题ToolStripMenuItem.Name" xml:space="preserve">
+    <value>写入完成后标题ToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;ToolStripTextBox2.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;写入完成后标题ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;WA0ToolStripMenuItem.Name" xml:space="preserve">
     <value>WA0ToolStripMenuItem</value>
@@ -3842,11 +3842,11 @@
   <data name="&gt;&gt;其他ToolStripMenuItem1.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;ToolStripTextBox1.Name" xml:space="preserve">
-    <value>ToolStripTextBox1</value>
+  <data name="&gt;&gt;写入时标题ToolStripMenuItem.Name" xml:space="preserve">
+    <value>写入时标题ToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;ToolStripTextBox1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="&gt;&gt;写入时标题ToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;计算校验ToolStripMenuItem.Name" xml:space="preserve">
     <value>计算校验ToolStripMenuItem</value>

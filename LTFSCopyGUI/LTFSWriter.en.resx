@@ -741,10 +741,10 @@
   <data name="ToolStripSeparator5.Size" type="System.Drawing.Size, System.Drawing">
     <value>140, 6</value>
   </data>
-  <data name="ToolStripTextBox2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>200, 16</value>
+  <data name="写入完成后标题ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
   </data>
-  <data name="ToolStripTextBox2.Text" xml:space="preserve">
+  <data name="写入完成后标题ToolStripMenuItem.Text" xml:space="preserve">
     <value>---------On finished writing---------</value>
   </data>
   <data name="WA0ToolStripMenuItem.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
@@ -821,10 +821,10 @@
   <data name="电源选项ToolStripMenuItem1.Text" xml:space="preserve">
     <value>Power plan</value>
   </data>
-  <data name="ToolStripTextBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>200, 16</value>
+  <data name="写入时标题ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
   </data>
-  <data name="ToolStripTextBox1.Text" xml:space="preserve">
+  <data name="写入时标题ToolStripMenuItem.Text" xml:space="preserve">
     <value>-----------On writing------------</value>
   </data>
   <data name="计算校验ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">

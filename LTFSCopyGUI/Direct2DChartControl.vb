@@ -30,7 +30,7 @@ Public Class Direct2DChartControl
     Private Const DipsPerInch As Single = 96.0F
     Private Const DefaultMaxSamples As Integer = 3600 * 6
     Private Const DefaultVisibleSamples As Integer = 600
-    Private Const DefaultFontFamily As String = "Segoe UI"
+    Private Const PlotBottomMargin As Single = 12.0F
     Private Const AnimationIntervalMilliseconds As Integer = 15
     Private Const AnimationDurationMilliseconds As Double = 180.0R
 
@@ -119,7 +119,6 @@ Public Class Direct2DChartControl
 
         BackColor = SystemColors.Window
         ForeColor = SystemColors.ControlText
-        Font = New Font(DefaultFontFamily, 9.0F, Drawing.FontStyle.Regular, GraphicsUnit.Point)
         TabStop = False
 
         ReallocateDataBuffers(DefaultMaxSamples)
@@ -543,32 +542,33 @@ Public Class Direct2DChartControl
         DisposeTextFormats()
         If _writeFactory Is Nothing Then Return
 
-        Dim familyName As String = If(Font Is Nothing OrElse Font.FontFamily Is Nothing, DefaultFontFamily, Font.FontFamily.Name)
-        Dim sizeInDips As Single = 11.0F
-        If Font IsNot Nothing Then sizeInDips = Math.Max(8.0F, Font.SizeInPoints * DipsPerInch / 72.0F)
-        Dim weight As FontWeight = If(Font IsNot Nothing AndAlso Font.Bold, FontWeight.Bold, FontWeight.Normal)
+        Dim chartFont As Font = If(Font, SystemFonts.MessageBoxFont)
+        Dim familyName As String = chartFont.FontFamily.Name
+        Dim sizeInDips As Single = Math.Max(8.0F, chartFont.SizeInPoints * DipsPerInch / 72.0F)
+        Dim weight As FontWeight = If(chartFont.Bold, FontWeight.Bold, FontWeight.Normal)
+        Dim style As DirectWrite.FontStyle = If(chartFont.Italic, DirectWrite.FontStyle.Italic, DirectWrite.FontStyle.Normal)
 
-        _axisLabelLeftFormat = _writeFactory.CreateTextFormat(familyName, weight, DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisLabelLeftFormat = _writeFactory.CreateTextFormat(familyName, weight, style, sizeInDips)
         _axisLabelLeftFormat.TextAlignment = TextAlignment.Trailing
         _axisLabelLeftFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisLabelLeftFormat.WordWrapping = WordWrapping.NoWrap
 
-        _axisLabelRightFormat = _writeFactory.CreateTextFormat(familyName, weight, DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisLabelRightFormat = _writeFactory.CreateTextFormat(familyName, weight, style, sizeInDips)
         _axisLabelRightFormat.TextAlignment = TextAlignment.Leading
         _axisLabelRightFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisLabelRightFormat.WordWrapping = WordWrapping.NoWrap
 
-        _axisTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
+        _axisTitleFormat = _writeFactory.CreateTextFormat(familyName, weight, style, sizeInDips)
         _axisTitleFormat.TextAlignment = TextAlignment.Center
         _axisTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _axisTitleFormat.WordWrapping = WordWrapping.NoWrap
 
-        _chartTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
+        _chartTitleFormat = _writeFactory.CreateTextFormat(familyName, weight, style, sizeInDips)
         _chartTitleFormat.TextAlignment = TextAlignment.Center
         _chartTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _chartTitleFormat.WordWrapping = WordWrapping.NoWrap
 
-        _xTitleFormat = _writeFactory.CreateTextFormat(familyName, FontWeight.Normal, DirectWrite.FontStyle.Normal, sizeInDips)
+        _xTitleFormat = _writeFactory.CreateTextFormat(familyName, weight, style, sizeInDips)
         _xTitleFormat.TextAlignment = TextAlignment.Center
         _xTitleFormat.ParagraphAlignment = ParagraphAlignment.Center
         _xTitleFormat.WordWrapping = WordWrapping.NoWrap
@@ -591,7 +591,7 @@ Public Class Direct2DChartControl
         Dim plotLeft As Single = 58.0F
         Dim plotRight As Single = Math.Max(plotLeft + 10.0F, renderSize.Width - 58.0F)
         Dim plotTop As Single = 24.0F
-        Dim plotBottom As Single = Math.Max(plotTop + 10.0F, renderSize.Height - 30.0F)
+        Dim plotBottom As Single = Math.Max(plotTop + 10.0F, renderSize.Height - PlotBottomMargin)
         Dim plot As New RectangleF(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop)
         If plot.Width <= 10.0F OrElse plot.Height <= 10.0F Then Return
 

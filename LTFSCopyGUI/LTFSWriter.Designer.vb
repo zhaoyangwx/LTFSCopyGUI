@@ -118,7 +118,7 @@ Partial Class LTFSWriter
         Me.更新全部索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator5 = New System.Windows.Forms.ToolStripSeparator()
         Me.自动化ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolStripTextBox2 = New System.Windows.Forms.ToolStripTextBox()
+        Me.写入完成后标题ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA0ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA1ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.WA2ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -129,7 +129,7 @@ Partial Class LTFSWriter
         Me.节能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.高性能ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.其他ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolStripTextBox1 = New System.Windows.Forms.ToolStripTextBox()
+        Me.写入时标题ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.计算校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.异步校验CPU占用高ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.去重ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -188,7 +188,7 @@ Partial Class LTFSWriter
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.ToolStrip1 = New DpiAwareToolStrip()
+        Me.ToolStrip1 = New System.Windows.Forms.ToolStrip()
         Me.ToolStripButton1 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton2 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton4 = New System.Windows.Forms.ToolStripButton()
@@ -890,19 +890,14 @@ Partial Class LTFSWriter
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripTextBox2, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.电源选项ToolStripMenuItem1, Me.ToolStripTextBox1, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.右下角显示容量损失ToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.电源选项ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem, Me.显示文件数ToolStripMenuItem})
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入完成后标题ToolStripMenuItem, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.电源选项ToolStripMenuItem1, Me.写入时标题ToolStripMenuItem, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.右下角显示容量损失ToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.电源选项ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem, Me.显示文件数ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
         resources.ApplyResources(Me.自动化ToolStripMenuItem1, "自动化ToolStripMenuItem1")
         '
-        'ToolStripTextBox2
+        '写入完成后标题ToolStripMenuItem
         '
-        Me.ToolStripTextBox2.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
-        Me.ToolStripTextBox2.BorderStyle = System.Windows.Forms.BorderStyle.None
-        resources.ApplyResources(Me.ToolStripTextBox2, "ToolStripTextBox2")
-        Me.ToolStripTextBox2.ForeColor = System.Drawing.SystemColors.WindowFrame
-        Me.ToolStripTextBox2.Name = "ToolStripTextBox2"
-        Me.ToolStripTextBox2.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
-        Me.ToolStripTextBox2.ReadOnly = True
+        resources.ApplyResources(Me.写入完成后标题ToolStripMenuItem, "写入完成后标题ToolStripMenuItem")
+        Me.写入完成后标题ToolStripMenuItem.Name = "写入完成后标题ToolStripMenuItem"
         '
         'WA0ToolStripMenuItem
         '
@@ -961,15 +956,10 @@ Partial Class LTFSWriter
         Me.其他ToolStripMenuItem1.Name = "其他ToolStripMenuItem1"
         resources.ApplyResources(Me.其他ToolStripMenuItem1, "其他ToolStripMenuItem1")
         '
-        'ToolStripTextBox1
+        '写入时标题ToolStripMenuItem
         '
-        Me.ToolStripTextBox1.BackColor = System.Drawing.Color.FromArgb(CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer), CType(CType(253, Byte), Integer))
-        Me.ToolStripTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None
-        resources.ApplyResources(Me.ToolStripTextBox1, "ToolStripTextBox1")
-        Me.ToolStripTextBox1.ForeColor = System.Drawing.SystemColors.WindowFrame
-        Me.ToolStripTextBox1.Name = "ToolStripTextBox1"
-        Me.ToolStripTextBox1.Overflow = System.Windows.Forms.ToolStripItemOverflow.Always
-        Me.ToolStripTextBox1.ReadOnly = True
+        resources.ApplyResources(Me.写入时标题ToolStripMenuItem, "写入时标题ToolStripMenuItem")
+        Me.写入时标题ToolStripMenuItem.Name = "写入时标题ToolStripMenuItem"
         '
         '计算校验ToolStripMenuItem
         '
@@ -1613,17 +1603,17 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripSeparator7 As ToolStripSeparator
     Friend WithEvents 索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 数据操作ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStripTextBox2 As ToolStripTextBox
+    Friend WithEvents 写入完成后标题ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 回退ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripDropDownButton3 As ToolStripDropDownButton
     Friend WithEvents 备份当前索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents ToolStripSeparator8 As ToolStripSeparator
     Friend WithEvents 生成标签ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 设置标签ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStripTextBox1 As ToolStripTextBox
+    Friend WithEvents 写入时标题ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents APToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 启用日志记录ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStrip1 As DpiAwareToolStrip
+    Friend WithEvents ToolStrip1 As ToolStrip
     Friend WithEvents ToolStripButton1 As ToolStripButton
     Friend WithEvents ToolStripButton2 As ToolStripButton
     Friend WithEvents ToolStripButton3 As ToolStripButton

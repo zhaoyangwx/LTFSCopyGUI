@@ -941,43 +941,6 @@ Public Class DpiAwareListView
     End Sub
 End Class
 
-''' <summary>
-''' ToolStrip with DPI-aware image and fixed item sizes.
-'''
-''' ToolStripItem is not a Control, so WinForms does not include its fixed
-''' Size or the ToolStrip's ImageScalingSize in the normal form scaling pass.
-''' Scale both with the factor supplied by that pass, including subsequent
-''' per-monitor DPI changes.
-''' </summary>
-Public Class DpiAwareToolStrip
-    Inherits ToolStrip
-
-    Public Sub New()
-        MyBase.New()
-    End Sub
-
-    Protected Overrides Sub ScaleControl(factor As SizeF,
-                                         specified As BoundsSpecified)
-        MyBase.ScaleControl(factor, specified)
-
-        If factor.Width = 1.0F AndAlso factor.Height = 1.0F Then Return
-
-        ImageScalingSize = ScaleSize(ImageScalingSize, factor)
-        For Each item As ToolStripItem In Items
-            If Not item.AutoSize Then
-                item.Size = ScaleSize(item.Size, factor)
-            End If
-        Next
-    End Sub
-
-    Private Shared Function ScaleSize(value As Size,
-                                      factor As SizeF) As Size
-        Return New Size(
-            Math.Max(1, CInt(Math.Round(value.Width * factor.Width))),
-            Math.Max(1, CInt(Math.Round(value.Height * factor.Height))))
-    End Function
-End Class
-
 Public Class ErrRateHelper
     Public Shared Function MixColor(col1 As Color, col2 As Color, val As Double, min As Double, max As Double) As Color
         If val <= min Then Return col1
