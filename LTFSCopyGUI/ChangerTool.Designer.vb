@@ -131,7 +131,7 @@ Partial Class ChangerTool
         'ChangerTool
         '
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.Controls.Add(Me.Button4)
         Me.Controls.Add(Me.CheckBox2)
         Me.Controls.Add(Me.Button3)

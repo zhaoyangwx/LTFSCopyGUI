@@ -8826,7 +8826,8 @@ Public Class LTFSWriter
 
     Private Sub ToolStripStatusLabel1_Click(sender As Object, e As EventArgs) Handles ToolStripStatusLabel1.Click
         If MyClipBoard.IsEmpty Then Exit Sub
-        Dim fMsg As New Form With {.Width = 800, .Height = 600, .TopMost = True, .Text = My.Resources.ResText_ClipBoard}
+        Dim fMsg As New Form With {.Width = 800, .Height = 600, .TopMost = True,
+            .Text = My.Resources.ResText_ClipBoard, .Font = DisplayHelper.DisplayFont}
         Dim ostr As New StringBuilder
         For Each d As ltfsindex.directory In MyClipBoard.Directory
             ostr.AppendLine($"DIR   {d.name}")
@@ -8836,6 +8837,7 @@ Public Class LTFSWriter
         Next
         fMsg.Controls.Add(New TextBox With {.Parent = fMsg, .Dock = DockStyle.Fill, .WordWrap = False,
                           .Multiline = True, .ScrollBars = ScrollBars.Both, .ReadOnly = True, .Text = ostr.ToString()})
+        DisplayHelper.ApplyDynamicFormLayout(fMsg)
         fMsg.ShowDialog()
     End Sub
 
@@ -9895,7 +9897,6 @@ Public Class LTFSWriter
         Dim frm As New Form With {
             .Width = 640,
             .Height = 200,
-            .AutoScaleMode = AutoScaleMode.Font,
             .Font = DisplayHelper.DisplayFont
         }
         Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
@@ -9911,6 +9912,7 @@ Public Class LTFSWriter
         Dim ButtonStart As New Button With {.Parent = frm, .Width = 73, .Height = 23,
             .Top = frm.Height - 73 - 23, .Left = CInt(frm.Width / 2 - 73 / 2), .Anchor = AnchorStyles.Bottom,
             .Text = "Start"}
+        DisplayHelper.ApplyDynamicFormLayout(frm)
         Dim isStarted As Boolean = False
         Dim frmLock As New Object
         AddHandler frm.FormClosing, Sub()

@@ -1492,7 +1492,7 @@ Partial Class LTFSWriter
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.Controls.Add(Me.TextBoxSelectedPath)
         Me.Controls.Add(Me.StatusStrip2)
         Me.Controls.Add(Me.ToolStrip1)

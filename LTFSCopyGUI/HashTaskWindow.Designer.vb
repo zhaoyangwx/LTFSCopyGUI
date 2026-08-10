@@ -381,7 +381,7 @@ Partial Class HashTaskWindow
         'HashTaskWindow
         '
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Controls.Add(Me.CheckBox3)
         Me.Controls.Add(Me.NumericUpDown1)

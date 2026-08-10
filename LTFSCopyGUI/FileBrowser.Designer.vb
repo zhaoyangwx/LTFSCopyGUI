@@ -93,7 +93,7 @@ Partial Class FileBrowser
         'FileBrowser
         '
         resources.ApplyResources(Me, "$this")
-        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
+        Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.ContextMenuStrip = Me.ContextMenuStrip1
         Me.Controls.Add(Me.CheckBox1)
         Me.Controls.Add(Me.Button2)

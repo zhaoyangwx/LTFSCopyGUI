@@ -152,7 +152,10 @@
     <value>Info</value>
   </data>
   <data name="ButtonLoadThreaded.Location" type="System.Drawing.Point, System.Drawing">
-    <value>473, 607</value>
+    <value>450, 607</value>
+  </data>
+  <data name="ButtonLoadThreaded.Size" type="System.Drawing.Size, System.Drawing">
+    <value>98, 23</value>
   </data>
   <data name="ButtonLoadThreaded.Text" xml:space="preserve">
     <value>Load threaded</value>

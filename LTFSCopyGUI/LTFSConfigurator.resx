@@ -2521,7 +2521,7 @@
     <value>True</value>
   </data>
   <data name="LabelParam.Font" type="System.Drawing.Font, System.Drawing">
-    <value>宋体, 12px, style=Underline</value>
+    <value>宋体, 9pt, style=Underline</value>
   </data>
   <data name="LabelParam.Location" type="System.Drawing.Point, System.Drawing">
     <value>162, 59</value>
@@ -3013,7 +3013,7 @@
     <value>720, 35</value>
   </data>
   <data name="ButtonDebugAllowMediumRemoval.Size" type="System.Drawing.Size, System.Drawing">
-    <value>125, 23</value>
+    <value>141, 23</value>
   </data>
   <data name="ButtonDebugAllowMediumRemoval.TabIndex" type="System.Int32, mscorlib">
     <value>58</value>
@@ -3214,10 +3214,10 @@
     <value>Top, Right</value>
   </data>
   <data name="ButtonDebugReadBlock.Location" type="System.Drawing.Point, System.Drawing">
-    <value>1049, 6</value>
+    <value>1046, 6</value>
   </data>
   <data name="ButtonDebugReadBlock.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
+    <value>78, 23</value>
   </data>
   <data name="ButtonDebugReadBlock.TabIndex" type="System.Int32, mscorlib">
     <value>39</value>
@@ -3265,7 +3265,7 @@
     <value>514, 35</value>
   </data>
   <data name="ButtonDebugDumpIndex.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
+    <value>76, 23</value>
   </data>
   <data name="ButtonDebugDumpIndex.TabIndex" type="System.Int32, mscorlib">
     <value>55</value>
@@ -4435,7 +4435,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonRestoreLBA.Location" type="System.Drawing.Point, System.Drawing">
-    <value>360, 31</value>
+    <value>368, 31</value>
   </data>
   <data name="ButtonRestoreLBA.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -4462,7 +4462,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonDumpLBA.Location" type="System.Drawing.Point, System.Drawing">
-    <value>279, 31</value>
+    <value>287, 31</value>
   </data>
   <data name="ButtonDumpLBA.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -4591,7 +4591,7 @@
     <value>181, 31</value>
   </data>
   <data name="ButtonWriteRandom.Size" type="System.Drawing.Size, System.Drawing">
-    <value>92, 23</value>
+    <value>100, 23</value>
   </data>
   <data name="ButtonWriteRandom.TabIndex" type="System.Int32, mscorlib">
     <value>55</value>
@@ -4618,7 +4618,7 @@
     <value>323, 6</value>
   </data>
   <data name="ButtonReportZone.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 23</value>
+    <value>81, 23</value>
   </data>
   <data name="ButtonReportZone.TabIndex" type="System.Int32, mscorlib">
     <value>54</value>
@@ -4690,7 +4690,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonFinishZone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>566, 6</value>
+    <value>572, 6</value>
   </data>
   <data name="ButtonFinishZone.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -4717,7 +4717,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonResetWritePointer.Location" type="System.Drawing.Point, System.Drawing">
-    <value>647, 6</value>
+    <value>653, 6</value>
   </data>
   <data name="ButtonResetWritePointer.Size" type="System.Drawing.Size, System.Drawing">
     <value>124, 23</value>
@@ -4744,7 +4744,7 @@
     <value>NoControl</value>
   </data>
   <data name="ButtonCloseZone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>485, 6</value>
+    <value>491, 6</value>
   </data>
   <data name="ButtonCloseZone.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -4768,7 +4768,7 @@
     <value>11</value>
   </data>
   <data name="ButtonOpenZone.Location" type="System.Drawing.Point, System.Drawing">
-    <value>404, 6</value>
+    <value>410, 6</value>
   </data>
   <data name="ButtonOpenZone.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -4870,7 +4870,7 @@
     <value>6, 59</value>
   </data>
   <data name="ButtonReportZones.Size" type="System.Drawing.Size, System.Drawing">
-    <value>83, 23</value>
+    <value>87, 23</value>
   </data>
   <data name="ButtonReportZones.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -4936,13 +4936,13 @@
     <value>110</value>
   </metadata>
   <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 12</value>
+    <value>96, 96</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>1230, 642</value>
   </data>
   <data name="$this.Font" type="System.Drawing.Font, System.Drawing">
-    <value>宋体, 12px</value>
+    <value>宋体, 9pt</value>
   </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>

@@ -800,14 +800,29 @@ Public Module GlobCollector
 End Module
 
 Public NotInheritable Class DisplayHelper
+    Private Const LogicalDpi As Single = 96.0F
     Private Shared _font As Drawing.Font
     Public Shared Property DisplayFont As Drawing.Font
         Get
-            If _font Is Nothing Then Return New Drawing.Font("SimSun", 12.0F, GraphicsUnit.Pixel)
+            If _font Is Nothing Then
+                _font = New Drawing.Font("SimSun", 9.0F, FontStyle.Regular, GraphicsUnit.Point)
+            End If
             Return _font
         End Get
         Set(value As Drawing.Font)
-            _font = value
+            If value Is Nothing Then Throw New ArgumentNullException(NameOf(value))
+
+            Dim pointSize As Single = value.SizeInPoints
+            If value.Unit = GraphicsUnit.Pixel Then
+                ' Legacy configurations stored the 96-DPI design font as 12 px.
+                ' Interpret that value as 9 pt on every monitor, rather than
+                ' converting it through the DPI of the monitor used at startup.
+                pointSize = value.Size * 72.0F / LogicalDpi
+            End If
+
+            Dim normalized = New Drawing.Font(value.FontFamily, pointSize, value.Style, GraphicsUnit.Point)
+            If _font IsNot Nothing Then _font.Dispose()
+            _font = normalized
         End Set
     End Property
     Public Shared Sub ApplyApplicationFont(frm As Form)
@@ -815,6 +830,17 @@ Public NotInheritable Class DisplayHelper
         ' Keep the user-selectable base font. DPI scaling itself is owned by
         ' WinForms' PerMonitorV2/AutoScaleMode pipeline.
         frm.Font = DisplayFont
+    End Sub
+
+    ''' <summary>
+    ''' Applies the 96-DPI logical layout contract to a form built in code.
+    ''' Call this after the form's child controls have been created.
+    ''' </summary>
+    Public Shared Sub ApplyDynamicFormLayout(frm As Form)
+        If frm Is Nothing Then Throw New ArgumentNullException(NameOf(frm))
+        frm.Font = DisplayFont
+        frm.AutoScaleDimensions = New SizeF(LogicalDpi, LogicalDpi)
+        frm.AutoScaleMode = AutoScaleMode.Dpi
     End Sub
 
     Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As UShort) As DialogResult
@@ -851,7 +877,6 @@ Public NotInheritable Class DisplayHelper
         Dim size As Size = New Size(200, 90)
         Dim inputDialog As Form = New Form()
         inputDialog.StartPosition = FormStartPosition.CenterParent
-        inputDialog.AutoScaleMode = AutoScaleMode.Font
         inputDialog.Font = DisplayFont
         inputDialog.FormBorderStyle = FormBorderStyle.FixedDialog
         inputDialog.MinimizeBox = False
@@ -884,6 +909,7 @@ Public NotInheritable Class DisplayHelper
         inputDialog.Controls.Add(cancelButton)
         inputDialog.AcceptButton = okButton
         inputDialog.CancelButton = cancelButton
+        ApplyDynamicFormLayout(inputDialog)
         Dim result As DialogResult = inputDialog.ShowDialog()
         If result = DialogResult.OK Then Response = textBox.Text
         Return result

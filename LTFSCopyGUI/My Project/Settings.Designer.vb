@@ -827,7 +827,7 @@ Namespace My
                 If result IsNot Nothing Then
                     Return result
                 Else
-                    Return New Font("SimSun", 12, GraphicsUnit.Pixel)
+                    Return New Font("SimSun", 9.0F, FontStyle.Regular, GraphicsUnit.Point)
                 End If
             End Get
             Set

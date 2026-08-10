@@ -132,9 +132,7 @@ Namespace My
                     End If
                 End Try
             End If
-            With Settings.Application_BaseFont
-                DisplayHelper.DisplayFont = New Font(.FontFamily, .Size, .Style, .Unit)
-            End With
+            DisplayHelper.DisplayFont = Settings.Application_BaseFont
             If e.CommandLine.Count = 0 Then
 
             Else

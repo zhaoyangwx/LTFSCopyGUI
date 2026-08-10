@@ -211,12 +211,9 @@ Public Class Form1
     End Sub
     Public LoadComplete As Boolean = False
     Public Sub LoadSetting()
-        Static ResText_version As String = ""
-        If ResText_version = "" Then ResText_version = Label6.Text
         TextBox1.Text = My.Settings.IndexAnalyzer_LastFile
         TextBox3.Text = My.Settings.IndexAnalyzer_Src
         TextBox4.Text = My.Settings.IndexAnalyzer_Dest
-        Label6.Text = ResText_version & $"{My.Application.Info.Version.ToString(3)} rev {My.Application.Info.Version.Revision}"
         CheckBox1.Checked = My.Settings.IndexAnalyzer_GenCMD
         Text = $"{FormTitle.Text} - {ApplicationWheels.ApplicationInfo}"
     End Sub
@@ -754,10 +751,6 @@ Public Class Form1
             My.Settings.Save()
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {device.DevicePath}"})
         End If
-    End Sub
-
-    Private Sub Label6_Click(sender As Object, e As EventArgs) Handles Label6.Click
-        Process.Start("https://github.com/zhaoyangwx/LTFSCopyGUI/releases")
     End Sub
 
     Private Sub ComboBox1_SelectedIndexChanged(sender As Object, e As EventArgs) Handles ComboBox1.SelectedIndexChanged
