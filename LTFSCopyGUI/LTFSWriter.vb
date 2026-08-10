@@ -2021,7 +2021,7 @@ Public Class LTFSWriter
                            Next
                        Next
                        自动化ToolStripMenuItem1.Enabled = True
-                       ToolStrip1.Enabled = AllowOperation
+                       CommandBar.Enabled = AllowOperation
                        ContextMenuStrip3.Enabled = AllowOperation
                    End SyncLock
                End Sub)
@@ -6995,19 +6995,19 @@ Public Class LTFSWriter
         PrintMsg($"{My.Resources.ResText_DLFin} .{My.Settings.LTFSWriter_FileLabel}")
     End Sub
 
-    Private Sub ToolStripButton1_Click(sender As Object, e As EventArgs) Handles ToolStripButton1.Click
+    Private Sub ImportFilesButton_Click(sender As Object, e As EventArgs) Handles ImportFilesButton.Click
         导入文件ToolStripMenuItem_Click(sender, e)
     End Sub
 
-    Private Sub ToolStripButton2_Click(sender As Object, e As EventArgs) Handles ToolStripButton2.Click
+    Private Sub WriteTapeButton_Click(sender As Object, e As EventArgs) Handles WriteTapeButton.Click
         写入数据ToolStripMenuItem_Click(sender, e)
     End Sub
 
-    Private Sub ToolStripButton4_Click(sender As Object, e As EventArgs) Handles ToolStripButton4.Click
+    Private Sub BackupIndexButton_Click(sender As Object, e As EventArgs) Handles BackupIndexButton.Click
         备份当前索引ToolStripMenuItem_Click(sender, e)
     End Sub
 
-    Private Sub ToolStripButton3_Click(sender As Object, e As EventArgs) Handles ToolStripButton3.Click
+    Private Sub SafeEjectButton_Click(sender As Object, e As EventArgs) Handles SafeEjectButton.Click
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UIE, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         Dim th As New Threading.Thread(
                 Sub()
@@ -7045,7 +7045,7 @@ Public Class LTFSWriter
 
     End Sub
 
-    Private Sub ToolStripButton5_Click(sender As Object, e As EventArgs) Handles ToolStripButton5.Click
+    Private Sub MergeHashButton_Click(sender As Object, e As EventArgs) Handles MergeHashButton.Click
         合并SHA1ToolStripMenuItem_Click(sender, e)
     End Sub
 
@@ -7098,7 +7098,7 @@ Public Class LTFSWriter
         End If
     End Sub
 
-    Private Sub ToolStripButton6_Click(sender As Object, e As EventArgs) Handles ToolStripButton6.Click
+    Private Sub VerifySourceButton_Click(sender As Object, e As EventArgs) Handles VerifySourceButton.Click
         校验源文件ToolStripMenuItem_Click(sender, e)
     End Sub
 
@@ -10307,7 +10307,7 @@ Public Class LTFSWriter
         End If
     End Sub
 
-    Private Sub ToolStripButton7_Click(sender As Object, e As EventArgs) Handles ToolStripButton7.Click
+    Private Sub ForceEjectButton_Click(sender As Object, e As EventArgs) Handles ForceEjectButton.Click
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_ForceEjectConfirm, My.Resources.ResText_Confirm, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
         LockGUI(True)
         Task.Run(Sub()

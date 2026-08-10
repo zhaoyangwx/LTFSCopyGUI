@@ -171,14 +171,14 @@ Partial Class LTFSWriter
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.ToolStrip1 = New System.Windows.Forms.ToolStrip()
-        Me.ToolStripButton1 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton2 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton4 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton5 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton6 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton3 = New System.Windows.Forms.ToolStripButton()
-        Me.ToolStripButton7 = New System.Windows.Forms.ToolStripButton()
+        Me.CommandBar = New LTFSCopyGUI.ModernCommandBar()
+        Me.ImportFilesButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.WriteTapeButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.BackupIndexButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.MergeHashButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.VerifySourceButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.SafeEjectButton = New LTFSCopyGUI.ModernCommandButton()
+        Me.ForceEjectButton = New LTFSCopyGUI.ModernCommandButton()
         Me.Timer2 = New System.Windows.Forms.Timer(Me.components)
         Me.StatusStrip2 = New System.Windows.Forms.StatusStrip()
         Me.ToolStripStatusLabel6 = New System.Windows.Forms.ToolStripStatusLabel()
@@ -236,7 +236,7 @@ Partial Class LTFSWriter
         Me.ContextMenuStrip2.SuspendLayout()
         Me.MenuStrip1.SuspendLayout()
         Me.StatusStrip1.SuspendLayout()
-        Me.ToolStrip1.SuspendLayout()
+        Me.CommandBar.SuspendLayout()
         Me.StatusStrip2.SuspendLayout()
         Me.ContextMenuStrip4.SuspendLayout()
         Me.SuspendLayout()
@@ -1048,54 +1048,60 @@ Partial Class LTFSWriter
         '
         Me.OpenFileDialog1.Multiselect = True
         '
-        'ToolStrip1
+        'CommandBar
         '
-        resources.ApplyResources(Me.ToolStrip1, "ToolStrip1")
-        Me.ToolStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripButton1, Me.ToolStripButton2, Me.ToolStripButton4, Me.ToolStripButton5, Me.ToolStripButton6, Me.ToolStripButton3, Me.ToolStripButton7})
-        Me.ToolStrip1.Name = "ToolStrip1"
-        Me.ToolStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional
+        resources.ApplyResources(Me.CommandBar, "ToolStrip1")
+        Me.CommandBar.Controls.AddRange(New System.Windows.Forms.Control() {Me.ImportFilesButton, Me.WriteTapeButton, Me.BackupIndexButton, Me.MergeHashButton, Me.VerifySourceButton, Me.SafeEjectButton, Me.ForceEjectButton})
+        Me.CommandBar.Name = "CommandBar"
         '
-        'ToolStripButton1
+        'ImportFilesButton
         '
-        resources.ApplyResources(Me.ToolStripButton1, "ToolStripButton1")
-        Me.ToolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton1.Name = "ToolStripButton1"
+        Me.ImportFilesButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.ImportFiles
+        Me.ImportFilesButton.Name = "ImportFilesButton"
+        Me.ImportFilesButton.TabIndex = 0
+        Me.ImportFilesButton.Text = resources.GetString("ToolStripButton1.Text")
         '
-        'ToolStripButton2
+        'WriteTapeButton
         '
-        resources.ApplyResources(Me.ToolStripButton2, "ToolStripButton2")
-        Me.ToolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton2.Name = "ToolStripButton2"
+        Me.WriteTapeButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.WriteTape
+        Me.WriteTapeButton.Name = "WriteTapeButton"
+        Me.WriteTapeButton.TabIndex = 1
+        Me.WriteTapeButton.Text = resources.GetString("ToolStripButton2.Text")
         '
-        'ToolStripButton4
+        'BackupIndexButton
         '
-        resources.ApplyResources(Me.ToolStripButton4, "ToolStripButton4")
-        Me.ToolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton4.Name = "ToolStripButton4"
+        Me.BackupIndexButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.BackupIndex
+        Me.BackupIndexButton.Name = "BackupIndexButton"
+        Me.BackupIndexButton.TabIndex = 2
+        Me.BackupIndexButton.Text = resources.GetString("ToolStripButton4.Text")
         '
-        'ToolStripButton5
+        'MergeHashButton
         '
-        resources.ApplyResources(Me.ToolStripButton5, "ToolStripButton5")
-        Me.ToolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton5.Name = "ToolStripButton5"
+        Me.MergeHashButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.MergeHash
+        Me.MergeHashButton.Name = "MergeHashButton"
+        Me.MergeHashButton.TabIndex = 3
+        Me.MergeHashButton.Text = resources.GetString("ToolStripButton5.Text")
         '
-        'ToolStripButton6
+        'VerifySourceButton
         '
-        resources.ApplyResources(Me.ToolStripButton6, "ToolStripButton6")
-        Me.ToolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton6.Name = "ToolStripButton6"
+        Me.VerifySourceButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.VerifySource
+        Me.VerifySourceButton.Name = "VerifySourceButton"
+        Me.VerifySourceButton.TabIndex = 4
+        Me.VerifySourceButton.Text = resources.GetString("ToolStripButton6.Text")
         '
-        'ToolStripButton3
+        'SafeEjectButton
         '
-        resources.ApplyResources(Me.ToolStripButton3, "ToolStripButton3")
-        Me.ToolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton3.Name = "ToolStripButton3"
+        Me.SafeEjectButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.SafeEject
+        Me.SafeEjectButton.Name = "SafeEjectButton"
+        Me.SafeEjectButton.TabIndex = 5
+        Me.SafeEjectButton.Text = resources.GetString("ToolStripButton3.Text")
         '
-        'ToolStripButton7
+        'ForceEjectButton
         '
-        resources.ApplyResources(Me.ToolStripButton7, "ToolStripButton7")
-        Me.ToolStripButton7.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image
-        Me.ToolStripButton7.Name = "ToolStripButton7"
+        Me.ForceEjectButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.ForceEject
+        Me.ForceEjectButton.Name = "ForceEjectButton"
+        Me.ForceEjectButton.TabIndex = 6
+        Me.ForceEjectButton.Text = resources.GetString("ToolStripButton7.Text")
         '
         'Timer2
         '
@@ -1362,7 +1368,7 @@ Partial Class LTFSWriter
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi
         Me.Controls.Add(Me.TextBoxSelectedPath)
         Me.Controls.Add(Me.StatusStrip2)
-        Me.Controls.Add(Me.ToolStrip1)
+        Me.Controls.Add(Me.CommandBar)
         Me.Controls.Add(Me.StatusStrip1)
         Me.Controls.Add(Me.SplitContainer1)
         Me.Controls.Add(Me.MenuStrip1)
@@ -1385,8 +1391,7 @@ Partial Class LTFSWriter
         Me.MenuStrip1.PerformLayout()
         Me.StatusStrip1.ResumeLayout(False)
         Me.StatusStrip1.PerformLayout()
-        Me.ToolStrip1.ResumeLayout(False)
-        Me.ToolStrip1.PerformLayout()
+        Me.CommandBar.ResumeLayout(False)
         Me.StatusStrip2.ResumeLayout(False)
         Me.StatusStrip2.PerformLayout()
         Me.ContextMenuStrip4.ResumeLayout(False)
@@ -1490,15 +1495,15 @@ Partial Class LTFSWriter
     Friend WithEvents 写入时标题ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents APToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 启用日志记录ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStrip1 As ToolStrip
-    Friend WithEvents ToolStripButton1 As ToolStripButton
-    Friend WithEvents ToolStripButton2 As ToolStripButton
-    Friend WithEvents ToolStripButton3 As ToolStripButton
-    Friend WithEvents ToolStripButton4 As ToolStripButton
+    Friend WithEvents CommandBar As ModernCommandBar
+    Friend WithEvents ImportFilesButton As ModernCommandButton
+    Friend WithEvents WriteTapeButton As ModernCommandButton
+    Friend WithEvents SafeEjectButton As ModernCommandButton
+    Friend WithEvents BackupIndexButton As ModernCommandButton
     Friend WithEvents ImageList1 As ImageList
-    Friend WithEvents ToolStripButton5 As ToolStripButton
+    Friend WithEvents MergeHashButton As ModernCommandButton
     Friend WithEvents 校验源文件ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStripButton6 As ToolStripButton
+    Friend WithEvents VerifySourceButton As ModernCommandButton
     Friend WithEvents 总是更新数据区索引ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 限速不限制ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 重装带前清洁次数3ToolStripMenuItem As ToolStripMenuItem
@@ -1599,7 +1604,7 @@ Partial Class LTFSWriter
     Friend WithEvents 从文件添加ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 提取为空文件ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 按索引删除硬盘文件ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStripButton7 As ToolStripButton
+    Friend WithEvents ForceEjectButton As ModernCommandButton
     Friend WithEvents 创建磁盘镜像ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 清除指定大小范围的待写文件ToolStripMenuItem As ToolStripMenuItem
 End Class

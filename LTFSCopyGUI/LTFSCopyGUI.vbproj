@@ -401,6 +401,9 @@
     <Compile Include="LTFSConfigurator.vb">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="ModernCommandBar.vb">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="LTFSWriter.Designer.vb">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
     </Compile>
