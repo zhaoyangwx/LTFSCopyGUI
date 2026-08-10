@@ -42,22 +42,6 @@ Partial Class LTFSWriter
         Me.解压索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
-        Me.ListView1 = New DpiAwareListView()
-        Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_fileuid = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_openforwrite = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_readonly = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_changetime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_modifytime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_accesstime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_backuptime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_tag = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_StartBlock = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_Partition = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_FriendlyLen = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_writtenBytes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.提取ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -93,7 +77,6 @@ Partial Class LTFSWriter
         Me.子目录列表ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.文件详情ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.XAttrToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.Chart1 = New Direct2DChartControl()
         Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.S60ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Min5ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -221,8 +204,25 @@ Partial Class LTFSWriter
         Me.提取为空文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.按索引删除硬盘文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.创建磁盘镜像ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
-        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
         Me.清除指定大小范围的待写文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
+        Me.ListView1 = New LTFSCopyGUI.DpiAwareListView()
+        Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_fileuid = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_openforwrite = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_readonly = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_changetime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_modifytime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_accesstime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_backuptime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_tag = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_StartBlock = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_Partition = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_FriendlyLen = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Column_writtenBytes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
+        Me.Chart1 = New LTFSCopyGUI.Direct2DChartControl()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -354,95 +354,6 @@ Partial Class LTFSWriter
         'SplitContainer2.Panel2
         '
         Me.SplitContainer2.Panel2.Controls.Add(Me.Chart1)
-        '
-        'ListView1
-        '
-        Me.ListView1.AllowColumnReorder = True
-        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
-        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
-        resources.ApplyResources(Me.ListView1, "ListView1")
-        Me.ListView1.HideSelection = False
-        Me.ListView1.Name = "ListView1"
-        Me.ListView1.ShowGroups = False
-        Me.ListView1.ShowItemToolTips = True
-        Me.ListView1.SmallImageList = Me.ImageList1
-        Me.ListView1.UseCompatibleStateImageBehavior = False
-        Me.ListView1.View = System.Windows.Forms.View.Details
-        '
-        'Column_name
-        '
-        Me.Column_name.Name = "Column_name"
-        resources.ApplyResources(Me.Column_name, "Column_name")
-        '
-        'Column_length
-        '
-        resources.ApplyResources(Me.Column_length, "Column_length")
-        Me.Column_length.Name = "Column_length"
-        '
-        'Column_creationtime
-        '
-        resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
-        Me.Column_creationtime.Name = "Column_creationtime"
-        '
-        'Column_fileuid
-        '
-        Me.Column_fileuid.Name = "Column_fileuid"
-        resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
-        '
-        'Column_openforwrite
-        '
-        resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
-        Me.Column_openforwrite.Name = "Column_openforwrite"
-        '
-        'Column_readonly
-        '
-        resources.ApplyResources(Me.Column_readonly, "Column_readonly")
-        Me.Column_readonly.Name = "Column_readonly"
-        '
-        'Column_changetime
-        '
-        resources.ApplyResources(Me.Column_changetime, "Column_changetime")
-        Me.Column_changetime.Name = "Column_changetime"
-        '
-        'Column_modifytime
-        '
-        resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
-        Me.Column_modifytime.Name = "Column_modifytime"
-        '
-        'Column_accesstime
-        '
-        resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
-        Me.Column_accesstime.Name = "Column_accesstime"
-        '
-        'Column_backuptime
-        '
-        resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
-        Me.Column_backuptime.Name = "Column_backuptime"
-        '
-        'Column_tag
-        '
-        resources.ApplyResources(Me.Column_tag, "Column_tag")
-        Me.Column_tag.Name = "Column_tag"
-        '
-        'Column_StartBlock
-        '
-        resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
-        Me.Column_StartBlock.Name = "Column_StartBlock"
-        '
-        'Column_Partition
-        '
-        resources.ApplyResources(Me.Column_Partition, "Column_Partition")
-        Me.Column_Partition.Name = "Column_Partition"
-        '
-        'Column_FriendlyLen
-        '
-        resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
-        Me.Column_FriendlyLen.Name = "Column_FriendlyLen"
-        '
-        'Column_writtenBytes
-        '
-        resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
-        Me.Column_writtenBytes.Name = "Column_writtenBytes"
         '
         'ContextMenuStrip1
         '
@@ -626,145 +537,6 @@ Partial Class LTFSWriter
         '
         Me.XAttrToolStripMenuItem.Name = "XAttrToolStripMenuItem"
         resources.ApplyResources(Me.XAttrToolStripMenuItem, "XAttrToolStripMenuItem")
-        '
-        'Chart1
-        '
-#If False Then
-        resources.ApplyResources(Me.Chart1, "Chart1")
-        Me.Chart1.AntiAliasing = System.Windows.Forms.DataVisualization.Charting.AntiAliasingStyles.Graphics
-        Me.Chart1.BorderlineColor = System.Drawing.Color.Silver
-        Me.Chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid
-        ChartArea2.AxisX.LabelStyle.Enabled = False
-        ChartArea2.AxisX.MajorGrid.Enabled = False
-        ChartArea2.AxisX2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisX2.LabelStyle.Enabled = False
-        ChartArea2.AxisX2.MajorGrid.Enabled = False
-        ChartArea2.AxisX2.MajorTickMark.Enabled = False
-        ChartArea2.AxisY.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisY.IsLabelAutoFit = False
-        ChartArea2.AxisY.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
-        ChartArea2.AxisY.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dash
-        ChartArea2.AxisY.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY.MajorTickMark.TickMarkStyle = System.Windows.Forms.DataVisualization.Charting.TickMarkStyle.AcrossAxis
-        ChartArea2.AxisY.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 9.1!)
-        ChartArea2.AxisY.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        ChartArea2.AxisY2.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.[True]
-        ChartArea2.AxisY2.IsLabelAutoFit = False
-        ChartArea2.AxisY2.LabelStyle.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.0!, System.Drawing.FontStyle.Bold)
-        ChartArea2.AxisY2.LabelStyle.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.AxisY2.MajorGrid.Enabled = False
-        ChartArea2.AxisY2.MajorTickMark.LineColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.AxisY2.TitleFont = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        ChartArea2.AxisY2.TitleForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        ChartArea2.InnerPlotPosition.Auto = False
-        ChartArea2.InnerPlotPosition.Height = 92.0!
-        ChartArea2.InnerPlotPosition.Width = 91.5!
-        ChartArea2.InnerPlotPosition.X = 4.5!
-        ChartArea2.InnerPlotPosition.Y = 7.21773!
-        ChartArea2.Name = "ChartArea1"
-        Me.Chart1.ChartAreas.Add(ChartArea2)
-        Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
-        Me.Chart1.Name = "Chart1"
-        Series4.BorderWidth = 2
-        Series4.ChartArea = "ChartArea1"
-        Series4.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series4.Color = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Series4.Name = "Series1"
-        Series4.Points.Add(DataPoint34)
-        Series4.Points.Add(DataPoint35)
-        Series4.Points.Add(DataPoint36)
-        Series4.Points.Add(DataPoint37)
-        Series4.Points.Add(DataPoint38)
-        Series4.Points.Add(DataPoint39)
-        Series4.Points.Add(DataPoint40)
-        Series4.Points.Add(DataPoint41)
-        Series4.Points.Add(DataPoint42)
-        Series4.Points.Add(DataPoint43)
-        Series4.Points.Add(DataPoint44)
-        Series4.Points.Add(DataPoint45)
-        Series4.Points.Add(DataPoint46)
-        Series4.Points.Add(DataPoint47)
-        Series4.Points.Add(DataPoint48)
-        Series4.Points.Add(DataPoint49)
-        Series5.BorderWidth = 2
-        Series5.ChartArea = "ChartArea1"
-        Series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series5.Color = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Series5.Name = "Series2"
-        Series5.Points.Add(DataPoint50)
-        Series5.Points.Add(DataPoint51)
-        Series5.Points.Add(DataPoint52)
-        Series5.Points.Add(DataPoint53)
-        Series5.Points.Add(DataPoint54)
-        Series5.Points.Add(DataPoint55)
-        Series5.Points.Add(DataPoint56)
-        Series5.Points.Add(DataPoint57)
-        Series5.Points.Add(DataPoint58)
-        Series5.Points.Add(DataPoint59)
-        Series5.Points.Add(DataPoint60)
-        Series5.Points.Add(DataPoint61)
-        Series5.Points.Add(DataPoint62)
-        Series5.Points.Add(DataPoint63)
-        Series5.Points.Add(DataPoint64)
-        Series5.Points.Add(DataPoint65)
-        Series5.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
-        Series5.YValuesPerPoint = 2
-        Series6.BorderWidth = 2
-        Series6.ChartArea = "ChartArea1"
-        Series6.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.FastLine
-        Series6.Color = System.Drawing.Color.Red
-        Series6.Name = "Series3"
-        Series6.Points.Add(DataPoint66)
-        Series6.YAxisType = System.Windows.Forms.DataVisualization.Charting.AxisType.Secondary
-        Me.Chart1.Series.Add(Series4)
-        Me.Chart1.Series.Add(Series5)
-        Me.Chart1.Series.Add(Series6)
-        Me.Chart1.SuppressExceptions = True
-        Title4.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Bottom
-        Title4.Name = "Title1"
-        Title4.Text = "10分钟"
-        Title5.BackColor = System.Drawing.Color.Transparent
-        Title5.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Left
-        Title5.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        Title5.ForeColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Title5.Name = "Title2"
-        Title5.Position.Auto = False
-        Title5.Position.Height = 80.01128!
-        Title5.Position.Width = 2.965401!
-        Title5.Position.X = 0.5!
-        Title5.Position.Y = 3.0!
-        Title5.Text = "速度 (MiB/s)"
-        Title5.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
-        Title6.Docking = System.Windows.Forms.DataVisualization.Charting.Docking.Right
-        Title6.Font = New System.Drawing.Font("Microsoft Sans Serif", 10.0!)
-        Title6.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Title6.Name = "Title3"
-        Title6.Position.Auto = False
-        Title6.Position.Height = 80.01128!
-        Title6.Position.Width = 1.915178!
-        Title6.Position.X = 97.2!
-        Title6.Position.Y = 4.0!
-        Title6.Text = "每秒文件"
-        Title6.TextOrientation = System.Windows.Forms.DataVisualization.Charting.TextOrientation.Rotated90
-        Me.Chart1.Titles.Add(Title4)
-        Me.Chart1.Titles.Add(Title5)
-        Me.Chart1.Titles.Add(Title6)
-#End If
-        '
-        'Direct2D chart
-        '
-        resources.ApplyResources(Me.Chart1, "Chart1")
-        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.Chart1.ThirdColor = System.Drawing.Color.Red
-        Me.Chart1.ChartTitle = "10分钟"
-        Me.Chart1.PrimaryAxisTitle = "速度 (MiB/s)"
-        Me.Chart1.SecondaryAxisTitle = "每秒文件"
-        Me.Chart1.VisibleSamples = 600
-        Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
-        Me.Chart1.Name = "Chart1"
         '
         'ContextMenuStrip2
         '
@@ -1465,6 +1237,11 @@ Partial Class LTFSWriter
         Me.创建磁盘镜像ToolStripMenuItem.Name = "创建磁盘镜像ToolStripMenuItem"
         resources.ApplyResources(Me.创建磁盘镜像ToolStripMenuItem, "创建磁盘镜像ToolStripMenuItem")
         '
+        '清除指定大小范围的待写文件ToolStripMenuItem
+        '
+        Me.清除指定大小范围的待写文件ToolStripMenuItem.Name = "清除指定大小范围的待写文件ToolStripMenuItem"
+        resources.ApplyResources(Me.清除指定大小范围的待写文件ToolStripMenuItem, "清除指定大小范围的待写文件ToolStripMenuItem")
+        '
         'ToolTipChanErrLog
         '
         Me.ToolTipChanErrLog.AutoPopDelay = 3600000
@@ -1474,10 +1251,110 @@ Partial Class LTFSWriter
         Me.ToolTipChanErrLog.UseAnimation = False
         Me.ToolTipChanErrLog.UseFading = False
         '
-        '清除指定大小范围的待写文件ToolStripMenuItem
+        'ListView1
         '
-        Me.清除指定大小范围的待写文件ToolStripMenuItem.Name = "清除指定大小范围的待写文件ToolStripMenuItem"
-        resources.ApplyResources(Me.清除指定大小范围的待写文件ToolStripMenuItem, "清除指定大小范围的待写文件ToolStripMenuItem")
+        Me.ListView1.AllowColumnReorder = True
+        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
+        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.ListView1, "ListView1")
+        Me.ListView1.HideSelection = False
+        Me.ListView1.Name = "ListView1"
+        Me.ListView1.ShowGroups = False
+        Me.ListView1.ShowItemToolTips = True
+        Me.ListView1.SmallImageList = Me.ImageList1
+        Me.ListView1.UseCompatibleStateImageBehavior = False
+        Me.ListView1.View = System.Windows.Forms.View.Details
+        '
+        'Column_name
+        '
+        Me.Column_name.Name = "Column_name"
+        resources.ApplyResources(Me.Column_name, "Column_name")
+        '
+        'Column_length
+        '
+        resources.ApplyResources(Me.Column_length, "Column_length")
+        Me.Column_length.Name = "Column_length"
+        '
+        'Column_creationtime
+        '
+        resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
+        Me.Column_creationtime.Name = "Column_creationtime"
+        '
+        'Column_fileuid
+        '
+        Me.Column_fileuid.Name = "Column_fileuid"
+        resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
+        '
+        'Column_openforwrite
+        '
+        resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
+        Me.Column_openforwrite.Name = "Column_openforwrite"
+        '
+        'Column_readonly
+        '
+        resources.ApplyResources(Me.Column_readonly, "Column_readonly")
+        Me.Column_readonly.Name = "Column_readonly"
+        '
+        'Column_changetime
+        '
+        resources.ApplyResources(Me.Column_changetime, "Column_changetime")
+        Me.Column_changetime.Name = "Column_changetime"
+        '
+        'Column_modifytime
+        '
+        resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
+        Me.Column_modifytime.Name = "Column_modifytime"
+        '
+        'Column_accesstime
+        '
+        resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
+        Me.Column_accesstime.Name = "Column_accesstime"
+        '
+        'Column_backuptime
+        '
+        resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
+        Me.Column_backuptime.Name = "Column_backuptime"
+        '
+        'Column_tag
+        '
+        resources.ApplyResources(Me.Column_tag, "Column_tag")
+        Me.Column_tag.Name = "Column_tag"
+        '
+        'Column_StartBlock
+        '
+        resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
+        Me.Column_StartBlock.Name = "Column_StartBlock"
+        '
+        'Column_Partition
+        '
+        Me.Column_Partition.Name = "Column_Partition"
+        resources.ApplyResources(Me.Column_Partition, "Column_Partition")
+        '
+        'Column_FriendlyLen
+        '
+        resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
+        Me.Column_FriendlyLen.Name = "Column_FriendlyLen"
+        '
+        'Column_writtenBytes
+        '
+        resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
+        Me.Column_writtenBytes.Name = "Column_writtenBytes"
+        '
+        'Chart1
+        '
+        resources.ApplyResources(Me.Chart1, "Chart1")
+        Me.Chart1.AxisColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(130, Byte), Integer))
+        Me.Chart1.BackColor = System.Drawing.SystemColors.Window
+        Me.Chart1.ChartTitle = ""
+        Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
+        Me.Chart1.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.Chart1.GridColor = System.Drawing.Color.FromArgb(CType(CType(205, Byte), Integer), CType(CType(205, Byte), Integer), CType(CType(225, Byte), Integer))
+        Me.Chart1.Name = "Chart1"
+        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.Chart1.TabStop = False
+        Me.Chart1.ThirdColor = System.Drawing.Color.Red
+        Me.Chart1.XAxisTitle = "10分钟"
         '
         'LTFSWriter
         '

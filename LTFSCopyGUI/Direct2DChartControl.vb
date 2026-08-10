@@ -30,7 +30,8 @@ Public Class Direct2DChartControl
     Private Const DipsPerInch As Single = 96.0F
     Private Const DefaultMaxSamples As Integer = 3600 * 6
     Private Const DefaultVisibleSamples As Integer = 600
-    Private Const PlotBottomMargin As Single = 12.0F
+    Private Const PlotBottomMargin As Single = 20.0F
+    Private Const PlotTopMargin As Single = 12.0F
     Private Const AnimationIntervalMilliseconds As Integer = 15
     Private Const AnimationDurationMilliseconds As Double = 180.0R
 
@@ -590,8 +591,8 @@ Public Class Direct2DChartControl
         Dim renderSize As SizeF = _renderTarget.Size
         Dim plotLeft As Single = 58.0F
         Dim plotRight As Single = Math.Max(plotLeft + 10.0F, renderSize.Width - 58.0F)
-        Dim plotTop As Single = 24.0F
-        Dim plotBottom As Single = Math.Max(plotTop + 10.0F, renderSize.Height - PlotBottomMargin)
+        Dim plotTop As Single = 24.0F - If(ChartTitle.Length = 0, PlotTopMargin, 0)
+        Dim plotBottom As Single = Math.Max(plotTop + 10.0F, renderSize.Height - If(XAxisTitle.Length = 0, 12, PlotBottomMargin))
         Dim plot As New RectangleF(plotLeft, plotTop, plotRight - plotLeft, plotBottom - plotTop)
         If plot.Width <= 10.0F OrElse plot.Height <= 10.0F Then Return
 
@@ -625,7 +626,7 @@ Public Class Direct2DChartControl
             _renderTarget.DrawText(_chartTitle, _chartTitleFormat, New RectangleF(plot.Left, 0.0F, plot.Width, plot.Top), _textBrush)
         End If
         If _xAxisTitle.Length > 0 Then
-            _renderTarget.DrawText(_xAxisTitle, _xTitleFormat, New RectangleF(plot.Left, plot.Bottom + 1.0F, plot.Width, renderSize.Height - plot.Bottom), _textBrush)
+            _renderTarget.DrawText(_xAxisTitle, _xTitleFormat, New RectangleF(plot.Left, plot.Bottom, plot.Width, renderSize.Height - plot.Bottom), _textBrush)
         End If
         DrawVerticalTitle(_primaryAxisTitle, 17.0F, (plot.Top + plot.Bottom) / 2.0F, _primaryColor)
         DrawVerticalTitle(_secondaryAxisTitle, renderSize.Width - 17.0F, (plot.Top + plot.Bottom) / 2.0F, _secondaryColor)

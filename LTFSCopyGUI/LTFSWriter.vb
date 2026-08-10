@@ -367,7 +367,7 @@ Public Class LTFSWriter
         End Select
         Chart1.PrimaryAxisTitle = If(My.Settings.Application_UseDecimalUnit, My.Resources.ResText_SpeedBTD, My.Resources.ResText_SpeedBT)
         Chart1.SecondaryAxisTitle = My.Resources.ResText_FileRateBT
-        Chart1.ChartTitle = Min10ToolStripMenuItem.Text
+        Chart1.XAxisTitle = Min10ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
         TapeUtils.AllowPartition = Not DisablePartition
         CleanCycle = CleanCycle
@@ -6651,37 +6651,37 @@ Public Class LTFSWriter
     End Sub
     Private Sub S60ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles S60ToolStripMenuItem.Click
         SMaxNum = 60
-        Chart1.ChartTitle = S60ToolStripMenuItem.Text
+        Chart1.XAxisTitle = S60ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min5ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min5ToolStripMenuItem.Click
         SMaxNum = 300
-        Chart1.ChartTitle = Min5ToolStripMenuItem.Text
+        Chart1.XAxisTitle = Min5ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min10ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min10ToolStripMenuItem.Click
         SMaxNum = 600
-        Chart1.ChartTitle = Min10ToolStripMenuItem.Text
+        Chart1.XAxisTitle = Min10ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub Min30ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles Min30ToolStripMenuItem.Click
         SMaxNum = 1800
-        Chart1.ChartTitle = Min30ToolStripMenuItem.Text
+        Chart1.XAxisTitle = Min30ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H1ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H1ToolStripMenuItem.Click
         SMaxNum = 3600
-        Chart1.ChartTitle = H1ToolStripMenuItem.Text
+        Chart1.XAxisTitle = H1ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H3ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H3ToolStripMenuItem.Click
         SMaxNum = 3600 * 3
-        Chart1.ChartTitle = H3ToolStripMenuItem.Text
+        Chart1.XAxisTitle = H3ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Private Sub H6ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles H6ToolStripMenuItem.Click
         SMaxNum = 3600 * 6
-        Chart1.ChartTitle = H6ToolStripMenuItem.Text
+        Chart1.XAxisTitle = H6ToolStripMenuItem.Text
         Chart1.VisibleSamples = SMaxNum
     End Sub
     Public LRHistory As Double
