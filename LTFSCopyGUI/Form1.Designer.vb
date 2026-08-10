@@ -458,11 +458,9 @@ Partial Class Form1
     Friend WithEvents Button16 As Button
 
     Public Sub New()
-        DisplayHelper.BeforeInitializeComponent(Me)
         ' 此调用是设计器所必需的。
         InitializeComponent()
         ' 在 InitializeComponent() 调用之后添加任何初始化。
-        Me.Label6.Font = New Font(Me.Label6.Font.FontFamily, Me.Label6.Font.Size * DisplayHelper.ScreenScale, GraphicsUnit.Pixel)
-        DisplayHelper.AfterInitializeComponent(Me)
+        DisplayHelper.ApplyApplicationFont(Me)
     End Sub
 End Class

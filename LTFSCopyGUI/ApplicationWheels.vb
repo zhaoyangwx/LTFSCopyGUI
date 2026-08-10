@@ -799,98 +799,22 @@ Public Module GlobCollector
     End Sub
 End Module
 
-Public Class DisplayHelper
-    Public Shared Function GetScreenScale() As Single
-        Using graphics As Graphics = Graphics.FromHwnd(IntPtr.Zero)
-            Return graphics.DpiX / 96
-        End Using
-    End Function
-    Public Shared Property ScreenScale As Single = 1
+Public NotInheritable Class DisplayHelper
     Private Shared _font As System.Drawing.Font
     Public Shared Property DisplayFont As System.Drawing.Font
         Get
-            If _font Is Nothing Then Return New Drawing.Font("SimSun", 12 * ScreenScale, GraphicsUnit.Pixel)
+            If _font Is Nothing Then Return New Drawing.Font("SimSun", 12.0F, GraphicsUnit.Pixel)
             Return _font
         End Get
         Set(value As System.Drawing.Font)
             _font = value
         End Set
     End Property
-    Public Shared Sub BeforeInitializeComponent(frm As Form)
-        frm.SuspendLayout()
-        frm.AutoScaleDimensions = New System.Drawing.SizeF(96.0!, 96.0!)
-    End Sub
-    Public Shared Sub AfterInitializeComponent(frm As Form)
-        frm.PerformAutoScale()
+    Public Shared Sub ApplyApplicationFont(frm As Form)
+        If frm Is Nothing Then Throw New ArgumentNullException(NameOf(frm))
+        ' Keep the user-selectable base font. DPI scaling itself is owned by
+        ' WinForms' PerMonitorV2/AutoScaleMode pipeline.
         frm.Font = DisplayFont
-
-        Dim cchk As New List(Of Control)
-        For Each c As Control In frm.Controls
-            cchk.Add(c)
-        Next
-        Dim clist As New List(Of Control)
-        While cchk.Count > 0
-            Dim cchk2 As New List(Of Control)
-            For Each c As Control In cchk
-                For Each c2 As Control In c.Controls
-                    cchk2.Add(c2)
-                Next
-            Next
-            clist.AddRange(cchk)
-            cchk = cchk2
-        End While
-
-        For Each f As Reflection.FieldInfo In frm.GetType().GetFields(
-                Reflection.BindingFlags.Public Or
-                Reflection.BindingFlags.NonPublic Or
-                Reflection.BindingFlags.Instance Or
-                Reflection.BindingFlags.Static)
-            Dim o As Object = f.GetValue(frm)
-            If TypeOf o Is ContextMenuStrip Then clist.Add(DirectCast(o, Control))
-        Next
-
-        For Each c As Control In clist
-            If TypeOf c Is ListView Then
-                For Each col As ColumnHeader In DirectCast(c, ListView).Columns
-                    col.Width = CInt(col.Width * ScreenScale)
-                Next
-            ElseIf TypeOf c Is ToolStrip Then
-                If ScreenScale <> 1 AndAlso TypeOf c Is MenuStrip OrElse TypeOf c Is ContextMenuStrip Then DirectCast(c, ToolStrip).Renderer = New RichMenuStrip.HiDPIRenderer()
-                DirectCast(c, ToolStrip).ImageScalingSize = New Size(CInt(16 * ScreenScale), CInt(16 * ScreenScale))
-                Dim items As New List(Of ToolStripMenuItem)
-                Dim icd As New List(Of ToolStripMenuItem)
-                For Each itm As ToolStripItem In DirectCast(c, ToolStrip).Items
-                    If TypeOf itm Is ToolStripMenuItem Then
-                        icd.Add(CType(itm, ToolStripMenuItem))
-                    ElseIf TypeOf itm Is ToolStripButton Then
-                        itm.Width = CInt(itm.Width * DisplayHelper.ScreenScale)
-                        itm.Height = CInt(itm.Height * DisplayHelper.ScreenScale)
-                    End If
-                Next
-                While icd.Count > 0
-                    Dim icd2 As New List(Of ToolStripMenuItem)
-                    For Each itm As ToolStripMenuItem In icd
-                        For Each ditm As ToolStripItem In itm.DropDownItems
-                            If TypeOf ditm Is ToolStripMenuItem Then
-                                icd2.Add(CType(ditm, ToolStripMenuItem))
-                            ElseIf TypeOf ditm Is ToolStripButton Then
-                                ditm.Width = CInt(ditm.Width * DisplayHelper.ScreenScale)
-                                ditm.Height = CInt(ditm.Height * DisplayHelper.ScreenScale)
-                            End If
-                        Next
-                    Next
-                    items.AddRange(icd)
-                    icd = icd2
-                End While
-                For Each itm As ToolStripMenuItem In items
-                    If itm.DropDown IsNot Nothing Then
-                        itm.DropDown.ImageScalingSize = New Size(CInt(16 * ScreenScale), CInt(16 * ScreenScale))
-                    End If
-                Next
-            End If
-        Next
-
-        frm.ResumeLayout(True)
     End Sub
 
     Public Shared Function ShowInputDialog(Prompt As String, Title As String, ByRef Response As UShort) As DialogResult
@@ -927,82 +851,105 @@ Public Class DisplayHelper
         Dim size As System.Drawing.Size = New System.Drawing.Size(200, 90)
         Dim inputDialog As Form = New Form()
         inputDialog.StartPosition = FormStartPosition.CenterParent
+        inputDialog.AutoScaleMode = AutoScaleMode.Font
         inputDialog.Font = DisplayFont
         inputDialog.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog
         inputDialog.MinimizeBox = False
         inputDialog.MaximizeBox = False
-        inputDialog.ClientSize = New Size(CInt(size.Width * ScreenScale), CInt(size.Height * ScreenScale))
-        inputDialog.AutoScaleMode = AutoScaleMode.Font
+        inputDialog.ClientSize = size
         inputDialog.Text = Title
         Dim promptLabel As Label = New Label()
-        promptLabel.Location = New Point(CInt(5 * ScreenScale), CInt(5 * ScreenScale))
+        promptLabel.Location = New Point(5, 5)
         promptLabel.Text = Prompt
         promptLabel.AutoSize = True
         inputDialog.Controls.Add(promptLabel)
         Dim textBox As System.Windows.Forms.TextBox = New TextBox()
-        textBox.Size = New System.Drawing.Size(CInt((size.Width - 10) * ScreenScale), CInt(23 * ScreenScale))
-        textBox.Location = New System.Drawing.Point(CInt(5 * ScreenScale), CInt(25 * ScreenScale))
+        textBox.Size = New System.Drawing.Size(size.Width - 10, 23)
+        textBox.Location = New System.Drawing.Point(5, 25)
         textBox.Text = Response
         inputDialog.Controls.Add(textBox)
         Dim okButton As Button = New Button()
         okButton.DialogResult = System.Windows.Forms.DialogResult.OK
         okButton.Name = "okButton"
-        okButton.Size = New System.Drawing.Size(CInt(75 * ScreenScale), CInt(23 * ScreenScale))
+        okButton.Size = New System.Drawing.Size(75, 23)
         okButton.Text = $"&OK"
-        okButton.Location = New System.Drawing.Point(CInt((size.Width - 80 - 80) * ScreenScale), CInt(59 * ScreenScale))
+        okButton.Location = New System.Drawing.Point(size.Width - 80 - 80, 59)
         inputDialog.Controls.Add(okButton)
         Dim cancelButton As Button = New Button()
         cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel
         cancelButton.Name = "cancelButton"
-        cancelButton.Size = New System.Drawing.Size(CInt(75 * ScreenScale), CInt(23 * ScreenScale))
+        cancelButton.Size = New System.Drawing.Size(75, 23)
         cancelButton.Text = $"&Cancel"
-        cancelButton.Location = New System.Drawing.Point(CInt((size.Width - 80) * ScreenScale), CInt(59 * ScreenScale))
+        cancelButton.Location = New System.Drawing.Point(size.Width - 80, 59)
         inputDialog.Controls.Add(cancelButton)
         inputDialog.AcceptButton = okButton
         inputDialog.CancelButton = cancelButton
-        inputDialog.PerformAutoScale()
         Dim result As DialogResult = inputDialog.ShowDialog()
         If result = DialogResult.OK Then Response = textBox.Text
         Return result
     End Function
 End Class
-Public Class RichMenuStrip
-    Inherits System.Windows.Forms.MenuStrip
-    Private Overloads Sub RescaleConstantsForDpi(deviceDpiOld As Integer, deviceDpiNew As Integer)
-        ' Use reflection to invoke the internal ResetScaling method
-        Dim resetScalingMethod = GetType(System.Windows.Forms.MenuStrip).GetMethod("ResetScaling", BindingFlags.NonPublic Or BindingFlags.Instance)
-        If (resetScalingMethod IsNot Nothing) Then
-            resetScalingMethod.Invoke(Me, {deviceDpiNew})
-        End If
+
+''' <summary>
+''' ListView with DPI-aware column widths.
+'''
+''' WinForms scales the control itself, but column widths are native ListView
+''' state and are not part of the regular child-control scaling pass. The
+''' framework supplies the scale factor here, so no process-wide DPI is read
+''' or cached by the application.
+''' </summary>
+Public Class DpiAwareListView
+    Inherits ListView
+
+    Protected Overrides Sub ScaleControl(factor As System.Drawing.SizeF,
+                                         specified As System.Windows.Forms.BoundsSpecified)
+        MyBase.ScaleControl(factor, specified)
+
+        If factor.Width = 1.0F Then Return
+
+        For Each column As ColumnHeader In Columns
+            If column.Width > 0 Then
+                column.Width = CInt(Math.Round(column.Width * factor.Width))
+            End If
+        Next
     End Sub
-    Public Sub New(container As IContainer)
-        RescaleConstantsForDpi(96, DeviceDpi)
-    End Sub
+End Class
+
+''' <summary>
+''' ToolStrip with DPI-aware image and fixed item sizes.
+'''
+''' ToolStripItem is not a Control, so WinForms does not include its fixed
+''' Size or the ToolStrip's ImageScalingSize in the normal form scaling pass.
+''' Scale both with the factor supplied by that pass, including subsequent
+''' per-monitor DPI changes.
+''' </summary>
+Public Class DpiAwareToolStrip
+    Inherits ToolStrip
+
     Public Sub New()
-        RescaleConstantsForDpi(96, DeviceDpi)
+        MyBase.New()
     End Sub
-    Public Class HiDPIRenderer
-        Inherits ToolStripProfessionalRenderer
 
-        Protected Overrides Sub OnRenderItemCheck(e As ToolStripItemImageRenderEventArgs)
-            Dim g = e.Graphics
-            g.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias
+    Protected Overrides Sub ScaleControl(factor As System.Drawing.SizeF,
+                                         specified As System.Windows.Forms.BoundsSpecified)
+        MyBase.ScaleControl(factor, specified)
 
-            Dim size = CInt(16 * DisplayHelper.ScreenScale)
+        If factor.Width = 1.0F AndAlso factor.Height = 1.0F Then Return
 
-            Dim rect = New Rectangle(e.ImageRectangle.X, e.ImageRectangle.Y, size, size)
-            Dim rect2 As New Rectangle(CInt(rect.X + rect.Width / 8), CInt(rect.Y + rect.Height / 8), CInt(rect.Width * 0.75), CInt(rect.Height * 0.75))
-            Using pen As New Pen(Color.Black, CSng(1.5 * DisplayHelper.ScreenScale))
-                g.FillRectangle(New SolidBrush(Color.FromArgb(181, 215, 243)), rect)
-                g.DrawRectangle(New Pen(Color.FromArgb(36, 138, 220)), rect)
-                g.DrawLines(pen, {
-                    New Point(CInt(rect2.Left + size * 0.75 * 0.2), CInt(rect2.Top + size * 0.75 * 0.55)),
-                    New Point(CInt(rect2.Left + size * 0.75 * 0.45), CInt(rect2.Top + size * 0.75 * 0.8)),
-                    New Point(CInt(rect2.Left + size * 0.75 * 0.85), CInt(rect2.Top + size * 0.75 * 0.2))
-                })
-            End Using
-        End Sub
-    End Class
+        ImageScalingSize = ScaleSize(ImageScalingSize, factor)
+        For Each item As ToolStripItem In Items
+            If Not item.AutoSize Then
+                item.Size = ScaleSize(item.Size, factor)
+            End If
+        Next
+    End Sub
+
+    Private Shared Function ScaleSize(value As System.Drawing.Size,
+                                      factor As System.Drawing.SizeF) As System.Drawing.Size
+        Return New System.Drawing.Size(
+            Math.Max(1, CInt(Math.Round(value.Width * factor.Width))),
+            Math.Max(1, CInt(Math.Round(value.Height * factor.Height))))
+    End Function
 End Class
 
 Public Class ErrRateHelper

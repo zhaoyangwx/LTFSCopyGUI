@@ -1472,12 +1472,10 @@ Partial Class LTFSConfigurator
     Friend WithEvents LabelTestSets As Label
 
     Public Sub New()
-        DisplayHelper.BeforeInitializeComponent(Me)
         ' 此调用是设计器所必需的。
         InitializeComponent()
         ' 在 InitializeComponent() 调用之后添加任何初始化。
-        Me.LabelParam.Font = New Font(Me.LabelParam.Font.FontFamily, Me.LabelParam.Font.Size * DisplayHelper.ScreenScale, GraphicsUnit.Pixel)
-        DisplayHelper.AfterInitializeComponent(Me)
+        DisplayHelper.ApplyApplicationFont(Me)
     End Sub
 
     Friend WithEvents AddImageToolStripMenuItem As ToolStripMenuItem

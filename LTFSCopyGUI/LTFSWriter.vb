@@ -2093,39 +2093,39 @@ Public Class LTFSWriter
                         ListView1.Columns.RemoveAt(3)
                     End While
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1)), .Text = "SHA1", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1)), .Text = "SHA1", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1)), .Text = "SHA256", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1)), .Text = "SHA256", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1)), .Text = "SHA512", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1)), .Text = "SHA512", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1)), .Text = "CRC32", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1)), .Text = "CRC32", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1)), .Text = "MD5", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1)), .Text = "MD5", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1)), .Text = "BLAKE3", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1)), .Text = "BLAKE3", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1)), .Text = "XxHash3", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1)), .Text = "XxHash3", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = CInt(DisplayHelper.ScreenScale * 12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1)), .Text = "XxHash128", .DisplayIndex = colIndex})
+                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1)), .Text = "XxHash128", .DisplayIndex = colIndex})
                         colIndex += 1
                     End If
                     If ShowXAttr_Barcode Then
-                        ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = 60, .Text = "Barcode", .DisplayIndex = 1})
+                        ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = ListView1.LogicalToDeviceUnits(60), .Text = "Barcode", .DisplayIndex = 1})
                     End If
 
                     If My.Settings.LTFSWriter_ColumnIndex IsNot Nothing Then
@@ -9892,8 +9892,12 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 监控写入ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 监控写入ToolStripMenuItem.Click
-        Dim frm As New Form With {.Width = 640, .Height = 200}
-        DisplayHelper.BeforeInitializeComponent(frm)
+        Dim frm As New Form With {
+            .Width = 640,
+            .Height = 200,
+            .AutoScaleMode = AutoScaleMode.Font,
+            .Font = DisplayHelper.DisplayFont
+        }
         Dim lbl1 As New Label With {.Parent = frm, .Top = 11, .Left = 7, .Width = 51, .Text = "SrcPath"}
         Dim txtLocation As New TextBox With {.Top = 7, .Left = 65, .Width = 640 - 7 * 3 - 65,
             .Anchor = AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Top,
@@ -10027,8 +10031,6 @@ Public Class LTFSWriter
                      End Sub)
 
         End Sub
-        ' 在 InitializeComponent() 调用之后添加任何初始化。
-        DisplayHelper.AfterInitializeComponent(frm)
         frm.Show()
     End Sub
 

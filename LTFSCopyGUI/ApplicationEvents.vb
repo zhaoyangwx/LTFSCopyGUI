@@ -132,9 +132,8 @@ Namespace My
                     End If
                 End Try
             End If
-            DisplayHelper.ScreenScale = DisplayHelper.GetScreenScale()
             With My.Settings.Application_BaseFont
-                DisplayHelper.DisplayFont = New Font(.FontFamily, .Size * DisplayHelper.ScreenScale, .Unit)
+                DisplayHelper.DisplayFont = New Font(.FontFamily, .Size, .Style, .Unit)
             End With
             If e.CommandLine.Count = 0 Then
 

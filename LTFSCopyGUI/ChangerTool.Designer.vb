@@ -165,11 +165,10 @@ Partial Class ChangerTool
     Friend WithEvents Button4 As Button
 
     Public Sub New()
-        DisplayHelper.BeforeInitializeComponent(Me)
         ' 此调用是设计器所必需的。
         InitializeComponent()
         ' 在 InitializeComponent() 调用之后添加任何初始化。
-        DisplayHelper.AfterInitializeComponent(Me)
+        DisplayHelper.ApplyApplicationFont(Me)
     End Sub
 
     Friend WithEvents ContextMenuStrip1 As ContextMenuStrip

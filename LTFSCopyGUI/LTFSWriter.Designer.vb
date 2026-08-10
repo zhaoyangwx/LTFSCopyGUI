@@ -42,7 +42,7 @@ Partial Class LTFSWriter
         Me.解压索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
-        Me.ListView1 = New System.Windows.Forms.ListView()
+        Me.ListView1 = New DpiAwareListView()
         Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
         Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
@@ -188,7 +188,7 @@ Partial Class LTFSWriter
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
-        Me.ToolStrip1 = New System.Windows.Forms.ToolStrip()
+        Me.ToolStrip1 = New DpiAwareToolStrip()
         Me.ToolStripButton1 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton2 = New System.Windows.Forms.ToolStripButton()
         Me.ToolStripButton4 = New System.Windows.Forms.ToolStripButton()
@@ -1528,7 +1528,7 @@ Partial Class LTFSWriter
 
     End Sub
 
-    Friend WithEvents ListView1 As ListView
+    Friend WithEvents ListView1 As DpiAwareListView
     Friend WithEvents Column_name As ColumnHeader
     Friend WithEvents Column_length As ColumnHeader
     Friend WithEvents Column_creationtime As ColumnHeader
@@ -1623,7 +1623,7 @@ Partial Class LTFSWriter
     Friend WithEvents ToolStripTextBox1 As ToolStripTextBox
     Friend WithEvents APToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 启用日志记录ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents ToolStrip1 As ToolStrip
+    Friend WithEvents ToolStrip1 As DpiAwareToolStrip
     Friend WithEvents ToolStripButton1 As ToolStripButton
     Friend WithEvents ToolStripButton2 As ToolStripButton
     Friend WithEvents ToolStripButton3 As ToolStripButton
@@ -1717,11 +1717,10 @@ Partial Class LTFSWriter
     Friend WithEvents 启动iSCSI服务ToolStripMenuItem As ToolStripMenuItem
 
     Public Sub New()
-        DisplayHelper.BeforeInitializeComponent(Me)
         ' 此调用是设计器所必需的。
         InitializeComponent()
         ' 在 InitializeComponent() 调用之后添加任何初始化。
-        DisplayHelper.AfterInitializeComponent(Me)
+        DisplayHelper.ApplyApplicationFont(Me)
     End Sub
 
     Friend WithEvents TestToolStripMenuItem As ToolStripMenuItem
