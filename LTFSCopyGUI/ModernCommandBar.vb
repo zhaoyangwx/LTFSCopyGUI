@@ -212,7 +212,11 @@ Public Class ModernCommandButton
                         g.DrawLines(pen, {New PointF(5.9F, 9.0F), New PointF(8.0F, 11.1F), New PointF(10.1F, 9.0F)})
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_Open, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_Open, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_Open, 0, 0, BackColor)
+                        End If
                     End If
                 Case ModernCommandIcon.WriteTape
                     If My.Settings.LTFSWriter_ModernIcon Then
@@ -224,7 +228,11 @@ Public Class ModernCommandButton
                         End Using
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_Copy, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_Copy, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_Copy, 0, 0, BackColor)
+                        End If
                     End If
                 Case ModernCommandIcon.BackupIndex
                     If My.Settings.LTFSWriter_ModernIcon Then
@@ -234,7 +242,11 @@ Public Class ModernCommandButton
                         g.DrawLine(pen, 5.5F, 10.5F, 9.0F, 10.5F)
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_SaveIndex, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_SaveIndex, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_SaveIndex, 0, 0, BackColor)
+                        End If
                     End If
 
                 Case ModernCommandIcon.MergeHash
@@ -246,7 +258,11 @@ Public Class ModernCommandButton
                         g.DrawLines(pen, {New PointF(12.0F, 8.0F), New PointF(14.0F, 10.0F), New PointF(12.0F, 12.0F)})
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_MergeSHA1, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_MergeSHA1, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_MergeSHA1, 0, 0, BackColor)
+                        End If
                     End If
 
                 Case ModernCommandIcon.VerifySource
@@ -258,7 +274,11 @@ Public Class ModernCommandButton
                         g.DrawLines(pen, {New PointF(7.0F, 11.5F), New PointF(9.5F, 14.0F), New PointF(14.5F, 9.0F)})
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_CheckSum, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_CheckSum, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_CheckSum, 0, 0, BackColor)
+                        End If
                     End If
 
                 Case ModernCommandIcon.SafeEject
@@ -267,7 +287,11 @@ Public Class ModernCommandButton
                         g.DrawLine(pen, 3.0F, 13.5F, 13.0F, 13.5F)
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_Eject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_Eject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_Eject, 0, 0, BackColor)
+                        End If
                     End If
 
                 Case ModernCommandIcon.ForceEject
@@ -280,7 +304,11 @@ Public Class ModernCommandButton
                         End Using
                     Else
                         g.InterpolationMode = InterpolationMode.NearestNeighbor
-                        g.DrawImage(My.Resources.Icon_ForceEject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        If Enabled Then
+                            g.DrawImage(My.Resources.Icon_ForceEject, New RectangleF(0F, 0F, 16.0F, 16.0F))
+                        Else
+                            ControlPaint.DrawImageDisabled(g, My.Resources.Icon_ForceEject, 0, 0, BackColor)
+                        End If
                     End If
             End Select
         End Using
