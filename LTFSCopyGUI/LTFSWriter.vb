@@ -1024,6 +1024,8 @@ Public Class LTFSWriter
         Public Property ParentDirectory As ltfsindex.directory
         Public Property SourcePath As String
         Public Property File As ltfsindex.file
+        Public Property FileOffset As Long
+        Public Property SegmentLength As Long
         Public Property Buffer As Byte() = Nothing
         Public Property IsOpened As Boolean = False
         Private OperationLock As New Object
@@ -1044,6 +1046,8 @@ Public Class LTFSWriter
                 .length = finf.Length,
                 .readonly = False,
                 .openforwrite = False}
+            FileOffset = 0
+            SegmentLength = finf.Length
             With File
                 Try
                     .creationtime = finf.CreationTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
@@ -1100,6 +1104,7 @@ Public Class LTFSWriter
                             Return 1
                         End If
                         fs = New IO.FileStream(SourcePath, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.Read, BufferSize, True)
+                        If FileOffset > 0 Then fs.Seek(FileOffset, IO.SeekOrigin.Begin)
                         IsOpened = True
                         Exit While
                     Catch ex As Exception
@@ -3051,7 +3056,7 @@ Public Class LTFSWriter
                                     For i As Integer = UnwrittenFiles.Count - 1 To 0 Step -1
                                         Dim oldf As FileRecord = UnwrittenFiles(i)
                                         If oldf.ParentDirectory Is dT AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                            oldf.ParentDirectory.UnwrittenFiles.Remove(oldf.File)
+                                            oldf.RemoveUnwritten()
                                             UnwrittenFiles.RemoveAt(i)
                                             FileExist = True
                                             Exit For
@@ -3106,7 +3111,7 @@ Public Class LTFSWriter
                         If UFReadCount > 0 Then Continue While
                         For Each oldf As FileRecord In UnwrittenFiles
                             If oldf.ParentDirectory Is d1 AndAlso oldf.File.name.ToLower = f.Name.ToLower Then
-                                oldf.ParentDirectory.UnwrittenFiles.Remove(oldf.File)
+                                oldf.RemoveUnwritten()
                                 UnwrittenFiles.Remove(oldf)
                                 FileExist = True
                                 Exit For
@@ -3615,7 +3620,7 @@ Public Class LTFSWriter
                                                   }wt{finfo.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")}->{FileIndex.modifytime}{vbCrLf _
                                                   }", LogOnly:=True)
         End If
-        If FileExist Then
+        If FileExist AndAlso Not (FileIndex.GetXAttr("ltfscopygui.fragment", True).ToLower() = "true") Then
             Threading.Interlocked.Increment(CurrentFilesProcessed)
             Threading.Interlocked.Increment(TotalFilesProcessed)
             Exit Sub
@@ -3647,7 +3652,6 @@ Public Class LTFSWriter
                 If FileIndex.TempObj Is Nothing OrElse TypeOf FileIndex.TempObj IsNot ltfsindex.file.refFile Then FileIndex.TempObj = New ltfsindex.file.refFile()
                 CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName = FileName
                 Dim fs As New IO.FileStream(FileName, IO.FileMode.OpenOrCreate, IO.FileAccess.ReadWrite, IO.FileShare.Read, 8388608, IO.FileOptions.None)
-                fs.SetLength(FileIndex.length)
                 Try
                     FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
                                                                                            If a.startblock <> b.startblock Then Return a.startblock.CompareTo(b.startblock)
@@ -5004,9 +5008,9 @@ Public Class LTFSWriter
                                         Dim fileextent As New ltfsindex.file.extent With
                                             {.partition = CType(DataPartition, ltfsindex.PartitionLabel),
                                             .startblock = CLng(p.BlockNumber),
-                                            .bytecount = fr.File.length,
+                                            .bytecount = If(Not useFastReader, fr.SegmentLength, fr.File.length),
                                             .byteoffset = 0,
-                                            .fileoffset = 0}
+                                            .fileoffset = If(Not useFastReader, fr.FileOffset, 0)}
                                         If IsIndexPartition Then
                                             fr.File.extentinfo.Clear()
                                             Select Case fr.Open()
@@ -5052,7 +5056,7 @@ Public Class LTFSWriter
                                             TotalBytesUnindexed += fr.File.length
                                         ElseIf useFastReader AndAlso Not IsIndexPartition Then
                                             If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash) Then Exit For
-                                        ElseIf fr.File.length <= plabel.blocksize Then
+                                        ElseIf (fr.File.length <= plabel.blocksize) AndAlso (fr.FileOffset = 0) AndAlso (fr.File.length = fr.SegmentLength) Then
                                             Dim succ As Boolean = False
                                             Dim FileData(CInt(fr.File.length - 1)) As Byte
                                             While True
@@ -5207,7 +5211,7 @@ Public Class LTFSWriter
                                             Else
                                                 PipeReader = provider.Reader
                                             End If
-                                            Dim remainingInFile As Long = fr.File.length
+                                            Dim remainingInFile As Long = fr.SegmentLength
                                             Dim LWTE As New AutoResetEvent(False)
                                             While Not StopFlag AndAlso remainingInFile > 0
                                                 Dim toRead As Integer = CInt(Math.Min(plabel.blocksize, remainingInFile))
@@ -5518,7 +5522,7 @@ Public Class LTFSWriter
                                 End If
                                 'mark as written
                                 fr.ParentDirectory.contents._file.Add(fr.File)
-                                fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
+                                fr.RemoveUnwritten()
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                 If (Not IsIndexPartition) AndAlso CheckUnindexedDataLimit() Then
                                     p = New TapeUtils.PositionData(driveHandle)
@@ -7883,27 +7887,34 @@ Public Class LTFSWriter
     Private Sub 文件详情ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 文件详情ToolStripMenuItem.Click
         Dim result As New StringBuilder
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
-            If ListView1.SelectedItems.Count > 1 Then
-                SyncLock ListView1.SelectedItems
-                    For Each ItemSelected As ListViewItem In ListView1.SelectedItems
-                        If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
-                            Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
-                            result.AppendLine(f.GetSerializedText())
-                        End If
-                    Next
-                End SyncLock
-                MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
+        ListView1.SelectedItems IsNot Nothing Then
+            If ListView1.SelectedItems.Count > 0 Then
+                If ListView1.SelectedItems.Count > 1 Then
+                    SyncLock ListView1.SelectedItems
+                        For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+                            If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
+                                Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
+                                result.AppendLine(f.GetSerializedText())
+                            End If
+                        Next
+                    End SyncLock
+                    MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
+                Else
+                    Dim PG1 As New SettingPanel
+                    PG1.PropertyGrid1.SelectedObject = CType(ListView1.SelectedItems(0).Tag, ltfsindex.file)
+                    PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name}"
+                    If PG1.ShowDialog() = DialogResult.OK Then
+                        If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                    End If
+                End If
             Else
                 Dim PG1 As New SettingPanel
-                PG1.PropertyGrid1.SelectedObject = CType(ListView1.SelectedItems(0).Tag, ltfsindex.file)
-                PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name}"
+                PG1.PropertyGrid1.SelectedObject = CType(ListView1.Tag, ltfsindex.directory)
+                PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(ListView1.Tag, ltfsindex.directory).name}"
                 If PG1.ShowDialog() = DialogResult.OK Then
                     If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                 End If
             End If
-
         End If
 
     End Sub
@@ -9183,7 +9194,7 @@ Public Class LTFSWriter
                             CurrentHeight = CLng(p.BlockNumber)
                             'mark as written
                             fr.ParentDirectory.contents._file.Add(fr.File)
-                            fr.ParentDirectory.UnwrittenFiles.Remove(fr.File)
+                            fr.RemoveUnwritten()
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                             If CheckUnindexedDataLimit() Then p = New TapeUtils.PositionData(driveHandle)
                             If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
@@ -9559,6 +9570,7 @@ Public Class LTFSWriter
         Select Case e.KeyCode
             Case Keys.V
                 If Not AllowOperation Then Exit Sub
+                If ListView1.Tag Is Nothing Then Exit Sub
                 If e.Control Then
                     Dim Paths As String() = Nothing
                     If Clipboard.ContainsText Then
@@ -10833,7 +10845,7 @@ Public Class LTFSWriter
                 Dim ulim As Long = Long.Parse(rangelim(1))
                 For i As Integer = UnwrittenFiles.Count - 1 To 1 Step -1
                     If UnwrittenFiles(i).File.length < dlim OrElse UnwrittenFiles(i).File.length > ulim Then Continue For
-                    UnwrittenFiles(i).ParentDirectory.UnwrittenFiles.Remove(UnwrittenFiles(i).File)
+                    UnwrittenFiles(i).RemoveUnwritten()
                     UnwrittenFiles.RemoveAt(i)
                 Next
                 MessageBox.Show(My.Resources.ResText_Succ)

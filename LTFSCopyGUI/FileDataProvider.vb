@@ -150,7 +150,7 @@ Public Class FileDataProvider
                 End If
                 _current = fr
 
-                If fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold Then
+                If fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold AndAlso fr.FileOffset = 0 AndAlso fr.File.length = fr.SegmentLength Then
                     Dim data As Byte() = Nothing
                     If Not _smallCacheMap.TryRemove(fr, data) Then
                         data = ReadAllBytesSafe(fr)
@@ -238,7 +238,11 @@ Public Class FileDataProvider
         Dim fs As FileStream = Nothing
         Try
             fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, My.Settings.LTFSWriter_FileStreamBufferSize, FileOptions.Asynchronous Or FileOptions.SequentialScan)
-            fr.File.length = fs.Length
+            If fr.File.length = 0 Then
+                fr.File.length = fs.Length
+                fr.FileOffset = 0
+                fr.SegmentLength = fs.Length
+            End If
             fr.IsOpened = True
         Catch
             ' 备用：尝试使用现有 FileRecord 打开
@@ -258,9 +262,12 @@ Public Class FileDataProvider
         End Try
 
         Using fs
+            If fr.FileOffset > 0 Then fs.Seek(fr.FileOffset, SeekOrigin.Begin)
+            Dim totalReadLen As Long = 0
             If _ringBufferEnabled Then
                 Dim minChunk As Integer = 1024 * 1024
                 While Not ct.IsCancellationRequested
+                    If totalReadLen >= fr.SegmentLength Then Exit While
                     Dim seg = RingBuffer.GetWriteSegment(minChunk, ct)
                     If seg.Count = 0 Then
                         ' 理论上不会（除非 completed/disposed/canceled）
@@ -269,12 +276,13 @@ Public Class FileDataProvider
 
                     Dim n As Integer = Await fs.ReadAsync(seg.Array, seg.Offset, seg.Count, ct).ConfigureAwait(False)
                     If n = 0 Then Exit While
-
-                    RingBuffer.AdvanceWrite(n)
+                    RingBuffer.AdvanceWrite(CInt(Math.Min(n, fr.SegmentLength - totalReadLen)))
+                    Threading.Interlocked.Add(totalReadLen, n)
                 End While
             Else
                 Dim minSize As Integer = 64 * 1024
                 While Not ct.IsCancellationRequested
+                    If totalReadLen >= fr.SegmentLength Then Exit While
                     Dim dest As Memory(Of Byte) = _writer.GetMemory(minSize)
                     Dim seg As New ArraySegment(Of Byte)
                     If Not MemoryMarshal.TryGetArray(Of Byte)(dest, seg) Then
@@ -283,7 +291,8 @@ Public Class FileDataProvider
                     Dim cap As Integer = Math.Min(minSize, seg.Count)
                     Dim n = Await fs.ReadAsync(seg.Array, seg.Offset, cap, ct).ConfigureAwait(False)
                     If n = 0 Then Exit While
-                    _writer.Advance(n)
+                    _writer.Advance(CInt(Math.Min(n, fr.SegmentLength - totalReadLen)))
+                    Threading.Interlocked.Add(totalReadLen, n)
                     Dim result = Await _writer.FlushAsync(ct).ConfigureAwait(False)
                     If result.IsCanceled OrElse result.IsCompleted Then Exit While
                 End While
