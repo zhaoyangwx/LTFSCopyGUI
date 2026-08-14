@@ -188,7 +188,6 @@ Partial Class LTFSWriter
         Me.ToolStripStatusLabel2 = New System.Windows.Forms.ToolStripStatusLabel()
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.CommandBar = New LTFSCopyGUI.ModernCommandBar()
         Me.ImportFilesButton = New LTFSCopyGUI.ModernCommandButton()
         Me.WriteTapeButton = New LTFSCopyGUI.ModernCommandButton()
@@ -1460,7 +1459,6 @@ End Sub
     Friend WithEvents OpenFileDialog1 As OpenFileDialog
     Friend WithEvents 添加目录ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 新建目录ToolStripMenuItem As ToolStripMenuItem
-    Friend WithEvents FolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents 删除目录ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 重命名目录ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 清除当前索引后数据ToolStripMenuItem As ToolStripMenuItem

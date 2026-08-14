@@ -12,6 +12,17 @@ Imports Microsoft.WindowsAPICodePack.Dialogs
 Imports ZstdSharp
 
 Public Class LTFSWriter
+    Private _lastSelectedFolder As String = String.Empty
+
+    Private Function SelectWriterFolder(Optional initialDirectory As String = Nothing) As String
+        Dim startDirectory As String = initialDirectory
+        If String.IsNullOrWhiteSpace(startDirectory) Then startDirectory = _lastSelectedFolder
+
+        Dim selectedPath As String = FileDialogHelper.SelectFolder(startDirectory)
+        If Not String.IsNullOrEmpty(selectedPath) Then _lastSelectedFolder = selectedPath
+        Return selectedPath
+    End Function
+
     <Category("LTFSWriter")>
     Public Property TapeDrive As String = ""
     <Category("LTFSWriter")>
@@ -3601,8 +3612,10 @@ Public Class LTFSWriter
         End If
     End Sub
     Private Sub 导入文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 导入文件ToolStripMenuItem.Click
-        If ListView1.Tag IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            Dim dnew As IO.DirectoryInfo = New IO.DirectoryInfo(FolderBrowserDialog1.SelectedPath)
+        If ListView1.Tag IsNot Nothing Then
+            Dim sourceDirectory As String = SelectWriterFolder()
+            If String.IsNullOrEmpty(sourceDirectory) Then Exit Sub
+            Dim dnew As IO.DirectoryInfo = New IO.DirectoryInfo(sourceDirectory)
             Dim Paths As New List(Of String)
             For Each f As IO.FileInfo In dnew.GetFiles("*", IO.SearchOption.TopDirectoryOnly)
                 Paths.Add(f.FullName)
@@ -4227,14 +4240,13 @@ Public Class LTFSWriter
                 tarDirectories.Add(DirectCast(item.Tag, TarVirtualDirectory))
             End If
         Next
+        Dim selectedPath As String = SelectWriterFolder()
+        If String.IsNullOrEmpty(selectedPath) Then Exit Sub
         If tarFiles.Count > 0 OrElse tarDirectories.Count > 0 Then
-            If FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
-                StartTarExtraction(FolderBrowserDialog1.SelectedPath, tarFiles, tarDirectories)
-            End If
+            StartTarExtraction(selectedPath, tarFiles, tarDirectories)
             Exit Sub
         End If
-        If FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
-            Dim BasePath As String = FolderBrowserDialog1.SelectedPath
+        Dim BasePath As String = selectedPath
             LockGUI()
             Dim flist As New List(Of ltfsindex.file)
             For Each SI As ListViewItem In ListView1.SelectedItems
@@ -4286,7 +4298,6 @@ Public Class LTFSWriter
                         Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_RestFin))
                     End Sub)
             th.Start()
-        End If
     End Sub
     Private Sub 提取ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem1.Click
         Dim Nodes As List(Of TreeNode) = SelectedNodes
@@ -4295,13 +4306,12 @@ Public Class LTFSWriter
         For Each node As TreeNode In Nodes
             If TypeOf node.Tag Is TarVirtualDirectory Then tarDirectories.Add(DirectCast(node.Tag, TarVirtualDirectory))
         Next
+        Dim selectedPath As String = SelectWriterFolder()
+        If String.IsNullOrEmpty(selectedPath) Then Exit Sub
         If tarDirectories.Count > 0 Then
-            If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-                StartTarExtraction(FolderBrowserDialog1.SelectedPath, New List(Of TarVirtualFile), tarDirectories)
-            End If
+            StartTarExtraction(selectedPath, New List(Of TarVirtualFile), tarDirectories)
             Exit Sub
         End If
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             Dim FileList As New List(Of FileRecord)
             Dim th As New Threading.Thread(
                     Sub()
@@ -4335,7 +4345,7 @@ Public Class LTFSWriter
                             PrintMsg(My.Resources.ResText_PrepFile)
                             For Each n As TreeNode In Nodes
                                 Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                                Dim ODir As String = IO.Path.Combine(selectedPath, selectedDir.name)
                                 If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
                                 If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                                 IterDir(selectedDir, New IO.DirectoryInfo(ODir))
@@ -4401,7 +4411,6 @@ Public Class LTFSWriter
                     End Sub)
             LockGUI()
             th.Start()
-        End If
     End Sub
     Private Sub 删除ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 删除ToolStripMenuItem.Click
         DeleteDir()
@@ -7504,9 +7513,10 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 校验源文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 校验源文件ToolStripMenuItem.Click
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            SetStatusLight(LWStatus.Busy)
-            Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = FolderBrowserDialog1.SelectedPath, .TargetDirectory = "", .DisableSkipInfo = True}
+        Dim baseDirectory As String = SelectWriterFolder()
+        If String.IsNullOrEmpty(baseDirectory) Then Exit Sub
+        SetStatusLight(LWStatus.Busy)
+        Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = baseDirectory, .TargetDirectory = "", .DisableSkipInfo = True}
             Dim p As String = ""
             If OpenFileDialog1.FileName <> "" Then p = New IO.FileInfo(OpenFileDialog1.FileName).DirectoryName
             hw.schPath = Barcode & ".schema"
@@ -7548,8 +7558,7 @@ Public Class LTFSWriter
             PrintMsg($"{hcount}/{fcount}{If(errCount > 0, $"({errCount} mismatch)", "")}")
             SetStatusLight(LWStatus.Idle)
             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-            RefreshDisplay()
-        End If
+        RefreshDisplay()
     End Sub
 
     Private Sub VerifySourceButton_Click(sender As Object, e As EventArgs) Handles VerifySourceButton.Click
@@ -7567,7 +7576,7 @@ Public Class LTFSWriter
         Dim fc As Long = 0, ec As Long = 0
         If ListView1.SelectedItems IsNot Nothing AndAlso
                 ListView1.SelectedItems.Count > 0 Then
-            Dim BasePath As String = FolderBrowserDialog1.SelectedPath
+            Dim BasePath As String = _lastSelectedFolder
             LockGUI()
             Dim flist As New List(Of ltfsindex.file)
             For Each SI As ListViewItem In ListView1.SelectedItems
@@ -9437,8 +9446,9 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 新建压缩文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 新建压缩文件ToolStripMenuItem.Click
-        If ListView1.Tag IsNot Nothing AndAlso FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            Dim dirname As String = FolderBrowserDialog1.SelectedPath
+        If ListView1.Tag IsNot Nothing Then
+            Dim dirname As String = SelectWriterFolder()
+            If String.IsNullOrEmpty(dirname) Then Exit Sub
 
             Dim th As New Threading.Thread(
             Sub()
@@ -10578,8 +10588,9 @@ Public Class LTFSWriter
     Private Sub 提取为空文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 提取为空文件ToolStripMenuItem.Click
         Dim Nodes As List(Of TreeNode) = SelectedNodes
         If Nodes.Count = 0 Then Exit Sub
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            Dim FileList As New List(Of FileRecord)
+        Dim outputDirectory As String = SelectWriterFolder()
+        If String.IsNullOrEmpty(outputDirectory) Then Exit Sub
+        Dim FileList As New List(Of FileRecord)
             Dim th As New Threading.Thread(
                     Sub()
                         PrintMsg(My.Resources.ResText_Restoring)
@@ -10609,7 +10620,7 @@ Public Class LTFSWriter
                             PrintMsg(My.Resources.ResText_PrepFile)
                             For Each n As TreeNode In Nodes
                                 Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                                Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
                                 If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
                                 If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                                 IterDir(selectedDir, New IO.DirectoryInfo(ODir))
@@ -10674,15 +10685,15 @@ Public Class LTFSWriter
                         LockGUI(False)
                     End Sub)
             LockGUI()
-            th.Start()
-        End If
+        th.Start()
     End Sub
 
     Private Sub 按索引删除硬盘文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 按索引删除硬盘文件ToolStripMenuItem.Click
         Dim Nodes As List(Of TreeNode) = SelectedNodes
         If Nodes.Count = 0 Then Exit Sub
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            Dim FileList As New List(Of FileRecord)
+        Dim outputDirectory As String = SelectWriterFolder()
+        If String.IsNullOrEmpty(outputDirectory) Then Exit Sub
+        Dim FileList As New List(Of FileRecord)
             Dim th As New Threading.Thread(
                     Sub()
                         PrintMsg(My.Resources.ResText_Deleting)
@@ -10712,7 +10723,7 @@ Public Class LTFSWriter
                             PrintMsg(My.Resources.ResText_PrepFile)
                             For Each n As TreeNode In Nodes
                                 Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(FolderBrowserDialog1.SelectedPath, selectedDir.name)
+                                Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
                                 If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
                                 If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
                                 IterDir(selectedDir, New IO.DirectoryInfo(ODir))
@@ -10770,8 +10781,7 @@ Public Class LTFSWriter
                         LockGUI(False)
                     End Sub)
             LockGUI()
-            th.Start()
-        End If
+        th.Start()
     End Sub
 
     Private Sub ForceEjectButton_Click(sender As Object, e As EventArgs) Handles ForceEjectButton.Click

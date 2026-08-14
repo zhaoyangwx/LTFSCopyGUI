@@ -1015,87 +1015,86 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
     Public Operation_Cancel_Flag As Boolean = False
     Private Sub ButtonDebugDumpTape_Click(sender As Object, e As EventArgs) Handles ButtonDebugDumpTape.Click
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            If New DirectoryInfo(FolderBrowserDialog1.SelectedPath).GetFiles("*.bin", SearchOption.TopDirectoryOnly).Length > 0 Then
-                MessageBox.Show(New Form With {.TopMost = True}, "File exist: *.bin; Cancelled.")
-                Exit Sub
-            End If
+        Dim outputDirectory As String = SelectFolder()
+        If String.IsNullOrEmpty(outputDirectory) Then Exit Sub
+        If New DirectoryInfo(outputDirectory).GetFiles("*.bin", SearchOption.TopDirectoryOnly).Length > 0 Then
+            MessageBox.Show(New Form With {.TopMost = True}, "File exist: *.bin; Cancelled.")
+            Exit Sub
+        End If
 
-            For Each c As Control In Panel1.Controls
-                c.Enabled = False
-            Next
-            Panel2.Enabled = True
-            For Each c As Control In Panel2.Controls
-                c.Enabled = False
-            Next
-            For Each c As Control In TabControl1.Controls
-                c.Enabled = False
-            Next
-            For Each c As Control In TabPageCommand.Controls
-                c.Enabled = False
-            Next
-            TabControl1.Enabled = True
-            TabPageCommand.Enabled = True
-            ButtonStopRawDump.Enabled = True
-            TextBoxDebugOutput.Text = ""
-            Dim log As Boolean = CheckBoxEnableDumpLog.Checked
-            Dim thprog As New Threading.Thread(
-                Sub()
-                    Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
-                    Dim FileNum As Integer = 0
+        For Each c As Control In Panel1.Controls
+            c.Enabled = False
+        Next
+        Panel2.Enabled = True
+        For Each c As Control In Panel2.Controls
+            c.Enabled = False
+        Next
+        For Each c As Control In TabControl1.Controls
+            c.Enabled = False
+        Next
+        For Each c As Control In TabPageCommand.Controls
+            c.Enabled = False
+        Next
+        TabControl1.Enabled = True
+        TabPageCommand.Enabled = True
+        ButtonStopRawDump.Enabled = True
+        TextBoxDebugOutput.Text = ""
+        Dim log As Boolean = CheckBoxEnableDumpLog.Checked
+        Dim thprog As New Threading.Thread(
+            Sub()
+                Dim ReadLen As UInteger = CUInt(NumericUpDownBlockLen.Value)
+                Dim FileNum As Integer = 0
 
-                    'Position
-                    Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
+                'Position
+                Dim pos As New TapeUtils.PositionData(ConfTapeDrive)
 
-                    Dim Partition As Byte = pos.PartitionNumber
-                    Dim Block As UInteger = CUInt(pos.BlockNumber)
-                    Dim BlkNum As Integer = CInt(Block)
-                    While True
-                        Dim sense(63) As Byte
-                        Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
-                        Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
-                        If readData.Length > 0 Then
-                            My.Computer.FileSystem.WriteAllBytes($"{FolderBrowserDialog1.SelectedPath}\FM{FileNum}_BLK{BlkNum}.bin", readData, True)
-                            If Not readData.Length = ReadLen Then
-                                BlkNum = CInt(Block)
-                            End If
-                        End If
-                        If Add_Key <> 0 Then
-                            FileNum += 1
+                Dim Partition As Byte = pos.PartitionNumber
+                Dim Block As UInteger = CUInt(pos.BlockNumber)
+                Dim BlkNum As Integer = CInt(Block)
+                While True
+                    Dim sense(63) As Byte
+                    Dim readData As Byte() = TapeUtils.ReadBlock(ConfTapeDrive, sense, ReadLen)
+                    Dim Add_Key As UInt16 = CUShort(CInt(sense(12)) << 8 Or sense(13))
+                    If readData.Length > 0 Then
+                        My.Computer.FileSystem.WriteAllBytes($"{outputDirectory}\FM{FileNum}_BLK{BlkNum}.bin", readData, True)
+                        If Not readData.Length = ReadLen Then
                             BlkNum = CInt(Block)
                         End If
-                        If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
-                            MessageBox.Show(TapeUtils.ParseSenseData(sense))
-                            Operation_Cancel_Flag = False
-                            Exit While
-                        End If
-                        If log Then
-                            Invoke(Sub()
-                                       If TextBoxDebugOutput.Text.Length > 10000 Then TextBoxDebugOutput.Text = ""
-                                       TextBoxDebugOutput.AppendText("Processing file " & FileNum.ToString.PadRight(10) & " (Block = " & Block & ") Sense:")
-                                       TextBoxDebugOutput.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
-                                   End Sub)
-                        End If
-                        Block = CUInt(Block + 1)
-                    End While
-                    Invoke(Sub()
-                               For Each c As Control In Panel1.Controls
-                                   c.Enabled = True
-                               Next
-                               For Each c As Control In Panel2.Controls
-                                   c.Enabled = True
-                               Next
-                               For Each c As Control In TabControl1.Controls
-                                   c.Enabled = True
-                               Next
-                               For Each c As Control In TabPageCommand.Controls
-                                   c.Enabled = True
-                               Next
-                           End Sub)
-                End Sub)
-            thprog.Start()
-
-        End If
+                    End If
+                    If Add_Key <> 0 Then
+                        FileNum += 1
+                        BlkNum = CInt(Block)
+                    End If
+                    If (Add_Key > 1 And Add_Key <> 4) Or Operation_Cancel_Flag Then
+                        MessageBox.Show(TapeUtils.ParseSenseData(sense))
+                        Operation_Cancel_Flag = False
+                        Exit While
+                    End If
+                    If log Then
+                        Invoke(Sub()
+                                   If TextBoxDebugOutput.Text.Length > 10000 Then TextBoxDebugOutput.Text = ""
+                                   TextBoxDebugOutput.AppendText("Processing file " & FileNum.ToString.PadRight(10) & " (Block = " & Block & ") Sense:")
+                                   TextBoxDebugOutput.AppendText(TapeUtils.ParseAdditionalSenseCode(Add_Key) & vbCrLf)
+                               End Sub)
+                    End If
+                    Block = CUInt(Block + 1)
+                End While
+                Invoke(Sub()
+                           For Each c As Control In Panel1.Controls
+                               c.Enabled = True
+                           Next
+                           For Each c As Control In Panel2.Controls
+                               c.Enabled = True
+                           Next
+                           For Each c As Control In TabControl1.Controls
+                               c.Enabled = True
+                           Next
+                           For Each c As Control In TabPageCommand.Controls
+                               c.Enabled = True
+                           Next
+                       End Sub)
+            End Sub)
+        thprog.Start()
     End Sub
 
     Private Sub Button24_Click(sender As Object, e As EventArgs) Handles ButtonStopRawDump.Click

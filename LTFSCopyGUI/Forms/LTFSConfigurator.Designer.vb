@@ -181,7 +181,6 @@ Partial Class LTFSConfigurator
         Me.LabelDebugPanel = New System.Windows.Forms.Label()
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
-        Me.FolderBrowserDialog1 = New System.Windows.Forms.FolderBrowserDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
         Me.ButtonVerify = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
@@ -1399,7 +1398,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents LabelRead As Label
     Friend WithEvents ButtonDebugReadPosition As Button
     Friend WithEvents ButtonDebugDumpTape As Button
-    Friend WithEvents FolderBrowserDialog1 As FolderBrowserDialog
     Friend WithEvents ButtonStopRawDump As Button
     Friend WithEvents CheckBoxEnableDumpLog As CheckBox
     Friend WithEvents ComboBoxLocateType As ComboBox

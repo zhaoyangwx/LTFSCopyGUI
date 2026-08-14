@@ -343,17 +343,13 @@ Public Class Form1
     End Sub
 
     Private Sub Button7_Click(sender As Object, e As EventArgs) Handles Button7.Click
-        If IO.Directory.Exists(TextBox3.Text) Then FolderBrowserDialog1.SelectedPath = TextBox3.Text
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            TextBox3.Text = FolderBrowserDialog1.SelectedPath
-        End If
+        Dim selectedPath As String = SelectFolder(TextBox3.Text)
+        If Not String.IsNullOrEmpty(selectedPath) Then TextBox3.Text = selectedPath
     End Sub
 
     Private Sub Button8_Click(sender As Object, e As EventArgs) Handles Button8.Click
-        If IO.Directory.Exists(TextBox4.Text) Then FolderBrowserDialog1.SelectedPath = TextBox4.Text
-        If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
-            TextBox4.Text = FolderBrowserDialog1.SelectedPath
-        End If
+        Dim selectedPath As String = SelectFolder(TextBox4.Text)
+        If Not String.IsNullOrEmpty(selectedPath) Then TextBox4.Text = selectedPath
     End Sub
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click

@@ -360,6 +360,7 @@
   <ItemGroup>
     <Compile Include="Application\ApplicationEvents.vb" />
     <Compile Include="Application\AppLogging.vb" />
+    <Compile Include="Application\FileDialogHelper.vb" />
     <Compile Include="Application\ApplicationWheels.vb" />
     <Compile Include="Build\Build.vb" />
     <Compile Include="Controls\Direct2DChartControl.vb">

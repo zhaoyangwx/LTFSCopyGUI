@@ -1,4 +1,4 @@
-﻿Public Class SettingPanel
+Public Class SettingPanel
     Dim result As DialogResult = DialogResult.Cancel
     Public Property SelectedObject As Object
         Get
