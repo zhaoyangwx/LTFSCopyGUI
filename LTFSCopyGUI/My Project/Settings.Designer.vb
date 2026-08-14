@@ -115,6 +115,20 @@ Namespace My
                 Me("LTFSWriter_OverwriteExist") = Value
             End Set
         End Property
+        <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("覆盖前清空待覆盖文件"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("True"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_ClearBeforeOverwrite")>
+        Public Property LTFSWriter_ClearBeforeOverwrite() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_ClearBeforeOverwrite"), Boolean)
+            End Get
+            Set
+                Me("LTFSWriter_ClearBeforeOverwrite") = Value
+            End Set
+        End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("写入完成后：" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "  0-什么都不做" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "  1-更新数据区索引" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "  2-更新全部索引" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "  3-更新全部索引并弹出" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10)),

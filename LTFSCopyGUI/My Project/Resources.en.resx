@@ -984,4 +984,8 @@ Enable only when memory usage is abnormally high</value>
   <data name="PropertyDescription_LTFSWriter_ModernIcon" xml:space="preserve">
     <value>Use vector icons</value>
   </data>
+  <data name="PropertyDescription_LTFSWriter_ClearBeforeOverwrite" xml:space="preserve">
+    <value>Clear file before overwrite
+Disable when file fragment is intended to restore</value>
+  </data>
 </root>

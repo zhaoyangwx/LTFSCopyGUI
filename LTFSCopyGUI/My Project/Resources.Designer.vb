@@ -450,6 +450,16 @@ Namespace My.Resources
         End Property
         
         '''<summary>
+        '''  查找类似 覆盖前清空待覆盖文件
+        '''如需提取文件碎片，请禁用 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_ClearBeforeOverwrite() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ClearBeforeOverwrite", resourceCulture)
+            End Get
+        End Property
+        
+        '''<summary>
         '''  查找类似 列表顺序 的本地化字符串。
         '''</summary>
         Friend ReadOnly Property PropertyDescription_LTFSWriter_ColumnIndex() As String

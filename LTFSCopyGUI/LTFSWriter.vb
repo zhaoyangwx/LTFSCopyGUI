@@ -3624,9 +3624,13 @@ Public Class LTFSWriter
         If IO.File.Exists(FileName) Then
             Dim fi As New IO.FileInfo(FileName)
             fi.Attributes = fi.Attributes And Not IO.FileAttributes.ReadOnly
-            IO.File.Delete(FileName)
+            If My.Settings.LTFSWriter_ClearBeforeOverwrite Then
+                IO.File.Delete(FileName)
+                IO.File.WriteAllBytes(FileName, {})
+            End If
+        Else
+            IO.File.WriteAllBytes(FileName, {})
         End If
-        IO.File.WriteAllBytes(FileName, {})
         If FileIndex.length > 0 Then
             Dim reffile As String = ""
             If FileIndex.TempObj IsNot Nothing AndAlso TypeOf FileIndex.TempObj Is ltfsindex.file.refFile Then reffile = CType(FileIndex.TempObj, ltfsindex.file.refFile).FileName.ToString()
