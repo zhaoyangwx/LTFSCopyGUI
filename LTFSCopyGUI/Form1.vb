@@ -126,7 +126,7 @@ Public Class Form1
                            TextBox4.Enabled = True
                            Label4.Visible = False
                        End Sub)
-            End Sub)
+            End Sub) With {.IsBackground = True}
         Button1.Enabled = False
         Button2.Enabled = False
         Button3.Enabled = False
@@ -416,7 +416,7 @@ Public Class Form1
                             Threading.Interlocked.Increment(progval)
                         End Sub)
                     Invoke(Sub() Enabled = True)
-                End Sub)
+                End Sub) With {.IsBackground = True}
             Dim thprog As New Threading.Thread(
                 Sub()
                     While True
@@ -432,7 +432,7 @@ Public Class Form1
                             End Sub)
                         If exitflag Then Exit While
                     End While
-                End Sub)
+                End Sub) With {.IsBackground = True}
             th.Start()
             thprog.Start()
         End If
@@ -481,7 +481,7 @@ Public Class Form1
                         Threading.Interlocked.Increment(progval)
                     End Sub)
                 Invoke(Sub() Enabled = True)
-            End Sub)
+            End Sub) With {.IsBackground = True}
         Dim thprog As New Threading.Thread(
             Sub()
                 While True
@@ -497,7 +497,7 @@ Public Class Form1
                         End Sub)
                     If exitflag Then Exit While
                 End While
-            End Sub)
+            End Sub) With {.IsBackground = True}
         th.Start()
         thprog.Start()
     End Sub
@@ -593,7 +593,7 @@ Public Class Form1
 
                     schema = result
                     Invoke(Sub() Enabled = True)
-                End Sub)
+                End Sub) With {.IsBackground = True}
             Dim thprog As New Threading.Thread(
                 Sub()
                     While True
@@ -609,7 +609,7 @@ Public Class Form1
                             End Sub)
                         If exitflag Then Exit While
                     End While
-                End Sub)
+                End Sub) With {.IsBackground = True}
             th.Start()
             thprog.Start()
         End If
@@ -663,7 +663,7 @@ Public Class Form1
                             Threading.Interlocked.Increment(progval)
                         End Sub)
                     Invoke(Sub() Enabled = True)
-                End Sub)
+                End Sub) With {.IsBackground = True}
             Dim thprog As New Threading.Thread(
                 Sub()
                     While True
@@ -679,7 +679,7 @@ Public Class Form1
                             End Sub)
                         If exitflag Then Exit While
                     End While
-                End Sub)
+                End Sub) With {.IsBackground = True}
             th.Start()
             thprog.Start()
         End If

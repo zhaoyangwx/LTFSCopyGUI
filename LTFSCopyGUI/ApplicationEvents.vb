@@ -851,8 +851,18 @@ dataDir:{dataDir}
         End Sub
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
-            AppLogger.Write(AppLogLevel.Info, "Application", "Application shutting down.", force:=True)
-            AppLogger.Shutdown(TimeSpan.FromSeconds(5))
+            Try
+                AppLogger.Write(AppLogLevel.Info, "Application", "Application shutting down.", force:=True)
+                AppLogger.Shutdown(TimeSpan.FromSeconds(5))
+            Finally
+                ' A worker created with Thread (rather than Task) is a
+                ' foreground thread by default.  It may be blocked in a
+                ' synchronous Control.Invoke after the UI message loop has
+                ' closed, which otherwise keeps the process alive forever.
+                ' Shutdown is the last application-level cleanup point, so
+                ' do not let such a worker veto the user's request to exit.
+                Environment.Exit(0)
+            End Try
         End Sub
 
         Private Sub MyApplication_UnhandledException(sender As Object, e As UnhandledExceptionEventArgs) Handles Me.UnhandledException
