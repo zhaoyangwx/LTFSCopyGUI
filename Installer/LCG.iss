@@ -17,10 +17,10 @@
 #endif
 #define MyAppVersion Copy(VersionLine, Pos(VersionMarker, VersionLine) + Len(VersionMarker), Len(VersionLine) - Pos(VersionMarker, VersionLine) - Len(VersionMarker) - 2)
 
-; Read the internal build number from Build.vb while compiling the installer.
-#define BuildFile FileOpen("..\LTFSCopyGUI\Build.vb")
+; Read the internal build number from Build\Build.vb while compiling the installer.
+#define BuildFile FileOpen("..\LTFSCopyGUI\Build\Build.vb")
 #if !BuildFile
-  #error "Unable to open LTFSCopyGUI\Build.vb"
+  #error "Unable to open LTFSCopyGUI\Build\Build.vb"
 #endif
 #define BuildMarker "Public Const Build As String = "
 #define BuildLine ""
@@ -28,7 +28,7 @@
 #for {BuildLine = FileRead(BuildFile); Pos(BuildMarker, BuildLine) == 0 && !FileEof(BuildFile); BuildLine = FileRead(BuildFile)} ReadBuildLine
 #expr FileClose(BuildFile)
 #if Pos(BuildMarker, BuildLine) == 0
-  #error "Unable to find the internal build number in LTFSCopyGUI\Build.vb"
+  #error "Unable to find the internal build number in LTFSCopyGUI\Build\Build.vb"
 #endif
 #define InternalBuild Copy(BuildLine, Pos(BuildMarker, BuildLine) + Len(BuildMarker) + 1, Len(BuildLine) - Pos(BuildMarker, BuildLine) - Len(BuildMarker) - 1)
 

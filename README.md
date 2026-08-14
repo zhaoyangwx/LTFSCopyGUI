@@ -1,6 +1,6 @@
 # LTFSCopyGUI
 
-![LTFSCopyGUIIcon](./logo.png)
+![LTFSCopyGUIIcon](./docs/logo.png)
 
 ## LTFS文件排序复制工具
 

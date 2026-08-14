@@ -101,7 +101,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>LTFSCopyGUIIcon.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\LTFSCopyGUIIcon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -358,57 +358,57 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApplicationEvents.vb" />
-    <Compile Include="AppLogging.vb" />
-    <Compile Include="Build.vb" />
-    <Compile Include="Direct2DChartControl.vb">
+    <Compile Include="Application\ApplicationEvents.vb" />
+    <Compile Include="Application\AppLogging.vb" />
+    <Compile Include="Application\ApplicationWheels.vb" />
+    <Compile Include="Build\Build.vb" />
+    <Compile Include="Controls\Direct2DChartControl.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ChangerTool.Designer.vb">
+    <Compile Include="Forms\ChangerTool.Designer.vb">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </Compile>
-    <Compile Include="ChangerTool.vb">
+    <Compile Include="Forms\ChangerTool.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FileBrowser.Designer.vb">
+    <Compile Include="Forms\FileBrowser.Designer.vb">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </Compile>
-    <Compile Include="FileBrowser.vb">
+    <Compile Include="Forms\FileBrowser.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FileDataProvider.vb" />
-    <Compile Include="Form1.vb">
+    <Compile Include="Core\FileDataProvider.vb" />
+    <Compile Include="Forms\Form1.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Form1.Designer.vb">
+    <Compile Include="Forms\Form1.Designer.vb">
       <DependentUpon>Form1.vb</DependentUpon>
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FTPService.vb" />
-    <Compile Include="HashTaskWindow.Designer.vb">
+    <Compile Include="Services\FTPService.vb" />
+    <Compile Include="Forms\HashTaskWindow.Designer.vb">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
     </Compile>
-    <Compile Include="HashTaskWindow.vb">
+    <Compile Include="Forms\HashTaskWindow.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="IOManager.vb" />
-    <Compile Include="ApplicationWheels.vb" />
-    <Compile Include="iSCSIService.vb" />
-    <Compile Include="RustFastReaderProvider.vb" />
-    <Compile Include="TarMetadata.vb" />
-    <Compile Include="LTFSConfigurator.Designer.vb">
+    <Compile Include="Core\IOManager.vb" />
+    <Compile Include="Services\iSCSIService.vb" />
+    <Compile Include="Services\RustFastReaderProvider.vb" />
+    <Compile Include="Core\TarMetadata.vb" />
+    <Compile Include="Forms\LTFSConfigurator.Designer.vb">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </Compile>
-    <Compile Include="LTFSConfigurator.vb">
+    <Compile Include="Forms\LTFSConfigurator.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ModernCommandBar.vb">
+    <Compile Include="Controls\ModernCommandBar.vb">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="LTFSWriter.Designer.vb">
+    <Compile Include="Forms\LTFSWriter.Designer.vb">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
     </Compile>
-    <Compile Include="LTFSWriter.vb">
+    <Compile Include="Forms\LTFSWriter.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
@@ -427,62 +427,62 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Schema.vb" />
-    <Compile Include="SettingPanel.Designer.vb">
+    <Compile Include="Core\Schema.vb" />
+    <Compile Include="Forms\SettingPanel.Designer.vb">
       <DependentUpon>SettingPanel.vb</DependentUpon>
     </Compile>
-    <Compile Include="SettingPanel.vb">
+    <Compile Include="Forms\SettingPanel.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SpscRingBuffer.vb" />
-    <Compile Include="TapeCopy.Designer.vb">
+    <Compile Include="Core\SpscRingBuffer.vb" />
+    <Compile Include="Forms\TapeCopy.Designer.vb">
       <DependentUpon>TapeCopy.vb</DependentUpon>
     </Compile>
-    <Compile Include="TapeCopy.vb">
+    <Compile Include="Forms\TapeCopy.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="TapeImage.vb" />
-    <Compile Include="TapeUtils.vb" />
-    <Compile Include="TreeViewEx.vb">
+    <Compile Include="Core\TapeImage.vb" />
+    <Compile Include="Core\TapeUtils.vb" />
+    <Compile Include="Controls\TreeViewEx.vb">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ChangerTool.en.resx">
+    <EmbeddedResource Include="Forms\ChangerTool.en.resx">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ChangerTool.resx">
+    <EmbeddedResource Include="Forms\ChangerTool.resx">
       <DependentUpon>ChangerTool.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FileBrowser.resx">
+    <EmbeddedResource Include="Forms\FileBrowser.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FileBrowser.zh.resx">
+    <EmbeddedResource Include="Forms\FileBrowser.zh.resx">
       <DependentUpon>FileBrowser.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.en.resx">
+    <EmbeddedResource Include="Forms\Form1.en.resx">
       <DependentUpon>Form1.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
+    <EmbeddedResource Include="Forms\Form1.resx">
       <DependentUpon>Form1.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="HashTaskWindow.resx">
+    <EmbeddedResource Include="Forms\HashTaskWindow.resx">
       <DependentUpon>HashTaskWindow.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="LTFSConfigurator.en.resx">
+    <EmbeddedResource Include="Forms\LTFSConfigurator.en.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LTFSConfigurator.resx">
+    <EmbeddedResource Include="Forms\LTFSConfigurator.resx">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LTFSWriter.en.resx">
+    <EmbeddedResource Include="Forms\LTFSWriter.en.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="LTFSWriter.resx">
+    <EmbeddedResource Include="Forms\LTFSWriter.resx">
       <DependentUpon>LTFSWriter.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -495,13 +495,13 @@
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="SettingPanel.en.resx">
+    <EmbeddedResource Include="Forms\SettingPanel.en.resx">
       <DependentUpon>SettingPanel.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="SettingPanel.resx">
+    <EmbeddedResource Include="Forms\SettingPanel.resx">
       <DependentUpon>SettingPanel.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="TapeCopy.resx">
+    <EmbeddedResource Include="Forms\TapeCopy.resx">
       <DependentUpon>TapeCopy.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -536,13 +536,13 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="configure.ico" />
-    <Content Include="LTFSCopyGUIIcon.ico" />
+    <Content Include="Assets\configure.ico" />
+    <Content Include="Assets\LTFSCopyGUIIcon.ico" />
     <Content Include="..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll">
       <Link>System.Runtime.InteropServices.RuntimeInformation.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="res\dragdrop.png" />
+    <None Include="Assets\dragdrop.png" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.6.2">
@@ -563,6 +563,6 @@
     <Copy SourceFiles="$(MSBuildProjectDirectory)\..\LtfsFastReader\target\x86_64-win7-windows-msvc\release\ltfscopy_fastreader.pdb" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" Condition="Exists('$(MSBuildProjectDirectory)\..\LtfsFastReader\target\x86_64-win7-windows-msvc\release\ltfscopy_fastreader.pdb')" />
   </Target>
   <PropertyGroup>
-    <PreBuildEvent>"$(ProjectDir)\BuildVersionPropagator.exe" "$(ProjectDir)\Build.vb"</PreBuildEvent>
+    <PreBuildEvent>"$(ProjectDir)Build\BuildVersionPropagator.exe" "$(ProjectDir)Build\Build.vb"</PreBuildEvent>
   </PropertyGroup>
 </Project>
