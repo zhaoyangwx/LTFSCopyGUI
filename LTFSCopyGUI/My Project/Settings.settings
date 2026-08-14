@@ -86,6 +86,10 @@
     <Setting Name="LTFSWriter_ExternalReaderEnabled" Description="启用Rust外部高速读取器" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="LTFSWriter_EnrichTarMetadata" Description="写入 tar 元数据索引" Type="System.Boolean"
+      Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
     <Setting Name="LTFSWriter_DisablePartition" Description="禁用分区" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>

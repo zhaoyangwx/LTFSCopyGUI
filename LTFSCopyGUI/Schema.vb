@@ -135,6 +135,7 @@ Public Class ltfsindex
         <Serializable>
         <TypeConverter(GetType(ExpandableObjectConverter))>
         Public Class xattr
+            Public Shared ReadOnly TarMetadata As String = "ltfscopygui.tarmetadata"
             <Category("LTFSIndex")>
             Public Property key As String
             <Category("LTFSIndex")>
@@ -207,6 +208,14 @@ Public Class ltfsindex
                 End If
             Next
             extendedattributes.Add(New xattr With {.key = key, .value = value})
+        End Sub
+        Public Sub RemoveXattr(key As String)
+            If String.IsNullOrEmpty(key) OrElse extendedattributes Is Nothing Then Exit Sub
+            For i As Integer = extendedattributes.Count - 1 To 0 Step -1
+                If String.Equals(extendedattributes(i).key, key, StringComparison.OrdinalIgnoreCase) Then
+                    extendedattributes.RemoveAt(i)
+                End If
+            Next
         End Sub
         Private _symlink As String = Nothing
         <Category("LTFSIndex")>

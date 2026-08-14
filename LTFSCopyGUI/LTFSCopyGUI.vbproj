@@ -395,6 +395,7 @@
     <Compile Include="ApplicationWheels.vb" />
     <Compile Include="iSCSIService.vb" />
     <Compile Include="RustFastReaderProvider.vb" />
+    <Compile Include="TarMetadata.vb" />
     <Compile Include="LTFSConfigurator.Designer.vb">
       <DependentUpon>LTFSConfigurator.vb</DependentUpon>
     </Compile>

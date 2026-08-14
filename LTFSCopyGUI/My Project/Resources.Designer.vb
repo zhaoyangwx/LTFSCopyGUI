@@ -503,6 +503,15 @@ Namespace My.Resources
                 Return ResourceManager.GetString("PropertyDescription_LTFSWriter_ExternalReaderEnabled", resourceCulture)
             End Get
         End Property
+
+        '''<summary>
+        '''  查找类似 写入 tar 元数据索引 的本地化字符串。
+        '''</summary>
+        Friend ReadOnly Property PropertyDescription_LTFSWriter_EnrichTarMetadata() As String
+            Get
+                Return ResourceManager.GetString("PropertyDescription_LTFSWriter_EnrichTarMetadata", resourceCulture)
+            End Get
+        End Property
         
         '''<summary>
         '''  查找类似 文件标签设置 的本地化字符串。

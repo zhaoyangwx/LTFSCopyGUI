@@ -7106,7 +7106,7 @@ Public Class TapeUtils
             Return result
         End SyncLock
     End Function
-    Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean, Optional ByVal ProgressReport As Action(Of Long) = Nothing) As Byte()
+    Public Shared Function Write(handle As IntPtr, Data As Stream, ByVal BlockSize As Integer, senseEnabled As Boolean, Optional ByVal ProgressReport As Action(Of Long) = Nothing, Optional ByVal DataRead As Action(Of Byte(), Integer, Integer) = Nothing) As Byte()
         Dim sense(63) As Byte
         Dim ts As TapeImage = Nothing
         Select Case DriverTypeSetting
@@ -7124,6 +7124,7 @@ Public Class TapeUtils
         Dim succ As Boolean
 
         While DataLen > 0
+            If DataRead IsNot Nothing Then DataRead(DataBuffer, 0, DataLen)
             Dim cdbData As Byte() = {&HA, 0, CByte((DataLen >> 16) And &HFF), CByte((DataLen >> 8) And &HFF), CByte(DataLen And &HFF), 0}
             Marshal.Copy(DataBuffer, 0, DataPtr, DataLen)
             Do

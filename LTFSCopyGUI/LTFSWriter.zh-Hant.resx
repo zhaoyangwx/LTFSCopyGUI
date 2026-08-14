@@ -1506,4 +1506,7 @@
         jq1j6/j/0/H/AnU44wBriU+yAAAAAElFTkSuQmCC
 </value>
   </data>
+  <data name="增强Tar元数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>寫入 tar 中繼資料索引</value>
+  </data>
 </root>

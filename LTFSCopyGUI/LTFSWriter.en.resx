@@ -994,6 +994,12 @@
   <data name="显示文件数ToolStripMenuItem.Text" xml:space="preserve">
     <value>Display file count</value>
   </data>
+  <data name="增强Tar元数据ToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 22</value>
+  </data>
+  <data name="增强Tar元数据ToolStripMenuItem.Text" xml:space="preserve">
+    <value>Enrich tar metadata</value>
+  </data>
   <data name="自动化ToolStripMenuItem1.Size" type="System.Drawing.Size, System.Drawing">
     <value>143, 22</value>
   </data>

@@ -303,6 +303,7 @@ Public Class LTFSWriter
         覆盖已有文件ToolStripMenuItem.Checked = My.Settings.LTFSWriter_OverwriteExist
         跳过符号链接ToolStripMenuItem.Checked = My.Settings.LTFSWriter_SkipSymlink
         显示文件数ToolStripMenuItem.Checked = My.Settings.LTFSWriter_ShowFileCount
+        增强Tar元数据ToolStripMenuItem.Checked = My.Settings.LTFSWriter_EnrichTarMetadata
         Select Case My.Settings.LTFSWriter_OnWriteFinished
             Case 0
                 WA0ToolStripMenuItem.Checked = True
@@ -1873,6 +1874,29 @@ Public Class LTFSWriter
         End Get
     End Property
 
+    Private Function TryGetTarVirtualRoot(source As ltfsindex.file, ByRef root As TarVirtualDirectory) As Boolean
+        root = Nothing
+        If source Is Nothing Then Return False
+        Dim encoded As String = source.GetXAttr(ltfsindex.file.xattr.TarMetadata, True)
+        Dim metadata As TarMetadata = Nothing
+        If Not TarMetadataCodec.TryDecode(encoded, metadata) Then Return False
+        Return TarVirtualTreeBuilder.TryBuild(source, metadata, root)
+    End Function
+
+    Private Sub AddTarVirtualNodes(directory As TarVirtualDirectory, node As TreeNode)
+        If directory Is Nothing OrElse node Is Nothing Then Return
+        For Each child As TarVirtualDirectory In directory.Directories
+            Dim childNode As New TreeNode(child.Name) With {
+                .Tag = child,
+                .ImageIndex = 1,
+                .SelectedImageIndex = 1,
+                .StateImageIndex = 1,
+                .ForeColor = Color.Blue}
+            node.Nodes.Add(childNode)
+            AddTarVirtualNodes(child, childNode)
+        Next
+    End Sub
+
     Public Sub RefreshDisplay()
         If schema Is Nothing Then Exit Sub
         Invoke(
@@ -1922,6 +1946,19 @@ Public Class LTFSWriter
                                                    node.Nodes.Add(t)
                                                End If
                                            Next
+                                           For Each f As ltfsindex.file In dir.contents._file
+                                               Dim tarRoot As TarVirtualDirectory = Nothing
+                                               If TryGetTarVirtualRoot(f, tarRoot) Then
+                                                   Dim t As New TreeNode(f.name) With {
+                                                       .Tag = tarRoot,
+                                                       .ImageIndex = 1,
+                                                       .SelectedImageIndex = 1,
+                                                       .StateImageIndex = 1,
+                                                       .ForeColor = Color.Blue}
+                                                   node.Nodes.Add(t)
+                                                   AddTarVirtualNodes(tarRoot, t)
+                                               End If
+                                           Next
                                        End SyncLock
                                    End Sub
                             Dim tvNodeExpand As New TreeViewEventHandler(
@@ -1956,7 +1993,7 @@ Public Class LTFSWriter
                             End If
                         End If
                     End If
-                    If old_select Is Nothing And ListView1.Tag IsNot Nothing Then
+                    If old_select Is Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
                         old_select = DirectCast(ListView1.Tag, ltfsindex.directory)
                         old_select_path = GetPath(TreeView1.TopNode)
                     End If
@@ -2032,16 +2069,22 @@ Public Class LTFSWriter
                End Sub)
     End Sub
     Public Function GetPath(ByVal n As TreeNode) As String
-        Dim l As New List(Of ltfsindex.directory)
+        Dim l As New List(Of String)
         Dim n0 As TreeNode = n
-        While n0 IsNot Nothing AndAlso TypeOf n0.Tag Is ltfsindex.directory
-            l.Add(DirectCast(n0.Tag, ltfsindex.directory))
+        While n0 IsNot Nothing
+            If TypeOf n0.Tag Is ltfsindex.directory Then
+                l.Add(DirectCast(n0.Tag, ltfsindex.directory).name)
+            ElseIf TypeOf n0.Tag Is TarVirtualDirectory Then
+                l.Add(DirectCast(n0.Tag, TarVirtualDirectory).Name)
+            Else
+                Exit While
+            End If
             n0 = n0.Parent
         End While
         Dim sb As New StringBuilder
         For i As Integer = l.Count - 1 To 0 Step -1
             sb.Append("\")
-            sb.Append(l(i).name)
+            sb.Append(l(i))
         Next
         Return sb.ToString()
     End Function
@@ -2365,6 +2408,61 @@ Public Class LTFSWriter
                             ListView1.Items.Add(li)
                         Next
                     End SyncLock
+                ElseIf TypeOf (TreeView1.SelectedNode.Tag) Is TarVirtualDirectory Then
+                    Dim tarDirectory As TarVirtualDirectory = DirectCast(TreeView1.SelectedNode.Tag, TarVirtualDirectory)
+                    压缩索引ToolStripMenuItem.Visible = False
+                    解压索引ToolStripMenuItem.Visible = False
+                    压缩索引ToolStripMenuItem.Enabled = False
+                    剪切目录ToolStripMenuItem.Enabled = False
+                    剪切文件ToolStripMenuItem.Enabled = False
+                    提取ToolStripMenuItem.Enabled = True
+                    提取ToolStripMenuItem1.Enabled = True
+                    校验ToolStripMenuItem.Enabled = False
+                    校验ToolStripMenuItem1.Enabled = False
+                    重命名ToolStripMenuItem.Enabled = False
+                    删除ToolStripMenuItem.Enabled = False
+                    统计ToolStripMenuItem.Enabled = False
+                    移动到索引区ToolStripMenuItem.Enabled = False
+                    定位到起始块ToolStripMenuItem.Enabled = False
+                    剪切文件ToolStripMenuItem.Enabled = False
+                    粘贴选中ToolStripMenuItem1.Enabled = False
+                    重命名文件ToolStripMenuItem.Enabled = False
+                    重命名目录ToolStripMenuItem.Enabled = False
+                    合并文件ToolStripMenuItem.Enabled = False
+                    导入文件ToolStripMenuItem.Enabled = False
+                    添加文件ToolStripMenuItem.Enabled = False
+                    添加目录ToolStripMenuItem.Enabled = False
+                    新建目录ToolStripMenuItem.Enabled = False
+                    新建压缩文件ToolStripMenuItem.Enabled = False
+                    删除文件ToolStripMenuItem.Enabled = False
+                    删除目录ToolStripMenuItem.Enabled = False
+                    生成标签ToolStripMenuItem.Enabled = False
+                    设置标签ToolStripMenuItem.Enabled = False
+                    复制信息到剪贴板ToolStripMenuItem.Enabled = False
+                    文件详情ToolStripMenuItem.Enabled = False
+                    ListView1.Tag = tarDirectory
+                    TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
+                    ListView1.Items.Clear()
+                    For Each child As TarVirtualDirectory In tarDirectory.Directories
+                        Dim li As New ListViewItem With {
+                            .Tag = child,
+                            .Text = child.Name,
+                            .ImageIndex = 1,
+                            .StateImageIndex = 1,
+                            .ForeColor = Color.Blue}
+                        li.SubItems.Add("<DIR>")
+                        ListView1.Items.Add(li)
+                    Next
+                    For Each child As TarVirtualFile In tarDirectory.Files
+                        Dim li As New ListViewItem With {
+                            .Tag = child,
+                            .Text = child.Name,
+                            .ImageIndex = 2,
+                            .StateImageIndex = 2}
+                        li.SubItems.Add(child.Entry.Length.ToString())
+                        li.SubItems.Add(child.Entry.Xxh3128)
+                        ListView1.Items.Add(li)
+                    Next
                 ElseIf TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.file Then
                     Dim f As ltfsindex.file = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.file)
                     Dim t As String = f.GetXAttr("ltfscopygui.archive")
@@ -2699,7 +2797,7 @@ Public Class LTFSWriter
     ''' <returns>
     ''' Data start position
     ''' </returns>
-    Public Function DumpDataToIndexPartition(ByVal Data As IO.Stream, Optional ByVal RetainPosisiton As Boolean = True, Optional ByVal IsFirstFile As Boolean = True, Optional ByVal IsLastFile As Boolean = True) As Long
+    Public Function DumpDataToIndexPartition(ByVal Data As IO.Stream, Optional ByVal RetainPosisiton As Boolean = True, Optional ByVal IsFirstFile As Boolean = True, Optional ByVal IsLastFile As Boolean = True, Optional ByVal DataRead As Action(Of Byte(), Integer, Integer) = Nothing) As Long
         Try
             If ExtraPartitionCount = 0 Then Return -1
             Static tmpf As String = ""
@@ -2725,7 +2823,8 @@ Public Class LTFSWriter
                             ProgressReport:=Sub(progress As Long)
                                                 Threading.Interlocked.Add(TotalBytesProcessed, progress)
                                                 Threading.Interlocked.Add(CurrentBytesProcessed, progress)
-                                            End Sub)
+                                            End Sub,
+                            DataRead:=DataRead)
             If IsLastFile Then
                 'Recover old index
                 TapeUtils.WriteFileMark(driveHandle)
@@ -3853,10 +3952,288 @@ Public Class LTFSWriter
         Threading.Interlocked.Increment(CurrentFilesProcessed)
         Threading.Interlocked.Increment(TotalFilesProcessed)
     End Sub
+    Private Class TarTapeRangeReader
+        Private ReadOnly _writer As LTFSWriter
+        Private ReadOnly _source As ltfsindex.file
+        Private ReadOnly _extents As New List(Of ltfsindex.file.extent)
+        Private _extentIndex As Integer = -1
+        Private _extentRemaining As Long
+        Private _block As Byte() = Nothing
+        Private _blockOffset As Integer
+        Private _firstBlock As Boolean
+        Private _position As Long
+
+        Public Sub New(writer As LTFSWriter, source As ltfsindex.file)
+            _writer = writer
+            _source = source
+            If source Is Nothing OrElse source.extentinfo Is Nothing OrElse source.extentinfo.Count = 0 Then
+                Throw New IO.InvalidDataException("tar source has no extents")
+            End If
+            For Each extent As ltfsindex.file.extent In source.extentinfo
+                _extents.Add(extent)
+            Next
+            _extents.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent)
+                                                                       Return a.fileoffset.CompareTo(b.fileoffset)
+                                                                   End Function))
+        End Sub
+
+        Public Sub CopyRange(entry As TarMetadataEntry, outputPath As String)
+            If entry Is Nothing OrElse entry.Length < 0 OrElse entry.DataOffset < 0 OrElse
+                entry.DataOffset > _source.length OrElse entry.Length > _source.length - entry.DataOffset Then
+                Throw New IO.InvalidDataException("tar member range is outside the source file")
+            End If
+            If entry.DataOffset < _position Then
+                Throw New IO.InvalidDataException("tar member ranges are not in forward order")
+            End If
+            Skip(entry.DataOffset - _position)
+            Dim parentPath As String = IO.Path.GetDirectoryName(outputPath)
+            If Not String.IsNullOrEmpty(parentPath) Then IO.Directory.CreateDirectory(parentPath)
+            If IO.File.Exists(outputPath) Then
+                Dim existingInfo As New IO.FileInfo(outputPath)
+                If existingInfo.IsReadOnly Then existingInfo.IsReadOnly = False
+            End If
+            Dim hasher As New System.IO.Hashing.XxHash128()
+            Using output As New IO.FileStream(outputPath, IO.FileMode.Create, IO.FileAccess.Write, IO.FileShare.None, 1048576, IO.FileOptions.SequentialScan)
+                Dim remaining As Long = entry.Length
+                While remaining > 0
+                    Dim chunk As Byte() = ReadChunk(remaining)
+                    If chunk Is Nothing OrElse chunk.Length = 0 Then Throw New IO.EndOfStreamException("tar member ended before its declared length")
+                    output.Write(chunk, 0, chunk.Length)
+                    hasher.Append(chunk)
+                    remaining -= chunk.Length
+                    Threading.Interlocked.Add(_writer.TotalBytesProcessed, chunk.Length)
+                    Threading.Interlocked.Add(_writer.CurrentBytesProcessed, chunk.Length)
+                End While
+            End Using
+            Dim actualHash As String = BitConverter.ToString(hasher.GetHashAndReset()).Replace("-", "").ToUpperInvariant()
+            If Not String.Equals(actualHash, entry.Xxh3128, StringComparison.OrdinalIgnoreCase) Then
+                Throw New IO.InvalidDataException($"tar member hash mismatch: {entry.Path}")
+            End If
+        End Sub
+
+        Private Sub Skip(count As Long)
+            Dim remaining As Long = count
+            While remaining > 0
+                Dim chunk As Byte() = ReadChunk(remaining)
+                If chunk Is Nothing OrElse chunk.Length = 0 Then Throw New IO.EndOfStreamException("tar source ended before member offset")
+                remaining -= chunk.Length
+            End While
+        End Sub
+
+        Private Function ReadChunk(maxCount As Long) As Byte()
+            EnsureData()
+            If _block Is Nothing OrElse _blockOffset >= _block.Length OrElse _extentRemaining <= 0 Then Return Nothing
+            Dim count As Integer = CInt(Math.Min(Math.Min(maxCount, CLng(_block.Length - _blockOffset)), _extentRemaining))
+            If count <= 0 Then Return Nothing
+            Dim result(count - 1) As Byte
+            System.Buffer.BlockCopy(_block, _blockOffset, result, 0, count)
+            _blockOffset += count
+            _extentRemaining -= count
+            _position += count
+            Return result
+        End Function
+
+        Private Sub EnsureData()
+            While _extentRemaining <= 0
+                StartNextExtent()
+            End While
+            If _block IsNot Nothing AndAlso _blockOffset < _block.Length Then Return
+            Dim extent As ltfsindex.file.extent = _extents(_extentIndex)
+            Dim physicalLimit As Long = _extentRemaining + If(_firstBlock, CLng(extent.byteoffset), 0L)
+            Dim blockLimit As UInteger = CUInt(Math.Min(CLng(Math.Max(1, _writer.plabel.blocksize)), physicalLimit))
+            Dim sense As Byte() = Nothing
+            _block = TapeUtils.ReadBlock(_writer.driveHandle, sense, blockLimit, True)
+            If sense IsNot Nothing AndAlso sense.Length > 2 AndAlso (sense(2) And &HF) <> 0 Then
+                Throw New IO.IOException(TapeUtils.ParseSenseData(sense))
+            End If
+            If _block Is Nothing OrElse _block.Length = 0 Then Throw New IO.EndOfStreamException("empty tape block while reading tar")
+            If _firstBlock Then
+                If _block.Length <= extent.byteoffset Then Throw New IO.InvalidDataException("tar extent byte offset exceeds tape block")
+                _blockOffset = CInt(extent.byteoffset)
+                _firstBlock = False
+            Else
+                _blockOffset = 0
+            End If
+        End Sub
+
+        Private Sub StartNextExtent()
+            If _extentIndex >= 0 AndAlso _extentRemaining > 0 Then Return
+            _extentIndex += 1
+            If _extentIndex >= _extents.Count Then Throw New IO.EndOfStreamException("tar source has no more extents")
+            Dim extent As ltfsindex.file.extent = _extents(_extentIndex)
+            If extent.fileoffset <> _position Then
+                Throw New IO.InvalidDataException("tar source extents are not contiguous")
+            End If
+            TapeUtils.Locate(_writer.driveHandle,
+                             CULng(extent.startblock),
+                             _writer.GetPartitionNumber(CType(extent.partition, ltfslabel.PartitionLabel)),
+                             TapeUtils.LocateDestType.Block)
+            _writer.RestorePosition = New TapeUtils.PositionData(_writer.driveHandle)
+            _extentRemaining = extent.bytecount
+            _block = Nothing
+            _blockOffset = 0
+            _firstBlock = True
+            If _extentRemaining <= 0 Then StartNextExtent()
+        End Sub
+    End Class
+
+    Private Sub CollectTarVirtualFiles(directory As TarVirtualDirectory, files As List(Of TarVirtualFile))
+        If directory Is Nothing Then Return
+        For Each file As TarVirtualFile In directory.Files
+            Dim exists As Boolean = False
+            For Each oldFile As TarVirtualFile In files
+                If oldFile.SourceFile Is file.SourceFile AndAlso String.Equals(oldFile.Entry.Path, file.Entry.Path, StringComparison.OrdinalIgnoreCase) Then
+                    exists = True
+                    Exit For
+                End If
+            Next
+            If Not exists Then files.Add(file)
+        Next
+        For Each child As TarVirtualDirectory In directory.Directories
+            CollectTarVirtualFiles(child, files)
+        Next
+    End Sub
+
+    Private Sub CreateTarVirtualDirectories(directory As TarVirtualDirectory, archiveRoot As String)
+        If directory Is Nothing Then Return
+        Dim target As String = archiveRoot
+        If Not String.IsNullOrEmpty(directory.RelativePath) Then
+            target = IO.Path.Combine(archiveRoot, directory.RelativePath.Replace("/"c, IO.Path.DirectorySeparatorChar))
+        End If
+        IO.Directory.CreateDirectory(target)
+        For Each child As TarVirtualDirectory In directory.Directories
+            CreateTarVirtualDirectories(child, archiveRoot)
+        Next
+    End Sub
+
+    Private Shared Function ToLongPath(path As String) As String
+        If path Is Nothing OrElse path.StartsWith("\\", StringComparison.Ordinal) Then Return path
+        Return $"\\?\{path}"
+    End Function
+
+    Private Sub StartTarExtraction(basePath As String,
+                                   selectedFiles As List(Of TarVirtualFile),
+                                   selectedDirectories As List(Of TarVirtualDirectory))
+        Dim files As New List(Of TarVirtualFile)
+        If selectedFiles IsNot Nothing Then files.AddRange(selectedFiles)
+        If selectedDirectories IsNot Nothing Then
+            For Each directory As TarVirtualDirectory In selectedDirectories
+                CollectTarVirtualFiles(directory, files)
+            Next
+        End If
+        If files.Count = 0 AndAlso (selectedDirectories Is Nothing OrElse selectedDirectories.Count = 0) Then Return
+
+        Dim th As New Threading.Thread(
+            Sub()
+                Dim reserved As Boolean = False
+                Try
+                    CurrentFilesProcessed = 0
+                    CurrentBytesProcessed = 0
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = CULng(files.Count)
+                    For Each file As TarVirtualFile In files
+                        UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + file.Entry.Length)
+                    Next
+                    StartTime = Now
+                    StopFlag = False
+                    SetStatusLight(LWStatus.Busy)
+                    PrintMsg(My.Resources.ResText_Restoring)
+                    TapeUtils.ReserveUnit(driveHandle)
+                    reserved = True
+                    TapeUtils.PreventMediaRemoval(driveHandle)
+                    RestorePosition = New TapeUtils.PositionData(driveHandle)
+
+                    Dim sources As New List(Of ltfsindex.file)
+                    For Each file As TarVirtualFile In files
+                        If Not sources.Contains(file.SourceFile) Then sources.Add(file.SourceFile)
+                    Next
+                    If selectedDirectories IsNot Nothing Then
+                        For Each directory As TarVirtualDirectory In selectedDirectories
+                            If Not sources.Contains(directory.SourceFile) Then sources.Add(directory.SourceFile)
+                            Dim archiveRoot As String = ToLongPath(IO.Path.Combine(basePath, IO.Path.GetFileName(directory.SourceFile.name)))
+                            CreateTarVirtualDirectories(directory, archiveRoot)
+                        Next
+                    End If
+
+                    Dim groups As New Dictionary(Of ltfsindex.file, List(Of TarVirtualFile))
+                    For Each file As TarVirtualFile In files
+                        Dim group As List(Of TarVirtualFile) = Nothing
+                        If Not groups.TryGetValue(file.SourceFile, group) Then
+                            group = New List(Of TarVirtualFile)
+                            groups(file.SourceFile) = group
+                        End If
+                        If Not group.Contains(file) Then group.Add(file)
+                    Next
+
+                    For Each source As ltfsindex.file In sources
+                        Dim group As List(Of TarVirtualFile) = Nothing
+                        If Not groups.TryGetValue(source, group) Then Continue For
+                        group.Sort(New Comparison(Of TarVirtualFile)(Function(a As TarVirtualFile, b As TarVirtualFile)
+                                                                         Return a.Entry.DataOffset.CompareTo(b.Entry.DataOffset)
+                                                                     End Function))
+                        Dim archiveRoot As String = ToLongPath(IO.Path.Combine(basePath, IO.Path.GetFileName(source.name)))
+                        IO.Directory.CreateDirectory(archiveRoot)
+                        Dim reader As New TarTapeRangeReader(Me, source)
+                        For Each file As TarVirtualFile In group
+                            If StopFlag Then Exit For
+                            Dim relative As String = file.Entry.Path.Replace("/"c, IO.Path.DirectorySeparatorChar)
+                            Dim outputPath As String = ToLongPath(IO.Path.Combine(archiveRoot, relative))
+                            reader.CopyRange(file.Entry, outputPath)
+                            Threading.Interlocked.Increment(CurrentFilesProcessed)
+                            Threading.Interlocked.Increment(TotalFilesProcessed)
+                        Next
+                        If StopFlag Then Exit For
+                    Next
+                    If StopFlag Then
+                        PrintMsg(My.Resources.ResText_OpCancelled)
+                        SetStatusLight(LWStatus.Idle)
+                    Else
+                        PrintMsg(My.Resources.ResText_RestFin)
+                        SetStatusLight(LWStatus.Succ)
+                    End If
+                Catch ex As Exception
+                    PrintMsg($"{My.Resources.ResText_RestoreErr}{ex}", ForceLog:=True)
+                    SetStatusLight(LWStatus.Err)
+                Finally
+                    If reserved Then
+                        Try
+                            TapeUtils.AllowMediumRemoval(driveHandle)
+                        Catch
+                        End Try
+                        Try
+                            TapeUtils.ReleaseUnit(driveHandle)
+                        Catch
+                        End Try
+                    End If
+                    StopFlag = False
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = 0
+                    LockGUI(False)
+                End Try
+            End Sub)
+        th.IsBackground = True
+        LockGUI()
+        th.Start()
+    End Sub
+
     Private Sub 提取ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem.Click
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 AndAlso
-        FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
+        If ListView1.SelectedItems Is Nothing OrElse ListView1.SelectedItems.Count = 0 Then Exit Sub
+        Dim tarFiles As New List(Of TarVirtualFile)
+        Dim tarDirectories As New List(Of TarVirtualDirectory)
+        For Each item As ListViewItem In ListView1.SelectedItems
+            If TypeOf item.Tag Is TarVirtualFile Then
+                tarFiles.Add(DirectCast(item.Tag, TarVirtualFile))
+            ElseIf TypeOf item.Tag Is TarVirtualDirectory Then
+                tarDirectories.Add(DirectCast(item.Tag, TarVirtualDirectory))
+            End If
+        Next
+        If tarFiles.Count > 0 OrElse tarDirectories.Count > 0 Then
+            If FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
+                StartTarExtraction(FolderBrowserDialog1.SelectedPath, tarFiles, tarDirectories)
+            End If
+            Exit Sub
+        End If
+        If FolderBrowserDialog1.ShowDialog() = DialogResult.OK Then
             Dim BasePath As String = FolderBrowserDialog1.SelectedPath
             LockGUI()
             Dim flist As New List(Of ltfsindex.file)
@@ -3914,6 +4291,16 @@ Public Class LTFSWriter
     Private Sub 提取ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem1.Click
         Dim Nodes As List(Of TreeNode) = SelectedNodes
         If Nodes.Count = 0 Then Exit Sub
+        Dim tarDirectories As New List(Of TarVirtualDirectory)
+        For Each node As TreeNode In Nodes
+            If TypeOf node.Tag Is TarVirtualDirectory Then tarDirectories.Add(DirectCast(node.Tag, TarVirtualDirectory))
+        Next
+        If tarDirectories.Count > 0 Then
+            If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
+                StartTarExtraction(FolderBrowserDialog1.SelectedPath, New List(Of TarVirtualFile), tarDirectories)
+            End If
+            Exit Sub
+        End If
         If FolderBrowserDialog1.ShowDialog = DialogResult.OK Then
             Dim FileList As New List(Of FileRecord)
             Dim th As New Threading.Thread(
@@ -4451,6 +4838,42 @@ Public Class LTFSWriter
         target.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, source.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
         target.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True), True)
         target.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True), True)
+        target.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
+        Dim tarMetadataText As String = source.GetXAttr(ltfsindex.file.xattr.TarMetadata, True)
+        Dim tarMetadata As TarMetadata = Nothing
+        Dim virtualRoot As TarVirtualDirectory = Nothing
+        If TarMetadataCodec.TryDecode(tarMetadataText, tarMetadata) AndAlso
+            TarVirtualTreeBuilder.TryBuild(target, tarMetadata, virtualRoot) Then
+            target.SetXattr(ltfsindex.file.xattr.TarMetadata, tarMetadataText)
+        End If
+    End Sub
+
+    Private Function IsTarMetadataCandidate(fr As FileRecord) As Boolean
+        If Not My.Settings.LTFSWriter_EnrichTarMetadata OrElse fr Is Nothing OrElse fr.File Is Nothing Then Return False
+        If fr.File.length <= 0 OrElse fr.FileOffset <> 0 OrElse fr.SegmentLength <> fr.File.length Then Return False
+        Return fr.File.name.EndsWith(".tar", StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Private Function IsTarFile(fr As FileRecord) As Boolean
+        Return My.Settings.LTFSWriter_EnrichTarMetadata AndAlso fr IsNot Nothing AndAlso fr.File IsNot Nothing AndAlso
+               fr.File.name.EndsWith(".tar", StringComparison.OrdinalIgnoreCase)
+    End Function
+
+    Private Sub CommitTarMetadata(fr As FileRecord, scanner As TarMetadataScanner)
+        If fr Is Nothing OrElse fr.File Is Nothing OrElse scanner Is Nothing Then Return
+        Dim metadata As TarMetadata = Nothing
+        Try
+            If scanner.TryComplete(fr.File.length, metadata) Then
+                fr.File.SetXattr(ltfsindex.file.xattr.TarMetadata, TarMetadataCodec.Encode(metadata))
+                Return
+            End If
+        Catch ex As Exception
+            PrintMsg($"tar metadata encode skipped: {fr.SourcePath}; {ex.Message}", LogOnly:=True, ForceLog:=True)
+        End Try
+        fr.File.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
+        If scanner.Failed Then
+            PrintMsg($"tar metadata skipped: {fr.SourcePath}; {scanner.ErrorMessage}", LogOnly:=True, ForceLog:=True)
+        End If
     End Sub
 
     Private Function BuildWritePlan(writeList As List(Of FileRecord),
@@ -4606,7 +5029,8 @@ Public Class LTFSWriter
                                              fr As FileRecord,
                                              driveHandle As IntPtr,
                                              p As TapeUtils.PositionData,
-                                             Optional expectedDedupeHash As String = "") As Boolean
+                                             Optional expectedDedupeHash As String = "",
+                                             Optional tarScanner As TarMetadataScanner = Nothing) As Boolean
         Dim remainingInFile As Long = fr.File.length
         Dim eofSeen As Boolean = False
         Dim writeCallCount As Long = 0
@@ -4656,6 +5080,7 @@ Public Class LTFSWriter
             Dim bytesReaded As Integer = slot.Length
             Dim writeStarted = Stopwatch.GetTimestamp()
             Try
+                If tarScanner IsNot Nothing Then tarScanner.ProcessUnmanaged(slot.DataPtr, slot.Length)
                 CheckCount += 1
                 If CheckCount >= CheckCycle Then CheckCount = 0
                 If SpeedLimit > 0 AndAlso CheckCount = 0 Then
@@ -4965,6 +5390,11 @@ Public Class LTFSWriter
                                 Dim currentPlan = writePlan(i)
                                 ValidatePlannedSource(fr, currentPlan)
                                 Dim IsIndexPartition As Boolean = currentPlan.Kind = PlannedWriteKind.IndexPartitionMaterial
+                                Dim tarScanner As TarMetadataScanner = Nothing
+                                If currentPlan.Kind <> PlannedWriteKind.Duplicate AndAlso IsTarFile(fr) Then
+                                    fr.File.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
+                                    If IsTarMetadataCandidate(fr) Then tarScanner = New TarMetadataScanner()
+                                End If
                                 If fr.File.length > 0 Then
                                     'p = New TapeUtils.PositionData(TapeDrive)
                                     'If p.EOP Then PrintMsg(My.Resources.ResText_EWEOM.Text, True)
@@ -5013,6 +5443,12 @@ Public Class LTFSWriter
                                             .fileoffset = If(Not useFastReader, fr.FileOffset, 0)}
                                         If IsIndexPartition Then
                                             fr.File.extentinfo.Clear()
+                                            Dim tarDataRead As Action(Of Byte(), Integer, Integer) = Nothing
+                                            If tarScanner IsNot Nothing Then
+                                                tarDataRead = Sub(data As Byte(), dataOffset As Integer, dataCount As Integer)
+                                                                  tarScanner.Process(data, dataOffset, dataCount)
+                                                              End Sub
+                                            End If
                                             Select Case fr.Open()
                                                 Case DialogResult.Ignore
                                                     PrintMsg($"Cannot open file {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
@@ -5024,7 +5460,7 @@ Public Class LTFSWriter
                                             fileextent.partition = CType(IndexPartition, ltfsindex.PartitionLabel)
                                             Dim IsFirstFile As Boolean = (i <= 0 OrElse p.PartitionNumber = DataPartition)
                                             Dim IsLastFile As Boolean = (i >= WriteList.Count - 1 OrElse (WriteList(i + 1).File.extentinfo Is Nothing) OrElse (WriteList(i + 1).File.extentinfo.Count = 0) OrElse WriteList(i + 1).File.extentinfo(0).partition = DataPartition)
-                                            fileextent.startblock = DumpDataToIndexPartition(fr.fs, False, IsFirstFile, IsLastFile)
+                                            fileextent.startblock = DumpDataToIndexPartition(fr.fs, False, IsFirstFile, IsLastFile, tarDataRead)
                                             fr.Close()
                                             If IsLastFile Then TapeUtils.Locate(driveHandle, lastpos.BlockNumber, lastpos.PartitionNumber)
                                         Else
@@ -5055,7 +5491,7 @@ Public Class LTFSWriter
                                             CurrentFilesProcessed += 1
                                             TotalBytesUnindexed += fr.File.length
                                         ElseIf useFastReader AndAlso Not IsIndexPartition Then
-                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash) Then Exit For
+                                            If Not WriteFileFromFastReader(fastProvider, i, fr, driveHandle, p, currentPlan.ExpectedDedupeHash, tarScanner) Then Exit For
                                         ElseIf (fr.File.length <= plabel.blocksize) AndAlso (fr.FileOffset = 0) AndAlso (fr.File.length = fr.SegmentLength) Then
                                             Dim succ As Boolean = False
                                             Dim FileData(CInt(fr.File.length - 1)) As Byte
@@ -5070,6 +5506,9 @@ Public Class LTFSWriter
                                                     Else
                                                         PipeReader = provider.Reader
                                                         PipeReadExactly(PipeReader, FileData, CInt(fr.File.length))
+                                                    End If
+                                                    If tarScanner IsNot Nothing AndAlso Not IsIndexPartition Then
+                                                        tarScanner.Process(FileData, 0, FileData.Length)
                                                     End If
                                                     If IsIndexPartition Then succ = True
                                                     Exit While
@@ -5273,6 +5712,10 @@ Public Class LTFSWriter
                                                             Continue For
                                                     End Select
                                                 End Try
+
+                                                If tarScanner IsNot Nothing AndAlso Not IsIndexPartition AndAlso BytesReaded > 0 Then
+                                                    tarScanner.Process(buffer, 0, BytesReaded)
+                                                End If
 
                                                 If LastWriteTask IsNot Nothing Then
                                                     Dim lwcounter As Integer = 0
@@ -5519,6 +5962,9 @@ Public Class LTFSWriter
                                     TotalBytesUnindexed += 1
                                     TotalFilesProcessed += 1
                                     CurrentFilesProcessed += 1
+                                End If
+                                If tarScanner IsNot Nothing AndAlso Not StopFlag Then
+                                    CommitTarMetadata(fr, tarScanner)
                                 End If
                                 'mark as written
                                 fr.ParentDirectory.contents._file.Add(fr.File)
@@ -8007,7 +8453,7 @@ Public Class LTFSWriter
                 FILE_ATTRIBUTE_VIRTUAL = &H10000
             End Enum
 
-            Public Function GetFileInfo(ByRef FileInfo As FileInfo) As Int32
+            Public Function GetFileInfo(ByRef FileInfo As Fsp.Interop.FileInfo) As Int32
                 If (Not IsDirectory) Then
                     FileInfo.FileAttributes = dwFilAttributesValue.FILE_ATTRIBUTE_OFFLINE Or dwFilAttributesValue.FILE_ATTRIBUTE_ARCHIVE
                     If LTFSFile.readonly Then FileInfo.FileAttributes = FileInfo.FileAttributes Or dwFilAttributesValue.FILE_ATTRIBUTE_READONLY
@@ -8036,7 +8482,7 @@ Public Class LTFSWriter
             End Function
 
             Public Function GetFileAttributes() As UInt32
-                Dim FileInfo As FileInfo
+                Dim FileInfo As Fsp.Interop.FileInfo
                 Me.GetFileInfo(FileInfo)
                 Return FileInfo.FileAttributes
             End Function
@@ -8114,7 +8560,7 @@ Public Class LTFSWriter
             If LW.schema._directory.Count = 0 Then Throw New Exception("Not LTFS formatted")
             Dim path As String() = FileName.Split({"\"}, StringSplitOptions.RemoveEmptyEntries)
             Dim filedesc As New FileDesc
-            Dim FileInfo As New FileInfo
+            Dim FileInfo As New Fsp.Interop.FileInfo
             If path.Length = 0 Then
                 filedesc = New FileDesc With {.IsDirectory = True, .LTFSDirectory = LW.schema._directory(0)}
                 filedesc.GetFileInfo(FileInfo)
@@ -8162,7 +8608,7 @@ Public Class LTFSWriter
                                        GrantedAccess As UInteger,
                                        ByRef FileNode As Object,
                                        ByRef FileDesc As Object,
-                                       ByRef FileInfo As FileInfo,
+                                       ByRef FileInfo As Fsp.Interop.FileInfo,
                                        ByRef NormalizedName As String) As Integer
             Try
                 'FileNode = New Object()
@@ -8262,12 +8708,12 @@ Public Class LTFSWriter
                 Return STATUS_FILE_CORRUPT_ERROR
             End Try
         End Function
-        Public Overrides Function GetFileInfo(FileNode As Object, FileDesc As Object, ByRef FileInfo As FileInfo) As Integer
+        Public Overrides Function GetFileInfo(FileNode As Object, FileDesc As Object, ByRef FileInfo As Fsp.Interop.FileInfo) As Integer
             Dim result As Integer = CType(FileDesc, FileDesc).GetFileInfo(FileInfo)
             Return result
         End Function
 
-        Public Overrides Function ReadDirectoryEntry(FileNode As Object, FileDesc0 As Object, Pattern As String, Marker As String, ByRef Context As Object, <Out> ByRef FileName As String, <Out> ByRef FileInfo As FileInfo) As Boolean
+        Public Overrides Function ReadDirectoryEntry(FileNode As Object, FileDesc0 As Object, Pattern As String, Marker As String, ByRef Context As Object, <Out> ByRef FileName As String, <Out> ByRef FileInfo As Fsp.Interop.FileInfo) As Boolean
 
             Dim FileDesc As FileDesc = CType(FileDesc0, FileDesc)
             If FileDesc.FileSystemInfos Is Nothing Then
@@ -8310,7 +8756,7 @@ Public Class LTFSWriter
             If FileDesc.FileSystemInfos.Length > index Then
                 Context = index + 1
                 FileName = CStr(FileDesc.FileSystemInfos(CInt(index)).Key)
-                FileInfo = New FileInfo()
+                FileInfo = New Fsp.Interop.FileInfo()
                 With FileDesc.FileSystemInfos(CInt(index))
                     If TypeOf FileDesc.FileSystemInfos(CInt(index)).Value Is ltfsindex.directory Then
                         With CType(FileDesc.FileSystemInfos(CInt(index)).Value, ltfsindex.directory)
@@ -8343,7 +8789,7 @@ Public Class LTFSWriter
                 Return True
             Else
                 FileName = ""
-                FileInfo = New FileInfo()
+                FileInfo = New Fsp.Interop.FileInfo()
                 Return False
             End If
         End Function
@@ -8667,6 +9113,11 @@ Public Class LTFSWriter
     Private Sub 显示文件数ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 显示文件数ToolStripMenuItem.Click
         My.Settings.LTFSWriter_ShowFileCount = 显示文件数ToolStripMenuItem.Checked
         RefreshDisplay()
+    End Sub
+
+    Private Sub 增强Tar元数据ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 增强Tar元数据ToolStripMenuItem.Click
+        My.Settings.LTFSWriter_EnrichTarMetadata = 增强Tar元数据ToolStripMenuItem.Checked
+        My.Settings.Save()
     End Sub
 
     Private Sub 移动到索引区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 移动到索引区ToolStripMenuItem.Click

@@ -1,4 +1,4 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()>
 Partial Class LTFSWriter
     Inherits System.Windows.Forms.Form
 
@@ -42,6 +42,22 @@ Partial Class LTFSWriter
         Me.解压索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ImageList1 = New System.Windows.Forms.ImageList(Me.components)
         Me.SplitContainer2 = New System.Windows.Forms.SplitContainer()
+        Me.ListView1 = New LTFSCopyGUI.DpiAwareListView()
+        Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_fileuid = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_openforwrite = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_readonly = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_changetime = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_modifytime = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_accesstime = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_backuptime = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_tag = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_StartBlock = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_Partition = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_FriendlyLen = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
+        Me.Column_writtenBytes = CType(New System.Windows.Forms.ColumnHeader(),System.Windows.Forms.ColumnHeader)
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.提取ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -77,6 +93,7 @@ Partial Class LTFSWriter
         Me.子目录列表ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.文件详情ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.XAttrToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.Chart1 = New LTFSCopyGUI.Direct2DChartControl()
         Me.ContextMenuStrip2 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.S60ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.Min5ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -140,6 +157,7 @@ Partial Class LTFSWriter
         Me.总是更新数据区索引ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.禁用分区ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.显示文件数ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
+        Me.增强Tar元数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparator6 = New System.Windows.Forms.ToolStripSeparator()
         Me.回退ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.清除当前索引后数据ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
@@ -206,40 +224,23 @@ Partial Class LTFSWriter
         Me.创建磁盘镜像ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.清除指定大小范围的待写文件ToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolTipChanErrLog = New System.Windows.Forms.ToolTip(Me.components)
-        Me.ListView1 = New LTFSCopyGUI.DpiAwareListView()
-        Me.Column_name = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_length = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_creationtime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_fileuid = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_openforwrite = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_readonly = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_changetime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_modifytime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_accesstime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_backuptime = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_tag = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_StartBlock = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_Partition = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_FriendlyLen = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Column_writtenBytes = CType(New System.Windows.Forms.ColumnHeader(), System.Windows.Forms.ColumnHeader)
-        Me.Chart1 = New LTFSCopyGUI.Direct2DChartControl()
-        CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SplitContainer1.Panel1.SuspendLayout()
-        Me.SplitContainer1.Panel2.SuspendLayout()
-        Me.SplitContainer1.SuspendLayout()
-        Me.ContextMenuStrip3.SuspendLayout()
-        CType(Me.SplitContainer2, System.ComponentModel.ISupportInitialize).BeginInit()
-        Me.SplitContainer2.Panel1.SuspendLayout()
-        Me.SplitContainer2.Panel2.SuspendLayout()
-        Me.SplitContainer2.SuspendLayout()
-        Me.ContextMenuStrip1.SuspendLayout()
-        Me.ContextMenuStrip2.SuspendLayout()
-        Me.MenuStrip1.SuspendLayout()
-        Me.StatusStrip1.SuspendLayout()
-        Me.CommandBar.SuspendLayout()
-        Me.StatusStrip2.SuspendLayout()
-        Me.ContextMenuStrip4.SuspendLayout()
-        Me.SuspendLayout()
+        CType(Me.SplitContainer1,System.ComponentModel.ISupportInitialize).BeginInit
+        Me.SplitContainer1.Panel1.SuspendLayout
+        Me.SplitContainer1.Panel2.SuspendLayout
+        Me.SplitContainer1.SuspendLayout
+        Me.ContextMenuStrip3.SuspendLayout
+        CType(Me.SplitContainer2,System.ComponentModel.ISupportInitialize).BeginInit
+        Me.SplitContainer2.Panel1.SuspendLayout
+        Me.SplitContainer2.Panel2.SuspendLayout
+        Me.SplitContainer2.SuspendLayout
+        Me.ContextMenuStrip1.SuspendLayout
+        Me.ContextMenuStrip2.SuspendLayout
+        Me.MenuStrip1.SuspendLayout
+        Me.StatusStrip1.SuspendLayout
+        Me.CommandBar.SuspendLayout
+        Me.StatusStrip2.SuspendLayout
+        Me.ContextMenuStrip4.SuspendLayout
+        Me.SuspendLayout
         '
         'SplitContainer1
         '
@@ -263,6 +264,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip3
         '
+        Me.ContextMenuStrip3.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.剪切目录ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.详情ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
@@ -335,7 +337,7 @@ Partial Class LTFSWriter
         '
         'ImageList1
         '
-        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"), System.Windows.Forms.ImageListStreamer)
+        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"),System.Windows.Forms.ImageListStreamer)
         Me.ImageList1.TransparentColor = System.Drawing.Color.Transparent
         Me.ImageList1.Images.SetKeyName(0, "DirRoot.png")
         Me.ImageList1.Images.SetKeyName(1, "Dir.png")
@@ -355,8 +357,98 @@ Partial Class LTFSWriter
         '
         Me.SplitContainer2.Panel2.Controls.Add(Me.Chart1)
         '
+        'ListView1
+        '
+        Me.ListView1.AllowColumnReorder = True
+        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
+        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
+        resources.ApplyResources(Me.ListView1, "ListView1")
+        Me.ListView1.HideSelection = False
+        Me.ListView1.Name = "ListView1"
+        Me.ListView1.ShowGroups = False
+        Me.ListView1.ShowItemToolTips = True
+        Me.ListView1.SmallImageList = Me.ImageList1
+        Me.ListView1.UseCompatibleStateImageBehavior = False
+        Me.ListView1.View = System.Windows.Forms.View.Details
+        '
+        'Column_name
+        '
+        Me.Column_name.Name = "Column_name"
+        resources.ApplyResources(Me.Column_name, "Column_name")
+        '
+        'Column_length
+        '
+        resources.ApplyResources(Me.Column_length, "Column_length")
+        Me.Column_length.Name = "Column_length"
+        '
+        'Column_creationtime
+        '
+        resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
+        Me.Column_creationtime.Name = "Column_creationtime"
+        '
+        'Column_fileuid
+        '
+        Me.Column_fileuid.Name = "Column_fileuid"
+        resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
+        '
+        'Column_openforwrite
+        '
+        resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
+        Me.Column_openforwrite.Name = "Column_openforwrite"
+        '
+        'Column_readonly
+        '
+        resources.ApplyResources(Me.Column_readonly, "Column_readonly")
+        Me.Column_readonly.Name = "Column_readonly"
+        '
+        'Column_changetime
+        '
+        resources.ApplyResources(Me.Column_changetime, "Column_changetime")
+        Me.Column_changetime.Name = "Column_changetime"
+        '
+        'Column_modifytime
+        '
+        resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
+        Me.Column_modifytime.Name = "Column_modifytime"
+        '
+        'Column_accesstime
+        '
+        resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
+        Me.Column_accesstime.Name = "Column_accesstime"
+        '
+        'Column_backuptime
+        '
+        resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
+        Me.Column_backuptime.Name = "Column_backuptime"
+        '
+        'Column_tag
+        '
+        resources.ApplyResources(Me.Column_tag, "Column_tag")
+        Me.Column_tag.Name = "Column_tag"
+        '
+        'Column_StartBlock
+        '
+        resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
+        Me.Column_StartBlock.Name = "Column_StartBlock"
+        '
+        'Column_Partition
+        '
+        Me.Column_Partition.Name = "Column_Partition"
+        resources.ApplyResources(Me.Column_Partition, "Column_Partition")
+        '
+        'Column_FriendlyLen
+        '
+        resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
+        Me.Column_FriendlyLen.Name = "Column_FriendlyLen"
+        '
+        'Column_writtenBytes
+        '
+        resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
+        Me.Column_writtenBytes.Name = "Column_writtenBytes"
+        '
         'ContextMenuStrip1
         '
+        Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.移动到索引区ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.剪切文件ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem1, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.新建压缩文件ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.文件详情ToolStripMenuItem, Me.复制信息到剪贴板ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
@@ -538,8 +630,25 @@ Partial Class LTFSWriter
         Me.XAttrToolStripMenuItem.Name = "XAttrToolStripMenuItem"
         resources.ApplyResources(Me.XAttrToolStripMenuItem, "XAttrToolStripMenuItem")
         '
+        'Chart1
+        '
+        resources.ApplyResources(Me.Chart1, "Chart1")
+        Me.Chart1.AxisColor = System.Drawing.Color.FromArgb(CType(CType(110,Byte),Integer), CType(CType(110,Byte),Integer), CType(CType(130,Byte),Integer))
+        Me.Chart1.BackColor = System.Drawing.SystemColors.Window
+        Me.Chart1.ChartTitle = ""
+        Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
+        Me.Chart1.ForeColor = System.Drawing.SystemColors.ControlText
+        Me.Chart1.GridColor = System.Drawing.Color.FromArgb(CType(CType(205,Byte),Integer), CType(CType(205,Byte),Integer), CType(CType(225,Byte),Integer))
+        Me.Chart1.Name = "Chart1"
+        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(255,Byte),Integer))
+        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(0,Byte),Integer))
+        Me.Chart1.TabStop = False
+        Me.Chart1.ThirdColor = System.Drawing.Color.Red
+        Me.Chart1.XAxisTitle = "10分钟"
+        '
         'ContextMenuStrip2
         '
+        Me.ContextMenuStrip2.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.S60ToolStripMenuItem, Me.Min5ToolStripMenuItem, Me.Min10ToolStripMenuItem, Me.Min30ToolStripMenuItem, Me.H1ToolStripMenuItem, Me.H3ToolStripMenuItem, Me.H6ToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogarithmicToolStripMenuItem})
         Me.ContextMenuStrip2.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
@@ -598,6 +707,8 @@ Partial Class LTFSWriter
         '
         'MenuStrip1
         '
+        Me.MenuStrip1.GripMargin = New System.Windows.Forms.Padding(2, 2, 0, 2)
+        Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.磁带ToolStripMenuItem, Me.数据ToolStripMenuItem})
         resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
         Me.MenuStrip1.Name = "MenuStrip1"
@@ -662,7 +773,7 @@ Partial Class LTFSWriter
         '
         '自动化ToolStripMenuItem1
         '
-        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入完成后标题ToolStripMenuItem, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.电源选项ToolStripMenuItem1, Me.写入时标题ToolStripMenuItem, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.右下角显示容量损失ToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.电源选项ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem, Me.显示文件数ToolStripMenuItem})
+        Me.自动化ToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.写入完成后标题ToolStripMenuItem, Me.WA0ToolStripMenuItem, Me.WA1ToolStripMenuItem, Me.WA2ToolStripMenuItem, Me.WA3ToolStripMenuItem, Me.电源选项ToolStripMenuItem1, Me.写入时标题ToolStripMenuItem, Me.计算校验ToolStripMenuItem, Me.异步校验CPU占用高ToolStripMenuItem, Me.去重ToolStripMenuItem, Me.索引间隔36GiBToolStripMenuItem, Me.容量刷新间隔30sToolStripMenuItem, Me.右下角显示容量损失ToolStripMenuItem, Me.限速不限制ToolStripMenuItem, Me.预读文件数5ToolStripMenuItem, Me.文件缓存32MiBToolStripMenuItem, Me.APToolStripMenuItem, Me.容量缺失检测参数ToolStripMenuItem, Me.重装带前清洁次数3ToolStripMenuItem, Me.电源选项ToolStripMenuItem, Me.ToolStripSeparator7, Me.启用日志记录ToolStripMenuItem, Me.总是更新数据区索引ToolStripMenuItem, Me.禁用分区ToolStripMenuItem, Me.显示文件数ToolStripMenuItem, Me.增强Tar元数据ToolStripMenuItem})
         Me.自动化ToolStripMenuItem1.Name = "自动化ToolStripMenuItem1"
         resources.ApplyResources(Me.自动化ToolStripMenuItem1, "自动化ToolStripMenuItem1")
         '
@@ -878,6 +989,12 @@ Partial Class LTFSWriter
         Me.显示文件数ToolStripMenuItem.Name = "显示文件数ToolStripMenuItem"
         resources.ApplyResources(Me.显示文件数ToolStripMenuItem, "显示文件数ToolStripMenuItem")
         '
+        '增强Tar元数据ToolStripMenuItem
+        '
+        Me.增强Tar元数据ToolStripMenuItem.CheckOnClick = True
+        Me.增强Tar元数据ToolStripMenuItem.Name = "增强Tar元数据ToolStripMenuItem"
+        resources.ApplyResources(Me.增强Tar元数据ToolStripMenuItem, "增强Tar元数据ToolStripMenuItem")
+        '
         'ToolStripSeparator6
         '
         Me.ToolStripSeparator6.Name = "ToolStripSeparator6"
@@ -980,6 +1097,7 @@ Partial Class LTFSWriter
         'StatusStrip1
         '
         resources.ApplyResources(Me.StatusStrip1, "StatusStrip1")
+        Me.StatusStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.StatusStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripDropDownButton1, Me.ToolStripDropDownButton2, Me.ToolStripDropDownButton3, Me.ToolStripStatusLabel1, Me.ToolStripStatusLabel4, Me.ToolStripProgressBar1, Me.ToolStripStatusLabel5, Me.ToolStripStatusLabel2})
         Me.StatusStrip1.Name = "StatusStrip1"
         Me.StatusStrip1.ShowItemToolTips = True
@@ -1004,7 +1122,7 @@ Partial Class LTFSWriter
         'ToolStripDropDownButton3
         '
         Me.ToolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
+        Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(0,Byte),Integer))
         resources.ApplyResources(Me.ToolStripDropDownButton3, "ToolStripDropDownButton3")
         Me.ToolStripDropDownButton3.Name = "ToolStripDropDownButton3"
         Me.ToolStripDropDownButton3.ShowDropDownArrow = False
@@ -1050,58 +1168,72 @@ Partial Class LTFSWriter
         '
         'CommandBar
         '
-        resources.ApplyResources(Me.CommandBar, "ToolStrip1")
-        Me.CommandBar.Controls.AddRange(New System.Windows.Forms.Control() {Me.ImportFilesButton, Me.WriteTapeButton, Me.BackupIndexButton, Me.MergeHashButton, Me.VerifySourceButton, Me.SafeEjectButton, Me.ForceEjectButton})
+        Me.CommandBar.BackColor = System.Drawing.Color.Transparent
+        Me.CommandBar.Controls.Add(Me.ImportFilesButton)
+        Me.CommandBar.Controls.Add(Me.WriteTapeButton)
+        Me.CommandBar.Controls.Add(Me.BackupIndexButton)
+        Me.CommandBar.Controls.Add(Me.MergeHashButton)
+        Me.CommandBar.Controls.Add(Me.VerifySourceButton)
+        Me.CommandBar.Controls.Add(Me.SafeEjectButton)
+        Me.CommandBar.Controls.Add(Me.ForceEjectButton)
+        resources.ApplyResources(Me.CommandBar, "CommandBar")
         Me.CommandBar.Name = "CommandBar"
         '
         'ImportFilesButton
         '
+        Me.ImportFilesButton.BackColor = System.Drawing.Color.Transparent
         Me.ImportFilesButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.ImportFiles
+        resources.ApplyResources(Me.ImportFilesButton, "ImportFilesButton")
         Me.ImportFilesButton.Name = "ImportFilesButton"
-        Me.ImportFilesButton.TabIndex = 0
-        Me.ImportFilesButton.Text = resources.GetString("ToolStripButton1.Text")
+        Me.ImportFilesButton.UseVisualStyleBackColor = False
         '
         'WriteTapeButton
         '
+        Me.WriteTapeButton.BackColor = System.Drawing.Color.Transparent
         Me.WriteTapeButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.WriteTape
+        resources.ApplyResources(Me.WriteTapeButton, "WriteTapeButton")
         Me.WriteTapeButton.Name = "WriteTapeButton"
-        Me.WriteTapeButton.TabIndex = 1
-        Me.WriteTapeButton.Text = resources.GetString("ToolStripButton2.Text")
+        Me.WriteTapeButton.UseVisualStyleBackColor = False
         '
         'BackupIndexButton
         '
+        Me.BackupIndexButton.BackColor = System.Drawing.Color.Transparent
         Me.BackupIndexButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.BackupIndex
+        resources.ApplyResources(Me.BackupIndexButton, "BackupIndexButton")
         Me.BackupIndexButton.Name = "BackupIndexButton"
-        Me.BackupIndexButton.TabIndex = 2
-        Me.BackupIndexButton.Text = resources.GetString("ToolStripButton4.Text")
+        Me.BackupIndexButton.UseVisualStyleBackColor = False
         '
         'MergeHashButton
         '
+        Me.MergeHashButton.BackColor = System.Drawing.Color.Transparent
         Me.MergeHashButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.MergeHash
+        resources.ApplyResources(Me.MergeHashButton, "MergeHashButton")
         Me.MergeHashButton.Name = "MergeHashButton"
-        Me.MergeHashButton.TabIndex = 3
-        Me.MergeHashButton.Text = resources.GetString("ToolStripButton5.Text")
+        Me.MergeHashButton.UseVisualStyleBackColor = False
         '
         'VerifySourceButton
         '
+        Me.VerifySourceButton.BackColor = System.Drawing.Color.Transparent
         Me.VerifySourceButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.VerifySource
+        resources.ApplyResources(Me.VerifySourceButton, "VerifySourceButton")
         Me.VerifySourceButton.Name = "VerifySourceButton"
-        Me.VerifySourceButton.TabIndex = 4
-        Me.VerifySourceButton.Text = resources.GetString("ToolStripButton6.Text")
+        Me.VerifySourceButton.UseVisualStyleBackColor = False
         '
         'SafeEjectButton
         '
+        Me.SafeEjectButton.BackColor = System.Drawing.Color.Transparent
         Me.SafeEjectButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.SafeEject
+        resources.ApplyResources(Me.SafeEjectButton, "SafeEjectButton")
         Me.SafeEjectButton.Name = "SafeEjectButton"
-        Me.SafeEjectButton.TabIndex = 5
-        Me.SafeEjectButton.Text = resources.GetString("ToolStripButton3.Text")
+        Me.SafeEjectButton.UseVisualStyleBackColor = False
         '
         'ForceEjectButton
         '
+        Me.ForceEjectButton.BackColor = System.Drawing.Color.Transparent
         Me.ForceEjectButton.CommandIcon = LTFSCopyGUI.ModernCommandIcon.ForceEject
+        resources.ApplyResources(Me.ForceEjectButton, "ForceEjectButton")
         Me.ForceEjectButton.Name = "ForceEjectButton"
-        Me.ForceEjectButton.TabIndex = 6
-        Me.ForceEjectButton.Text = resources.GetString("ToolStripButton7.Text")
+        Me.ForceEjectButton.UseVisualStyleBackColor = False
         '
         'Timer2
         '
@@ -1110,6 +1242,7 @@ Partial Class LTFSWriter
         '
         'StatusStrip2
         '
+        Me.StatusStrip2.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.StatusStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ToolStripStatusLabel6, Me.ToolStripStatusLabel3, Me.ToolStripStatusLabelS1, Me.ToolStripStatusLabelS2, Me.ToolStripStatusLabelS3, Me.ToolStripStatusLabelS4, Me.ToolStripStatusLabelS5, Me.ToolStripStatusLabelS6, Me.ToolStripStatusLabelErrLog})
         resources.ApplyResources(Me.StatusStrip2, "StatusStrip2")
         Me.StatusStrip2.Name = "StatusStrip2"
@@ -1178,6 +1311,7 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip4
         '
+        Me.ContextMenuStrip4.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem, Me.TestToolStripMenuItem})
         Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
         resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
@@ -1257,111 +1391,6 @@ Partial Class LTFSWriter
         Me.ToolTipChanErrLog.UseAnimation = False
         Me.ToolTipChanErrLog.UseFading = False
         '
-        'ListView1
-        '
-        Me.ListView1.AllowColumnReorder = True
-        Me.ListView1.Columns.AddRange(New System.Windows.Forms.ColumnHeader() {Me.Column_name, Me.Column_length, Me.Column_creationtime, Me.Column_fileuid, Me.Column_openforwrite, Me.Column_readonly, Me.Column_changetime, Me.Column_modifytime, Me.Column_accesstime, Me.Column_backuptime, Me.Column_tag, Me.Column_StartBlock, Me.Column_Partition, Me.Column_FriendlyLen, Me.Column_writtenBytes})
-        Me.ListView1.ContextMenuStrip = Me.ContextMenuStrip1
-        resources.ApplyResources(Me.ListView1, "ListView1")
-        Me.ListView1.HideSelection = False
-        Me.ListView1.Name = "ListView1"
-        Me.ListView1.ShowGroups = False
-        Me.ListView1.ShowItemToolTips = True
-        Me.ListView1.SmallImageList = Me.ImageList1
-        Me.ListView1.UseCompatibleStateImageBehavior = False
-        Me.ListView1.View = System.Windows.Forms.View.Details
-        '
-        'Column_name
-        '
-        Me.Column_name.Name = "Column_name"
-        resources.ApplyResources(Me.Column_name, "Column_name")
-        '
-        'Column_length
-        '
-        resources.ApplyResources(Me.Column_length, "Column_length")
-        Me.Column_length.Name = "Column_length"
-        '
-        'Column_creationtime
-        '
-        resources.ApplyResources(Me.Column_creationtime, "Column_creationtime")
-        Me.Column_creationtime.Name = "Column_creationtime"
-        '
-        'Column_fileuid
-        '
-        Me.Column_fileuid.Name = "Column_fileuid"
-        resources.ApplyResources(Me.Column_fileuid, "Column_fileuid")
-        '
-        'Column_openforwrite
-        '
-        resources.ApplyResources(Me.Column_openforwrite, "Column_openforwrite")
-        Me.Column_openforwrite.Name = "Column_openforwrite"
-        '
-        'Column_readonly
-        '
-        resources.ApplyResources(Me.Column_readonly, "Column_readonly")
-        Me.Column_readonly.Name = "Column_readonly"
-        '
-        'Column_changetime
-        '
-        resources.ApplyResources(Me.Column_changetime, "Column_changetime")
-        Me.Column_changetime.Name = "Column_changetime"
-        '
-        'Column_modifytime
-        '
-        resources.ApplyResources(Me.Column_modifytime, "Column_modifytime")
-        Me.Column_modifytime.Name = "Column_modifytime"
-        '
-        'Column_accesstime
-        '
-        resources.ApplyResources(Me.Column_accesstime, "Column_accesstime")
-        Me.Column_accesstime.Name = "Column_accesstime"
-        '
-        'Column_backuptime
-        '
-        resources.ApplyResources(Me.Column_backuptime, "Column_backuptime")
-        Me.Column_backuptime.Name = "Column_backuptime"
-        '
-        'Column_tag
-        '
-        resources.ApplyResources(Me.Column_tag, "Column_tag")
-        Me.Column_tag.Name = "Column_tag"
-        '
-        'Column_StartBlock
-        '
-        resources.ApplyResources(Me.Column_StartBlock, "Column_StartBlock")
-        Me.Column_StartBlock.Name = "Column_StartBlock"
-        '
-        'Column_Partition
-        '
-        Me.Column_Partition.Name = "Column_Partition"
-        resources.ApplyResources(Me.Column_Partition, "Column_Partition")
-        '
-        'Column_FriendlyLen
-        '
-        resources.ApplyResources(Me.Column_FriendlyLen, "Column_FriendlyLen")
-        Me.Column_FriendlyLen.Name = "Column_FriendlyLen"
-        '
-        'Column_writtenBytes
-        '
-        resources.ApplyResources(Me.Column_writtenBytes, "Column_writtenBytes")
-        Me.Column_writtenBytes.Name = "Column_writtenBytes"
-        '
-        'Chart1
-        '
-        resources.ApplyResources(Me.Chart1, "Chart1")
-        Me.Chart1.AxisColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(130, Byte), Integer))
-        Me.Chart1.BackColor = System.Drawing.SystemColors.Window
-        Me.Chart1.ChartTitle = ""
-        Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
-        Me.Chart1.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.Chart1.GridColor = System.Drawing.Color.FromArgb(CType(CType(205, Byte), Integer), CType(CType(205, Byte), Integer), CType(CType(225, Byte), Integer))
-        Me.Chart1.Name = "Chart1"
-        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
-        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.Chart1.TabStop = False
-        Me.Chart1.ThirdColor = System.Drawing.Color.Red
-        Me.Chart1.XAxisTitle = "10分钟"
-        '
         'LTFSWriter
         '
         resources.ApplyResources(Me, "$this")
@@ -1378,27 +1407,27 @@ Partial Class LTFSWriter
         Me.Name = "LTFSWriter"
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.SplitContainer1,System.ComponentModel.ISupportInitialize).EndInit
         Me.SplitContainer1.ResumeLayout(False)
         Me.ContextMenuStrip3.ResumeLayout(False)
         Me.SplitContainer2.Panel1.ResumeLayout(False)
         Me.SplitContainer2.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer2, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.SplitContainer2,System.ComponentModel.ISupportInitialize).EndInit
         Me.SplitContainer2.ResumeLayout(False)
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ContextMenuStrip2.ResumeLayout(False)
         Me.MenuStrip1.ResumeLayout(False)
-        Me.MenuStrip1.PerformLayout()
+        Me.MenuStrip1.PerformLayout
         Me.StatusStrip1.ResumeLayout(False)
-        Me.StatusStrip1.PerformLayout()
+        Me.StatusStrip1.PerformLayout
         Me.CommandBar.ResumeLayout(False)
         Me.StatusStrip2.ResumeLayout(False)
-        Me.StatusStrip2.PerformLayout()
+        Me.StatusStrip2.PerformLayout
         Me.ContextMenuStrip4.ResumeLayout(False)
         Me.ResumeLayout(False)
-        Me.PerformLayout()
+        Me.PerformLayout
 
-    End Sub
+End Sub
 
     Friend WithEvents ListView1 As DpiAwareListView
     Friend WithEvents Column_name As ColumnHeader
@@ -1524,6 +1553,7 @@ Partial Class LTFSWriter
     Friend WithEvents 文件缓存32MiBToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 文件详情ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 禁用分区ToolStripMenuItem As ToolStripMenuItem
+    Friend WithEvents 增强Tar元数据ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 容量缺失检测参数ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 速度下限ToolStripMenuItem As ToolStripMenuItem
     Friend WithEvents 速度上限ToolStripMenuItem As ToolStripMenuItem

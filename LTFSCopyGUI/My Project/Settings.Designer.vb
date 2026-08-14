@@ -559,6 +559,21 @@ Namespace My
         End Property
 
         <Global.System.Configuration.UserScopedSettingAttribute(),
+         Global.System.Configuration.SettingsDescriptionAttribute("写入 tar 元数据索引"),
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
+         Global.System.Configuration.DefaultSettingValueAttribute("False"),
+         Category("LTFSWriter"),
+         LocalizedDescription("PropertyDescription_LTFSWriter_EnrichTarMetadata")>
+        Public Property LTFSWriter_EnrichTarMetadata() As Boolean
+            Get
+                Return CType(Me("LTFSWriter_EnrichTarMetadata"), Boolean)
+            End Get
+            Set(Value As Boolean)
+                Me("LTFSWriter_EnrichTarMetadata") = Value
+            End Set
+        End Property
+
+        <Global.System.Configuration.UserScopedSettingAttribute(),
          Global.System.Configuration.SettingsDescriptionAttribute("Ring buffer模式"),
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),
          Global.System.Configuration.DefaultSettingValueAttribute("True"),
