@@ -272,6 +272,7 @@ Public Class LTFSWriter
             Me.Invoke(Sub()
                           粘贴选中ToolStripMenuItem.Visible = Not MyClipBoard.IsEmpty
                           粘贴选中ToolStripMenuItem1.Visible = Not MyClipBoard.IsEmpty
+                          If 粘贴选中ToolStripMenuItem.Visible Then TriggerTreeView1Event()
                       End Sub)
         End Sub}
     <TypeConverter(GetType(ExpandableObjectConverter))>
@@ -2119,19 +2120,48 @@ Public Class LTFSWriter
                         压缩索引ToolStripMenuItem.Enabled = True
                         剪切目录ToolStripMenuItem.Enabled = True
                         删除ToolStripMenuItem.Enabled = True
+                        删除ToolStripMenuItem.Visible = True
                     Else
                         压缩索引ToolStripMenuItem.Enabled = False
                         剪切目录ToolStripMenuItem.Enabled = False
                         删除ToolStripMenuItem.Enabled = False
+                        删除ToolStripMenuItem.Visible = True
                     End If
                     压缩索引ToolStripMenuItem.Visible = True
                     剪切目录ToolStripMenuItem.Enabled = True
+                    剪切目录ToolStripMenuItem.Visible = True
                     解压索引ToolStripMenuItem.Visible = False
                     提取ToolStripMenuItem1.Enabled = True
                     校验ToolStripMenuItem1.Enabled = True
+                    校验ToolStripMenuItem1.Visible = True
+                    校验ToolStripMenuItem.Visible = True
+                    校验ToolStripMenuItem.Enabled = True
                     重命名ToolStripMenuItem.Enabled = True
+                    重命名ToolStripMenuItem.Visible = True
                     统计ToolStripMenuItem.Enabled = True
+                    统计ToolStripMenuItem.Visible = True
+                    详情ToolStripMenuItem.Visible = True
+                    详情ToolStripMenuItem.Enabled = True
+                    粘贴选中ToolStripMenuItem.Visible = Not MyClipBoard.IsEmpty
+                    粘贴选中ToolStripMenuItem1.Visible = Not MyClipBoard.IsEmpty
                     TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
+
+                    移动到索引区ToolStripMenuItem.Enabled = True
+                    定位到起始块ToolStripMenuItem.Enabled = True
+                    剪切文件ToolStripMenuItem.Enabled = True
+                    重命名文件ToolStripMenuItem.Enabled = True
+                    重命名目录ToolStripMenuItem.Enabled = True
+                    合并文件ToolStripMenuItem.Enabled = True
+                    导入文件ToolStripMenuItem.Enabled = True
+                    添加文件ToolStripMenuItem.Enabled = True
+                    添加目录ToolStripMenuItem.Enabled = True
+                    新建目录ToolStripMenuItem.Enabled = True
+                    删除文件ToolStripMenuItem.Enabled = True
+                    删除目录ToolStripMenuItem.Enabled = True
+                    生成标签ToolStripMenuItem.Enabled = True
+                    设置标签ToolStripMenuItem.Enabled = True
+                    复制信息到剪贴板ToolStripMenuItem.Enabled = True
+                    文件详情ToolStripMenuItem.Enabled = True
                     Dim d As ltfsindex.directory = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.directory)
                     If ColumnReordered Then
                         Dim dd As New SerializableDictionary(Of String, Integer)
@@ -2425,18 +2455,25 @@ Public Class LTFSWriter
                     解压索引ToolStripMenuItem.Visible = False
                     压缩索引ToolStripMenuItem.Enabled = False
                     剪切目录ToolStripMenuItem.Enabled = False
+                    剪切目录ToolStripMenuItem.Visible = False
                     剪切文件ToolStripMenuItem.Enabled = False
                     提取ToolStripMenuItem.Enabled = True
                     提取ToolStripMenuItem1.Enabled = True
                     校验ToolStripMenuItem.Enabled = False
+                    校验ToolStripMenuItem.Visible = False
                     校验ToolStripMenuItem1.Enabled = False
+                    校验ToolStripMenuItem1.Visible = False
                     重命名ToolStripMenuItem.Enabled = False
+                    重命名ToolStripMenuItem.Visible = False
+                    详情ToolStripMenuItem.Visible = False
                     删除ToolStripMenuItem.Enabled = False
+                    删除ToolStripMenuItem.Visible = False
                     统计ToolStripMenuItem.Enabled = False
+                    统计ToolStripMenuItem.Visible = False
+
                     移动到索引区ToolStripMenuItem.Enabled = False
                     定位到起始块ToolStripMenuItem.Enabled = False
                     剪切文件ToolStripMenuItem.Enabled = False
-                    粘贴选中ToolStripMenuItem1.Enabled = False
                     重命名文件ToolStripMenuItem.Enabled = False
                     重命名目录ToolStripMenuItem.Enabled = False
                     合并文件ToolStripMenuItem.Enabled = False
@@ -2444,13 +2481,16 @@ Public Class LTFSWriter
                     添加文件ToolStripMenuItem.Enabled = False
                     添加目录ToolStripMenuItem.Enabled = False
                     新建目录ToolStripMenuItem.Enabled = False
-                    新建压缩文件ToolStripMenuItem.Enabled = False
                     删除文件ToolStripMenuItem.Enabled = False
                     删除目录ToolStripMenuItem.Enabled = False
                     生成标签ToolStripMenuItem.Enabled = False
                     设置标签ToolStripMenuItem.Enabled = False
                     复制信息到剪贴板ToolStripMenuItem.Enabled = False
                     文件详情ToolStripMenuItem.Enabled = False
+
+                    粘贴选中ToolStripMenuItem.Enabled = False
+                    粘贴选中ToolStripMenuItem1.Enabled = False
+                    新建压缩文件ToolStripMenuItem.Enabled = False
                     ListView1.Tag = tarDirectory
                     TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
                     ListView1.Items.Clear()
@@ -2480,6 +2520,8 @@ Public Class LTFSWriter
                     If t IsNot Nothing AndAlso t.ToLower = "true" Then
                         压缩索引ToolStripMenuItem.Visible = False
                         剪切目录ToolStripMenuItem.Enabled = False
+                        粘贴选中ToolStripMenuItem.Enabled = False
+                        粘贴选中ToolStripMenuItem1.Enabled = False
                         解压索引ToolStripMenuItem.Visible = True
                         提取ToolStripMenuItem1.Enabled = False
                         校验ToolStripMenuItem1.Enabled = False
