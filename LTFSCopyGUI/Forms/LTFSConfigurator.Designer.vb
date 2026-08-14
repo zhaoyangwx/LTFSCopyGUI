@@ -124,6 +124,7 @@ Partial Class LTFSConfigurator
         Me.ComboBox4 = New System.Windows.Forms.ComboBox()
         Me.ButtonResetLogPage = New System.Windows.Forms.Button()
         Me.TabPageTest = New System.Windows.Forms.TabPage()
+        Me.ButtonVerify = New System.Windows.Forms.Button()
         Me.ButtonEOT = New System.Windows.Forms.Button()
         Me.ButtonBOT = New System.Windows.Forms.Button()
         Me.NumericUpDownTestSets = New System.Windows.Forms.NumericUpDown()
@@ -182,7 +183,6 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
-        Me.ButtonVerify = New System.Windows.Forms.Button()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -226,7 +226,6 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripRefreshDeviceList
         '
-        Me.ContextMenuStripRefreshDeviceList.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripRefreshDeviceList.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DiskToolStripMenuItem, Me.SCSIAdapterToolStripMenuItem, Me.ManualAddToolStripMenuItem, Me.AddImageToolStripMenuItem, Me.BrowseToolStripMenuItem})
         Me.ContextMenuStripRefreshDeviceList.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStripRefreshDeviceList, "ContextMenuStripRefreshDeviceList")
@@ -401,7 +400,6 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripLTFSWriter
         '
-        Me.ContextMenuStripLTFSWriter.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripLTFSWriter.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.在当前进程运行ToolStripMenuItem, Me.不读取索引ToolStripMenuItem})
         Me.ContextMenuStripLTFSWriter.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStripLTFSWriter, "ContextMenuStripLTFSWriter")
@@ -574,7 +572,6 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripCMReader
         '
-        Me.ContextMenuStripCMReader.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripCMReader.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.BrowseBinaryFileToolStripMenuItem, Me.ReadThroughDiagnosticCommandToolStripMenuItem})
         Me.ContextMenuStripCMReader.Name = "ContextMenuStrip2"
         resources.ApplyResources(Me.ContextMenuStripCMReader, "ContextMenuStripCMReader")
@@ -649,7 +646,6 @@ Partial Class LTFSConfigurator
         '
         'ContextMenuStripErase
         '
-        Me.ContextMenuStripErase.ImageScalingSize = New System.Drawing.Size(32, 32)
         Me.ContextMenuStripErase.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.ReInitializeToolStripMenuItem, Me.QuickEraseToolStripMenuItem})
         Me.ContextMenuStripErase.Name = "ContextMenuStripErase"
         resources.ApplyResources(Me.ContextMenuStripErase, "ContextMenuStripErase")
@@ -926,6 +922,12 @@ Partial Class LTFSConfigurator
         resources.ApplyResources(Me.TabPageTest, "TabPageTest")
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
+        '
+        'ButtonVerify
+        '
+        resources.ApplyResources(Me.ButtonVerify, "ButtonVerify")
+        Me.ButtonVerify.Name = "ButtonVerify"
+        Me.ButtonVerify.UseVisualStyleBackColor = True
         '
         'ButtonEOT
         '
@@ -1281,12 +1283,6 @@ Partial Class LTFSConfigurator
         'OpenFileDialog1
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
-        '
-        'ButtonVerify
-        '
-        resources.ApplyResources(Me.ButtonVerify, "ButtonVerify")
-        Me.ButtonVerify.Name = "ButtonVerify"
-        Me.ButtonVerify.UseVisualStyleBackColor = True
         '
         'LTFSConfigurator
         '

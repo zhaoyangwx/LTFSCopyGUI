@@ -135,7 +135,6 @@ Public Class ltfsindex
         <Serializable>
         <TypeConverter(GetType(ExpandableObjectConverter))>
         Public Class xattr
-            Public Shared ReadOnly TarMetadata As String = "ltfscopygui.tarmetadata"
             <Category("LTFSIndex")>
             Public Property key As String
             <Category("LTFSIndex")>
@@ -161,6 +160,13 @@ Public Class ltfsindex
                     XxHash3
                     XxHash128
                 End Enum
+            End Class
+            Public Class ApplicationSpecific
+                Public Shared ReadOnly Property TarMetadata As String = "ltfscopygui.tarmetadata"
+                Public Shared ReadOnly Property CapacityRemain As String = "ltfscopygui.capacityremain"
+                Public Shared ReadOnly Property Archive As String = "ltfscopygui.archive"
+                Public Shared ReadOnly Property Fragment As String = "ltfscopygui.fragment"
+
             End Class
             Public Class HashLengthBytes
                 Public Const CRC32 As Integer = 4

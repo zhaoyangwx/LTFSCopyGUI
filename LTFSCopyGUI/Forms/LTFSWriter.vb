@@ -1888,7 +1888,7 @@ Public Class LTFSWriter
     Private Function TryGetTarVirtualRoot(source As ltfsindex.file, ByRef root As TarVirtualDirectory) As Boolean
         root = Nothing
         If source Is Nothing Then Return False
-        Dim encoded As String = source.GetXAttr(ltfsindex.file.xattr.TarMetadata, True)
+        Dim encoded As String = source.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata, True)
         Dim metadata As TarMetadata = Nothing
         If Not TarMetadataCodec.TryDecode(encoded, metadata) Then Return False
         Return TarVirtualTreeBuilder.TryBuild(source, metadata, root)
@@ -1946,7 +1946,7 @@ Public Class LTFSWriter
                                            Next
                                            'Compressed Dir
                                            For Each f As ltfsindex.file In dir.contents._file
-                                               Dim s As String = f.GetXAttr("ltfscopygui.archive")
+                                               Dim s As String = f.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Archive)
                                                If s IsNot Nothing AndAlso s.ToLower = "true" Then
                                                    Dim t As New TreeNode
                                                    t.Text = $"*{f.name}"
@@ -2476,7 +2476,7 @@ Public Class LTFSWriter
                     Next
                 ElseIf TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.file Then
                     Dim f As ltfsindex.file = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.file)
-                    Dim t As String = f.GetXAttr("ltfscopygui.archive")
+                    Dim t As String = f.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Archive)
                     If t IsNot Nothing AndAlso t.ToLower = "true" Then
                         压缩索引ToolStripMenuItem.Visible = False
                         剪切目录ToolStripMenuItem.Enabled = False
@@ -3732,7 +3732,7 @@ Public Class LTFSWriter
                                                   }wt{finfo.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")}->{FileIndex.modifytime}{vbCrLf _
                                                   }", LogOnly:=True)
         End If
-        If FileExist AndAlso Not (FileIndex.GetXAttr("ltfscopygui.fragment", True).ToLower() = "true") Then
+        If FileExist AndAlso Not (FileIndex.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Fragment, True).ToLower() = "true") Then
             Threading.Interlocked.Increment(CurrentFilesProcessed)
             Threading.Interlocked.Increment(TotalFilesProcessed)
             Exit Sub
@@ -4847,13 +4847,13 @@ Public Class LTFSWriter
         target.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, source.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True), True)
         target.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True), True)
         target.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, source.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True), True)
-        target.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
-        Dim tarMetadataText As String = source.GetXAttr(ltfsindex.file.xattr.TarMetadata, True)
+        target.RemoveXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata)
+        Dim tarMetadataText As String = source.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata, True)
         Dim tarMetadata As TarMetadata = Nothing
         Dim virtualRoot As TarVirtualDirectory = Nothing
         If TarMetadataCodec.TryDecode(tarMetadataText, tarMetadata) AndAlso
             TarVirtualTreeBuilder.TryBuild(target, tarMetadata, virtualRoot) Then
-            target.SetXattr(ltfsindex.file.xattr.TarMetadata, tarMetadataText)
+            target.SetXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata, tarMetadataText)
         End If
     End Sub
 
@@ -4873,13 +4873,13 @@ Public Class LTFSWriter
         Dim metadata As TarMetadata = Nothing
         Try
             If scanner.TryComplete(fr.File.length, metadata) Then
-                fr.File.SetXattr(ltfsindex.file.xattr.TarMetadata, TarMetadataCodec.Encode(metadata))
+                fr.File.SetXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata, TarMetadataCodec.Encode(metadata))
                 Return
             End If
         Catch ex As Exception
             PrintMsg($"tar metadata encode skipped: {fr.SourcePath}; {ex.Message}", LogOnly:=True, ForceLog:=True)
         End Try
-        fr.File.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
+        fr.File.RemoveXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata)
         If scanner.Failed Then
             PrintMsg($"tar metadata skipped: {fr.SourcePath}; {scanner.ErrorMessage}", LogOnly:=True, ForceLog:=True)
         End If
@@ -5401,7 +5401,7 @@ Public Class LTFSWriter
                                 Dim IsIndexPartition As Boolean = currentPlan.Kind = PlannedWriteKind.IndexPartitionMaterial
                                 Dim tarScanner As TarMetadataScanner = Nothing
                                 If currentPlan.Kind <> PlannedWriteKind.Duplicate AndAlso IsTarFile(fr) Then
-                                    fr.File.RemoveXattr(ltfsindex.file.xattr.TarMetadata)
+                                    fr.File.RemoveXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata)
                                     If IsTarMetadataCandidate(fr) Then tarScanner = New TarMetadataScanner()
                                 End If
                                 If fr.File.length > 0 Then
@@ -5988,7 +5988,7 @@ Public Class LTFSWriter
                                 If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
                                     p = New TapeUtils.PositionData(driveHandle)
                                     Dim capValue As Long() = RefreshCapacity()
-                                    fr.File.SetXattr("ltfscopygui.capacityremain", CStr(capValue(p.PartitionNumber * 2)))
+                                    fr.File.SetXattr(ltfsindex.file.xattr.ApplicationSpecific.CapacityRemain, CStr(capValue(p.PartitionNumber * 2)))
                                     Dim p2 As New TapeUtils.PositionData(driveHandle)
                                     If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                         Invoke(Sub()
@@ -8946,7 +8946,7 @@ Public Class LTFSWriter
                                  .changetime = d.changetime,
                                  .creationtime = d.creationtime,
                                  .modifytime = d.modifytime,
-                                 .extendedattributes = {New ltfsindex.file.xattr With {.key = "ltfscopygui.archive", .value = "True"}}.ToList(),
+                                 .extendedattributes = {New ltfsindex.file.xattr With {.key = ltfsindex.file.xattr.ApplicationSpecific.Archive, .value = "True"}}.ToList(),
                                  .fileuid = schema.highestfileuid,
                                  .length = ms.Length,
                                  .extentinfo = {New ltfsindex.file.extent With {
@@ -9085,7 +9085,7 @@ Public Class LTFSWriter
         If TreeView1.SelectedNode IsNot Nothing AndAlso TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.file Then
             Dim f As ltfsindex.file = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.file)
             Dim d As ltfsindex.directory = DirectCast(TreeView1.SelectedNode.Parent.Tag, ltfsindex.directory)
-            If f.GetXAttr("ltfscopygui.archive").ToLower = "true" Then
+            If f.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Archive).ToLower = "true" Then
                 LockGUI(True)
                 Task.Run(Sub()
                              SetStatusLight(LWStatus.Busy)
@@ -11204,7 +11204,7 @@ Public Class LTFSWriter
                          If CapacityRefreshInterval > 0 AndAlso (Now - LastRefresh).TotalSeconds > CapacityRefreshInterval Then
                              p = New TapeUtils.PositionData(driveHandle)
                              Dim capValue As Long() = RefreshCapacity()
-                             newfile.SetXattr("ltfscopygui.capacityremain", CStr(capValue(p.PartitionNumber * 2)))
+                             newfile.SetXattr(ltfsindex.file.xattr.ApplicationSpecific.CapacityRemain, CStr(capValue(p.PartitionNumber * 2)))
                              Dim p2 As New TapeUtils.PositionData(driveHandle)
                              If p2.BlockNumber <> p.BlockNumber OrElse p2.PartitionNumber <> p.PartitionNumber Then
                                  Invoke(Sub()

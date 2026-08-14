@@ -263,7 +263,6 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip3
         '
-        Me.ContextMenuStrip3.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip3.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem1, Me.校验ToolStripMenuItem1, Me.剪切目录ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem, Me.重命名ToolStripMenuItem, Me.删除ToolStripMenuItem, Me.统计ToolStripMenuItem, Me.详情ToolStripMenuItem, Me.压缩索引ToolStripMenuItem, Me.解压索引ToolStripMenuItem})
         Me.ContextMenuStrip3.Name = "ContextMenuStrip3"
         resources.ApplyResources(Me.ContextMenuStrip3, "ContextMenuStrip3")
@@ -336,7 +335,7 @@ Partial Class LTFSWriter
         '
         'ImageList1
         '
-        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"),System.Windows.Forms.ImageListStreamer)
+        Me.ImageList1.ImageStream = CType(resources.GetObject("ImageList1.ImageStream"), System.Windows.Forms.ImageListStreamer)
         Me.ImageList1.TransparentColor = System.Drawing.Color.Transparent
         Me.ImageList1.Images.SetKeyName(0, "DirRoot.png")
         Me.ImageList1.Images.SetKeyName(1, "Dir.png")
@@ -447,7 +446,6 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip1
         '
-        Me.ContextMenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.提取ToolStripMenuItem, Me.校验ToolStripMenuItem, Me.移动到索引区ToolStripMenuItem, Me.定位到起始块ToolStripMenuItem, Me.ToolStripSeparator2, Me.剪切文件ToolStripMenuItem, Me.粘贴选中ToolStripMenuItem1, Me.重命名文件ToolStripMenuItem, Me.重命名目录ToolStripMenuItem, Me.合并文件ToolStripMenuItem, Me.ToolStripSeparator3, Me.导入文件ToolStripMenuItem, Me.添加文件ToolStripMenuItem, Me.添加目录ToolStripMenuItem, Me.新建目录ToolStripMenuItem, Me.新建压缩文件ToolStripMenuItem, Me.选项ToolStripMenuItem, Me.ToolStripSeparator4, Me.删除文件ToolStripMenuItem, Me.删除目录ToolStripMenuItem, Me.ToolStripSeparator8, Me.生成标签ToolStripMenuItem, Me.设置标签ToolStripMenuItem, Me.文件详情ToolStripMenuItem, Me.复制信息到剪贴板ToolStripMenuItem})
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStrip1, "ContextMenuStrip1")
@@ -632,22 +630,21 @@ Partial Class LTFSWriter
         'Chart1
         '
         resources.ApplyResources(Me.Chart1, "Chart1")
-        Me.Chart1.AxisColor = System.Drawing.Color.FromArgb(CType(CType(110,Byte),Integer), CType(CType(110,Byte),Integer), CType(CType(130,Byte),Integer))
+        Me.Chart1.AxisColor = System.Drawing.Color.FromArgb(CType(CType(110, Byte), Integer), CType(CType(110, Byte), Integer), CType(CType(130, Byte), Integer))
         Me.Chart1.BackColor = System.Drawing.SystemColors.Window
         Me.Chart1.ChartTitle = ""
         Me.Chart1.ContextMenuStrip = Me.ContextMenuStrip2
         Me.Chart1.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.Chart1.GridColor = System.Drawing.Color.FromArgb(CType(CType(205,Byte),Integer), CType(CType(205,Byte),Integer), CType(CType(225,Byte),Integer))
+        Me.Chart1.GridColor = System.Drawing.Color.FromArgb(CType(CType(205, Byte), Integer), CType(CType(205, Byte), Integer), CType(CType(225, Byte), Integer))
         Me.Chart1.Name = "Chart1"
-        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(255,Byte),Integer))
-        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(0,Byte),Integer))
+        Me.Chart1.PrimaryColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(255, Byte), Integer))
+        Me.Chart1.SecondaryColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
         Me.Chart1.TabStop = False
         Me.Chart1.ThirdColor = System.Drawing.Color.Red
         Me.Chart1.XAxisTitle = "10分钟"
         '
         'ContextMenuStrip2
         '
-        Me.ContextMenuStrip2.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip2.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.S60ToolStripMenuItem, Me.Min5ToolStripMenuItem, Me.Min10ToolStripMenuItem, Me.Min30ToolStripMenuItem, Me.H1ToolStripMenuItem, Me.H3ToolStripMenuItem, Me.H6ToolStripMenuItem, Me.ToolStripSeparator1, Me.LinearToolStripMenuItem, Me.LogarithmicToolStripMenuItem})
         Me.ContextMenuStrip2.Name = "ContextMenuStrip1"
         resources.ApplyResources(Me.ContextMenuStrip2, "ContextMenuStrip2")
@@ -706,8 +703,6 @@ Partial Class LTFSWriter
         '
         'MenuStrip1
         '
-        Me.MenuStrip1.GripMargin = New System.Windows.Forms.Padding(2, 2, 0, 2)
-        Me.MenuStrip1.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.MenuStrip1.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.磁带ToolStripMenuItem, Me.数据ToolStripMenuItem})
         resources.ApplyResources(Me.MenuStrip1, "MenuStrip1")
         Me.MenuStrip1.Name = "MenuStrip1"
@@ -1121,7 +1116,7 @@ Partial Class LTFSWriter
         'ToolStripDropDownButton3
         '
         Me.ToolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text
-        Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255,Byte),Integer), CType(CType(128,Byte),Integer), CType(CType(0,Byte),Integer))
+        Me.ToolStripDropDownButton3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(255, Byte), Integer), CType(CType(128, Byte), Integer), CType(CType(0, Byte), Integer))
         resources.ApplyResources(Me.ToolStripDropDownButton3, "ToolStripDropDownButton3")
         Me.ToolStripDropDownButton3.Name = "ToolStripDropDownButton3"
         Me.ToolStripDropDownButton3.ShowDropDownArrow = False
@@ -1310,7 +1305,6 @@ Partial Class LTFSWriter
         '
         'ContextMenuStrip4
         '
-        Me.ContextMenuStrip4.ImageScalingSize = New System.Drawing.Size(24, 24)
         Me.ContextMenuStrip4.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.DebugToolStripMenuItem, Me.SettingToolStripMenuItem, Me.TestToolStripMenuItem})
         Me.ContextMenuStrip4.Name = "ContextMenuStrip4"
         resources.ApplyResources(Me.ContextMenuStrip4, "ContextMenuStrip4")
@@ -1406,22 +1400,22 @@ Partial Class LTFSWriter
         Me.Name = "LTFSWriter"
         Me.SplitContainer1.Panel1.ResumeLayout(False)
         Me.SplitContainer1.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer1,System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer1.ResumeLayout(False)
         Me.ContextMenuStrip3.ResumeLayout(False)
         Me.SplitContainer2.Panel1.ResumeLayout(False)
         Me.SplitContainer2.Panel2.ResumeLayout(False)
-        CType(Me.SplitContainer2,System.ComponentModel.ISupportInitialize).EndInit
+        CType(Me.SplitContainer2, System.ComponentModel.ISupportInitialize).EndInit()
         Me.SplitContainer2.ResumeLayout(False)
         Me.ContextMenuStrip1.ResumeLayout(False)
         Me.ContextMenuStrip2.ResumeLayout(False)
         Me.MenuStrip1.ResumeLayout(False)
-        Me.MenuStrip1.PerformLayout
+        Me.MenuStrip1.PerformLayout()
         Me.StatusStrip1.ResumeLayout(False)
-        Me.StatusStrip1.PerformLayout
+        Me.StatusStrip1.PerformLayout()
         Me.CommandBar.ResumeLayout(False)
         Me.StatusStrip2.ResumeLayout(False)
-        Me.StatusStrip2.PerformLayout
+        Me.StatusStrip2.PerformLayout()
         Me.ContextMenuStrip4.ResumeLayout(False)
         Me.ResumeLayout(False)
         Me.PerformLayout
