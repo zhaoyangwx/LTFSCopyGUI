@@ -69,7 +69,7 @@ Public Class LTFSConfigurator
         Set(value As Integer)
             _SelectedIndex = Math.Max(0, value)
             If Not LoadComplete Then Exit Property
-            Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
+            Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(ForceDisableRefresh:=_deviceRefreshInProgress)
             If CurDrive Is Nothing Then
                 ButtonAssign.Enabled = False
                 ButtonLTFSWriter.Enabled = False
@@ -131,42 +131,83 @@ Public Class LTFSConfigurator
         End Get
     End Property
     Public UILock As New Object
+    Private _deviceRefreshInProgress As Boolean
     Public Sub RefreshUI(Optional RefreshDevList As Boolean = True)
-        If Not LoadComplete Then Exit Sub
+        If IsDisposed OrElse Disposing Then Exit Sub
+        If InvokeRequired Then
+            BeginInvoke(New Action(Sub() RefreshUI(RefreshDevList)))
+            Exit Sub
+        End If
+        If Not LoadComplete OrElse _deviceRefreshInProgress Then Exit Sub
+
+        _deviceRefreshInProgress = True
+        LoadComplete = False
+        ButtonRefresh.Enabled = False
+        Dim selectedIndexBeforeRefresh As Integer = SelectedIndex
+
         Task.Run(Sub()
-                     LoadComplete = False
-                     If Threading.Monitor.TryEnter(UILock, 100) Then
-                         Dim DevList As List(Of TapeUtils.BlockDevice)
-                         If RefreshDevList OrElse LastDeviceList Is Nothing Then DevList = DeviceList Else DevList = LastDeviceList
-                         Invoke(Sub()
-                                    ListBox1.Items.Clear()
-                                    For Each D As TapeUtils.BlockDevice In DevList
-                                        If TapeUtils.TagDictionary.ContainsKey(D.SerialNumber) Then
-                                            ListBox1.Items.Add(TapeUtils.TagDictionary(D.SerialNumber))
-                                        Else
-                                            ListBox1.Items.Add(D.ToString())
-                                        End If
-                                    Next
-                                    ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
-                                    Dim t As String = ComboBoxDriveLetter.Text
-                                    ComboBoxDriveLetter.Items.Clear()
-                                    ComboBoxDriveLetter.Text = ""
-                                    For Each s As String In AvailableDriveLetters
-                                        ComboBoxDriveLetter.Items.Add(s)
-                                    Next
-                                    If ComboBoxDriveLetter.Items.Count > 0 Then
-                                        If Not ComboBoxDriveLetter.Items.Contains(t) Then
-                                            ComboBoxDriveLetter.SelectedIndex = 0
-                                        Else
-                                            ComboBoxDriveLetter.Text = t
-                                        End If
-                                    End If
-                                    If Not My.Settings.Application_License.ToLower().Contains("dev") Then TabControl1.TabPages.Remove(TabPageZBC)
-                                    LoadComplete = True
-                                    SelectedIndex = ListBox1.SelectedIndex
-                                End Sub)
-                         Threading.Monitor.Exit(UILock)
-                     End If
+                     Try
+                         If Threading.Monitor.TryEnter(UILock, 100) Then
+                             Try
+                                 Dim DevList As List(Of TapeUtils.BlockDevice)
+                                 If RefreshDevList OrElse LastDeviceList Is Nothing Then
+                                     DevList = DeviceList
+                                 Else
+                                     DevList = LastDeviceList
+                                 End If
+                                 Dim driveLetters As List(Of Char) = AvailableDriveLetters
+
+                                 If IsDisposed OrElse Disposing Then Return
+                                 Invoke(Sub()
+                                            ListBox1.Items.Clear()
+                                            For Each D As TapeUtils.BlockDevice In DevList
+                                                If TapeUtils.TagDictionary.ContainsKey(D.SerialNumber) Then
+                                                    ListBox1.Items.Add(TapeUtils.TagDictionary(D.SerialNumber))
+                                                Else
+                                                    ListBox1.Items.Add(D.ToString())
+                                                End If
+                                            Next
+                                            ListBox1.SelectedIndex = Math.Min(selectedIndexBeforeRefresh, ListBox1.Items.Count - 1)
+                                            Dim t As String = ComboBoxDriveLetter.Text
+                                            ComboBoxDriveLetter.Items.Clear()
+                                            ComboBoxDriveLetter.Text = ""
+                                            For Each s As Char In driveLetters
+                                                ComboBoxDriveLetter.Items.Add(s)
+                                            Next
+                                            If ComboBoxDriveLetter.Items.Count > 0 Then
+                                                If Not ComboBoxDriveLetter.Items.Contains(t) Then
+                                                    ComboBoxDriveLetter.SelectedIndex = 0
+                                                Else
+                                                    ComboBoxDriveLetter.Text = t
+                                                End If
+                                            End If
+                                            If Not My.Settings.Application_License.ToLower().Contains("dev") Then TabControl1.TabPages.Remove(TabPageZBC)
+                                            LoadComplete = True
+                                            SelectedIndex = ListBox1.SelectedIndex
+                                        End Sub)
+                             Finally
+                                 Threading.Monitor.Exit(UILock)
+                             End Try
+                         End If
+                     Catch ex As Exception
+                         If Not IsDisposed AndAlso Not Disposing Then
+                             Try
+                                 Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString(), My.Resources.ResText_Warning))
+                             Catch
+                             End Try
+                         End If
+                     Finally
+                         If Not IsDisposed AndAlso Not Disposing Then
+                             Try
+                                 Invoke(Sub()
+                                            _deviceRefreshInProgress = False
+                                            LoadComplete = True
+                                            ButtonRefresh.Enabled = True
+                                        End Sub)
+                             Catch
+                             End Try
+                         End If
+                     End Try
                  End Sub)
     End Sub
 

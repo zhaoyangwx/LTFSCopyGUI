@@ -217,10 +217,10 @@ Public Class Form1
         CheckBox1.Checked = My.Settings.IndexAnalyzer_GenCMD
         Text = $"{FormTitle.Text} - {ApplicationWheels.ApplicationInfo}"
     End Sub
-    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+    Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         LoadSetting()
         LoadComplete = True
-        RefreshDeviceList()
+        Await RefreshDeviceList()
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
@@ -698,32 +698,56 @@ Public Class Form1
     End Sub
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of TapeUtils.BlockDevice), TapeUtils.BlockDevice)))>
     Dim DevList As List(Of TapeUtils.BlockDevice)
-    Public Sub RefreshDeviceList()
+    Private _deviceScanInProgress As Boolean
+    Public Async Function RefreshDeviceList() As Threading.Tasks.Task
+        If _deviceScanInProgress Then Return
+
+        _deviceScanInProgress = True
         LoadComplete = False
+        Button11.Enabled = False
+
         Dim lastIndex As Integer = ComboBox1.SelectedIndex
-        ComboBox1.Items.Clear()
-        DevList = TapeUtils.GetTapeDriveList()
-        For Each D As TapeUtils.BlockDevice In DevList
-            ComboBox1.Items.Add(D.ToString())
-        Next
-        ComboBox1.SelectedIndex = Math.Min(ComboBox1.Items.Count - 1, Math.Max(0, lastIndex))
-        If ComboBox1.SelectedIndex >= 0 Then
-            If DevList(ComboBox1.SelectedIndex).DriveLetter.Length > 0 Then
-                Button27.Enabled = False
-            Else
-                Button27.Enabled = True
+        Try
+            ' Device enumeration performs SetupAPI, device opens and SCSI Inquiry calls.
+            ' Keep all of that work off the UI thread so the first form can paint.
+            Dim scannedDevices As List(Of TapeUtils.BlockDevice) = Await Threading.Tasks.Task.Run(
+                Function() TapeUtils.GetTapeDriveList())
+
+            If IsDisposed OrElse Disposing Then Return
+
+            ComboBox1.BeginUpdate()
+            Try
+                ComboBox1.Items.Clear()
+                DevList = scannedDevices
+                For Each D As TapeUtils.BlockDevice In DevList
+                    ComboBox1.Items.Add(D.ToString())
+                Next
+                ComboBox1.SelectedIndex = Math.Min(ComboBox1.Items.Count - 1, Math.Max(0, lastIndex))
+                If ComboBox1.SelectedIndex >= 0 Then
+                    Button27.Enabled = (DevList(ComboBox1.SelectedIndex).DriveLetter.Length = 0)
+                End If
+            Finally
+                ComboBox1.EndUpdate()
+            End Try
+        Catch ex As Exception
+            If Not IsDisposed AndAlso Not Disposing Then
+                MessageBox.Show(New Form With {.TopMost = True}, ex.ToString(), My.Resources.ResText_Warning)
             End If
-        End If
-        LoadComplete = True
-    End Sub
-    Private Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
+        Finally
+            _deviceScanInProgress = False
+            LoadComplete = True
+            If Not IsDisposed AndAlso Not Disposing Then Button11.Enabled = True
+        End Try
+    End Function
+    Private Async Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
+        If _deviceScanInProgress Then Exit Sub
         If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
             If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
             Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas"})
             Close()
             Exit Sub
         End If
-        RefreshDeviceList()
+        Await RefreshDeviceList()
     End Sub
 
     Private Sub Button12_Click(sender As Object, e As EventArgs) Handles Button12.Click
@@ -738,9 +762,10 @@ Public Class Form1
         ChangerTool.Show()
     End Sub
 
-    Private Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
+    Private Async Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
+        If Not LoadComplete OrElse _deviceScanInProgress Then Exit Sub
         If DevList IsNot Nothing AndAlso DevList.Count > 0 AndAlso ComboBox1.SelectedIndex >= 0 Then
-            RefreshDeviceList()
+            Await RefreshDeviceList()
             If Button27.Enabled = False Then Exit Sub
             Dim device As TapeUtils.BlockDevice = DevList(ComboBox1.SelectedIndex)
             TapeUtils.CheckSwitchConfig(device)
