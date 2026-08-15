@@ -4290,57 +4290,57 @@ Public Class LTFSWriter
             Exit Sub
         End If
         Dim BasePath As String = selectedPath
-            LockGUI()
-            Dim flist As New List(Of ltfsindex.file)
-            For Each SI As ListViewItem In ListView1.SelectedItems
-                If TypeOf SI.Tag Is ltfsindex.file Then
-                    flist.Add(DirectCast(SI.Tag, ltfsindex.file))
-                End If
-            Next
+        LockGUI()
+        Dim flist As New List(Of ltfsindex.file)
+        For Each SI As ListViewItem In ListView1.SelectedItems
+            If TypeOf SI.Tag Is ltfsindex.file Then
+                flist.Add(DirectCast(SI.Tag, ltfsindex.file))
+            End If
+        Next
 
-            Dim th As New Threading.Thread(
-                    Sub()
-                        Try
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverrideValue = CULng(flist.Count)
-                            StartTime = Now
-                            For Each FI As ltfsindex.file In flist
-                                UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.length)
-                                FI.TempObj = Nothing
-                            Next
-                            SetStatusLight(LWStatus.Busy)
-                            PrintMsg(My.Resources.ResText_Restoring)
-                            StopFlag = False
-                            TapeUtils.ReserveUnit(driveHandle)
-                            TapeUtils.PreventMediaRemoval(driveHandle)
-                            RestorePosition = New TapeUtils.PositionData(driveHandle)
-                            For Each FileIndex As ltfsindex.file In flist
-                                Dim FileName As String = IO.Path.Combine(BasePath, FileIndex.name)
-                                RestoreFile(FileName, FileIndex)
-                                If StopFlag Then
-                                    PrintMsg(My.Resources.ResText_OpCancelled)
-                                    SetStatusLight(LWStatus.Idle)
-                                    LockGUI(False)
-                                    Exit Sub
-                                End If
-                            Next
-                        Catch ex As Exception
-                            PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
-                            SetStatusLight(LWStatus.Err)
-                        End Try
-                        TapeUtils.AllowMediumRemoval(driveHandle)
-                        TapeUtils.ReleaseUnit(driveHandle)
-                        StopFlag = False
+        Dim th As New Threading.Thread(
+                Sub()
+                    Try
+                        CurrentFilesProcessed = 0
+                        CurrentBytesProcessed = 0
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverrideValue = 0
-                        LockGUI(False)
-                        PrintMsg(My.Resources.ResText_RestFin)
-                        SetStatusLight(LWStatus.Succ)
-                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_RestFin))
-                    End Sub)
-            th.Start()
+                        UnwrittenCountOverrideValue = CULng(flist.Count)
+                        StartTime = Now
+                        For Each FI As ltfsindex.file In flist
+                            UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.length)
+                            FI.TempObj = Nothing
+                        Next
+                        SetStatusLight(LWStatus.Busy)
+                        PrintMsg(My.Resources.ResText_Restoring)
+                        StopFlag = False
+                        TapeUtils.ReserveUnit(driveHandle)
+                        TapeUtils.PreventMediaRemoval(driveHandle)
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        For Each FileIndex As ltfsindex.file In flist
+                            Dim FileName As String = IO.Path.Combine(BasePath, FileIndex.name)
+                            RestoreFile(FileName, FileIndex)
+                            If StopFlag Then
+                                PrintMsg(My.Resources.ResText_OpCancelled)
+                                SetStatusLight(LWStatus.Idle)
+                                LockGUI(False)
+                                Exit Sub
+                            End If
+                        Next
+                    Catch ex As Exception
+                        PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                        SetStatusLight(LWStatus.Err)
+                    End Try
+                    TapeUtils.AllowMediumRemoval(driveHandle)
+                    TapeUtils.ReleaseUnit(driveHandle)
+                    StopFlag = False
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = 0
+                    LockGUI(False)
+                    PrintMsg(My.Resources.ResText_RestFin)
+                    SetStatusLight(LWStatus.Succ)
+                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_RestFin))
+                End Sub)
+        th.Start()
     End Sub
     Private Sub 提取ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem1.Click
         Dim Nodes As List(Of TreeNode) = SelectedNodes
@@ -4355,105 +4355,105 @@ Public Class LTFSWriter
             StartTarExtraction(selectedPath, New List(Of TarVirtualFile), tarDirectories)
             Exit Sub
         End If
-            Dim FileList As New List(Of FileRecord)
-            Dim th As New Threading.Thread(
-                    Sub()
-                        PrintMsg(My.Resources.ResText_Restoring)
-                        SetStatusLight(LWStatus.Busy)
-                        Try
-                            StopFlag = False
-                            Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
-                                Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
-                                    For Each f As ltfsindex.file In tapeDir.contents._file
-                                        f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
-                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
-                                    Next
-                                    For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                        Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
-                                        Dim dirOutput As IO.DirectoryInfo
-                                        Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
-                                        If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
-                                        dirOutput = New IO.DirectoryInfo(thisDir)
-                                        IterDir(d, dirOutput)
-                                        If RestoreTimeStamp Then
-                                            Try
-                                                dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
-                                                dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
-                                                dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
-                                            Catch ex As Exception
-                                            End Try
-                                        End If
-                                    Next
-                                End Sub
-                            PrintMsg(My.Resources.ResText_PrepFile)
-                            For Each n As TreeNode In Nodes
-                                Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(selectedPath, selectedDir.name)
-                                If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
-                                If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                                IterDir(selectedDir, New IO.DirectoryInfo(ODir))
-                            Next
+        Dim FileList As New List(Of FileRecord)
+        Dim th As New Threading.Thread(
+                Sub()
+                    PrintMsg(My.Resources.ResText_Restoring)
+                    SetStatusLight(LWStatus.Busy)
+                    Try
+                        StopFlag = False
+                        Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
+                            Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
+                                For Each f As ltfsindex.file In tapeDir.contents._file
+                                    f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
+                                    FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
+                                Next
+                                For Each d As ltfsindex.directory In tapeDir.contents._directory
+                                    Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
+                                    Dim dirOutput As IO.DirectoryInfo
+                                    Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
+                                    If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
+                                    dirOutput = New IO.DirectoryInfo(thisDir)
+                                    IterDir(d, dirOutput)
+                                    If RestoreTimeStamp Then
+                                        Try
+                                            dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
+                                            dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
+                                            dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
+                                        Catch ex As Exception
+                                        End Try
+                                    End If
+                                Next
+                            End Sub
+                        PrintMsg(My.Resources.ResText_PrepFile)
+                        For Each n As TreeNode In Nodes
+                            Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
+                            Dim ODir As String = IO.Path.Combine(selectedPath, selectedDir.name)
+                            If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
+                            If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
+                            IterDir(selectedDir, New IO.DirectoryInfo(ODir))
+                        Next
 
-                            FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
-                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
-                                                                            If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
-                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo Is Nothing Then Return 0.CompareTo(0)
-                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
-                                                                            If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
-                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
-                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
-                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
-                                                                            Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
-                                                                        End Function))
-                            For i As Integer = 1 To FileList.Count - 1
-                                If FileList(i).File.length = FileList(i - 1).File.length AndAlso IOManager.ChecksumEquals(FileList(i).File, FileList(i - 1).File, My.Settings.LTFSWriter_DedupeAlgorithm) Then
-                                    FileList(i).File.TempObj = FileList(i - 1).File.TempObj
-                                End If
-                            Next
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverrideValue = CULng(FileList.Count)
-                            StartTime = Now
-                            For Each FI As FileRecord In FileList
-                                UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
-                                FI.File.TempObj = Nothing
-                            Next
-                            PrintMsg(My.Resources.ResText_RestFile)
-                            Dim c As Integer = 0
-                            TapeUtils.ReserveUnit(driveHandle)
-                            TapeUtils.PreventMediaRemoval(driveHandle)
-                            RestorePosition = New TapeUtils.PositionData(driveHandle)
-                            For Each fr As FileRecord In FileList
-                                c += 1
-                                PrintMsg($"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.SourcePath}")
-                                RestoreFile(fr.SourcePath, fr.File)
-                                If StopFlag Then
-                                    PrintMsg(My.Resources.ResText_OpCancelled)
-                                    SetStatusLight(LWStatus.Idle)
-                                    Exit Try
-                                End If
-                            Next
-                            PrintMsg(My.Resources.ResText_RestFin)
-                            SetStatusLight(LWStatus.Succ)
-                        Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
-                            PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
-                            SetStatusLight(LWStatus.Err)
-                        End Try
-                        SyncLock OperationLock
-                            SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediumRemoval(driveHandle)
-                                TapeUtils.ReleaseUnit(driveHandle)
-                            End SyncLock
-                        End SyncLock
-
+                        FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                        If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
+                                                                        If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
+                                                                        If a.File.extentinfo Is Nothing And b.File.extentinfo Is Nothing Then Return 0.CompareTo(0)
+                                                                        If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
+                                                                        If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
+                                                                        If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
+                                                                        If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
+                                                                        If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
+                                                                        Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
+                                                                    End Function))
+                        For i As Integer = 1 To FileList.Count - 1
+                            If FileList(i).File.length = FileList(i - 1).File.length AndAlso IOManager.ChecksumEquals(FileList(i).File, FileList(i - 1).File, My.Settings.LTFSWriter_DedupeAlgorithm) Then
+                                FileList(i).File.TempObj = FileList(i - 1).File.TempObj
+                            End If
+                        Next
+                        CurrentFilesProcessed = 0
+                        CurrentBytesProcessed = 0
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverrideValue = 0
-                        LockGUI(False)
-                    End Sub)
-            LockGUI()
-            th.Start()
+                        UnwrittenCountOverrideValue = CULng(FileList.Count)
+                        StartTime = Now
+                        For Each FI As FileRecord In FileList
+                            UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
+                            FI.File.TempObj = Nothing
+                        Next
+                        PrintMsg(My.Resources.ResText_RestFile)
+                        Dim c As Integer = 0
+                        TapeUtils.ReserveUnit(driveHandle)
+                        TapeUtils.PreventMediaRemoval(driveHandle)
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        For Each fr As FileRecord In FileList
+                            c += 1
+                            PrintMsg($"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.SourcePath}")
+                            RestoreFile(fr.SourcePath, fr.File)
+                            If StopFlag Then
+                                PrintMsg(My.Resources.ResText_OpCancelled)
+                                SetStatusLight(LWStatus.Idle)
+                                Exit Try
+                            End If
+                        Next
+                        PrintMsg(My.Resources.ResText_RestFin)
+                        SetStatusLight(LWStatus.Succ)
+                    Catch ex As Exception
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
+                        PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                        SetStatusLight(LWStatus.Err)
+                    End Try
+                    SyncLock OperationLock
+                        SyncLock TapeUtils.SCSIOperationLock
+                            TapeUtils.AllowMediumRemoval(driveHandle)
+                            TapeUtils.ReleaseUnit(driveHandle)
+                        End SyncLock
+                    End SyncLock
+
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = 0
+                    LockGUI(False)
+                End Sub)
+        LockGUI()
+        th.Start()
     End Sub
     Private Sub 删除ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 删除ToolStripMenuItem.Click
         DeleteDir()
@@ -7560,47 +7560,47 @@ Public Class LTFSWriter
         If String.IsNullOrEmpty(baseDirectory) Then Exit Sub
         SetStatusLight(LWStatus.Busy)
         Dim hw As New HashTaskWindow With {.schema = schema, .BaseDirectory = baseDirectory, .TargetDirectory = "", .DisableSkipInfo = True}
-            Dim p As String = ""
-            If OpenFileDialog1.FileName <> "" Then p = New IO.FileInfo(OpenFileDialog1.FileName).DirectoryName
-            hw.schPath = Barcode & ".schema"
-            If IO.Directory.Exists(p) Then
-                hw.schPath = IO.Path.Combine(p, hw.schPath)
-            End If
-            hw.CheckBox2.Visible = False
-            hw.CheckBox3.Visible = False
-            hw.Button3.Visible = False
-            hw.Button4.Visible = False
-            Dim errCount As Integer = 0
-            AddHandler hw.SHA1Changed, Sub(f As ltfsindex.file, msg As String)
-                                           PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {msg} {f.fullpath}", ForceLog:=True, LogOnly:=True)
-                                           Threading.Interlocked.Increment(errCount)
-                                       End Sub
-            hw.ShowDialog()
-            Dim q As New List(Of ltfsindex.directory)
-            Dim hcount As Integer = 0, fcount As Integer = 0
-            For Each d As ltfsindex.directory In schema._directory
-                q.Add(d)
-            Next
-            For Each f As ltfsindex.file In schema._file
-                Threading.Interlocked.Increment(fcount)
-                If f.sha1 IsNot Nothing AndAlso f.sha1.Length = 40 Then Threading.Interlocked.Increment(hcount)
-            Next
-            While q.Count > 0
-                Dim q1 As New List(Of ltfsindex.directory)
-                For Each d As ltfsindex.directory In q
-                    For Each f1 As ltfsindex.file In d.contents._file
-                        Threading.Interlocked.Increment(fcount)
-                        If f1.sha1 IsNot Nothing AndAlso f1.sha1.Length = 40 Then Threading.Interlocked.Increment(hcount)
-                    Next
-                    For Each d1 As ltfsindex.directory In d.contents._directory
-                        q1.Add(d1)
-                    Next
+        Dim p As String = ""
+        If OpenFileDialog1.FileName <> "" Then p = New IO.FileInfo(OpenFileDialog1.FileName).DirectoryName
+        hw.schPath = Barcode & ".schema"
+        If IO.Directory.Exists(p) Then
+            hw.schPath = IO.Path.Combine(p, hw.schPath)
+        End If
+        hw.CheckBox2.Visible = False
+        hw.CheckBox3.Visible = False
+        hw.Button3.Visible = False
+        hw.Button4.Visible = False
+        Dim errCount As Integer = 0
+        AddHandler hw.SHA1Changed, Sub(f As ltfsindex.file, msg As String)
+                                       PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {msg} {f.fullpath}", ForceLog:=True, LogOnly:=True)
+                                       Threading.Interlocked.Increment(errCount)
+                                   End Sub
+        hw.ShowDialog()
+        Dim q As New List(Of ltfsindex.directory)
+        Dim hcount As Integer = 0, fcount As Integer = 0
+        For Each d As ltfsindex.directory In schema._directory
+            q.Add(d)
+        Next
+        For Each f As ltfsindex.file In schema._file
+            Threading.Interlocked.Increment(fcount)
+            If f.sha1 IsNot Nothing AndAlso f.sha1.Length = 40 Then Threading.Interlocked.Increment(hcount)
+        Next
+        While q.Count > 0
+            Dim q1 As New List(Of ltfsindex.directory)
+            For Each d As ltfsindex.directory In q
+                For Each f1 As ltfsindex.file In d.contents._file
+                    Threading.Interlocked.Increment(fcount)
+                    If f1.sha1 IsNot Nothing AndAlso f1.sha1.Length = 40 Then Threading.Interlocked.Increment(hcount)
                 Next
-                q = q1
-            End While
-            PrintMsg($"{hcount}/{fcount}{If(errCount > 0, $"({errCount} mismatch)", "")}")
-            SetStatusLight(LWStatus.Idle)
-            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
+                For Each d1 As ltfsindex.directory In d.contents._directory
+                    q1.Add(d1)
+                Next
+            Next
+            q = q1
+        End While
+        PrintMsg($"{hcount}/{fcount}{If(errCount > 0, $"({errCount} mismatch)", "")}")
+        SetStatusLight(LWStatus.Idle)
+        If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
         RefreshDisplay()
     End Sub
 
@@ -10634,100 +10634,100 @@ Public Class LTFSWriter
         Dim outputDirectory As String = SelectWriterFolder()
         If String.IsNullOrEmpty(outputDirectory) Then Exit Sub
         Dim FileList As New List(Of FileRecord)
-            Dim th As New Threading.Thread(
-                    Sub()
-                        PrintMsg(My.Resources.ResText_Restoring)
-                        SetStatusLight(LWStatus.Busy)
-                        Try
-                            StopFlag = False
-                            Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
-                                Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
-                                    For Each f As ltfsindex.file In tapeDir.contents._file
-                                        f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
-                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
-                                    Next
-                                    For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                        Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
-                                        Dim dirOutput As IO.DirectoryInfo
-                                        Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
-                                        If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
-                                        dirOutput = New IO.DirectoryInfo(thisDir)
-                                        IterDir(d, dirOutput)
-                                        If RestoreTimeStamp Then
-                                            dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
-                                            dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
-                                            dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
-                                        End If
-                                    Next
-                                End Sub
-                            PrintMsg(My.Resources.ResText_PrepFile)
-                            For Each n As TreeNode In Nodes
-                                Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
-                                If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
-                                If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                                IterDir(selectedDir, New IO.DirectoryInfo(ODir))
-                            Next
+        Dim th As New Threading.Thread(
+                Sub()
+                    PrintMsg(My.Resources.ResText_Restoring)
+                    SetStatusLight(LWStatus.Busy)
+                    Try
+                        StopFlag = False
+                        Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
+                            Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
+                                For Each f As ltfsindex.file In tapeDir.contents._file
+                                    f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
+                                    FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
+                                Next
+                                For Each d As ltfsindex.directory In tapeDir.contents._directory
+                                    Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
+                                    Dim dirOutput As IO.DirectoryInfo
+                                    Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
+                                    If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
+                                    dirOutput = New IO.DirectoryInfo(thisDir)
+                                    IterDir(d, dirOutput)
+                                    If RestoreTimeStamp Then
+                                        dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
+                                        dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
+                                        dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
+                                    End If
+                                Next
+                            End Sub
+                        PrintMsg(My.Resources.ResText_PrepFile)
+                        For Each n As TreeNode In Nodes
+                            Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
+                            Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
+                            If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
+                            If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
+                            IterDir(selectedDir, New IO.DirectoryInfo(ODir))
+                        Next
 
-                            FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
-                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
-                                                                            If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
-                                                                            If a.File.extentinfo Is Nothing And b.File.extentinfo Is Nothing Then Return 0.CompareTo(0)
-                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
-                                                                            If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
-                                                                            If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
-                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
-                                                                            If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
-                                                                            Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
-                                                                        End Function))
-                            For i As Integer = 1 To FileList.Count - 1
-                                If FileList(i).File.length = FileList(i - 1).File.length AndAlso IOManager.ChecksumEquals(FileList(i).File, FileList(i - 1).File, My.Settings.LTFSWriter_DedupeAlgorithm) Then
-                                    FileList(i).File.TempObj = FileList(i - 1).File.TempObj
-                                End If
-                            Next
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverrideValue = CULng(FileList.Count)
-                            StartTime = Now
-                            For Each FI As FileRecord In FileList
-                                UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
-                                FI.File.TempObj = Nothing
-                            Next
-                            PrintMsg(My.Resources.ResText_RestFile)
-                            Dim c As Integer = 0
-                            TapeUtils.ReserveUnit(driveHandle)
-                            TapeUtils.PreventMediaRemoval(driveHandle)
-                            RestorePosition = New TapeUtils.PositionData(driveHandle)
-                            For Each fr As FileRecord In FileList
-                                c += 1
-                                PrintMsg($"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.SourcePath}")
-                                IOManager.CreateSparceFile(fr.SourcePath, fr.File.length)
-                                If StopFlag Then
-                                    PrintMsg(My.Resources.ResText_OpCancelled)
-                                    SetStatusLight(LWStatus.Idle)
-                                    Exit Try
-                                End If
-                            Next
-                            PrintMsg(My.Resources.ResText_RestFin)
-                            SetStatusLight(LWStatus.Succ)
-                        Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
-                            PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
-                            SetStatusLight(LWStatus.Err)
-                        End Try
-                        SyncLock OperationLock
-                            SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediumRemoval(driveHandle)
-                                TapeUtils.ReleaseUnit(driveHandle)
-                            End SyncLock
-                        End SyncLock
-
+                        FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
+                                                                        If a.File.extentinfo Is Nothing And b.File.extentinfo IsNot Nothing Then Return 0.CompareTo(1)
+                                                                        If b.File.extentinfo Is Nothing And a.File.extentinfo IsNot Nothing Then Return 1.CompareTo(0)
+                                                                        If a.File.extentinfo Is Nothing And b.File.extentinfo Is Nothing Then Return 0.CompareTo(0)
+                                                                        If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return 0.CompareTo(1)
+                                                                        If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return 1.CompareTo(0)
+                                                                        If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return 0.CompareTo(0)
+                                                                        If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
+                                                                        If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
+                                                                        Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
+                                                                    End Function))
+                        For i As Integer = 1 To FileList.Count - 1
+                            If FileList(i).File.length = FileList(i - 1).File.length AndAlso IOManager.ChecksumEquals(FileList(i).File, FileList(i - 1).File, My.Settings.LTFSWriter_DedupeAlgorithm) Then
+                                FileList(i).File.TempObj = FileList(i - 1).File.TempObj
+                            End If
+                        Next
+                        CurrentFilesProcessed = 0
+                        CurrentBytesProcessed = 0
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverrideValue = 0
-                        LockGUI(False)
-                    End Sub)
-            LockGUI()
+                        UnwrittenCountOverrideValue = CULng(FileList.Count)
+                        StartTime = Now
+                        For Each FI As FileRecord In FileList
+                            UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
+                            FI.File.TempObj = Nothing
+                        Next
+                        PrintMsg(My.Resources.ResText_RestFile)
+                        Dim c As Integer = 0
+                        TapeUtils.ReserveUnit(driveHandle)
+                        TapeUtils.PreventMediaRemoval(driveHandle)
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        For Each fr As FileRecord In FileList
+                            c += 1
+                            PrintMsg($"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Restoring} [{c}/{FileList.Count}] {fr.SourcePath}")
+                            IOManager.CreateSparceFile(fr.SourcePath, fr.File.length)
+                            If StopFlag Then
+                                PrintMsg(My.Resources.ResText_OpCancelled)
+                                SetStatusLight(LWStatus.Idle)
+                                Exit Try
+                            End If
+                        Next
+                        PrintMsg(My.Resources.ResText_RestFin)
+                        SetStatusLight(LWStatus.Succ)
+                    Catch ex As Exception
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
+                        PrintMsg($"{My.Resources.ResText_RestoreErr}{ex.ToString}", ForceLog:=True)
+                        SetStatusLight(LWStatus.Err)
+                    End Try
+                    SyncLock OperationLock
+                        SyncLock TapeUtils.SCSIOperationLock
+                            TapeUtils.AllowMediumRemoval(driveHandle)
+                            TapeUtils.ReleaseUnit(driveHandle)
+                        End SyncLock
+                    End SyncLock
+
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = 0
+                    LockGUI(False)
+                End Sub)
+        LockGUI()
         th.Start()
     End Sub
 
@@ -10737,93 +10737,93 @@ Public Class LTFSWriter
         Dim outputDirectory As String = SelectWriterFolder()
         If String.IsNullOrEmpty(outputDirectory) Then Exit Sub
         Dim FileList As New List(Of FileRecord)
-            Dim th As New Threading.Thread(
-                    Sub()
-                        PrintMsg(My.Resources.ResText_Deleting)
-                        SetStatusLight(LWStatus.Busy)
-                        Try
-                            StopFlag = False
-                            Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
-                                Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
-                                    For Each f As ltfsindex.file In tapeDir.contents._file
-                                        f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
-                                        FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
-                                    Next
-                                    For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                        Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
-                                        Dim dirOutput As IO.DirectoryInfo
-                                        Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
-                                        If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
-                                        dirOutput = New IO.DirectoryInfo(thisDir)
-                                        IterDir(d, dirOutput)
-                                        If RestoreTimeStamp Then
-                                            dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
-                                            dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
-                                            dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
-                                        End If
-                                    Next
-                                End Sub
-                            PrintMsg(My.Resources.ResText_PrepFile)
-                            For Each n As TreeNode In Nodes
-                                Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
-                                Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
-                                If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
-                                If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                                IterDir(selectedDir, New IO.DirectoryInfo(ODir))
-                            Next
-
-                            CurrentFilesProcessed = 0
-                            CurrentBytesProcessed = 0
-                            UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverrideValue = CULng(FileList.Count)
-                            StartTime = Now
-                            For Each FI As FileRecord In FileList
-                                UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
-                                FI.File.TempObj = Nothing
-                            Next
-                            PrintMsg(My.Resources.ResText_Deleting)
-                            Dim c As Integer = 0
-                            TapeUtils.ReserveUnit(driveHandle)
-                            TapeUtils.PreventMediaRemoval(driveHandle)
-                            RestorePosition = New TapeUtils.PositionData(driveHandle)
-                            For Each fr As FileRecord In FileList
-                                c += 1
-                                PrintMsg($"{My.Resources.ResText_Deleting} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Deleting} [{c}/{FileList.Count}] {fr.SourcePath}")
-                                Try
-                                    If IO.File.Exists(fr.SourcePath) Then
-                                        If (New IO.FileInfo(fr.SourcePath)).Length = fr.File.length Then
-                                            IO.File.Delete(fr.SourcePath)
-                                        End If
+        Dim th As New Threading.Thread(
+                Sub()
+                    PrintMsg(My.Resources.ResText_Deleting)
+                    SetStatusLight(LWStatus.Busy)
+                    Try
+                        StopFlag = False
+                        Dim IterDir As Action(Of ltfsindex.directory, IO.DirectoryInfo) =
+                            Sub(tapeDir As ltfsindex.directory, outputDir As IO.DirectoryInfo)
+                                For Each f As ltfsindex.file In tapeDir.contents._file
+                                    f.TempObj = New ltfsindex.file.refFile() With {.FileName = ""}
+                                    FileList.Add(New FileRecord With {.File = f, .SourcePath = IO.Path.Combine(outputDir.FullName, f.name)})
+                                Next
+                                For Each d As ltfsindex.directory In tapeDir.contents._directory
+                                    Dim thisDir As String = IO.Path.Combine(outputDir.FullName, d.name)
+                                    Dim dirOutput As IO.DirectoryInfo
+                                    Dim RestoreTimeStamp As Boolean = Not IO.Directory.Exists(thisDir)
+                                    If RestoreTimeStamp Then IO.Directory.CreateDirectory(thisDir)
+                                    dirOutput = New IO.DirectoryInfo(thisDir)
+                                    IterDir(d, dirOutput)
+                                    If RestoreTimeStamp Then
+                                        dirOutput.CreationTimeUtc = TapeUtils.ParseTimeStamp(d.creationtime)
+                                        dirOutput.LastWriteTimeUtc = TapeUtils.ParseTimeStamp(d.modifytime)
+                                        dirOutput.LastAccessTimeUtc = TapeUtils.ParseTimeStamp(d.accesstime)
                                     End If
+                                Next
+                            End Sub
+                        PrintMsg(My.Resources.ResText_PrepFile)
+                        For Each n As TreeNode In Nodes
+                            Dim selectedDir As ltfsindex.directory = DirectCast(n.Tag, ltfsindex.directory)
+                            Dim ODir As String = IO.Path.Combine(outputDirectory, selectedDir.name)
+                            If Not ODir.StartsWith("\\") Then ODir = $"\\?\{ODir}"
+                            If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
+                            IterDir(selectedDir, New IO.DirectoryInfo(ODir))
+                        Next
 
-                                Catch ex As Exception
-                                    PrintMsg($"[ERROR]{fr.SourcePath}>{ex.ToString()}", LogOnly:=True, ForceLog:=True)
-                                End Try
-                                If StopFlag Then
-                                    PrintMsg(My.Resources.ResText_OpCancelled)
-                                    SetStatusLight(LWStatus.Idle)
-                                    Exit Try
-                                End If
-                            Next
-                            PrintMsg(My.Resources.ResText_DeleteFin)
-                            SetStatusLight(LWStatus.Succ)
-                        Catch ex As Exception
-                            Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
-                            PrintMsg($"{My.Resources.ResText_Error}{ex.ToString}", ForceLog:=True)
-                            SetStatusLight(LWStatus.Err)
-                        End Try
-                        SyncLock OperationLock
-                            SyncLock TapeUtils.SCSIOperationLock
-                                TapeUtils.AllowMediumRemoval(driveHandle)
-                                TapeUtils.ReleaseUnit(driveHandle)
-                            End SyncLock
-                        End SyncLock
-
+                        CurrentFilesProcessed = 0
+                        CurrentBytesProcessed = 0
                         UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverrideValue = 0
-                        LockGUI(False)
-                    End Sub)
-            LockGUI()
+                        UnwrittenCountOverrideValue = CULng(FileList.Count)
+                        StartTime = Now
+                        For Each FI As FileRecord In FileList
+                            UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
+                            FI.File.TempObj = Nothing
+                        Next
+                        PrintMsg(My.Resources.ResText_Deleting)
+                        Dim c As Integer = 0
+                        TapeUtils.ReserveUnit(driveHandle)
+                        TapeUtils.PreventMediaRemoval(driveHandle)
+                        RestorePosition = New TapeUtils.PositionData(driveHandle)
+                        For Each fr As FileRecord In FileList
+                            c += 1
+                            PrintMsg($"{My.Resources.ResText_Deleting} [{c}/{FileList.Count}] {fr.File.name}", False, $"{My.Resources.ResText_Deleting} [{c}/{FileList.Count}] {fr.SourcePath}")
+                            Try
+                                If IO.File.Exists(fr.SourcePath) Then
+                                    If (New IO.FileInfo(fr.SourcePath)).Length = fr.File.length Then
+                                        IO.File.Delete(fr.SourcePath)
+                                    End If
+                                End If
+
+                            Catch ex As Exception
+                                PrintMsg($"[ERROR]{fr.SourcePath}>{ex.ToString()}", LogOnly:=True, ForceLog:=True)
+                            End Try
+                            If StopFlag Then
+                                PrintMsg(My.Resources.ResText_OpCancelled)
+                                SetStatusLight(LWStatus.Idle)
+                                Exit Try
+                            End If
+                        Next
+                        PrintMsg(My.Resources.ResText_DeleteFin)
+                        SetStatusLight(LWStatus.Succ)
+                    Catch ex As Exception
+                        Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
+                        PrintMsg($"{My.Resources.ResText_Error}{ex.ToString}", ForceLog:=True)
+                        SetStatusLight(LWStatus.Err)
+                    End Try
+                    SyncLock OperationLock
+                        SyncLock TapeUtils.SCSIOperationLock
+                            TapeUtils.AllowMediumRemoval(driveHandle)
+                            TapeUtils.ReleaseUnit(driveHandle)
+                        End SyncLock
+                    End SyncLock
+
+                    UnwrittenSizeOverrideValue = 0
+                    UnwrittenCountOverrideValue = 0
+                    LockGUI(False)
+                End Sub)
+        LockGUI()
         th.Start()
     End Sub
 
