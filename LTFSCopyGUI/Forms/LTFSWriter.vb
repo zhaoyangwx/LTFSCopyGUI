@@ -6865,10 +6865,10 @@ Public Class LTFSWriter
                     param.Barcode = TapeUtils.ReadBarcode(driveHandle)
                     param.EncryptionKey = EncryptionKey
                     Dim Confirm As Boolean = False
-                    Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
-                    msDialog.Top = CInt(Me.Top + Me.Height / 2 - msDialog.Height / 2)
-                    msDialog.Left = CInt(Me.Left + Me.Width / 2 - msDialog.Width / 2)
                     Invoke(Sub()
+                               Dim msDialog As New SettingPanel With {.SelectedObject = param, .StartPosition = FormStartPosition.Manual, .TopMost = True, .Text = $"{格式化ToolStripMenuItem.Text} - {My.Resources.ResText_Setting}"}
+                               msDialog.Top = CInt(Me.Top + Me.Height / 2 - msDialog.Height / 2)
+                               msDialog.Left = CInt(Me.Left + Me.Width / 2 - msDialog.Width / 2)
                                While Not Confirm
                                    If param.VolumeLabel = "" Then param.VolumeLabel = param.Barcode
                                    If msDialog.ShowDialog() = DialogResult.Cancel Then
