@@ -11393,5 +11393,18 @@ Public Class LTFSWriter
     Private Sub 自动化ToolStripMenuItem1_DropDownOpening(sender As Object, e As EventArgs) Handles 自动化ToolStripMenuItem1.DropDownOpening
         Load_Settings()
     End Sub
+
+    Private Sub TreeView1_SizeChanged(sender As Object, e As EventArgs) Handles TreeView1.SizeChanged
+        Try
+            Dim il = New ImageList With {.ImageSize = New Size(TreeView1.ItemHeight, TreeView1.ItemHeight)}
+            For Each img As Image In ImageList1.Images
+                il.Images.Add(img)
+            Next
+            ImageList1 = il
+            If TreeView1 IsNot Nothing AndAlso TreeView1.ImageList IsNot Nothing Then TreeView1.ImageList = il
+        Catch ex As Exception
+
+        End Try
+    End Sub
 End Class
 
