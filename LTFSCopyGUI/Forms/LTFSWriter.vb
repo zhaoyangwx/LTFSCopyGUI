@@ -3706,6 +3706,7 @@ Public Class LTFSWriter
             Dim s As String = ""
             If (DisplayHelper.ShowInputDialog(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, s) <> DialogResult.OK) Then Exit Sub
             If s <> "" Then
+                If s(1) = ":" AndAlso s(2) = "\" Then s = s.Substring(2)
                 If (s.Replace("\", "").Replace("/", "").IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
                     MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
                     Exit Sub
