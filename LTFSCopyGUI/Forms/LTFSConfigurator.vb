@@ -7,6 +7,12 @@ Imports LTFSCopyGUI.TapeImage
 Imports NAudio.Wave
 
 Public Class LTFSConfigurator
+    Private Const WM_SETREDRAW As Integer = &HB
+
+    <DllImport("user32.dll", CharSet:=CharSet.Auto)>
+    Private Shared Function SendMessage(hWnd As IntPtr, msg As Integer, wParam As IntPtr, lParam As IntPtr) As IntPtr
+    End Function
+
     Private LoadComplete As Boolean = False
     Private _SelectedIndex As Integer
     Public ReadOnly Property DriveOpenCount As SerializableDictionary(Of String, Integer)
@@ -1659,28 +1665,40 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Public Sub FormatLogRateColor(textbox As RichTextBox, StartIndex As Integer, infostr As String)
-        Dim seglen As Integer = 7
+        If textbox Is Nothing OrElse String.IsNullOrEmpty(infostr) OrElse textbox.IsDisposed OrElse textbox.Disposing Then Return
+
+        ' The callers normally arrive here from the UI thread. Keep the method safe for
+        ' other callers too, but marshal the whole formatting operation only once.
+        If textbox.InvokeRequired Then
+            textbox.Invoke(New Action(Sub() FormatLogRateColor(textbox, StartIndex, infostr)))
+            Return
+        End If
+
+        Const seglen As Integer = 7
+        Dim segmentCount As Integer = infostr.Length \ seglen
+        If segmentCount <= 0 Then Return
+
         Dim lineStart As Integer = textbox.GetFirstCharIndexFromLine(textbox.Lines.Length - 2) + StartIndex
+        If lineStart < 0 OrElse lineStart >= textbox.TextLength Then Return
 
-        Static col1 As Color = Color.FromArgb(101, 225, 111)
-        Static col2 As Color = Color.FromArgb(237, 208, 120)
-        Static col3 As Color = Color.FromArgb(251, 145, 85)
-        Static col4 As Color = Color.FromArgb(255, 71, 73)
+        ' SelectionBackColor causes RichEdit to repaint for every range. Suppress redraw
+        ' while applying all channel colors so one output line becomes one repaint.
+        SendMessage(textbox.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero)
+        Try
+            For i As Integer = 0 To segmentCount - 1
+                Dim selectionStart As Integer = lineStart + i * seglen
+                Dim selectionLength As Integer = Math.Min(seglen, textbox.TextLength - selectionStart)
+                If selectionLength <= 0 Then Exit For
 
-        For i As Integer = 0 To infostr.Length \ seglen - 1
-            Dim textcol As Color = Color.Black
-            Dim bkgcol As Color = Color.Transparent
-            Dim segvalue As String = infostr.Substring(i * seglen, seglen).Replace(" ", "")
-            bkgcol = ErrRateHelper.GetColor(segvalue)
-            Dim chid As Integer = i
-            textbox.Invoke(Sub()
-                               textbox.SelectionStart = lineStart + chid * seglen
-                               textbox.SelectionLength = seglen
-                               textbox.SelectionBackColor = bkgcol
-                               textbox.SelectionStart = textbox.TextLength
-                           End Sub)
-
-        Next
+                Dim segvalue As String = infostr.Substring(i * seglen, seglen).Replace(" ", "")
+                textbox.Select(selectionStart, selectionLength)
+                textbox.SelectionBackColor = ErrRateHelper.GetColor(segvalue)
+            Next
+        Finally
+            textbox.Select(textbox.TextLength, 0)
+            SendMessage(textbox.Handle, WM_SETREDRAW, New IntPtr(1), IntPtr.Zero)
+            textbox.Invalidate()
+        End Try
     End Sub
 
     Private Sub Button15_Click(sender As Object, e As EventArgs) Handles ButtonRDErrRateLog.Click
