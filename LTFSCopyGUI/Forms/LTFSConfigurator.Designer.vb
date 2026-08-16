@@ -183,6 +183,8 @@ Partial Class LTFSConfigurator
         Me.SaveFileDialog1 = New System.Windows.Forms.SaveFileDialog()
         Me.SaveFileDialog2 = New System.Windows.Forms.SaveFileDialog()
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog()
+        Me.GroupBoxRWTest = New System.Windows.Forms.GroupBox()
+        Me.GroupBoxDiag = New System.Windows.Forms.GroupBox()
         Me.ContextMenuStripRefreshDeviceList.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.ContextMenuStripLTFSWriter.SuspendLayout()
@@ -215,6 +217,8 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.ContextMenuStripSend.SuspendLayout()
+        Me.GroupBoxRWTest.SuspendLayout()
+        Me.GroupBoxDiag.SuspendLayout()
         Me.SuspendLayout()
         '
         'ButtonRefresh
@@ -899,26 +903,9 @@ Partial Class LTFSConfigurator
         '
         'TabPageTest
         '
-        Me.TabPageTest.Controls.Add(Me.ButtonVerify)
-        Me.TabPageTest.Controls.Add(Me.ButtonEOT)
-        Me.TabPageTest.Controls.Add(Me.ButtonBOT)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSets)
-        Me.TabPageTest.Controls.Add(Me.LabelTestSets)
-        Me.TabPageTest.Controls.Add(Me.ButtonDiagTest)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestWrap)
-        Me.TabPageTest.Controls.Add(Me.LabelTestWrap)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestStartLen)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestSpeed)
-        Me.TabPageTest.Controls.Add(Me.LabelTestStartLen)
-        Me.TabPageTest.Controls.Add(Me.LabelTestSpeed)
+        Me.TabPageTest.Controls.Add(Me.GroupBoxDiag)
+        Me.TabPageTest.Controls.Add(Me.GroupBoxRWTest)
         Me.TabPageTest.Controls.Add(Me.ButtonRDErrRateLog)
-        Me.TabPageTest.Controls.Add(Me.ButtonTest)
-        Me.TabPageTest.Controls.Add(Me.RadioButtonTest2)
-        Me.TabPageTest.Controls.Add(Me.RadioButtonTest1)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestBlkNum)
-        Me.TabPageTest.Controls.Add(Me.LabelTestBlockCount)
-        Me.TabPageTest.Controls.Add(Me.NumericUpDownTestBlkSize)
-        Me.TabPageTest.Controls.Add(Me.LabelTestBlocksize)
         resources.ApplyResources(Me.TabPageTest, "TabPageTest")
         Me.TabPageTest.Name = "TabPageTest"
         Me.TabPageTest.UseVisualStyleBackColor = True
@@ -1284,6 +1271,37 @@ Partial Class LTFSConfigurator
         '
         Me.OpenFileDialog1.FileName = "OpenFileDialog1"
         '
+        'GroupBoxRWTest
+        '
+        Me.GroupBoxRWTest.Controls.Add(Me.LabelTestBlocksize)
+        Me.GroupBoxRWTest.Controls.Add(Me.ButtonVerify)
+        Me.GroupBoxRWTest.Controls.Add(Me.NumericUpDownTestBlkSize)
+        Me.GroupBoxRWTest.Controls.Add(Me.LabelTestBlockCount)
+        Me.GroupBoxRWTest.Controls.Add(Me.NumericUpDownTestBlkNum)
+        Me.GroupBoxRWTest.Controls.Add(Me.RadioButtonTest1)
+        Me.GroupBoxRWTest.Controls.Add(Me.RadioButtonTest2)
+        Me.GroupBoxRWTest.Controls.Add(Me.ButtonTest)
+        resources.ApplyResources(Me.GroupBoxRWTest, "GroupBoxRWTest")
+        Me.GroupBoxRWTest.Name = "GroupBoxRWTest"
+        Me.GroupBoxRWTest.TabStop = False
+        '
+        'GroupBoxDiag
+        '
+        Me.GroupBoxDiag.Controls.Add(Me.LabelTestSpeed)
+        Me.GroupBoxDiag.Controls.Add(Me.LabelTestStartLen)
+        Me.GroupBoxDiag.Controls.Add(Me.ButtonEOT)
+        Me.GroupBoxDiag.Controls.Add(Me.NumericUpDownTestSpeed)
+        Me.GroupBoxDiag.Controls.Add(Me.ButtonBOT)
+        Me.GroupBoxDiag.Controls.Add(Me.NumericUpDownTestStartLen)
+        Me.GroupBoxDiag.Controls.Add(Me.NumericUpDownTestSets)
+        Me.GroupBoxDiag.Controls.Add(Me.LabelTestWrap)
+        Me.GroupBoxDiag.Controls.Add(Me.LabelTestSets)
+        Me.GroupBoxDiag.Controls.Add(Me.NumericUpDownTestWrap)
+        Me.GroupBoxDiag.Controls.Add(Me.ButtonDiagTest)
+        resources.ApplyResources(Me.GroupBoxDiag, "GroupBoxDiag")
+        Me.GroupBoxDiag.Name = "GroupBoxDiag"
+        Me.GroupBoxDiag.TabStop = False
+        '
         'LTFSConfigurator
         '
         resources.ApplyResources(Me, "$this")
@@ -1319,7 +1337,6 @@ Partial Class LTFSConfigurator
         Me.TabPageLog.ResumeLayout(False)
         Me.TabPageLog.PerformLayout()
         Me.TabPageTest.ResumeLayout(False)
-        Me.TabPageTest.PerformLayout()
         CType(Me.NumericUpDownTestSets, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestWrap, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownTestStartLen, System.ComponentModel.ISupportInitialize).EndInit()
@@ -1332,6 +1349,10 @@ Partial Class LTFSConfigurator
         CType(Me.NumericUpDownSectorSize, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.NumericUpDownLBA, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ContextMenuStripSend.ResumeLayout(False)
+        Me.GroupBoxRWTest.ResumeLayout(False)
+        Me.GroupBoxRWTest.PerformLayout()
+        Me.GroupBoxDiag.ResumeLayout(False)
+        Me.GroupBoxDiag.PerformLayout()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1504,4 +1525,6 @@ Partial Class LTFSConfigurator
     Friend WithEvents Label2 As Label
     Friend WithEvents NumericUpDownRAPartition As NumericUpDown
     Friend WithEvents ButtonVerify As Button
+    Friend WithEvents GroupBoxDiag As GroupBox
+    Friend WithEvents GroupBoxRWTest As GroupBox
 End Class
