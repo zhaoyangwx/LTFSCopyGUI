@@ -435,6 +435,7 @@ End Class
 Public Class GlobHelper
     Public Property schema As ltfsindex
     Public Property OnStopFlagInquiry As Func(Of Boolean)
+    Private ReadOnly _directoryCache As New Dictionary(Of String, ltfsindex.directory)(StringComparer.OrdinalIgnoreCase)
     Public ReadOnly Property StopFlag As Boolean
         Get
             If OnStopFlagInquiry IsNot Nothing Then
@@ -515,7 +516,13 @@ Public Class GlobHelper
         For Each directoryName In parts
             If StopFlag Then Exit For
             currentAbs = If(currentAbs.EndsWith("\"), currentAbs & directoryName, currentAbs & "\" & directoryName)
-            node = GetOrCreateSubdir(node, directoryName, currentAbs)
+            Dim cached As ltfsindex.directory = Nothing
+            If _directoryCache.TryGetValue(currentAbs, cached) Then
+                node = cached
+            Else
+                node = GetOrCreateSubdir(node, directoryName, currentAbs)
+                _directoryCache(currentAbs) = node
+            End If
         Next
         Return node
     End Function
@@ -563,6 +570,10 @@ Public Class GlobHelper
     Public Class AddFile
         Public Property SourceFullPath As String
         Public Property RelativePath As String
+        Public Property SourceInfo As FileInfo
+        ' Empty means the directory snapshot confirmed that no sidecar exists;
+        ' Nothing means the caller did not have a snapshot and should probe.
+        Public Property SourceXattrPath As String
     End Class
 
     Public Class AddPlan
@@ -664,6 +675,127 @@ Public Module GlobCollector
         Return True
     End Function
 
+    Private Class PendingGlobDirectory
+        Public Sub New(directory As DirectoryInfo)
+            Me.Directory = directory
+        End Sub
+
+        Public ReadOnly Property Directory As DirectoryInfo
+    End Class
+
+    Private Function IsNetworkPath(path As String) As Boolean
+        If path.StartsWith("\\", StringComparison.Ordinal) AndAlso
+           Not path.StartsWith("\\?\", StringComparison.Ordinal) Then
+            Return True
+        End If
+
+        Try
+            Dim root = IO.Path.GetPathRoot(path)
+            Return Not String.IsNullOrEmpty(root) AndAlso New DriveInfo(root).DriveType = DriveType.Network
+        Catch
+            Return False
+        End Try
+    End Function
+
+    Private Function EnumerateFiles(root As DirectoryInfo, skipSymlink As Boolean) As List(Of FileInfo)
+        If skipSymlink Then
+            Try
+                If root.Attributes.HasFlag(FileAttributes.ReparsePoint) Then Return New List(Of FileInfo)
+            Catch
+            End Try
+        End If
+
+        If IsNetworkPath(root.FullName) Then Return EnumerateNetworkFiles(root, skipSymlink)
+
+        Dim result As New List(Of FileInfo)
+        Dim pending As New Stack(Of DirectoryInfo)
+        pending.Push(root)
+        While pending.Count > 0
+            Dim directory = pending.Pop()
+            For Each entry As FileSystemInfo In directory.GetFileSystemInfos()
+                Dim file = TryCast(entry, FileInfo)
+                If file IsNot Nothing Then
+                    result.Add(file)
+                Else
+                    Dim childDirectory = DirectCast(entry, DirectoryInfo)
+                    If skipSymlink Then
+                        Try
+                            If childDirectory.Attributes.HasFlag(FileAttributes.ReparsePoint) Then Continue For
+                        Catch
+                        End Try
+                    End If
+                    pending.Push(childDirectory)
+                End If
+            Next
+        End While
+        Return result
+    End Function
+
+    Private Function EnumerateNetworkFiles(root As DirectoryInfo, skipSymlink As Boolean) As List(Of FileInfo)
+        Const WorkerCount As Integer = 16
+        Dim queue As New Collections.Concurrent.ConcurrentQueue(Of PendingGlobDirectory)
+        Dim files As New Collections.Concurrent.ConcurrentBag(Of FileInfo)
+        Dim failures As New Collections.Concurrent.ConcurrentQueue(Of Exception)
+        Dim pending As Integer = 1
+        Dim finished As Integer = 0
+        queue.Enqueue(New PendingGlobDirectory(root))
+
+        Using wake As New Threading.AutoResetEvent(False)
+            Dim workers(WorkerCount - 1) As Threading.Tasks.Task
+            For i As Integer = 0 To workers.Length - 1
+                workers(i) = Threading.Tasks.Task.Run(
+                    Sub()
+                        While Threading.Volatile.Read(finished) = 0
+                            Dim current As PendingGlobDirectory = Nothing
+                            If Not queue.TryDequeue(current) Then
+                                wake.WaitOne(2)
+                                Continue While
+                            End If
+
+                            Try
+                                For Each entry As FileSystemInfo In current.Directory.GetFileSystemInfos()
+                                    Dim file = TryCast(entry, FileInfo)
+                                    If file IsNot Nothing Then
+                                        files.Add(file)
+                                    Else
+                                        Dim childDirectory = DirectCast(entry, DirectoryInfo)
+                                        Dim skipChild As Boolean = False
+                                        If skipSymlink Then
+                                            Try
+                                                skipChild = childDirectory.Attributes.HasFlag(FileAttributes.ReparsePoint)
+                                            Catch
+                                            End Try
+                                        End If
+                                        If Not skipChild Then
+                                            Threading.Interlocked.Increment(pending)
+                                            queue.Enqueue(New PendingGlobDirectory(childDirectory))
+                                            wake.Set()
+                                        End If
+                                    End If
+                                Next
+                            Catch ex As Exception
+                                failures.Enqueue(ex)
+                            Finally
+                                If Threading.Interlocked.Decrement(pending) = 0 Then
+                                    Threading.Interlocked.Exchange(finished, 1)
+                                    wake.Set()
+                                End If
+                            End Try
+                        End While
+                    End Sub)
+            Next
+            Threading.Tasks.Task.WaitAll(workers)
+        End Using
+
+        If Not failures.IsEmpty Then Throw New AggregateException(failures)
+
+        Dim result As New List(Of FileInfo)
+        For Each file In files
+            result.Add(file)
+        Next
+        Return result
+    End Function
+
     Public Function PlanAdd_ByFullPathInputs(inputs As IEnumerable(Of String),
                                              matcher As Matcher) As GlobHelper.AddPlan
         If inputs Is Nothing Then Throw New ArgumentNullException(NameOf(inputs))
@@ -674,6 +806,7 @@ Public Module GlobCollector
         Dim seenSource As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim seenRelative As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
         Dim dirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+        Dim parentDirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
 
         Dim normalized = inputs.
             Where(Function(p) Not String.IsNullOrWhiteSpace(p)).
@@ -683,14 +816,25 @@ Public Module GlobCollector
         For Each inputPath In normalized
             If Directory.Exists(inputPath) Then
                 Dim baseDirForRel = Path.GetDirectoryName(TrailingTrimSeparators(inputPath))
-                If String.IsNullOrEmpty(baseDirForRel) Then
-                    Continue For
-                End If
+                ' A UNC share root (for example \\server\share) has no parent
+                ' according to Path.GetDirectoryName. Treat the selected root
+                ' itself as the relative-path base in that case.
+                If String.IsNullOrEmpty(baseDirForRel) Then baseDirForRel = inputPath
 
-                Dim matched = matcher.GetResultsInFullPath(inputPath)
-                For Each fileFull In matched
-                    If Not File.Exists(fileFull) Then Continue For
-                    Dim rel = GetRelativePathWin(baseDirForRel, fileFull)
+                Dim enumeratedFiles = EnumerateFiles(New DirectoryInfo(inputPath), My.Settings.LTFSWriter_SkipSymlink)
+                Dim knownXattrPaths As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
+                For Each candidate As FileInfo In enumeratedFiles
+                    If candidate.Extension.Equals(".xattr", StringComparison.OrdinalIgnoreCase) Then
+                        knownXattrPaths.Add(candidate.FullName)
+                    End If
+                Next
+
+                For Each fileInfo As FileInfo In enumeratedFiles
+                    Dim fileFull = fileInfo.FullName
+                    Dim matchRel = NormalizeRelativeSeparators(GetRelativePathFast(inputPath, fileFull))
+                    If String.IsNullOrEmpty(matchRel) OrElse Not matcher.Match(matchRel).HasMatches Then Continue For
+
+                    Dim rel = GetRelativePathFast(baseDirForRel, fileFull)
                     rel = NormalizeRelativeSeparators(rel)
 
                     If rel.StartsWith(Path.DirectorySeparatorChar) OrElse rel.StartsWith(Path.AltDirectorySeparatorChar) Then
@@ -701,19 +845,27 @@ Public Module GlobCollector
                     If Not seenRelative.Add(rel) Then Continue For
                     If Not seenSource.Add(fileFull) Then Continue For
 
+                    Dim xattrPath As String = String.Empty
+                    Dim xattrCandidate = fileFull & ".xattr"
+                    If knownXattrPaths.Contains(xattrCandidate) Then xattrPath = xattrCandidate
+
                     plan.Files.Add(New GlobHelper.AddFile With {
                         .SourceFullPath = fileFull,
-                        .RelativePath = rel
+                        .RelativePath = rel,
+                        .SourceInfo = fileInfo,
+                        .SourceXattrPath = xattrPath
                     })
 
-                    AddParentDirsOfRelativePath(rel, dirSet)
+                    Dim parentRel = Path.GetDirectoryName(rel)
+                    If Not String.IsNullOrEmpty(parentRel) Then parentDirSet.Add(parentRel)
                 Next
 
             ElseIf File.Exists(inputPath) Then
                 Dim parentDir = Path.GetDirectoryName(inputPath)
                 If String.IsNullOrEmpty(parentDir) Then Continue For
 
-                Dim relForMatch = GetRelativePathWin(parentDir, inputPath)
+                Dim fileInfo As New FileInfo(inputPath)
+                Dim relForMatch = Path.GetFileName(inputPath)
                 relForMatch = NormalizeRelativeSeparators(relForMatch)
 
                 If matcher.Match(relForMatch).HasMatches Then
@@ -725,12 +877,18 @@ Public Module GlobCollector
 
                     plan.Files.Add(New GlobHelper.AddFile With {
                         .SourceFullPath = inputPath,
-                        .RelativePath = relDisplay
+                        .RelativePath = relDisplay,
+                        .SourceInfo = fileInfo,
+                        .SourceXattrPath = Nothing
                     })
                 End If
             Else
                 Continue For
             End If
+        Next
+
+        For Each parentRel In parentDirSet
+            AddParentDirsOfRelativePath(parentRel, dirSet)
         Next
 
         plan.Dirs.AddRange(dirSet.OrderBy(Function(s) s, StringComparer.OrdinalIgnoreCase))
@@ -750,6 +908,21 @@ Public Module GlobCollector
             Return p
         End If
         Return p.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+    End Function
+
+    Private Function GetRelativePathFast(baseDir As String, targetPath As String) As String
+        If String.IsNullOrEmpty(baseDir) OrElse String.IsNullOrEmpty(targetPath) Then Return Nothing
+
+        Dim baseFixed = TrailingTrimSeparators(NormalizeFullPath(baseDir))
+        Dim targetFixed = TrailingTrimSeparators(NormalizeFullPath(targetPath))
+        If baseFixed.Equals(targetFixed, StringComparison.OrdinalIgnoreCase) Then Return String.Empty
+
+        Dim prefix = If(baseFixed.EndsWith("\", StringComparison.Ordinal), baseFixed, baseFixed & "\")
+        If targetFixed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) Then
+            Return targetFixed.Substring(prefix.Length)
+        End If
+
+        Return GetRelativePathWin(baseDir, targetPath)
     End Function
 
     Public Function GetRelativePathWin(baseDir As String, targetPath As String) As String
@@ -782,10 +955,9 @@ Public Module GlobCollector
     End Function
 
     Private Sub AddParentDirsOfRelativePath(relativePath As String, dirSet As HashSet(Of String))
-        Dim dir = Path.GetDirectoryName(relativePath)
-        If String.IsNullOrEmpty(dir) Then Exit Sub
+        If String.IsNullOrEmpty(relativePath) Then Exit Sub
 
-        Dim parts = dir.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).
+        Dim parts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).
                          Where(Function(s) Not String.IsNullOrEmpty(s)).
                          ToArray()
         If parts.Length = 0 Then Exit Sub

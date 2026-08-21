@@ -1050,9 +1050,22 @@ Public Class LTFSWriter
         End Sub
         Public Sub New(Path As String, ParentDir As ltfsindex.directory)
             If Not Path.StartsWith("\\") Then Path = $"\\?\{Path}"
+            Dim xattrPath As String = Nothing
+            If IO.File.Exists(Path & ".xattr") Then xattrPath = Path & ".xattr"
+            Initialize(New IO.FileInfo(Path), ParentDir, xattrPath)
+        End Sub
+        Public Sub New(FileInfo As IO.FileInfo, ParentDir As ltfsindex.directory, XattrPath As String)
+            Initialize(FileInfo, ParentDir, XattrPath)
+        End Sub
+        Public Sub New(FileInfo As IO.FileInfo, ParentDir As ltfsindex.directory)
+            Dim xattrPath As String = Nothing
+            If IO.File.Exists(FileInfo.FullName & ".xattr") Then xattrPath = FileInfo.FullName & ".xattr"
+            Initialize(FileInfo, ParentDir, xattrPath)
+        End Sub
+        Private Sub Initialize(finf As IO.FileInfo, ParentDir As ltfsindex.directory, xattrPath As String)
             ParentDirectory = ParentDir
-            SourcePath = Path
-            Dim finf As IO.FileInfo = New IO.FileInfo(SourcePath)
+            SourcePath = finf.FullName
+            If Not SourcePath.StartsWith("\\") Then SourcePath = $"\\?\{SourcePath}"
             File = New ltfsindex.file With {
                 .name = finf.Name,
                 .fileuid = -1,
@@ -1080,8 +1093,9 @@ Public Class LTFSWriter
                 .changetime = .modifytime
                 .backuptime = Now.ToUniversalTime.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                 Try
-                    If IO.File.Exists(Path & ".xattr") Then
-                        Dim x As String = IO.File.ReadAllText(Path & ".xattr")
+                    If xattrPath IsNot Nothing Then
+                        If Not xattrPath.StartsWith("\\") Then xattrPath = $"\\?\{xattrPath}"
+                        Dim x As String = IO.File.ReadAllText(xattrPath)
                         Dim xlist As List(Of ltfsindex.file.xattr) = ltfsindex.file.xattr.FromXMLList(x)
                         If .extendedattributes Is Nothing Then .extendedattributes = New List(Of ltfsindex.file.xattr)
                         .extendedattributes.AddRange(xlist)
@@ -3015,7 +3029,8 @@ Public Class LTFSWriter
         End If
         Return Result
     End Function
-    Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
+    Public Sub AddFile(f As IO.FileInfo, d As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False,
+                       Optional ByVal XattrPath As String = Nothing)
         Try
             If StopFlag Then Exit Sub
             If f.Extension.ToLower = ".xattr" Then Exit Sub
@@ -3063,7 +3078,13 @@ Public Class LTFSWriter
                 End While
             End If
             '添加到队列
-            Dim frnew As New FileRecord(f.FullName, d)
+            Dim xattrPathToUse As String = XattrPath
+            If XattrPath Is Nothing Then
+                Dim candidateXattrPath = f.FullName & ".xattr"
+                If IO.File.Exists(candidateXattrPath) Then xattrPathToUse = candidateXattrPath
+            End If
+            If String.IsNullOrEmpty(xattrPathToUse) Then xattrPathToUse = Nothing
+            Dim frnew As New FileRecord(f, d, xattrPathToUse)
             While True
                 Threading.Thread.Sleep(0)
                 SyncLock UFReadCount
@@ -3076,11 +3097,150 @@ Public Class LTFSWriter
             Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString()}{vbCrLf}{ex.StackTrace}"))
         End Try
     End Sub
+    Private Class DirectoryScanEntry
+        Public Sub New(directory As IO.DirectoryInfo)
+            Me.Directory = directory
+        End Sub
+
+        Public ReadOnly Property Directory As IO.DirectoryInfo
+        Public ReadOnly Property Files As New List(Of IO.FileInfo)
+        Public ReadOnly Property Directories As New List(Of DirectoryScanEntry)
+        Public ReadOnly Property XattrFiles As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+        Public Property Scanned As Boolean
+    End Class
+
+    Private Shared Function IsNetworkDirectory(directory As IO.DirectoryInfo) As Boolean
+        Dim fullName As String = directory.FullName
+        If fullName.StartsWith("\\", StringComparison.Ordinal) AndAlso
+           Not fullName.StartsWith("\\?\", StringComparison.Ordinal) Then
+            Return True
+        End If
+
+        Try
+            Dim root As String = IO.Path.GetPathRoot(fullName)
+            Return Not String.IsNullOrEmpty(root) AndAlso New IO.DriveInfo(root).DriveType = IO.DriveType.Network
+        Catch
+            Return False
+        End Try
+    End Function
+
+    Private Sub PopulateDirectoryScan(scan As DirectoryScanEntry,
+                                      skipSymlink As Boolean,
+                                      enqueue As Action(Of DirectoryScanEntry))
+        For Each entry As IO.FileSystemInfo In scan.Directory.GetFileSystemInfos()
+            Dim file As IO.FileInfo = TryCast(entry, IO.FileInfo)
+            If file IsNot Nothing Then
+                scan.Files.Add(file)
+                If file.Extension.Equals(".xattr", StringComparison.OrdinalIgnoreCase) Then
+                    scan.XattrFiles(file.Name) = file.FullName
+                End If
+                Continue For
+            End If
+
+            Dim childDirectory As IO.DirectoryInfo = DirectCast(entry, IO.DirectoryInfo)
+            If skipSymlink AndAlso ((childDirectory.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
+                Continue For
+            End If
+            Dim child As New DirectoryScanEntry(childDirectory)
+            scan.Directories.Add(child)
+            If enqueue IsNot Nothing Then enqueue(child)
+        Next
+
+        scan.Files.Sort(New Comparison(Of IO.FileInfo)(Function(a As IO.FileInfo, b As IO.FileInfo) As Integer
+                                                            Return ExplorerComparer.Compare(a.Name, b.Name)
+                                                        End Function))
+        scan.Directories.Sort(New Comparison(Of DirectoryScanEntry)(Function(a As DirectoryScanEntry, b As DirectoryScanEntry) As Integer
+                                                                         Return ExplorerComparer.Compare(a.Directory.Name, b.Directory.Name)
+                                                                     End Function))
+        scan.Scanned = True
+    End Sub
+
+    Private Function ScanNetworkDirectoryTree(rootDirectory As IO.DirectoryInfo) As DirectoryScanEntry
+        ' SMB enumeration is latency-bound; index construction remains serialized after this scan.
+        Const WorkerCount As Integer = 16
+        Dim root As New DirectoryScanEntry(rootDirectory)
+        Dim queue As New Collections.Concurrent.ConcurrentQueue(Of DirectoryScanEntry)()
+        Dim failures As New Collections.Concurrent.ConcurrentQueue(Of Exception)()
+        Dim skipSymlink As Boolean = My.Settings.LTFSWriter_SkipSymlink
+        Using wake As New Threading.AutoResetEvent(False)
+            Dim pending As Integer = 1
+            Dim finished As Integer = 0
+            queue.Enqueue(root)
+
+            Dim workers(WorkerCount - 1) As Threading.Tasks.Task
+            For i As Integer = 0 To workers.Length - 1
+                workers(i) = Threading.Tasks.Task.Run(
+                    Sub()
+                        While Threading.Volatile.Read(finished) = 0
+                            Dim current As DirectoryScanEntry = Nothing
+                            If Not queue.TryDequeue(current) Then
+                                wake.WaitOne(2)
+                                Continue While
+                            End If
+
+                            Try
+                                If Not StopFlag Then
+                                    PopulateDirectoryScan(
+                                        current,
+                                        skipSymlink,
+                                        Sub(child As DirectoryScanEntry)
+                                            Threading.Interlocked.Increment(pending)
+                                            queue.Enqueue(child)
+                                            wake.Set()
+                                        End Sub)
+                                End If
+                            Catch ex As Exception
+                                failures.Enqueue(ex)
+                            Finally
+                                If Threading.Interlocked.Decrement(pending) = 0 Then
+                                    Threading.Interlocked.Exchange(finished, 1)
+                                    wake.Set()
+                                End If
+                            End Try
+                        End While
+                    End Sub)
+            Next
+            Threading.Tasks.Task.WaitAll(workers)
+
+            If Not failures.IsEmpty Then Throw New AggregateException(failures)
+        End Using
+        Return root
+    End Function
+
+    Private Sub AddDirectorySinglePass(dnew1 As IO.DirectoryInfo,
+                                       d1 As ltfsindex.directory,
+                                       OverWrite As Boolean,
+                                       exceptExtention As String())
+        If My.Settings.LTFSWriter_SkipSymlink AndAlso ((dnew1.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
+            Exit Sub
+        End If
+        If StopFlag Then Exit Sub
+        Dim scan As New DirectoryScanEntry(dnew1)
+        PopulateDirectoryScan(scan, My.Settings.LTFSWriter_SkipSymlink, Nothing)
+        AddScannedDirectory(scan, d1, OverWrite, exceptExtention)
+    End Sub
+
     Public Sub AddDirectry(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False, Optional ByVal exceptExtention As String() = Nothing)
         If My.Settings.LTFSWriter_SkipSymlink AndAlso ((dnew1.Attributes And IO.FileAttributes.ReparsePoint) <> 0) Then
             Exit Sub
         End If
         If StopFlag Then Exit Sub
+
+        If IsNetworkDirectory(dnew1) Then
+            Dim scan As DirectoryScanEntry = ScanNetworkDirectoryTree(dnew1)
+            If StopFlag Then Exit Sub
+            AddScannedDirectory(scan, d1, OverWrite, exceptExtention)
+        Else
+            AddDirectorySinglePass(dnew1, d1, OverWrite, exceptExtention)
+        End If
+    End Sub
+
+    Private Sub AddScannedDirectory(scan As DirectoryScanEntry,
+                                    d1 As ltfsindex.directory,
+                                    OverWrite As Boolean,
+                                    exceptExtention As String())
+        If StopFlag Then Exit Sub
+        Dim dnew1 As IO.DirectoryInfo = scan.Directory
         Dim dirExist As Boolean = False
         Dim dT As ltfsindex.directory = Nothing
         SyncLock d1.contents._directory
@@ -3106,11 +3266,9 @@ Public Class LTFSWriter
             d1.contents._directory.Add(dT)
             Threading.Interlocked.Increment(schema.highestfileuid)
         End If
+        Dim flist As List(Of IO.FileInfo) = scan.Files
+        Dim xattrFiles As Dictionary(Of String, String) = scan.XattrFiles
         If Not ParallelAdd Then
-            Dim flist As List(Of IO.FileInfo) = dnew1.GetFiles().ToList()
-            flist.Sort(New Comparison(Of IO.FileInfo)(Function(a As IO.FileInfo, b As IO.FileInfo) As Integer
-                                                          Return ExplorerComparer.Compare(a.Name, b.Name)
-                                                      End Function))
             For Each f As IO.FileInfo In flist
                 Try
                     If StopFlag Then Exit For
@@ -3165,7 +3323,9 @@ Public Class LTFSWriter
                         Threading.Thread.Sleep(0)
                         SyncLock UFReadCount
                             If UFReadCount > 0 Then Continue While
-                            UnwrittenFiles.Add(New FileRecord(f.FullName, dT))
+                            Dim xattrPath As String = Nothing
+                            xattrFiles.TryGetValue(f.Name & ".xattr", xattrPath)
+                            UnwrittenFiles.Add(New FileRecord(f, dT, xattrPath))
                             Exit While
                         End SyncLock
                     End While
@@ -3174,7 +3334,7 @@ Public Class LTFSWriter
                 End Try
             Next
         Else
-            Parallel.ForEach(dnew1.GetFiles(),
+            Parallel.ForEach(flist,
                 Sub(f As IO.FileInfo)
                     Try
                         If exceptExtention IsNot Nothing AndAlso exceptExtention.Count > 0 Then
@@ -3223,7 +3383,9 @@ Public Class LTFSWriter
                             Threading.Thread.Sleep(0)
                             SyncLock UFReadCount
                                 If UFReadCount > 0 Then Continue While
-                                UnwrittenFiles.Add(New FileRecord(f.FullName, dT))
+                                Dim xattrPath As String = Nothing
+                                xattrFiles.TryGetValue(f.Name & ".xattr", xattrPath)
+                                UnwrittenFiles.Add(New FileRecord(f, dT, xattrPath))
                                 Exit While
                             End SyncLock
                         End While
@@ -3232,12 +3394,12 @@ Public Class LTFSWriter
                     End Try
                 End Sub)
         End If
-        Dim dl As List(Of IO.DirectoryInfo) = dnew1.GetDirectories().ToList()
-        dl.Sort(New Comparison(Of IO.DirectoryInfo)(Function(a As IO.DirectoryInfo, b As IO.DirectoryInfo) As Integer
-                                                        Return ExplorerComparer.Compare(a.Name, b.Name)
-                                                    End Function))
-        For Each dn As IO.DirectoryInfo In dnew1.GetDirectories()
-            AddDirectry(dn, dT, OverWrite, exceptExtention)
+        For Each child As DirectoryScanEntry In scan.Directories
+            If child.Scanned Then
+                AddScannedDirectory(child, dT, OverWrite, exceptExtention)
+            Else
+                AddDirectorySinglePass(child.Directory, dT, OverWrite, exceptExtention)
+            End If
         Next
     End Sub
     Public Sub ConcatDirectory(dnew1 As IO.DirectoryInfo, d1 As ltfsindex.directory, Optional ByVal OverWrite As Boolean = False)
@@ -3505,26 +3667,34 @@ Public Class LTFSWriter
                 Dim matcher = GlobCollector.BuildMatcherFromString(match)
                 Dim results = GlobCollector.PlanAdd_ByFullPathInputs(Paths, matcher)
 
-                Dim fileSeq As IEnumerable(Of GlobHelper.AddFile) = results.Files
+                Dim fileSeq As List(Of GlobHelper.AddFile) = results.Files
 
                 If My.Settings.LTFSWriter_SkipSymlink Then
-                    fileSeq = fileSeq.Where(
-                        Function(f)
-                            Try
-                                Dim fi As New IO.FileInfo(f.SourceFullPath)
-                                If fi.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then Return False
+                    Dim reparseCache As New Dictionary(Of String, Boolean)(StringComparer.OrdinalIgnoreCase)
+                    Dim filteredFiles As New List(Of GlobHelper.AddFile)(fileSeq.Count)
+                    For Each f In fileSeq
+                        Try
+                            Dim fi As IO.FileInfo = f.SourceInfo
+                            If fi Is Nothing Then fi = New IO.FileInfo(f.SourceFullPath)
+                            Dim keepFile As Boolean = Not fi.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
 
-                                Dim dir As IO.DirectoryInfo = fi.Directory
-                                While dir IsNot Nothing
-                                    If dir.Attributes.HasFlag(IO.FileAttributes.ReparsePoint) Then Return False
-                                    dir = dir.Parent
-                                End While
+                            Dim dir As IO.DirectoryInfo = fi.Directory
+                            While keepFile AndAlso dir IsNot Nothing
+                                Dim dirPath = dir.FullName
+                                Dim isReparse As Boolean = False
+                                If Not reparseCache.TryGetValue(dirPath, isReparse) Then
+                                    isReparse = dir.Attributes.HasFlag(IO.FileAttributes.ReparsePoint)
+                                    reparseCache(dirPath) = isReparse
+                                End If
+                                keepFile = Not isReparse
+                                dir = dir.Parent
+                            End While
 
-                                Return True
-                            Catch
-                                Return False
-                            End Try
-                        End Function)
+                            If keepFile Then filteredFiles.Add(f)
+                        Catch
+                        End Try
+                    Next
+                    fileSeq = filteredFiles
                 End If
 
                 Dim relDirSet As New HashSet(Of String)(StringComparer.OrdinalIgnoreCase)
@@ -3546,22 +3716,30 @@ Public Class LTFSWriter
                 Next
 
                 Dim dirSeq As IEnumerable(Of String) = relDirSet.OrderBy(Function(s) s, StringComparer.OrdinalIgnoreCase)
+                Dim targetDirs As New Dictionary(Of String, ltfsindex.directory)(StringComparer.OrdinalIgnoreCase)
 
                 For Each relDir In dirSeq
                     If StopFlag Then Exit Sub
 
-                    Dim targetParent = helper.EnsureDirectoryChain(d, "", relDir)
+                    targetDirs(relDir) = helper.EnsureDirectoryChain(d, "", relDir)
                 Next
 
                 For Each af In fileSeq
                     If StopFlag Then Exit Sub
 
                     Dim parentRel = IO.Path.GetDirectoryName(af.RelativePath)
-                    Dim targetDir = helper.EnsureDirectoryChain(d, "", If(parentRel, String.Empty))
+                    Dim targetDir As ltfsindex.directory = d
+                    If Not String.IsNullOrEmpty(parentRel) Then
+                        If Not targetDirs.TryGetValue(parentRel, targetDir) Then
+                            targetDir = helper.EnsureDirectoryChain(d, "", parentRel)
+                            targetDirs(parentRel) = targetDir
+                        End If
+                    End If
 
                     Try
-                        Dim fi As New IO.FileInfo(af.SourceFullPath)
-                        AddFile(fi, targetDir, overwrite)
+                        Dim fi As IO.FileInfo = af.SourceInfo
+                        If fi Is Nothing Then fi = New IO.FileInfo(af.SourceFullPath)
+                        AddFile(fi, targetDir, overwrite, af.SourceXattrPath)
                     Catch
                     End Try
                 Next
