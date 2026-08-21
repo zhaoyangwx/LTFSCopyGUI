@@ -7493,140 +7493,1051 @@ Public Class LTFSWriter
         End If
 
     End Sub
-    Public Function CalculateChecksum(FileIndex As ltfsindex.file, Optional ByVal blk0 As Byte() = Nothing) As Dictionary(Of String, String)
-        Dim HT As New IOManager.CheckSumBlockwiseCalculator
-        If FileIndex.length > 0 Then
-            Dim CreateNew As Boolean = True
-            If FileIndex.extentinfo.Count > 1 Then FileIndex.extentinfo.Sort(New Comparison(Of ltfsindex.file.extent)(Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
-                                                                                                                          Return a.fileoffset.CompareTo(b.fileoffset)
-                                                                                                                      End Function))
-            For Each fe As ltfsindex.file.extent In FileIndex.extentinfo
-                If blk0 IsNot Nothing Then
-                    RestorePosition = New TapeUtils.PositionData(driveHandle)
-                    RestorePosition.BlockNumber = CULng(RestorePosition.BlockNumber - 1)
-                Else
-                    'RestorePosition = New TapeUtils.PositionData(driveHandle)
-                    If RestorePosition.BlockNumber <> fe.startblock OrElse RestorePosition.PartitionNumber <> Math.Min(ExtraPartitionCount, fe.partition) Then
-                        TapeUtils.Locate(handle:=driveHandle, BlockAddress:=CULng(fe.startblock), Partition:=GetPartitionNumber(CType(fe.partition, ltfslabel.PartitionLabel)))
-                        RestorePosition = New TapeUtils.PositionData(driveHandle)
-                    End If
-                End If
-                Dim TotalBytesToRead As Long = fe.bytecount
-                Dim blk As Byte() = Nothing
-                Dim sense As Byte() = {}
-                If blk0 IsNot Nothing Then
-                    blk = blk0
-                    blk0 = Nothing
-                Else
-                    Dim succ As Boolean = False
-                    While Not succ
-                        blk = TapeUtils.ReadBlock(handle:=driveHandle, sense:=sense, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, TotalBytesToRead)))
-                        If ((sense(2) >> 6) And &H1) = 1 Then
-                            succ = True
-                            Exit While
-                        ElseIf (sense(2) And &HF) <> 0 Then
-                            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                            Try
-                                Throw New Exception("SCSI sense error")
-                            Catch ex As Exception
-                                Dim dResult As DialogResult
-                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
-                                Select Case dResult
-                                    Case DialogResult.Abort
-                                        StopFlag = True
-                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                    Case DialogResult.Retry
-                                        succ = False
-                                    Case DialogResult.Ignore
-                                        succ = True
-                                        Exit While
-                                End Select
-                            End Try
-                        Else
-                            succ = True
-                        End If
-                    End While
-                End If
-                SyncLock RestorePosition
-                    RestorePosition.BlockNumber = CULng(RestorePosition.BlockNumber + 1)
-                End SyncLock
-                If fe.byteoffset > 0 Then blk = blk.Skip(CInt(fe.byteoffset)).ToArray()
-                TotalBytesToRead -= blk.Length
-                HT.Propagate(blk)
-                Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
-                Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
-                While TotalBytesToRead > 0
-                    Dim succ As Boolean = False
-                    While Not succ
-                        blk = TapeUtils.ReadBlock(handle:=driveHandle, sense:=sense, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, TotalBytesToRead)))
-                        If ((sense(2) >> 6) And &H1) = 1 Then
-                            succ = True
-                            Exit While
-                        ElseIf (sense(2) And &HF) <> 0 Then
-                            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
-                            Try
-                                Throw New Exception("SCSI sense error")
-                            Catch ex As Exception
-                                Dim dResult As DialogResult
-                                Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
-                                Select Case dResult
-                                    Case DialogResult.Abort
-                                        StopFlag = True
-                                        Throw New Exception(TapeUtils.ParseSenseData(sense))
-                                    Case DialogResult.Retry
-                                        succ = False
-                                    Case DialogResult.Ignore
-                                        succ = True
-                                        Exit While
-                                End Select
-                            End Try
-                        Else
-                            succ = True
-                        End If
-                    End While
-                    SyncLock RestorePosition
-                        RestorePosition.BlockNumber = CULng(RestorePosition.BlockNumber + 1)
-                    End SyncLock
-                    Dim blklen As Integer = blk.Length
-                    If blklen = 0 Then Exit While
-                    If blklen > TotalBytesToRead Then blklen = CInt(TotalBytesToRead)
-                    TotalBytesToRead -= blk.Length
-                    HT.Propagate(blk, blklen)
-                    Threading.Interlocked.Add(CurrentBytesProcessed, blk.Length)
-                    Threading.Interlocked.Add(TotalBytesProcessed, blk.Length)
-                    If StopFlag Then Return Nothing
-                    If Pause Then
-                        Invoke(Sub()
-                                   With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
-                                       .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Paused)
-                                   End With
-                               End Sub)
-                    End If
-                    While Pause
-                        Threading.Thread.Sleep(10)
-                        If Not Pause Then
-                            Invoke(Sub()
-                                       With Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance
-                                           .SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal)
-                                       End With
-                                   End Sub)
-                        End If
-                    End While
-                End While
-            Next
+    Private Const ValidationSpoolBudgetBytes As Long = 256L * 1024L * 1024L
+
+    Private Class ValidationWork
+        Public Representative As FileRecord
+        Public Members As New List(Of FileRecord)
+        Public Extents As New List(Of ValidationExtent)
+        Public SpoolSlices As New List(Of ValidationSpoolSlice)
+        Public Calculator As IOManager.CheckSumBlockwiseCalculator
+        Public Result As Dictionary(Of String, String)
+        Public HashedBytes As Long
+    End Class
+
+    Private Class ValidationExtent
+        Public Work As ValidationWork
+        Public Partition As Byte
+        Public StartBlock As Long
+        Public EndBlockExclusive As Long
+        Public ByteOffset As Long
+        Public ByteCount As Long
+        Public FileOffset As Long
+        Public CopiedBytes As Long
+    End Class
+
+    Private Class ValidationSpoolSlice
+        Public FileOffset As Long
+        Public Length As Integer
+        Public SpoolOffset As Long
+    End Class
+
+    Private Class ValidationSpoolBatch
+        Public Works As New List(Of ValidationWork)
+        Public ReservedBytes As Long
+    End Class
+
+    Private Function GetValidationBlockSize() As Long
+        Dim blockSize As Long = If(plabel Is Nothing, 0, CLng(plabel.blocksize))
+        If blockSize <= 0 Then blockSize = 524288
+        Dim tapeLimit As Long = CLng(TapeUtils.GlobalBlockLimit)
+        If tapeLimit <= 0 Then tapeLimit = 1048576
+        If blockSize > tapeLimit Then
+            Throw New IO.InvalidDataException($"LTFS block size {blockSize} exceeds the drive read limit {tapeLimit}")
         End If
-        HT.ProcessFinalBlock()
-        Threading.Interlocked.Increment(CurrentFilesProcessed)
-        Threading.Interlocked.Increment(TotalFilesProcessed)
-        Dim result As New Dictionary(Of String, String)
-        result.Add("SHA1", HT.SHA1Value)
-        result.Add("MD5", HT.MD5Value)
-        If HT.BlakeValue IsNot Nothing Then result.Add("BLAKE3", HT.BlakeValue)
-        If HT.XXHash3Value IsNot Nothing Then result.Add("XxHash3", HT.XXHash3Value)
-        If HT.XXHash128Value IsNot Nothing Then result.Add("XxHash128", HT.XXHash128Value)
+        Return blockSize
+    End Function
+
+    Private Function CloneValidationExtent(source As ltfsindex.file.extent) As ltfsindex.file.extent
+        Return New ltfsindex.file.extent With {
+            .partition = source.partition,
+            .startblock = source.startblock,
+            .byteoffset = source.byteoffset,
+            .bytecount = source.bytecount,
+            .fileoffset = source.fileoffset}
+    End Function
+
+    Private Function GetValidationExtents(file As ltfsindex.file) As List(Of ltfsindex.file.extent)
+        Dim result As New List(Of ltfsindex.file.extent)
+        If file Is Nothing OrElse file.extentinfo Is Nothing Then Return result
+
+        For Each source As ltfsindex.file.extent In file.extentinfo
+            If source IsNot Nothing Then result.Add(CloneValidationExtent(source))
+        Next
+
+        ' LTFS 1.0 did not store fileoffset.  Preserve the recorded order only
+        ' for that legacy shape; modern indexes may store extents in any order.
+        If result.Count > 1 AndAlso result.All(Function(ext As ltfsindex.file.extent) ext.fileoffset = 0) Then
+            Dim fileOffset As Long = 0
+            For Each ext As ltfsindex.file.extent In result
+                ext.fileoffset = fileOffset
+                If ext.bytecount > 0 Then fileOffset += ext.bytecount
+            Next
+        Else
+            result.Sort(New Comparison(Of ltfsindex.file.extent)(
+                Function(a As ltfsindex.file.extent, b As ltfsindex.file.extent) As Integer
+                    Dim comparison = a.fileoffset.CompareTo(b.fileoffset)
+                    If comparison <> 0 Then Return comparison
+                    comparison = a.partition.CompareTo(b.partition)
+                    If comparison <> 0 Then Return comparison
+                    comparison = a.startblock.CompareTo(b.startblock)
+                    If comparison <> 0 Then Return comparison
+                    comparison = a.byteoffset.CompareTo(b.byteoffset)
+                    If comparison <> 0 Then Return comparison
+                    Return a.bytecount.CompareTo(b.bytecount)
+                End Function))
+        End If
         Return result
     End Function
 
+    Private Function CanMergeValidationReferences(previous As ltfsindex.file.extent,
+                                                   current As ltfsindex.file.extent,
+                                                   blockSize As Long) As Boolean
+        If previous Is Nothing OrElse current Is Nothing OrElse
+            previous.bytecount <= 0 OrElse current.bytecount <= 0 OrElse
+            previous.partition <> current.partition Then Return False
+        If previous.fileoffset > Long.MaxValue - previous.bytecount OrElse
+            previous.fileoffset + previous.bytecount <> current.fileoffset Then Return False
+        If previous.byteoffset > Long.MaxValue - previous.bytecount Then Return False
+
+        Dim physicalLength = previous.byteoffset + previous.bytecount
+        Dim blockDelta = physicalLength \ blockSize
+        If previous.startblock > Long.MaxValue - blockDelta Then Return False
+        Return previous.startblock + blockDelta = current.startblock AndAlso
+            physicalLength Mod blockSize = current.byteoffset
+    End Function
+
+    Private Function GetValidationReferenceKey(file As ltfsindex.file,
+                                                extents As List(Of ltfsindex.file.extent),
+                                                blockSize As Long) As String
+        Dim builder As New StringBuilder
+        builder.Append(file.length).Append("|")
+        If file.symlink Is Nothing Then
+            builder.Append("no-symlink")
+        Else
+            builder.Append("symlink:").Append(file.symlink.Length).Append(":"c).Append(file.symlink)
+        End If
+        builder.Append("|")
+
+        ' Extent-list order and segmentation are not significant in LTFS.  Merge
+        ' logically and physically adjacent entries for the identity key so a
+        ' deduplicated file is hashed once even if one index describes it as one
+        ' extent and another index describes the same bytes as several extents.
+        Dim canonical As New List(Of ltfsindex.file.extent)
+        For Each source As ltfsindex.file.extent In extents
+            If source.bytecount <= 0 Then Continue For
+            Dim ext = CloneValidationExtent(source)
+            If canonical.Count > 0 AndAlso CanMergeValidationReferences(canonical(canonical.Count - 1), ext, blockSize) Then
+                Dim previous = canonical(canonical.Count - 1)
+                If previous.bytecount <= Long.MaxValue - ext.bytecount Then
+                    previous.bytecount += ext.bytecount
+                    Continue For
+                End If
+            End If
+            canonical.Add(ext)
+        Next
+
+        For Each ext As ltfsindex.file.extent In canonical
+            builder.Append(CInt(ext.partition)).Append(":"c).
+                Append(ext.startblock).Append(":"c).
+                Append(ext.byteoffset).Append(":"c).
+                Append(ext.bytecount).Append(":"c).
+                Append(ext.fileoffset).Append(";"c)
+        Next
+        Return builder.ToString()
+    End Function
+
+    Private Function GetEnabledChecksumNames() As List(Of String)
+        Dim result As New List(Of String)
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then result.Add("SHA1")
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then result.Add("SHA256")
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then result.Add("SHA512")
+        If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then result.Add("CRC32")
+        If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then result.Add("MD5")
+        If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then result.Add("BLAKE3")
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then result.Add("XxHash3")
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then result.Add("XxHash128")
+        Return result
+    End Function
+
+    Private Function GetChecksumAttributeName(name As String) As String
+        Select Case name
+            Case "SHA1"
+                Return ltfsindex.file.xattr.HashType.SHA1
+            Case "SHA256"
+                Return ltfsindex.file.xattr.HashType.SHA256
+            Case "SHA512"
+                Return ltfsindex.file.xattr.HashType.SHA512
+            Case "CRC32"
+                Return ltfsindex.file.xattr.HashType.CRC32
+            Case "MD5"
+                Return ltfsindex.file.xattr.HashType.MD5
+            Case "BLAKE3"
+                Return ltfsindex.file.xattr.HashType.BLAKE3
+            Case "XxHash3"
+                Return ltfsindex.file.xattr.HashType.XxHash3
+            Case "XxHash128"
+                Return ltfsindex.file.xattr.HashType.XxHash128
+            Case Else
+                Return Nothing
+        End Select
+    End Function
+
+    Private Function GetChecksumValue(file As ltfsindex.file, name As String) As String
+        Dim attributeName = GetChecksumAttributeName(name)
+        If String.IsNullOrEmpty(attributeName) Then Return ""
+        Return file.GetXAttr(attributeName, True)
+    End Function
+
+    Private Sub SetChecksumValue(file As ltfsindex.file, name As String, value As String)
+        Dim attributeName = GetChecksumAttributeName(name)
+        If Not String.IsNullOrEmpty(attributeName) AndAlso value IsNot Nothing Then
+            file.SetXattr(attributeName, value)
+        End If
+    End Sub
+
+    Private Sub SetChecksumColor(file As ltfsindex.file, name As String, color As Color)
+        Select Case name
+            Case "SHA1"
+                file.SHA1ForeColor = color
+            Case "SHA256"
+                file.SHA256ForeColor = color
+            Case "SHA512"
+                file.SHA512ForeColor = color
+            Case "CRC32"
+                file.CRC32ForeColor = color
+            Case "MD5"
+                file.MD5ForeColor = color
+            Case "BLAKE3"
+                file.BLAKE3ForeColor = color
+            Case "XxHash3"
+                file.XxHash3ForeColor = color
+            Case "XxHash128"
+                file.XxHash128ForeColor = color
+        End Select
+    End Sub
+
+    Private Function HasMissingChecksum(file As ltfsindex.file) As Boolean
+        For Each name As String In GetEnabledChecksumNames()
+            If String.IsNullOrEmpty(GetChecksumValue(file, name)) Then Return True
+        Next
+        Return False
+    End Function
+
+    Private Function HasValidatedChecksums(file As ltfsindex.file) As Boolean
+        For Each name As String In GetEnabledChecksumNames()
+            Dim value = GetChecksumValue(file, name)
+            If String.IsNullOrEmpty(value) Then Return False
+            Dim color As Color
+            Select Case name
+                Case "SHA1"
+                    color = file.SHA1ForeColor
+                Case "SHA256"
+                    color = file.SHA256ForeColor
+                Case "SHA512"
+                    color = file.SHA512ForeColor
+                Case "CRC32"
+                    color = file.CRC32ForeColor
+                Case "MD5"
+                    color = file.MD5ForeColor
+                Case "BLAKE3"
+                    color = file.BLAKE3ForeColor
+                Case "XxHash3"
+                    color = file.XxHash3ForeColor
+                Case Else
+                    color = file.XxHash128ForeColor
+            End Select
+            If color.Equals(Color.Black) OrElse color.Equals(Color.Red) Then Return False
+        Next
+        Return True
+    End Function
+
+    Private Function ValidationNeedsCalculation(file As ltfsindex.file,
+                                                overwrite As Boolean,
+                                                validateOnly As Boolean) As Boolean
+        If file Is Nothing Then Return False
+        If GetEnabledChecksumNames().Count = 0 Then Return False
+        If overwrite Then Return True
+        If validateOnly Then Return Not HasValidatedChecksums(file)
+        Return HasMissingChecksum(file)
+    End Function
+
+    Private Function BuildValidationPlan(fileList As List(Of FileRecord),
+                                         overwrite As Boolean,
+                                         validateOnly As Boolean,
+                                         workByRecord As Dictionary(Of FileRecord, ValidationWork)) As List(Of ValidationWork)
+        Dim result As New List(Of ValidationWork)
+        Dim byReference As New Dictionary(Of String, ValidationWork)(StringComparer.Ordinal)
+        Dim blockSize As Long = GetValidationBlockSize()
+
+        For Each fr As FileRecord In fileList
+            If fr Is Nothing OrElse fr.File Is Nothing OrElse
+                Not ValidationNeedsCalculation(fr.File, overwrite, validateOnly) Then Continue For
+            If fr.File.length < 0 Then Throw New IO.InvalidDataException($"Negative file length for {fr.File.name}")
+
+            Dim normalizedExtents = GetValidationExtents(fr.File)
+            Dim referenceKey = GetValidationReferenceKey(fr.File, normalizedExtents, blockSize)
+            Dim work As ValidationWork = Nothing
+            If Not byReference.TryGetValue(referenceKey, work) Then
+                work = New ValidationWork With {.Representative = fr,
+                                                 .Calculator = New IOManager.CheckSumBlockwiseCalculator}
+                byReference.Add(referenceKey, work)
+                result.Add(work)
+
+                Dim logicalEnd As Long = 0
+                For Each ext As ltfsindex.file.extent In normalizedExtents
+                    If ext.bytecount < 0 Then Throw New IO.InvalidDataException($"Negative extent bytecount for {fr.File.name}")
+                    If ext.partition <> ltfsindex.PartitionLabel.a AndAlso ext.partition <> ltfsindex.PartitionLabel.b Then
+                        Throw New IO.InvalidDataException($"Invalid extent partition for {fr.File.name}: {ext.partition}")
+                    End If
+                    If ext.byteoffset < 0 OrElse ext.byteoffset >= blockSize Then
+                        Throw New IO.InvalidDataException($"Invalid extent byteoffset for {fr.File.name}: {ext.byteoffset}")
+                    End If
+                    If ext.fileoffset < 0 OrElse ext.fileoffset > fr.File.length Then
+                        Throw New IO.InvalidDataException($"Invalid extent fileoffset for {fr.File.name}: {ext.fileoffset}")
+                    End If
+                    If ext.startblock < 0 Then
+                        Throw New IO.InvalidDataException($"Negative extent startblock for {fr.File.name}")
+                    End If
+                    If ext.bytecount = 0 Then Continue For
+                    If ext.fileoffset > fr.File.length - ext.bytecount Then
+                        Throw New IO.InvalidDataException($"Extent exceeds file length for {fr.File.name}")
+                    End If
+                    If ext.fileoffset < logicalEnd Then
+                        Throw New IO.InvalidDataException($"Overlapping extents for {fr.File.name}")
+                    End If
+                    logicalEnd = ext.fileoffset + ext.bytecount
+
+                    If ext.byteoffset > Long.MaxValue - ext.bytecount Then
+                        Throw New IO.InvalidDataException($"Invalid physical extent length for {fr.File.name}")
+                    End If
+                    Dim physicalByteCount As Long = ext.byteoffset + ext.bytecount
+                    If physicalByteCount > Long.MaxValue - (blockSize - 1) Then
+                        Throw New IO.InvalidDataException($"Invalid physical extent block range for {fr.File.name}")
+                    End If
+                    Dim blockCount As Long = (physicalByteCount + blockSize - 1) \ blockSize
+                    If blockCount <= 0 OrElse ext.startblock > Long.MaxValue - blockCount Then
+                        Throw New IO.InvalidDataException($"Invalid extent block range for {fr.File.name}")
+                    End If
+                    work.Extents.Add(New ValidationExtent With {
+                        .Work = work,
+                        .Partition = GetPartitionNumber(CType(ext.partition, ltfslabel.PartitionLabel)),
+                        .StartBlock = ext.startblock,
+                        .EndBlockExclusive = ext.startblock + blockCount,
+                        .ByteOffset = ext.byteoffset,
+                        .ByteCount = ext.bytecount,
+                        .FileOffset = ext.fileoffset})
+                Next
+            End If
+
+            work.Members.Add(fr)
+            workByRecord(fr) = work
+        Next
+        Return result
+    End Function
+
+    Private Function ReadValidationBlock(partition As Byte, block As Long) As Byte()
+        If block < 0 Then Throw New IO.InvalidDataException("Negative validation block")
+        If block = Long.MaxValue Then Throw New IO.InvalidDataException("Validation block number overflow")
+        If RestorePosition Is Nothing Then RestorePosition = New TapeUtils.PositionData(driveHandle)
+
+        If RestorePosition.PartitionNumber <> partition OrElse RestorePosition.BlockNumber <> CULng(block) Then
+            Dim locateCode = TapeUtils.Locate(handle:=driveHandle,
+                                              BlockAddress:=CULng(block),
+                                              Partition:=partition,
+                                              DestType:=TapeUtils.LocateDestType.Block)
+            RestorePosition = New TapeUtils.PositionData(driveHandle)
+            If RestorePosition.PartitionNumber <> partition OrElse RestorePosition.BlockNumber <> CULng(block) Then
+                Throw New IO.IOException($"Unable to locate validation block P{partition} B{block}; current position is {RestorePosition}; sense=0x{Hex(locateCode).ToUpper.PadLeft(4, "0"c)}")
+            End If
+        End If
+
+        While Not StopFlag
+            Dim sense As Byte() = {}
+            Dim data = TapeUtils.ReadBlock(handle:=driveHandle,
+                                           sense:=sense,
+                                           BlockSizeLimit:=CUInt(GetValidationBlockSize()))
+            Dim senseKey As Integer = If(sense IsNot Nothing AndAlso sense.Length > 2, sense(2) And &HF, 0)
+            Dim eom As Boolean = sense IsNot Nothing AndAlso sense.Length > 2 AndAlso ((sense(2) >> 6) And &H1) = 1
+            If data IsNot Nothing AndAlso data.Length > 0 AndAlso (senseKey = 0 OrElse eom) Then
+                If data.LongLength > GetValidationBlockSize() Then
+                    Throw New IO.InvalidDataException($"Tape block P{partition} B{block} is {data.LongLength} bytes; LTFS label block size is {GetValidationBlockSize()}")
+                End If
+                RestorePosition.PartitionNumber = partition
+                RestorePosition.BlockNumber = CULng(block + 1)
+                Return data
+            End If
+
+            If senseKey = 0 AndAlso (data Is Nothing OrElse data.Length = 0) Then
+                Throw New IO.EndOfStreamException($"Empty tape block while validating P{partition} B{block}")
+            End If
+
+            PrintMsg($"sense err {TapeUtils.Byte2Hex(sense, True)}", Warning:=True, LogOnly:=True)
+            Dim decision As DialogResult = DialogResult.Abort
+            Invoke(Sub() decision = MessageBox.Show(New Form With {.TopMost = True},
+                                                     $"{My.Resources.ResText_RErrSCSI}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}",
+                                                     My.Resources.ResText_Warning,
+                                                     MessageBoxButtons.AbortRetryIgnore))
+            Select Case decision
+                Case DialogResult.Retry
+                    Continue While
+                Case DialogResult.Ignore
+                    If data IsNot Nothing AndAlso data.Length > 0 Then
+                        RestorePosition.PartitionNumber = partition
+                        RestorePosition.BlockNumber = CULng(block + 1)
+                        Return data
+                    End If
+                    Throw New IO.EndOfStreamException($"No data returned for ignored tape error at P{partition} B{block}")
+                Case Else
+                    StopFlag = True
+                    Throw New IO.IOException(TapeUtils.ParseSenseData(sense))
+            End Select
+        End While
+        Throw New OperationCanceledException()
+    End Function
+
+    Private Sub SpoolValidationBlock(spool As IO.FileStream,
+                                     blockNumber As Long,
+                                     block As Byte(),
+                                     active As List(Of ValidationExtent),
+                                     blockSize As Long)
+        Dim blockSpoolOffset As Long = spool.Length
+        spool.Position = blockSpoolOffset
+        spool.Write(block, 0, block.Length)
+        For Each ext As ValidationExtent In active
+            Dim blockDelta As Long = blockNumber - ext.StartBlock
+            If blockDelta < 0 OrElse blockDelta > Long.MaxValue \ blockSize Then
+                Throw New IO.InvalidDataException("Validation block offset overflow")
+            End If
+            Dim blockRelativeStart As Long = blockDelta * blockSize
+            Dim validStart As Long = Math.Max(ext.ByteOffset, blockRelativeStart)
+            Dim validEnd As Long = Math.Min(ext.ByteOffset + ext.ByteCount, blockRelativeStart + block.Length)
+            If validEnd <= validStart Then Continue For
+
+            Dim dataOffset As Integer = CInt(validStart - blockRelativeStart)
+            Dim count As Integer = CInt(validEnd - validStart)
+            Dim slice As New ValidationSpoolSlice With {
+                .FileOffset = ext.FileOffset + validStart - ext.ByteOffset,
+                .Length = count,
+                .SpoolOffset = blockSpoolOffset + dataOffset}
+            ext.CopiedBytes += count
+            ext.Work.SpoolSlices.Add(slice)
+        Next
+    End Sub
+
+    Private Sub SpoolValidationPartition(spool As IO.FileStream,
+                                          extents As List(Of ValidationExtent),
+                                          blockSize As Long)
+        extents.Sort(New Comparison(Of ValidationExtent)(
+            Function(a As ValidationExtent, b As ValidationExtent) As Integer
+                Dim comparison = a.StartBlock.CompareTo(b.StartBlock)
+                If comparison <> 0 Then Return comparison
+                comparison = a.ByteOffset.CompareTo(b.ByteOffset)
+                If comparison <> 0 Then Return comparison
+                comparison = a.EndBlockExclusive.CompareTo(b.EndBlockExclusive)
+                If comparison <> 0 Then Return comparison
+                Return a.FileOffset.CompareTo(b.FileOffset)
+            End Function))
+
+        Dim active As New List(Of ValidationExtent)
+        Dim nextExtent As Integer = 0
+        Dim currentBlock As Long = -1
+        While nextExtent < extents.Count OrElse active.Count > 0
+            If active.Count = 0 Then currentBlock = extents(nextExtent).StartBlock
+            active.RemoveAll(Function(ext As ValidationExtent) currentBlock >= ext.EndBlockExclusive)
+            While nextExtent < extents.Count AndAlso extents(nextExtent).StartBlock <= currentBlock
+                active.Add(extents(nextExtent))
+                nextExtent += 1
+            End While
+            If active.Count = 0 Then Continue While
+
+            Dim block = ReadValidationBlock(active(0).Partition, currentBlock)
+            SpoolValidationBlock(spool, currentBlock, block, active, blockSize)
+            If StopFlag Then Throw New OperationCanceledException()
+            If currentBlock = Long.MaxValue Then Throw New IO.InvalidDataException("Validation block number overflow")
+            currentBlock += 1
+            active.RemoveAll(Function(ext As ValidationExtent) currentBlock >= ext.EndBlockExclusive)
+        End While
+
+        For Each ext As ValidationExtent In extents
+            If ext.CopiedBytes <> ext.ByteCount Then
+                Throw New IO.EndOfStreamException($"Extent P{ext.Partition} B{ext.StartBlock} returned {ext.CopiedBytes} of {ext.ByteCount} bytes")
+            End If
+        Next
+    End Sub
+
+    Private Function GetValidationPartitionOrder(works As IEnumerable(Of ValidationWork)) As List(Of Byte)
+        Dim partitions As New HashSet(Of Byte)
+        For Each work As ValidationWork In works
+            For Each ext As ValidationExtent In work.Extents
+                partitions.Add(ext.Partition)
+            Next
+        Next
+
+        Dim result As New List(Of Byte)
+        If partitions.Count = 0 Then Return result
+        RestorePosition = New TapeUtils.PositionData(driveHandle)
+        If partitions.Contains(RestorePosition.PartitionNumber) Then
+            result.Add(RestorePosition.PartitionNumber)
+        End If
+        For Each partition As Byte In partitions.OrderBy(Function(value As Byte) value)
+            If Not result.Contains(partition) Then result.Add(partition)
+        Next
+        Return result
+    End Function
+
+    Private Function CompareValidationPosition(blockA As Long,
+                                                offsetA As Long,
+                                                blockB As Long,
+                                                offsetB As Long) As Integer
+        Dim comparison = blockA.CompareTo(blockB)
+        If comparison <> 0 Then Return comparison
+        Return offsetA.CompareTo(offsetB)
+    End Function
+
+    Private Function IsForwardValidationWork(work As ValidationWork,
+                                             partitionOrder As List(Of Byte),
+                                             blockSize As Long) As Boolean
+        Dim rank As New Dictionary(Of Byte, Integer)
+        For i As Integer = 0 To partitionOrder.Count - 1
+            rank(partitionOrder(i)) = i
+        Next
+
+        Dim previousRank As Integer = -1
+        Dim previousEndBlock As Long = 0
+        Dim previousEndOffset As Long = 0
+        For Each ext As ValidationExtent In work.Extents.OrderBy(Function(value As ValidationExtent) value.FileOffset)
+            Dim currentRank As Integer = -1
+            If Not rank.TryGetValue(ext.Partition, currentRank) OrElse currentRank < previousRank Then Return False
+            If currentRank = previousRank AndAlso
+                CompareValidationPosition(ext.StartBlock, ext.ByteOffset, previousEndBlock, previousEndOffset) < 0 Then Return False
+
+            Dim physicalLength = ext.ByteOffset + ext.ByteCount
+            Dim blockDelta = physicalLength \ blockSize
+            If ext.StartBlock > Long.MaxValue - blockDelta Then Return False
+            previousRank = currentRank
+            previousEndBlock = ext.StartBlock + blockDelta
+            previousEndOffset = physicalLength Mod blockSize
+        Next
+        Return True
+    End Function
+
+    Private Function OptimizeValidationPartitionOrder(works As List(Of ValidationWork),
+                                                       preferred As List(Of Byte),
+                                                       blockSize As Long) As List(Of Byte)
+        If preferred.Count <> 2 Then Return preferred
+        Dim alternate As New List(Of Byte) From {preferred(1), preferred(0)}
+        Dim preferredBytes As Decimal = 0D
+        Dim alternateBytes As Decimal = 0D
+        Dim preferredCount As Integer = 0
+        Dim alternateCount As Integer = 0
+        For Each work As ValidationWork In works
+            Dim length As Decimal = Math.Max(0, work.Representative.File.length)
+            If IsForwardValidationWork(work, preferred, blockSize) Then
+                preferredBytes += length
+                preferredCount += 1
+            End If
+            If IsForwardValidationWork(work, alternate, blockSize) Then
+                alternateBytes += length
+                alternateCount += 1
+            End If
+        Next
+        If alternateBytes > preferredBytes OrElse
+            (alternateBytes = preferredBytes AndAlso alternateCount > preferredCount) Then Return alternate
+        Return preferred
+    End Function
+
+    Private Sub StreamValidationBlock(blockNumber As Long,
+                                      block As Byte(),
+                                      active As List(Of ValidationExtent),
+                                      blockSize As Long,
+                                      zeroBuffer As Byte())
+        For Each ext As ValidationExtent In active
+            Dim blockDelta As Long = blockNumber - ext.StartBlock
+            If blockDelta < 0 OrElse blockDelta > Long.MaxValue \ blockSize Then
+                Throw New IO.InvalidDataException("Validation block offset overflow")
+            End If
+            Dim blockRelativeStart As Long = blockDelta * blockSize
+            Dim validStart As Long = Math.Max(ext.ByteOffset, blockRelativeStart)
+            Dim validEnd As Long = Math.Min(ext.ByteOffset + ext.ByteCount, blockRelativeStart + block.Length)
+            If validEnd <= validStart Then Continue For
+
+            Dim dataOffset As Integer = CInt(validStart - blockRelativeStart)
+            Dim count As Integer = CInt(validEnd - validStart)
+            Dim fileOffset As Long = ext.FileOffset + validStart - ext.ByteOffset
+            If fileOffset < ext.Work.HashedBytes Then
+                Throw New IO.InvalidDataException($"Physical extent order conflicts with logical order for {ext.Work.Representative.File.name}")
+            End If
+            If fileOffset > ext.Work.HashedBytes Then
+                PropagateValidationZeros(ext.Work.Calculator, fileOffset - ext.Work.HashedBytes, zeroBuffer)
+                ext.Work.HashedBytes = fileOffset
+            End If
+            ext.Work.Calculator.PropagateRange(block, dataOffset, count)
+            ext.Work.HashedBytes += count
+            ext.CopiedBytes += count
+        Next
+    End Sub
+
+    Private Sub StreamValidationPartition(extents As List(Of ValidationExtent),
+                                          blockSize As Long,
+                                          zeroBuffer As Byte())
+        extents.Sort(New Comparison(Of ValidationExtent)(
+            Function(a As ValidationExtent, b As ValidationExtent) As Integer
+                Dim comparison = a.StartBlock.CompareTo(b.StartBlock)
+                If comparison <> 0 Then Return comparison
+                comparison = a.ByteOffset.CompareTo(b.ByteOffset)
+                If comparison <> 0 Then Return comparison
+                comparison = a.EndBlockExclusive.CompareTo(b.EndBlockExclusive)
+                If comparison <> 0 Then Return comparison
+                Return a.FileOffset.CompareTo(b.FileOffset)
+            End Function))
+
+        Dim active As New List(Of ValidationExtent)
+        Dim nextExtent As Integer = 0
+        Dim currentBlock As Long = -1
+        While nextExtent < extents.Count OrElse active.Count > 0
+            If active.Count = 0 Then currentBlock = extents(nextExtent).StartBlock
+            active.RemoveAll(Function(ext As ValidationExtent) currentBlock >= ext.EndBlockExclusive)
+            While nextExtent < extents.Count AndAlso extents(nextExtent).StartBlock <= currentBlock
+                active.Add(extents(nextExtent))
+                nextExtent += 1
+            End While
+            If active.Count = 0 Then Continue While
+
+            Dim block = ReadValidationBlock(active(0).Partition, currentBlock)
+            StreamValidationBlock(currentBlock, block, active, blockSize, zeroBuffer)
+            If StopFlag Then Throw New OperationCanceledException()
+            If currentBlock = Long.MaxValue Then Throw New IO.InvalidDataException("Validation block number overflow")
+            currentBlock += 1
+            active.RemoveAll(Function(ext As ValidationExtent) currentBlock >= ext.EndBlockExclusive)
+        End While
+
+        For Each ext As ValidationExtent In extents
+            If ext.CopiedBytes <> ext.ByteCount Then
+                Throw New IO.EndOfStreamException($"Extent P{ext.Partition} B{ext.StartBlock} returned {ext.CopiedBytes} of {ext.ByteCount} bytes")
+            End If
+        Next
+    End Sub
+
+    Private Sub FinishStreamedValidationWork(work As ValidationWork, zeroBuffer As Byte())
+        If work.HashedBytes < work.Representative.File.length Then
+            PropagateValidationZeros(work.Calculator, work.Representative.File.length - work.HashedBytes, zeroBuffer)
+            work.HashedBytes = work.Representative.File.length
+        ElseIf work.HashedBytes > work.Representative.File.length Then
+            Throw New IO.InvalidDataException($"Validation extents exceed file length for {work.Representative.File.name}")
+        End If
+        work.Calculator.ProcessFinalBlock()
+        work.Result = GetValidationChecksumResult(work.Calculator)
+    End Sub
+
+    Private Sub CalculateForwardValidationWorks(works As List(Of ValidationWork),
+                                                partitionOrder As List(Of Byte),
+                                                blockSize As Long)
+        If works.Count = 0 Then Return
+        Dim zeroBuffer(Math.Min(CInt(blockSize), 1024 * 1024) - 1) As Byte
+        Dim byPartition As New Dictionary(Of Byte, List(Of ValidationExtent))
+        For Each work As ValidationWork In works
+            work.HashedBytes = 0
+            For Each ext As ValidationExtent In work.Extents
+                ext.CopiedBytes = 0
+                Dim partitionExtents As List(Of ValidationExtent) = Nothing
+                If Not byPartition.TryGetValue(ext.Partition, partitionExtents) Then
+                    partitionExtents = New List(Of ValidationExtent)
+                    byPartition.Add(ext.Partition, partitionExtents)
+                End If
+                partitionExtents.Add(ext)
+            Next
+        Next
+
+        For Each partition As Byte In partitionOrder
+            If byPartition.ContainsKey(partition) Then
+                StreamValidationPartition(byPartition(partition), blockSize, zeroBuffer)
+            End If
+        Next
+        For Each work As ValidationWork In works
+            FinishStreamedValidationWork(work, zeroBuffer)
+        Next
+    End Sub
+
+    Private Function GetValidationSpoolReservation(work As ValidationWork, blockSize As Long) As Long
+        Dim result As Long = 0
+        For Each ext As ValidationExtent In work.Extents
+            Dim blockCount = ext.EndBlockExclusive - ext.StartBlock
+            If blockCount <= 0 Then Continue For
+            If blockCount > ValidationSpoolBudgetBytes \ blockSize Then Return ValidationSpoolBudgetBytes + 1
+            Dim extentBytes = blockCount * blockSize
+            If result > ValidationSpoolBudgetBytes - extentBytes Then Return ValidationSpoolBudgetBytes + 1
+            result += extentBytes
+        Next
+        Return result
+    End Function
+
+    Private Function BuildValidationSpoolBatches(works As List(Of ValidationWork),
+                                                 blockSize As Long,
+                                                 directWorks As List(Of ValidationWork)) As List(Of ValidationSpoolBatch)
+        Dim candidates As New List(Of Tuple(Of ValidationWork, Long))
+        For Each work As ValidationWork In works
+            Dim reservation = GetValidationSpoolReservation(work, blockSize)
+            If reservation > ValidationSpoolBudgetBytes Then
+                directWorks.Add(work)
+            Else
+                candidates.Add(Tuple.Create(work, reservation))
+            End If
+        Next
+        candidates.Sort(New Comparison(Of Tuple(Of ValidationWork, Long))(
+            Function(a As Tuple(Of ValidationWork, Long), b As Tuple(Of ValidationWork, Long)) As Integer
+                Return b.Item2.CompareTo(a.Item2)
+            End Function))
+
+        Dim result As New List(Of ValidationSpoolBatch)
+        For Each candidate As Tuple(Of ValidationWork, Long) In candidates
+            Dim best As ValidationSpoolBatch = Nothing
+            Dim bestRemaining As Long = Long.MaxValue
+            For Each batch As ValidationSpoolBatch In result
+                If batch.ReservedBytes <= ValidationSpoolBudgetBytes - candidate.Item2 Then
+                    Dim remaining = ValidationSpoolBudgetBytes - batch.ReservedBytes - candidate.Item2
+                    If remaining < bestRemaining Then
+                        best = batch
+                        bestRemaining = remaining
+                    End If
+                End If
+            Next
+            If best Is Nothing Then
+                best = New ValidationSpoolBatch
+                result.Add(best)
+            End If
+            best.Works.Add(candidate.Item1)
+            best.ReservedBytes += candidate.Item2
+        Next
+        Return result
+    End Function
+
+    Private Sub CalculateValidationWorkDirect(work As ValidationWork, blockSize As Long)
+        Dim zeroBuffer(Math.Min(CInt(blockSize), 1024 * 1024) - 1) As Byte
+        work.HashedBytes = 0
+        For Each ext As ValidationExtent In work.Extents.OrderBy(Function(value As ValidationExtent) value.FileOffset)
+            ext.CopiedBytes = 0
+            If ext.FileOffset < work.HashedBytes Then
+                Throw New IO.InvalidDataException($"Overlapping extents in validation file {work.Representative.File.name}")
+            End If
+            If ext.FileOffset > work.HashedBytes Then
+                PropagateValidationZeros(work.Calculator, ext.FileOffset - work.HashedBytes, zeroBuffer)
+                work.HashedBytes = ext.FileOffset
+            End If
+
+            Dim currentBlock = ext.StartBlock
+            While currentBlock < ext.EndBlockExclusive
+                Dim block = ReadValidationBlock(ext.Partition, currentBlock)
+                Dim blockDelta = currentBlock - ext.StartBlock
+                Dim blockRelativeStart = blockDelta * blockSize
+                Dim validStart = Math.Max(ext.ByteOffset, blockRelativeStart)
+                Dim validEnd = Math.Min(ext.ByteOffset + ext.ByteCount, blockRelativeStart + block.Length)
+                If validEnd > validStart Then
+                    Dim dataOffset = CInt(validStart - blockRelativeStart)
+                    Dim count = CInt(validEnd - validStart)
+                    work.Calculator.PropagateRange(block, dataOffset, count)
+                    work.HashedBytes += count
+                    ext.CopiedBytes += count
+                End If
+                currentBlock += 1
+            End While
+            If ext.CopiedBytes <> ext.ByteCount Then
+                Throw New IO.EndOfStreamException($"Extent P{ext.Partition} B{ext.StartBlock} returned {ext.CopiedBytes} of {ext.ByteCount} bytes")
+            End If
+        Next
+        FinishStreamedValidationWork(work, zeroBuffer)
+    End Sub
+
+    Private Sub PropagateValidationZeros(calculator As IOManager.CheckSumBlockwiseCalculator,
+                                         count As Long,
+                                         zeroBuffer As Byte())
+        While count > 0
+            If StopFlag Then Throw New OperationCanceledException()
+            Dim take As Integer = CInt(Math.Min(count, CLng(zeroBuffer.Length)))
+            calculator.Propagate(zeroBuffer, take)
+            count -= take
+        End While
+    End Sub
+
+    Private Sub ReadValidationSpoolSlice(spool As IO.FileStream,
+                                         slice As ValidationSpoolSlice,
+                                         calculator As IOManager.CheckSumBlockwiseCalculator,
+                                         buffer As Byte())
+        spool.Position = slice.SpoolOffset
+        Dim remaining As Integer = slice.Length
+        While remaining > 0
+            If StopFlag Then Throw New OperationCanceledException()
+            Dim readCount = spool.Read(buffer, 0, Math.Min(remaining, buffer.Length))
+            If readCount <= 0 Then Throw New IO.EndOfStreamException("Validation spool ended unexpectedly")
+            calculator.Propagate(buffer, readCount)
+            remaining -= readCount
+        End While
+    End Sub
+
+    Private Function GetValidationChecksumResult(calculator As IOManager.CheckSumBlockwiseCalculator) As Dictionary(Of String, String)
+        Dim result As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+        For Each name As String In GetEnabledChecksumNames()
+            Dim value As String = Nothing
+            Select Case name
+                Case "SHA1"
+                    value = calculator.SHA1Value
+                Case "SHA256"
+                    value = calculator.SHA256Value
+                Case "SHA512"
+                    value = calculator.SHA512Value
+                Case "CRC32"
+                    value = calculator.CRC32Value
+                Case "MD5"
+                    value = calculator.MD5Value
+                Case "BLAKE3"
+                    value = calculator.BlakeValue
+                Case "XxHash3"
+                    value = calculator.XXHash3Value
+                Case "XxHash128"
+                    value = calculator.XXHash128Value
+            End Select
+            If value IsNot Nothing Then result(name) = value
+        Next
+        Return result
+    End Function
+
+    Private Sub FinalizeValidationWork(work As ValidationWork,
+                                       spool As IO.FileStream,
+                                       blockSize As Long)
+        Dim zeroBuffer(Math.Min(CInt(blockSize), 1024 * 1024) - 1) As Byte
+        Dim readBuffer(Math.Min(CInt(blockSize), 1024 * 1024) - 1) As Byte
+        Dim logicalOffset As Long = 0
+        work.SpoolSlices.Sort(New Comparison(Of ValidationSpoolSlice)(
+            Function(a As ValidationSpoolSlice, b As ValidationSpoolSlice) As Integer
+                Return a.FileOffset.CompareTo(b.FileOffset)
+            End Function))
+
+        For Each slice As ValidationSpoolSlice In work.SpoolSlices
+            If StopFlag Then Throw New OperationCanceledException()
+            If slice.FileOffset < logicalOffset Then
+                Throw New IO.InvalidDataException($"Overlapping extents in validation file {work.Representative.File.name}")
+            End If
+            If slice.FileOffset > logicalOffset Then
+                PropagateValidationZeros(work.Calculator, slice.FileOffset - logicalOffset, zeroBuffer)
+                logicalOffset = slice.FileOffset
+            End If
+            ReadValidationSpoolSlice(spool, slice, work.Calculator, readBuffer)
+            logicalOffset += slice.Length
+        Next
+        If logicalOffset < work.Representative.File.length Then
+            PropagateValidationZeros(work.Calculator, work.Representative.File.length - logicalOffset, zeroBuffer)
+        ElseIf logicalOffset > work.Representative.File.length Then
+            Throw New IO.InvalidDataException($"Validation extents exceed file length for {work.Representative.File.name}")
+        End If
+        work.Calculator.ProcessFinalBlock()
+        work.Result = GetValidationChecksumResult(work.Calculator)
+    End Sub
+
+    Private Sub CalculateChecksumsWithSpool(works As List(Of ValidationWork))
+        Dim spoolPath As String = IO.Path.GetTempFileName()
+        Dim blockSize As Long = GetValidationBlockSize()
+        Try
+            Using spool As New IO.FileStream(spoolPath,
+                                             IO.FileMode.Create,
+                                             IO.FileAccess.ReadWrite,
+                                             IO.FileShare.None,
+                                             1024 * 1024,
+                                             IO.FileOptions.RandomAccess Or IO.FileOptions.DeleteOnClose)
+                Dim byPartition As New Dictionary(Of Byte, List(Of ValidationExtent))
+                For Each work As ValidationWork In works
+                    work.SpoolSlices.Clear()
+                    For Each ext As ValidationExtent In work.Extents
+                        ext.CopiedBytes = 0
+                        Dim partitionExtents As List(Of ValidationExtent) = Nothing
+                        If Not byPartition.TryGetValue(ext.Partition, partitionExtents) Then
+                            partitionExtents = New List(Of ValidationExtent)
+                            byPartition.Add(ext.Partition, partitionExtents)
+                        End If
+                        partitionExtents.Add(ext)
+                    Next
+                Next
+
+                Dim partitionOrder = GetValidationPartitionOrder(works)
+                For Each partition As Byte In partitionOrder
+                    SpoolValidationPartition(spool, byPartition(partition), blockSize)
+                    If spool.Length > ValidationSpoolBudgetBytes Then
+                        Throw New IO.IOException($"Validation spool exceeded its {ValidationSpoolBudgetBytes} byte limit")
+                    End If
+                Next
+
+                spool.Flush()
+                For Each work As ValidationWork In works
+                    If StopFlag Then Throw New OperationCanceledException()
+                    FinalizeValidationWork(work, spool, blockSize)
+                Next
+            End Using
+        Finally
+            Try
+                If IO.File.Exists(spoolPath) Then IO.File.Delete(spoolPath)
+            Catch
+            End Try
+        End Try
+    End Sub
+
+    Private Sub CalculateChecksumsWithPlan(works As List(Of ValidationWork))
+        If works.Count = 0 Then Return
+        Dim blockSize = GetValidationBlockSize()
+        Dim partitionOrder = GetValidationPartitionOrder(works)
+        partitionOrder = OptimizeValidationPartitionOrder(works, partitionOrder, blockSize)
+        Dim forwardWorks As New List(Of ValidationWork)
+        Dim deferredWorks As New List(Of ValidationWork)
+        For Each work As ValidationWork In works
+            If IsForwardValidationWork(work, partitionOrder, blockSize) Then
+                forwardWorks.Add(work)
+            Else
+                deferredWorks.Add(work)
+            End If
+        Next
+
+        CalculateForwardValidationWorks(forwardWorks, partitionOrder, blockSize)
+
+        Dim directWorks As New List(Of ValidationWork)
+        Dim spoolBatches = BuildValidationSpoolBatches(deferredWorks, blockSize, directWorks)
+        PrintMsg($"Validation schedule: forward={forwardWorks.Count}, bounded spool batches={spoolBatches.Count}, direct fallback={directWorks.Count}, spool limit={ValidationSpoolBudgetBytes}", LogOnly:=True)
+        For Each batch As ValidationSpoolBatch In spoolBatches
+            If StopFlag Then Throw New OperationCanceledException()
+            CalculateChecksumsWithSpool(batch.Works)
+        Next
+
+        directWorks.Sort(New Comparison(Of ValidationWork)(
+            Function(a As ValidationWork, b As ValidationWork) As Integer
+                If a.Extents.Count = 0 Then Return If(b.Extents.Count = 0, 0, -1)
+                If b.Extents.Count = 0 Then Return 1
+                Dim comparison = a.Extents(0).Partition.CompareTo(b.Extents(0).Partition)
+                If comparison <> 0 Then Return comparison
+                Return a.Extents(0).StartBlock.CompareTo(b.Extents(0).StartBlock)
+            End Function))
+        For Each work As ValidationWork In directWorks
+            If StopFlag Then Throw New OperationCanceledException()
+            CalculateValidationWorkDirect(work, blockSize)
+        Next
+    End Sub
+
+    Private Function ApplyValidationResult(file As ltfsindex.file,
+                                           result As Dictionary(Of String, String),
+                                           overwrite As Boolean,
+                                           validateOnly As Boolean,
+                                           ByRef errorCount As Long,
+                                           darkGreen As Boolean) As Boolean
+        If result Is Nothing Then Return False
+        Dim updateHashes As Boolean = overwrite OrElse (Not validateOnly AndAlso HasMissingChecksum(file))
+        For Each name As String In GetEnabledChecksumNames()
+            Dim expected As String = Nothing
+            If Not result.TryGetValue(name, expected) OrElse String.IsNullOrEmpty(expected) Then Continue For
+            Dim actual = GetChecksumValue(file, name)
+            If validateOnly Then
+                If String.IsNullOrEmpty(actual) Then Continue For
+                If String.Equals(actual, expected, StringComparison.OrdinalIgnoreCase) Then
+                    SetChecksumColor(file, name, If(darkGreen, Color.DarkGreen, Color.Green))
+                Else
+                    SetChecksumColor(file, name, Color.Red)
+                    Threading.Interlocked.Increment(errorCount)
+                    PrintMsg($"{name} Mismatch at fileuid={file.fileuid} filename={file.name} logged={actual} calculated={expected}", ForceLog:=True)
+                End If
+            ElseIf updateHashes Then
+                If Not String.Equals(actual, expected, StringComparison.OrdinalIgnoreCase) Then
+                    SetChecksumValue(file, name, expected)
+                    SetChecksumColor(file, name, Color.Blue)
+                Else
+                    SetChecksumColor(file, name, Color.Green)
+                End If
+            End If
+        Next
+        Return True
+    End Function
+
+    Private Sub MarkValidationProgress(file As ltfsindex.file, includeTotal As Boolean)
+        If file Is Nothing Then Return
+        Threading.Interlocked.Add(CurrentBytesProcessed, Math.Max(0, file.length))
+        If includeTotal Then
+            Threading.Interlocked.Add(TotalBytesProcessed, Math.Max(0, file.length))
+            Threading.Interlocked.Increment(TotalFilesProcessed)
+        End If
+        Threading.Interlocked.Increment(CurrentFilesProcessed)
+    End Sub
+
+    Private Function GetValidationDisplayPath(fr As FileRecord) As String
+        If fr Is Nothing Then Return ""
+        If Not String.IsNullOrEmpty(fr.SourcePath) Then Return fr.SourcePath
+        If fr.File IsNot Nothing Then Return fr.File.fullpath
+        Return ""
+    End Function
+
+    Private Sub ExecuteHashPlan(fileList As List(Of FileRecord),
+                                overwrite As Boolean,
+                                validateOnly As Boolean,
+                                darkGreen As Boolean)
+        Dim fileCount As Long = 0
+        Dim errorCount As Long = 0
+        Try
+            StartTime = Now
+            SetStatusLight(LWStatus.Busy)
+            PrintMsg(My.Resources.ResText_Hashing)
+            StopFlag = False
+            CurrentBytesProcessed = 0
+            CurrentFilesProcessed = 0
+            UnwrittenSizeOverrideValue = 0
+            UnwrittenCountOverrideValue = CULng(fileList.Count)
+            For Each fr As FileRecord In fileList
+                If fr IsNot Nothing AndAlso fr.File IsNot Nothing Then
+                    UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + Math.Max(0, fr.File.length))
+                End If
+            Next
+
+            Dim workByRecord As New Dictionary(Of FileRecord, ValidationWork)
+            Dim works = BuildValidationPlan(fileList, overwrite, validateOnly, workByRecord)
+            Dim physicalExtentCount As Integer = works.Sum(Function(work As ValidationWork) work.Extents.Count)
+            PrintMsg($"Validation plan: files={fileList.Count}, unique references={works.Count}, physical extents={physicalExtentCount}", LogOnly:=True)
+            CalculateChecksumsWithPlan(works)
+
+            For Each fr As FileRecord In fileList
+                If StopFlag Then Exit For
+                If fr Is Nothing OrElse fr.File Is Nothing Then Continue For
+                fileCount += 1
+                Dim work As ValidationWork = Nothing
+                If workByRecord.TryGetValue(fr, work) Then
+                    PrintMsg($"{My.Resources.ResText_Hashing} [{fileCount}/{fileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}",
+                             False,
+                             $"{My.Resources.ResText_Hashing} [{fileCount}/{fileList.Count}] {GetValidationDisplayPath(fr)} {My.Resources.ResText_Size}:{fr.File.length}")
+                    ApplyValidationResult(fr.File, work.Result, overwrite, validateOnly, errorCount, darkGreen)
+                    MarkValidationProgress(fr.File, True)
+                Else
+                    MarkValidationProgress(fr.File, False)
+                End If
+            Next
+            If StopFlag Then
+                PrintMsg(My.Resources.ResText_OpCancelled)
+            End If
+        Catch ex As OperationCanceledException When StopFlag
+            PrintMsg(My.Resources.ResText_OpCancelled)
+        Catch ex As Exception
+            SetStatusLight(LWStatus.Err)
+            Try
+                Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString))
+            Catch
+            End Try
+            PrintMsg(My.Resources.ResText_HErr)
+        Finally
+            UnwrittenSizeOverrideValue = 0
+            UnwrittenCountOverrideValue = 0
+            StopFlag = False
+            SetStatusLight(LWStatus.Idle)
+            LockGUI(False)
+            RefreshDisplay()
+            PrintMsg($"{My.Resources.ResText_HFin} {fileCount - errorCount}/{fileCount} | {errorCount} {My.Resources.ResText_Error}")
+        End Try
+    End Sub
+
+    Public Function CalculateChecksum(FileIndex As ltfsindex.file, Optional ByVal blk0 As Byte() = Nothing) As Dictionary(Of String, String)
+        If FileIndex Is Nothing Then Return Nothing
+
+        ' blk0 belonged to the former extent-reconstruction path.  The unified
+        ' planner always follows the authoritative LTFS extent map.
+        Dim fileRecord As New FileRecord With {
+            .File = FileIndex,
+            .SourcePath = FileIndex.fullpath}
+        Dim workByRecord As New Dictionary(Of FileRecord, ValidationWork)
+        Dim works = BuildValidationPlan(New List(Of FileRecord) From {fileRecord}, True, False, workByRecord)
+        If works.Count = 0 Then Return Nothing
+
+        CalculateChecksumsWithPlan(works)
+        Return works(0).Result
+    End Function
     Private Sub 生成标签ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 生成标签ToolStripMenuItem.Click
         If My.Settings.LTFSWriter_FileLabel = "" Then
             设置标签ToolStripMenuItem_Click(sender, e)
@@ -7794,319 +8705,26 @@ Public Class LTFSWriter
         DisplayHelper.ShowInputDialog(My.Resources.ResText_CLNCS, My.Resources.ResText_Setting, CleanCycle)
     End Sub
     Public Sub HashSelectedFiles(Overwrite As Boolean, ValidOnly As Boolean)
-        Dim fc As Long = 0, ec As Long = 0
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-                ListView1.SelectedItems.Count > 0 Then
-            Dim BasePath As String = _lastSelectedFolder
-            LockGUI()
-            Dim flist As New List(Of ltfsindex.file)
-            For Each SI As ListViewItem In ListView1.SelectedItems
-                If TypeOf SI.Tag Is ltfsindex.file Then
-                    flist.Add(DirectCast(SI.Tag, ltfsindex.file))
-                End If
-            Next
-            StartTime = Now
-            SetStatusLight(LWStatus.Busy)
-            Dim th As New Threading.Thread(
-                    Sub()
-                        Try
-                            PrintMsg(My.Resources.ResText_Hashing)
-                            StopFlag = False
-                            CurrentBytesProcessed = 0
-                            CurrentFilesProcessed = 0
-                            UnwrittenSizeOverrideValue = 0
-                            UnwrittenCountOverrideValue = CULng(flist.Count)
-                            flist.Sort(New Comparison(Of ltfsindex.file)(Function(a As ltfsindex.file, b As ltfsindex.file) As Integer
-                                                                             If a.extentinfo.Count = 0 And b.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
-                                                                             If b.extentinfo.Count = 0 And a.extentinfo.Count <> 0 Then Return a.fileuid.CompareTo(b.fileuid)
-                                                                             If a.extentinfo.Count = 0 And b.extentinfo.Count = 0 Then Return a.fileuid.CompareTo(b.fileuid)
-                                                                             If a.extentinfo(0).startblock = 0 OrElse b.extentinfo(0).startblock = 0 Then
-                                                                                 Return a.fileuid.CompareTo(b.fileuid)
-                                                                             End If
-                                                                             If a.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
-                                                                             If a.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
-                                                                             Return a.extentinfo(0).startblock.CompareTo(b.extentinfo(0).startblock)
-                                                                         End Function))
-                            For Each FI As ltfsindex.file In flist
-                                UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.length)
-                            Next
-                            RestorePosition = New TapeUtils.PositionData(driveHandle)
-                            For Each FileIndex As ltfsindex.file In flist
-                                If ValidOnly Then
-                                    If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (FileIndex.SHA1ForeColor.Equals(Color.Black) OrElse FileIndex.SHA1ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA256) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "" OrElse (Not (FileIndex.SHA256ForeColor.Equals(Color.Black) OrElse FileIndex.SHA256ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA512) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = "" OrElse (Not (FileIndex.SHA512ForeColor.Equals(Color.Black) OrElse FileIndex.SHA512ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_CRC32) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = "" OrElse (Not (FileIndex.CRC32ForeColor.Equals(Color.Black) OrElse FileIndex.CRC32ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_MD5) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (FileIndex.MD5ForeColor.Equals(Color.Black) OrElse FileIndex.MD5ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "" OrElse (Not (FileIndex.BLAKE3ForeColor.Equals(Color.Black) OrElse FileIndex.BLAKE3ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash3) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "" OrElse (Not (FileIndex.XxHash3ForeColor.Equals(Color.Black) OrElse FileIndex.XxHash3ForeColor.Equals(Color.Red)))) AndAlso
-                                       ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash128) OrElse FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "" OrElse (Not (FileIndex.XxHash128ForeColor.Equals(Color.Black) OrElse FileIndex.XxHash128ForeColor.Equals(Color.Red)))) Then
-                                        'Skip
-                                        Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
-                                        Threading.Interlocked.Increment(CurrentFilesProcessed)
-                                    Else
-                                        Dim blk0 As Byte() = Nothing
-                                        If FileIndex.length > 0 AndAlso FileIndex.symlink Is Nothing AndAlso (FileIndex.extentinfo.Count = 0 OrElse FileIndex.extentinfo(0).startblock = 0) Then
-                                            PrintMsg("Extent missing. Try to reconstruct.", LogOnly:=True)
-                                            blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, FileIndex.length)))
-                                            Dim p As New TapeUtils.PositionData(handle:=driveHandle)
-                                            If blk0.Count = 0 Then
-                                                PrintMsg("Filemark Found. Skip index.", LogOnly:=True)
-                                                TapeUtils.ReadToFileMark(driveHandle)
-                                                blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, FileIndex.length)))
-                                                p = New TapeUtils.PositionData(handle:=driveHandle)
-                                            End If
-                                            FileIndex.extentinfo.Clear()
-                                            FileIndex.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = FileIndex.length, .startblock = CLng(p.BlockNumber - 1), .partition = ltfsindex.PartitionLabel.b})
-                                        End If
-                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex, blk0)
-                                        If result IsNot Nothing Then
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
-                                                    FileIndex.SHA1ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
-                                                    FileIndex.SHA1ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"SHA1 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha1logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = result.Item("SHA256") Then
-                                                    FileIndex.SHA256ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> "" Then
-                                                    FileIndex.SHA256ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"SHA256 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha256logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True)} sha256calc={result.Item("SHA256")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = result.Item("SHA512") Then
-                                                    FileIndex.SHA512ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> "" Then
-                                                    FileIndex.SHA512ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"SHA512 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} sha512logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True)} sha512calc={result.Item("SHA512")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = result.Item("CRC32") Then
-                                                    FileIndex.CRC32ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> "" Then
-                                                    FileIndex.CRC32ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"CRC32 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} crc2logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True)} crc32calc={result.Item("CRC32")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
-                                                    FileIndex.MD5ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
-                                                    FileIndex.MD5ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"MD5 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} md5logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = result.Item("BLAKE3") Then
-                                                    FileIndex.BLAKE3ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> "" Then
-                                                    FileIndex.BLAKE3ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"BLAKE3 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} blake3logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)} blake3calc={result.Item("BLAKE3")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = result.Item("XxHash3") Then
-                                                    FileIndex.XxHash3ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> "" Then
-                                                    FileIndex.XxHash3ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"XxHash3 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} xxhash3logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)} xxhash3calc={result.Item("XxHash3")}", ForceLog:=True)
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = result.Item("XxHash128") Then
-                                                    FileIndex.XxHash128ForeColor = Color.DarkGreen
-                                                ElseIf FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> "" Then
-                                                    FileIndex.XxHash128ForeColor = Color.Red
-                                                    Threading.Interlocked.Increment(ec)
-                                                    PrintMsg($"XxHash128 Mismatch at fileuid={FileIndex.fileuid} filename={FileIndex.name} xxhash128logged={FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)} xxhash128calc={result.Item("XxHash128")}", ForceLog:=True)
-                                                End If
-                                            End If
+        If ListView1.SelectedItems Is Nothing OrElse ListView1.SelectedItems.Count = 0 Then Return
 
-                                        End If
-                                    End If
-                                ElseIf Overwrite Then
-                                    Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
-                                    If result IsNot Nothing Then
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                                FileIndex.SHA1ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.SHA1ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> result.Item("SHA256") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA256, result.Item("SHA256"))
-                                                FileIndex.SHA256ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.SHA256ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> result.Item("SHA512") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA512, result.Item("SHA512"))
-                                                FileIndex.SHA512ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.SHA512ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> result.Item("CRC32") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.CRC32, result.Item("CRC32"))
-                                                FileIndex.CRC32ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.CRC32ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                                FileIndex.MD5ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.MD5ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
-                                                FileIndex.BLAKE3ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.BLAKE3ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
-                                                FileIndex.XxHash3ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.XxHash3ForeColor = Color.Green
-                                            End If
-                                        End If
-                                        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                            If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
-                                                FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
-                                                FileIndex.XxHash128ForeColor = Color.Blue
-                                            Else
-                                                FileIndex.XxHash128ForeColor = Color.Green
-                                            End If
-                                        End If
+        Dim selectedFiles As New List(Of FileRecord)
+        For Each item As ListViewItem In ListView1.SelectedItems
+            If TypeOf item.Tag Is ltfsindex.file Then
+                Dim selectedFile As ltfsindex.file = DirectCast(item.Tag, ltfsindex.file)
+                selectedFiles.Add(New FileRecord With {
+                    .File = selectedFile,
+                    .SourcePath = IO.Path.Combine(If(_lastSelectedFolder, ""), If(selectedFile.name, ""))
+                })
+            End If
+        Next
+        If selectedFiles.Count = 0 Then Return
 
-                                        If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                    End If
-                                Else
-                                    If (My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_SHA256 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_SHA512 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_CRC32 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "") OrElse
-                                    (My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "") Then
-                                        Dim result As Dictionary(Of String, String) = CalculateChecksum(FileIndex)
-                                        If result IsNot Nothing Then
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                                    FileIndex.SHA1ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.SHA1ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> result.Item("SHA256") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA256, result.Item("SHA256"))
-                                                    FileIndex.SHA256ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.SHA256ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> result.Item("SHA512") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.SHA512, result.Item("SHA512"))
-                                                    FileIndex.SHA512ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.SHA512ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> result.Item("CRC32") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.CRC32, result.Item("CRC32"))
-                                                    FileIndex.CRC32ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.CRC32ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                                    FileIndex.MD5ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.MD5ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
-                                                    FileIndex.BLAKE3ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.BLAKE3ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
-                                                    FileIndex.XxHash3ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.XxHash3ForeColor = Color.Green
-                                                End If
-                                            End If
-                                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                                If FileIndex.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
-                                                    FileIndex.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
-                                                    FileIndex.XxHash128ForeColor = Color.Blue
-                                                Else
-                                                    FileIndex.XxHash128ForeColor = Color.Green
-                                                End If
-                                            End If
-
-                                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                                        End If
-                                    Else
-                                        Threading.Interlocked.Add(CurrentBytesProcessed, FileIndex.length)
-                                        Threading.Interlocked.Increment(CurrentFilesProcessed)
-                                    End If
-                                End If
-                                Threading.Interlocked.Increment(fc)
-                                If StopFlag Then Exit For
-                            Next
-                        Catch ex As Exception
-                            PrintMsg(My.Resources.ResText_HErr)
-                            SetStatusLight(LWStatus.Err)
-                        End Try
-                        UnwrittenSizeOverrideValue = 0
-                        UnwrittenCountOverrideValue = 0
-                        StopFlag = False
-                        LockGUI(False)
-                        RefreshDisplay()
-                        PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
-                        SetStatusLight(LWStatus.Idle)
-                    End Sub)
-            th.Start()
-        End If
+        LockGUI()
+        Dim validationThread As New Threading.Thread(
+            Sub() ExecuteHashPlan(selectedFiles, Overwrite, ValidOnly, True))
+        validationThread.Start()
     End Sub
+
     Private Sub 计算并更新ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 计算并更新ToolStripMenuItem.Click
         HashSelectedFiles(True, False)
     End Sub
@@ -8118,356 +8736,33 @@ Public Class LTFSWriter
         HashSelectedFiles(False, True)
     End Sub
     Public Sub HashSelectedDir(selectedDir As ltfsindex.directory, Overwrite As Boolean, ValidateOnly As Boolean)
-        Dim th As New Threading.Thread(
-            Sub()
-                StartTime = Now
-                SetStatusLight(LWStatus.Busy)
-                Dim fc As Long = 0, ec As Long = 0
-                PrintMsg(My.Resources.ResText_Hashing)
-                Try
-                    StopFlag = False
-                    Dim FileList As New List(Of FileRecord)
-                    Dim IterDir As Action(Of ltfsindex.directory, String) =
-                        Sub(tapeDir As ltfsindex.directory, outputDir As String)
-                            For Each f As ltfsindex.file In tapeDir.contents._file
-                                FileList.Add(New FileRecord With {.File = f, .SourcePath = outputDir & "\" & f.name})
-                                'RestoreFile(IO.Path.Combine(outputDir.FullName, f.name), f)
-                            Next
-                            For Each d As ltfsindex.directory In tapeDir.contents._directory
-                                Dim dirOutput As String = outputDir & "\" & d.name
-                                IterDir(d, dirOutput)
-                            Next
-                        End Sub
-                    PrintMsg(My.Resources.ResText_PrepFile)
-                    Dim ODir As String = selectedDir.name
-                    'If Not IO.Directory.Exists(ODir) Then IO.Directory.CreateDirectory(ODir)
-                    IterDir(selectedDir, ODir)
-                    FileList.Sort(New Comparison(Of FileRecord)(Function(a As FileRecord, b As FileRecord) As Integer
-                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count <> 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
-                                                                    If b.File.extentinfo.Count = 0 And a.File.extentinfo.Count <> 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
-                                                                    If a.File.extentinfo.Count = 0 And b.File.extentinfo.Count = 0 Then Return a.File.fileuid.CompareTo(b.File.fileuid)
-                                                                    If a.File.extentinfo(0).startblock = 0 OrElse b.File.extentinfo(0).startblock = 0 Then
-                                                                        Return a.File.fileuid.CompareTo(b.File.fileuid)
-                                                                    End If
-                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b Then Return 0.CompareTo(1)
-                                                                    If a.File.extentinfo(0).partition = ltfsindex.PartitionLabel.b And b.File.extentinfo(0).partition = ltfsindex.PartitionLabel.a Then Return 1.CompareTo(0)
-                                                                    Return a.File.extentinfo(0).startblock.CompareTo(b.File.extentinfo(0).startblock)
-                                                                End Function))
-                    CurrentBytesProcessed = 0
-                    CurrentFilesProcessed = 0
-                    UnwrittenSizeOverrideValue = 0
-                    UnwrittenCountOverrideValue = CULng(FileList.Count)
-                    For Each FI As FileRecord In FileList
-                        UnwrittenSizeOverrideValue = CULng(UnwrittenSizeOverrideValue + FI.File.length)
-                    Next
-                    PrintMsg(My.Resources.ResText_Hashing)
-                    Dim c As Integer = 0
-                    RestorePosition = New TapeUtils.PositionData(driveHandle)
-                    Dim lastfr As FileRecord = Nothing
-                    Dim lastResult As Dictionary(Of String, String) = Nothing
-                    For Each fr As FileRecord In FileList
-                        c += 1
-                        Dim dupe As Boolean = False
-                        If lastfr IsNot Nothing Then
-                            If ltfsindex.file.extent.AllEquals(fr.File.extentinfo, lastfr.File.extentinfo) Then
-                                dupe = True
-                            End If
-                        End If
-                        PrintMsg($"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.File.name} {My.Resources.ResText_Size}:{IOManager.FormatSize(fr.File.length)}", False, $"{My.Resources.ResText_Hashing} [{c}/{FileList.Count}] {fr.SourcePath} {My.Resources.ResText_Size}:{fr.File.length}")
-                        If ValidateOnly Then
-                            If ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA1) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "" OrElse (Not (fr.File.SHA1ForeColor.Equals(Color.Black) OrElse fr.File.SHA1ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA256) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "" OrElse (Not (fr.File.SHA256ForeColor.Equals(Color.Black) OrElse fr.File.SHA256ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_SHA512) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = "" OrElse (Not (fr.File.SHA512ForeColor.Equals(Color.Black) OrElse fr.File.SHA512ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_CRC32) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = "" OrElse (Not (fr.File.CRC32ForeColor.Equals(Color.Black) OrElse fr.File.CRC32ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_MD5) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "" OrElse (Not (fr.File.MD5ForeColor.Equals(Color.Black) OrElse fr.File.MD5ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "" OrElse (Not (fr.File.BLAKE3ForeColor.Equals(Color.Black) OrElse fr.File.BLAKE3ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash3) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "" OrElse (Not (fr.File.XxHash3ForeColor.Equals(Color.Black) OrElse fr.File.XxHash3ForeColor.Equals(Color.Red)))) AndAlso
-                               ((Not My.Settings.LTFSWriter_ChecksumEnabled_XxHash128) OrElse fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "" OrElse (Not (fr.File.XxHash128ForeColor.Equals(Color.Black) OrElse fr.File.XxHash128ForeColor.Equals(Color.Red)))) Then
-                                'skip
-                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
-                                Threading.Interlocked.Increment(CurrentFilesProcessed)
-                            Else
-                                Dim blk0 As Byte() = Nothing
-                                If fr.File.length > 0 AndAlso fr.File.symlink Is Nothing AndAlso (fr.File.extentinfo.Count = 0 OrElse fr.File.extentinfo(0).startblock = 0) Then
-                                    PrintMsg("Extent missing. Try to reconstruct.", LogOnly:=True)
-                                    blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, fr.File.length)))
-                                    Dim p As New TapeUtils.PositionData(handle:=driveHandle)
-                                    If blk0.Count = 0 Then
-                                        PrintMsg("Filemark Found. Skip index.", LogOnly:=True)
-                                        TapeUtils.ReadToFileMark(driveHandle)
-                                        blk0 = TapeUtils.ReadBlock(handle:=driveHandle, BlockSizeLimit:=CUInt(Math.Min(plabel.blocksize, fr.File.length)))
-                                        p = New TapeUtils.PositionData(handle:=driveHandle)
-                                    End If
-                                    fr.File.extentinfo.Clear()
-                                    fr.File.extentinfo.Add(New ltfsindex.file.extent With {.bytecount = fr.File.length, .startblock = CLng(p.BlockNumber - 1), .partition = ltfsindex.PartitionLabel.b})
-                                End If
-                                Dim result As Dictionary(Of String, String)
-                                If dupe AndAlso lastResult IsNot Nothing Then
-                                    result = lastResult
-                                Else
-                                    result = CalculateChecksum(fr.File, blk0)
-                                End If
-                                lastResult = result
-                                If result IsNot Nothing Then
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = result.Item("SHA1") Then
-                                            fr.File.SHA1ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> "" Then
-                                            fr.File.SHA1ForeColor = Color.Red
-                                            PrintMsg($"SHA1 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha1logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True)} sha1calc={result.Item("SHA1")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = result.Item("SHA256") Then
-                                            fr.File.SHA256ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> "" Then
-                                            fr.File.SHA256ForeColor = Color.Red
-                                            PrintMsg($"SHA256 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha256logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True)} sha256calc={result.Item("SHA256")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = result.Item("SHA512") Then
-                                            fr.File.SHA512ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> "" Then
-                                            fr.File.SHA512ForeColor = Color.Red
-                                            PrintMsg($"SHA512 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} sha512logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True)} sha512calc={result.Item("SHA512")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = result.Item("CRC32") Then
-                                            fr.File.CRC32ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> "" Then
-                                            fr.File.CRC32ForeColor = Color.Red
-                                            PrintMsg($"CRC32 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} crc32logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True)} crc32calc={result.Item("CRC32")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = result.Item("MD5") Then
-                                            fr.File.MD5ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> "" Then
-                                            fr.File.MD5ForeColor = Color.Red
-                                            PrintMsg($"MD5 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} md5logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True)} md5calc={result.Item("MD5")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = result.Item("BLAKE3") Then
-                                            fr.File.BLAKE3ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> "" Then
-                                            fr.File.BLAKE3ForeColor = Color.Red
-                                            PrintMsg($"BLAKE3 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} blake3logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True)} blake3calc={result.Item("BLAKE3")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = result.Item("XxHash3") Then
-                                            fr.File.XxHash3ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> "" Then
-                                            fr.File.XxHash3ForeColor = Color.Red
-                                            PrintMsg($"XxHash3 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} xxhash3logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True)} xxhash3calc={result.Item("XxHash3")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
-                                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                        If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = result.Item("XxHash128") Then
-                                            fr.File.XxHash128ForeColor = Color.Green
-                                        ElseIf fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> "" Then
-                                            fr.File.XxHash128ForeColor = Color.Red
-                                            PrintMsg($"XxHash128 Mismatch at fileuid={fr.File.fileuid} filename={fr.File.name} xxhash128logged={fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True)} xxhash128calc={result.Item("XxHash128")}", ForceLog:=True)
-                                            Threading.Interlocked.Increment(ec)
-                                        End If
-                                    End If
+        If selectedDir Is Nothing Then Return
 
-                                End If
-                            End If
-                        ElseIf Overwrite Then
-                            Dim result As Dictionary(Of String, String)
-                            If dupe AndAlso lastResult IsNot Nothing Then
-                                result = lastResult
-                            Else
-                                result = CalculateChecksum(fr.File)
-                            End If
-                            lastResult = result
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                    fr.File.SHA1ForeColor = Color.Blue
-                                Else
-                                    fr.File.SHA1ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> result.Item("SHA256") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA256, result.Item("SHA256"))
-                                    fr.File.SHA256ForeColor = Color.Blue
-                                Else
-                                    fr.File.SHA256ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> result.Item("SHA512") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA512, result.Item("SHA512"))
-                                    fr.File.SHA512ForeColor = Color.Blue
-                                Else
-                                    fr.File.SHA512ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> result.Item("CRC32") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.CRC32, result.Item("CRC32"))
-                                    fr.File.CRC32ForeColor = Color.Blue
-                                Else
-                                    fr.File.CRC32ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                    fr.File.MD5ForeColor = Color.Blue
-                                Else
-                                    fr.File.MD5ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
-                                    fr.File.BLAKE3ForeColor = Color.Blue
-                                Else
-                                    fr.File.BLAKE3ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
-                                    fr.File.XxHash3ForeColor = Color.Blue
-                                Else
-                                    fr.File.XxHash3ForeColor = Color.Green
-                                End If
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
-                                    fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
-                                    fr.File.XxHash128ForeColor = Color.Blue
-                                Else
-                                    fr.File.XxHash128ForeColor = Color.Green
-                                End If
-                            End If
+        Dim fileList As New List(Of FileRecord)
+        Dim collectFiles As Action(Of ltfsindex.directory, String) = Nothing
+        collectFiles =
+            Sub(tapeDir As ltfsindex.directory, outputDir As String)
+                If tapeDir Is Nothing OrElse tapeDir.contents Is Nothing Then Return
+                For Each file As ltfsindex.file In tapeDir.contents._file
+                    fileList.Add(New FileRecord With {
+                        .File = file,
+                        .SourcePath = IO.Path.Combine(outputDir, If(file.name, ""))
+                    })
+                Next
+                For Each directory As ltfsindex.directory In tapeDir.contents._directory
+                    collectFiles(directory, IO.Path.Combine(outputDir, If(directory.name, "")))
+                Next
+            End Sub
+        collectFiles(selectedDir, If(selectedDir.name, ""))
+        If fileList.Count = 0 Then Return
 
-                            If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                        Else
-                            If (My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_SHA256 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_SHA512 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_CRC32 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) = "") OrElse
-                            (My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) = "") Then
-                                Dim result As Dictionary(Of String, String)
-                                If dupe AndAlso lastResult IsNot Nothing Then
-                                    result = lastResult
-                                Else
-                                    result = CalculateChecksum(fr.File)
-                                End If
-                                lastResult = result
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True) <> result.Item("SHA1") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA1, result.Item("SHA1"))
-                                        fr.File.SHA1ForeColor = Color.Blue
-                                    Else
-                                        fr.File.SHA1ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True) <> result.Item("SHA256") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA256, result.Item("SHA256"))
-                                        fr.File.SHA256ForeColor = Color.Blue
-                                    Else
-                                        fr.File.SHA256ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True) <> result.Item("SHA512") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.SHA512, result.Item("SHA512"))
-                                        fr.File.SHA512ForeColor = Color.Blue
-                                    Else
-                                        fr.File.SHA512ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True) <> result.Item("CRC32") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.CRC32, result.Item("CRC32"))
-                                        fr.File.CRC32ForeColor = Color.Blue
-                                    Else
-                                        fr.File.CRC32ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True) <> result.Item("MD5") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.MD5, result.Item("MD5"))
-                                        fr.File.MD5ForeColor = Color.Blue
-                                    Else
-                                        fr.File.MD5ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True) <> result.Item("BLAKE3") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.BLAKE3, result.Item("BLAKE3"))
-                                        fr.File.BLAKE3ForeColor = Color.Blue
-                                    Else
-                                        fr.File.BLAKE3ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True) <> result.Item("XxHash3") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash3, result.Item("XxHash3"))
-                                        fr.File.XxHash3ForeColor = Color.Blue
-                                    Else
-                                        fr.File.XxHash3ForeColor = Color.Green
-                                    End If
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-
-                                    If fr.File.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True) <> result.Item("XxHash128") Then
-                                        fr.File.SetXattr(ltfsindex.file.xattr.HashType.XxHash128, result.Item("XxHash128"))
-                                        fr.File.XxHash128ForeColor = Color.Blue
-                                    Else
-                                        fr.File.XxHash128ForeColor = Color.Green
-                                    End If
-                                End If
-
-                                If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
-                            Else
-                                Threading.Interlocked.Add(CurrentBytesProcessed, fr.File.length)
-                                Threading.Interlocked.Increment(CurrentFilesProcessed)
-                            End If
-                        End If
-                        lastfr = fr
-                        Threading.Interlocked.Increment(fc)
-                        If StopFlag Then
-                            PrintMsg(My.Resources.ResText_OpCancelled)
-                            Exit Try
-                        End If
-                    Next
-                    PrintMsg($"{My.Resources.ResText_HFin} {fc - ec}/{fc} | {ec} {My.Resources.ResText_Error}")
-                Catch ex As Exception
-                    SetStatusLight(LWStatus.Err)
-                    Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{ex.ToString}"))
-                    PrintMsg(My.Resources.ResText_HErr)
-                End Try
-                UnwrittenSizeOverrideValue = 0
-                UnwrittenCountOverrideValue = 0
-                SetStatusLight(LWStatus.Idle)
-                LockGUI(False)
-                RefreshDisplay()
-            End Sub)
+        PrintMsg(My.Resources.ResText_PrepFile)
+        Dim validationThread As New Threading.Thread(
+            Sub() ExecuteHashPlan(fileList, Overwrite, ValidateOnly, False))
         LockGUI()
-        th.Start()
+        validationThread.Start()
     End Sub
+
     Private Sub 计算并更新ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 计算并更新ToolStripMenuItem1.Click
         Dim nodes As List(Of TreeNode) = SelectedNodes
         If nodes.Count > 0 Then

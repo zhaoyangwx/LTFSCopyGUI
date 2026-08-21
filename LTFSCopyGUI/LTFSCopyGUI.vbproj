@@ -539,6 +539,10 @@
   <ItemGroup>
     <Content Include="Assets\configure.ico" />
     <Content Include="Assets\LTFSCopyGUIIcon.ico" />
+    <Content Include="..\packages\Blake3.Retro\blake3_dotnet.dll">
+      <Link>blake3_dotnet.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll">
       <Link>System.Runtime.InteropServices.RuntimeInformation.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
