@@ -1,15 +1,16 @@
 #![allow(non_snake_case)]
 
 use md5::Md5;
+use rustc_hash::FxHashMap;
 use sha1::Sha1;
 use sha2::{Digest, Sha256, Sha512};
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::ffi::OsStr;
-use std::io::{self, BufRead, Write};
+use std::io::{self, Write};
 use std::os::windows::ffi::OsStrExt;
 use std::ptr::{null, null_mut};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{mpsc, Arc, Condvar, Mutex};
+use std::sync::{Arc, Condvar, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 use windows_sys::Win32::Foundation::{
@@ -17,29 +18,18 @@ use windows_sys::Win32::Foundation::{
     WAIT_OBJECT_0, WAIT_TIMEOUT,
 };
 use windows_sys::Win32::Storage::FileSystem::{
-    CreateFileW, GetFileSizeEx, ReadFile, FILE_ATTRIBUTE_NORMAL, FILE_FLAG_OVERLAPPED,
-    FILE_FLAG_SEQUENTIAL_SCAN, FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
-};
-use windows_sys::Win32::System::Memory::{
-    CreateFileMappingW, MapViewOfFile, UnmapViewOfFile, FILE_MAP_ALL_ACCESS,
-    MEMORY_MAPPED_VIEW_ADDRESS, PAGE_READWRITE,
-};
-use windows_sys::Win32::System::Threading::{
-    CreateEventW, SetEvent, WaitForMultipleObjects, WaitForSingleObject, INFINITE,
+    CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_FLAG_OVERLAPPED, FILE_FLAG_SEQUENTIAL_SCAN,
+    FILE_SHARE_DELETE, FILE_SHARE_READ, FILE_SHARE_WRITE, GetFileSizeEx, OPEN_EXISTING, ReadFile,
 };
 use windows_sys::Win32::System::IO::{
     CancelIoEx, CreateIoCompletionPort, GetOverlappedResult, GetQueuedCompletionStatusEx,
-    PostQueuedCompletionStatus, OVERLAPPED, OVERLAPPED_ENTRY,
+    OVERLAPPED, OVERLAPPED_ENTRY, PostQueuedCompletionStatus,
+};
+use windows_sys::Win32::System::Threading::{
+    CreateEventW, INFINITE, SetEvent, WaitForSingleObject,
 };
 
-const HEADER_SIZE: usize = 4096;
-const SLOT_META_SIZE: usize = 64;
-const MAGIC: u64 = 0x4c544653_46525354; // LTFSFRST
-const VERSION: u32 = 1;
-const STATUS_EMPTY: u32 = 0;
-const STATUS_FULL: u32 = 1;
 const FLAG_EOF: u32 = 1;
-const FLAG_ERROR: u32 = 2;
 const IO_QUEUE_DEPTH: usize = 16;
 const HASH_CHUNK_SIZE: usize = 4 * 1024 * 1024;
 const CANCEL_POLL_MS: u32 = 100;
@@ -120,7 +110,8 @@ struct NativeSlot {
 
 struct NativeState {
     slots: Vec<NativeSlot>,
-    files: Vec<NativeFileTask>,
+    files: FxHashMap<u64, NativeFileTask>,
+    file_order: Vec<u64>,
     write_index: u64,
     read_index: u64,
     buffered_bytes: u64,
@@ -130,7 +121,7 @@ struct NativeState {
     done: bool,
     cancelled: bool,
     error: String,
-    results: HashMap<u64, String>,
+    results: FxHashMap<u64, String>,
 }
 
 #[derive(Default)]
@@ -172,139 +163,22 @@ fn cancelled_error() -> io::Error {
     io::Error::new(io::ErrorKind::Interrupted, "fastreader operation cancelled")
 }
 
-unsafe fn is_cancelled(cancel_event: HANDLE) -> bool {
-    !cancel_event.is_null() && WaitForSingleObject(cancel_event, 0) == WAIT_OBJECT_0
+fn is_cancelled(cancel_event: HANDLE) -> bool {
+    !cancel_event.is_null() && unsafe { WaitForSingleObject(cancel_event, 0) == WAIT_OBJECT_0 }
 }
 
 fn wide(s: &str) -> Vec<u16> {
     OsStr::new(s).encode_wide().chain(Some(0)).collect()
 }
 
-unsafe fn write_u32(base: *mut u8, off: usize, v: u32) {
-    std::ptr::write_unaligned(base.add(off) as *mut u32, v);
-}
-unsafe fn write_u64(base: *mut u8, off: usize, v: u64) {
-    std::ptr::write_unaligned(base.add(off) as *mut u64, v);
-}
-unsafe fn read_u32(base: *mut u8, off: usize) -> u32 {
-    std::ptr::read_unaligned(base.add(off) as *const u32)
-}
-unsafe fn read_u64(base: *mut u8, off: usize) -> u64 {
-    std::ptr::read_unaligned(base.add(off) as *const u64)
-}
-
 struct Handle(HANDLE);
 unsafe impl Send for Handle {}
-
-#[derive(Clone, Copy)]
-struct SessionEvents {
-    data: HANDLE,
-    space: HANDLE,
-    cancel: HANDLE,
-}
 
 impl Drop for Handle {
     fn drop(&mut self) {
         unsafe {
             if !self.0.is_null() && self.0 != INVALID_HANDLE_VALUE {
                 CloseHandle(self.0);
-            }
-        }
-    }
-}
-
-struct Mapping {
-    _handle: Handle,
-    base: *mut u8,
-    size: usize,
-    slot_count: u64,
-    slot_size: usize,
-    data_offset: usize,
-}
-
-impl Drop for Mapping {
-    fn drop(&mut self) {
-        unsafe {
-            if !self.base.is_null() {
-                UnmapViewOfFile(MEMORY_MAPPED_VIEW_ADDRESS {
-                    Value: self.base.cast(),
-                });
-            }
-        }
-    }
-}
-
-impl Mapping {
-    unsafe fn create(name: &str, capacity: u64, slot_size: u64) -> io::Result<Self> {
-        let slot_count = std::cmp::max(2, capacity / slot_size);
-        let meta_bytes = slot_count as usize * SLOT_META_SIZE;
-        let data_offset = (HEADER_SIZE + meta_bytes + 4095) & !4095usize;
-        let size = data_offset + slot_count as usize * slot_size as usize;
-        let name_w = wide(name);
-        let handle = CreateFileMappingW(
-            INVALID_HANDLE_VALUE,
-            null(),
-            PAGE_READWRITE,
-            (size as u64 >> 32) as u32,
-            size as u32,
-            name_w.as_ptr(),
-        );
-        if handle.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-        let base = MapViewOfFile(handle, FILE_MAP_ALL_ACCESS, 0, 0, size).Value as *mut u8;
-        if base.is_null() {
-            CloseHandle(handle);
-            return Err(io::Error::last_os_error());
-        }
-        std::ptr::write_bytes(base, 0, size);
-        write_u64(base, 0, MAGIC);
-        write_u32(base, 8, VERSION);
-        write_u32(base, 12, HEADER_SIZE as u32);
-        write_u64(base, 16, slot_size);
-        write_u64(base, 24, slot_count);
-        write_u64(base, 32, 0);
-        write_u64(base, 40, 0);
-        write_u32(base, 48, 0);
-        write_u32(base, 52, 0);
-        write_u64(base, 56, data_offset as u64);
-        Ok(Self {
-            _handle: Handle(handle),
-            base,
-            size,
-            slot_count,
-            slot_size: slot_size as usize,
-            data_offset,
-        })
-    }
-
-    unsafe fn slot_meta(&self, idx: u64) -> *mut u8 {
-        self.base
-            .add(HEADER_SIZE + (idx as usize % self.slot_count as usize) * SLOT_META_SIZE)
-    }
-
-    unsafe fn slot_data(&self, idx: u64) -> *mut u8 {
-        self.base
-            .add(self.data_offset + (idx as usize % self.slot_count as usize) * self.slot_size)
-    }
-
-    unsafe fn wait_free_slot(&self, space_event: HANDLE, cancel_event: HANDLE) -> io::Result<u64> {
-        loop {
-            if is_cancelled(cancel_event) {
-                return Err(cancelled_error());
-            }
-            let write_idx = read_u64(self.base, 32);
-            let meta = self.slot_meta(write_idx);
-            if read_u32(meta, 0) == STATUS_EMPTY {
-                return Ok(write_idx);
-            }
-            let handles = [cancel_event, space_event];
-            let wait = WaitForMultipleObjects(handles.len() as u32, handles.as_ptr(), 0, INFINITE);
-            if wait == WAIT_OBJECT_0 {
-                return Err(cancelled_error());
-            }
-            if wait != WAIT_OBJECT_0 + 1 {
-                return Err(io::Error::last_os_error());
             }
         }
     }
@@ -364,7 +238,7 @@ fn hex(bytes: &[u8]) -> String {
 }
 
 impl HashSet {
-    fn new(enabled: &HashMap<String, bool>) -> io::Result<Self> {
+    fn new(enabled: &FxHashMap<String, bool>) -> io::Result<Self> {
         Ok(Self {
             sha1: if *enabled.get("SHA1").unwrap_or(&false) {
                 Some(Sha1::new())
@@ -470,58 +344,6 @@ impl HashSet {
     }
 }
 
-fn parse_bool(v: Option<&String>) -> bool {
-    matches!(
-        v.map(|s| s.as_str()),
-        Some("1") | Some("true") | Some("True")
-    )
-}
-
-fn parse_init(line: &str) -> HashMap<String, String> {
-    let mut result = HashMap::new();
-    for part in line.trim_end().split('\t').skip(1) {
-        if let Some((k, v)) = part.split_once('=') {
-            result.insert(k.to_string(), v.to_string());
-        }
-    }
-    result
-}
-
-fn decode_path_hex(value: &str) -> io::Result<String> {
-    if !value.len().is_multiple_of(4) {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "bad path encoding length",
-        ));
-    }
-    let mut units = Vec::with_capacity(value.len() / 4);
-    let bytes = value.as_bytes();
-    let mut i = 0usize;
-    while i < bytes.len() {
-        let lo = hex_byte(bytes[i], bytes[i + 1])?;
-        let hi = hex_byte(bytes[i + 2], bytes[i + 3])?;
-        units.push(u16::from_le_bytes([lo, hi]));
-        i += 4;
-    }
-    String::from_utf16(&units).map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, e))
-}
-
-fn hex_byte(hi: u8, lo: u8) -> io::Result<u8> {
-    Ok((hex_nibble(hi)? << 4) | hex_nibble(lo)?)
-}
-
-fn hex_nibble(v: u8) -> io::Result<u8> {
-    match v {
-        b'0'..=b'9' => Ok(v - b'0'),
-        b'a'..=b'f' => Ok(v - b'a' + 10),
-        b'A'..=b'F' => Ok(v - b'A' + 10),
-        _ => Err(io::Error::new(
-            io::ErrorKind::InvalidInput,
-            "bad hex path encoding",
-        )),
-    }
-}
-
 #[derive(Clone, Copy)]
 enum RequestState {
     Idle,
@@ -569,7 +391,7 @@ fn completed_request_at(requests: &[ReadRequest], offset: u64) -> Option<usize> 
 }
 
 impl AsyncSequentialReader {
-    unsafe fn open(
+    fn open(
         path: &str,
         expected_len: u64,
         chunk_size: usize,
@@ -578,7 +400,7 @@ impl AsyncSequentialReader {
         Self::open_with_depth(path, expected_len, chunk_size, cancel_event, IO_QUEUE_DEPTH)
     }
 
-    unsafe fn open_with_depth(
+    fn open_with_depth(
         path: &str,
         expected_len: u64,
         chunk_size: usize,
@@ -596,22 +418,24 @@ impl AsyncSequentialReader {
         }
 
         let path_w = wide(path);
-        let file = CreateFileW(
-            path_w.as_ptr(),
-            GENERIC_READ,
-            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-            null(),
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED | FILE_FLAG_SEQUENTIAL_SCAN,
-            null_mut(),
-        );
+        let file = unsafe {
+            CreateFileW(
+                path_w.as_ptr(),
+                GENERIC_READ,
+                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                null(),
+                OPEN_EXISTING,
+                FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED | FILE_FLAG_SEQUENTIAL_SCAN,
+                null_mut(),
+            )
+        };
         if file == INVALID_HANDLE_VALUE {
             return Err(io::Error::last_os_error());
         }
         let file = Handle(file);
 
         let mut actual_len = 0i64;
-        if GetFileSizeEx(file.0, &mut actual_len) == 0 {
+        if unsafe { GetFileSizeEx(file.0, &mut actual_len) } == 0 {
             return Err(io::Error::last_os_error());
         }
         if actual_len < 0 || actual_len as u64 != expected_len {
@@ -621,7 +445,7 @@ impl AsyncSequentialReader {
             ));
         }
 
-        let completion_port = CreateIoCompletionPort(file.0, null_mut(), 0, 0);
+        let completion_port = unsafe { CreateIoCompletionPort(file.0, null_mut(), 0, 0) };
         if completion_port.is_null() {
             return Err(io::Error::last_os_error());
         }
@@ -652,7 +476,7 @@ impl AsyncSequentialReader {
         })
     }
 
-    unsafe fn submit(&mut self, request_index: usize) -> io::Result<()> {
+    fn submit(&mut self, request_index: usize) -> io::Result<()> {
         if is_cancelled(self.cancel_event) {
             return Err(cancelled_error());
         }
@@ -670,13 +494,15 @@ impl AsyncSequentialReader {
         request.requested = requested;
         request.state = RequestState::InFlight;
 
-        let ok = ReadFile(
-            self.file.0,
-            request.buffer.as_mut_ptr(),
-            requested,
-            null_mut(),
-            &mut request.overlapped,
-        );
+        let ok = unsafe {
+            ReadFile(
+                self.file.0,
+                request.buffer.as_mut_ptr(),
+                requested,
+                null_mut(),
+                &mut request.overlapped,
+            )
+        };
         if ok == 0 {
             let error = io::Error::last_os_error();
             if error.raw_os_error() != Some(ERROR_IO_PENDING as i32) {
@@ -689,11 +515,11 @@ impl AsyncSequentialReader {
         Ok(())
     }
 
-    unsafe fn prime(&mut self) -> io::Result<()> {
+    fn prime(&mut self) -> io::Result<()> {
         self.prime_limit(self.requests.len())
     }
 
-    unsafe fn prime_limit(&mut self, limit: usize) -> io::Result<()> {
+    fn prime_limit(&mut self, limit: usize) -> io::Result<()> {
         let mut submitted = 0usize;
         for index in 0..self.requests.len() {
             if submitted >= limit || self.next_submit >= self.file_len {
@@ -708,18 +534,20 @@ impl AsyncSequentialReader {
         Ok(())
     }
 
-    unsafe fn receive_completions(&mut self) -> io::Result<()> {
+    fn receive_completions(&mut self) -> io::Result<()> {
         let wait_started = Instant::now();
         let mut entries = [OVERLAPPED_ENTRY::default(); IO_QUEUE_DEPTH];
         let mut removed = 0u32;
-        if GetQueuedCompletionStatusEx(
-            self.completion_port.0,
-            entries.as_mut_ptr(),
-            entries.len() as u32,
-            &mut removed,
-            CANCEL_POLL_MS,
-            0,
-        ) == 0
+        if unsafe {
+            GetQueuedCompletionStatusEx(
+                self.completion_port.0,
+                entries.as_mut_ptr(),
+                entries.len() as u32,
+                &mut removed,
+                CANCEL_POLL_MS,
+                0,
+            )
+        } == 0
         {
             self.record_read_wait(wait_started.elapsed());
             let error = io::Error::last_os_error();
@@ -751,12 +579,9 @@ impl AsyncSequentialReader {
                 ));
             }
             let mut transferred = 0u32;
-            let completion = if GetOverlappedResult(
-                self.file.0,
-                &request.overlapped,
-                &mut transferred,
-                0,
-            ) != 0
+            let completion = if unsafe {
+                GetOverlappedResult(self.file.0, &request.overlapped, &mut transferred, 0)
+            } != 0
             {
                 Ok(transferred)
             } else {
@@ -781,7 +606,7 @@ impl AsyncSequentialReader {
         }
     }
 
-    unsafe fn run<F>(&mut self, mut consume: F) -> io::Result<()>
+    fn run<F>(&mut self, mut consume: F) -> io::Result<()>
     where
         F: FnMut(u64, &[u8]) -> io::Result<()>,
     {
@@ -824,11 +649,11 @@ impl AsyncSequentialReader {
         Ok(())
     }
 
-    unsafe fn cancel_and_drain(&mut self) {
+    fn cancel_and_drain(&mut self) {
         if self.outstanding == 0 {
             return;
         }
-        if CancelIoEx(self.file.0, null()) == 0 {
+        if unsafe { CancelIoEx(self.file.0, null()) } == 0 {
             let code = io::Error::last_os_error().raw_os_error();
             if code != Some(ERROR_NOT_FOUND as i32) {
                 // Continue draining: already completed requests may still have queued packets.
@@ -837,14 +662,16 @@ impl AsyncSequentialReader {
         let mut entries = [OVERLAPPED_ENTRY::default(); IO_QUEUE_DEPTH];
         while self.outstanding > 0 {
             let mut removed = 0u32;
-            if GetQueuedCompletionStatusEx(
-                self.completion_port.0,
-                entries.as_mut_ptr(),
-                entries.len() as u32,
-                &mut removed,
-                INFINITE,
-                0,
-            ) == 0
+            if unsafe {
+                GetQueuedCompletionStatusEx(
+                    self.completion_port.0,
+                    entries.as_mut_ptr(),
+                    entries.len() as u32,
+                    &mut removed,
+                    INFINITE,
+                    0,
+                )
+            } == 0
             {
                 // Preserve the request storage if Windows cannot confirm cancellation.
                 let leaked = std::mem::take(&mut self.requests);
@@ -858,13 +685,11 @@ impl AsyncSequentialReader {
 
 impl Drop for AsyncSequentialReader {
     fn drop(&mut self) {
-        unsafe {
-            self.cancel_and_drain();
-        }
+        self.cancel_and_drain();
     }
 }
 
-unsafe fn read_file_overlapped<F>(
+fn read_file_overlapped<F>(
     path: &str,
     expected_len: u64,
     chunk_size: usize,
@@ -887,6 +712,7 @@ const SMALL_BUFFER_CLASSES: [usize; 7] = [
     2 * 1024 * 1024,
     4 * 1024 * 1024,
 ];
+const SMALL_QUEUE_CLASS_COUNT: usize = SMALL_BUFFER_CLASSES.len() + 1;
 
 #[derive(Clone)]
 struct SmallFileTask {
@@ -899,11 +725,7 @@ enum SmallFileStatus {
     Pending,
     Opening,
     InFlight,
-    Ready {
-        data: Vec<u8>,
-        digest: Option<String>,
-        reserved: usize,
-    },
+    Ready { data: Vec<u8>, reserved: usize },
     Failed(String),
     Borrowed,
 }
@@ -912,13 +734,21 @@ struct SmallFileEntry {
     task: SmallFileTask,
     status: SmallFileStatus,
     attempts: u8,
-    discard: bool,
+    queue_generation: u64,
+}
+
+#[derive(Clone, Copy)]
+struct SmallQueueItem {
+    index: u64,
+    generation: u64,
+    priority: bool,
 }
 
 struct SmallFileState {
-    entries: HashMap<u64, SmallFileEntry>,
-    queue: VecDeque<u64>,
-    buffers: HashMap<usize, Vec<Vec<u8>>>,
+    entries: FxHashMap<u64, SmallFileEntry>,
+    queues: [VecDeque<SmallQueueItem>; SMALL_QUEUE_CLASS_COUNT],
+    next_queue_generation: u64,
+    buffers: FxHashMap<usize, Vec<Vec<u8>>>,
     active_files: usize,
     reserved_bytes: usize,
     max_active_files: usize,
@@ -930,9 +760,10 @@ struct SmallFileState {
 impl SmallFileState {
     fn new() -> Self {
         Self {
-            entries: HashMap::new(),
-            queue: VecDeque::new(),
-            buffers: HashMap::new(),
+            entries: FxHashMap::default(),
+            queues: std::array::from_fn(|_| VecDeque::new()),
+            next_queue_generation: 0,
+            buffers: FxHashMap::default(),
             active_files: 0,
             reserved_bytes: 0,
             max_active_files: 0,
@@ -962,6 +793,75 @@ impl SmallFileState {
         buffer.clear();
         self.buffers.entry(capacity).or_default().push(buffer);
     }
+
+    fn enqueue_index(&mut self, index: u64, class: usize, priority: bool) {
+        let generation = self.next_queue_generation;
+        self.next_queue_generation = self.next_queue_generation.wrapping_add(1);
+        if let Some(entry) = self.entries.get_mut(&index) {
+            entry.queue_generation = generation;
+        }
+        let item = SmallQueueItem {
+            index,
+            generation,
+            priority,
+        };
+        if priority {
+            self.queues[class].push_front(item);
+        } else {
+            self.queues[class].push_back(item);
+        }
+    }
+
+    fn clean_queue_front(&mut self, class: usize) -> Option<SmallQueueItem> {
+        loop {
+            let item = self.queues[class].front().copied()?;
+            let valid = self
+                .entries
+                .get(&item.index)
+                .map(|entry| {
+                    entry.queue_generation == item.generation
+                        && matches!(entry.status, SmallFileStatus::Pending)
+                })
+                .unwrap_or(false);
+            if valid {
+                return Some(item);
+            }
+            self.queues[class].pop_front();
+        }
+    }
+
+    fn take_next_pending(&mut self, inflight_byte_limit: usize) -> Option<(u64, usize)> {
+        let mut selected: Option<(usize, SmallQueueItem)> = None;
+        for class in 0..SMALL_QUEUE_CLASS_COUNT {
+            let capacity = small_queue_capacity(class);
+            if self.reserved_bytes.saturating_add(capacity) > inflight_byte_limit {
+                continue;
+            }
+            let Some(item) = self.clean_queue_front(class) else {
+                continue;
+            };
+            let should_select = selected
+                .map(|(_, current)| {
+                    if item.priority != current.priority {
+                        item.priority
+                    } else if item.priority {
+                        item.generation > current.generation
+                    } else {
+                        item.generation < current.generation
+                    }
+                })
+                .unwrap_or(true);
+            if should_select {
+                selected = Some((class, item));
+            }
+        }
+
+        let (class, item) = selected?;
+        let removed = self.queues[class].pop_front()?;
+        debug_assert_eq!(removed.index, item.index);
+        debug_assert_eq!(removed.generation, item.generation);
+        Some((item.index, small_queue_capacity(class)))
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -984,7 +884,7 @@ unsafe impl Send for SmallOperation {}
 struct SmallShared {
     state: Mutex<SmallFileState>,
     changed: Condvar,
-    operations: Mutex<HashMap<usize, Box<SmallOperation>>>,
+    operations: Mutex<FxHashMap<usize, Box<SmallOperation>>>,
     completion_port: SharedHandle,
     active_limit: usize,
     inflight_byte_limit: usize,
@@ -994,7 +894,6 @@ struct SmallShared {
 
 struct CachedSmallFile {
     data: Vec<u8>,
-    digest: Option<String>,
     reserved: usize,
 }
 
@@ -1005,16 +904,11 @@ struct SmallFilePool {
     completion_thread: Option<JoinHandle<()>>,
 }
 
-#[derive(Clone)]
-struct SmallFilePoolControl {
-    shared: Arc<SmallShared>,
-}
-
-impl SmallFilePoolControl {
+impl SmallFilePool {
     fn enqueue(&self, task: SmallFileTask, priority: bool) {
-        if small_buffer_capacity(task.len).is_none() {
+        let Some((class, _)) = small_buffer_class(task.len) else {
             return;
-        }
+        };
         let mut state = self.shared.state.lock().unwrap();
         if state.shutdown || state.fatal_error.is_some() || state.entries.contains_key(&task.index)
         {
@@ -1027,26 +921,31 @@ impl SmallFilePoolControl {
                 task,
                 status: SmallFileStatus::Pending,
                 attempts: 0,
-                discard: false,
+                queue_generation: 0,
             },
         );
-        if priority {
-            state.queue.push_front(index);
-        } else {
-            state.queue.push_back(index);
-        }
+        state.enqueue_index(index, class, priority);
         self.shared.changed.notify_all();
     }
 }
 
-fn small_buffer_capacity(len: u64) -> Option<usize> {
+fn small_buffer_class(len: u64) -> Option<(usize, usize)> {
     if len == 0 {
-        return Some(0);
+        return Some((0, 0));
     }
     SMALL_BUFFER_CLASSES
         .iter()
-        .copied()
-        .find(|capacity| len <= *capacity as u64)
+        .enumerate()
+        .find(|(_, capacity)| len <= **capacity as u64)
+        .map(|(class, capacity)| (class + 1, *capacity))
+}
+
+fn small_queue_capacity(class: usize) -> usize {
+    debug_assert!(class < SMALL_QUEUE_CLASS_COUNT);
+    class
+        .checked_sub(1)
+        .and_then(|class| SMALL_BUFFER_CLASSES.get(class).copied())
+        .unwrap_or(0)
 }
 
 fn small_failure(
@@ -1060,15 +959,7 @@ fn small_failure(
     state.active_files = state.active_files.saturating_sub(1);
     state.reserved_bytes = state.reserved_bytes.saturating_sub(reserved);
     state.return_buffer(buffer, reserved);
-    let discard = state.shutdown
-        || state
-            .entries
-            .get(&index)
-            .map(|entry| entry.discard)
-            .unwrap_or(true);
-    if discard {
-        state.entries.remove(&index);
-    } else if let Some(entry) = state.entries.get_mut(&index) {
+    if let Some(entry) = state.entries.get_mut(&index) {
         entry.status = SmallFileStatus::Failed(message);
     }
     shared.changed.notify_all();
@@ -1086,36 +977,22 @@ fn small_open_worker(shared: Arc<SmallShared>) {
                     state = shared.changed.wait(state).unwrap();
                     continue;
                 }
-                if state.active_files < shared.active_limit {
-                    let position = state.queue.iter().position(|index| {
-                        let Some(entry) = state.entries.get(index) else {
-                            return false;
-                        };
-                        let Some(capacity) = small_buffer_capacity(entry.task.len) else {
-                            return false;
-                        };
-                        matches!(entry.status, SmallFileStatus::Pending)
-                            && state.reserved_bytes + capacity <= shared.inflight_byte_limit
-                    });
-                    if let Some(position) = position {
-                        let index = state.queue.remove(position).unwrap();
-                        let (task, reserved) = {
-                            let entry = state.entries.get_mut(&index).unwrap();
-                            entry.status = SmallFileStatus::Opening;
-                            entry.attempts += 1;
-                            (
-                                entry.task.clone(),
-                                small_buffer_capacity(entry.task.len).unwrap(),
-                            )
-                        };
-                        state.active_files += 1;
-                        state.reserved_bytes += reserved;
-                        state.max_active_files = state.max_active_files.max(state.active_files);
-                        state.max_reserved_bytes =
-                            state.max_reserved_bytes.max(state.reserved_bytes);
-                        let buffer = state.take_buffer(reserved);
-                        break (task, reserved, buffer);
-                    }
+                if state.active_files < shared.active_limit
+                    && let Some((index, reserved)) =
+                        state.take_next_pending(shared.inflight_byte_limit)
+                {
+                    let task = {
+                        let entry = state.entries.get_mut(&index).unwrap();
+                        entry.status = SmallFileStatus::Opening;
+                        entry.attempts += 1;
+                        entry.task.clone()
+                    };
+                    state.active_files += 1;
+                    state.reserved_bytes += reserved;
+                    state.max_active_files = state.max_active_files.max(state.active_files);
+                    state.max_reserved_bytes = state.max_reserved_bytes.max(state.reserved_bytes);
+                    let buffer = state.take_buffer(reserved);
+                    break (task, reserved, buffer);
                 }
                 state = shared.changed.wait(state).unwrap();
             }
@@ -1161,15 +1038,10 @@ fn small_open_worker(shared: Arc<SmallShared>) {
             let mut state = shared.state.lock().unwrap();
             state.active_files = state.active_files.saturating_sub(1);
             if let Some(entry) = state.entries.get_mut(&task.index) {
-                if entry.discard {
-                    state.entries.remove(&task.index);
-                } else {
-                    entry.status = SmallFileStatus::Ready {
-                        data: buffer,
-                        digest: None,
-                        reserved,
-                    };
-                }
+                entry.status = SmallFileStatus::Ready {
+                    data: buffer,
+                    reserved,
+                };
             }
             shared.changed.notify_all();
             continue;
@@ -1308,13 +1180,7 @@ fn small_completion_worker(shared: Arc<SmallShared>) {
 
             let mut state = shared.state.lock().unwrap();
             state.active_files = state.active_files.saturating_sub(1);
-            let discard = state.shutdown
-                || state
-                    .entries
-                    .get(&operation.index)
-                    .map(|entry| entry.discard)
-                    .unwrap_or(true);
-            if discard {
+            if state.shutdown || !state.entries.contains_key(&operation.index) {
                 state.reserved_bytes = state.reserved_bytes.saturating_sub(operation.reserved);
                 state.return_buffer(operation.buffer, operation.reserved);
                 state.entries.remove(&operation.index);
@@ -1324,7 +1190,6 @@ fn small_completion_worker(shared: Arc<SmallShared>) {
                         if let Some(entry) = state.entries.get_mut(&operation.index) {
                             entry.status = SmallFileStatus::Ready {
                                 data: operation.buffer,
-                                digest: None,
                                 reserved: operation.reserved,
                             };
                         }
@@ -1349,14 +1214,14 @@ fn small_completion_worker(shared: Arc<SmallShared>) {
 }
 
 impl SmallFilePool {
-    unsafe fn new(
+    fn new(
         open_concurrency: usize,
         active_limit: usize,
         inflight_byte_limit: usize,
         completion_batch: usize,
         cancel_event: HANDLE,
     ) -> io::Result<Self> {
-        let raw_port = CreateIoCompletionPort(INVALID_HANDLE_VALUE, null_mut(), 0, 0);
+        let raw_port = unsafe { CreateIoCompletionPort(INVALID_HANDLE_VALUE, null_mut(), 0, 0) };
         if raw_port.is_null() {
             return Err(io::Error::last_os_error());
         }
@@ -1364,7 +1229,7 @@ impl SmallFilePool {
         let shared = Arc::new(SmallShared {
             state: Mutex::new(SmallFileState::new()),
             changed: Condvar::new(),
-            operations: Mutex::new(HashMap::new()),
+            operations: Mutex::new(FxHashMap::default()),
             completion_port: SharedHandle(raw_port),
             active_limit: active_limit.max(1),
             inflight_byte_limit: inflight_byte_limit.max(64 * 1024),
@@ -1389,51 +1254,14 @@ impl SmallFilePool {
         })
     }
 
-    fn enqueue(&self, task: SmallFileTask, priority: bool) {
-        self.control().enqueue(task, priority);
-    }
-
-    fn control(&self) -> SmallFilePoolControl {
-        SmallFilePoolControl {
-            shared: Arc::clone(&self.shared),
-        }
-    }
-
-    fn discard_before(&self, index: u64) {
-        let mut state = self.shared.state.lock().unwrap();
-        let keys = state
-            .entries
-            .keys()
-            .copied()
-            .filter(|existing| *existing < index)
-            .collect::<Vec<_>>();
-        for key in keys {
-            let removable = matches!(
-                state.entries.get(&key).map(|entry| &entry.status),
-                Some(SmallFileStatus::Pending)
-                    | Some(SmallFileStatus::Ready { .. })
-                    | Some(SmallFileStatus::Failed(_))
-            );
-            if removable {
-                if let Some(entry) = state.entries.remove(&key) {
-                    if let SmallFileStatus::Ready { data, reserved, .. } = entry.status {
-                        state.reserved_bytes = state.reserved_bytes.saturating_sub(reserved);
-                        state.return_buffer(data, reserved);
-                    }
-                }
-                state.queue.retain(|queued| *queued != key);
-            } else if let Some(entry) = state.entries.get_mut(&key) {
-                entry.discard = true;
-            }
-        }
-        self.shared.changed.notify_all();
-    }
-
     fn wait_take(&self, task: SmallFileTask) -> io::Result<CachedSmallFile> {
+        let queue_class = small_buffer_class(task.len)
+            .map(|(class, _)| class)
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "file is not small"))?;
         self.enqueue(task.clone(), true);
         let mut state = self.shared.state.lock().unwrap();
         loop {
-            if unsafe { is_cancelled(self.shared.cancel_event.0) } {
+            if is_cancelled(self.shared.cancel_event.0) {
                 return Err(cancelled_error());
             }
             if let Some(message) = state.fatal_error.as_ref() {
@@ -1448,25 +1276,18 @@ impl SmallFilePool {
             match &entry.status {
                 SmallFileStatus::Ready { .. } => {
                     let status = std::mem::replace(&mut entry.status, SmallFileStatus::Borrowed);
-                    if let SmallFileStatus::Ready {
-                        data,
-                        digest,
-                        reserved,
-                    } = status
-                    {
-                        return Ok(CachedSmallFile {
-                            data,
-                            digest,
-                            reserved,
-                        });
+                    if let SmallFileStatus::Ready { data, reserved } = status {
+                        return Ok(CachedSmallFile { data, reserved });
                     }
                 }
                 SmallFileStatus::Failed(message) if entry.attempts >= 2 => {
                     return Err(io::Error::other(message.clone()));
                 }
                 SmallFileStatus::Failed(_) => {
-                    entry.status = SmallFileStatus::Pending;
-                    state.queue.push_front(task.index);
+                    {
+                        entry.status = SmallFileStatus::Pending;
+                    }
+                    state.enqueue_index(task.index, queue_class, true);
                     self.shared.changed.notify_all();
                 }
                 _ => {
@@ -1481,12 +1302,12 @@ impl SmallFilePool {
         }
     }
 
+    #[cfg(test)]
     fn put_back(&self, index: u64, cached: CachedSmallFile) {
         let mut state = self.shared.state.lock().unwrap();
         if let Some(entry) = state.entries.get_mut(&index) {
             entry.status = SmallFileStatus::Ready {
                 data: cached.data,
-                digest: cached.digest,
                 reserved: cached.reserved,
             };
         }
@@ -1501,7 +1322,7 @@ impl SmallFilePool {
         self.shared.changed.notify_all();
     }
 
-    unsafe fn shutdown(&mut self) {
+    fn shutdown(&mut self) {
         {
             let mut state = self.shared.state.lock().unwrap();
             state.shutdown = true;
@@ -1513,10 +1334,14 @@ impl SmallFilePool {
         {
             let operations = self.shared.operations.lock().unwrap();
             for operation in operations.values() {
-                CancelIoEx(operation.file.0, null());
+                unsafe {
+                    CancelIoEx(operation.file.0, null());
+                }
             }
         }
-        PostQueuedCompletionStatus(self.completion_port.0, 0, 0, null());
+        unsafe {
+            PostQueuedCompletionStatus(self.completion_port.0, 0, 0, null());
+        }
         if let Some(completion_thread) = self.completion_thread.take() {
             let join_result = completion_thread.join();
             let mut operations = self
@@ -1535,268 +1360,8 @@ impl SmallFilePool {
 
 impl Drop for SmallFilePool {
     fn drop(&mut self) {
-        unsafe { self.shutdown() }
+        self.shutdown()
     }
-}
-
-fn parse_file_task(rest: &str, kind: &str) -> io::Result<SmallFileTask> {
-    let mut parts = rest.splitn(3, '\t');
-    let index = parts
-        .next()
-        .and_then(|value| value.parse().ok())
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, format!("bad {kind} index")))?;
-    let len = parts
-        .next()
-        .and_then(|value| value.parse().ok())
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, format!("bad {kind} length")))?;
-    let path = decode_path_hex(parts.next().ok_or_else(|| {
-        io::Error::new(io::ErrorKind::InvalidInput, format!("missing {kind} path"))
-    })?)?;
-    Ok(SmallFileTask { index, len, path })
-}
-
-enum SessionCommand {
-    File(SmallFileTask),
-    Hash(SmallFileTask),
-    Done,
-    ProtocolError(String),
-}
-
-fn receive_commands(
-    sender: mpsc::Sender<SessionCommand>,
-    small_pool: SmallFilePoolControl,
-    small_threshold: u64,
-) {
-    for line in io::stdin().lock().lines() {
-        let line = match line {
-            Ok(line) => line,
-            Err(error) => {
-                let _ = sender.send(SessionCommand::ProtocolError(error.to_string()));
-                return;
-            }
-        };
-        if line == "DONE" {
-            let _ = sender.send(SessionCommand::Done);
-            return;
-        }
-        let parsed = if let Some(rest) = line.strip_prefix("PREFETCH\t") {
-            parse_file_task(rest, "prefetch").map(|task| {
-                if task.len <= small_threshold {
-                    small_pool.enqueue(task, false);
-                }
-                None
-            })
-        } else if let Some(rest) = line.strip_prefix("FILE\t") {
-            parse_file_task(rest, "file").map(|task| {
-                if task.len <= small_threshold {
-                    small_pool.enqueue(task.clone(), false);
-                }
-                Some(SessionCommand::File(task))
-            })
-        } else if let Some(rest) = line.strip_prefix("HASH\t") {
-            parse_file_task(rest, "hash").map(|task| {
-                if task.len <= small_threshold {
-                    small_pool.enqueue(task.clone(), false);
-                }
-                Some(SessionCommand::Hash(task))
-            })
-        } else {
-            Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                format!("unknown command: {line}"),
-            ))
-        };
-        match parsed {
-            Ok(Some(command)) => {
-                if sender.send(command).is_err() {
-                    return;
-                }
-            }
-            Ok(None) => {}
-            Err(error) => {
-                let _ = sender.send(SessionCommand::ProtocolError(error.to_string()));
-                return;
-            }
-        }
-    }
-    let _ = sender.send(SessionCommand::Done);
-}
-
-fn digest_bytes(data: &[u8], enabled: &HashMap<String, bool>) -> io::Result<String> {
-    let mut hashes = HashSet::new(enabled)?;
-    hashes.update(data)?;
-    hashes.finish()
-}
-
-unsafe fn publish_error_slot(
-    mapping: &Mapping,
-    events: SessionEvents,
-    file_index: u64,
-    file_offset: u64,
-) -> io::Result<()> {
-    let idx = mapping.wait_free_slot(events.space, events.cancel)?;
-    let meta = mapping.slot_meta(idx);
-    write_u32(meta, 4, FLAG_ERROR);
-    write_u64(meta, 8, file_index);
-    write_u64(meta, 16, file_offset);
-    write_u32(meta, 24, 0);
-    write_u32(meta, 0, STATUS_FULL);
-    write_u64(mapping.base, 32, idx + 1);
-    SetEvent(events.data);
-    Ok(())
-}
-
-unsafe fn fill_cached_file(
-    pool: &SmallFilePool,
-    mapping: &Mapping,
-    events: SessionEvents,
-    task: SmallFileTask,
-    enabled: &HashMap<String, bool>,
-) -> io::Result<()> {
-    let mut cached = match pool.wait_take(task.clone()) {
-        Ok(cached) => cached,
-        Err(error) => {
-            if error.kind() != io::ErrorKind::Interrupted {
-                publish_error_slot(mapping, events, task.index, 0)?;
-            }
-            return Err(error);
-        }
-    };
-    let result = (|| -> io::Result<()> {
-        let digest = match cached.digest.take() {
-            Some(digest) => digest,
-            None => digest_bytes(&cached.data, enabled)?,
-        };
-        let mut file_offset = 0u64;
-        for slice in cached.data.chunks(mapping.slot_size) {
-            let idx = mapping.wait_free_slot(events.space, events.cancel)?;
-            let meta = mapping.slot_meta(idx);
-            let data = mapping.slot_data(idx);
-            std::ptr::copy_nonoverlapping(slice.as_ptr(), data, slice.len());
-            write_u32(meta, 4, 0);
-            write_u64(meta, 8, task.index);
-            write_u64(meta, 16, file_offset);
-            write_u32(meta, 24, slice.len() as u32);
-            write_u32(meta, 0, STATUS_FULL);
-            file_offset += slice.len() as u64;
-            write_u64(mapping.base, 32, idx + 1);
-            SetEvent(events.data);
-        }
-        println!("FILE_DONE\t{}\t{}", task.index, digest);
-        io::stdout().flush().ok();
-        let idx = mapping.wait_free_slot(events.space, events.cancel)?;
-        let meta = mapping.slot_meta(idx);
-        write_u32(meta, 4, FLAG_EOF);
-        write_u64(meta, 8, task.index);
-        write_u64(meta, 16, task.len);
-        write_u32(meta, 24, 0);
-        write_u32(meta, 0, STATUS_FULL);
-        write_u64(mapping.base, 32, idx + 1);
-        SetEvent(events.data);
-        Ok(())
-    })();
-    pool.release(task.index, cached);
-    result
-}
-
-fn hash_cached_file(
-    pool: &SmallFilePool,
-    task: SmallFileTask,
-    enabled: &HashMap<String, bool>,
-) -> io::Result<()> {
-    let mut cached = pool.wait_take(task.clone())?;
-    let digest = match cached.digest.clone() {
-        Some(digest) => digest,
-        None => {
-            let digest = digest_bytes(&cached.data, enabled)?;
-            cached.digest = Some(digest.clone());
-            digest
-        }
-    };
-    println!("HASH_DONE\t{}\t{}", task.index, digest);
-    io::stdout().flush().ok();
-    pool.put_back(task.index, cached);
-    Ok(())
-}
-
-unsafe fn fill_file(
-    mapping: &Mapping,
-    events: SessionEvents,
-    file_index: u64,
-    expected_len: u64,
-    path: &str,
-    enabled: &HashMap<String, bool>,
-) -> io::Result<()> {
-    let mut hashes = HashSet::new(enabled)?;
-    let mut file_offset = 0u64;
-    let read_result = read_file_overlapped(
-        path,
-        expected_len,
-        mapping.slot_size,
-        events.cancel,
-        |offset, slice| {
-            if offset != file_offset {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "asynchronous read order mismatch",
-                ));
-            }
-            let idx = mapping.wait_free_slot(events.space, events.cancel)?;
-            let meta = mapping.slot_meta(idx);
-            let data = mapping.slot_data(idx);
-            std::ptr::copy_nonoverlapping(slice.as_ptr(), data, slice.len());
-            hashes.update(slice)?;
-            write_u32(meta, 4, 0);
-            write_u64(meta, 8, file_index);
-            write_u64(meta, 16, file_offset);
-            write_u32(meta, 24, slice.len() as u32);
-            write_u32(meta, 0, STATUS_FULL);
-            file_offset += slice.len() as u64;
-            write_u64(mapping.base, 32, idx + 1);
-            SetEvent(events.data);
-            Ok(())
-        },
-    );
-    if let Err(error) = read_result {
-        if error.kind() != io::ErrorKind::Interrupted {
-            publish_error_slot(mapping, events, file_index, file_offset)?;
-        }
-        return Err(error);
-    }
-    let digest = hashes.finish()?;
-    println!("FILE_DONE\t{}\t{}", file_index, digest);
-    io::stdout().flush().ok();
-    let idx = mapping.wait_free_slot(events.space, events.cancel)?;
-    let meta = mapping.slot_meta(idx);
-    write_u32(meta, 4, FLAG_EOF);
-    write_u64(meta, 8, file_index);
-    write_u64(meta, 16, file_offset);
-    write_u32(meta, 24, 0);
-    write_u32(meta, 0, STATUS_FULL);
-    write_u64(mapping.base, 32, idx + 1);
-    SetEvent(events.data);
-    Ok(())
-}
-
-unsafe fn hash_file(
-    file_index: u64,
-    expected_len: u64,
-    path: &str,
-    cancel_event: HANDLE,
-    enabled: &HashMap<String, bool>,
-) -> io::Result<()> {
-    let mut hashes = HashSet::new(enabled)?;
-    read_file_overlapped(
-        path,
-        expected_len,
-        HASH_CHUNK_SIZE,
-        cancel_event,
-        |_offset, slice| hashes.update(slice),
-    )?;
-    let digest = hashes.finish()?;
-    println!("HASH_DONE\t{}\t{}", file_index, digest);
-    io::stdout().flush().ok();
-    Ok(())
 }
 
 fn native_lock(shared: &NativeShared) -> std::sync::MutexGuard<'_, NativeState> {
@@ -1806,8 +1371,8 @@ fn native_lock(shared: &NativeShared) -> std::sync::MutexGuard<'_, NativeState> 
         .unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
-fn native_hash_options(mask: u32) -> HashMap<String, bool> {
-    let mut enabled = HashMap::new();
+fn native_hash_options(mask: u32) -> FxHashMap<String, bool> {
+    let mut enabled = FxHashMap::default();
     enabled.insert("SHA1".to_string(), mask & LFR_HASH_SHA1 != 0);
     enabled.insert("SHA256".to_string(), mask & LFR_HASH_SHA256 != 0);
     enabled.insert("SHA512".to_string(), mask & LFR_HASH_SHA512 != 0);
@@ -1945,7 +1510,7 @@ fn native_publish_batch(
     Ok(())
 }
 
-unsafe fn native_run_worker(
+fn native_run_worker(
     shared: Arc<NativeShared>,
     config: NativeConfig,
     cancel_event: HANDLE,
@@ -2019,19 +1584,19 @@ unsafe fn native_run_worker(
                 reader.prime()?;
             }
             let mut next_prepared = None;
-            if let Some(next) = files.get(position + 1) {
-                if next.len > config.small_threshold {
-                    let mut reader = AsyncSequentialReader::open_with_depth(
-                        &next.path,
-                        next.len,
-                        config.read_chunk_size,
-                        cancel_event,
-                        config.queue_depth,
-                    )?;
-                    reader.set_read_wait_counter(Arc::clone(&shared.telemetry.read_wait_ns));
-                    reader.prime_limit(config.next_file_prime_depth)?;
-                    next_prepared = Some((next.index, reader));
-                }
+            if let Some(next) = files.get(position + 1)
+                && next.len > config.small_threshold
+            {
+                let mut reader = AsyncSequentialReader::open_with_depth(
+                    &next.path,
+                    next.len,
+                    config.read_chunk_size,
+                    cancel_event,
+                    config.queue_depth,
+                )?;
+                reader.set_read_wait_counter(Arc::clone(&shared.telemetry.read_wait_ns));
+                reader.prime_limit(config.next_file_prime_depth)?;
+                next_prepared = Some((next.index, reader));
             }
 
             let mut hashes = HashSet::new(&enabled)?;
@@ -2099,8 +1664,8 @@ unsafe fn native_run_worker(
     small_pool.shutdown();
 }
 
-unsafe fn native_context<'a>(context: *mut LfrContext) -> Result<&'a LfrContext, i32> {
-    context.as_ref().ok_or(LFR_INVALID)
+fn native_context<'a>(context: *mut LfrContext) -> Result<&'a LfrContext, i32> {
+    unsafe { context.as_ref().ok_or(LFR_INVALID) }
 }
 
 fn native_copy_text(text: &str, buffer: *mut u8, capacity: u32, written: *mut u32) -> i32 {
@@ -2124,6 +1689,10 @@ pub extern "system" fn lfr_abi_version() -> u32 {
 }
 
 #[unsafe(no_mangle)]
+/// Creates a native fast-reader context.
+///
+/// # Safety
+/// `config` and `output` must be valid, writable pointers for the duration of the call.
 pub unsafe extern "system" fn lfr_create(
     config: *const LfrConfig,
     output: *mut *mut LfrContext,
@@ -2131,13 +1700,13 @@ pub unsafe extern "system" fn lfr_create(
     if config.is_null() || output.is_null() {
         return LFR_INVALID;
     }
-    let config = &*config;
+    let config = unsafe { &*config };
     if config.struct_size as usize != std::mem::size_of::<LfrConfig>()
         || config.abi_version != LFR_ABI_VERSION
         || config.slot_size == 0
         || config.read_chunk_size < config.slot_size
         || config.read_chunk_size > 64 * 1024 * 1024
-        || config.read_chunk_size % config.slot_size != 0
+        || !config.read_chunk_size.is_multiple_of(config.slot_size)
     {
         return LFR_INVALID;
     }
@@ -2154,7 +1723,7 @@ pub unsafe extern "system" fn lfr_create(
             full: false,
         })
         .collect();
-    let cancel_event = CreateEventW(null(), 1, 0, null());
+    let cancel_event = unsafe { CreateEventW(null(), 1, 0, null()) };
     if cancel_event.is_null() {
         return LFR_ERROR;
     }
@@ -2162,7 +1731,8 @@ pub unsafe extern "system" fn lfr_create(
         shared: Arc::new(NativeShared {
             state: Mutex::new(NativeState {
                 slots,
-                files: Vec::new(),
+                files: FxHashMap::default(),
+                file_order: Vec::new(),
                 write_index: 0,
                 read_index: 0,
                 buffered_bytes: 0,
@@ -2172,7 +1742,7 @@ pub unsafe extern "system" fn lfr_create(
                 done: false,
                 cancelled: false,
                 error: String::new(),
-                results: HashMap::new(),
+                results: FxHashMap::default(),
             }),
             changed: Condvar::new(),
             telemetry: NativeTelemetry::default(),
@@ -2192,11 +1762,17 @@ pub unsafe extern "system" fn lfr_create(
         cancel_event: Handle(cancel_event),
         worker: Mutex::new(None),
     });
-    *output = Box::into_raw(context);
+    unsafe {
+        *output = Box::into_raw(context);
+    }
     LFR_OK
 }
 
 #[unsafe(no_mangle)]
+/// Adds a file to a context before it is started.
+///
+/// # Safety
+/// `context` must be a valid context pointer, and `path` must point to `path_len` UTF-16 code units.
 pub unsafe extern "system" fn lfr_add_file(
     context: *mut LfrContext,
     index: i64,
@@ -2211,38 +1787,47 @@ pub unsafe extern "system" fn lfr_add_file(
     if index < 0 || path.is_null() {
         return LFR_INVALID;
     }
-    let path = match String::from_utf16(std::slice::from_raw_parts(path, path_len as usize)) {
-        Ok(value) => value,
-        Err(_) => return LFR_INVALID,
-    };
+    let path =
+        match String::from_utf16(unsafe { std::slice::from_raw_parts(path, path_len as usize) }) {
+            Ok(value) => value,
+            Err(_) => return LFR_INVALID,
+        };
+    let file_index = index as u64;
     let mut state = native_lock(&context.shared);
-    if state.started || state.files.iter().any(|file| file.index == index as u64) {
+    if state.started || state.files.contains_key(&file_index) {
         return LFR_INVALID;
     }
-    state.files.push(NativeFileTask {
-        index: index as u64,
-        len: expected_len,
-        path,
-        selected: false,
-    });
+    state.file_order.push(file_index);
+    state.files.insert(
+        file_index,
+        NativeFileTask {
+            index: file_index,
+            len: expected_len,
+            path,
+            selected: false,
+        },
+    );
     LFR_OK
 }
 
 #[unsafe(no_mangle)]
+/// Selects a file for processing.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_select_file(context: *mut LfrContext, index: i64) -> i32 {
     let context = match native_context(context) {
         Ok(value) => value,
         Err(code) => return code,
     };
+    if index < 0 {
+        return LFR_INVALID;
+    }
     let mut state = native_lock(&context.shared);
     if state.started {
         return LFR_INVALID;
     }
-    match state
-        .files
-        .iter_mut()
-        .find(|file| file.index == index as u64)
-    {
+    match state.files.get_mut(&(index as u64)) {
         Some(file) => {
             file.selected = true;
             LFR_OK
@@ -2252,6 +1837,10 @@ pub unsafe extern "system" fn lfr_select_file(context: *mut LfrContext, index: i
 }
 
 #[unsafe(no_mangle)]
+/// Starts processing the selected files.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create` and not concurrently destroyed.
 pub unsafe extern "system" fn lfr_start(context: *mut LfrContext) -> i32 {
     let context = match native_context(context) {
         Ok(value) => value,
@@ -2264,8 +1853,9 @@ pub unsafe extern "system" fn lfr_start(context: *mut LfrContext) -> i32 {
         }
         state.started = true;
         let files = state
-            .files
+            .file_order
             .iter()
+            .filter_map(|index| state.files.get(index))
             .filter(|file| file.selected)
             .cloned()
             .collect::<Vec<_>>();
@@ -2288,15 +1878,18 @@ pub unsafe extern "system" fn lfr_start(context: *mut LfrContext) -> i32 {
         next_file_prime_depth: context.config.next_file_prime_depth,
     };
     let cancel_event = context.cancel_event.0 as usize;
-    let worker = thread::spawn(move || unsafe {
-        native_run_worker(shared, config, cancel_event as HANDLE, files)
-    });
+    let worker =
+        thread::spawn(move || native_run_worker(shared, config, cancel_event as HANDLE, files));
     let mut worker_slot = context.worker.lock().unwrap_or_else(|p| p.into_inner());
     *worker_slot = Some(worker);
     LFR_OK
 }
 
 #[unsafe(no_mangle)]
+/// Returns the number of bytes currently buffered.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_buffered_bytes(context: *mut LfrContext) -> u64 {
     match native_context(context) {
         Ok(context) => native_lock(&context.shared).buffered_bytes,
@@ -2305,6 +1898,10 @@ pub unsafe extern "system" fn lfr_buffered_bytes(context: *mut LfrContext) -> u6
 }
 
 #[unsafe(no_mangle)]
+/// Returns the configured native buffer capacity.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_buffer_capacity(context: *mut LfrContext) -> u64 {
     match native_context(context) {
         Ok(context) => context.config.capacity_bytes,
@@ -2313,6 +1910,10 @@ pub unsafe extern "system" fn lfr_buffer_capacity(context: *mut LfrContext) -> u
 }
 
 #[unsafe(no_mangle)]
+/// Returns the number of occupied output slots.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_occupied_slots(context: *mut LfrContext) -> u64 {
     match native_context(context) {
         Ok(context) => native_lock(&context.shared).occupied_slots as u64,
@@ -2321,6 +1922,10 @@ pub unsafe extern "system" fn lfr_occupied_slots(context: *mut LfrContext) -> u6
 }
 
 #[unsafe(no_mangle)]
+/// Retrieves processing statistics.
+///
+/// # Safety
+/// `context` must be valid and `output` must point to a writable `LfrStats` value with the expected ABI size.
 pub unsafe extern "system" fn lfr_get_stats(
     context: *mut LfrContext,
     output: *mut LfrStats,
@@ -2329,37 +1934,45 @@ pub unsafe extern "system" fn lfr_get_stats(
         Ok(value) => value,
         Err(code) => return code,
     };
-    if output.is_null() || (*output).struct_size as usize != std::mem::size_of::<LfrStats>() {
+    if output.is_null()
+        || unsafe { (*output).struct_size as usize != std::mem::size_of::<LfrStats>() }
+    {
         return LFR_INVALID;
     }
     let state = native_lock(&context.shared);
-    *output = LfrStats {
-        struct_size: std::mem::size_of::<LfrStats>() as u32,
-        abi_version: LFR_ABI_VERSION,
-        bytes_read: context.shared.telemetry.bytes_read.load(Ordering::Relaxed),
-        bytes_published: context
-            .shared
-            .telemetry
-            .bytes_published
-            .load(Ordering::Relaxed),
-        buffered_bytes: state.buffered_bytes,
-        occupied_slots: state.occupied_slots as u64,
-        read_wait_ns: context
-            .shared
-            .telemetry
-            .read_wait_ns
-            .load(Ordering::Relaxed),
-        hash_ns: context.shared.telemetry.hash_ns.load(Ordering::Relaxed),
-        publish_wait_ns: context
-            .shared
-            .telemetry
-            .publish_wait_ns
-            .load(Ordering::Relaxed),
-    };
+    unsafe {
+        *output = LfrStats {
+            struct_size: std::mem::size_of::<LfrStats>() as u32,
+            abi_version: LFR_ABI_VERSION,
+            bytes_read: context.shared.telemetry.bytes_read.load(Ordering::Relaxed),
+            bytes_published: context
+                .shared
+                .telemetry
+                .bytes_published
+                .load(Ordering::Relaxed),
+            buffered_bytes: state.buffered_bytes,
+            occupied_slots: state.occupied_slots as u64,
+            read_wait_ns: context
+                .shared
+                .telemetry
+                .read_wait_ns
+                .load(Ordering::Relaxed),
+            hash_ns: context.shared.telemetry.hash_ns.load(Ordering::Relaxed),
+            publish_wait_ns: context
+                .shared
+                .telemetry
+                .publish_wait_ns
+                .load(Ordering::Relaxed),
+        };
+    }
     LFR_OK
 }
 
 #[unsafe(no_mangle)]
+/// Reports whether processing has completed.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_is_done(context: *mut LfrContext) -> i32 {
     match native_context(context) {
         Ok(context) => i32::from(native_lock(&context.shared).done),
@@ -2368,6 +1981,10 @@ pub unsafe extern "system" fn lfr_is_done(context: *mut LfrContext) -> i32 {
 }
 
 #[unsafe(no_mangle)]
+/// Waits until the requested amount of data is buffered or progress stops.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_wait_until_buffered(
     context: *mut LfrContext,
     target: u64,
@@ -2448,6 +2065,10 @@ pub unsafe extern "system" fn lfr_wait_until_buffered(
 }
 
 #[unsafe(no_mangle)]
+/// Acquires the next output slot.
+///
+/// # Safety
+/// `context` must be valid and `output` must point to writable storage for an `LfrSlot`.
 pub unsafe extern "system" fn lfr_acquire_slot(
     context: *mut LfrContext,
     expected_file_index: i64,
@@ -2470,14 +2091,16 @@ pub unsafe extern "system" fn lfr_acquire_slot(
             if expected_file_index >= 0 && slot.file_index != expected_file_index as u64 {
                 return LFR_ERROR;
             }
-            *output = LfrSlot {
-                token: slot.token,
-                file_index: slot.file_index as i64,
-                file_offset: slot.file_offset,
-                data: slot.buffer.as_ptr(),
-                length: slot.length,
-                flags: slot.flags,
-            };
+            unsafe {
+                *output = LfrSlot {
+                    token: slot.token,
+                    file_index: slot.file_index as i64,
+                    file_offset: slot.file_offset,
+                    data: slot.buffer.as_ptr(),
+                    length: slot.length,
+                    flags: slot.flags,
+                };
+            }
             return LFR_OK;
         }
         if state.cancelled {
@@ -2517,6 +2140,10 @@ pub unsafe extern "system" fn lfr_acquire_slot(
 }
 
 #[unsafe(no_mangle)]
+/// Releases a previously acquired output slot.
+///
+/// # Safety
+/// `context` must be a valid context pointer and `token` must identify the currently acquired slot.
 pub unsafe extern "system" fn lfr_release_slot(context: *mut LfrContext, token: u64) -> i32 {
     let context = match native_context(context) {
         Ok(value) => value,
@@ -2541,6 +2168,10 @@ pub unsafe extern "system" fn lfr_release_slot(context: *mut LfrContext, token: 
 }
 
 #[unsafe(no_mangle)]
+/// Hashes a file independently of the streaming worker.
+///
+/// # Safety
+/// `context` must be valid; `buffer` and `written` must follow the output-buffer contract when non-null.
 pub unsafe extern "system" fn lfr_hash_file(
     context: *mut LfrContext,
     index: i64,
@@ -2552,9 +2183,12 @@ pub unsafe extern "system" fn lfr_hash_file(
         Ok(value) => value,
         Err(code) => return code,
     };
+    if index < 0 {
+        return LFR_INVALID;
+    }
     let file = {
         let state = native_lock(&context.shared);
-        match state.files.iter().find(|file| file.index == index as u64) {
+        match state.files.get(&(index as u64)) {
             Some(file) => file.clone(),
             None => return LFR_INVALID,
         }
@@ -2586,6 +2220,10 @@ pub unsafe extern "system" fn lfr_hash_file(
 }
 
 #[unsafe(no_mangle)]
+/// Retrieves hashes produced by the streaming worker.
+///
+/// # Safety
+/// `context` must be valid; `buffer` and `written` must follow the output-buffer contract when non-null.
 pub unsafe extern "system" fn lfr_get_file_hashes(
     context: *mut LfrContext,
     index: i64,
@@ -2607,6 +2245,10 @@ pub unsafe extern "system" fn lfr_get_file_hashes(
 }
 
 #[unsafe(no_mangle)]
+/// Retrieves the last context error message.
+///
+/// # Safety
+/// `context` must be valid; `buffer` and `written` must follow the output-buffer contract when non-null.
 pub unsafe extern "system" fn lfr_last_error(
     context: *mut LfrContext,
     buffer: *mut u8,
@@ -2622,6 +2264,10 @@ pub unsafe extern "system" fn lfr_last_error(
 }
 
 #[unsafe(no_mangle)]
+/// Cancels processing.
+///
+/// # Safety
+/// `context` must be a valid context pointer created by `lfr_create`.
 pub unsafe extern "system" fn lfr_cancel(context: *mut LfrContext) -> i32 {
     let context = match native_context(context) {
         Ok(value) => value,
@@ -2632,22 +2278,30 @@ pub unsafe extern "system" fn lfr_cancel(context: *mut LfrContext) -> i32 {
         state.cancelled = true;
         context.shared.changed.notify_all();
     }
-    SetEvent(context.cancel_event.0);
+    unsafe {
+        SetEvent(context.cancel_event.0);
+    }
     LFR_OK
 }
 
 #[unsafe(no_mangle)]
+/// Destroys a context and waits for its worker to exit.
+///
+/// # Safety
+/// `context` must be null or a context returned by `lfr_create` that has not already been destroyed.
 pub unsafe extern "system" fn lfr_destroy(context: *mut LfrContext) {
     if context.is_null() {
         return;
     }
-    let context = Box::from_raw(context);
+    let context = unsafe { Box::from_raw(context) };
     {
         let mut state = native_lock(&context.shared);
         state.cancelled = true;
         context.shared.changed.notify_all();
     }
-    SetEvent(context.cancel_event.0);
+    unsafe {
+        SetEvent(context.cancel_event.0);
+    }
     let worker = context
         .worker
         .lock()
@@ -2656,167 +2310,6 @@ pub unsafe extern "system" fn lfr_destroy(context: *mut LfrContext) {
     if let Some(worker) = worker {
         let _ = worker.join();
     }
-}
-
-fn main() -> io::Result<()> {
-    let mut init = String::new();
-    if io::stdin().read_line(&mut init)? == 0 {
-        return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "missing INIT"));
-    }
-    if !init.starts_with("INIT\t") {
-        return Err(io::Error::new(io::ErrorKind::InvalidInput, "expected INIT"));
-    }
-    let cfg = parse_init(&init);
-    let shm_name = cfg
-        .get("shm")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing shm"))?
-        .clone();
-    let data_event_name = cfg
-        .get("data_event")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing data_event"))?
-        .clone();
-    let space_event_name = cfg
-        .get("space_event")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing space_event"))?
-        .clone();
-    let cancel_event_name = cfg
-        .get("cancel_event")
-        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "missing cancel_event"))?
-        .clone();
-    let capacity: u64 = cfg
-        .get("capacity")
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(268435456);
-    let slot_size: u64 = cfg
-        .get("slot_size")
-        .and_then(|s| s.parse().ok())
-        .unwrap_or(1048576);
-    let default_small_inflight = capacity.min(128 * 1024 * 1024);
-    let small_inflight_bytes: usize = cfg
-        .get("small_inflight_bytes")
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(default_small_inflight as usize);
-    let small_threshold: u64 = cfg
-        .get("small_threshold")
-        .and_then(|value| value.parse().ok())
-        .unwrap_or_else(|| (default_small_inflight / 64).clamp(64 * 1024, 4 * 1024 * 1024))
-        .clamp(64 * 1024, 4 * 1024 * 1024);
-    let small_open_concurrency: usize = cfg
-        .get("small_open_concurrency")
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(32);
-    let small_active_files: usize = cfg
-        .get("small_active_files")
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(64);
-    let small_iocp_batch: usize = cfg
-        .get("small_iocp_batch")
-        .and_then(|value| value.parse().ok())
-        .unwrap_or(64);
-    let mut enabled = HashMap::new();
-    for name in [
-        "SHA1",
-        "SHA256",
-        "SHA512",
-        "MD5",
-        "CRC32",
-        "BLAKE3",
-        "XxHash3",
-        "XxHash128",
-    ] {
-        enabled.insert(name.to_string(), parse_bool(cfg.get(name)));
-    }
-
-    unsafe {
-        let mapping = Mapping::create(&shm_name, capacity, slot_size)?;
-        let data_event = CreateEventW(null(), 0, 0, wide(&data_event_name).as_ptr());
-        if data_event.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-        let _data_event = Handle(data_event);
-        let space_event = CreateEventW(null(), 0, 0, wide(&space_event_name).as_ptr());
-        if space_event.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-        let _space_event = Handle(space_event);
-        let cancel_event = CreateEventW(null(), 1, 0, wide(&cancel_event_name).as_ptr());
-        if cancel_event.is_null() {
-            return Err(io::Error::last_os_error());
-        }
-        let _cancel_event = Handle(cancel_event);
-        let events = SessionEvents {
-            data: data_event,
-            space: space_event,
-            cancel: cancel_event,
-        };
-        let small_pool = SmallFilePool::new(
-            small_open_concurrency,
-            small_active_files,
-            small_inflight_bytes,
-            small_iocp_batch,
-            cancel_event,
-        )?;
-        println!(
-            "READY\tslot_count={}\tdata_offset={}\tmap_size={}\tsmall_threshold={}\tsmall_inflight_bytes={}",
-            mapping.slot_count,
-            mapping.data_offset,
-            mapping.size,
-            small_threshold,
-            small_inflight_bytes
-        );
-        io::stdout().flush().ok();
-
-        let (command_sender, command_receiver) = mpsc::channel();
-        let command_pool = small_pool.control();
-        let command_thread =
-            thread::spawn(move || receive_commands(command_sender, command_pool, small_threshold));
-        let session_result = (|| -> io::Result<()> {
-            loop {
-                match command_receiver.recv() {
-                    Ok(SessionCommand::Done) | Err(_) => break,
-                    Ok(SessionCommand::ProtocolError(message)) => {
-                        return Err(io::Error::new(io::ErrorKind::InvalidInput, message));
-                    }
-                    Ok(SessionCommand::File(task)) => {
-                        small_pool.discard_before(task.index);
-                        let result = if task.len <= small_threshold {
-                            fill_cached_file(&small_pool, &mapping, events, task.clone(), &enabled)
-                        } else {
-                            fill_file(&mapping, events, task.index, task.len, &task.path, &enabled)
-                        };
-                        result.map_err(|error| {
-                            io::Error::new(error.kind(), format!("file {}: {error}", task.index))
-                        })?;
-                    }
-                    Ok(SessionCommand::Hash(task)) => {
-                        small_pool.discard_before(task.index);
-                        let result = if task.len <= small_threshold {
-                            hash_cached_file(&small_pool, task.clone(), &enabled)
-                        } else {
-                            hash_file(task.index, task.len, &task.path, cancel_event, &enabled)
-                        };
-                        result.map_err(|error| {
-                            io::Error::new(error.kind(), format!("hash {}: {error}", task.index))
-                        })?;
-                    }
-                }
-            }
-            Ok(())
-        })();
-        if session_result.is_ok() {
-            let _ = command_thread.join();
-        }
-        if let Err(error) = session_result {
-            if error.kind() != io::ErrorKind::Interrupted || !is_cancelled(cancel_event) {
-                eprintln!("FILE_ERROR\t{error}");
-                io::stderr().flush().ok();
-                write_u32(mapping.base, 52, 1);
-            }
-        }
-        write_u32(mapping.base, 48, 1);
-        SetEvent(data_event);
-    }
-    Ok(())
 }
 
 #[cfg(test)]
@@ -2867,9 +2360,44 @@ mod tests {
         }
     }
 
+    #[test]
+    fn large_file_catalog_lookup_handles_90000_files() {
+        const FILE_COUNT: usize = 90_000;
+        let path = r"C:\ltfscopy-fastreader-large-catalog-placeholder.bin"
+            .encode_utf16()
+            .collect::<Vec<_>>();
+        let config = native_test_config(4096, 32 * 1024);
+
+        unsafe {
+            let context = create_native_test_context(&config);
+            for index in 0..FILE_COUNT {
+                assert_eq!(
+                    lfr_add_file(context, index as i64, path.as_ptr(), path.len() as u32, 0,),
+                    LFR_OK
+                );
+            }
+            assert_eq!(
+                lfr_add_file(
+                    context,
+                    (FILE_COUNT - 1) as i64,
+                    path.as_ptr(),
+                    path.len() as u32,
+                    0,
+                ),
+                LFR_INVALID
+            );
+
+            for index in 0..FILE_COUNT {
+                assert_eq!(lfr_select_file(context, index as i64), LFR_OK);
+            }
+            assert_eq!(lfr_select_file(context, FILE_COUNT as i64), LFR_INVALID);
+            lfr_destroy(context);
+        }
+    }
+
     unsafe fn create_native_test_context(config: &LfrConfig) -> *mut LfrContext {
         let mut context = null_mut();
-        assert_eq!(lfr_create(config, &mut context), LFR_OK);
+        assert_eq!(unsafe { lfr_create(config, &mut context) }, LFR_OK);
         assert!(!context.is_null());
         context
     }
@@ -2905,19 +2433,17 @@ mod tests {
                 .collect::<Vec<_>>();
             let file = TempFile::create(case, &expected)?;
             let mut actual = Vec::with_capacity(len);
-            unsafe {
-                read_file_overlapped(
-                    file.0.to_str().unwrap(),
-                    len as u64,
-                    CHUNK,
-                    null_mut(),
-                    |offset, slice| {
-                        assert_eq!(offset, actual.len() as u64);
-                        actual.extend_from_slice(slice);
-                        Ok(())
-                    },
-                )?;
-            }
+            read_file_overlapped(
+                file.0.to_str().unwrap(),
+                len as u64,
+                CHUNK,
+                null_mut(),
+                |offset, slice| {
+                    assert_eq!(offset, actual.len() as u64);
+                    actual.extend_from_slice(slice);
+                    Ok(())
+                },
+            )?;
             assert_eq!(actual, expected, "failed case {case}");
         }
         Ok(())
@@ -2926,22 +2452,20 @@ mod tests {
     #[test]
     fn overlapped_reader_rejects_length_changes() -> io::Result<()> {
         let file = TempFile::create("length", b"abcdef")?;
-        let result = unsafe {
-            read_file_overlapped(
-                file.0.to_str().unwrap(),
-                5,
-                4096,
-                null_mut(),
-                |_offset, _slice| Ok(()),
-            )
-        };
+        let result = read_file_overlapped(
+            file.0.to_str().unwrap(),
+            5,
+            4096,
+            null_mut(),
+            |_offset, _slice| Ok(()),
+        );
         assert_eq!(result.unwrap_err().kind(), io::ErrorKind::InvalidData);
         Ok(())
     }
 
     #[test]
     fn small_file_pool_prefetches_once_within_limits() -> io::Result<()> {
-        let mut pool = unsafe { SmallFilePool::new(8, 12, 2 * 1024 * 1024, 16, null_mut())? };
+        let mut pool = SmallFilePool::new(8, 12, 2 * 1024 * 1024, 16, null_mut())?;
         let mut files = Vec::new();
         let mut tasks = Vec::new();
         let mut expected = Vec::new();
@@ -2981,8 +2505,50 @@ mod tests {
             assert!(state.max_active_files <= 12);
             assert!(state.max_reserved_bytes <= 2 * 1024 * 1024);
         }
-        unsafe { pool.shutdown() };
+        pool.shutdown();
         Ok(())
+    }
+
+    #[test]
+    fn small_file_queue_buckets_choose_oldest_fitting_and_priority_items() {
+        fn add_pending(state: &mut SmallFileState, index: u64, len: u64, priority: bool) {
+            let (class, _) = small_buffer_class(len).unwrap();
+            state.entries.insert(
+                index,
+                SmallFileEntry {
+                    task: SmallFileTask {
+                        index,
+                        len,
+                        path: String::new(),
+                    },
+                    status: SmallFileStatus::Pending,
+                    attempts: 0,
+                    queue_generation: 0,
+                },
+            );
+            state.enqueue_index(index, class, priority);
+        }
+
+        let mut state = SmallFileState::new();
+        add_pending(&mut state, 0, 200_000, false); // 256 KiB class
+        add_pending(&mut state, 1, 1_000_000, false); // 1 MiB class
+        add_pending(&mut state, 2, 1_000, false); // 4 KiB class
+        add_pending(&mut state, 3, 0, false); // zero-length class
+
+        assert_eq!(state.take_next_pending(256 * 1024), Some((0, 256 * 1024)));
+        assert_eq!(state.take_next_pending(256 * 1024), Some((2, 4 * 1024)));
+
+        add_pending(&mut state, 4, 16_000, true);
+        add_pending(&mut state, 6, 8_000, true);
+        assert_eq!(state.take_next_pending(1024 * 1024), Some((6, 16 * 1024)));
+        assert_eq!(state.take_next_pending(1024 * 1024), Some((4, 16 * 1024)));
+        assert_eq!(state.take_next_pending(1024 * 1024), Some((1, 1024 * 1024)));
+        assert_eq!(state.take_next_pending(1024 * 1024), Some((3, 0)));
+
+        add_pending(&mut state, 5, 1_000, false);
+        state.entries.remove(&5);
+        add_pending(&mut state, 5, 1_000, false);
+        assert_eq!(state.take_next_pending(4 * 1024), Some((5, 4 * 1024)));
     }
 
     #[test]
@@ -3125,9 +2691,11 @@ mod tests {
                         ),
                         LFR_OK
                     );
-                    assert!(std::str::from_utf8(&hashes[..written as usize])
-                        .unwrap()
-                        .starts_with("CRC32="));
+                    assert!(
+                        std::str::from_utf8(&hashes[..written as usize])
+                            .unwrap()
+                            .starts_with("CRC32=")
+                    );
                     assert_eq!(lfr_release_slot(context, slot.token), LFR_OK);
                     break;
                 }
