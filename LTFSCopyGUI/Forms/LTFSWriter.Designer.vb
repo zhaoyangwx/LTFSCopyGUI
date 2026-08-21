@@ -25,7 +25,7 @@ Partial Class LTFSWriter
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(LTFSWriter))
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer()
-        Me.TreeView1 = New System.Windows.Forms.TreeView()
+        Me.TreeView1 = New LTFSCopyGUI.DpiAwareTreeView()
         Me.ContextMenuStrip3 = New System.Windows.Forms.ContextMenuStrip(Me.components)
         Me.提取ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
         Me.校验ToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem()
@@ -1428,7 +1428,7 @@ End Sub
     Friend WithEvents Column_creationtime As ColumnHeader
     Friend WithEvents Column_changetime As ColumnHeader
     Friend WithEvents SplitContainer1 As SplitContainer
-    Friend WithEvents TreeView1 As TreeView
+    Friend WithEvents TreeView1 As LTFSCopyGUI.DpiAwareTreeView
     Friend WithEvents Column_fileuid As ColumnHeader
     Friend WithEvents Column_openforwrite As ColumnHeader
     Friend WithEvents Column_readonly As ColumnHeader

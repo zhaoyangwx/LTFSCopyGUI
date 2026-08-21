@@ -24,16 +24,23 @@ Public Class TreeViewEx
     Private Const TVS_EX_PARTIALCHECKBOXES As UInteger = &H80
 
     Private Declare Auto Function SendMessage Lib "user32" (ByVal hWnd As IntPtr, ByVal Msg As UInteger, ByVal wParam As IntPtr, ByRef lParam As TV_ITEM) As IntPtr
-    Private Declare Auto Function SendMessage Lib "user32" (ByVal hWnd As IntPtr, ByVal Msg As UInteger, ByVal wParam As IntPtr, ByRef lParam As IntPtr) As IntPtr
+    Private Declare Auto Function SendMessage Lib "user32" (ByVal hWnd As IntPtr, ByVal Msg As UInteger, ByVal wParam As IntPtr, ByVal lParam As IntPtr) As IntPtr
 
     Private Function INDEXTOSTATEIMAGEMASK(i As Integer) As Integer
         Return i << 12
     End Function
 
+    Protected Overridable ReadOnly Property UsePartialCheckboxes As Boolean
+        Get
+            Return True
+        End Get
+    End Property
+
     Protected Overrides Sub OnHandleCreated(e As EventArgs)
-        Dim style As UInteger = TVS_EX_DOUBLEBUFFER Or TVS_EX_PARTIALCHECKBOXES
-        SendMessage(Handle, TVM_SETEXTENDEDSTYLE, New IntPtr(style), New IntPtr(style))
         MyBase.OnHandleCreated(e)
+        Dim style As UInteger = TVS_EX_DOUBLEBUFFER
+        If UsePartialCheckboxes Then style = style Or TVS_EX_PARTIALCHECKBOXES
+        SendMessage(Handle, TVM_SETEXTENDEDSTYLE, New IntPtr(style), New IntPtr(style))
     End Sub
 
     Public Sub SetNodeCheckState(node As TreeNode, state As CheckState)

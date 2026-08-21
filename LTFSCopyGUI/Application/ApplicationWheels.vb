@@ -1128,6 +1128,21 @@ Public Class DpiAwareListView
     End Sub
 End Class
 
+Public Class DpiAwareTreeView
+    Inherits TreeViewEx
+
+    Protected Overrides ReadOnly Property UsePartialCheckboxes As Boolean
+        Get
+            Return False
+        End Get
+    End Property
+
+    Public Sub New()
+        MyBase.New()
+        HideSelection = False
+    End Sub
+End Class
+
 Public Class ErrRateHelper
     Public Shared Function MixColor(col1 As Color, col2 As Color, val As Double, min As Double, max As Double) As Color
         If val <= min Then Return col1

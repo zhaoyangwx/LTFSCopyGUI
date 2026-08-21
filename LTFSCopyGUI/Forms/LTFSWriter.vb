@@ -1908,143 +1908,226 @@ Public Class LTFSWriter
         Return TarVirtualTreeBuilder.TryBuild(source, metadata, root)
     End Function
 
-    Private Sub AddTarVirtualNodes(directory As TarVirtualDirectory, node As TreeNode)
-        If directory Is Nothing OrElse node Is Nothing Then Return
-        For Each child As TarVirtualDirectory In directory.Directories
-            Dim childNode As New TreeNode(child.Name) With {
-                .Tag = child,
-                .ImageIndex = 1,
-                .SelectedImageIndex = 1,
-                .StateImageIndex = 1,
-                .ForeColor = Color.Blue}
-            node.Nodes.Add(childNode)
-            AddTarVirtualNodes(child, childNode)
+    Private NotInheritable Class WriterTreeNode
+        Inherits TreeNode
+
+        Public Property ChildrenLoaded As Boolean
+        Public Property IsPlaceholder As Boolean
+    End Class
+
+    Private Function CreateDirectoryTreeNode(directory As ltfsindex.directory, rootNode As Boolean) As WriterTreeNode
+        If directory Is Nothing Then Return Nothing
+        Dim nodeText As String = If(directory.name, String.Empty)
+        If Not rootNode AndAlso My.Settings.LTFSWriter_ShowFileCount Then
+            If directory.TotalFilesUnwritten = 0 Then
+                nodeText = $"{directory.TotalFiles.ToString.PadRight(6)}| {directory.name}"
+            Else
+                nodeText = $"{$"{directory.TotalFiles.ToString}+{directory.TotalFilesUnwritten.ToString}".PadRight(6)}| {directory.name}"
+            End If
+        End If
+        Return New WriterTreeNode With {
+            .Text = nodeText,
+            .Tag = directory,
+            .ImageIndex = If(rootNode, 0, 1),
+            .SelectedImageIndex = If(rootNode, 0, 1),
+            .StateImageIndex = If(rootNode, 0, 1)}
+    End Function
+
+    Private Function CreateArchiveTreeNode(file As ltfsindex.file) As TreeNode
+        If file Is Nothing Then Return Nothing
+        Return New TreeNode With {
+            .Text = $"*{file.name}",
+            .Tag = file,
+            .ImageIndex = 3,
+            .SelectedImageIndex = 3,
+            .StateImageIndex = 3}
+    End Function
+
+    Private Function CreateTarDirectoryTreeNode(directory As TarVirtualDirectory) As WriterTreeNode
+        If directory Is Nothing Then Return Nothing
+        Return New WriterTreeNode With {
+            .Text = directory.Name,
+            .Tag = directory,
+            .ImageIndex = 1,
+            .SelectedImageIndex = 1,
+            .StateImageIndex = 1,
+            .ForeColor = Color.Blue}
+    End Function
+
+    Private Function HasPotentialTreeChildren(node As TreeNode) As Boolean
+        If node Is Nothing OrElse node.Tag Is Nothing Then Return False
+        If TypeOf node.Tag Is ltfsindex.directory Then
+            Dim directory As ltfsindex.directory = DirectCast(node.Tag, ltfsindex.directory)
+            If directory.contents Is Nothing Then Return False
+            SyncLock directory.contents._directory
+                Return (directory.contents._directory IsNot Nothing AndAlso directory.contents._directory.Count > 0) OrElse
+                       (directory.contents._file IsNot Nothing AndAlso directory.contents._file.Count > 0)
+            End SyncLock
+        End If
+        If TypeOf node.Tag Is TarVirtualDirectory Then
+            Dim directory As TarVirtualDirectory = DirectCast(node.Tag, TarVirtualDirectory)
+            Return directory.Directories IsNot Nothing AndAlso directory.Directories.Count > 0
+        End If
+        Return False
+    End Function
+
+    Private Sub AddUnloadedChildMarker(node As TreeNode)
+        Dim writerNode As WriterTreeNode = TryCast(node, WriterTreeNode)
+        If writerNode Is Nothing OrElse writerNode.ChildrenLoaded OrElse node.Nodes.Count > 0 Then Return
+        If Not HasPotentialTreeChildren(node) Then Return
+        node.Nodes.Add(New WriterTreeNode With {.IsPlaceholder = True})
+    End Sub
+
+    Private Sub RemoveUnloadedChildMarker(node As TreeNode)
+        If node Is Nothing Then Return
+        For i As Integer = node.Nodes.Count - 1 To 0 Step -1
+            Dim child As WriterTreeNode = TryCast(node.Nodes(i), WriterTreeNode)
+            If child IsNot Nothing AndAlso child.IsPlaceholder Then node.Nodes.RemoveAt(i)
         Next
     End Sub
+
+    Private Sub AddTarVirtualChildren(directory As TarVirtualDirectory, node As TreeNode)
+        If directory Is Nothing OrElse node Is Nothing Then Return
+        For Each child As TarVirtualDirectory In directory.Directories
+            Dim childNode As WriterTreeNode = CreateTarDirectoryTreeNode(child)
+            node.Nodes.Add(childNode)
+            AddUnloadedChildMarker(childNode)
+        Next
+    End Sub
+
+    Private Sub LoadTreeNodeChildren(node As TreeNode)
+        Dim writerNode As WriterTreeNode = TryCast(node, WriterTreeNode)
+        If writerNode Is Nothing OrElse writerNode.IsPlaceholder OrElse writerNode.ChildrenLoaded Then Return
+
+        writerNode.ChildrenLoaded = True
+        Dim manageUpdate As Boolean = Not _treeRefreshInProgress
+        If manageUpdate Then TreeView1.BeginUpdate()
+        Try
+            RemoveUnloadedChildMarker(node)
+            If TypeOf node.Tag Is ltfsindex.directory Then
+                Dim directory As ltfsindex.directory = DirectCast(node.Tag, ltfsindex.directory)
+                Dim directories As New List(Of ltfsindex.directory)
+                Dim files As New List(Of ltfsindex.file)
+                If directory.contents IsNot Nothing Then
+                    SyncLock directory.contents._directory
+                        If directory.contents._directory IsNot Nothing Then directories.AddRange(directory.contents._directory)
+                    End SyncLock
+                    SyncLock directory.contents._file
+                        If directory.contents._file IsNot Nothing Then files.AddRange(directory.contents._file)
+                    End SyncLock
+                End If
+
+                For Each childDirectory As ltfsindex.directory In directories
+                    Dim childNode As WriterTreeNode = CreateDirectoryTreeNode(childDirectory, False)
+                    node.Nodes.Add(childNode)
+                    AddUnloadedChildMarker(childNode)
+                Next
+
+                For Each file As ltfsindex.file In files
+                    Dim archive As String = file.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Archive)
+                    If String.Equals(archive, "true", StringComparison.OrdinalIgnoreCase) Then
+                        node.Nodes.Add(CreateArchiveTreeNode(file))
+                    End If
+
+                    Dim tarRoot As TarVirtualDirectory = Nothing
+                    If TryGetTarVirtualRoot(file, tarRoot) Then
+                        Dim tarNode As WriterTreeNode = CreateTarDirectoryTreeNode(tarRoot)
+                        node.Nodes.Add(tarNode)
+                        AddUnloadedChildMarker(tarNode)
+                    End If
+                Next
+            ElseIf TypeOf node.Tag Is TarVirtualDirectory Then
+                AddTarVirtualChildren(DirectCast(node.Tag, TarVirtualDirectory), node)
+            End If
+        Catch
+            node.Nodes.Clear()
+            writerNode.ChildrenLoaded = False
+        Finally
+            If manageUpdate Then TreeView1.EndUpdate()
+        End Try
+    End Sub
+
+    Private Function GetTreeNodeName(node As TreeNode) As String
+        If node Is Nothing OrElse node.Tag Is Nothing Then Return Nothing
+        If TypeOf node.Tag Is ltfsindex.directory Then Return DirectCast(node.Tag, ltfsindex.directory).name
+        If TypeOf node.Tag Is TarVirtualDirectory Then Return DirectCast(node.Tag, TarVirtualDirectory).Name
+        Return Nothing
+    End Function
+
+    Private Function FindTreeNodeByPath(path As String) As TreeNode
+        If String.IsNullOrWhiteSpace(path) Then Return Nothing
+        Dim parts() As String = path.Split({"\"c, "/"c}, StringSplitOptions.RemoveEmptyEntries)
+        If parts.Length = 0 Then Return Nothing
+
+        Dim current As TreeNode = Nothing
+        For Each root As TreeNode In TreeView1.Nodes
+            If String.Equals(GetTreeNodeName(root), parts(0), StringComparison.Ordinal) Then
+                current = root
+                Exit For
+            End If
+        Next
+        If current Is Nothing Then Return Nothing
+
+        For i As Integer = 1 To parts.Length - 1
+            LoadTreeNodeChildren(current)
+            Dim nextNode As TreeNode = Nothing
+            For Each child As TreeNode In current.Nodes
+                If String.Equals(GetTreeNodeName(child), parts(i), StringComparison.Ordinal) Then
+                    nextNode = child
+                    Exit For
+                End If
+            Next
+            If nextNode Is Nothing Then Return Nothing
+            current = nextNode
+        Next
+        LoadTreeNodeChildren(current)
+        Return current
+    End Function
 
     Public Sub RefreshDisplay()
         If schema Is Nothing Then Exit Sub
         Invoke(
             Sub()
                 _lastListRefreshTag = Nothing
-                If My.Settings.LTFSWriter_ShowFileCount Then schema._directory(0).DeepRefreshCount()
+                If My.Settings.LTFSWriter_ShowFileCount AndAlso schema._directory IsNot Nothing AndAlso schema._directory.Count > 0 Then schema._directory(0).DeepRefreshCount()
+                Dim oldSelectPath As String = String.Empty
+                If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
+                    oldSelectPath = GetPath(TreeView1.SelectedNode)
+                End If
+                If String.IsNullOrEmpty(oldSelectPath) AndAlso TypeOf ListView1.Tag Is ltfsindex.directory AndAlso TreeView1.TopNode IsNot Nothing Then
+                    oldSelectPath = GetPath(TreeView1.TopNode)
+                End If
+
+                _treeRefreshInProgress = True
+                TreeView1.BeginUpdate()
                 Try
-                    Dim old_select As ltfsindex.directory = Nothing
-                    Dim old_select_path As String = ""
-                    Dim new_select As TreeNode = Nothing
-                    Dim IterDirectory As Action(Of ltfsindex.directory, TreeNode, Integer) =
-                        Sub(dir As ltfsindex.directory, node As TreeNode, ByVal MaxDepth As Integer)
-                            Dim NodeExpand As Action =
-                                   Sub()
-                                       'PrintMsg(dir.name, LogOnly:=True, ForceLog:=True)
-                                       SyncLock dir.contents._directory
-                                           For Each d As ltfsindex.directory In dir.contents._directory
-                                               Dim t As New TreeNode
-                                               If My.Settings.LTFSWriter_ShowFileCount Then
-                                                   If d.TotalFilesUnwritten = 0 Then
-                                                       t.Text = $"{d.TotalFiles.ToString.PadRight(6)}| {d.name}"
-                                                   Else
-                                                       t.Text = $"{$"{d.TotalFiles.ToString}+{d.TotalFilesUnwritten.ToString}".PadRight(6)}| {d.name}"
-                                                   End If
-                                               Else
-                                                   t.Text = d.name
-                                               End If
-                                               t.Tag = d
-                                               t.ImageIndex = 1
-                                               t.SelectedImageIndex = 1
-                                               t.StateImageIndex = 1
-                                               node.Nodes.Add(t)
-                                               IterDirectory(d, t, MaxDepth - 1)
-                                               If old_select Is d Then
-                                                   new_select = t
-                                               End If
-                                           Next
-                                           'Compressed Dir
-                                           For Each f As ltfsindex.file In dir.contents._file
-                                               Dim s As String = f.GetXAttr(ltfsindex.file.xattr.ApplicationSpecific.Archive)
-                                               If s IsNot Nothing AndAlso s.ToLower = "true" Then
-                                                   Dim t As New TreeNode
-                                                   t.Text = $"*{f.name}"
-                                                   t.Tag = f
-                                                   t.ImageIndex = 3
-                                                   t.SelectedImageIndex = 3
-                                                   t.StateImageIndex = 3
-                                                   node.Nodes.Add(t)
-                                               End If
-                                           Next
-                                           For Each f As ltfsindex.file In dir.contents._file
-                                               Dim tarRoot As TarVirtualDirectory = Nothing
-                                               If TryGetTarVirtualRoot(f, tarRoot) Then
-                                                   Dim t As New TreeNode(f.name) With {
-                                                       .Tag = tarRoot,
-                                                       .ImageIndex = 1,
-                                                       .SelectedImageIndex = 1,
-                                                       .StateImageIndex = 1,
-                                                       .ForeColor = Color.Blue}
-                                                   node.Nodes.Add(t)
-                                                   AddTarVirtualNodes(tarRoot, t)
-                                               End If
-                                           Next
-                                       End SyncLock
-                                   End Sub
-                            Dim tvNodeExpand As New TreeViewEventHandler(
-                                Sub(sender As Object, e As TreeViewEventArgs)
-                                    If e.Node IsNot node.Parent Then Exit Sub
-                                    If node.Nodes IsNot Nothing AndAlso node.Nodes.Count > 0 Then Exit Sub
-                                    NodeExpand()
-                                    RemoveHandler TreeView1.AfterExpand, tvNodeExpand
-                                End Sub)
-                            Dim tvNodeSelect As New TreeViewEventHandler(
-                                Sub(sender As Object, e As TreeViewEventArgs)
-                                    If e.Node IsNot node Then Exit Sub
-                                    If node.Nodes IsNot Nothing AndAlso node.Nodes.Count > 0 Then Exit Sub
-                                    NodeExpand()
-                                    RemoveHandler TreeView1.AfterSelect, tvNodeSelect
-                                End Sub)
-                            Dim isParentOfOldSelect As Boolean = False
-                            If MaxDepth = 0 AndAlso Not old_select_path.StartsWith(GetPath(node)) Then
-                                AddHandler TreeView1.AfterExpand, tvNodeExpand
-                                AddHandler TreeView1.AfterSelect, tvNodeSelect
-                                MaxDepth = 2
-                                Exit Sub
-                            Else
-                                NodeExpand()
-                            End If
-                        End Sub
-                    If TreeView1.SelectedNode IsNot Nothing Then
-                        If TreeView1.SelectedNode.Tag IsNot Nothing Then
-                            If TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.directory Then
-                                old_select = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.directory)
-                                old_select_path = GetPath(TreeView1.SelectedNode)
-                            End If
-                        End If
-                    End If
-                    If old_select Is Nothing AndAlso TypeOf ListView1.Tag Is ltfsindex.directory Then
-                        old_select = DirectCast(ListView1.Tag, ltfsindex.directory)
-                        old_select_path = GetPath(TreeView1.TopNode)
-                    End If
+                    LastSelectedNode = Nothing
                     TreeView1.Nodes.Clear()
                     SyncLock schema._directory
-                        For Each d As ltfsindex.directory In schema._directory
-                            Dim t As New TreeNode
-                            t.Text = d.name
-                            t.Tag = d
-                            t.ImageIndex = 0
-                            TreeView1.Nodes.Add(t)
-                            IterDirectory(d, t, 2)
-                        Next
+                        If schema._directory IsNot Nothing Then
+                            For Each directory As ltfsindex.directory In schema._directory
+                                Dim rootNode As WriterTreeNode = CreateDirectoryTreeNode(directory, True)
+                                TreeView1.Nodes.Add(rootNode)
+                                LoadTreeNodeChildren(rootNode)
+                            Next
+                        End If
                     End SyncLock
-                    TreeView1.TopNode.Expand()
-                    If new_select IsNot Nothing Then
-                        TreeView1.SelectedNode = new_select
-                        new_select.Expand()
-                    Else
-                        TreeView1.SelectedNode = TreeView1.TopNode
-                        TreeView1.SelectedNode.Expand()
-                    End If
-                Catch ex As Exception
 
+                    If TreeView1.Nodes.Count > 0 Then
+                        Dim selectedNode As TreeNode = FindTreeNodeByPath(oldSelectPath)
+                        If selectedNode Is Nothing Then selectedNode = TreeView1.TopNode
+                        TreeView1.SelectedNode = selectedNode
+                        selectedNode.Expand()
+                        selectedNode.EnsureVisible()
+                    End If
+                Catch
+                Finally
+                    TreeView1.EndUpdate()
+                    _treeRefreshInProgress = False
                 End Try
+                If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
+                    TriggerTreeView1Event(True)
+                End If
                 Try
                     Text = GetLocInfo()
                     ToolStripStatusLabel4.Text = $"{My.Resources.ResText_DNW} {IOManager.FormatSize(CLng(UnwrittenSize))}"
@@ -2142,6 +2225,8 @@ Public Class LTFSWriter
     Private ReadOnly _listItemCacheOrder As New Queue(Of Integer)
     Private Const ListItemCacheCapacity As Integer = 512
     Private _lastListRefreshTag As Object = Nothing
+    Private _treeRefreshInProgress As Boolean
+    Private _listViewColumnSignature As String = Nothing
 
     Private Function CreateListViewItem(row As WriterListRow) As ListViewItem
         If row Is Nothing OrElse row.Value Is Nothing Then Return New ListViewItem()
@@ -2287,7 +2372,6 @@ Public Class LTFSWriter
 
     Private Sub ClearListViewRows()
         ListView1.SelectedIndices.Clear()
-        ListView1.VirtualListSize = 0
         _listRows.Clear()
         _listItemCache.Clear()
         _listItemCacheOrder.Clear()
@@ -2296,7 +2380,12 @@ Public Class LTFSWriter
     Private Sub SetListViewRows(rows As List(Of WriterListRow))
         ClearListViewRows()
         If rows IsNot Nothing AndAlso rows.Count > 0 Then _listRows.AddRange(rows)
-        ListView1.VirtualListSize = _listRows.Count
+        Dim rowCount As Integer = _listRows.Count
+        If ListView1.VirtualListSize <> rowCount Then
+            ListView1.VirtualListSize = rowCount
+        Else
+            ListView1.Invalidate()
+        End If
     End Sub
 
     Private Function GetListViewRowCount() As Integer
@@ -2351,24 +2440,114 @@ Public Class LTFSWriter
         e.Item = item
     End Sub
 
+    Private Function GetListViewColumnSignature() As String
+        Return If(ShowXAttr_Barcode, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_SHA1, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_SHA256, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_SHA512, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_CRC32, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_MD5, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_XxHash3, "1", "0") &
+               If(My.Settings.LTFSWriter_ChecksumEnabled_XxHash128, "1", "0")
+    End Function
+
+    Private Shared Function IsDynamicListViewColumn(name As String) As Boolean
+        Select Case name
+            Case "Column_Barcode", "Column_sha1", "Column_sha256", "Column_sha512", "Column_crc32",
+                 "Column_md5", "Column_blake3", "Column_XxHash3", "Column_XxHash128"
+                Return True
+        End Select
+        Return False
+    End Function
+
+    Private Sub EnsureListViewColumns()
+        Dim signature As String = GetListViewColumnSignature()
+        If String.Equals(_listViewColumnSignature, signature, StringComparison.Ordinal) Then Return
+
+        For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
+            If IsDynamicListViewColumn(ListView1.Columns(i).Name) Then ListView1.Columns.RemoveAt(i)
+        Next
+
+        Dim colIndex As Integer = 3
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1)), .Text = "SHA1", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1)), .Text = "SHA256", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1)), .Text = "SHA512", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1)), .Text = "CRC32", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1)), .Text = "MD5", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1)), .Text = "BLAKE3", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1)), .Text = "XxHash3", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+            ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1)), .Text = "XxHash128", .DisplayIndex = colIndex})
+            colIndex += 1
+        End If
+        If ShowXAttr_Barcode Then
+            ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = ListView1.LogicalToDeviceUnits(60), .Text = "Barcode", .DisplayIndex = 1})
+        End If
+
+        If My.Settings.LTFSWriter_ColumnIndex IsNot Nothing Then
+            Try
+                Dim cl As New List(Of KeyValuePair(Of ColumnHeader, Integer))
+                For i As Integer = 0 To ListView1.Columns.Count - 1
+                    Dim cid As Integer = ListView1.Columns(i).DisplayIndex + ListView1.Columns.Count + 100
+                    My.Settings.LTFSWriter_ColumnIndex.TryGetValue(ListView1.Columns(i).Name, cid)
+                    cl.Add(New KeyValuePair(Of ColumnHeader, Integer)(ListView1.Columns(i), cid))
+                Next
+                cl.Sort(New Comparison(Of KeyValuePair(Of ColumnHeader, Integer))(Function(a As KeyValuePair(Of ColumnHeader, Integer), b As KeyValuePair(Of ColumnHeader, Integer))
+                                                                                      Return a.Value.CompareTo(b.Value)
+                                                                                  End Function))
+                Dim d2 As New SerializableDictionary(Of String, Integer)
+                For i As Integer = 0 To cl.Count - 1
+                    cl(i) = New KeyValuePair(Of ColumnHeader, Integer)(cl(i).Key, i)
+                    d2.Add(cl(i).Key.Name, i)
+                Next
+                My.Settings.LTFSWriter_ColumnIndex = d2
+                For i As Integer = cl.Count - 1 To 0 Step -1
+                    cl(i).Key.DisplayIndex = i
+                Next
+            Catch ex As Exception
+                My.Settings.LTFSWriter_ColumnIndex = Nothing
+            End Try
+        Else
+            For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
+                ListView1.Columns(i).DisplayIndex = i
+            Next
+        End If
+
+        _listViewColumnSignature = signature
+    End Sub
+
     Public Sub TriggerTreeView1Event(Optional ByVal ForceRefresh As Boolean = False)
         If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
             Dim selectedTag As Object = TreeView1.SelectedNode.Tag
             If Not ForceRefresh AndAlso Object.ReferenceEquals(_lastListRefreshTag, selectedTag) Then Return
             _lastListRefreshTag = selectedTag
 
-            If LastSelectedNode IsNot Nothing Then
-                LastSelectedNode.BackColor = Color.Transparent
-            End If
-            If TreeView1.SelectedNode IsNot Nothing Then
-                LastSelectedNode = TreeView1.SelectedNode
-                TreeView1.SelectedNode.BackColor = Color.LightSkyBlue
-            End If
             ListView1.BeginUpdate()
             Dim old_select_index As Integer, old_node As Object = ListView1.Tag
             If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
             Dim pendingRows As New List(Of WriterListRow)
-            ClearListViewRows()
             Try
 
                 If TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.directory Then
@@ -2429,77 +2608,7 @@ Public Class LTFSWriter
                         ColumnReordered = False
                     End If
                     ListView1.Tag = d
-                    Dim colIndex As Integer = 3
-                    If ShowXAttr_Barcode Then
-                        If ListView1.Columns(1).Name = "Column_Barcode" Then ListView1.Columns.RemoveAt(1)
-                    End If
-                    While ListView1.Columns.Count > 15
-                        ListView1.Columns.RemoveAt(3)
-                    End While
-                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha1", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA1 + 1)), .Text = "SHA1", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha256", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA256 + 1)), .Text = "SHA256", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_sha512", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.SHA512 + 1)), .Text = "SHA512", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_crc32", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.CRC32 + 1)), .Text = "CRC32", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_md5", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.MD5 + 1)), .Text = "MD5", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_blake3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.BLAKE3 + 1)), .Text = "BLAKE3", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash3", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash3 + 1)), .Text = "XxHash3", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                        ListView1.Columns.Insert(colIndex, New ColumnHeader With {.Name = "Column_XxHash128", .Width = ListView1.LogicalToDeviceUnits(12 * (ltfsindex.file.xattr.HashLengthBytes.XxHash128 + 1)), .Text = "XxHash128", .DisplayIndex = colIndex})
-                        colIndex += 1
-                    End If
-                    If ShowXAttr_Barcode Then
-                        ListView1.Columns.Insert(1, New ColumnHeader With {.Name = "Column_Barcode", .Width = ListView1.LogicalToDeviceUnits(60), .Text = "Barcode", .DisplayIndex = 1})
-                    End If
-
-                    If My.Settings.LTFSWriter_ColumnIndex IsNot Nothing Then
-                        Try
-                            Dim cl As New List(Of KeyValuePair(Of ColumnHeader, Integer))
-                            For i As Integer = 0 To ListView1.Columns.Count - 1
-                                Dim cid As Integer = ListView1.Columns(i).DisplayIndex + ListView1.Columns.Count + 100
-                                My.Settings.LTFSWriter_ColumnIndex.TryGetValue(ListView1.Columns(i).Name, cid)
-                                cl.Add(New KeyValuePair(Of ColumnHeader, Integer)(ListView1.Columns(i), cid))
-                            Next
-                            cl.Sort(New Comparison(Of KeyValuePair(Of ColumnHeader, Integer))(Function(a As KeyValuePair(Of ColumnHeader, Integer), b As KeyValuePair(Of ColumnHeader, Integer))
-                                                                                                  Return a.Value.CompareTo(b.Value)
-                                                                                              End Function))
-                            Dim d2 As New SerializableDictionary(Of String, Integer)
-                            For i As Integer = 0 To cl.Count - 1
-                                cl(i) = New KeyValuePair(Of ColumnHeader, Integer)(cl(i).Key, i)
-                                d2.Add(cl(i).Key.Name, i)
-                            Next
-                            My.Settings.LTFSWriter_ColumnIndex = d2
-                            For i As Integer = cl.Count - 1 To 0 Step -1
-                                cl(i).Key.DisplayIndex = i
-                            Next
-                        Catch ex As Exception
-                            My.Settings.LTFSWriter_ColumnIndex = Nothing
-                        End Try
-                    Else
-                        For i As Integer = ListView1.Columns.Count - 1 To 0 Step -1
-                            ListView1.Columns(i).DisplayIndex = i
-                        Next
-                    End If
+                    EnsureListViewColumns()
 
                     SyncLock d.contents._file
                         For Each f As ltfsindex.file In d.contents._file
@@ -2596,20 +2705,30 @@ Public Class LTFSWriter
             End If
         End If
     End Sub
-    Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles TreeView1.AfterSelect
-        TriggerTreeView1Event()
+    Private Sub TreeView1_BeforeExpand(sender As Object, e As TreeViewCancelEventArgs) Handles TreeView1.BeforeExpand
+        If _treeRefreshInProgress Then Return
+        LoadTreeNodeChildren(e.Node)
     End Sub
-    Private Sub TreeView1_Click(sender As Object, e As EventArgs) Handles TreeView1.Click
+    Private Sub TreeView1_BeforeSelect(sender As Object, e As TreeViewCancelEventArgs) Handles TreeView1.BeforeSelect
+        Dim writerNode As WriterTreeNode = TryCast(e.Node, WriterTreeNode)
+        If writerNode IsNot Nothing AndAlso writerNode.IsPlaceholder Then
+            e.Cancel = True
+            Return
+        End If
+    End Sub
+    Private Sub TreeView1_AfterSelect(sender As Object, e As TreeViewEventArgs) Handles TreeView1.AfterSelect
+        If _treeRefreshInProgress OrElse e.Node Is Nothing OrElse e.Node.Tag Is Nothing Then Return
         TriggerTreeView1Event()
     End Sub
     Private Sub TreeView1_KeyUp(sender As Object, e As KeyEventArgs) Handles TreeView1.KeyUp
-        If e.KeyCode = Keys.ControlKey Then
-            TreeView1.CheckBoxes = Not TreeView1.CheckBoxes
-        End If
+        Select Case e.KeyCode
+            Case Keys.ControlKey, Keys.LControlKey, Keys.RControlKey
+                TreeView1.CheckBoxes = Not TreeView1.CheckBoxes
+        End Select
     End Sub
     Private Sub TreeView1_NodeMouseClick(sender As Object, e As TreeNodeMouseClickEventArgs) Handles TreeView1.NodeMouseClick
         If e.Button = MouseButtons.Right Then
-            TreeView1.SelectedNode = e.Node
+            If Not Object.ReferenceEquals(TreeView1.SelectedNode, e.Node) Then TreeView1.SelectedNode = e.Node
         End If
     End Sub
     <Category("UI")>
@@ -10780,40 +10899,16 @@ Public Class LTFSWriter
         End If
     End Sub
     Public Function GetNode(path As String) As TreeNode
-        If Not path.EndsWith("\") AndAlso Not path.EndsWith("/") Then path &= "\"
-        Dim DIR() As String = path.Split({"\", "/"}, StringSplitOptions.None)
-        ReDim Preserve DIR(DIR.Length - 2)
-        Dim targetdir As TreeNode = TreeView1.TopNode
-        If DIR.Length > 1 AndAlso DIR(1) = CType(targetdir.Tag, ltfsindex.directory).name Then
-            Dim found As Boolean = False
-            For i As Integer = 2 To DIR.Length - 1
-                If targetdir.Nodes.Count = 0 AndAlso CType(targetdir.Tag, ltfsindex.directory).contents._directory.Count > 0 Then
-                    TreeView1.SelectedNode = targetdir
-                    Application.DoEvents()
-                End If
-                For j As Integer = 0 To targetdir.Nodes.Count - 1
-                    If CType(targetdir.Nodes(j).Tag, ltfsindex.directory).name = DIR(i) Then
-                        targetdir = targetdir.Nodes(j)
-                        If i = DIR.Length - 1 Then
-                            found = True
-                        End If
-                        Exit For
-                    End If
-                Next
-            Next
-            If found Then
-                Return targetdir
-            End If
-        End If
-        Return Nothing
+        Return FindTreeNodeByPath(path)
     End Function
     Public Sub ChangeDirectory(path As String)
         Dim targetdir As TreeNode = GetNode(path)
         If targetdir IsNot Nothing Then
+            Dim selectionUnchanged As Boolean = Object.ReferenceEquals(TreeView1.SelectedNode, targetdir)
             TreeView1.SelectedNode = targetdir
             targetdir.Expand()
+            If selectionUnchanged Then TriggerTreeView1Event(True)
         End If
-        TriggerTreeView1Event(True)
     End Sub
 
     Private Sub 启动iSCSI服务ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动iSCSI服务ToolStripMenuItem.Click
@@ -11888,7 +11983,10 @@ Public Class LTFSWriter
 
     Private Sub TreeView1_SizeChanged(sender As Object, e As EventArgs) Handles TreeView1.SizeChanged
         Try
-            Dim il = New ImageList With {.ImageSize = New Size(TreeView1.ItemHeight, TreeView1.ItemHeight)}
+            Dim targetSize As New Size(TreeView1.ItemHeight, TreeView1.ItemHeight)
+            If TreeView1.ImageList IsNot Nothing AndAlso TreeView1.ImageList.ImageSize = targetSize Then Return
+
+            Dim il = New ImageList With {.ImageSize = targetSize}
             For Each img As Image In ImageList1.Images
                 il.Images.Add(img)
             Next
