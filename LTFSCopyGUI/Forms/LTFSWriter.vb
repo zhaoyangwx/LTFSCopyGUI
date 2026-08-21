@@ -480,8 +480,7 @@ Public Class LTFSWriter
             schema._directory IsNot Nothing AndAlso
             schema._directory.Count > 0 AndAlso
             schema._directory(0) IsNot Nothing AndAlso (
-            ListView1.Items Is Nothing OrElse
-            ListView1.Items.Count = 0) Then
+            GetListViewRowCount() = 0) Then
             Try
                 Dim img As Image = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
                 ListView1.CreateGraphics().DrawImage(img, 0, 0)
@@ -1927,6 +1926,7 @@ Public Class LTFSWriter
         If schema Is Nothing Then Exit Sub
         Invoke(
             Sub()
+                _lastListRefreshTag = Nothing
                 If My.Settings.LTFSWriter_ShowFileCount Then schema._directory(0).DeepRefreshCount()
                 Try
                     Dim old_select As ltfsindex.directory = Nothing
@@ -2115,8 +2115,248 @@ Public Class LTFSWriter
         Return sb.ToString()
     End Function
     Public LastSelectedNode As TreeNode = Nothing
-    Public Sub TriggerTreeView1Event()
+
+    Private Enum WriterListRowKind
+        File
+        UnwrittenFile
+        TarDirectory
+        TarFile
+    End Enum
+
+    Private NotInheritable Class WriterListRow
+        Public Sub New(kind As WriterListRowKind, value As Object)
+            Me.Kind = kind
+            Me.Value = value
+        End Sub
+
+        Public ReadOnly Property Kind As WriterListRowKind
+        Public ReadOnly Property Value As Object
+
+        Public Function GetItem(owner As LTFSWriter) As ListViewItem
+            Return owner.CreateListViewItem(Me)
+        End Function
+    End Class
+
+    Private ReadOnly _listRows As New List(Of WriterListRow)
+    Private ReadOnly _listItemCache As New Dictionary(Of Integer, ListViewItem)
+    Private ReadOnly _listItemCacheOrder As New Queue(Of Integer)
+    Private Const ListItemCacheCapacity As Integer = 512
+    Private _lastListRefreshTag As Object = Nothing
+
+    Private Function CreateListViewItem(row As WriterListRow) As ListViewItem
+        If row Is Nothing OrElse row.Value Is Nothing Then Return New ListViewItem()
+
+        Select Case row.Kind
+            Case WriterListRowKind.File
+                Return CreateFileListViewItem(DirectCast(row.Value, ltfsindex.file), False)
+            Case WriterListRowKind.UnwrittenFile
+                Return CreateFileListViewItem(DirectCast(row.Value, ltfsindex.file), True)
+            Case WriterListRowKind.TarDirectory
+                Dim directory As TarVirtualDirectory = DirectCast(row.Value, TarVirtualDirectory)
+                Dim directoryItem As New ListViewItem With {
+                    .Tag = directory,
+                    .Text = directory.Name,
+                    .ImageIndex = 1,
+                    .StateImageIndex = 1,
+                    .ForeColor = Color.Blue}
+                directoryItem.SubItems.Add("<DIR>")
+                Return directoryItem
+            Case WriterListRowKind.TarFile
+                Dim file As TarVirtualFile = DirectCast(row.Value, TarVirtualFile)
+                Dim item As New ListViewItem With {
+                    .Tag = file,
+                    .Text = file.Name,
+                    .ImageIndex = 2,
+                    .StateImageIndex = 2}
+                item.SubItems.Add(file.Entry.Length.ToString())
+                item.SubItems.Add(file.Entry.Xxh3128)
+                Return item
+        End Select
+
+        Return New ListViewItem()
+    End Function
+
+    Private Function CreateFileListViewItem(file As ltfsindex.file, unwritten As Boolean) As ListViewItem
+        Dim item As New ListViewItem With {
+            .Tag = file,
+            .Text = If(file.name, String.Empty),
+            .ImageIndex = If(unwritten, -1, 2),
+            .StateImageIndex = If(unwritten, -1, 2)}
+        Dim values As New List(Of String)
+
+        Dim populate As Action =
+            Sub()
+                If ShowXAttr_Barcode Then values.Add(file.GetXAttr("Barcode", True))
+                values.Add(CStr(file.length))
+                values.Add(If(file.creationtime, String.Empty))
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
+                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then values.Add(file.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True))
+                values.Add(CStr(file.fileuid))
+                values.Add(CStr(file.openforwrite))
+                values.Add(CStr(file.readonly))
+                values.Add(If(file.changetime, String.Empty))
+                values.Add(If(file.modifytime, String.Empty))
+                values.Add(If(file.accesstime, String.Empty))
+                values.Add(If(file.backuptime, String.Empty))
+                values.Add(If(file.tag, String.Empty))
+                If file.extentinfo IsNot Nothing AndAlso file.extentinfo.Count > 0 Then
+                    Try
+                        values.Add(file.extentinfo(0).startblock.ToString())
+                    Catch
+                        values.Add("-")
+                    End Try
+                    Try
+                        values.Add(file.extentinfo(0).partition.ToString())
+                    Catch
+                        values.Add("-")
+                    End Try
+                Else
+                    values.Add("-")
+                    values.Add("-")
+                End If
+                values.Add(ByteFormatter.FormatBytes(file.length, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
+                If file.WrittenBytes > 0 Then
+                    values.Add(ByteFormatter.FormatBytes(file.WrittenBytes, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
+                Else
+                    values.Add("-")
+                End If
+            End Sub
+
+        If unwritten Then
+            SyncLock file
+                populate()
+            End SyncLock
+        Else
+            populate()
+        End If
+
+        For Each value As String In values
+            item.SubItems.Add(If(value, String.Empty))
+        Next
+        item.ForeColor = If(unwritten, Color.Gray, file.ItemForeColor)
+
+        If Not unwritten Then
+            Dim columnIndex As Integer = 3 + If(ShowXAttr_Barcode, 1, 0)
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
+                ApplyChecksumColor(item, columnIndex, file.SHA1ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
+                ApplyChecksumColor(item, columnIndex, file.SHA256ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
+                ApplyChecksumColor(item, columnIndex, file.SHA512ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
+                ApplyChecksumColor(item, columnIndex, file.CRC32ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
+                ApplyChecksumColor(item, columnIndex, file.MD5ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
+                ApplyChecksumColor(item, columnIndex, file.BLAKE3ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
+                ApplyChecksumColor(item, columnIndex, file.XxHash3ForeColor)
+                columnIndex += 1
+            End If
+            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
+                ApplyChecksumColor(item, columnIndex, file.XxHash128ForeColor)
+            End If
+        End If
+
+        Return item
+    End Function
+
+    Private Shared Sub ApplyChecksumColor(item As ListViewItem, columnIndex As Integer, color As Color)
+        If color.Equals(Color.Black) OrElse columnIndex >= item.SubItems.Count Then Return
+        item.UseItemStyleForSubItems = False
+        item.SubItems(columnIndex).ForeColor = color
+    End Sub
+
+    Private Sub ClearListViewRows()
+        ListView1.SelectedIndices.Clear()
+        ListView1.VirtualListSize = 0
+        _listRows.Clear()
+        _listItemCache.Clear()
+        _listItemCacheOrder.Clear()
+    End Sub
+
+    Private Sub SetListViewRows(rows As List(Of WriterListRow))
+        ClearListViewRows()
+        If rows IsNot Nothing AndAlso rows.Count > 0 Then _listRows.AddRange(rows)
+        ListView1.VirtualListSize = _listRows.Count
+    End Sub
+
+    Private Function GetListViewRowCount() As Integer
+        Return _listRows.Count
+    End Function
+
+    Private Function GetListViewItem(index As Integer) As ListViewItem
+        If index < 0 OrElse index >= _listRows.Count Then Return Nothing
+        Dim item As ListViewItem = Nothing
+        If _listItemCache.TryGetValue(index, item) Then Return item
+
+        item = _listRows(index).GetItem(Me)
+        _listItemCache(index) = item
+        _listItemCacheOrder.Enqueue(index)
+        While _listItemCache.Count > ListItemCacheCapacity
+            Dim oldestIndex As Integer = _listItemCacheOrder.Dequeue()
+            If _listItemCache.ContainsKey(oldestIndex) Then
+                _listItemCache.Remove(oldestIndex)
+            End If
+        End While
+        Return item
+    End Function
+
+    Private Function GetSelectedListViewItems() As List(Of ListViewItem)
+        Dim result As New List(Of ListViewItem)
+        For i As Integer = 0 To ListView1.SelectedIndices.Count - 1
+            Dim index As Integer = ListView1.SelectedIndices(i)
+            Dim item As ListViewItem = GetListViewItem(index)
+            If item IsNot Nothing Then result.Add(item)
+        Next
+        Return result
+    End Function
+
+    Private Sub SelectListViewIndex(index As Integer)
+        If index < 0 OrElse index >= _listRows.Count Then Return
+        ListView1.SelectedIndices.Clear()
+        ListView1.SelectedIndices.Add(index)
+        Dim item As ListViewItem = GetListViewItem(index)
+        If item IsNot Nothing Then
+            Try
+                ListView1.FocusedItem = item
+            Catch
+            End Try
+        End If
+        ListView1.Focus()
+        ListView1.EnsureVisible(index)
+    End Sub
+
+    Private Sub ListView1_RetrieveVirtualItem(sender As Object, e As RetrieveVirtualItemEventArgs) Handles ListView1.RetrieveVirtualItem
+        Dim item As ListViewItem = GetListViewItem(e.ItemIndex)
+        If item Is Nothing Then item = New ListViewItem()
+        e.Item = item
+    End Sub
+
+    Public Sub TriggerTreeView1Event(Optional ByVal ForceRefresh As Boolean = False)
         If TreeView1.SelectedNode IsNot Nothing AndAlso TreeView1.SelectedNode.Tag IsNot Nothing Then
+            Dim selectedTag As Object = TreeView1.SelectedNode.Tag
+            If Not ForceRefresh AndAlso Object.ReferenceEquals(_lastListRefreshTag, selectedTag) Then Return
+            _lastListRefreshTag = selectedTag
+
             If LastSelectedNode IsNot Nothing Then
                 LastSelectedNode.BackColor = Color.Transparent
             End If
@@ -2127,6 +2367,8 @@ Public Class LTFSWriter
             ListView1.BeginUpdate()
             Dim old_select_index As Integer, old_node As Object = ListView1.Tag
             If ListView1.SelectedIndices.Count > 0 Then old_select_index = ListView1.SelectedIndices(0) Else old_select_index = -1
+            Dim pendingRows As New List(Of WriterListRow)
+            ClearListViewRows()
             Try
 
                 If TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.directory Then
@@ -2186,7 +2428,6 @@ Public Class LTFSWriter
                         My.Settings.Save()
                         ColumnReordered = False
                     End If
-                    ListView1.Items.Clear()
                     ListView1.Tag = d
                     Dim colIndex As Integer = 3
                     If ShowXAttr_Barcode Then
@@ -2262,205 +2503,12 @@ Public Class LTFSWriter
 
                     SyncLock d.contents._file
                         For Each f As ltfsindex.file In d.contents._file
-                            Dim li As New ListViewItem
-                            li.Tag = f
-                            li.Text = f.name
-                            li.ImageIndex = 2
-                            li.StateImageIndex = 2
-                            Dim s As New List(Of String)
-                            If ShowXAttr_Barcode Then
-                                s.Add(f.GetXAttr("Barcode", True))
-                            End If
-                            s.Add(CStr(f.length))
-                            s.Add(f.creationtime)
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True))
-                            End If
-                            s.Add(CStr(f.fileuid))
-                            s.Add(CStr(f.openforwrite))
-                            s.Add(CStr(f.readonly))
-                            s.Add(f.changetime)
-                            s.Add(f.modifytime)
-                            s.Add(f.accesstime)
-                            s.Add(f.backuptime)
-                            If f.tag IsNot Nothing Then
-                                s.Add(f.tag.ToString())
-                            Else
-                                s.Add("")
-                            End If
-                            If f.extentinfo IsNot Nothing Then
-                                If f.extentinfo.Count > 0 Then
-                                    Try
-                                        s.Add((f.extentinfo(0).startblock.ToString()))
-                                    Catch ex As Exception
-                                        s.Add(("-"))
-                                    End Try
-                                    Try
-                                        s.Add((f.extentinfo(0).partition.ToString()))
-                                    Catch ex As Exception
-                                        s.Add(("-"))
-                                    End Try
-                                End If
-                            Else
-                                s.Add(("-"))
-                                s.Add(("-"))
-                            End If
-                            s.Add(ByteFormatter.FormatBytes(f.length, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
-                            If f.WrittenBytes > 0 Then
-                                s.Add(ByteFormatter.FormatBytes(f.WrittenBytes, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
-                            Else
-                                s.Add("-")
-                            End If
-                            For Each t As String In s
-                                li.SubItems.Add(t)
-                            Next
-                            li.ForeColor = f.ItemForeColor
-                            Dim colID As Integer = 3
-                            If ShowXAttr_Barcode Then
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 AndAlso Not f.SHA1ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.SHA1ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 AndAlso Not f.SHA256ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.SHA256ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 AndAlso Not f.SHA512ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.SHA512ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 AndAlso Not f.CRC32ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.CRC32ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_MD5 AndAlso Not f.MD5ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.MD5ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 AndAlso Not f.BLAKE3ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.BLAKE3ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 AndAlso Not f.XxHash3ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.XxHash3ForeColor
-                                colID += 1
-                            End If
-                            If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 AndAlso Not f.XxHash128ForeColor.Equals(Color.Black) Then
-                                li.UseItemStyleForSubItems = False
-                                li.SubItems(colID).ForeColor = f.XxHash128ForeColor
-                                colID += 1
-                            End If
-                            ListView1.Items.Add(li)
+                            pendingRows.Add(New WriterListRow(WriterListRowKind.File, f))
                         Next
-
                     End SyncLock
                     SyncLock d.UnwrittenFiles
                         For Each f As ltfsindex.file In d.UnwrittenFiles
-                            Dim li As New ListViewItem
-                            SyncLock f
-                                li.Tag = f
-                                li.Text = f.name
-                                Dim s As New List(Of String)
-                                s.Add(CStr(f.length))
-                                s.Add(f.creationtime)
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA1 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA1, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA256 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA256, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_SHA512 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.SHA512, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_CRC32 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.CRC32, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_MD5 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.MD5, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_BLAKE3 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.BLAKE3, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash3 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash3, True))
-                                End If
-                                If My.Settings.LTFSWriter_ChecksumEnabled_XxHash128 Then
-                                    s.Add(f.GetXAttr(ltfsindex.file.xattr.HashType.XxHash128, True))
-                                End If
-                                s.Add(CStr(f.fileuid))
-                                s.Add(CStr(f.openforwrite))
-                                s.Add(CStr(f.readonly))
-                                s.Add(f.changetime)
-                                s.Add(f.modifytime)
-                                s.Add(f.accesstime)
-                                s.Add(f.backuptime)
-                                If f.tag IsNot Nothing Then
-                                    s.Add(f.tag.ToString())
-                                Else
-                                    s.Add("")
-                                End If
-                                If f.extentinfo IsNot Nothing Then
-                                    If f.extentinfo.Count > 0 Then
-                                        Try
-                                            s.Add(f.extentinfo(0).startblock.ToString())
-                                        Catch ex As Exception
-                                            s.Add(("-"))
-                                        End Try
-                                        Try
-                                            s.Add((f.extentinfo(0).partition.ToString()))
-                                        Catch ex As Exception
-                                            s.Add(("-"))
-                                        End Try
-                                    Else
-                                        s.Add("-")
-                                        s.Add("-")
-                                    End If
-                                Else
-                                    s.Add("-")
-                                    s.Add("-")
-                                End If
-                                s.Add(ByteFormatter.FormatBytes(f.length, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
-                                If f.WrittenBytes > 0 Then
-                                    s.Add(ByteFormatter.FormatBytes(f.WrittenBytes, style:=If(My.Settings.Application_UseDecimalUnit, Style.SI, Style.IEC)))
-                                Else
-                                    s.Add("-")
-                                End If
-                                For Each t As String In s
-                                    li.SubItems.Add(t)
-                                Next
-                            End SyncLock
-                            li.ForeColor = Color.Gray
-                            ListView1.Items.Add(li)
+                            pendingRows.Add(New WriterListRow(WriterListRowKind.UnwrittenFile, f))
                         Next
                     End SyncLock
                 ElseIf TypeOf (TreeView1.SelectedNode.Tag) Is TarVirtualDirectory Then
@@ -2507,26 +2555,11 @@ Public Class LTFSWriter
                     新建压缩文件ToolStripMenuItem.Enabled = False
                     ListView1.Tag = tarDirectory
                     TextBoxSelectedPath.Text = GetPath(TreeView1.SelectedNode)
-                    ListView1.Items.Clear()
                     For Each child As TarVirtualDirectory In tarDirectory.Directories
-                        Dim li As New ListViewItem With {
-                            .Tag = child,
-                            .Text = child.Name,
-                            .ImageIndex = 1,
-                            .StateImageIndex = 1,
-                            .ForeColor = Color.Blue}
-                        li.SubItems.Add("<DIR>")
-                        ListView1.Items.Add(li)
+                        pendingRows.Add(New WriterListRow(WriterListRowKind.TarDirectory, child))
                     Next
                     For Each child As TarVirtualFile In tarDirectory.Files
-                        Dim li As New ListViewItem With {
-                            .Tag = child,
-                            .Text = child.Name,
-                            .ImageIndex = 2,
-                            .StateImageIndex = 2}
-                        li.SubItems.Add(child.Entry.Length.ToString())
-                        li.SubItems.Add(child.Entry.Xxh3128)
-                        ListView1.Items.Add(li)
+                        pendingRows.Add(New WriterListRow(WriterListRowKind.TarFile, child))
                     Next
                 ElseIf TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.file Then
                     Dim f As ltfsindex.file = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.file)
@@ -2543,23 +2576,23 @@ Public Class LTFSWriter
                         删除ToolStripMenuItem.Enabled = False
                         统计ToolStripMenuItem.Enabled = False
                     End If
-                    ListView1.Items.Clear()
                 End If
-                If ListView1.Items Is Nothing OrElse ListView1.Items.Count = 0 AndAlso schema IsNot Nothing Then
+                If pendingRows.Count = 0 AndAlso schema IsNot Nothing Then
                     'ListView1.BackgroundImage = IOManager.FitImage(My.Resources.dragdrop, ListView1.Size)
                 Else
                     'ListView1.BackgroundImage = Nothing
                 End If
 
+                SetListViewRows(pendingRows)
+
             Catch ex As Exception
+                _lastListRefreshTag = Nothing
                 PrintMsg(My.Resources.ResText_NavErr)
                 SetStatusLight(LWStatus.Err)
             End Try
             ListView1.EndUpdate()
-            If old_node IsNot Nothing AndAlso ListView1.Tag IsNot Nothing AndAlso ListView1.Items.Count > 0 AndAlso old_node Is ListView1.Tag AndAlso old_select_index >= 0 Then
-                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Focused = True
-                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).Selected = True
-                ListView1.Items(Math.Min(old_select_index, ListView1.Items.Count - 1)).EnsureVisible()
+            If old_node IsNot Nothing AndAlso ListView1.Tag IsNot Nothing AndAlso GetListViewRowCount() > 0 AndAlso old_node Is ListView1.Tag AndAlso old_select_index >= 0 Then
+                SelectListViewIndex(Math.Min(old_select_index, GetListViewRowCount() - 1))
             End If
         End If
     End Sub
@@ -3564,12 +3597,12 @@ Public Class LTFSWriter
 
     End Sub
     Private Sub 重命名ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 重命名文件ToolStripMenuItem.Click
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 AndAlso
-        ListView1.SelectedItems.Item(0).Tag IsNot Nothing AndAlso
-        TypeOf (ListView1.SelectedItems.Item(0).Tag) Is ltfsindex.file Then
-            Dim f As ltfsindex.file = DirectCast(ListView1.SelectedItems.Item(0).Tag, ltfsindex.file)
+        selectedItems.Count > 0 AndAlso
+        selectedItems.Item(0).Tag IsNot Nothing AndAlso
+        TypeOf (selectedItems.Item(0).Tag) Is ltfsindex.file Then
+            Dim f As ltfsindex.file = DirectCast(selectedItems.Item(0).Tag, ltfsindex.file)
             Dim d As ltfsindex.directory = DirectCast(ListView1.Tag, ltfsindex.directory)
             Dim newname As String = f.name
             If (DisplayHelper.ShowInputDialog(My.Resources.ResText_NFName, My.Resources.ResText_Rename, newname) <> DialogResult.OK) Then Exit Sub
@@ -3593,12 +3626,11 @@ Public Class LTFSWriter
         End If
     End Sub
     Private Sub 删除文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 删除文件ToolStripMenuItem.Click
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 AndAlso
-        MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{ListView1.SelectedItems.Count}{My.Resources.ResText_Files_C}", My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
-            SyncLock ListView1.SelectedItems
-                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+        selectedItems.Count > 0 AndAlso
+        MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_DelConfrm}{selectedItems.Count}{My.Resources.ResText_Files_C}", My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            For Each ItemSelected As ListViewItem In selectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
                         Dim d As ltfsindex.directory = DirectCast(ListView1.Tag, ltfsindex.directory)
@@ -3623,8 +3655,7 @@ Public Class LTFSWriter
                             If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                         End If
                     End If
-                Next
-            End SyncLock
+            Next
             UnwrittenCountOverrideValue = 0
             UnwrittenSizeOverrideValue = 0
             RefreshDisplay()
@@ -4451,10 +4482,11 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 提取ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 提取ToolStripMenuItem.Click
-        If ListView1.SelectedItems Is Nothing OrElse ListView1.SelectedItems.Count = 0 Then Exit Sub
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count = 0 Then Exit Sub
         Dim tarFiles As New List(Of TarVirtualFile)
         Dim tarDirectories As New List(Of TarVirtualDirectory)
-        For Each item As ListViewItem In ListView1.SelectedItems
+        For Each item As ListViewItem In selectedItems
             If TypeOf item.Tag Is TarVirtualFile Then
                 tarFiles.Add(DirectCast(item.Tag, TarVirtualFile))
             ElseIf TypeOf item.Tag Is TarVirtualDirectory Then
@@ -4470,7 +4502,7 @@ Public Class LTFSWriter
         Dim BasePath As String = selectedPath
         LockGUI()
         Dim flist As New List(Of ltfsindex.file)
-        For Each SI As ListViewItem In ListView1.SelectedItems
+        For Each SI As ListViewItem In selectedItems
             If TypeOf SI.Tag Is ltfsindex.file Then
                 flist.Add(DirectCast(SI.Tag, ltfsindex.file))
             End If
@@ -7307,12 +7339,12 @@ Public Class LTFSWriter
         End If
     End Sub
     Private Sub 定位到起始块ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 定位到起始块ToolStripMenuItem.Click
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 AndAlso
-        ListView1.SelectedItems(0).Tag IsNot Nothing AndAlso
-            TypeOf (ListView1.SelectedItems(0).Tag) Is ltfsindex.file Then
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count > 0 AndAlso
+        selectedItems(0).Tag IsNot Nothing AndAlso
+            TypeOf (selectedItems(0).Tag) Is ltfsindex.file Then
 
-            Dim f As ltfsindex.file = DirectCast(ListView1.SelectedItems(0).Tag, ltfsindex.file)
+            Dim f As ltfsindex.file = DirectCast(selectedItems(0).Tag, ltfsindex.file)
             If f.extentinfo IsNot Nothing AndAlso f.extentinfo.Count > 0 Then
                 Dim ext As ltfsindex.file.extent = f.extentinfo(0)
                 Dim th As New Threading.Thread(
@@ -8704,10 +8736,11 @@ Public Class LTFSWriter
         DisplayHelper.ShowInputDialog(My.Resources.ResText_CLNCS, My.Resources.ResText_Setting, CleanCycle)
     End Sub
     Public Sub HashSelectedFiles(Overwrite As Boolean, ValidOnly As Boolean)
-        If ListView1.SelectedItems Is Nothing OrElse ListView1.SelectedItems.Count = 0 Then Return
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count = 0 Then Return
 
         Dim selectedFiles As New List(Of FileRecord)
-        For Each item As ListViewItem In ListView1.SelectedItems
+        For Each item As ListViewItem In selectedItems
             If TypeOf item.Tag Is ltfsindex.file Then
                 Dim selectedFile As ltfsindex.file = DirectCast(item.Tag, ltfsindex.file)
                 selectedFiles.Add(New FileRecord With {
@@ -8797,17 +8830,15 @@ Public Class LTFSWriter
 
     Private Sub 复制选中信息ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 复制选中信息ToolStripMenuItem.Click
         Dim result As New StringBuilder
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
-            SyncLock ListView1.SelectedItems
-                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+        selectedItems.Count > 0 Then
+            For Each ItemSelected As ListViewItem In selectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
                         result.AppendLine(f.name)
                     End If
-                Next
-            End SyncLock
+            Next
         End If
         Clipboard.SetText(result.ToString)
     End Sub
@@ -8856,23 +8887,21 @@ Public Class LTFSWriter
 
     Private Sub 文件详情ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 文件详情ToolStripMenuItem.Click
         Dim result As New StringBuilder
-        If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing Then
-            If ListView1.SelectedItems.Count > 0 Then
-                If ListView1.SelectedItems.Count > 1 Then
-                    SyncLock ListView1.SelectedItems
-                        For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If ListView1.Tag IsNot Nothing Then
+            If selectedItems.Count > 0 Then
+                If selectedItems.Count > 1 Then
+                    For Each ItemSelected As ListViewItem In selectedItems
                             If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                                 Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
                                 result.AppendLine(f.GetSerializedText())
                             End If
-                        Next
-                    End SyncLock
+                    Next
                     MessageBox.Show(New Form With {.TopMost = True}, result.ToString)
                 Else
                     Dim PG1 As New SettingPanel
-                    PG1.PropertyGrid1.SelectedObject = CType(ListView1.SelectedItems(0).Tag, ltfsindex.file)
-                    PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name}"
+                    PG1.PropertyGrid1.SelectedObject = CType(selectedItems(0).Tag, ltfsindex.file)
+                    PG1.Text = $"{TextBoxSelectedPath.Text}\{ CType(selectedItems(0).Tag, ltfsindex.file).name}"
                     If PG1.ShowDialog() = DialogResult.OK Then
                         If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                     End If
@@ -9379,34 +9408,30 @@ Public Class LTFSWriter
 
     Private Sub 文件详情ToolStripMenuItem1_Click(sender As Object, e As EventArgs) Handles 文件详情ToolStripMenuItem1.Click
         Dim result As New StringBuilder
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
-            SyncLock ListView1.SelectedItems
-                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+        selectedItems.Count > 0 Then
+            For Each ItemSelected As ListViewItem In selectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
                         result.AppendLine(f.GetSerializedText())
                     End If
-                Next
-            End SyncLock
+            Next
         End If
         Clipboard.SetText(result.ToString)
     End Sub
 
     Private Sub XAttrToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles XAttrToolStripMenuItem.Click
         Dim result As New StringBuilder
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If ListView1.Tag IsNot Nothing AndAlso
-        ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
-            SyncLock ListView1.SelectedItems
-                For Each ItemSelected As ListViewItem In ListView1.SelectedItems
+        selectedItems.Count > 0 Then
+            For Each ItemSelected As ListViewItem In selectedItems
                     If ItemSelected.Tag IsNot Nothing AndAlso TypeOf (ItemSelected.Tag) Is ltfsindex.file Then
                         Dim f As ltfsindex.file = DirectCast(ItemSelected.Tag, ltfsindex.file)
                         result.AppendLine(f.GetXAttrText())
                     End If
-                Next
-            End SyncLock
+            Next
         End If
         Clipboard.SetText(result.ToString)
     End Sub
@@ -9645,11 +9670,11 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 移动到索引区ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 移动到索引区ToolStripMenuItem.Click
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count > 0 Then
             LockGUI()
             Dim flist As New List(Of ltfsindex.file)
-            For Each SI As ListViewItem In ListView1.SelectedItems
+            For Each SI As ListViewItem In selectedItems
                 If TypeOf SI.Tag Is ltfsindex.file Then
                     flist.Add(DirectCast(SI.Tag, ltfsindex.file))
                 End If
@@ -9762,11 +9787,11 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 剪切文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 剪切文件ToolStripMenuItem.Click
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count > 0 Then
             Dim flist As New List(Of ltfsindex.file)
             Dim d As ltfsindex.directory = DirectCast(ListView1.Tag, ltfsindex.directory)
-            For Each SI As ListViewItem In ListView1.SelectedItems
+            For Each SI As ListViewItem In selectedItems
                 If TypeOf SI.Tag Is ltfsindex.file Then
                     Dim f As ltfsindex.file = CType(SI.Tag, ltfsindex.file)
                     If Not d.UnwrittenFiles.Contains(f) Then
@@ -10388,14 +10413,14 @@ Public Class LTFSWriter
         If KW Is Nothing Then KW = LastSearchKW
         Dim SearchStart As String = ""
         Dim result As New StringBuilder
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
         If TreeView1.SelectedNode IsNot Nothing Then
             If TreeView1.SelectedNode.Tag IsNot Nothing Then
                 If TypeOf TreeView1.SelectedNode.Tag Is ltfsindex.directory Then
                     SearchStart = GetPath(TreeView1.SelectedNode) & "\"
                     If ListView1.Tag IsNot Nothing AndAlso
-                                             ListView1.SelectedItems IsNot Nothing AndAlso
-                                             ListView1.SelectedItems.Count > 0 Then
-                        SearchStart &= CType(ListView1.SelectedItems(0).Tag, ltfsindex.file).name
+                                             selectedItems.Count > 0 Then
+                        SearchStart &= CType(selectedItems(0).Tag, ltfsindex.file).name
                     End If
                 End If
             End If
@@ -10470,14 +10495,10 @@ Public Class LTFSWriter
                                                     TreeView1.SelectedNode = nd
                                                     RefreshDisplay()
                                                 End If
-                                                For Each it As ListViewItem In ListView1.Items
-                                                    it.Selected = False
-                                                Next
+                                                ListView1.SelectedIndices.Clear()
                                                 If fileindex <> -1 Then
                                                     Try
-                                                        ListView1.Items(fileindex).Focused = True
-                                                        ListView1.Items(fileindex).Selected = True
-                                                        ListView1.EnsureVisible(fileindex)
+                                                        SelectListViewIndex(fileindex)
                                                         PrintMsg($"{currpath}\{dirStack.Last.contents._file(fileindex).name}")
                                                     Catch ex As Exception
 
@@ -10485,9 +10506,7 @@ Public Class LTFSWriter
                                                 Else
                                                     PrintMsg($"{currpath}")
                                                     Try
-                                                        ListView1.Items(0).Focused = True
-                                                        ListView1.Items(0).Selected = True
-                                                        ListView1.EnsureVisible(0)
+                                                        SelectListViewIndex(0)
                                                     Catch ex As Exception
 
                                                     End Try
@@ -10683,11 +10702,11 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub 合并文件ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 合并文件ToolStripMenuItem.Click
-        If ListView1.SelectedItems IsNot Nothing AndAlso
-        ListView1.SelectedItems.Count > 0 Then
+        Dim selectedItems As List(Of ListViewItem) = GetSelectedListViewItems()
+        If selectedItems.Count > 0 Then
             Dim flist As New List(Of ltfsindex.file)
             Dim d As ltfsindex.directory = DirectCast(ListView1.Tag, ltfsindex.directory)
-            For Each SI As ListViewItem In ListView1.SelectedItems
+            For Each SI As ListViewItem In selectedItems
                 If TypeOf SI.Tag Is ltfsindex.file Then
                     Dim f As ltfsindex.file = CType(SI.Tag, ltfsindex.file)
                     If Not d.UnwrittenFiles.Contains(f) Then
@@ -10794,7 +10813,7 @@ Public Class LTFSWriter
             TreeView1.SelectedNode = targetdir
             targetdir.Expand()
         End If
-        TriggerTreeView1Event()
+        TriggerTreeView1Event(True)
     End Sub
 
     Private Sub 启动iSCSI服务ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启动iSCSI服务ToolStripMenuItem.Click

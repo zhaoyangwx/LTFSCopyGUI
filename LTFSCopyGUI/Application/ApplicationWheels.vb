@@ -1108,6 +1108,12 @@ End Class
 Public Class DpiAwareListView
     Inherits ListView
 
+    Public Sub New()
+        MyBase.New()
+        DoubleBuffered = True
+        VirtualMode = True
+    End Sub
+
     Protected Overrides Sub ScaleControl(factor As SizeF,
                                          specified As BoundsSpecified)
         MyBase.ScaleControl(factor, specified)
