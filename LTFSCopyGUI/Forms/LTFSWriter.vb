@@ -2569,8 +2569,8 @@ Public Class LTFSWriter
     Private Sub TreeView1_Click(sender As Object, e As EventArgs) Handles TreeView1.Click
         TriggerTreeView1Event()
     End Sub
-    Private Sub TreeView1_KeyDown(sender As Object, e As KeyEventArgs) Handles TreeView1.KeyDown
-        If e.Control Then
+    Private Sub TreeView1_KeyUp(sender As Object, e As KeyEventArgs) Handles TreeView1.KeyUp
+        If e.KeyCode = Keys.ControlKey Then
             TreeView1.CheckBoxes = Not TreeView1.CheckBoxes
         End If
     End Sub
@@ -3147,11 +3147,11 @@ Public Class LTFSWriter
         Next
 
         scan.Files.Sort(New Comparison(Of IO.FileInfo)(Function(a As IO.FileInfo, b As IO.FileInfo) As Integer
-                                                            Return ExplorerComparer.Compare(a.Name, b.Name)
-                                                        End Function))
+                                                           Return ExplorerComparer.Compare(a.Name, b.Name)
+                                                       End Function))
         scan.Directories.Sort(New Comparison(Of DirectoryScanEntry)(Function(a As DirectoryScanEntry, b As DirectoryScanEntry) As Integer
-                                                                         Return ExplorerComparer.Compare(a.Directory.Name, b.Directory.Name)
-                                                                     End Function))
+                                                                        Return ExplorerComparer.Compare(a.Directory.Name, b.Directory.Name)
+                                                                    End Function))
         scan.Scanned = True
     End Sub
 
@@ -3884,7 +3884,7 @@ Public Class LTFSWriter
             Dim s As String = ""
             If (DisplayHelper.ShowInputDialog(My.Resources.ResText_DirName, My.Resources.ResText_NewDir, s) <> DialogResult.OK) Then Exit Sub
             If s <> "" Then
-                If s(1) = ":" AndAlso s(2) = "\" Then s = s.Substring(2)
+                If s.Length >= 3 AndAlso s(1) = ":" AndAlso s(2) = "\" Then s = s.Substring(2)
                 If (s.Replace("\", "").Replace("/", "").IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0) Then
                     MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DirNIllegal)
                     Exit Sub
@@ -6269,7 +6269,6 @@ Public Class LTFSWriter
                                 End If
                             End While
                             UnwrittenFiles.Remove(fr)
-                            WriteList(i) = Nothing
                             If StopFlag Then
                                 Exit For
                             End If
