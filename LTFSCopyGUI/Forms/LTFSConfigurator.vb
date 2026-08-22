@@ -1,3 +1,4 @@
+Imports System
 Imports System.Buffers
 Imports System.ComponentModel
 Imports System.IO
@@ -5,8 +6,11 @@ Imports System.Runtime.InteropServices
 Imports System.Text
 Imports LTFSCopyGUI.TapeImage
 Imports NAudio.Wave
+Imports Serilog
+Imports Serilog.Context
 
 Public Class LTFSConfigurator
+    Private ReadOnly _logSessionId As String = $"configurator-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Private Const WM_SETREDRAW As Integer = &HB
 
     <DllImport("user32.dll", CharSet:=CharSet.Auto)>
@@ -140,10 +144,20 @@ Public Class LTFSConfigurator
         End If
         If Not LoadComplete OrElse _deviceRefreshInProgress Then Exit Sub
 
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Debug("Configurator device refresh started. RefreshDeviceList={RefreshDeviceList}.", RefreshDevList)
+                    End Using
+                End Using
+            End Using
+        End Using
         _deviceRefreshInProgress = True
         LoadComplete = False
         ButtonRefresh.Enabled = False
         Dim selectedIndexBeforeRefresh As Integer = SelectedIndex
+        Dim refreshSucceeded As Boolean = False
 
         Task.Run(Sub()
                      Try
@@ -183,13 +197,23 @@ Public Class LTFSConfigurator
                                             End If
                                             If Not My.Settings.Application_License.ToLower().Contains("dev") Then TabControl1.TabPages.Remove(TabPageZBC)
                                             LoadComplete = True
-                                            SelectedIndex = ListBox1.SelectedIndex
-                                        End Sub)
+                                             SelectedIndex = ListBox1.SelectedIndex
+                                         End Sub)
+                                  refreshSucceeded = True
                              Finally
                                  Threading.Monitor.Exit(UILock)
                              End Try
                          End If
                      Catch ex As Exception
+                         Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                 Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                     Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                         Log.Error(ex, "Configurator device refresh failed. RefreshDeviceList={RefreshDeviceList}.", RefreshDevList)
+                                     End Using
+                                 End Using
+                             End Using
+                         End Using
                          If Not IsDisposed AndAlso Not Disposing Then
                              Try
                                  Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, ex.ToString(), My.Resources.ResText_Warning))
@@ -207,6 +231,15 @@ Public Class LTFSConfigurator
                              Catch
                              End Try
                          End If
+                         Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                 Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                     Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                                         Log.Debug("Configurator device refresh finished. Succeeded={Succeeded}.", refreshSucceeded)
+                                     End Using
+                                 End Using
+                             End Using
+                         End Using
                      End Try
                  End Sub)
     End Sub
@@ -216,6 +249,15 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub LTFSConfigurator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("LTFS configurator window loading.")
+                    End Using
+                End Using
+            End Using
+        End Using
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBoxBufferPage.SelectedIndex = 16
         ComboBoxLocateType.SelectedIndex = 0
@@ -223,21 +265,57 @@ Public Class LTFSConfigurator
         LoadCMD()
         LoadComplete = True
         RefreshUI()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("LTFS configurator window loaded. AutoRefresh={AutoRefresh}.", CheckBoxAutoRefresh.Checked)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles ButtonStartFUSESvc.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceOperation")
+                        Log.Information("LTFS service start requested.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim s As String = TapeUtils.StartLtfsService()
         If s = "" Then s = "OK"
         MessageBox.Show(New Form With {.TopMost = True}, s)
     End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles ButtonStopFUSESvc.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceOperation")
+                        Log.Information("LTFS service stop requested.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim s As String = TapeUtils.StopLtfsService()
         If s = "" Then s = "OK"
         MessageBox.Show(New Form With {.TopMost = True}, s)
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles ButtonRemount.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceOperation")
+                        Log.Information("Tape drive remount requested.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim s As String = TapeUtils.RemapTapeDrives()
         If s = "" Then s = "OK"
         MessageBox.Show(New Form With {.TopMost = True}, s)
@@ -255,10 +333,28 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter = "" And ComboBoxDriveLetter.Text <> "" Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive mapping requested. DevicePath={DevicePath} DriveLetter={DriveLetter}.", CurDrive.DevicePath, ComboBoxDriveLetter.Text)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 Dim result As String = TapeUtils.MapTapeDrive(CChar(ComboBoxDriveLetter.Text), CurDrive.DeviceType & CurDrive.DevIndex)
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> " & ComboBoxDriveLetter.Text & ":"
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive mapping completed. DevicePath={DevicePath} DriveLetter={DriveLetter} Result={Result}.", CurDrive.DevicePath, ComboBoxDriveLetter.Text, result.Trim())
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End If
         End If
         RefreshUI(False)
@@ -269,10 +365,28 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive unmapping requested. DevicePath={DevicePath} DriveLetter={DriveLetter}.", CurDrive.DevicePath, CurDrive.DriveLetter)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 Dim result As String = TapeUtils.UnMapTapeDrive(CChar(ComboBoxDriveLetter.Text))
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " <=> ---" & ComboBoxDriveLetter.Text
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive unmapping completed. DevicePath={DevicePath} DriveLetter={DriveLetter} Result={Result}.", CurDrive.DevicePath, CurDrive.DriveLetter, result.Trim())
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End If
         End If
         RefreshUI(False)
@@ -283,6 +397,15 @@ Public Class LTFSConfigurator
         Dim path As String = TapeDrive
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                            Log.Information("Threaded tape load requested. TapeDrive={TapeDrive}.", path)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Panel1.Enabled = False
             Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
@@ -295,9 +418,27 @@ Public Class LTFSConfigurator
                                                                                                        End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Threaded tape load failed. TapeDrive={TapeDrive}.", path)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
+                               Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                                   Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                       Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                           Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                                               Log.Information("Threaded tape load finished. TapeDrive={TapeDrive} Result={Result}.", path, result.Trim())
+                                           End Using
+                                       End Using
+                                   End Using
+                               End Using
                                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " loaded"
                                result &= vbCrLf
                                TextBoxMsg.AppendText(result)
@@ -318,6 +459,15 @@ Public Class LTFSConfigurator
         Dim path As String = TapeDrive
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                            Log.Information("Tape eject requested. TapeDrive={TapeDrive}.", path)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Panel1.Enabled = False
             Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
@@ -330,9 +480,27 @@ Public Class LTFSConfigurator
                                                                                                 End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Tape eject failed. TapeDrive={TapeDrive}.", path)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
+                               Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                                   Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                       Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                           Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                                               Log.Information("Tape eject finished. TapeDrive={TapeDrive} Result={Result}.", path, result.Trim())
+                                           End Using
+                                       End Using
+                                   End Using
+                               End Using
                                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " ejected"
                                result &= vbCrLf
                                TextBoxMsg.AppendText(result)
@@ -350,10 +518,28 @@ Public Class LTFSConfigurator
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive()
         If CurDrive IsNot Nothing Then
             If CurDrive.DriveLetter <> "" And ComboBoxDriveLetter.Text <> "" Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive mount requested. DriveLetter={DriveLetter}.", ComboBoxDriveLetter.Text)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 Dim result As String = TapeUtils.MountTapeDrive(CChar(ComboBoxDriveLetter.Text))
                 If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " mounted"
                 result &= vbCrLf
                 TextBoxMsg.AppendText(result)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceMapping")
+                                Log.Information("Tape drive mount completed. DriveLetter={DriveLetter} Result={Result}.", ComboBoxDriveLetter.Text, result.Trim())
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End If
         End If
         RefreshUI(False)
@@ -434,6 +620,15 @@ Public Class LTFSConfigurator
         Dim path As String = TapeDrive
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                            Log.Information("Unthreaded tape load requested. TapeDrive={TapeDrive}.", path)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Panel1.Enabled = False
             Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
@@ -446,9 +641,27 @@ Public Class LTFSConfigurator
                                                                                                          End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Unthreaded tape load failed. TapeDrive={TapeDrive}.", path)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
+                               Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                                   Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                       Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                           Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                                               Log.Information("Unthreaded tape load finished. TapeDrive={TapeDrive} Result={Result}.", path, result.Trim())
+                                           End Using
+                                       End Using
+                                   End Using
+                               End Using
                                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " loaded (unthread)"
                                result &= vbCrLf
                                TextBoxMsg.AppendText(result)
@@ -468,6 +681,15 @@ Public Class LTFSConfigurator
         Dim path As String = TapeDrive
         Dim CurDrive As TapeUtils.BlockDevice = GetCurDrive(True)
         If CurDrive IsNot Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                            Log.Information("Tape unthread requested. TapeDrive={TapeDrive}.", path)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Panel1.Enabled = False
             Dim dL As Char = CChar(ComboBoxDriveLetter.Text)
             Dim th As New Threading.Thread(
@@ -480,9 +702,27 @@ Public Class LTFSConfigurator
                                                                                                    End Function).ToString()
                         result = result.Replace("True", "").Replace("False", "Failed")
                     Catch ex As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Tape unthread failed. TapeDrive={TapeDrive}.", path)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         result = ex.ToString()
                     End Try
                     Invoke(Sub()
+                               Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                                   Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                       Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                           Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeOperation")
+                                               Log.Information("Tape unthread finished. TapeDrive={TapeDrive} Result={Result}.", path, result.Trim())
+                                           End Using
+                                       End Using
+                                   End Using
+                               End Using
                                If result = "" Then result = CurDrive.DeviceType & CurDrive.DevIndex & " unthreaded"
                                result &= vbCrLf
                                TextBoxMsg.AppendText(result)
@@ -1172,6 +1412,15 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
         If Not LoadComplete Then Exit Sub
         Dim driveHandle As IntPtr
         If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Format")
+                            Log.Information("Tape format requested. TapeDrive={TapeDrive}.", ConfTapeDrive)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Try
                 If Not TapeUtils.IsOpened(driveHandle) Then TapeUtils.OpenTapeDrive(ConfTapeDrive, driveHandle)
                 TapeUtils.ReadPosition(driveHandle)
@@ -1211,6 +1460,15 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                     Sub(Message As String)
                         'OnFinished
                         TapeUtils.CloseTapeDrive(driveHandle)
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Format")
+                                        Log.Information("Tape format completed. TapeDrive={TapeDrive}.", ConfTapeDrive)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         Invoke(Sub()
                                    TextBoxDebugOutput.AppendText("Format finished.")
                                    Panel1.Enabled = True
@@ -1219,6 +1477,15 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                     Sub(Message As String)
                         'OnError
                         TapeUtils.CloseTapeDrive(driveHandle)
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error("Tape format failed. TapeDrive={TapeDrive} Message={Message}.", ConfTapeDrive, Message)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         Invoke(Sub()
                                    TextBoxDebugOutput.AppendText(Message & vbCrLf)
                                    TextBoxDebugOutput.AppendText("Format failed.")
@@ -1228,6 +1495,15 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                     End Sub, param.Capacity, param.P0Size, param.P1Size, param.EncryptionKey, param.WORMMode)
             Catch ex As Exception
                 TapeUtils.CloseTapeDrive(driveHandle)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "Tape format failed before completion callback. TapeDrive={TapeDrive}.", ConfTapeDrive)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 TextBoxDebugOutput.AppendText(ex.ToString())
                 Panel1.Enabled = True
             End Try
@@ -1274,6 +1550,15 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub LTFSConfigurator_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSConfigurator))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Configurator")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("LTFS configurator window closing.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Operation_Cancel_Flag = True
         My.Settings.LTFSConf_AutoRefresh = CheckBoxAutoRefresh.Checked
         My.Settings.Save()

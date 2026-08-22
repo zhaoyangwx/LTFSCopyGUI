@@ -1,3 +1,4 @@
+Imports System
 Imports System.ComponentModel
 Imports System.IO
 Imports System.Reflection
@@ -7,6 +8,8 @@ Imports System.Text
 Imports System.Xml.Serialization
 Imports Microsoft.Diagnostics.Runtime
 Imports Microsoft.Extensions.FileSystemGlobbing
+Imports Serilog
+Imports Serilog.Context
 Imports stdole
 Public Class SerializationHelper
     Public Shared Function GetSerializeString(ByVal c As Object) As String
@@ -1186,20 +1189,66 @@ Partial Public Class ApplicationWheels
     End Property
     Public Shared Function TryExecute(ByVal command As Func(Of Byte()), Optional ByVal AutoRetryCount As Integer = 0) As Boolean
         Dim succ As Boolean = False
+        Dim operationId As String = $"scsi-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Command")
+                        Log.Debug("Retryable SCSI operation started. AutoRetryCount={AutoRetryCount}.", AutoRetryCount)
+                    End Using
+                End Using
+            End Using
+        End Using
         While Not succ
             Dim sense() As Byte
             Try
                 sense = command()
             Catch ex As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                        Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "Retryable SCSI operation threw an exception.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 Dim ActiveFrm = GetActiveWindow()
                 Dim dResult As DialogResult
                 ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_Error}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                 Select Case dResult
                     Case DialogResult.Abort
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                                        Log.Warning("Retryable SCSI operation aborted by the user.")
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         Throw ex
                     Case DialogResult.Retry
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Retry")
+                                        Log.Warning("Retryable SCSI operation will be retried after an exception.")
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         succ = False
                     Case DialogResult.Ignore
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Retry")
+                                        Log.Warning("Retryable SCSI operation ignored by the user.")
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         succ = True
                         Exit While
                 End Select
@@ -1218,6 +1267,15 @@ Partial Public Class ApplicationWheels
                 Catch ex As Exception
                     If AutoRetryCount > 0 Then
                         AutoRetryCount -= 1
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Retry")
+                                        Log.Warning("SCSI sense error will be retried. RemainingRetries={RemainingRetries}.", AutoRetryCount)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         succ = False
                     Else
                         Dim ActiveFrm = GetActiveWindow()
@@ -1225,10 +1283,37 @@ Partial Public Class ApplicationWheels
                         ActiveFrm.Invoke(Sub() dResult = MessageBox.Show(ActiveFrm, $"{My.Resources.ResText_RestoreErr}{vbCrLf}{TapeUtils.ParseSenseData(sense)}{vbCrLf}{vbCrLf}sense{vbCrLf}{TapeUtils.Byte2Hex(sense, True)}{vbCrLf}{ex.StackTrace}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                         Select Case dResult
                             Case DialogResult.Abort
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                        Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                                                Log.Warning("SCSI sense error operation aborted by the user.")
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 Throw New Exception(TapeUtils.ParseSenseData(sense))
                             Case DialogResult.Retry
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                        Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Retry")
+                                                Log.Warning("SCSI sense error operation will be retried after user confirmation.")
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 succ = False
                             Case DialogResult.Ignore
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
+                                        Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Retry")
+                                                Log.Warning("SCSI sense error operation was ignored by the user.")
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 succ = True
                                 Exit While
                         End Select

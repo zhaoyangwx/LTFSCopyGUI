@@ -1,3 +1,4 @@
+Imports System
 Imports System.IO
 Imports System.Security.Claims
 Imports System.Threading
@@ -7,8 +8,11 @@ Imports FubarDev.FtpServer.BackgroundTransfer
 Imports FubarDev.FtpServer.FileSystem
 Imports FubarDev.FtpServer.FileSystem.Unix
 Imports Microsoft.Extensions.DependencyInjection
+Imports Serilog
+Imports Serilog.Context
 
 Public Class FTPService
+    Private ReadOnly _logSessionId As String = $"ftp-service-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Public TapeDrive As String
     Public BlockSize As Integer = 524288
     Public ExtraPartitionCount As Integer = 1
@@ -121,6 +125,7 @@ Public Class FTPService
     End Class
     Public Class LTFSFileSystem
         Implements IUnixFileSystem
+        Private ReadOnly _logSessionId As String = $"ftp-filesystem-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
         Public Property TapeDrive As String
         Public Property BlockSize As Integer = 524288
         Public Property ExtraPartitionCount As Integer = 1
@@ -135,6 +140,15 @@ Public Class FTPService
                 Sub(s As String)
                     LogHandler(s)
                 End Sub
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("LTFS FTP file system created. TapeDrive={TapeDrive} BlockSize={BlockSize} ExtraPartitionCount={ExtraPartitionCount}.", TapeDrive, BlockSize, ExtraPartitionCount)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Sub
 
         Public ReadOnly Property SupportsAppend As Boolean Implements IUnixFileSystem.SupportsAppend
@@ -161,6 +175,15 @@ Public Class FTPService
             For Each f As ltfsindex.file In searchDirInfo.contents._file
                 result.Add(New LTFSFileEntry(f))
             Next
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Directory")
+                            Log.Debug("FTP directory enumeration completed. DirectoryName={DirectoryName} EntryCount={EntryCount}.", searchDirInfo.name, result.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Return Task.FromResult(Of IReadOnlyList(Of IUnixFileSystemEntry))(result)
         End Function
 
@@ -179,23 +202,44 @@ Public Class FTPService
                     End If
                 Next
             End If
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Directory")
+                            Log.Debug("FTP directory lookup completed. DirectoryName={DirectoryName} RequestedName={RequestedName} Found={Found}.", searchDirInfo.name, name, result IsNot Nothing)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Return Task.FromResult(result)
         End Function
 
         Public Function MoveAsync(parent As IUnixDirectoryEntry, source As IUnixFileSystemEntry, target As IUnixDirectoryEntry, fileName As String, cancellationToken As CancellationToken) As Task(Of IUnixFileSystemEntry) Implements IUnixFileSystem.MoveAsync
+            LogUnsupportedOperation("Move", fileName)
             Throw New NotImplementedException()
         End Function
 
         Public Function UnlinkAsync(entry As IUnixFileSystemEntry, cancellationToken As CancellationToken) As Task Implements IUnixFileSystem.UnlinkAsync
+            LogUnsupportedOperation("Unlink", If(entry Is Nothing, String.Empty, entry.Name))
             Throw New NotImplementedException()
         End Function
 
         Public Function CreateDirectoryAsync(targetDirectory As IUnixDirectoryEntry, directoryName As String, cancellationToken As CancellationToken) As Task(Of IUnixDirectoryEntry) Implements IUnixFileSystem.CreateDirectoryAsync
+            LogUnsupportedOperation("CreateDirectory", directoryName)
             Throw New NotImplementedException()
         End Function
 
         Public Function OpenReadAsync(fileEntry As IUnixFileEntry, startPosition As Long, cancellationToken As CancellationToken) As Task(Of Stream) Implements IUnixFileSystem.OpenReadAsync
             Dim fileInfo As ltfsindex.file = CType(fileEntry, LTFSFileEntry).FileInfo
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                            Log.Information("FTP file read started. FileName={FileName} StartPosition={StartPosition} FileLength={FileLength}.", fileInfo.name, startPosition, fileInfo.length)
+                        End Using
+                    End Using
+                End Using
+            End Using
             RaiseEvent LogPrint($"OpenReadAsync file={fileInfo.name} position={startPosition}")
             Dim input As New IOManager.LTFSFileStream(fileInfo, TapeDrive, BlockSize, ExtraPartitionCount)
             AddHandler input.LogPrint, Sub(s As String)
@@ -203,6 +247,15 @@ Public Class FTPService
                                        End Sub
             Dim rstream As New BufferedStream(input, TapeUtils.GlobalBlockLimit)
             rstream.Seek(startPosition, SeekOrigin.Begin)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                            Log.Information("FTP file read stream opened. FileName={FileName} StartPosition={StartPosition}.", fileInfo.name, startPosition)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Return Task.FromResult(Of Stream)(rstream)
 
             'Dim sstream As New IOManager.SmartStream(input, BlockSize, BlockSize * 128, BlockSize * 1024, BlockSize * 4096)
@@ -214,20 +267,36 @@ Public Class FTPService
         End Function
 
         Public Function AppendAsync(fileEntry As IUnixFileEntry, startPosition As Long?, data As Stream, cancellationToken As CancellationToken) As Task(Of IBackgroundTransfer) Implements IUnixFileSystem.AppendAsync
+            LogUnsupportedOperation("Append", If(fileEntry Is Nothing, String.Empty, fileEntry.Name))
             Throw New NotImplementedException()
         End Function
 
         Public Function CreateAsync(targetDirectory As IUnixDirectoryEntry, fileName As String, data As Stream, cancellationToken As CancellationToken) As Task(Of IBackgroundTransfer) Implements IUnixFileSystem.CreateAsync
+            LogUnsupportedOperation("Create", fileName)
             Throw New NotImplementedException()
         End Function
 
         Public Function ReplaceAsync(fileEntry As IUnixFileEntry, data As Stream, cancellationToken As CancellationToken) As Task(Of IBackgroundTransfer) Implements IUnixFileSystem.ReplaceAsync
+            LogUnsupportedOperation("Replace", If(fileEntry Is Nothing, String.Empty, fileEntry.Name))
             Throw New NotImplementedException()
         End Function
 
         Public Function SetMacTimeAsync(entry As IUnixFileSystemEntry, modify As DateTimeOffset?, access As DateTimeOffset?, create As DateTimeOffset?, cancellationToken As CancellationToken) As Task(Of IUnixFileSystemEntry) Implements IUnixFileSystem.SetMacTimeAsync
+            LogUnsupportedOperation("SetMacTime", If(entry Is Nothing, String.Empty, entry.Name))
             Throw New NotImplementedException()
         End Function
+
+        Private Sub LogUnsupportedOperation(operation As String, entryName As String)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSFileSystem))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "UnsupportedOperation")
+                            Log.Warning("FTP file system operation is not supported. Operation={Operation} EntryName={EntryName}.", operation, entryName)
+                        End Using
+                    End Using
+                End Using
+            End Using
+        End Sub
     End Class
     Public Class LTFSFileSystemProvider
         Implements IFileSystemClassFactory
@@ -282,7 +351,27 @@ Public Class FTPService
         End Function
     End Class
     Public Sub StartService()
-        If schema Is Nothing Then Exit Sub
+        If schema Is Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                            Log.Warning("FTP service start was skipped because no schema is loaded.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Exit Sub
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                        Log.Information("FTP service start requested. TapeDrive={TapeDrive} Port={Port} BlockSize={BlockSize} ExtraPartitionCount={ExtraPartitionCount}.", TapeDrive, port, BlockSize, ExtraPartitionCount)
+                    End Using
+                End Using
+            End Using
+        End Using
         Services = New ServiceCollection()
         Services.Configure(
         Sub(opt As LTFSFileSystemOptions)
@@ -317,12 +406,65 @@ Public Class FTPService
 
         With Services.BuildServiceProvider
             ftpServerHost = .GetRequiredService(Of IFtpServerHost)
-            ftpServerHost.StartAsync(CancellationToken.None)
+            Try
+                ftpServerHost.StartAsync(CancellationToken.None)
+            Catch ex As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "FTP service start failed. Port={Port}.", port)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Throw
+            End Try
         End With
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                        Log.Information("FTP service started. Port={Port}.", port)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Public Sub StopService()
-        ftpServerHost.StopAsync(CancellationToken.None).Wait()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                        Log.Information("FTP service stop requested.")
+                    End Using
+                End Using
+            End Using
+        End Using
+        Try
+            ftpServerHost.StopAsync(CancellationToken.None).Wait()
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                            Log.Information("FTP service stopped.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FTPService))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FTP")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "FTP service stop failed.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw
+        End Try
     End Sub
     Public Shared Function ParseTimeStamp(t As String) As Date
         'yyyy-MM-ddTHH:mm:ss.fffffff00Z

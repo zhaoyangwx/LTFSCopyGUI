@@ -4,6 +4,8 @@ Imports System.IO.Pipelines
 Imports System.Threading
 Imports System.Buffers
 Imports System.Runtime.InteropServices
+Imports Serilog
+Imports Serilog.Context
 
 ' 高性能文件数据提供器：
 ' - 仅暴露一个 PipeReader（单读者），内部 Pipe 使用 256MiB 背压阈值（可配），避免过量内存占用
@@ -57,6 +59,7 @@ Public Class FileDataProvider
     Private _currentIndex As Integer = -1
     Private _started As Integer = 0
     Private _current As LTFSWriter.FileRecord = Nothing
+    Private ReadOnly _logSessionId As String = $"fileprovider-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
 
     Public ReadOnly Property Current As LTFSWriter.FileRecord
         Get
@@ -97,7 +100,33 @@ Public Class FileDataProvider
     End Sub
 
     Public Sub Start()
-        If Interlocked.Exchange(_started, 1) <> 0 Then Return
+        If Interlocked.Exchange(_started, 1) <> 0 Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Warning("File data provider start was ignored because the provider was already started.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Return
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File data provider started. FileCount={FileCount} RingBufferEnabled={RingBufferEnabled} PipeBufferBytes={PipeBufferBytes} SmallThresholdBytes={SmallThresholdBytes} SmallCacheCapacity={SmallCacheCapacity} RequireSignal={RequireSignal}.",
+                                        _writeList.Count,
+                                        _ringBufferEnabled,
+                                        If(_ringBufferEnabled, RingBuffer.Capacity, 0L),
+                                        _smallThreshold,
+                                        _smallCacheCapacity,
+                                        _requireSignal)
+                    End Using
+                End Using
+            End Using
+        End Using
         Task.Run(AddressOf PreloadSmallFilesAsync)
         Task.Run(AddressOf ProducerLoopAsync)
         ' 积极模式下，立即允许开始
@@ -106,15 +135,44 @@ Public Class FileDataProvider
 
     ' 由消费者调用，指示可以开始传输下一个文件（仅当 requireSignal=True 时需要）
     Public Sub RequestNextFile()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileSwitch")
+                        Log.Information("File data provider requested the next file. CurrentIndex={CurrentIndex}.", Interlocked.CompareExchange(_currentIndex, 0, 0))
+                    End Using
+                End Using
+            End Using
+        End Using
         _nextFileSignal.Set()
     End Sub
 
     Public Sub Cancel()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                        Log.Information("File data provider cancellation requested. CurrentIndex={CurrentIndex}.", Interlocked.CompareExchange(_currentIndex, 0, 0))
+                    End Using
+                End Using
+            End Using
+        End Using
         _cts.Cancel()
         _nextFileSignal.Set()
     End Sub
 
     Public Function CompleteAsync() As Task
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File data provider completion started. CurrentIndex={CurrentIndex} CachedSmallFiles={CachedSmallFiles}.",
+                                        Interlocked.CompareExchange(_currentIndex, 0, 0),
+                                        _smallCacheMap.Count)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             _cts.Cancel()
             _nextFileSignal.Set()
@@ -126,13 +184,40 @@ Public Class FileDataProvider
                     _writer.Complete()
                     Reader.Complete()
                 End If
-            Catch
+            Catch ex As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "File data provider buffer completion failed.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End Try
         End Try
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File data provider completion requested. CachedSmallFiles={CachedSmallFiles}.", _smallCacheMap.Count)
+                    End Using
+                End Using
+            End Using
+        End Using
         Return Task.CompletedTask
     End Function
 
     Private Async Function ProducerLoopAsync() As Task
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File data provider producer loop started.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             While Not _cts.IsCancellationRequested
                 ' requireSignal=True 时按事件推进；否则积极连续推进
@@ -150,7 +235,23 @@ Public Class FileDataProvider
                 End If
                 _current = fr
 
-                If fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold AndAlso fr.FileOffset = 0 AndAlso fr.File.length = fr.SegmentLength Then
+                Dim isSmallFile = fr IsNot Nothing AndAlso fr.File IsNot Nothing AndAlso fr.File.length < _smallThreshold AndAlso fr.FileOffset = 0 AndAlso fr.File.length = fr.SegmentLength
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                                Log.Information("File data provider began reading a file. FileIndex={FileIndex} SourcePath={SourcePath} Length={Length} SmallFile={SmallFile} CacheHit={CacheHit}.",
+                                                nextIdx,
+                                                If(fr Is Nothing, String.Empty, fr.SourcePath),
+                                                If(fr Is Nothing OrElse fr.File Is Nothing, 0L, fr.File.length),
+                                                isSmallFile,
+                                                isSmallFile AndAlso _smallCacheMap.ContainsKey(fr))
+                            End Using
+                        End Using
+                    End Using
+                End Using
+
+                If isSmallFile Then
                     Dim data As Byte() = Nothing
                     If Not _smallCacheMap.TryRemove(fr, data) Then
                         data = ReadAllBytesSafe(fr)
@@ -174,12 +275,44 @@ Public Class FileDataProvider
                     ' 大文件：流式拷贝到 Pipe（积极缓存，受 Pipe 背压调节）
                     Await StreamFileToPipeAsync(fr, _cts.Token)
                 End If
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileCompleted")
+                                Log.Information("File data provider completed a file. FileIndex={FileIndex} SourcePath={SourcePath} CachedSmallFiles={CachedSmallFiles}.",
+                                                nextIdx,
+                                                If(fr Is Nothing, String.Empty, fr.SourcePath),
+                                                _smallCacheMap.Count)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 ' 在积极模式下，自动继续下一个文件；在信号模式下，等待下一次 RequestNextFile
                 If _requireSignal = False Then
                     ' 继续循环即可
                 End If
             End While
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("File data provider producer loop completed. CurrentIndex={CurrentIndex} CancellationRequested={CancellationRequested}.",
+                                            Interlocked.CompareExchange(_currentIndex, 0, 0),
+                                            _cts.IsCancellationRequested)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "File data provider producer loop failed. CurrentIndex={CurrentIndex}.", Interlocked.CompareExchange(_currentIndex, 0, 0))
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(ex.ToString())
             Try
                 If _ringBufferEnabled Then
@@ -188,7 +321,16 @@ Public Class FileDataProvider
                     _writer.Complete()
                     Reader.Complete()
                 End If
-            Catch
+            Catch completionEx As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(completionEx, "File data provider failed to complete its output after a producer error.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End Try
         End Try
     End Function
@@ -209,14 +351,41 @@ Public Class FileDataProvider
             Dim result As Byte() = fr.ReadAllBytes()
             fr.IsOpened = True
             Return result
-        Catch
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                            Log.Warning(ex, "File data provider managed file read failed; switching to direct file fallback. SourcePath={SourcePath}.", fr.SourcePath)
+                        End Using
+                    End Using
+                End Using
+            End Using
             While True
                 Try
                     Dim result As Byte() = File.ReadAllBytes(fr.SourcePath)
                     fr.File.length = result.Length
                     fr.IsOpened = True
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                                    Log.Information("File data provider direct file fallback completed. SourcePath={SourcePath} Bytes={Bytes}.", fr.SourcePath, result.Length)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Return result
                 Catch ex As Exception
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                    Log.Error(ex, "File data provider direct file fallback failed. SourcePath={SourcePath}.", fr.SourcePath)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                         Case DialogResult.Abort
                             fr.IsOpened = False
@@ -236,6 +405,18 @@ Public Class FileDataProvider
     End Function
     Private Async Function StreamFileToPipeAsync(fr As LTFSWriter.FileRecord, ct As CancellationToken) As Task
         Dim fs As FileStream = Nothing
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                        Log.Information("File data provider stream read started. SourcePath={SourcePath} FileOffset={FileOffset} SegmentLength={SegmentLength}.",
+                                        fr.SourcePath,
+                                        fr.FileOffset,
+                                        fr.SegmentLength)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             fs = New FileStream(fr.SourcePath, FileMode.Open, FileAccess.Read, FileShare.Read, My.Settings.LTFSWriter_FileStreamBufferSize, FileOptions.Asynchronous Or FileOptions.SequentialScan)
             If fr.File.length = 0 Then
@@ -244,7 +425,16 @@ Public Class FileDataProvider
                 fr.SegmentLength = fs.Length
             End If
             fr.IsOpened = True
-        Catch
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                            Log.Warning(ex, "File data provider stream open failed; using FileRecord fallback. SourcePath={SourcePath}.", fr.SourcePath)
+                        End Using
+                    End Using
+                End Using
+            End Using
             ' 备用：尝试使用现有 FileRecord 打开
             Try
                 Select Case fr.Open(BufferSize:=64 * 1024)
@@ -254,16 +444,25 @@ Public Class FileDataProvider
                         Throw New IOException("Open aborted")
                 End Select
                 fs = fr.fs
-            Catch
+            Catch fallbackEx As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(fallbackEx, "File data provider FileRecord fallback open failed. SourcePath={SourcePath}.", fr.SourcePath)
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 fr.IsOpened = False
                 fr.File = Nothing
                 Exit Function
             End Try
         End Try
 
+        Dim totalReadLen As Long = 0
         Using fs
             If fr.FileOffset > 0 Then fs.Seek(fr.FileOffset, SeekOrigin.Begin)
-            Dim totalReadLen As Long = 0
             If _ringBufferEnabled Then
                 Dim minChunk As Integer = 1024 * 1024
                 While Not ct.IsCancellationRequested
@@ -298,9 +497,22 @@ Public Class FileDataProvider
                 End While
             End If
         End Using
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                        Log.Information("File data provider stream read completed. SourcePath={SourcePath} BytesRead={BytesRead} CancellationRequested={CancellationRequested}.",
+                                        fr.SourcePath,
+                                        totalReadLen,
+                                        ct.IsCancellationRequested)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Function
 
     Private Async Function PreloadSmallFilesAsync() As Task
+        Dim cachedCount As Integer = 0
         Try
             For Each fr In _writeList
                 If _cts.IsCancellationRequested Then Exit For
@@ -319,10 +531,29 @@ Public Class FileDataProvider
                     If data IsNot Nothing Then
                         _smallCacheMap.TryAdd(fr, data)
                         _smallCacheQueue.Enqueue(Tuple.Create(fr, data))
+                        cachedCount += 1
                     End If
                 End If
             Next
-        Catch
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cache")
+                            Log.Information("File data provider small-file preload completed. CachedFiles={CachedFiles} CacheEntries={CacheEntries}.", cachedCount, _smallCacheMap.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "File data provider small-file preload failed. CachedFiles={CachedFiles}.", cachedCount)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Try
     End Function
 End Class
@@ -336,6 +567,7 @@ Public Class HardDriveDataProvider
     Private ReadOnly _cts As New CancellationTokenSource()
 
     Private _started As Integer = 0
+    Private ReadOnly _logSessionId As String = $"harddrive-provider-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Public Property DevicePath As String
     Public Property StartLBA As ULong
     Public Property SectorCount As Long
@@ -373,16 +605,58 @@ Public Class HardDriveDataProvider
     End Sub
 
     Public Sub Start()
-        If Interlocked.Exchange(_started, 1) <> 0 Then Return
+        If Interlocked.Exchange(_started, 1) <> 0 Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Warning("Hard drive data provider start was ignored because the provider was already started. DevicePath={DevicePath}.", DevicePath)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Return
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Hard drive data provider started. DevicePath={DevicePath} StartLba={StartLba} SectorCount={SectorCount} RingBufferEnabled={RingBufferEnabled}.",
+                                        DevicePath,
+                                        StartLBA,
+                                        SectorCount,
+                                        _ringBufferEnabled)
+                    End Using
+                End Using
+            End Using
+        End Using
         Task.Run(AddressOf ProducerLoopAsync)
     End Sub
 
 
     Public Sub Cancel()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                        Log.Information("Hard drive data provider cancellation requested. DevicePath={DevicePath}.", DevicePath)
+                    End Using
+                End Using
+            End Using
+        End Using
         _cts.Cancel()
     End Sub
 
     Public Function CompleteAsync() As Task
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Hard drive data provider completion started. DevicePath={DevicePath}.", DevicePath)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             _cts.Cancel()
         Finally
@@ -393,13 +667,40 @@ Public Class HardDriveDataProvider
                     _writer.Complete()
                     Reader.Complete()
                 End If
-            Catch
+            Catch ex As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "Hard drive data provider buffer completion failed. DevicePath={DevicePath}.", DevicePath)
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End Try
         End Try
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Hard drive data provider completion requested. DevicePath={DevicePath}.", DevicePath)
+                    End Using
+                End Using
+            End Using
+        End Using
         Return Task.CompletedTask
     End Function
 
     Private Async Function ProducerLoopAsync() As Task
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Hard drive data provider producer loop started. DevicePath={DevicePath}.", DevicePath)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             While Not _cts.IsCancellationRequested
 
@@ -407,7 +708,25 @@ Public Class HardDriveDataProvider
                 Await StreamDiskToPipeAsync(DevicePath, StartLBA, SectorCount, _cts.Token)
 
             End While
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Hard drive data provider producer loop completed. DevicePath={DevicePath} CancellationRequested={CancellationRequested}.", DevicePath, _cts.IsCancellationRequested)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Hard drive data provider producer loop failed. DevicePath={DevicePath}.", DevicePath)
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(ex.ToString())
             Try
                 If _ringBufferEnabled Then
@@ -416,7 +735,16 @@ Public Class HardDriveDataProvider
                     _writer.Complete()
                     Reader.Complete()
                 End If
-            Catch
+            Catch completionEx As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(completionEx, "Hard drive data provider failed to complete its output after a producer error. DevicePath={DevicePath}.", DevicePath)
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End Try
         End Try
     End Function
@@ -433,7 +761,28 @@ Public Class HardDriveDataProvider
     End Sub
     Private Async Function StreamDiskToPipeAsync(path As String, StartLBA As ULong, SectorCount As Long, ct As CancellationToken) As Task
         Dim driveHandle As IntPtr
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRead")
+                        Log.Information("Hard drive stream read started. DevicePath={DevicePath} StartLba={StartLba} RequestedSectorCount={RequestedSectorCount}.",
+                                        path,
+                                        StartLBA,
+                                        SectorCount)
+                    End Using
+                End Using
+            End Using
+        End Using
         If Not TapeUtils.OpenTapeDrive(path, driveHandle) Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Hard drive stream read could not open the device. DevicePath={DevicePath} Win32Error={Win32Error}.", path, TapeUtils.GetLastError())
+                        End Using
+                    End Using
+                End Using
+            End Using
             Throw New ComponentModel.Win32Exception(TapeUtils.GetLastError())
         End If
         Try
@@ -447,6 +796,18 @@ Public Class HardDriveDataProvider
                 Me.SectorCount = SectorCount
                 SectorLenUpdated = True
             End With
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRead")
+                            Log.Information("Hard drive sector geometry resolved. DevicePath={DevicePath} SectorLength={SectorLength} SectorCount={SectorCount}.",
+                                            path,
+                                            SectorLength,
+                                            SectorCount)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Dim LBA As ULong = StartLBA
             Dim EndLBA As ULong = CULng(StartLBA + SectorCount - 1)
             If _ringBufferEnabled Then
@@ -507,9 +868,30 @@ Public Class HardDriveDataProvider
                 End While
             End If
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Hard drive stream read failed. DevicePath={DevicePath} StartLba={StartLba} SectorCount={SectorCount}.",
+                                      path,
+                                      StartLBA,
+                                      SectorCount)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Throw ex
         Finally
             TapeUtils.CloseTapeDrive(driveHandle)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HardDriveDataProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "HardDriveProvider")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRead")
+                            Log.Information("Hard drive stream read closed. DevicePath={DevicePath}.", path)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Try
 
     End Function

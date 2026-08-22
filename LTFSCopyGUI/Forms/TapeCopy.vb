@@ -1,3 +1,7 @@
+Imports System
+Imports Serilog
+Imports Serilog.Context
+
 Public Class TapeCopy
     Public TapeA As String, TapeB As String, Operation_Cancel_Flag As Boolean = False
     Public FlushFlag As Boolean = False
@@ -5,12 +9,31 @@ Public Class TapeCopy
     Public progLastVal As Long = 0
     Public lastIncVal As Long = 0
     Public FlushCounter As Long = 0
+    Private ReadOnly _logSessionId As String = $"tapecopy-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
         FlushFlag = True
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Flush")
+                        Log.Information("Tape copy flush was requested by the user.")
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub TapeCopy_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Tape copy window loaded. AutoFlushThreshold={AutoFlushThreshold}.", FlushCounter)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
@@ -35,6 +58,15 @@ Public Class TapeCopy
         If CheckBox3.Checked Then
             Dim targetLen As String = ""
             TapeB = TextBox2.Text
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileOperation")
+                            Log.Information("Tape image length operation started. TapePath={TapePath}.", TapeB)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Dim handleB As IntPtr
             Dim drivertype As TapeUtils.DriverType = TapeUtils.DriverTypeSetting
             TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
@@ -49,6 +81,15 @@ Public Class TapeCopy
                 If DisplayHelper.ShowInputDialog("Length", "", targetLen) = DialogResult.OK Then
                     Dim LenValue = Long.Parse(targetLen)
                     vt.CurrentStream.SetLength(Math.Max(vt.CurrentStreamValidLength, LenValue))
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileOperation")
+                                    Log.Information("Tape image length operation completed. TapePath={TapePath} RequestedLength={RequestedLength}.", TapeB, LenValue)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                 End If
             End If
             TapeUtils.CloseTapeDrive(handleB)
@@ -69,6 +110,22 @@ Public Class TapeCopy
             If drivertype = TapeUtils.DriverType.TapeStream Then drivertype = TapeUtils.DriverType.LTO
             Dim IsFileA As Boolean = CheckBox2.Checked
             Dim IsFileB As Boolean = CheckBox3.Checked
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Tape copy operation started. Source={Source} Destination={Destination} SourceIsFile={SourceIsFile} DestinationIsFile={DestinationIsFile} RequestedBlockCount={RequestedBlockCount} BlockLength={BlockLength} DriverType={DriverType}.",
+                                            TapeA,
+                                            TapeB,
+                                            IsFileA,
+                                            IsFileB,
+                                            NumericUpDown1.Value,
+                                            NumericUpDown2.Value,
+                                            drivertype.ToString())
+                        End Using
+                    End Using
+                End Using
+            End Using
             If IsFileA Then
                 TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
             Else
@@ -85,6 +142,15 @@ Public Class TapeCopy
                 TapeUtils.DriverTypeSetting = drivertype
             End If
             TapeUtils.OpenTapeDrive(TapeB, handleB)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Tape copy devices opened. SourceHandle={SourceHandle} DestinationHandle={DestinationHandle}.", handleA, handleB)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Dim BlockCount As Integer = CInt(NumericUpDown1.Value)
             Dim BlockLen As UInteger = CUInt(NumericUpDown2.Value)
             progval = 0
@@ -93,6 +159,15 @@ Public Class TapeCopy
             Dim th As New Threading.Thread(
                 Sub()
                     Dim sense(63) As Byte
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                    Log.Information("Tape copy worker started. Source={Source} Destination={Destination}.", TapeA, TapeB)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Invoke(Sub() Button1.Enabled = True)
                     Dim readData As Byte()
                     Dim Add_Key As UInt16
@@ -110,6 +185,15 @@ Public Class TapeCopy
                                 End If
                                 TapeUtils.Flush(handleB)
                                 FlushFlag = False
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Flush")
+                                                Log.Information("Tape copy destination flush completed. BlocksTransferred={BlocksTransferred}.", i)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                             End If
 
                             If IsFileA Then
@@ -156,15 +240,42 @@ Public Class TapeCopy
                                 running = False
                                 Threading.Thread.Sleep(200)
                                 PrintMsg($"EOD detected. {i} blocks transferred.")
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                                Log.Information("Tape copy reached end of data. BlocksTransferred={BlocksTransferred}.", i)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 Exit Do
                             ElseIf Operation_Cancel_Flag Then
                                 running = False
                                 Threading.Thread.Sleep(200)
                                 Operation_Cancel_Flag = False
                                 PrintMsg($"Operation cancelled. {i} blocks transferred.")
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                                                Log.Information("Tape copy was canceled. BlocksTransferred={BlocksTransferred}.", i)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 Exit Do
                             End If
                         Catch ex As Exception
+                            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                            Log.Error(ex, "Tape copy worker iteration failed. BlocksTransferred={BlocksTransferred}.", i)
+                                        End Using
+                                    End Using
+                                End Using
+                            End Using
                             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString())
                         End Try
                     Loop While i < BlockCount OrElse BlockCount <= 0
@@ -174,23 +285,86 @@ Public Class TapeCopy
                     Else
                         TapeUtils.DriverTypeSetting = drivertype
                     End If
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy cleanup flush started. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     TapeUtils.Flush(TapeB)
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy cleanup flush completed. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
 
                     If IsFileA Then
                         TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
                     Else
                         TapeUtils.DriverTypeSetting = drivertype
                     End If
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy source close started. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     TapeUtils.CloseTapeDrive(handleA)
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy source close completed. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
 
                     If IsFileB Then
                         TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream
                     Else
                         TapeUtils.DriverTypeSetting = drivertype
                     End If
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy destination close started. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     TapeUtils.CloseTapeDrive(handleB)
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cleanup")
+                                    Log.Information("Tape copy destination close completed. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     TapeUtils.DriverTypeSetting = drivertype
                     running = False
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                    Log.Information("Tape copy worker finished. BlocksTransferred={BlocksTransferred}.", i)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Invoke(Sub() Button1.Text = "Start")
                 End Sub)
             Dim maxStr As String = ""
@@ -212,6 +386,15 @@ Public Class TapeCopy
             th.Start()
         ElseIf Button1.Text = "Stop" Then
             Operation_Cancel_Flag = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(TapeCopy))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "TapeCopy")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                            Log.Information("Tape copy cancellation requested by the user.")
+                        End Using
+                    End Using
+                End Using
+            End Using
         End If
     End Sub
 End Class

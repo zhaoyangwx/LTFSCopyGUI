@@ -1,6 +1,10 @@
+Imports System
 Imports System.ComponentModel
+Imports Serilog
+Imports Serilog.Context
 
 Public Class Form1
+    Private ReadOnly _logSessionId As String = $"index-analyzer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Public schema As ltfsindex
     Public contents As ltfsindex.contentsDef
     Public filelist As New List(Of String)
@@ -10,10 +14,41 @@ Public Class Form1
         Public Property BlockNumber As Long
         Public Property FileLength As Long
     End Class
+
+    Private Sub LogFileOperationWarning(operation As String, filePath As String, ex As Exception)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                        Log.Warning(ex, "Index analyzer file operation failed. Operation={Operation} FilePath={FilePath}.", operation, filePath)
+                    End Using
+                End Using
+            End Using
+        End Using
+    End Sub
+
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaLoad")
+                        Log.Information("Schema load requested by the user. FilePath={FilePath}.", TextBox1.Text)
+                    End Using
+                End Using
+            End Using
+        End Using
         LoadSchemaFile()
     End Sub
     Public Sub LoadSchemaFile(Optional ByVal ReloadFile As Boolean = True)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaLoad")
+                        Log.Information("Schema load started. FilePath={FilePath} ReloadFile={ReloadFile}.", TextBox1.Text, ReloadFile)
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim th As New Threading.Thread(
             Sub()
                 Try
@@ -112,7 +147,25 @@ Public Class Form1
                     End If
                     Invoke(Sub() Label4.Text = CStr(SchemaLoadText.Items(6)))
                     Invoke(Sub() TextBox2.Text = p.ToString)
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaLoad")
+                                    Log.Information("Schema load completed. FilePath={FilePath} FileCount={FileCount} PartitionAFileCount={PartitionAFileCount} PartitionBFileCount={PartitionBFileCount}.", TextBox1.Text, flist.Count, alist.Count, blist.Count)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                 Catch ex As Exception
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                    Log.Error(ex, "Schema load failed. FilePath={FilePath} ReloadFile={ReloadFile}.", TextBox1.Text, ReloadFile)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Invoke(Sub() TextBox2.Text = ex.Message)
                 End Try
                 Invoke(Sub()
@@ -206,7 +259,38 @@ Public Class Form1
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles Button3.Click
         If SaveFileDialog1.ShowDialog = DialogResult.OK Then
-            IO.File.WriteAllText(SaveFileDialog1.FileName, TextBox2.Text, New Text.UTF8Encoding(False))
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileWrite")
+                            Log.Information("Generated output write started. FilePath={FilePath}.", SaveFileDialog1.FileName)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Try
+                IO.File.WriteAllText(SaveFileDialog1.FileName, TextBox2.Text, New Text.UTF8Encoding(False))
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileWrite")
+                                Log.Information("Generated output write completed. FilePath={FilePath}.", SaveFileDialog1.FileName)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+            Catch ex As Exception
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                Log.Error(ex, "Generated output write failed. FilePath={FilePath}.", SaveFileDialog1.FileName)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Throw
+            End Try
         End If
     End Sub
     Public LoadComplete As Boolean = False
@@ -218,9 +302,27 @@ Public Class Form1
         Text = $"{FormTitle.Text} - {ApplicationWheels.ApplicationInfo}"
     End Sub
     Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Index analyzer window loading.")
+                    End Using
+                End Using
+            End Using
+        End Using
         LoadSetting()
         LoadComplete = True
         Await RefreshDeviceList()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Index analyzer window loaded.")
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub Button4_Click(sender As Object, e As EventArgs) Handles Button4.Click
@@ -244,6 +346,15 @@ Public Class Form1
     End Sub
 
     Private Sub Form1_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Index analyzer window closing.")
+                    End Using
+                End Using
+            End Using
+        End Using
         My.Settings.IndexAnalyzer_LastFile = TextBox1.Text
         My.Settings.IndexAnalyzer_Src = TextBox3.Text
         My.Settings.IndexAnalyzer_Dest = TextBox4.Text
@@ -279,6 +390,15 @@ Public Class Form1
         End Function
     End Class
     Private Sub Button6_Click(sender As Object, e As EventArgs) Handles Button6.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaBuild")
+                        Log.Information("Schema generation from directory started. SourceDirectory={SourceDirectory}.", TextBox3.Text)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             schema = New ltfsindex
             Dim fid As Integer = 0
@@ -303,7 +423,7 @@ Public Class Form1
                             fnew.modifytime = f.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                             fnew.changetime = fnew.modifytime
                         Catch ex As Exception
-
+                            LogFileOperationWarning("MetadataUpdate", f.FullName, ex)
                         End Try
                         d.LTFSIndexDir.contents._file.Add(fnew)
                     Next
@@ -315,7 +435,7 @@ Public Class Form1
                             ld.modifytime = sd.LastWriteTimeUtc.ToString("yyyy-MM-ddTHH:mm:ss.fffffff00Z")
                             ld.changetime = ld.modifytime
                         Catch ex As Exception
-
+                            LogFileOperationWarning("DirectoryMetadataUpdate", sd.FullName, ex)
                         End Try
                         d.LTFSIndexDir.contents._directory.Add(ld)
                         qtmp.Add(New IndexedDirectory(ld, sd))
@@ -337,7 +457,25 @@ Public Class Form1
                 Next
             End While
             LoadSchemaFile(False)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaBuild")
+                            Log.Information("Schema generation from directory completed. SourceDirectory={SourceDirectory} FileCount={FileCount}.", TextBox3.Text, fid)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Schema generation from directory failed. SourceDirectory={SourceDirectory}.", TextBox3.Text)
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
     End Sub
@@ -353,6 +491,15 @@ Public Class Form1
     End Sub
 
     Private Sub Button9_Click(sender As Object, e As EventArgs) Handles Button9.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaConvert")
+                        Log.Information("Schema conversion started. DirectoryPath={DirectoryPath}.", TextBox1.Text)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             Dim f() As IO.FileInfo = New IO.DirectoryInfo(TextBox1.Text).GetFiles("*.schema")
             For Each fl As IO.FileInfo In f
@@ -365,7 +512,25 @@ Public Class Form1
                 schema.SaveFile(fl.FullName)
                 TextBox2.AppendText(fl.FullName & vbCrLf)
             Next
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SchemaConvert")
+                            Log.Information("Schema conversion completed. DirectoryPath={DirectoryPath} FileCount={FileCount}.", TextBox1.Text, f.Length)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "IndexAnalyzer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Schema conversion failed. DirectoryPath={DirectoryPath}.", TextBox1.Text)
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
 
@@ -407,7 +572,7 @@ Public Class Form1
                                     End SyncLock
                                 End If
                             Catch ex As Exception
-
+                                LogFileOperationWarning("Search", fl.FullName, ex)
                             End Try
                             Threading.Interlocked.Increment(progval)
                         End Sub)
@@ -472,6 +637,7 @@ Public Class Form1
                                 End If
                             Next
                         Catch ex As Exception
+                            LogFileOperationWarning("ExtentCheck", fl.FullName, ex)
                             result.Append(ex.ToString)
                         End Try
                         Threading.Interlocked.Increment(progval)
@@ -539,7 +705,7 @@ Public Class Form1
                                     result._directory(0).contents._directory.AddRange(rsch._directory(0).contents._directory)
                                 End If
                             Catch ex As Exception
-
+                                LogFileOperationWarning("Merge", fl.FullName, ex)
                             End Try
                             Threading.Interlocked.Increment(progval)
                         End Sub)
@@ -654,7 +820,7 @@ Public Class Form1
                                     End SyncLock
                                 End If
                             Catch ex As Exception
-
+                                LogFileOperationWarning("UnverifiedCheck", fl.FullName, ex)
                             End Try
                             Threading.Interlocked.Increment(progval)
                         End Sub)
@@ -700,13 +866,34 @@ Public Class Form1
     Dim DevList As List(Of TapeUtils.BlockDevice)
     Private _deviceScanInProgress As Boolean
     Public Async Function RefreshDeviceList() As Threading.Tasks.Task
-        If _deviceScanInProgress Then Return
+        If _deviceScanInProgress Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                            Log.Warning("Tape device refresh was skipped because another scan is already running.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Return
+        End If
 
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Tape device refresh started.")
+                    End Using
+                End Using
+            End Using
+        End Using
         _deviceScanInProgress = True
         LoadComplete = False
         Button11.Enabled = False
 
         Dim lastIndex As Integer = ComboBox1.SelectedIndex
+        Dim scanSucceeded As Boolean = False
         Try
             ' Device enumeration performs SetupAPI, device opens and SCSI Inquiry calls.
             ' Keep all of that work off the UI thread so the first form can paint.
@@ -729,7 +916,26 @@ Public Class Form1
             Finally
                 ComboBox1.EndUpdate()
             End Try
+            scanSucceeded = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                            Log.Information("Tape device refresh completed. DeviceCount={DeviceCount}.", scannedDevices.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Tape device refresh failed.")
+                        End Using
+                    End Using
+                End Using
+            End Using
             If Not IsDisposed AndAlso Not Disposing Then
                 MessageBox.Show(New Form With {.TopMost = True}, ex.ToString(), My.Resources.ResText_Warning)
             End If
@@ -737,13 +943,40 @@ Public Class Form1
             _deviceScanInProgress = False
             LoadComplete = True
             If Not IsDisposed AndAlso Not Disposing Then Button11.Enabled = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                            Log.Information("Tape device refresh finished. Succeeded={Succeeded}.", scanSucceeded)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Try
     End Function
     Private Async Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
         If _deviceScanInProgress Then Exit Sub
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Tape device refresh requested by the user.")
+                    End Using
+                End Using
+            End Using
+        End Using
         If Not ApplicationElevation.IsAdministrator Then
             If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
             If ApplicationElevation.StartElevated() Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Device")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "PrivilegeCheck")
+                                Log.Information("Device refresh requested elevation; the current process will exit after elevation starts.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 ApplicationElevation.ExitCurrentProcess()
             End If
             Exit Sub
@@ -769,6 +1002,15 @@ Public Class Form1
             Await RefreshDeviceList()
             If Button27.Enabled = False Then Exit Sub
             Dim device As TapeUtils.BlockDevice = DevList(ComboBox1.SelectedIndex)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(Form1))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Navigation")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowOpen")
+                            Log.Information("Writer navigation requested from the index analyzer. DevicePath={DevicePath}.", device.DevicePath)
+                        End Using
+                    End Using
+                End Using
+            End Using
             TapeUtils.CheckSwitchConfig(device)
             My.Settings.Save()
             ApplicationNavigation.ShowWriter(device.DevicePath)

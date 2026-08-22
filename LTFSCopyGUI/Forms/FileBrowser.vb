@@ -1,9 +1,20 @@
 ﻿Imports System.ComponentModel
 Imports LTFSCopyGUI
+Imports System
+Imports Serilog
+Imports Serilog.Context
 
 Public Class FileBrowser
     Public Property schema As ltfsindex
+    Private ReadOnly _logSessionId As String = $"filebrowser-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Public Overloads Shared Sub Show(FList As ltfsindex)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowOpen")
+                    Log.Information("File browser window requested.")
+                End Using
+            End Using
+        End Using
         Dim FB1 As New FileBrowser
         With FB1
             .schema = FList
@@ -11,6 +22,13 @@ Public Class FileBrowser
         End With
     End Sub
     Public Overloads Shared Function ShowDialog(FList As ltfsindex) As DialogResult
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowOpen")
+                    Log.Information("File browser dialog requested.")
+                End Using
+            End Using
+        End Using
         Dim FB1 As New FileBrowser
         With FB1
             .schema = FList
@@ -18,6 +36,15 @@ Public Class FileBrowser
         End With
     End Function
     Private Sub FileBrowser_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File browser loading index tree. HasSchema={HasSchema}.", schema IsNot Nothing)
+                    End Using
+                End Using
+            End Using
+        End Using
         SuspendLayout()
         SyncLock EventLock
             If EventLock Then Exit Sub
@@ -35,6 +62,15 @@ Public Class FileBrowser
             EventLock = False
         End SyncLock
         ResumeLayout()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File browser index tree loaded. RootNodeCount={RootNodeCount}.", TreeView1.Nodes.Count)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
     Private Sub AddItem(Root As TreeNodeCollection, FList As ltfsindex.contentsDef)
         If FList Is Nothing Then Exit Sub
@@ -51,6 +87,15 @@ Public Class FileBrowser
                 newitem.Checked = FList._file(i).Selected
             Next
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "File browser failed to build an index tree.")
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(New Form With {.TopMost = True}, ex.ToString)
         End Try
 
@@ -87,6 +132,15 @@ Public Class FileBrowser
         SyncLock EventLock
             EventLock = False
         End SyncLock
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SelectionChanged")
+                        Log.Information("File browser selection changed. NodeText={NodeText} Checked={Checked}.", e.Node.Text, e.Node.Checked)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
     Public Sub RecursivelySetNodeCheckStatus(n As TreeNode, Checked As Boolean)
         n.Checked = Checked
@@ -178,14 +232,41 @@ Public Class FileBrowser
         SyncLock EventLock
             EventLock = False
         End SyncLock
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SelectionChanged")
+                        Log.Information("File browser node check state changed. NodeText={NodeText} Checked={Checked}.", e.Node.Text, e.Node.Checked)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowClose")
+                        Log.Information("File browser accepted the current selection.")
+                    End Using
+                End Using
+            End Using
+        End Using
         DialogResult = DialogResult.OK
         Close()
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowClose")
+                        Log.Information("File browser canceled the current selection.")
+                    End Using
+                End Using
+            End Using
+        End Using
         DialogResult = DialogResult.Cancel
         Close()
     End Sub
@@ -204,7 +285,28 @@ Public Class FileBrowser
         Dim sMin As Long = 0, sMax As Long = Long.MaxValue
         DisplayHelper.ShowInputDialog("Minimum Bytes", "By Size", sMin)
         DisplayHelper.ShowInputDialog("Maximum Bytes", "By Size", sMax)
-        If sMax < sMin Then Exit Sub
+        If sMax < sMin Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Filter")
+                            Log.Warning("File browser size filter was ignored because the maximum was below the minimum. MinimumBytes={MinimumBytes} MaximumBytes={MaximumBytes}.", sMin, sMax)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            ResumeLayout()
+            Exit Sub
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Filter")
+                        Log.Information("File browser size filter applied. MinimumBytes={MinimumBytes} MaximumBytes={MaximumBytes}.", sMin, sMax)
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim NList As New List(Of TreeNode)
         Dim DirQ As New List(Of TreeNode)
         For Each n As TreeNode In TreeView1.Nodes
@@ -243,6 +345,15 @@ Public Class FileBrowser
         SuspendLayout()
         Dim pattern As String = "*"
         DisplayHelper.ShowInputDialog("Regex", "By regex", pattern)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Filter")
+                        Log.Information("File browser filename filter applied. Pattern={Pattern}.", pattern)
+                    End Using
+                End Using
+            End Using
+        End Using
         For Each n As TreeNode In TreeView1.Nodes
             n.Checked = False
         Next
@@ -283,5 +394,14 @@ Public Class FileBrowser
     Private Sub FileBrowser_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
         My.Settings.FileBrowser_CopyInfo = CheckBox1.Checked
         My.Settings.Save()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileBrowser))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileBrowser")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("File browser closed. CopyInfoEnabled={CopyInfoEnabled}.", CheckBox1.Checked)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 End Class

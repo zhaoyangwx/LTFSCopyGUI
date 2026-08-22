@@ -1,3 +1,4 @@
+Imports System
 Imports System.ComponentModel
 Imports System.ComponentModel.DataAnnotations
 Imports System.Runtime.InteropServices
@@ -7,8 +8,11 @@ Imports System.Threading
 Imports LTFSCopyGUI.TapeUtils
 Imports LTFSCopyGUI.TapeUtils.SetupAPIWheels
 Imports NAudio.MediaFoundation
+Imports Serilog
+Imports Serilog.Context
 
 Public Class ChangerTool
+    Private ReadOnly _logSessionId As String = $"changer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Public LoadComplete As Boolean = False
     '<TypeConverter(GetType(ExpandableObjectConverter))>
     <TypeConverter(GetType(ListTypeDescriptor(Of List(Of MediumChanger), MediumChanger)))>
@@ -44,6 +48,15 @@ Public Class ChangerTool
         End Get
     End Property
     Private Sub ChangerTool_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Changer window loading.")
+                    End Using
+                End Using
+            End Using
+        End Using
         Text = $"ChangerTool - {ApplicationWheels.ApplicationInfo}"
         RefreshMCList()
         SetUILock(True)
@@ -55,9 +68,41 @@ Public Class ChangerTool
                             End Sub)
                  End Sub)
         LoadComplete = True
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Changer window loaded. DeviceCount={DeviceCount} SelectedIndex={SelectedIndex}.", If(LastDeviceList Is Nothing, 0, LastDeviceList.Count), SelectedIndex)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
     Public Sub RefreshMCList()
-        Dim DeviceList As List(Of MediumChanger) = GetMediumChangerList()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Medium changer enumeration started.")
+                    End Using
+                End Using
+            End Using
+        End Using
+        Dim DeviceList As List(Of MediumChanger)
+        Try
+            DeviceList = GetMediumChangerList()
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Medium changer enumeration failed.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw
+        End Try
         LoadComplete = False
         ListBox1.Items.Clear()
         Dim DevList As List(Of MediumChanger)
@@ -69,17 +114,75 @@ Public Class ChangerTool
         ListBox1.SelectedIndex = Math.Min(SelectedIndex, ListBox1.Items.Count - 1)
         LoadComplete = True
         SelectedIndex = ListBox1.SelectedIndex
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Medium changer enumeration completed. DeviceCount={DeviceCount} SelectedIndex={SelectedIndex}.", DeviceList.Count, SelectedIndex)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
     Public FullElement, EmptyElement As List(Of MediumChanger.Element)
     Public Sub RefreshCurrentChanger()
-        If CurrentChanger Is Nothing Then Exit Sub
+        If CurrentChanger Is Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                            Log.Warning("Current medium changer refresh was skipped because no changer is selected.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Exit Sub
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Current medium changer refresh started. DeviceIndex={DeviceIndex}.", CurrentChanger.DevIndex)
+                    End Using
+                End Using
+            End Using
+        End Using
         Try
             CurrentChanger.RefreshElementStatus(Not CheckBox2.Checked)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                            Log.Information("Current medium changer refresh completed. ElementCount={ElementCount}.", If(CurrentChanger.Elements Is Nothing, 0, CurrentChanger.Elements.Count))
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Current medium changer refresh failed. DeviceIndex={DeviceIndex}.", CurrentChanger.DevIndex)
+                        End Using
+                    End Using
+                End Using
+            End Using
             MessageBox.Show(ex.ToString())
         End Try
     End Sub
     Public Sub SwitchChanger()
+        If CurrentChanger Is Nothing Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Selection")
+                            Log.Warning("Changer view switch was skipped because no changer is selected.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+        End If
         If CurrentChanger Is Nothing OrElse CurrentChanger.Elements Is Nothing OrElse CurrentChanger.Elements.Count = 0 Then RefreshCurrentChanger()
         Try
             TextBox1.Text = CurrentChanger.GetSerializedText()
@@ -110,13 +213,39 @@ Public Class ChangerTool
                 If itext.Length > 0 Then ctext = $"{ctext}({itext})"
                 ComboBox2.Items.Add(ctext)
             Next
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Selection")
+                            Log.Information("Changer view updated. FullElementCount={FullElementCount} EmptyElementCount={EmptyElementCount}.", FullElement.Count, EmptyElement.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Catch ex As Exception
-
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Changer view update failed.")
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Try
 
     End Sub
 
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles Button1.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Medium changer refresh requested by the user.")
+                    End Using
+                End Using
+            End Using
+        End Using
         RefreshMCList()
     End Sub
 
@@ -142,6 +271,15 @@ Public Class ChangerTool
             Dim destElement As MediumChanger.Element = EmptyElement(destElementIndex)
             Dim src As UInt32 = srcElement.ElementAddress
             Dim dest As UInt32 = destElement.ElementAddress
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Move")
+                            Log.Information("Medium move requested. DevicePath={DevicePath} SourceAddress={SourceAddress} DestinationAddress={DestinationAddress} LUN={LUN}.", drv, src, dest, LUN)
+                        End Using
+                    End Using
+                End Using
+            End Using
             srcElement.Full = Not srcElement.Full
             destElement.Full = Not destElement.Full
             destElement.PrimaryVolumeTagInformation = srcElement.PrimaryVolumeTagInformation
@@ -154,8 +292,26 @@ Public Class ChangerTool
                     Dim ex As Exception = Nothing
                     Try
                         MediumChanger.MoveMedium(drv, src, dest, sense, LUN:=LUN)
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Move")
+                                        Log.Information("Medium move command completed. SourceAddress={SourceAddress} DestinationAddress={DestinationAddress}.", src, dest)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                     Catch ex
                         succ = False
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Medium move command failed. SourceAddress={SourceAddress} DestinationAddress={DestinationAddress}.", src, dest)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                     Finally
                         succ = True
                     End Try
@@ -188,6 +344,15 @@ Public Class ChangerTool
     End Sub
 
     Private Sub Button2_Click(sender As Object, e As EventArgs) Handles Button2.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "DeviceRefresh")
+                        Log.Information("Current medium changer refresh requested by the user.")
+                    End Using
+                End Using
+            End Using
+        End Using
         SetUILock(True)
         Task.Run(
             Sub()
@@ -219,6 +384,15 @@ Public Class ChangerTool
     End Sub
 
     Private Sub 排序ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 排序ToolStripMenuItem.Click
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Sort")
+                        Log.Information("Medium changer sorting started.")
+                    End Using
+                End Using
+            End Using
+        End Using
         SetUILock(True)
         Task.Run(
             Sub()
@@ -262,6 +436,15 @@ Public Class ChangerTool
                                             Dim sensekey As Byte = CByte(sense(2) And &HF)
                                             If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                         Catch ex As Exception
+                                            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                                                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                                                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                                            Log.Error(ex, "Medium changer sorting move failed. SourceAddress={SourceAddress} DestinationAddress={DestinationAddress}.", srcList(j).ElementAddress, srcList(i).ElementAddress)
+                                                        End Using
+                                                    End Using
+                                                End Using
+                                            End Using
                                             Dim result As DialogResult
                                             Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
                                             Select Case result
@@ -302,6 +485,15 @@ Public Class ChangerTool
                                                 Dim sensekey As Byte = CByte(sense(2) And &HF)
                                                 If sensekey <> 0 Then Throw New Exception("SCSI Sense Error")
                                             Catch ex As Exception
+                                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                                                Log.Error(ex, "Medium changer sorting move failed. SourceAddress={SourceAddress} DestinationAddress={DestinationAddress}.", srcList(j).ElementAddress, srcList(i).ElementAddress)
+                                                            End Using
+                                                        End Using
+                                                    End Using
+                                                End Using
                                                 Dim result As DialogResult
                                                 Invoke(Sub() result = MessageBox.Show(New Form With {.TopMost = True}, $"Error: {ex.ToString}{vbCrLf}{ParseSenseData(sense)}", "", MessageBoxButtons.AbortRetryIgnore))
                                                 Select Case result
@@ -335,6 +527,15 @@ Public Class ChangerTool
                 Invoke(Sub()
                            SetUILock(False)
                        End Sub)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Sort")
+                                Log.Information("Medium changer sorting completed.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End Sub)
     End Sub
 
@@ -350,6 +551,15 @@ Public Class ChangerTool
 
     Private Sub 批量擦除ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 批量擦除ToolStripMenuItem.Click
         If Not (MessageBox.Show(My.Resources.ResText_DataLossWarning, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.OK) Then Exit Sub
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Erase")
+                        Log.Information("Batch medium erase started.")
+                    End Using
+                End Using
+            End Using
+        End Using
         SetUILock(True)
         Task.Run(Sub()
                      Invoke(Sub() TextBox1.Text = $"Loading elements{vbCrLf}")
@@ -387,6 +597,7 @@ Public Class ChangerTool
                              End If
                          Next
                      Next
+                     Dim eraseSucceeded As Boolean = False
                      Try
                          If drvMapping.Keys.Count = 0 Then
                              Throw New Exception("No drive found.")
@@ -468,11 +679,30 @@ Public Class ChangerTool
                              Next
                          End While
                          Invoke(Sub() TextBox1.AppendText("Finished"))
+                         eraseSucceeded = True
                      Catch ex As Exception
+                         Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                                 Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                     Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                         Log.Error(ex, "Batch medium erase failed.")
+                                     End Using
+                                 End Using
+                             End Using
+                         End Using
                          MessageBox.Show(ex.ToString())
                      End Try
 
                      SetUILock(False)
+                     Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ChangerTool))
+                         Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Changer")
+                             Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                 Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Erase")
+                                     Log.Information("Batch medium erase worker finished. Succeeded={Succeeded}.", eraseSucceeded)
+                                 End Using
+                             End Using
+                         End Using
+                     End Using
                  End Sub)
 
     End Sub
