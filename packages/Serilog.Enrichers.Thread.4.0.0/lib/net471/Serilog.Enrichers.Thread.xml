@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Serilog.Enrichers.Thread</name>
+    </assembly>
+    <members>
+        <member name="T:Serilog.Enrichers.ThreadIdEnricher">
+            <summary>
+            Enriches log events with a ThreadId property containing the <see cref="P:System.Environment.CurrentManagedThreadId"/>.
+            </summary>
+        </member>
+        <member name="F:Serilog.Enrichers.ThreadIdEnricher.ThreadIdPropertyName">
+            <summary>
+            The property name added to enriched log events.
+            </summary>
+        </member>
+        <member name="F:Serilog.Enrichers.ThreadIdEnricher._lastValue">
+            <summary>
+            The cached last created "ThreadId" property with some thread id. It is likely to be reused frequently so avoiding heap allocations.
+            </summary>
+        </member>
+        <member name="M:Serilog.Enrichers.ThreadIdEnricher.Enrich(Serilog.Events.LogEvent,Serilog.Core.ILogEventPropertyFactory)">
+            <summary>
+            Enrich the log event.
+            </summary>
+            <param name="logEvent">The log event to enrich.</param>
+            <param name="propertyFactory">Factory for creating new properties to add to the event.</param>
+        </member>
+        <member name="T:Serilog.Enrichers.ThreadNameEnricher">
+            <summary>
+            Enriches log events with a ThreadName property containing the <see cref="P:System.Threading.Thread.CurrentThread"/> <see cref="P:System.Threading.Thread.Name"/>.
+            </summary>
+        </member>
+        <member name="F:Serilog.Enrichers.ThreadNameEnricher.ThreadNamePropertyName">
+            <summary>
+            The property name added to enriched log events.
+            </summary>
+        </member>
+        <member name="F:Serilog.Enrichers.ThreadNameEnricher._lastValue">
+            <summary>
+            The cached last created "ThreadName" property with some thread name. It is likely to be reused frequently so avoiding heap allocations.
+            </summary>
+        </member>
+        <member name="M:Serilog.Enrichers.ThreadNameEnricher.Enrich(Serilog.Events.LogEvent,Serilog.Core.ILogEventPropertyFactory)">
+            <summary>
+            Enrich the log event.
+            </summary>
+            <param name="logEvent">The log event to enrich.</param>
+            <param name="propertyFactory">Factory for creating new properties to add to the event.</param>
+        </member>
+        <member name="T:Serilog.ThreadLoggerConfigurationExtensions">
+            <summary>
+            Extends <see cref="T:Serilog.LoggerConfiguration"/> to add enrichers for <see cref="P:System.Environment.CurrentManagedThreadId"/>
+            capabilities.
+            </summary>
+        </member>
+        <member name="M:Serilog.ThreadLoggerConfigurationExtensions.WithThreadId(Serilog.Configuration.LoggerEnrichmentConfiguration)">
+            <summary>
+            Enrich log events with a ThreadId property containing the <see cref="P:System.Environment.CurrentManagedThreadId"/>.
+            </summary>
+            <param name="enrichmentConfiguration">Logger enrichment configuration.</param>
+            <returns>Configuration object allowing method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">If <paramref name="enrichmentConfiguration"/> is null.</exception>
+        </member>
+        <member name="M:Serilog.ThreadLoggerConfigurationExtensions.WithThreadName(Serilog.Configuration.LoggerEnrichmentConfiguration)">
+            <summary>
+            Enrich log events with a ThreadName property containing the <see cref="P:System.Threading.Thread.CurrentThread"/> <see cref="P:System.Threading.Thread.Name"/>.
+            </summary>
+            <param name="enrichmentConfiguration">Logger enrichment configuration.</param>
+            <returns>Configuration object allowing method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">If <paramref name="enrichmentConfiguration"/> is null.</exception>
+        </member>
+    </members>
+</doc>

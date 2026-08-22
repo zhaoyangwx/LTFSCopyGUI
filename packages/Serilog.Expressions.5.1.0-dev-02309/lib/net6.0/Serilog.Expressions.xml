@@ -1,0 +1,1686 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Serilog.Expressions</name>
+    </assembly>
+    <members>
+        <member name="T:Serilog.Expressions.Ast.AccessorExpression">
+            <summary>
+            An accessor retrieves a property from a (structured) object. For example, in the expression
+            <code>Headers.ContentType</code> the <code>.</code> operator forms an accessor expression that
+            retrieves the <code>ContentType</code> property from the <code>Headers</code> object.
+            </summary>
+            <remarks>Note that the AST type can represent accessors that cannot be validly written using
+            <code>.</code> notation. In these cases, if the accessor is formatted back out as an expression,
+            <see cref="T:Serilog.Expressions.Ast.IndexerExpression"/> notation will be used.</remarks>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.AmbientNameExpression">
+            <summary>
+            An ambient name is generally a property name or built-in that appears standalone in an expression. For example,
+            in <code>Headers.ContentType</code>, <code>Headers</code> is an ambient name that produces an
+            <see cref="T:Serilog.Expressions.Ast.AmbientNameExpression"/>. Built-ins like <code>@Level</code> are also parsed as ambient names.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.ArrayExpression">
+            <summary>
+            An array expression constructs an array from a list of elements. For example, <code>[1, 2, 3]</code> is an
+            array expression. The items in an array expression can be literal values or expressions, like in the
+            above example, or they can be spread expressions that describe zero or more elements to include in the
+            list. Whether included via regular elements or spread expressions, undefined values are ignored and won't
+            appear in the resulting array value.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.CallExpression">
+            <summary>
+            A <see cref="T:Serilog.Expressions.Ast.CallExpression"/> is a function call made up of the function name, parenthesised argument
+            list, and optional postfix <code>ci</code> modifier. For example, <code>Substring(RequestPath, 0, 5)</code>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.ConstantExpression">
+            <summary>
+            A constant such as <code>'hello'</code>, <code>true</code>, <code>null</code>, or <code>123.45</code>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.Element">
+            <summary>
+            An element in an <see cref="T:Serilog.Expressions.Ast.ArrayExpression"/>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.Expression">
+            <summary>
+            An AST node.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.Ast.Expression.ToString">
+            <summary>
+            The <see cref="M:Serilog.Expressions.Ast.Expression.ToString"/> representation of an <see cref="T:Serilog.Expressions.Ast.Expression"/> is <strong>not</strong>
+            guaranteed to be syntactically valid: this is provided for debugging purposes only.
+            </summary>
+            <returns>A textual representation of the expression.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.IndexerExpression">
+            <summary>
+            An <see cref="T:Serilog.Expressions.Ast.IndexerExpression"/> retrieves a property from an object, by name, or an item from an array
+            by zero-based numeric index. For example, <code>Headers['Content-Type']</code> and <code>Items[2]</code> are
+            parsed as indexer expressions.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.IndexerWildcard">
+            <summary>
+            Describes the wildcard in a <see cref="T:Serilog.Expressions.Ast.IndexerWildcardExpression"/>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.IndexerWildcardExpression">
+            <summary>
+            An indexer wildcard is a placeholder in a property path expression. For example,
+            in <code>Headers[?] = 'test'</code>, the question-mark token is a wildcard that means "any property of
+            the <code>Headers</code> object". The other wildcard indexer is the asterisk, meaning "all".
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.IndexOfMatchExpression">
+            <summary>
+            A non-syntax expression tree node used when compiling the <see cref="F:Serilog.Expressions.Operators.OpIndexOfMatch"/>,
+            <see cref="F:Serilog.Expressions.Operators.OpIsMatch"/>, and SQL-style <code>like</code> expressions.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.ItemElement">
+            <summary>
+            A single item in an <see cref="T:Serilog.Expressions.Ast.ArrayExpression"/>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.LambdaExpression">
+            <summary>
+            A non-syntax expression tree node used in the compilation of <see cref="T:Serilog.Expressions.Ast.IndexerWildcardExpression"/>. Only
+            very limited support for lambda expressions is currently present.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.LocalNameExpression">
+            <summary>
+            Represents the iteration variable in template <code>#each</code> directives.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.Member">
+            <summary>
+            A member in an <see cref="T:Serilog.Expressions.Ast.ObjectExpression"/>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.ObjectExpression">
+            <summary>
+            Constructs an object given a list of members. Members can be <code>name: value</code> pairs, or spread
+            expressions that include members from another object. Where names conflict, the rightmost appearance of
+            a name wins. Members that evaluate to an undefined value do not appear in the resulting object.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.ParameterExpression">
+            <summary>
+            Non-syntax expression type used to represent parameters in <see cref="T:Serilog.Expressions.Ast.LambdaExpression"/> bodies.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.PropertyMember">
+            <summary>
+            An <see cref="T:Serilog.Expressions.Ast.ObjectExpression"/> member comprising an optionally-quoted name and a value, for example
+            the object <code>{Username: 'alice'}</code> includes a single <see cref="T:Serilog.Expressions.Ast.PropertyMember"/> with name
+            <code>Username</code> and value <code>'alice'</code>.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.SpreadElement">
+            <summary>
+            An element in an <see cref="T:Serilog.Expressions.Ast.ArrayExpression"/> that describes zero or more items to include in the array.
+            Spread elements are written with two dots preceding an expression that evaluates to an array of elements to
+            insert into the result array at the position of the spread element, for example, in <code>[1, 2, ..Others]</code>,
+            the <code>..Others</code> expression is a spread element. If the value of the array in the spread is
+            undefined, no items will be added to the list.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Ast.SpreadMember">
+            <summary>
+            An <see cref="T:Serilog.Expressions.Ast.ObjectExpression"/> member that designates another object from which to copy members into the
+            current object. Spread member expressions comprise two dots preceding an expression that is expected to
+            evaluate to an object.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Compilation.Linq.EventIdHash">
+            <summary>
+            Hash functions for message templates. See <see cref="M:Serilog.Expressions.Compilation.Linq.EventIdHash.Compute(System.String)"/>.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.Compilation.Linq.EventIdHash.Compute(System.String)">
+            <summary>
+            Compute a 32-bit hash of the provided <paramref name="messageTemplate"/>. The
+            resulting hash value can be uses as an event id in lieu of transmitting the
+            full template string.
+            </summary>
+            <param name="messageTemplate">A message template.</param>
+            <returns>A 32-bit hash of the template.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.CompiledExpression">
+            <summary>
+            A compiled expression evaluated against a <see cref="T:Serilog.Events.LogEvent"/>.
+            </summary>
+            <param name="logEvent"></param>
+            <returns>The result of evaluating the expression, represented as a <see cref="T:Serilog.Events.LogEventPropertyValue"/>,
+            or <c langword="null">null</c> if the result is undefined.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.ExpressionResult">
+            <summary>
+            Helper functions for working with the results of evaluating expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.ExpressionResult.IsTrue(Serilog.Events.LogEventPropertyValue)">
+            <summary>
+            Test whether <paramref name="value"/> is <c langword="true">true</c>.
+            </summary>
+            <param name="value">The value to test, which may be <c langword="null">null</c>
+            if the result of evaluating an expression was undefined.</param>
+            <returns>Returns <c langword="true">true</c> if and only if the
+            <paramref name="value"/> is a scalar Boolean with the
+            value <c langword="true">true</c>. Returns <c langword="false">false</c>, otherwise.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.LoggingFilterSwitch">
+            <summary>
+            A log event filter that can be modified at runtime.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.LoggingFilterSwitch.#ctor(System.String)">
+            <summary>
+            Construct a <see cref="T:Serilog.Expressions.LoggingFilterSwitch"/>, optionally initialized
+            with the <paramref name="expression"/>.
+            </summary>
+            <param name="expression">A filter expression against which log events will be tested.
+            Only expressions that evaluate to <c>true</c> are included
+            by the filter. A <c>null</c> expression will accept all
+            events.</param>
+        </member>
+        <member name="P:Serilog.Expressions.LoggingFilterSwitch.Expression">
+            <summary>
+            A filter expression against which log events will be tested.
+            Only expressions that evaluate to <c>true</c> are included
+            by the filter. A <c>null</c> expression will accept all
+            events.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.LoggingFilterSwitch.IsEnabled(Serilog.Events.LogEvent)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.Expressions.LoggingFilterSwitch.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:Serilog.Expressions.NameResolver">
+            <summary>
+            Looks up the implementations of functions that appear in expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.NameResolver.TryResolveFunctionName(System.String,System.Reflection.MethodInfo@)">
+            <summary>
+            Match a function name to a method that implements it.
+            </summary>
+            <param name="name">The function name as it appears in the expression source. Names are not case-sensitive.</param>
+            <param name="implementation">A <see cref="T:System.Reflection.MethodInfo"/> implementing the function.</param>
+            <returns><c>True</c> if the name could be resolved; otherwise, <c>false</c>.</returns>
+            <remarks>The method implementing a function should be <c>static</c>, return <see cref="T:Serilog.Events.LogEventPropertyValue"/>,
+            and accept parameters of type <see cref="T:Serilog.Events.LogEventPropertyValue"/>. If the <c>ci</c> modifier is supported,
+            a <see cref="T:System.StringComparison"/> should be included in the argument list. If the function is culture-specific,
+            an <see cref="T:System.IFormatProvider"/> should be included in the argument list.</remarks>
+        </member>
+        <member name="M:Serilog.Expressions.NameResolver.TryBindFunctionParameter(System.Reflection.ParameterInfo,System.Object@)">
+            <summary>
+            Provide a value for a non-<see cref="T:Serilog.Events.LogEventPropertyValue"/> parameter. This allows user-defined state to
+            be threaded through user-defined functions.
+            </summary>
+            <param name="parameter">A parameter of a method implementing a user-defined function, which could not be
+            bound to any of the standard runtime-provided values or operands.</param>
+            <param name="boundValue">The value that should be provided when the method is called.</param>
+            <returns><c>True</c> if the parameter could be bound; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="M:Serilog.Expressions.NameResolver.TryResolveBuiltInPropertyName(System.String,System.String@)">
+            <summary>
+            Map an unrecognized built-in property name to a recognised one.
+            </summary>
+            <remarks>Intended predominantly to support migration from <em>Serilog.Filters.Expressions</em>.</remarks>
+            <param name="alias">The unrecognized name, for example, <code>"Message"</code>; the <code>@</code> prefix is
+            not included.</param>
+            <param name="target">If the name could be resolved, the target property name, without any prefix; for
+            example, <code>"m"</code>.</param>
+            <returns>True if the alias was mapped to a built-in property; otherwise, false.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.Runtime.Locals">
+            <summary>
+            Named local variables. We just look them up by name. The structure is a
+            linked list with a null terminator: most of the time expressions won't have any
+            locals, and when they do, they'll only have one or two at a given point.
+            </summary>
+        </member>
+        <member name="T:Serilog.Expressions.Runtime.Support.UnflattenDottedPropertyNames">
+            <summary>
+            Nest (un-flatten) properties with dotted names. A property with name <c>"a.b"</c> will be transmitted to Seq as
+            a structure with name <c>"a"</c>, and one member <c>"b"</c>.
+            </summary>
+            <remarks>Forked from <a href="https://github.com/datalust/serilog-sinks-seq/blob/6815d7307b477747e05e782f7dfbcff8c8dd20a2/src/Serilog.Sinks.Seq/Sinks/Seq/Conventions/UnflattenDottedPropertyNames.cs"/>.</remarks>
+        </member>
+        <member name="T:Serilog.Expressions.SerilogExpression">
+            <summary>
+            Helper methods to assist with construction of well-formed expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.Compile(System.String,System.IFormatProvider,Serilog.Expressions.NameResolver)">
+            <summary>
+            Create an evaluation function based on the provided expression.
+            </summary>
+            <param name="expression">An expression.</param>
+            <param name="formatProvider">Optionally, a format provider that will be used for culture-specific formatting;
+                by default, <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/> is used.</param>
+            <param name="nameResolver">Optionally, a <see cref="T:Serilog.Expressions.NameResolver"/>
+                with which to resolve function names that appear in the template.</param>
+            <returns>A function that evaluates the expression in the context of a log event.</returns>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.TryCompile(System.String,Serilog.Expressions.CompiledExpression@,System.String@)">
+            <summary>
+            Create an evaluation function based on the provided expression.
+            </summary>
+            <param name="expression">An expression.</param>
+            <param name="result">A function that evaluates the expression in the context of a log event.</param>
+            <param name="error">The reported error, if compilation was unsuccessful.</param>
+            <returns>True if the function could be created; otherwise, false.</returns>
+            <remarks>Validation errors including invalid regular expressions and unknown function names are returned
+            as friendly error messages. Invalid case-insensitive modifiers are ignored with warnings.</remarks>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.TryCompile(System.String,System.IFormatProvider,Serilog.Expressions.NameResolver,Serilog.Expressions.CompiledExpression@,System.String@)">
+            <summary>
+            Create an evaluation function based on the provided expression.
+            </summary>
+            <param name="expression">An expression.</param>
+            <param name="formatProvider">Optionally, a format provider that will be used for culture-specific formatting;
+                by default, <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/> is used.</param>
+            <param name="nameResolver">A <see cref="T:Serilog.Expressions.NameResolver"/>
+                with which to resolve function names that appear in the template.</param>
+            <param name="result">A function that evaluates the expression in the context of a log event.</param>
+            <param name="error">The reported error, if compilation was unsuccessful.</param>
+            <returns>True if the function could be created; otherwise, false.</returns>
+            <remarks>Validation errors including invalid regular expressions and unknown function names are returned
+            as friendly error messages. Invalid case-insensitive modifiers are ignored with warnings.</remarks>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.EscapeLikeExpressionContent(System.String)">
+            <summary>
+            Escape a value that is to appear in a `like` expression.
+            </summary>
+            <param name="text">The text to escape.</param>
+            <returns>The text with any special values escaped. Will need to be passed through
+            <see cref="M:Serilog.Expressions.SerilogExpression.EscapeStringContent(System.String)"/> if it is being embedded directly into a filter expression.</returns>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.EscapeStringContent(System.String)">
+            <summary>
+            Escape a fragment of text that will appear within a string.
+            </summary>
+            <param name="text">The text to escape.</param>
+            <returns>The text with any special values escaped.</returns>
+        </member>
+        <member name="M:Serilog.Expressions.SerilogExpression.IsValidIdentifier(System.String)">
+            <summary>
+            Determine if the specified text is a valid identifier.
+            </summary>
+            <param name="identifier">The text to check.</param>
+            <returns>True if the text can be used verbatim as a property name.</returns>
+        </member>
+        <member name="T:Serilog.Expressions.StaticMemberNameResolver">
+            <summary>
+            A <see cref="T:Serilog.Expressions.NameResolver"/> that matches public static members of a class by name.
+            </summary>
+        </member>
+        <member name="M:Serilog.Expressions.StaticMemberNameResolver.#ctor(System.Type)">
+            <summary>
+            Create a <see cref="T:Serilog.Expressions.StaticMemberNameResolver"/> that returns members of the specified <see cref="T:System.Type"/>.
+            </summary>
+            <param name="type">A <see cref="T:System.Type"/> with public static members implementing runtime functions.</param>
+        </member>
+        <member name="M:Serilog.Expressions.StaticMemberNameResolver.TryResolveFunctionName(System.String,System.Reflection.MethodInfo@)">
+            <inheritdoc />
+        </member>
+        <member name="T:Serilog.LoggerEnrichmentConfigurationExtensions">
+            <summary>
+            Extends logger enrichment configuration with methods for filtering with expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.LoggerEnrichmentConfigurationExtensions.When(Serilog.Configuration.LoggerEnrichmentConfiguration,System.String,System.Action{Serilog.Configuration.LoggerEnrichmentConfiguration})">
+            <summary>
+            Write to a sink only when <paramref name="expression" /> evaluates to <c>true</c>.
+            </summary>
+            <param name="loggerEnrichmentConfiguration">Enrichment configuration.</param>
+            <param name="expression">An expression that evaluates to <c>true</c> when the supplied
+            <see cref="T:Serilog.Events.LogEvent" /> should be enriched.</param>
+            <param name="configureEnricher">An action that configures the wrapped enricher.</param>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="M:Serilog.LoggerEnrichmentConfigurationExtensions.WithComputed(Serilog.Configuration.LoggerEnrichmentConfiguration,System.String,System.String)">
+            <summary>
+            Enrich events with a property <paramref name="propertyName"/> computed by evaluating
+            <paramref name="expression"/> in the context of the event.
+            </summary>
+            <param name="loggerEnrichmentConfiguration">Enrichment configuration.</param>
+            <param name="propertyName">The name of the property to attach; if the property already
+            exists, and <paramref name="expression"/> evaluates to a defined value, it will be overwritten.</param>
+            <param name="expression">An expression to evaluate in the context of each event. If the result of
+            evaluating the expression is defined, it will be attached to the event as <paramref name="propertyName"/>.</param>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="T:Serilog.LoggerFilterConfigurationExtensions">
+            <summary>
+            Extends logger filter configuration with methods for filtering with expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.LoggerFilterConfigurationExtensions.ByIncludingOnly(Serilog.Configuration.LoggerFilterConfiguration,System.String)">
+            <summary>
+            Include only log events that match the provided expression.
+            </summary>
+            <param name="loggerFilterConfiguration">Filter configuration.</param>
+            <param name="expression">The expression to apply.</param>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="M:Serilog.LoggerFilterConfigurationExtensions.ByExcluding(Serilog.Configuration.LoggerFilterConfiguration,System.String)">
+            <summary>
+            Exclude log events that match the provided expression.
+            </summary>
+            <param name="loggerFilterConfiguration">Filter configuration.</param>
+            <param name="expression">The expression to apply.</param>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="M:Serilog.LoggerFilterConfigurationExtensions.ControlledBy(Serilog.Configuration.LoggerFilterConfiguration,Serilog.Expressions.LoggingFilterSwitch)">
+            <summary>
+            Use a <see cref="T:Serilog.Expressions.LoggingFilterSwitch"/> to dynamically control filtering.
+            </summary>
+            <param name="loggerFilterConfiguration">Filter configuration.</param>
+            <param name="switch">A <see cref="T:Serilog.Expressions.LoggingFilterSwitch"/> that can be used to dynamically control
+            log filtering.</param>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="T:Serilog.LoggerSinkConfigurationExtensions">
+            <summary>
+            Extends logger sink configuration with methods for filtering with expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.LoggerSinkConfigurationExtensions.Conditional(Serilog.Configuration.LoggerSinkConfiguration,System.String,System.Action{Serilog.Configuration.LoggerSinkConfiguration})">
+            <summary>
+            Write to a sink only when <paramref name="expression" /> evaluates to <c>true</c>.
+            </summary>
+            <param name="loggerSinkConfiguration">Sink configuration.</param>
+            <param name="expression">An expression that evaluates to <c>true</c> when the
+            supplied <see cref="T:Serilog.Events.LogEvent" />
+            should be written to the configured sink.</param>
+            <param name="configureSink">An action that configures the wrapped sink.</param>
+            <returns>Configuration object allowing method chaining.</returns>
+            <returns>The underlying <see cref="T:Serilog.LoggerConfiguration"/>.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Combinators">
+            <summary>
+            Functions that construct more complex parsers by combining simpler ones.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Apply``2(Serilog.ParserConstruction.TokenListParser{``0,Serilog.ParserConstruction.Model.Token{``0}},Serilog.ParserConstruction.TextParser{``1})">
+            <summary>
+            Apply the text parser <paramref name="valueParser"/> to the span represented by the parsed token.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="valueParser">A text parser to apply.</param>
+            <returns>A parser that returns the result of parsing the token value.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.AtEnd``1(Serilog.ParserConstruction.TextParser{``0})">
+            <summary>
+            Construct a parser that succeeds only if the source is at the end of input.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.AtEnd``2(Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Construct a parser that succeeds only if the source is at the end of input.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.AtLeastOnce``1(Serilog.ParserConstruction.TextParser{``0})">
+            <summary>
+            Construct a parser that matches one or more instances of applying <paramref name="parser"/>.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.AtLeastOnceDelimitedBy``3(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``2})">
+            <summary>
+            Construct a parser that matches one or more instances of applying <paramref name="parser"/>, delimited by <paramref name="delimiter"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="delimiter">The parser that matches the delimiters.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.IgnoreThen``3(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``2})">
+            <summary>
+            Construct a parser that matches <paramref name="first"/>, discards the resulting value, then returns the result of <paramref name="second"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="first">The first parser.</param>
+            <param name="second">The second parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.IgnoreThen``2(Serilog.ParserConstruction.TextParser{``0},Serilog.ParserConstruction.TextParser{``1})">
+            <summary>
+            Construct a parser that matches <paramref name="first"/>, discards the resulting value, then returns the result of <paramref name="second"/>.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="first">The first parser.</param>
+            <param name="second">The second parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Many``2(Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Construct a parser that matches <paramref name="parser"/> zero or more times.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+            <remarks>Many will fail if any item partially matches this. To modify this behavior use <see cref="M:Serilog.ParserConstruction.Combinators.Try``2(Serilog.ParserConstruction.TokenListParser{``0,``1})"/>.</remarks>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Many``1(Serilog.ParserConstruction.TextParser{``0})">
+            <summary>
+            Construct a parser that matches <paramref name="parser"/> zero or more times.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+            <remarks>Many will fail if any item partially matches this. To modify this behavior use <see cref="M:Serilog.ParserConstruction.Combinators.Try``1(Serilog.ParserConstruction.TextParser{``0})"/>.</remarks>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.ManyDelimitedBy``3(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``2},Serilog.ParserConstruction.TokenListParser{``0,``2})">
+            <summary>
+            Construct a parser that matches <paramref name="parser"/> zero or more times, delimited by <paramref name="delimiter"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="delimiter">The parser that matches the delimiters.</param>
+            <param name="end">A parser to match a final trailing delimiter, if required. Specifying
+            this can improve error reporting for some lists.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Named``2(Serilog.ParserConstruction.TokenListParser{``0,``1},System.String)">
+            <summary>
+            Construct a parser that returns <paramref name="name"/> as its "expectation" if <paramref name="parser"/> fails.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="name">The name given to <paramref name="parser"/>.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Named``1(Serilog.ParserConstruction.TextParser{``0},System.String)">
+            <summary>
+            Construct a parser that returns <paramref name="name"/> as its "expectation" if <paramref name="parser"/> fails.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="name">The name given to <paramref name="parser"/>.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.OptionalOrDefault``2(Serilog.ParserConstruction.TokenListParser{``0,``1},``1)">
+            <summary>
+            Construct a parser that matches zero or one instance of <paramref name="parser"/>, returning <paramref name="defaultValue"/> when
+            no match is possible.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="defaultValue">The default value</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.OptionalOrDefault``1(Serilog.ParserConstruction.TextParser{``0},``0)">
+            <summary>
+            Construct a parser that matches zero or one instance of <paramref name="parser"/>, returning <paramref name="defaultValue"/> when
+            no match is possible.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="defaultValue">The default value.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Or``2(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Construct a parser that tries first the <paramref name="lhs"/> parser, and if it fails, applies <paramref name="rhs"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="lhs">The first parser to try.</param>
+            <param name="rhs">The second parser to try.</param>
+            <returns>The resulting parser.</returns>
+            <remarks>Or will fail if the first item partially matches this. To modify this behavior use <see cref="M:Serilog.ParserConstruction.Combinators.Try``2(Serilog.ParserConstruction.TokenListParser{``0,``1})"/>.</remarks>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Or``1(Serilog.ParserConstruction.TextParser{``0},Serilog.ParserConstruction.TextParser{``0})">
+            <summary>
+            Construct a parser that tries first the <paramref name="lhs"/> parser, and if it fails, applies <paramref name="rhs"/>.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="lhs">The first parser to try.</param>
+            <param name="rhs">The second parser to try.</param>
+            <returns>The resulting parser.</returns>
+            <remarks>Or will fail if the first item partially matches this. To modify this behavior use <see cref="M:Serilog.ParserConstruction.Combinators.Try``1(Serilog.ParserConstruction.TextParser{``0})"/>.</remarks>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Select``3(Serilog.ParserConstruction.TokenListParser{``0,``1},System.Func{``1,``2})">
+            <summary>
+            Construct a parser that takes the result of <paramref name="parser"/> and converts it value using <paramref name="selector"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="selector">A mapping from the first result to the second.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Select``2(Serilog.ParserConstruction.TextParser{``0},System.Func{``0,``1})">
+            <summary>
+            Construct a parser that takes the result of <paramref name="parser"/> and converts it value using <paramref name="selector"/>.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="selector">A mapping from the first result to the second.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Cast``3(Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Construct a parser that takes the result of <paramref name="parser"/> and casts it to <typeparamref name="U"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.SelectMany``4(Serilog.ParserConstruction.TokenListParser{``0,``1},System.Func{``1,Serilog.ParserConstruction.TokenListParser{``0,``2}},System.Func{``1,``2,``3})">
+            <summary>
+            The LINQ query comprehension pattern.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <typeparam name="V"></typeparam>
+            <param name="parser">The parser.</param>
+            <param name="selector">A mapping from the first result to the second parser.</param>
+            <param name="projector">Function mapping the results of the first two parsers onto the final result.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Then``3(Serilog.ParserConstruction.TokenListParser{``0,``1},System.Func{``1,Serilog.ParserConstruction.TokenListParser{``0,``2}})">
+            <summary>
+            Construct a parser that applies <paramref name="first"/>, provides the value to <paramref name="second"/> and returns the result.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="first">The first parser.</param>
+            <param name="second">The second parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Then``2(Serilog.ParserConstruction.TextParser{``0},System.Func{``0,Serilog.ParserConstruction.TextParser{``1}})">
+            <summary>
+            Construct a parser that applies <paramref name="first"/>, provides the value to <paramref name="second"/> and returns the result.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="first">The first parser.</param>
+            <param name="second">The second parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Try``2(Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Construct a parser that tries one parser, and backtracks if unsuccessful so that no input
+            appears to have been consumed by subsequent checks against the result.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Try``1(Serilog.ParserConstruction.TextParser{``0})">
+            <summary>
+            Construct a parser that tries one parser, and backtracks if unsuccessful so that no input
+            appears to have been consumed by subsequent checks against the result.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <param name="parser">The parser.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Value``3(Serilog.ParserConstruction.TokenListParser{``0,``1},``2)">
+            <summary>
+            Construct a parser that applies the first, and returns <paramref name="value"/>.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="value">The value to return.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Value``2(Serilog.ParserConstruction.TextParser{``0},``1)">
+            <summary>
+            Construct a parser that applies the first, and returns <paramref name="value"/>.
+            </summary>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="U">The type of the resulting value.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="value">The value to return.</param>
+            <returns>The resulting parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Combinators.Chain``4(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``2},Serilog.ParserConstruction.TokenListParser{``0,``3},System.Func{``2,``1,``3,``1})">
+            <summary>
+            Parse a sequence of operands connected by left-associative operators.
+            </summary>
+            <typeparam name="TKind">The kind of the tokens being parsed.</typeparam>
+            <typeparam name="TResult">The type of the leftmost operand and of the ultimate result.</typeparam>
+            <typeparam name="TOperator">The type of the operator.</typeparam>
+            <typeparam name="TOperand">The type of subsequent operands.</typeparam>
+            <param name="parser">The parser for the leftmost operand.</param>
+            <param name="operator">A parser matching operators.</param>
+            <param name="operand">A parser matching operands.</param>
+            <param name="apply">A function combining the operator, left operand, and right operand, into the result.</param>
+            <returns>The result of calling <paramref name="apply"/> successively on pairs of operands.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Display.TokenAttribute">
+            <summary>
+            Applied to enum members representing tokens to control how they are rendered.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Display.TokenAttribute.Category">
+            <summary>
+            The category of the token, e.g. "keyword" or "identifier".
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Display.TokenAttribute.Example">
+            <summary>
+            For tokens that correspond to exact text, e.g. punctuation, the canonical
+            example of how the token looks.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Display.TokenAttribute.Description">
+            <summary>
+            A description of the token, for example "regular expression".
+            </summary>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.Position">
+            <summary>
+            A position within a stream of character input.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.Absolute">
+            <summary>
+            The zero-based absolute index of the position.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.Line">
+            <summary>
+            The one-based line number.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.Column">
+            <summary>
+            The one-based column number.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Position.#ctor(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Construct a position.
+            </summary>
+            <param name="absolute">The absolute position.</param>
+            <param name="line">The line number.</param>
+            <param name="column">The column number.</param>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.Zero">
+            <summary>
+            The position corresponding to the zero index.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.Empty">
+            <summary>
+            A position with no value.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Position.HasValue">
+            <summary>
+            True if the position has a value.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Position.Advance(System.Char)">
+            <summary>
+            Advance over <paramref name="overChar"/>, advancing line and column numbers
+            as appropriate.
+            </summary>
+            <param name="overChar">The character being advanced over.</param>
+            <returns>The updated position.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Position.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.Result">
+            <summary>
+            Helper methods for working with <see cref="T:Serilog.ParserConstruction.Model.Result`1"/>.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result.Empty``1(Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            An empty result indicating no value could be parsed.
+            </summary>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="remainder">The start of un-parsed input.</param>
+            <returns>A result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result.Empty``1(Serilog.ParserConstruction.Model.TextSpan,System.String[])">
+            <summary>
+            An empty result indicating no value could be parsed.
+            </summary>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="remainder">The start of un-parsed input.</param>
+            <param name="expectations">Literal descriptions of expectations not met.</param>
+            <returns>A result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result.Value``1(``0,Serilog.ParserConstruction.Model.TextSpan,Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            A result carrying a successfully-parsed value.
+            </summary>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="value">The value.</param>
+            <param name="location">The location corresponding to the beginning of the parsed span.</param>
+            <param name="remainder">The start of un-parsed input.</param>
+            <returns>A result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result.CastEmpty``2(Serilog.ParserConstruction.Model.Result{``0})">
+            <summary>
+            Convert an empty result of one type into another.
+            </summary>
+            <typeparam name="T">The source type.</typeparam>
+            <typeparam name="U">The target type.</typeparam>
+            <param name="result">The value to convert.</param>
+            <returns>A result of type <typeparamref name="U"/> carrying the same information as <paramref name="result"/>.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result.CombineEmpty``1(Serilog.ParserConstruction.Model.Result{``0},Serilog.ParserConstruction.Model.Result{``0})">
+            <summary>
+            Combine two empty results.
+            </summary>
+            <typeparam name="T">The source type.</typeparam>
+            <param name="first">The first value to combine.</param>
+            <param name="second">The second value to combine.</param>
+            <returns>A result of type <typeparamref name="T"/> carrying information from both results.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.Result`1">
+            <summary>
+            The result of parsing from a text span.
+            </summary>
+            <typeparam name="T">The type of the value being parsed.</typeparam>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.Location">
+            <summary>
+            If the result is a value, the location in the input corresponding to the
+            value. If the result is an error, it's the location of the error.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.Remainder">
+            <summary>
+            The first un-parsed location in the input.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.HasValue">
+            <summary>
+            True if the result carries a successfully-parsed value; otherwise, false.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.ErrorPosition">
+            <summary>
+            If the result is an error, the source-level position of the error; otherwise, <see cref="P:Serilog.ParserConstruction.Model.Position.Empty"/>.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.ErrorMessage">
+            <summary>
+            A provided error message, or null.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.Expectations">
+            <summary>
+            A list of expectations that were unmet, or null.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Result`1.Value">
+            <summary>
+            The parsed value.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result`1.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Result`1.FormatErrorMessageFragment">
+            <summary>
+            If the result is empty, format the fragment of text describing the error.
+            </summary>
+            <returns>The error fragment.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.TextSpan">
+            <summary>
+            A span of text within a larger string.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TextSpan.Source">
+            <summary>
+            The source string containing the span.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TextSpan.Position">
+            <summary>
+            The position of the start of the span within the string.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TextSpan.Length">
+            <summary>
+            The length of the span.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.#ctor(System.String)">
+            <summary>
+            Construct a span encompassing an entire string.
+            </summary>
+            <param name="source">The source string.</param>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.#ctor(System.String,Serilog.ParserConstruction.Model.Position,System.Int32)">
+            <summary>
+            Construct a string span for a substring of <paramref name="source"/>.
+            </summary>
+            <param name="source">The source string.</param>
+            <param name="position">The start of the span.</param>
+            <param name="length">The length of the span.</param>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TextSpan.None">
+            <summary>
+            A span with no value.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TextSpan.IsAtEnd">
+            <summary>
+            True if the span has no content.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.ConsumeChar">
+            <summary>
+            Consume a character from the start of the span.
+            </summary>
+            <returns>A result with the character and remainder.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.Equals(Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Compare a string span with another using source identity
+            semantics - same source, same position, same length.
+            </summary>
+            <param name="other">The other span.</param>
+            <returns>True if the spans are the same.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.op_Equality(Serilog.ParserConstruction.Model.TextSpan,Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Compare two spans using source identity semantics.
+            </summary>
+            <param name="lhs">One span.</param>
+            <param name="rhs">Another span.</param>
+            <returns>True if the spans are the same.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.op_Inequality(Serilog.ParserConstruction.Model.TextSpan,Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Compare two spans using source identity semantics.
+            </summary>
+            <param name="lhs">One span.</param>
+            <param name="rhs">Another span.</param>
+            <returns>True if the spans are the different.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.Until(Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Return a new span from the start of this span to the beginning of another.
+            </summary>
+            <param name="next">The next span.</param>
+            <returns>A sub-span.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.First(System.Int32)">
+            <summary>
+            Return a span comprising the first <paramref name="length"/> characters of this span.
+            </summary>
+            <param name="length">The number of characters to return.</param>
+            <returns>The sub-span.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.ToStringValue">
+            <summary>
+            Compute the string value of this span.
+            </summary>
+            <returns>A string with the value of this span.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TextSpan.EqualsValueIgnoreCase(System.String)">
+            <summary>
+            Compare the contents of this span with <paramref name="otherValue"/>, ignoring invariant character case.
+            </summary>
+            <param name="otherValue">The string value to compare.</param>
+            <returns>True if the values are the same ignoring case.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.TokenListParserResult">
+            <summary>
+            Helper methods for working with <see cref="T:Serilog.ParserConstruction.Model.TokenListParserResult`2"/>.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.Empty``2(Serilog.ParserConstruction.Model.TokenList{``0})">
+            <summary>
+            Create a token result with no value, indicating a failure to parse any value.
+            </summary>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="remainder">The start of un-parsed input.</param>
+            <returns>An empty result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.Empty``2(Serilog.ParserConstruction.Model.TokenList{``0},System.String[])">
+            <summary>
+            Create a token result with no value, indicating a failure to parse any value.
+            </summary>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="remainder">The start of un-parsed input.</param>
+            <param name="expectations">Expectations that could not be fulfilled.</param>
+            <returns>An empty result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.Empty``2(Serilog.ParserConstruction.Model.TokenList{``0},System.String)">
+            <summary>
+            Create a token result with no value, indicating a failure to parse any value.
+            </summary>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="remainder">The start of un-parsed input.</param>
+            <param name="errorMessage">An error message describing why the tokens could not be parsed.</param>
+            <returns>An empty result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.Value``2(``1,Serilog.ParserConstruction.Model.TokenList{``0},Serilog.ParserConstruction.Model.TokenList{``0})">
+            <summary>
+            Create a token result with the provided value.
+            </summary>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <typeparam name="T">The result type.</typeparam>
+            <param name="value">The value.</param>
+            <param name="location">The location where parsing began.</param>
+            <param name="remainder">The first un-parsed location.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.CastEmpty``3(Serilog.ParserConstruction.Model.TokenListParserResult{``0,``1})">
+            <summary>
+            Convert an empty result of one type into another.
+            </summary>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <typeparam name="T">The source type.</typeparam>
+            <typeparam name="U">The destination type.</typeparam>
+            <param name="result">The result to convert.</param>
+            <returns>The converted result.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult.CombineEmpty``2(Serilog.ParserConstruction.Model.TokenListParserResult{``0,``1},Serilog.ParserConstruction.Model.TokenListParserResult{``0,``1})">
+            <summary>
+            Combine two empty results.
+            </summary>
+            <typeparam name="T">The source type.</typeparam>
+            <typeparam name="TKind">The kind of token.</typeparam>
+            <param name="first">The first value to combine.</param>
+            <param name="second">The second value to combine.</param>
+            <returns>A result of type <typeparamref name="T"/> carrying information from both results.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.TokenListParserResult`2">
+            <summary>
+            The result of parsing from a token list.
+            </summary>
+            <typeparam name="T">The type of the value being parsed.</typeparam>
+            <typeparam name="TKind">The kind of token being parsed.</typeparam>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.Location">
+            <summary>
+            If the result has a value, this carries the location of the value in the token
+            list. If the result is an error, it's the location of the error.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.Remainder">
+            <summary>
+            The first un-parsed location in the list.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.HasValue">
+            <summary>
+            True if the result carries a successfully-parsed value; otherwise, false.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.ErrorPosition">
+            <summary>
+            If the result is an error, the source-level position of the error; otherwise, <see cref="P:Serilog.ParserConstruction.Model.Position.Empty"/>.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.SubTokenErrorPosition">
+            <summary>
+            If the result is an error, the source-level position of the error; otherwise, <see cref="P:Serilog.ParserConstruction.Model.Position.Empty"/>.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.ErrorMessage">
+            <summary>
+            A provided error message, or null.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.Expectations">
+            <summary>
+            A list of expectations that were unmet, or null.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenListParserResult`2.Value">
+            <summary>
+            The parsed value.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult`2.ToString">
+            <inheritdoc />
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenListParserResult`2.FormatErrorMessageFragment">
+            <summary>
+            If the result is empty, format the fragment of text describing the error.
+            </summary>
+            <returns>The error fragment.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.TokenList`1">
+            <summary>
+            A list of <see cref="T:Serilog.ParserConstruction.Model.Token`1"/>
+            </summary>
+            <typeparam name="TKind">The kind of tokens held in the list.</typeparam>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenList`1.Position">
+            <summary>
+            The position of the token list in the token stream.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.#ctor(Serilog.ParserConstruction.Model.Token{`0}[])">
+            <summary>
+            Construct a token list containing <paramref name="tokens"/>.
+            </summary>
+            <param name="tokens">The tokens in the list.</param>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenList`1.Empty">
+            <summary>
+            A token list with no value.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.TokenList`1.IsAtEnd">
+            <summary>
+            True if the token list contains no tokens.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.ConsumeToken">
+            <summary>
+            Consume a token from the start of the list, returning a result with the token and remainder.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.Equals(Serilog.ParserConstruction.Model.TokenList{`0})">
+            <summary>
+            Compare two token lists using identity semantics - same list, same position.
+            </summary>
+            <param name="other">The other token list.</param>
+            <returns>True if the token lists are the same.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.op_Equality(Serilog.ParserConstruction.Model.TokenList{`0},Serilog.ParserConstruction.Model.TokenList{`0})">
+            <summary>
+            Compare two token lists using identity semantics.
+            </summary>
+            <param name="lhs">The first token list.</param>
+            <param name="rhs">The second token list.</param>
+            <returns>True if the token lists are the same.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.op_Inequality(Serilog.ParserConstruction.Model.TokenList{`0},Serilog.ParserConstruction.Model.TokenList{`0})">
+            <summary>
+            Compare two token lists using identity semantics.
+            </summary>
+            <param name="lhs">The first token list.</param>
+            <param name="rhs">The second token list.</param>
+            <returns>True if the token lists are the different.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.TokenList`1.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.Token`1">
+            <summary>
+            A token.
+            </summary>
+            <typeparam name="TKind">The type of the token's kind.</typeparam>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Token`1.Kind">
+            <summary>
+            The kind of the token.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Token`1.Span">
+            <summary>
+            The string span containing the value of the token.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Token`1.ToStringValue">
+            <summary>
+            Get the string value of the token.
+            </summary>
+            <returns>The token as a string.</returns>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Token`1.Position">
+            <summary>
+            The position of the token within the source string.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Token`1.HasValue">
+            <summary>
+            True if the token has a value.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Token`1.#ctor(`0,Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Construct a token.
+            </summary>
+            <param name="kind">The kind of the token.</param>
+            <param name="span">The span holding the token's value.</param>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Model.Token`1.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Model.Unit">
+            <summary>
+            A structure with no information.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Model.Unit.Value">
+            <summary>
+            The singleton value of the struct, with no value.
+            </summary>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Parse">
+            <summary>
+            General parsing helper methods.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parse.Chain``3(Serilog.ParserConstruction.TokenListParser{``0,``2},Serilog.ParserConstruction.TokenListParser{``0,``1},System.Func{``2,``1,``1,``1})">
+            <summary>
+            Parse a sequence of similar operands connected by left-associative operators.
+            </summary>
+            <typeparam name="T">The type being parsed.</typeparam>
+            <typeparam name="TOperator">The type of the operator.</typeparam>
+            <typeparam name="TKind">The kind of token being parsed.</typeparam>
+            <param name="operator">A parser matching operators.</param>
+            <param name="operand">A parser matching operands.</param>
+            <param name="apply">A function combining an operator and two operands into the result.</param>
+            <returns>The result of calling <paramref name="apply"/> successively on pairs of operands.</returns>
+            <seealso cref="M:Serilog.ParserConstruction.Combinators.Chain``4(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.TokenListParser{``0,``2},Serilog.ParserConstruction.TokenListParser{``0,``3},System.Func{``2,``1,``3,``1})"/>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parse.Not``2(Serilog.ParserConstruction.TokenListParser{``0,``1})">
+            <summary>
+            Constructs a parser that will fail if the given parser succeeds,
+            and will succeed if the given parser fails. In any case, it won't
+            consume any input. It's like a negative look-ahead in a regular expression.
+            </summary>
+            <typeparam name="T">The result type of the given parser.</typeparam>
+            <typeparam name="TKind">The kind of token being parsed.</typeparam>
+            <param name="parser">The parser to wrap</param>
+            <returns>A parser that is the negation of the given parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parse.Ref``2(System.Func{Serilog.ParserConstruction.TokenListParser{``0,``1}})">
+            <summary>
+            Lazily construct a parser, so that circular dependencies are possible.
+            </summary>
+            <param name="reference">A function creating the parser, when required.</param>
+            <typeparam name="T">The type of value being parsed.</typeparam>
+            <typeparam name="TKind">The kind of token being parsed.</typeparam>
+            <returns>A parser that lazily evaluates <paramref name="reference"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="reference"/> is null.</exception>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parse.Return``1(``0)">
+            <summary>
+            Construct a parser with a fixed value.
+            </summary>
+            <param name="value">The value returned by the parser.</param>
+            <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
+            <returns>The parser.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parse.Return``2(``1)">
+            <summary>
+            Construct a parser with a fixed value.
+            </summary>
+            <param name="value">The value returned by the parser.</param>
+            <typeparam name="T">The type of <paramref name="value"/>.</typeparam>
+            <typeparam name="TKind">The kind of token being parsed.</typeparam>
+            <returns>The parser.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.ParseException">
+            <summary>
+            Represents an error that occurs during parsing.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.ParseException.#ctor(System.String,Serilog.ParserConstruction.Model.Position)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Serilog.ParserConstruction.ParseException" /> class with a specified error message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="errorPosition">The position of the error in the input text.</param>
+        </member>
+        <member name="M:Serilog.ParserConstruction.ParseException.#ctor(System.String,Serilog.ParserConstruction.Model.Position,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Serilog.ParserConstruction.ParseException" /> class with a specified error message.
+            </summary>
+            <param name="message">The message that describes the error.</param>
+            <param name="errorPosition">The position of the error in the input text.</param>
+            <param name="innerException">The exception that is the cause of the current exception.</param>
+        </member>
+        <member name="P:Serilog.ParserConstruction.ParseException.ErrorPosition">
+            <summary>
+            The position of the error in the input text, or <see cref="P:Serilog.ParserConstruction.Model.Position.Empty"/> if no position is specified.
+            </summary>
+        </member>
+        <member name="T:Serilog.ParserConstruction.ParserExtensions">
+            <summary>
+            Helper methods for working with parsers.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.ParserExtensions.TryParse``2(Serilog.ParserConstruction.TokenListParser{``0,``1},Serilog.ParserConstruction.Model.TokenList{``0})">
+            <summary>
+            Tries to parse the input without throwing an exception upon failure.
+            </summary>
+            <typeparam name="TKind">The type of tokens consumed by the parser.</typeparam>
+            <typeparam name="T">The type of the result.</typeparam>
+            <param name="parser">The parser.</param>
+            <param name="input">The input.</param>
+            <returns>The result of the parser</returns>
+            <exception cref="T:System.ArgumentNullException">The parser or input is null.</exception>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Parsers.Character">
+            <summary>
+            Parsers for matching individual characters.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Character.Matching(System.Func{System.Char,System.Boolean},System.String)">
+            <summary>
+            Parse a single character matching <paramref name="predicate"/>.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Character.Except(System.Func{System.Char,System.Boolean},System.String)">
+            <summary>
+            Parse a single character except those matching <paramref name="predicate"/>.
+            </summary>
+            <param name="predicate">Characters not to match.</param>
+            <param name="description">Description of characters that don't match.</param>
+            <returns>A parser for characters except those matching <paramref name="predicate"/>.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Character.EqualTo(System.Char)">
+            <summary>
+            Parse a single specified character.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Character.Except(System.Char)">
+            <summary>
+            Parse a single character except <paramref name="ch"/>.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Parsers.Character.Digit">
+            <summary>
+            Parse a digit.
+            </summary>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Parsers.Numerics">
+            <summary>
+            Parsers for numeric patterns.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Parsers.Numerics.NaturalUInt32">
+            <summary>
+            A string of digits, converted into a <see cref="T:System.UInt32"/>.
+            </summary>
+        </member>
+        <member name="P:Serilog.ParserConstruction.Parsers.Numerics.Integer">
+            <summary>
+            A string of digits with an optional +/- sign.
+            </summary>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Parsers.Span">
+            <summary>
+            Parsers for spans of characters.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Span.EqualTo(System.String)">
+            <summary>
+            Match a span equal to <paramref name="text"/>.
+            </summary>
+            <param name="text">The text to match.</param>
+            <returns>The matched text.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Parsers.Token">
+            <summary>
+            Parsers for matching individual tokens.
+            </summary>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Token.EqualTo``1(``0)">
+            <summary>
+            Parse a token of the kind <typeparamref name="TKind"/>.
+            </summary>
+            <typeparam name="TKind">The type of the token being matched.</typeparam>
+            <param name="kind">The kind of token to match.</param>
+            <returns>The matched token.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Parsers.Token.Sequence``1(``0[])">
+            <summary>
+            Parse a sequence of tokens of the kind <typeparamref name="TKind"/>.
+            </summary>
+            <typeparam name="TKind">The type of the tokens being matched.</typeparam>
+            <param name="kinds">The kinds of token to match, once each in order.</param>
+            <returns>The matched tokens.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.TextParser`1">
+            <summary>
+            A parser that consumes text from a string span.
+            </summary>
+            <typeparam name="T">The type of values produced by the parser.</typeparam>
+            <param name="input">The span of text to parse.</param>
+            <returns>A result with a parsed value, or an empty result indicating error.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.Tokenizer`1">
+            <summary>
+            Base class for tokenizers, types whose instances convert strings into lists of tokens.
+            </summary>
+            <typeparam name="TKind">The kind of tokens produced.</typeparam>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Tokenizer`1.Tokenize(System.String)">
+            <summary>
+            Tokenize <paramref name="source"/>.
+            </summary>
+            <param name="source">The source to tokenize.</param>
+            <returns>The list of tokens or an error.</returns>
+            <exception cref="T:Serilog.ParserConstruction.ParseException">Tokenization failed.</exception>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Tokenizer`1.TryTokenize(System.String)">
+            <summary>
+            Tokenize <paramref name="source"/>.
+            </summary>
+            <param name="source">The source to tokenize.</param>
+            <returns>A result with the list of tokens or an error.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="source"/> is null.</exception>
+            <exception cref="T:Serilog.ParserConstruction.ParseException">The tokenizer could not correctly perform tokenization.</exception>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Tokenizer`1.Tokenize(Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Subclasses should override to perform tokenization.
+            </summary>
+            <param name="span">The input span to tokenize.</param>
+            <returns>A list of parsed tokens.</returns>
+        </member>
+        <member name="M:Serilog.ParserConstruction.Tokenizer`1.SkipWhiteSpace(Serilog.ParserConstruction.Model.TextSpan)">
+            <summary>
+            Advance until the first non-whitespace character is encountered.
+            </summary>
+            <param name="span">The span to advance from.</param>
+            <returns>A result with the first non-whitespace character.</returns>
+        </member>
+        <member name="T:Serilog.ParserConstruction.TokenListParser`2">
+            <summary>
+            A parser that consumes elements from a list of tokens.
+            </summary>
+            <typeparam name="T">The type of values produced by the parser.</typeparam>
+            <typeparam name="TKind">The type of tokens being parsed.</typeparam>
+            <param name="input">The list of tokens to parse.</param>
+            <returns>A result with a parsed value, or an empty result indicating error.</returns>
+        </member>
+        <member name="T:Serilog.Templates.Compilation.UnreferencedProperties.UnreferencedPropertiesFunction">
+            <summary>
+            This little extension implements the <c>rest()</c> function in expression templates. It's based on
+            <c>Serilog.Sinks.SystemConsole.PropertiesTokenRenderer</c>, and is equivalent to how <c>Properties</c> is rendered by
+            the console sink. <c>rest()</c> will return a structure containing all of the user-defined properties from a
+            log event except those referenced in either the event's message template, or the expression template itself.
+            </summary>
+            <remarks>
+            The existing semantics of <c>Properties</c> in output templates isn't suitable for expression templates. The
+            <c>@p</c> object provides access to <em>all</em> event properties in an expression template, so it would make no
+            sense to render that object without all of its members.
+            </remarks>
+        </member>
+        <member name="T:Serilog.Templates.Compilation.Unsafe.UnsafeOutputFunction">
+            <summary>
+            Marks an expression in a template as bypassing the output encoding mechanism.
+            </summary>
+        </member>
+        <member name="T:Serilog.Templates.Encoding.TemplateOutputEncoder">
+            <summary>
+            An encoder applied to the output substituted into template holes.
+            </summary>
+        </member>
+        <member name="M:Serilog.Templates.Encoding.TemplateOutputEncoder.Encode(System.String)">
+            <summary>
+            Encode <paramref name="value" />.
+            </summary>
+            <param name="value">The raw template output to encode.</param>
+            <returns>The encoded output.</returns>
+        </member>
+        <member name="T:Serilog.Templates.ExpressionTemplate">
+            <summary>
+            Formats <see cref="T:Serilog.Events.LogEvent"/>s into text using embedded expressions.
+            </summary>
+        </member>
+        <member name="M:Serilog.Templates.ExpressionTemplate.TryParse(System.String,Serilog.Templates.ExpressionTemplate@,System.String@)">
+            <summary>
+            Construct an <see cref="T:Serilog.Templates.ExpressionTemplate"/>.
+            </summary>
+            <param name="template">The template text.</param>
+            <param name="result">The parsed template, if successful.</param>
+            <param name="error">A description of the error, if unsuccessful.</param>
+            <returns><c langword="true">true</c> if the template was well-formed.</returns>
+        </member>
+        <member name="M:Serilog.Templates.ExpressionTemplate.TryParse(System.String,System.IFormatProvider,Serilog.Expressions.NameResolver,Serilog.Templates.Themes.TemplateTheme,System.Boolean,Serilog.Templates.Encoding.TemplateOutputEncoder,Serilog.Templates.ExpressionTemplate@,System.String@)">
+            <summary>
+            Construct an <see cref="T:Serilog.Templates.ExpressionTemplate"/>.
+            </summary>
+            <param name="template">The template text.</param>
+            <param name="formatProvider">Optionally, an <see cref="T:System.IFormatProvider"/> to use when formatting
+            embedded values.</param>
+            <param name="theme">Optionally, an ANSI theme to apply to the template output.</param>
+            <param name="result">The parsed template, if successful.</param>
+            <param name="error">A description of the error, if unsuccessful.</param>
+            <param name="nameResolver">Optionally, a <see cref="T:Serilog.Expressions.NameResolver"/>
+            with which to resolve function names that appear in the template.</param>
+            <param name="applyThemeWhenOutputIsRedirected">Apply <paramref name="theme"/> even when
+            <see cref="P:System.Console.IsOutputRedirected"/> or <see cref="P:System.Console.IsErrorRedirected"/> returns <c>true</c>.</param>
+            <param name="encoder">Optionally, an encoder to apply to output substituted into template holes.</param>
+            <returns><c langword="true">true</c> if the template was well-formed.</returns>
+        </member>
+        <member name="M:Serilog.Templates.ExpressionTemplate.#ctor(System.String,System.IFormatProvider,Serilog.Expressions.NameResolver,Serilog.Templates.Themes.TemplateTheme,System.Boolean,Serilog.Templates.Encoding.TemplateOutputEncoder)">
+            <summary>
+            Construct an <see cref="T:Serilog.Templates.ExpressionTemplate"/>.
+            </summary>
+            <param name="template">The template text.</param>
+            <param name="formatProvider">Optionally, an <see cref="T:System.IFormatProvider"/> to use when formatting
+            embedded values.</param>
+            <param name="nameResolver">Optionally, a <see cref="T:Serilog.Expressions.NameResolver"/>
+            with which to resolve function names that appear in the template.</param>
+            <param name="theme">Optionally, an ANSI theme to apply to the template output.</param>
+            <param name="applyThemeWhenOutputIsRedirected">Apply <paramref name="theme"/> even when
+            <see cref="P:System.Console.IsOutputRedirected"/> or <see cref="P:System.Console.IsErrorRedirected"/> returns <c>true</c>.</param>
+            <param name="encoder">Optionally, an encoder to apply to output substituted into template holes.</param>
+        </member>
+        <member name="M:Serilog.Templates.ExpressionTemplate.Format(Serilog.Events.LogEvent,System.IO.TextWriter)">
+            <inheritdoc />
+        </member>
+        <member name="M:Serilog.Templates.Rendering.Casing.Format(System.String,System.String)">
+            <summary>
+            Apply upper or lower casing to <paramref name="value"/> when <paramref name="format"/> is provided.
+            Returns <paramref name="value"/> when no or invalid format provided.
+            </summary>
+            <param name="value">Provided string for formatting.</param>
+            <param name="format">Format string.</param>
+            <returns>The provided <paramref name="value"/> with formatting applied.</returns>
+        </member>
+        <member name="T:Serilog.Templates.Rendering.LevelRenderer">
+            <summary>
+            Implements the {Level} element.
+            can now have a fixed width applied to it, as well as casing rules.
+            Width is set through formats like "u3" (uppercase three chars),
+            "w1" (one lowercase char), or "t4" (title case four chars).
+            </summary>
+        </member>
+        <member name="M:Serilog.Templates.Rendering.Padding.Apply(System.IO.TextWriter,System.String,Serilog.Parsing.Alignment)">
+            <summary>
+            Writes the provided value to the output, applying direction-based padding when <paramref name="alignment"/> is provided.
+            </summary>
+        </member>
+        <member name="T:Serilog.Templates.Themes.TemplateTheme">
+            <summary>
+            A template theme using the ANSI terminal escape sequences.
+            </summary>
+        </member>
+        <member name="P:Serilog.Templates.Themes.TemplateTheme.Code">
+            <summary>
+            A 256-color theme along the lines of Visual Studio Code.
+            </summary>
+        </member>
+        <member name="P:Serilog.Templates.Themes.TemplateTheme.Grayscale">
+            <summary>
+            A theme using only gray, black and white.
+            </summary>
+        </member>
+        <member name="P:Serilog.Templates.Themes.TemplateTheme.Literate">
+            <summary>
+            A theme in the style of the original <i>Serilog.Sinks.Literate</i>.
+            </summary>
+        </member>
+        <member name="P:Serilog.Templates.Themes.TemplateTheme.Sixteen">
+            <summary>
+            A theme in the style of the original <i>Serilog.Sinks.Literate</i> using only standard 16 terminal colors that will work on light backgrounds.
+            </summary>
+        </member>
+        <member name="M:Serilog.Templates.Themes.TemplateTheme.#ctor(System.Collections.Generic.IReadOnlyDictionary{Serilog.Templates.Themes.TemplateThemeStyle,System.String})">
+            <summary>
+            Construct a theme given a set of styles.
+            </summary>
+            <param name="ansiStyles">Styles to apply within the theme. The dictionary maps style names to ANSI
+            sequences implementing the styles.</param>
+            <exception cref="T:System.ArgumentNullException">When <paramref name="ansiStyles"/> is <code>null</code></exception>
+        </member>
+        <member name="M:Serilog.Templates.Themes.TemplateTheme.#ctor(Serilog.Templates.Themes.TemplateTheme,System.Collections.Generic.IReadOnlyDictionary{Serilog.Templates.Themes.TemplateThemeStyle,System.String})">
+            <summary>
+            Construct a theme given a set of styles.
+            </summary>
+            <param name="baseTheme">A base template theme, which will supply styles not overridden in <paramref name="ansiStyles"/>.</param>
+            <param name="ansiStyles">Styles to apply within the theme. The dictionary maps style names to ANSI
+            sequences implementing the styles.</param>
+            <exception cref="T:System.ArgumentNullException">When <paramref name="ansiStyles"/> is <code>null</code></exception>
+        </member>
+        <member name="T:Serilog.Templates.Themes.TemplateThemeStyle">
+            <summary>
+            Elements styled by a template theme.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Text">
+            <summary>
+            Prominent text, generally content within an event's message.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.SecondaryText">
+            <summary>
+            Boilerplate text, for example items specified in an output template.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.TertiaryText">
+            <summary>
+            De-emphasized text, for example literal text in output templates and
+            punctuation used when writing structured data.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Invalid">
+            <summary>
+            Output demonstrating some kind of configuration issue, e.g. an invalid
+            message template token.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Null">
+            <summary>
+            The built-in <see langword="null"/> value.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Name">
+            <summary>
+            Property and type names.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.String">
+            <summary>
+            Strings.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Number">
+            <summary>
+            Numbers.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Boolean">
+            <summary>
+            <see cref="T:System.Boolean"/> values.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.Scalar">
+            <summary>
+            All other scalar values, e.g. <see cref="T:System.Guid"/> instances.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelVerbose">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelDebug">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelInformation">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelWarning">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelError">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+        <member name="F:Serilog.Templates.Themes.TemplateThemeStyle.LevelFatal">
+            <summary>
+            Level indicator.
+            </summary>
+        </member>
+    </members>
+</doc>
