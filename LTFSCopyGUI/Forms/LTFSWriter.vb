@@ -392,15 +392,7 @@ Public Class LTFSWriter
         If My.Settings.Application_License.ToLower().Contains("dev") Then TestToolStripMenuItem.Visible = True
     End Sub
     Public Sub Save_Settings()
-        If ColumnReordered Then
-            Dim dd As New SerializableDictionary(Of String, Integer)
-            For i As Integer = 0 To ListView1.Columns.Count - 1
-                dd.Add(ListView1.Columns(i).Name, ListView1.Columns(i).DisplayIndex)
-            Next
-            My.Settings.LTFSWriter_ColumnIndex = dd
-            My.Settings.Save()
-            ColumnReordered = False
-        End If
+        SaveListViewColumnOrder()
         My.Settings.LTFSWriter_OverwriteExist = 覆盖已有文件ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_SkipSymlink = 跳过符号链接ToolStripMenuItem.Checked
         ApplyWAStatus()
@@ -2238,6 +2230,7 @@ Public Class LTFSWriter
     Private _lastListRefreshTag As Object = Nothing
     Private _treeRefreshInProgress As Boolean
     Private _listViewColumnSignature As String = Nothing
+    Private _listViewTarMode As Boolean
 
     Private Function CreateListViewItem(row As WriterListRow) As ListViewItem
         If row Is Nothing OrElse row.Value Is Nothing Then Return New ListViewItem()
@@ -2375,6 +2368,23 @@ Public Class LTFSWriter
         Return item
     End Function
 
+    Private Function EnsureVirtualListViewItemColumns(item As ListViewItem) As ListViewItem
+        If item Is Nothing Then item = New ListViewItem()
+
+        ' ListView requires exactly one subitem for every column when
+        ' RetrieveVirtualItem supplies an item. TAR virtual entries only have
+        ' a subset of the normal LTFS file fields, so fill their unused cells.
+        Dim columnCount As Integer = ListView1.Columns.Count
+        While item.SubItems.Count < columnCount
+            item.SubItems.Add(String.Empty)
+        End While
+        While item.SubItems.Count > columnCount AndAlso item.SubItems.Count > 1
+            item.SubItems.RemoveAt(item.SubItems.Count - 1)
+        End While
+
+        Return item
+    End Function
+
     Private Shared Sub ApplyChecksumColor(item As ListViewItem, columnIndex As Integer, color As Color)
         If color.Equals(Color.Black) OrElse columnIndex >= item.SubItems.Count Then Return
         item.UseItemStyleForSubItems = False
@@ -2406,9 +2416,11 @@ Public Class LTFSWriter
     Private Function GetListViewItem(index As Integer) As ListViewItem
         If index < 0 OrElse index >= _listRows.Count Then Return Nothing
         Dim item As ListViewItem = Nothing
-        If _listItemCache.TryGetValue(index, item) Then Return item
+        If _listItemCache.TryGetValue(index, item) Then
+            Return EnsureVirtualListViewItemColumns(item)
+        End If
 
-        item = _listRows(index).GetItem(Me)
+        item = EnsureVirtualListViewItemColumns(_listRows(index).GetItem(Me))
         _listItemCache(index) = item
         _listItemCacheOrder.Enqueue(index)
         While _listItemCache.Count > ListItemCacheCapacity
@@ -2447,8 +2459,7 @@ Public Class LTFSWriter
 
     Private Sub ListView1_RetrieveVirtualItem(sender As Object, e As RetrieveVirtualItemEventArgs) Handles ListView1.RetrieveVirtualItem
         Dim item As ListViewItem = GetListViewItem(e.ItemIndex)
-        If item Is Nothing Then item = New ListViewItem()
-        e.Item = item
+        e.Item = EnsureVirtualListViewItemColumns(item)
     End Sub
 
     Private Function GetListViewColumnSignature() As String
@@ -2472,7 +2483,72 @@ Public Class LTFSWriter
         Return False
     End Function
 
+    Private Sub SaveListViewColumnOrder()
+        If _listViewTarMode OrElse Not ColumnReordered Then Return
+
+        Dim columnIndex As New SerializableDictionary(Of String, Integer)
+        For i As Integer = 0 To ListView1.Columns.Count - 1
+            columnIndex.Add(ListView1.Columns(i).Name, ListView1.Columns(i).DisplayIndex)
+        Next
+        My.Settings.LTFSWriter_ColumnIndex = columnIndex
+        My.Settings.Save()
+        ColumnReordered = False
+    End Sub
+
+    Private Sub RestoreNormalListViewColumns()
+        If Not _listViewTarMode Then Return
+
+        ' Do not let the native ListView request an old virtual item while its
+        ' column collection is being replaced.
+        ListView1.VirtualListSize = 0
+        ListView1.Columns.Clear()
+        ListView1.Columns.AddRange(New ColumnHeader() {
+                                  Column_name,
+                                  Column_length,
+                                  Column_creationtime,
+                                  Column_fileuid,
+                                  Column_openforwrite,
+                                  Column_readonly,
+                                  Column_changetime,
+                                  Column_modifytime,
+                                  Column_accesstime,
+                                  Column_backuptime,
+                                  Column_tag,
+                                  Column_StartBlock,
+                                  Column_Partition,
+                                  Column_FriendlyLen,
+                                  Column_writtenBytes})
+        ListView1.AllowColumnReorder = True
+        ColumnReordered = False
+        _listViewTarMode = False
+        _listViewColumnSignature = Nothing
+    End Sub
+
+    Private Sub EnsureTarListViewColumns()
+        If _listViewTarMode Then Return
+
+        SaveListViewColumnOrder()
+        ListView1.VirtualListSize = 0
+        ListView1.Columns.Clear()
+
+        Dim tarHashColumn As New ColumnHeader With {
+            .Name = "Column_tarHash",
+            .Text = "XxHash3",
+            .Width = ListView1.LogicalToDeviceUnits(260)}
+        ListView1.Columns.AddRange(New ColumnHeader() {Column_name, Column_length, tarHashColumn})
+        For i As Integer = 0 To ListView1.Columns.Count - 1
+            ListView1.Columns(i).DisplayIndex = i
+        Next
+
+        ListView1.AllowColumnReorder = False
+        ColumnReordered = False
+        _listViewTarMode = True
+    End Sub
+
     Private Sub EnsureListViewColumns()
+        RestoreNormalListViewColumns()
+        SaveListViewColumnOrder()
+
         Dim signature As String = GetListViewColumnSignature()
         If String.Equals(_listViewColumnSignature, signature, StringComparison.Ordinal) Then Return
 
@@ -2561,6 +2637,12 @@ Public Class LTFSWriter
             Dim pendingRows As New List(Of WriterListRow)
             Try
 
+                If TypeOf selectedTag Is TarVirtualDirectory Then
+                    EnsureTarListViewColumns()
+                Else
+                    EnsureListViewColumns()
+                End If
+
                 If TypeOf (TreeView1.SelectedNode.Tag) Is ltfsindex.directory Then
                     If TreeView1.SelectedNode.Parent IsNot Nothing Then
                         压缩索引ToolStripMenuItem.Enabled = True
@@ -2609,17 +2691,7 @@ Public Class LTFSWriter
                     复制信息到剪贴板ToolStripMenuItem.Enabled = True
                     文件详情ToolStripMenuItem.Enabled = True
                     Dim d As ltfsindex.directory = DirectCast(TreeView1.SelectedNode.Tag, ltfsindex.directory)
-                    If ColumnReordered Then
-                        Dim dd As New SerializableDictionary(Of String, Integer)
-                        For i As Integer = 0 To ListView1.Columns.Count - 1
-                            dd.Add(ListView1.Columns(i).Name, ListView1.Columns(i).DisplayIndex)
-                        Next
-                        My.Settings.LTFSWriter_ColumnIndex = dd
-                        My.Settings.Save()
-                        ColumnReordered = False
-                    End If
                     ListView1.Tag = d
-                    EnsureListViewColumns()
 
                     SyncLock d.contents._file
                         For Each f As ltfsindex.file In d.contents._file
