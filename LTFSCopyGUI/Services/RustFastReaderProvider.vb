@@ -5,6 +5,8 @@ Imports System.IO
 Imports System.Runtime.InteropServices
 Imports System.Text
 Imports System.Threading
+Imports Serilog
+Imports Serilog.Context
 
 ' Control-plane wrapper for ltfscopy_fastreader.dll. File payloads never enter
 ' CLR memory: Rust owns every slot and TapeUtils.Write consumes its pointer
@@ -201,6 +203,7 @@ Public Class RustFastReaderProvider
     Private Const SmallMaximumInflightBytes As Long = 128L * 1024L * 1024L
     Private Const NativeWaitSliceMs As UInteger = 50UI
     Private Const RefillNoChangeMs As UInteger = 10000UI
+    Private Const StallWarningIntervalMs As Long = 5000L
 
     Private ReadOnly _writeList As List(Of LTFSWriter.FileRecord)
     Private ReadOnly _requestedCapacityBytes As Long
@@ -216,6 +219,7 @@ Public Class RustFastReaderProvider
     Private _streamStarted As Boolean
     Private _cancelRequested As Integer
     Private _disposed As Integer
+    Private ReadOnly _logSessionId As String = $"fastreader-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
 
     Public Sub New(writeList As IEnumerable(Of LTFSWriter.FileRecord), blockSize As Integer, capacityBytes As Long)
         If IntPtr.Size <> 8 Then Throw New PlatformNotSupportedException("The native fast reader requires an x64 process")
@@ -250,15 +254,59 @@ Public Class RustFastReaderProvider
         End Get
     End Property
 
+    Public ReadOnly Property RemainingBytes As Long
+        Get
+            Return Math.Max(0L, Interlocked.Read(_remainingBytes))
+        End Get
+    End Property
+
     Public Sub Start()
         If _started Then Return
         ThrowIfDisposed()
 
         Dim dllPath = FindNativeDll()
-        If Not File.Exists(dllPath) Then Throw New DllNotFoundException($"{NativeMethods.DllName} not found: {dllPath}")
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Fast reader initialization started. FileCount={FileCount} SlotSize={SlotSize} ReadChunkSize={ReadChunkSize} CapacityBytes={CapacityBytes} SmallThreshold={SmallThreshold} NativeDll={NativeDll}.",
+                                        _writeList.Count,
+                                        _slotSize,
+                                        _readChunkSize,
+                                        _requestedCapacityBytes,
+                                        _smallFileThreshold,
+                                        dllPath)
+                    End Using
+                End Using
+            End Using
+        End Using
+        If Not File.Exists(dllPath) Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Fast reader native DLL was not found. NativeDll={NativeDll}.", dllPath)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw New DllNotFoundException($"{NativeMethods.DllName} not found: {dllPath}")
+        End If
         _moduleHandle = NativeMethods.LoadLibrary(dllPath)
         If _moduleHandle = IntPtr.Zero Then
-            Throw New Win32Exception(Marshal.GetLastWin32Error(), $"Unable to load native fast reader: {dllPath}")
+            Dim nativeError = Marshal.GetLastWin32Error()
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Fast reader native DLL failed to load. NativeDll={NativeDll} NativeError={NativeError}.",
+                                      dllPath,
+                                      nativeError)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw New Win32Exception(nativeError, $"Unable to load native fast reader: {dllPath}")
         End If
 
         Try
@@ -285,6 +333,7 @@ Public Class RustFastReaderProvider
             _handle = New NativeReaderHandle()
             _handle.Initialize(rawContext)
 
+            Dim registeredFileCount As Integer = 0
             For index = 0 To _writeList.Count - 1
                 Dim fr = _writeList(index)
                 If fr Is Nothing OrElse fr.File Is Nothing Then Continue For
@@ -295,9 +344,29 @@ Public Class RustFastReaderProvider
                                                        CUInt(fr.SourcePath.Length),
                                                        CULng(fr.File.length)),
                             $"add file {index}")
+                registeredFileCount += 1
             Next
             _started = True
-        Catch
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Fast reader initialization completed. RegisteredFileCount={RegisteredFileCount}.",
+                                            registeredFileCount)
+                        End Using
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Error(ex, "Fast reader initialization failed.")
+                        End Using
+                    End Using
+                End Using
+            End Using
             If _handle IsNot Nothing Then
                 _handle.Dispose()
                 _handle = Nothing
@@ -314,38 +383,130 @@ Public Class RustFastReaderProvider
         EnsureStarted()
         If _streamStarted Then Throw New InvalidOperationException("Native fast reader ordered queue is already configured")
 
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Fast reader ordered file configuration started.")
+                    End Using
+                End Using
+            End Using
+        End Using
+
         Dim previous As Long = -1
         Dim remaining As Long = 0
-        For Each fileIndex In fileIndices
-            If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndices))
-            If fileIndex <= previous Then Throw New InvalidOperationException("Native fast reader queue must contain unique ascending file indices")
-            previous = fileIndex
-            Dim fr = _writeList(CInt(fileIndex))
-            If fr Is Nothing OrElse fr.File Is Nothing OrElse fr.File.length <= 0 Then Continue For
-            CheckResult(NativeMethods.lfr_select_file(Context, fileIndex), $"select file {fileIndex}")
-            _configuredFiles.Add(fileIndex)
-            remaining = checkedAdd(remaining, fr.File.length)
-        Next
-        Interlocked.Exchange(_remainingBytes, remaining)
-        CheckResult(NativeMethods.lfr_start(Context), "start stream")
-        _streamStarted = True
+        Try
+            For Each fileIndex In fileIndices
+                If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndices))
+                If fileIndex <= previous Then Throw New InvalidOperationException("Native fast reader queue must contain unique ascending file indices")
+                previous = fileIndex
+                Dim fr = _writeList(CInt(fileIndex))
+                If fr Is Nothing OrElse fr.File Is Nothing OrElse fr.File.length <= 0 Then Continue For
+                CheckResult(NativeMethods.lfr_select_file(Context, fileIndex), $"select file {fileIndex}")
+                _configuredFiles.Add(fileIndex)
+                remaining = checkedAdd(remaining, fr.File.length)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileSwitch")
+                                Log.Information("Fast reader selected file. FileIndex={FileIndex} SourcePath={SourcePath} Length={Length}.",
+                                                fileIndex,
+                                                fr.SourcePath,
+                                                fr.File.length)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+            Next
+            Interlocked.Exchange(_remainingBytes, remaining)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Fast reader native stream start requested. FileCount={FileCount} SelectedBytes={SelectedBytes}.",
+                                            _configuredFiles.Count,
+                                            remaining)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            CheckResult(NativeMethods.lfr_start(Context), "start stream")
+            _streamStarted = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Fast reader stream started. FileCount={FileCount} SelectedBytes={SelectedBytes}.",
+                                            _configuredFiles.Count,
+                                            remaining)
+                        End Using
+                    End Using
+                End Using
+            End Using
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Error(ex, "Fast reader ordered file configuration failed. ConfiguredFileCount={ConfiguredFileCount} SelectedBytes={SelectedBytes}.",
+                                      _configuredFiles.Count,
+                                      remaining)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw
+        End Try
     End Sub
 
     Public Sub QueueFile(fileIndex As Long)
         ThrowIfDisposed()
         If Not _streamStarted OrElse Not _configuredFiles.Contains(fileIndex) Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Fast reader rejected a file queue request. FileIndex={FileIndex} StreamStarted={StreamStarted} ConfiguredFile={ConfiguredFile} ConfiguredFileCount={ConfiguredFileCount}.",
+                                      fileIndex,
+                                      _streamStarted,
+                                      _configuredFiles.Contains(fileIndex),
+                                      _configuredFiles.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Throw New InvalidOperationException($"Native fast reader file {fileIndex} is not in the ordered queue")
         End If
     End Sub
 
     Public Function ReadSlot(expectedFileIndex As Long, ct As CancellationToken) As Slot
         QueueFile(expectedFileIndex)
+        Dim waitTimer = Stopwatch.StartNew()
+        Dim nextWarningMs As Long = StallWarningIntervalMs
+        Dim didWait As Boolean = False
         While True
             ct.ThrowIfCancellationRequested()
             Dim native As NativeSlot
             Dim result = NativeMethods.lfr_acquire_slot(Context, expectedFileIndex, NativeWaitSliceMs, native)
             Select Case result
                 Case ResultOk
+                    If didWait Then
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SlotRead")
+                                        Log.Information("Fast reader output slot acquired after waiting. FileIndex={FileIndex} FileOffset={FileOffset} Length={Length} WaitedMilliseconds={WaitedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots}.",
+                                                        native.FileIndex,
+                                                        native.FileOffset,
+                                                        native.Length,
+                                                        waitTimer.ElapsedMilliseconds,
+                                                        BufferedBytes,
+                                                        OccupiedSlotCount)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
+                    End If
                     Return New Slot With {
                         .Token = native.Token,
                         .FileIndex = native.FileIndex,
@@ -355,10 +516,56 @@ Public Class RustFastReaderProvider
                         .DataPtr = native.Data
                     }
                 Case ResultTimeout
+                    didWait = True
+                    If waitTimer.ElapsedMilliseconds >= nextWarningMs Then
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SlotWait")
+                                        Log.Warning("Fast reader is waiting for an output slot. FileIndex={FileIndex} WaitedMilliseconds={WaitedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes} CancelRequested={CancelRequested}.",
+                                                    expectedFileIndex,
+                                                    waitTimer.ElapsedMilliseconds,
+                                                    BufferedBytes,
+                                                    OccupiedSlotCount,
+                                                    Interlocked.Read(_remainingBytes),
+                                                    Volatile.Read(_cancelRequested) <> 0)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
+                        nextWarningMs = waitTimer.ElapsedMilliseconds + StallWarningIntervalMs
+                    End If
                     Continue While
                 Case ResultDone
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                    Log.Error("Fast reader completed before the expected EOF marker. FileIndex={FileIndex} WaitedMilliseconds={WaitedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots}.",
+                                              expectedFileIndex,
+                                              waitTimer.ElapsedMilliseconds,
+                                              BufferedBytes,
+                                              OccupiedSlotCount)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Throw New EndOfStreamException($"Native fast reader completed before file {expectedFileIndex} EOF")
                 Case Else
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                    Log.Error("Fast reader output slot acquisition failed. FileIndex={FileIndex} Result={Result} WaitedMilliseconds={WaitedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots}.",
+                                              expectedFileIndex,
+                                              result,
+                                              waitTimer.ElapsedMilliseconds,
+                                              BufferedBytes,
+                                              OccupiedSlotCount)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     ThrowNative(result, $"acquire file {expectedFileIndex} slot")
             End Select
         End While
@@ -374,9 +581,84 @@ Public Class RustFastReaderProvider
     End Function
 
     Public Sub AdvanceSlot(slot As Slot)
-        If slot.Token = 0 Then Return
-        CheckResult(NativeMethods.lfr_release_slot(Context, slot.Token), "release slot")
-        If slot.Length > 0 Then Interlocked.Add(_remainingBytes, -CLng(slot.Length))
+        If slot.Token = 0 Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Fast reader ignored an output slot release because the slot token was zero. FileIndex={FileIndex} FileOffset={FileOffset} Length={Length} Flags={Flags}.",
+                                      slot.FileIndex,
+                                      slot.FileOffset,
+                                      slot.Length,
+                                      slot.Flags)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Return
+        End If
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SlotRelease")
+                        Log.Information("Fast reader output slot release started. Token={Token} FileIndex={FileIndex} FileOffset={FileOffset} Length={Length} Flags={Flags} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                        slot.Token,
+                                        slot.FileIndex,
+                                        slot.FileOffset,
+                                        slot.Length,
+                                        slot.Flags,
+                                        BufferedBytes,
+                                        OccupiedSlotCount,
+                                        Interlocked.Read(_remainingBytes))
+                    End Using
+                End Using
+            End Using
+        End Using
+        Dim releaseTimer = Stopwatch.StartNew()
+        Try
+            CheckResult(NativeMethods.lfr_release_slot(Context, slot.Token), "release slot")
+        Catch ex As Exception
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Fast reader failed to release an output slot. Token={Token} FileIndex={FileIndex} FileOffset={FileOffset} Length={Length} Flags={Flags} ReleaseElapsedMilliseconds={ReleaseElapsedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                      slot.Token,
+                                      slot.FileIndex,
+                                      slot.FileOffset,
+                                      slot.Length,
+                                      slot.Flags,
+                                      releaseTimer.Elapsed.TotalMilliseconds,
+                                      BufferedBytes,
+                                      OccupiedSlotCount,
+                                      Interlocked.Read(_remainingBytes))
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw
+        End Try
+        releaseTimer.Stop()
+        Dim remainingAfter = Interlocked.Read(_remainingBytes)
+        If slot.Length > 0 Then remainingAfter = Interlocked.Add(_remainingBytes, -CLng(slot.Length))
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "SlotRelease")
+                        Log.Information("Fast reader output slot released. Token={Token} FileIndex={FileIndex} FileOffset={FileOffset} Length={Length} Flags={Flags} ReleaseElapsedMilliseconds={ReleaseElapsedMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                        slot.Token,
+                                        slot.FileIndex,
+                                        slot.FileOffset,
+                                        slot.Length,
+                                        slot.Flags,
+                                        releaseTimer.Elapsed.TotalMilliseconds,
+                                        BufferedBytes,
+                                        OccupiedSlotCount,
+                                        remainingAfter)
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Public Sub Drain(fileIndex As Long, bytesToDrain As Long, Optional ct As CancellationToken = Nothing)
@@ -415,6 +697,16 @@ Public Class RustFastReaderProvider
         If _streamStarted Then Throw New InvalidOperationException("Hash scan must finish before the ordered native stream starts")
         If timeoutMs = 0 Then Throw New TimeoutException("Native hash timeout")
 
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                        Log.Information("Fast reader hash scan started. TimeoutMilliseconds={TimeoutMilliseconds}.", timeoutMs)
+                    End Using
+                End Using
+            End Using
+        End Using
+
         Dim results As New Dictionary(Of Long, Dictionary(Of String, String))()
         For Each fileIndex In fileIndices.Distinct()
             If fileIndex < 0 OrElse fileIndex >= _writeList.Count Then Throw New ArgumentOutOfRangeException(NameOf(fileIndices))
@@ -423,16 +715,60 @@ Public Class RustFastReaderProvider
                 results(fileIndex) = EmptyHashes()
                 Continue For
             End If
-            results(fileIndex) = InvokeText(Function(buffer As Byte(), capacity As UInteger, ByRef written As UInteger) As Integer
-                                                Return NativeMethods.lfr_hash_file(Context, fileIndex, buffer, capacity, written)
-                                            End Function,
-                                            $"hash file {fileIndex}")
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                            Log.Information("Fast reader hashing file. FileIndex={FileIndex} SourcePath={SourcePath} Length={Length}.",
+                                            fileIndex,
+                                            fr.SourcePath,
+                                            fr.File.length)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Dim hashes = InvokeText(Function(buffer As Byte(), capacity As UInteger, ByRef written As UInteger) As Integer
+                                        Return NativeMethods.lfr_hash_file(Context, fileIndex, buffer, capacity, written)
+                                    End Function,
+                                    $"hash file {fileIndex}")
+            results(fileIndex) = hashes
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                            Log.Information("Fast reader file hash completed. FileIndex={FileIndex} HashCount={HashCount}.",
+                                            fileIndex,
+                                            hashes.Count)
+                        End Using
+                    End Using
+                End Using
+            End Using
         Next
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                        Log.Information("Fast reader hash scan completed. FileCount={FileCount}.", results.Count)
+                    End Using
+                End Using
+            End Using
+        End Using
         Return results
     End Function
 
     Public Function WaitFileDone(fileIndex As Long, Optional timeoutMs As Integer = 30000) As Dictionary(Of String, String)
         Dim timer = Stopwatch.StartNew()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                        Log.Information("Fast reader waiting for file completion hashes. FileIndex={FileIndex} TimeoutMilliseconds={TimeoutMilliseconds}.",
+                                        fileIndex,
+                                        timeoutMs)
+                    End Using
+                End Using
+            End Using
+        End Using
         While timeoutMs = Timeout.Infinite OrElse timer.ElapsedMilliseconds < timeoutMs
             ThrowIfFailed()
             Dim text As String = Nothing
@@ -440,45 +776,190 @@ Public Class RustFastReaderProvider
                                         Return NativeMethods.lfr_get_file_hashes(Context, fileIndex, buffer, capacity, written)
                                     End Function,
                                     text)
-            If result = ResultOk Then Return ParseHashes(text)
+            If result = ResultOk Then
+                Dim hashes = ParseHashes(text)
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                                Log.Information("Fast reader file completion hashes received. FileIndex={FileIndex} HashCount={HashCount} ElapsedMilliseconds={ElapsedMilliseconds}.",
+                                                fileIndex,
+                                                hashes.Count,
+                                                timer.ElapsedMilliseconds)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Return hashes
+            End If
             If result <> ResultTimeout Then ThrowNative(result, $"get file {fileIndex} hashes")
             Thread.Sleep(10)
         End While
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                        Log.Warning("Fast reader file completion hash wait timed out. FileIndex={FileIndex} TimeoutMilliseconds={TimeoutMilliseconds} ElapsedMilliseconds={ElapsedMilliseconds}.",
+                                    fileIndex,
+                                    timeoutMs,
+                                    timer.ElapsedMilliseconds)
+                    End Using
+                End Using
+            End Using
+        End Using
         Return EmptyHashes()
     End Function
 
     Public Function GetCompletedFileHashes(fileIndex As Long) As Dictionary(Of String, String)
         EnsureStarted()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                        Log.Information("Fast reader waiting for completed hashes. FileIndex={FileIndex}.", fileIndex)
+                    End Using
+                End Using
+            End Using
+        End Using
         Dim text As String = Nothing
         Dim result = TryGetText(Function(buffer As Byte(), capacity As UInteger, ByRef written As UInteger) As Integer
                                     Return NativeMethods.lfr_get_file_hashes(Context, fileIndex, buffer, capacity, written)
                                 End Function,
-                                text)
+                                    text)
         If result = ResultTimeout Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error("Fast reader reached EOF without completed hashes. FileIndex={FileIndex}.", fileIndex)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Throw New InvalidDataException($"Native fast reader published EOF before hashes for file {fileIndex}")
         End If
         If result <> ResultOk Then ThrowNative(result, $"get completed file {fileIndex} hashes")
-        Return ParseHashes(text)
+        Dim hashes = ParseHashes(text)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Hash")
+                        Log.Information("Fast reader completed hashes received. FileIndex={FileIndex} HashCount={HashCount}.",
+                                        fileIndex,
+                                        hashes.Count)
+                    End Using
+                End Using
+            End Using
+        End Using
+        Return hashes
     End Function
 
     Public Sub WaitForStreamFillFraction(fraction As Double, ct As CancellationToken)
         ThrowIfFailed()
         Dim boundedFraction = Math.Max(0.0, Math.Min(1.0, fraction))
+        Dim waitTimer = Stopwatch.StartNew()
+        Dim waitStartedLogged As Boolean = False
         While True
             ct.ThrowIfCancellationRequested()
             ThrowIfFailed()
             Dim remaining = Math.Max(0L, Interlocked.Read(_remainingBytes))
-            Dim target = Math.Min(CLng(Math.Ceiling(BufferCapacityBytes * boundedFraction)), remaining)
-            If target <= 0 OrElse BufferedBytes >= target Then Return
+            Dim capacity = BufferCapacityBytes
+            Dim buffered = BufferedBytes
+            Dim target = Math.Min(CLng(Math.Ceiling(capacity * boundedFraction)), remaining)
+            If target <= 0 OrElse buffered >= target Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "BufferWait")
+                                Log.Information("Fast reader buffer wait completed. Fraction={Fraction} TargetBytes={TargetBytes} BufferedBytes={BufferedBytes} CapacityBytes={CapacityBytes} RemainingBytes={RemainingBytes} WaitedMilliseconds={WaitedMilliseconds}.",
+                                                boundedFraction,
+                                                target,
+                                                buffered,
+                                                capacity,
+                                                remaining,
+                                                waitTimer.ElapsedMilliseconds)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Return
+            End If
+            If Not waitStartedLogged Then
+                waitStartedLogged = True
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "BufferWait")
+                                Log.Information("Fast reader waiting for buffer fill. Fraction={Fraction} TargetBytes={TargetBytes} BufferedBytes={BufferedBytes} CapacityBytes={CapacityBytes} RemainingBytes={RemainingBytes}.",
+                                                boundedFraction,
+                                                target,
+                                                buffered,
+                                                capacity,
+                                                remaining)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+            End If
             Dim result = NativeMethods.lfr_wait_until_buffered(Context, CULng(target), RefillNoChangeMs)
-            If result = ResultOk Then Return
+            If result = ResultOk Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "BufferWait")
+                                Log.Information("Fast reader buffer refill completed. Fraction={Fraction} TargetBytes={TargetBytes} BufferedBytes={BufferedBytes} CapacityBytes={CapacityBytes} RemainingBytes={RemainingBytes} WaitedMilliseconds={WaitedMilliseconds}.",
+                                                boundedFraction,
+                                                target,
+                                                BufferedBytes,
+                                                BufferCapacityBytes,
+                                                Interlocked.Read(_remainingBytes),
+                                                waitTimer.ElapsedMilliseconds)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Return
+            End If
+            If result = ResultTimeout Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "BufferWait")
+                                Log.Warning("Fast reader buffer refill made no progress. Fraction={Fraction} TargetBytes={TargetBytes} BufferedBytes={BufferedBytes} CapacityBytes={CapacityBytes} RemainingBytes={RemainingBytes} WaitedMilliseconds={WaitedMilliseconds} OccupiedSlots={OccupiedSlots}.",
+                                            boundedFraction,
+                                            target,
+                                            BufferedBytes,
+                                            BufferCapacityBytes,
+                                            Interlocked.Read(_remainingBytes),
+                                            waitTimer.ElapsedMilliseconds,
+                                            OccupiedSlotCount)
+                            End Using
+                        End Using
+                    End Using
+                End Using
+                Continue While
+            End If
             If result <> ResultTimeout Then ThrowNative(result, "wait for native buffer fill")
         End While
     End Sub
 
     Public Sub Cancel()
         If Interlocked.Exchange(_cancelRequested, 1) <> 0 Then Return
-        If HasContext() Then NativeMethods.lfr_cancel(Context)
+        Dim result As Integer = ResultInvalid
+        If HasContext() Then result = NativeMethods.lfr_cancel(Context)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                        Log.Information("Fast reader cancellation requested. Result={Result} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                        result,
+                                        BufferedBytes,
+                                        OccupiedSlotCount,
+                                        Interlocked.Read(_remainingBytes))
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
 
     Public Sub Complete()
@@ -487,17 +968,77 @@ Public Class RustFastReaderProvider
 
     Public Sub Dispose() Implements IDisposable.Dispose
         If Interlocked.Exchange(_disposed, 1) <> 0 Then Return
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                        Log.Information("Fast reader disposal started. Started={Started} StreamStarted={StreamStarted} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                        _started,
+                                        _streamStarted,
+                                        BufferedBytes,
+                                        OccupiedSlotCount,
+                                        Interlocked.Read(_remainingBytes))
+                    End Using
+                End Using
+            End Using
+        End Using
+        Dim disposalFailed As Boolean = False
         Try
             Cancel()
             If _handle IsNot Nothing Then
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                Log.Information("Fast reader native context destruction started. BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                                BufferedBytes,
+                                                OccupiedSlotCount,
+                                                Interlocked.Read(_remainingBytes))
+                            End Using
+                        End Using
+                    End Using
+                End Using
                 _handle.Dispose()
                 _handle = Nothing
+                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                Log.Information("Fast reader native context destruction completed.")
+                            End Using
+                        End Using
+                    End Using
+                End Using
             End If
+        Catch ex As Exception
+            disposalFailed = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Error(ex, "Fast reader disposal failed. BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} RemainingBytes={RemainingBytes}.",
+                                      BufferedBytes,
+                                      OccupiedSlotCount,
+                                      Interlocked.Read(_remainingBytes))
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw
         Finally
             If _moduleHandle <> IntPtr.Zero Then
                 NativeMethods.FreeLibrary(_moduleHandle)
                 _moduleHandle = IntPtr.Zero
             End If
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                            Log.Information("Fast reader disposal completed. CleanupFailed={CleanupFailed}.", disposalFailed)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End Try
     End Sub
 
@@ -584,9 +1125,35 @@ Public Class RustFastReaderProvider
     End Sub
 
     Private Sub ThrowNative(result As Integer, operation As String)
-        If result = ResultCancelled Then Throw New OperationCanceledException($"Native fast reader cancelled during {operation}")
         Dim message = If(HasContext(), ReadLastError(), String.Empty)
+        If result = ResultCancelled Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                            Log.Information("Fast reader native operation canceled. Operation={Operation} Result={Result} Error={ErrorMessage}.",
+                                            operation,
+                                            result,
+                                            message)
+                        End Using
+                    End Using
+                End Using
+            End Using
+            Throw New OperationCanceledException($"Native fast reader cancelled during {operation}")
+        End If
         If String.IsNullOrEmpty(message) Then message = $"Native fast reader {operation} failed ({result})"
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(RustFastReaderProvider))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                        Log.Error("Fast reader native operation failed. Operation={Operation} Result={Result} Error={ErrorMessage}.",
+                                  operation,
+                                  result,
+                                  message)
+                    End Using
+                End Using
+            End Using
+        End Using
         Throw New IOException(message)
     End Sub
 

@@ -5483,6 +5483,26 @@ Public Class LTFSWriter
         Dim publishWaitMs = If(after.PublishWaitNanoseconds >= before.PublishWaitNanoseconds,
                                (after.PublishWaitNanoseconds - before.PublishWaitNanoseconds) / 1000000.0,
                                0.0)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "BufferStats")
+                        Log.Information("Fast reader buffer operation completed. Operation={Operation} ElapsedSeconds={ElapsedSeconds} BytesRead={BytesRead} BytesPublished={BytesPublished} ReadMiBs={ReadMiBs} PublishedMiBs={PublishedMiBs} IoWaitMilliseconds={IoWaitMilliseconds} HashMilliseconds={HashMilliseconds} PublishWaitMilliseconds={PublishWaitMilliseconds} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots}.",
+                                        operation,
+                                        elapsed.TotalSeconds,
+                                        readBytes,
+                                        publishedBytes,
+                                        readMiBs,
+                                        publishMiBs,
+                                        ioWaitMs,
+                                        hashMs,
+                                        publishWaitMs,
+                                        after.BufferedBytes,
+                                        after.OccupiedSlots)
+                    End Using
+                End Using
+            End Using
+        End Using
         PrintMsg($"fastreader {operation}: elapsed={elapsed.TotalSeconds:F3}s read={readMiBs:F1}MiB/s published={publishMiBs:F1}MiB/s io_wait={ioWaitMs:F1}ms hash={hashMs:F1}ms publish_wait={publishWaitMs:F1}ms buffered={IOManager.FormatSize(CLng(after.BufferedBytes))} slots={after.OccupiedSlots}",
                  LogOnly:=True,
                  ForceLog:=True)
@@ -5502,8 +5522,49 @@ Public Class LTFSWriter
         Dim writeElapsedSeconds As Double = 0
         Dim slowestWriteMiBs As Double = Double.PositiveInfinity
         Dim minimumBufferedBytes As Long = Long.MaxValue
-        PrintMsg($"fastreader reading: {fr.SourcePath}", LogOnly:=True, ForceLog:=True)
         fastProvider.QueueFile(fileIndex)
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileSwitch")
+                        Log.Information("Fast reader switched to file. FileIndex={FileIndex} FileName={FileName} SourcePath={SourcePath} Length={Length}.",
+                                        fileIndex,
+                                        fr.File.name,
+                                        fr.SourcePath,
+                                        fr.File.length)
+                    End Using
+                End Using
+            End Using
+        End Using
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileRead")
+                        Log.Information("Fast reader starting file read. FileIndex={FileIndex} FileName={FileName} SourcePath={SourcePath} Length={Length}.",
+                                        fileIndex,
+                                        fr.File.name,
+                                        fr.SourcePath,
+                                        fr.File.length)
+                    End Using
+                End Using
+            End Using
+        End Using
+
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeWrite")
+                        Log.Information("Fast reader tape write started. FileIndex={FileIndex} FileName={FileName} Length={Length} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                        fileIndex,
+                                        fr.File.name,
+                                        fr.File.length,
+                                        fastProvider.BufferedBytes,
+                                        fastProvider.OccupiedSlotCount,
+                                        fastProvider.RemainingBytes)
+                    End Using
+                End Using
+            End Using
+        End Using
 
         While Not StopFlag AndAlso remainingInFile > 0
             WaitForFastReaderRefill(fastProvider)
@@ -5559,13 +5620,73 @@ Public Class LTFSWriter
                 Dim succ As Boolean = False
                 While Not succ
                     Dim sense As Byte()
+                    Dim writeCallNumber = writeCallCount + 1
+                    Dim tapeWriteTimer = Stopwatch.StartNew()
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeWriteCall")
+                                    Log.Information("Fast reader tape write call started. FileIndex={FileIndex} FileName={FileName} WriteCall={WriteCall} FileOffset={FileOffset} SlotLength={SlotLength} FileRemainingBytes={FileRemainingBytes} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                                    fileIndex,
+                                                    fr.File.name,
+                                                    writeCallNumber,
+                                                    slot.FileOffset,
+                                                    slot.Length,
+                                                    remainingInFile,
+                                                    fastProvider.BufferedBytes,
+                                                    fastProvider.OccupiedSlotCount,
+                                                    fastProvider.RemainingBytes)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Try
-                        writeCallCount += 1
+                        writeCallCount = writeCallNumber
                         sense = TapeUtils.Write(driveHandle, slot.DataPtr, CUInt(slot.Length), True)
+                        tapeWriteTimer.Stop()
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeWriteCall")
+                                        Log.Information("Fast reader tape write call completed. FileIndex={FileIndex} FileName={FileName} WriteCall={WriteCall} FileOffset={FileOffset} SlotLength={SlotLength} ElapsedMilliseconds={ElapsedMilliseconds} SenseByte2={SenseByte2} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                                        fileIndex,
+                                                        fr.File.name,
+                                                        writeCallNumber,
+                                                        slot.FileOffset,
+                                                        slot.Length,
+                                                        tapeWriteTimer.Elapsed.TotalMilliseconds,
+                                                        If(sense Is Nothing OrElse sense.Length <= 2, -1, CInt(sense(2))),
+                                                        fastProvider.BufferedBytes,
+                                                        fastProvider.OccupiedSlotCount,
+                                                        fastProvider.RemainingBytes)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         SyncLock p
                             p.BlockNumber = CULng(p.BlockNumber + 1)
                         End SyncLock
                     Catch ex As Exception
+                        tapeWriteTimer.Stop()
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(ex, "Fast reader tape write call failed. FileIndex={FileIndex} FileName={FileName} WriteCall={WriteCall} FileOffset={FileOffset} SlotLength={SlotLength} ElapsedMilliseconds={ElapsedMilliseconds} FileRemainingBytes={FileRemainingBytes} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                                  fileIndex,
+                                                  fr.File.name,
+                                                  writeCallNumber,
+                                                  slot.FileOffset,
+                                                  slot.Length,
+                                                  tapeWriteTimer.Elapsed.TotalMilliseconds,
+                                                  remainingInFile,
+                                                  fastProvider.BufferedBytes,
+                                                  fastProvider.OccupiedSlotCount,
+                                                  fastProvider.RemainingBytes)
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                         Dim dResult As DialogResult
                         Invoke(Sub() dResult = MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErrSCSI}{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore))
                         Select Case dResult
@@ -5636,9 +5757,43 @@ Public Class LTFSWriter
                                       0.0)
             Dim minimumBuffer = If(minimumBufferedBytes = Long.MaxValue, 0, minimumBufferedBytes)
             Dim slowestWrite = If(Double.IsPositiveInfinity(slowestWriteMiBs), 0.0, slowestWriteMiBs)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "TapeWrite")
+                            Log.Information("Fast reader tape write completed. FileIndex={FileIndex} FileName={FileName} Calls={Calls} Bytes={Bytes} ElapsedSeconds={ElapsedSeconds} AverageMiBs={AverageMiBs} SlowestMiBs={SlowestMiBs} MinimumBufferedBytes={MinimumBufferedBytes} FileRemainingBytes={FileRemainingBytes} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                            fileIndex,
+                                            fr.File.name,
+                                            writeCallCount,
+                                            writeByteCount,
+                                            writeElapsedSeconds,
+                                            averageWriteMiBs,
+                                            slowestWrite,
+                                            minimumBuffer,
+                                            remainingInFile,
+                                            fastProvider.RemainingBytes)
+                        End Using
+                    End Using
+                End Using
+            End Using
             PrintMsg($"fastreader tape write: calls={writeCallCount} bytes={IOManager.FormatSize(writeByteCount)} elapsed={writeElapsedSeconds:F3}s average={averageWriteMiBs:F1}MiB/s slowest={slowestWrite:F1}MiB/s min_buffered={IOManager.FormatSize(minimumBuffer)}",
                      LogOnly:=True,
                      ForceLog:=True)
+        Else
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                            Log.Warning("Fast reader tape write loop ended without a tape write call. FileIndex={FileIndex} FileName={FileName} Length={Length} FileRemainingBytes={FileRemainingBytes} StopFlag={StopFlag}.",
+                                        fileIndex,
+                                        fr.File.name,
+                                        fr.File.length,
+                                        remainingInFile,
+                                        StopFlag)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End If
 
         If StopFlag Then Return False
@@ -5646,6 +5801,18 @@ Public Class LTFSWriter
             Throw New IO.EndOfStreamException($"Native fast reader ended before all bytes were written for {fr.SourcePath}: remaining={remainingInFile}")
         End If
         If Not eofSeen Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Eof")
+                            Log.Information("Fast reader waiting for file EOF marker. FileIndex={FileIndex} FileName={FileName} RemainingBytes={RemainingBytes}.",
+                                            fileIndex,
+                                            fr.File.name,
+                                            remainingInFile)
+                        End Using
+                    End Using
+                End Using
+            End Using
             Dim eofSlot = fastProvider.ReadSlot(fileIndex, Threading.CancellationToken.None)
             Dim validEof = eofSlot.FileIndex = fileIndex AndAlso
                            eofSlot.FileOffset = fr.File.length AndAlso
@@ -5656,6 +5823,18 @@ Public Class LTFSWriter
                 Throw New IO.InvalidDataException($"Native fast reader did not publish the expected EOF for {fr.SourcePath}: file={eofSlot.FileIndex} offset={eofSlot.FileOffset} length={eofSlot.Length} flags={eofSlot.Flags}")
             End If
             eofSeen = True
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Eof")
+                            Log.Information("Fast reader file EOF marker received. FileIndex={FileIndex} FileName={FileName} FileOffset={FileOffset}.",
+                                            fileIndex,
+                                            fr.File.name,
+                                            eofSlot.FileOffset)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End If
         If Not StopFlag Then
             Dim hashes = fastProvider.GetCompletedFileHashes(fileIndex)
@@ -5667,6 +5846,22 @@ Public Class LTFSWriter
                 SetFileDedupeHash(fr.File, actualDedupeHash)
             End If
             If HashOnWrite Then ApplyFastReaderHashes(fr, hashes)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileCompleted")
+                            Log.Information("Fast reader completed file processing. FileIndex={FileIndex} FileName={FileName} Length={Length} HashCount={HashCount} BufferedBytes={BufferedBytes} OccupiedSlots={OccupiedSlots} FastReaderRemainingBytes={FastReaderRemainingBytes}.",
+                                            fileIndex,
+                                            fr.File.name,
+                                            fr.File.length,
+                                            hashes.Count,
+                                            fastProvider.BufferedBytes,
+                                            fastProvider.OccupiedSlotCount,
+                                            fastProvider.RemainingBytes)
+                        End Using
+                    End Using
+                End Using
+            End Using
         End If
         TotalFilesProcessed += 1
         CurrentFilesProcessed += 1
@@ -5720,11 +5915,32 @@ Public Class LTFSWriter
                                 fastProvider.Start()
                                 useFastReader = True
                                 _activeFastReaderProvider = fastProvider
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Lifecycle")
+                                                Log.Information("Fast reader enabled for writer. DriverType={DriverType} FileCount={FileCount} CapacityBytes={CapacityBytes}.",
+                                                                TapeUtils.DriverTypeSetting,
+                                                                WriteList.Count,
+                                                                My.Settings.LTFSWriter_PreLoadBytes)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 PrintMsg($"fastreader enabled: driver={TapeUtils.DriverTypeSetting} buffer={IOManager.FormatSize(My.Settings.LTFSWriter_PreLoadBytes)}", LogOnly:=True, ForceLog:=True)
                                 For Each fr As FileRecord In WriteList
                                     If fr IsNot Nothing Then fr.IsOpened = True
                                 Next
                             Catch ex As Exception
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                                Log.Error(ex, "Fast reader could not be initialized for the writer. Managed fallback is disabled.")
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 PrintMsg($"native fastreader unavailable: {ex.Message}", LogOnly:=True, ForceLog:=True)
                                 If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
                                 If fastProvider IsNot Nothing Then fastProvider.Dispose()
@@ -5762,7 +5978,16 @@ Public Class LTFSWriter
                                 PipeBufferLength = 0
                                 If ReferenceEquals(_activeFastReaderProvider, fastProvider) Then _activeFastReaderProvider = Nothing
                                 fastProvider.Dispose()
-                            Catch
+                            Catch ex As Exception
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                                Log.Error(ex, "Fast reader cleanup failed after locate failed.")
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 PrintMsg("fastreader complete failed", LogOnly:=True)
                             End Try
                         End If
@@ -5854,6 +6079,22 @@ Public Class LTFSWriter
                                 Dim currentPlan = writePlan(i)
                                 ValidatePlannedSource(fr, currentPlan)
                                 Dim IsIndexPartition As Boolean = currentPlan.Kind = PlannedWriteKind.IndexPartitionMaterial
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Writer")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileSwitch")
+                                                Log.Information("Writer switching to file. FileIndex={FileIndex} FileName={FileName} SourcePath={SourcePath} Length={Length} PlanKind={PlanKind} IndexPartition={IndexPartition} FastReader={FastReader}.",
+                                                                i,
+                                                                fr.File.name,
+                                                                fr.SourcePath,
+                                                                fr.File.length,
+                                                                currentPlan.Kind.ToString(),
+                                                                IsIndexPartition,
+                                                                useFastReader)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 Dim tarScanner As TarMetadataScanner = Nothing
                                 If currentPlan.Kind <> PlannedWriteKind.Duplicate AndAlso IsTarFile(fr) Then
                                     fr.File.RemoveXattr(ltfsindex.file.xattr.ApplicationSpecific.TarMetadata)
@@ -6433,6 +6674,25 @@ Public Class LTFSWriter
                                 'mark as written
                                 fr.ParentDirectory.contents._file.Add(fr.File)
                                 fr.RemoveUnwritten()
+                                Dim extentCount As Integer = If(fr.File.extentinfo Is Nothing, 0, fr.File.extentinfo.Count)
+                                Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                    Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Writer")
+                                        Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                            Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "FileCompleted")
+                                                Log.Information("Writer completed file. FileIndex={FileIndex} FileName={FileName} SourcePath={SourcePath} Length={Length} WrittenBytes={WrittenBytes} ExtentCount={ExtentCount} PlanKind={PlanKind} IndexPartition={IndexPartition} FastReader={FastReader}.",
+                                                                i,
+                                                                fr.File.name,
+                                                                fr.SourcePath,
+                                                                fr.File.length,
+                                                                fr.File.WrittenBytes,
+                                                                extentCount,
+                                                                currentPlan.Kind.ToString(),
+                                                                IsIndexPartition,
+                                                                useFastReader)
+                                            End Using
+                                        End Using
+                                    End Using
+                                End Using
                                 If TotalBytesUnindexed = 0 Then TotalBytesUnindexed = 1
                                 If (Not IsIndexPartition) AndAlso CheckUnindexedDataLimit() Then
                                     p = New TapeUtils.PositionData(driveHandle)
@@ -6528,7 +6788,16 @@ Public Class LTFSWriter
                                 provider.Cancel()
                                 provider.CompleteAsync().GetAwaiter().GetResult()
                             End If
-                        Catch
+                        Catch ex As Exception
+                            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                            Log.Error(ex, "Fast reader or managed reader cleanup failed after writing.")
+                                        End Using
+                                    End Using
+                                End Using
+                            End Using
                             PrintMsg("pipe complete failed", LogOnly:=True)
                         End Try
                     End If
@@ -6564,20 +6833,56 @@ Public Class LTFSWriter
                         OnWriteFinishMessage = (My.Resources.ResText_WCnd)
                     End If
                 Catch ex As OperationCanceledException When StopFlag
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Cancellation")
+                                    Log.Information(ex, "Writer operation canceled while the fast reader was active. StopFlag={StopFlag}.", StopFlag)
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Try
                         Dim fastProviderSnapshot = _activeFastReaderProvider
                         _activeFastReaderProvider = Nothing
                         PipeBufferLength = 0
                         If fastProviderSnapshot IsNot Nothing Then fastProviderSnapshot.Dispose()
-                    Catch
+                    Catch cleanupEx As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(cleanupEx, "Fast reader cleanup failed after cancellation.")
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                     End Try
                 Catch ex As Exception
+                    Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                        Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                            Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                    Log.Error(ex, "Writer operation failed while the fast reader was active.")
+                                End Using
+                            End Using
+                        End Using
+                    End Using
                     Try
                         Dim fastProviderSnapshot = _activeFastReaderProvider
                         _activeFastReaderProvider = Nothing
                         PipeBufferLength = 0
                         If fastProviderSnapshot IsNot Nothing Then fastProviderSnapshot.Dispose()
-                    Catch
+                    Catch cleanupEx As Exception
+                        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+                            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FastReader")
+                                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
+                                        Log.Error(cleanupEx, "Fast reader cleanup failed after writer failure.")
+                                    End Using
+                                End Using
+                            End Using
+                        End Using
                     End Try
                     Invoke(Sub() MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr}{vbCrLf}{ex.ToString}"))
                     PrintMsg($"{My.Resources.ResText_WErr}{ex.Message}")
