@@ -216,11 +216,6 @@ Public Class LTFSConfigurator
     End Sub
 
     Private Sub LTFSConfigurator_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-c"})
-            Close()
-            Exit Sub
-        End If
         CheckBoxAutoRefresh.Checked = My.Settings.LTFSConf_AutoRefresh
         ComboBoxBufferPage.SelectedIndex = 16
         ComboBoxLocateType.SelectedIndex = 0
@@ -1241,16 +1236,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub Button27_Click(sender As Object, e As EventArgs) Handles ButtonLTFSWriter.Click
-        Dim appcmd As String = $"""{Application.ExecutablePath}"" -t {ConfTapeDrive}"
-        Dim psexecpath As String = Path.Combine(Application.StartupPath, "PsExec64.exe")
-        Try
-            If File.Exists(psexecpath) Then
-                Process.Start(psexecpath, $"-accepteula -s -i -d {appcmd}")
-            Else
-                Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {ConfTapeDrive}"})
-            End If
-        Catch ex As Exception
-        End Try
+        ApplicationNavigation.ShowWriter(ConfTapeDrive)
     End Sub
 
     Private Sub ButtonDebugReleaseUnit_Click(sender As Object, e As EventArgs) Handles ButtonDebugReleaseUnit.Click
@@ -1304,7 +1290,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub Button5_Click(sender As Object, e As EventArgs) Handles ButtonChangerTool.Click
-        ChangerTool.Show()
+        ApplicationNavigation.ShowChangerTool()
     End Sub
 
     Private Sub Button11_Click(sender As Object, e As EventArgs) Handles ButtonResetLogPage.Click
@@ -1881,13 +1867,11 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
     End Sub
 
     Private Sub 在当前进程运行ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 在当前进程运行ToolStripMenuItem.Click
-        Dim LWF As New LTFSWriter With {.TapeDrive = ConfTapeDrive}
-        LWF.Show()
+        ApplicationNavigation.ShowWriter(ConfTapeDrive)
     End Sub
 
     Private Sub 不读取索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 不读取索引ToolStripMenuItem.Click
-        Dim LWF As New LTFSWriter With {.TapeDrive = ConfTapeDrive, .OfflineMode = True}
-        LWF.Show()
+        ApplicationNavigation.ShowWriter(ConfTapeDrive, offlineMode:=True)
     End Sub
 
     Private Sub BrowseBinaryFileToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles BrowseBinaryFileToolStripMenuItem.Click

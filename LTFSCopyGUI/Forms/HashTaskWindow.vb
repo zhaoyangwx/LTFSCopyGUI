@@ -1,4 +1,6 @@
 Imports System.ComponentModel
+Imports Serilog
+Imports Serilog.Context
 
 Public Class HashTaskWindow
     Public schema As ltfsindex
@@ -37,7 +39,17 @@ Public Class HashTaskWindow
     End Property
     Public Sub PrintMsg(Message As String)
         If Message Is Nothing Then Message = String.Empty
-        If LogEnabled Then AppLogger.Write(AppLogLevel.Info, "Hash", Message, sessionId:=_logSessionId)
+        If LogEnabled Then
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HashTaskWindow))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Hash")
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                        Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "HashStatus")
+                            Log.Information("Hash task status updated.")
+                        End Using
+                    End Using
+                End Using
+            End Using
+        End If
         _pendingUiMessages.Enqueue(Message)
         ScheduleUiFlush()
     End Sub
@@ -124,10 +136,24 @@ Public Class HashTaskWindow
                                           End Sub
         AddHandler HashTask.SHA1Changed, Sub(f As ltfsindex.file, s As String)
                                              PrintMsg($"SHA1 mismatch:[FID {f.fileuid}] {s} {f.fullpath}")
+                                             Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HashTaskWindow))
+                                                 Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Hash")
+                                                     Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                                         Log.Warning("Hash mismatch detected for file {FileId} at {FilePath}.", f.fileuid, f.fullpath)
+                                                     End Using
+                                                 End Using
+                                             End Using
                                              RaiseEvent SHA1Changed(f, s)
                                          End Sub
         AddHandler HashTask.ErrorOccured, Sub(s As String)
                                               Threading.Interlocked.Increment(ErrorCount)
+                                              Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(HashTaskWindow))
+                                                  Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Hash")
+                                                      Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                                                          Log.Error("Hash task reported an error: {ErrorDetails}.", s)
+                                                      End Using
+                                                  End Using
+                                              End Using
                                               PrintMsg(s)
                                           End Sub
         AddHandler HashTask.ProgressReport, Sub(s As String)

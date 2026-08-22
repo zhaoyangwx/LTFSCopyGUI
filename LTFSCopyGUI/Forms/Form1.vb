@@ -380,7 +380,7 @@ Public Class Form1
     End Sub
 
     Private Sub Button10_Click(sender As Object, e As EventArgs) Handles Button10.Click
-        LTFSConfigurator.Show()
+        ApplicationNavigation.ShowConfigurator()
     End Sub
 
     Private Sub 查找ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 查找ToolStripMenuItem.Click
@@ -741,10 +741,11 @@ Public Class Form1
     End Function
     Private Async Sub Button11_Click(sender As Object, e As EventArgs) Handles Button11.Click
         If _deviceScanInProgress Then Exit Sub
-        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
+        If Not ApplicationElevation.IsAdministrator Then
             If MessageBox.Show(New Form With {.TopMost = True}, My.Resources.ResText_UACConfirm, My.Resources.ResText_Warning, MessageBoxButtons.OKCancel) = DialogResult.Cancel Then Exit Sub
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas"})
-            Close()
+            If ApplicationElevation.StartElevated() Then
+                ApplicationElevation.ExitCurrentProcess()
+            End If
             Exit Sub
         End If
         Await RefreshDeviceList()
@@ -755,11 +756,11 @@ Public Class Form1
     End Sub
 
     Private Sub Button13_Click(sender As Object, e As EventArgs) Handles Button13.Click
-        TapeCopy.Show()
+        ApplicationNavigation.ShowTapeCopy()
     End Sub
 
     Private Sub Button14_Click(sender As Object, e As EventArgs) Handles Button14.Click
-        ChangerTool.Show()
+        ApplicationNavigation.ShowChangerTool()
     End Sub
 
     Private Async Sub Button27_Click(sender As Object, e As EventArgs) Handles Button27.Click
@@ -770,7 +771,7 @@ Public Class Form1
             Dim device As TapeUtils.BlockDevice = DevList(ComboBox1.SelectedIndex)
             TapeUtils.CheckSwitchConfig(device)
             My.Settings.Save()
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Arguments = $"-t {device.DevicePath}"})
+            ApplicationNavigation.ShowWriter(device.DevicePath)
         End If
     End Sub
 

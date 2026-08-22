@@ -9,6 +9,8 @@ Imports System.Text
 Imports System.Threading
 Imports Fsp.Interop
 Imports Microsoft.WindowsAPICodePack.Dialogs
+Imports Serilog
+Imports Serilog.Context
 Imports ZstdSharp
 
 Public Class LTFSWriter
@@ -404,7 +406,7 @@ Public Class LTFSWriter
         ApplyWAStatus()
         My.Settings.LTFSWriter_AutoFlush = APToolStripMenuItem.Checked
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
-        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
+        AppLogging.SetInformationEnabled(My.Settings.LTFSWriter_LogEnabled)
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashOnWriting = 计算校验ToolStripMenuItem.Checked
         My.Settings.LTFSWriter_HashAsync = 异步校验CPU占用高ToolStripMenuItem.Checked
@@ -541,13 +543,22 @@ Public Class LTFSWriter
             End If
         End SyncLock
 
-        Dim logMessage = s
-        If TooltipText IsNot Nothing AndAlso TooltipText <> String.Empty Then logMessage &= $" ({TooltipText})"
-        AppLogger.Write(If(Warning, AppLogLevel.Warning, AppLogLevel.Info),
-                        Category,
-                        logMessage,
-                        sessionId:=_logSessionId,
-                        force:=ForceLog)
+        Dim logCategory = If(String.IsNullOrWhiteSpace(Category), NameOf(LTFSWriter), Category.Trim())
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(LTFSWriter))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", logCategory)
+                Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WriterStatus")
+                        If Warning Then
+                            Log.Warning(If(ForceLog, "Writer status update forced.", "Writer warning status update."))
+                        ElseIf ForceLog Then
+                            Log.Warning("Writer status update forced.")
+                        Else
+                            Log.Information(If(LogOnly, "Writer diagnostic status update.", "Writer status update."))
+                        End If
+                    End Using
+                End Using
+            End Using
+        End Using
     End Sub
     <Category("LTFSWriter")>
     Public Property DataCompressionLogPage As TapeUtils.PageData
@@ -6597,7 +6608,7 @@ Public Class LTFSWriter
     End Sub
     Private Sub 启用日志记录ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs) Handles 启用日志记录ToolStripMenuItem.CheckedChanged
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
-        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
+        AppLogging.SetInformationEnabled(My.Settings.LTFSWriter_LogEnabled)
     End Sub
     Private Sub 总是更新数据区索引ToolStripMenuItem_CheckedChanged(sender As Object, e As EventArgs) Handles 总是更新数据区索引ToolStripMenuItem.CheckedChanged
         My.Settings.LTFSWriter_ForceIndex = 总是更新数据区索引ToolStripMenuItem.Checked
@@ -9862,7 +9873,7 @@ Public Class LTFSWriter
     End Sub
 
     Private Sub DebugToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles DebugToolStripMenuItem.Click
-        LTFSConfigurator.Show()
+        ApplicationNavigation.ShowConfigurator()
     End Sub
 
     Private Sub 设置密钥ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 设置密钥ToolStripMenuItem.Click
@@ -10968,7 +10979,7 @@ Public Class LTFSWriter
 
     Private Sub 启用日志记录ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 启用日志记录ToolStripMenuItem.Click
         My.Settings.LTFSWriter_LogEnabled = 启用日志记录ToolStripMenuItem.Checked
-        AppLogger.InformationEnabled = My.Settings.LTFSWriter_LogEnabled
+        AppLogging.SetInformationEnabled(My.Settings.LTFSWriter_LogEnabled)
     End Sub
 
     Private Sub 总是更新数据区索引ToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles 总是更新数据区索引ToolStripMenuItem.Click

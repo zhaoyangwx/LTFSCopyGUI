@@ -10,11 +10,6 @@ Public Class TapeCopy
     End Sub
 
     Private Sub TapeCopy_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
-            Process.Start(New ProcessStartInfo With {.FileName = Application.ExecutablePath, .Verb = "runas", .Arguments = "-copy"})
-            Close()
-            Exit Sub
-        End If
         FlushCounter = My.Settings.LTFSWriter_AutoCleanTimeThreashould
     End Sub
 

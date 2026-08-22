@@ -384,6 +384,8 @@
   <ItemGroup>
     <Compile Include="Application\ApplicationEvents.vb" />
     <Compile Include="Application\AppLogging.vb" />
+    <Compile Include="Application\ApplicationElevation.vb" />
+    <Compile Include="Application\ApplicationNavigation.vb" />
     <Compile Include="Application\FileDialogHelper.vb" />
     <Compile Include="Application\ApplicationWheels.vb" />
     <Compile Include="Build\Build.vb" />

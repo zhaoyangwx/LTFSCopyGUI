@@ -1,9 +1,10 @@
 Imports System.Runtime.InteropServices
-Imports System.Text
 Imports System.Threading
 Imports ISCSI
 Imports ISCSI.Server
 Imports SCSI
+Imports Serilog
+Imports Serilog.Context
 Public Class iSCSIService
     Public driveHandle As IntPtr
     Public BlockSize As Integer = 524288
@@ -13,7 +14,6 @@ Public Class iSCSIService
     Public svc As ISCSIServer
     Public target As ISCSITarget
     Public Property LogCommand As Boolean = False
-    Private _traceSession As TraceLogSession
 
     Public Class SCSIDirectInterface
         Implements SCSITargetInterface
@@ -24,7 +24,6 @@ Public Class iSCSIService
         Public QueueTaskProcessor As Task
         Private Shared _DataDir As Dictionary(Of Byte(), Byte)
         Public Property LogCommand As Boolean
-        Public Property TraceSession As TraceLogSession
         Public Shared ReadOnly Property DataDir As Dictionary(Of Byte(), Byte)
             Get
                 If _DataDir Is Nothing Then
@@ -365,18 +364,29 @@ Public Class iSCSIService
                                   End If
                                   OnCommandCompleted(status, response, task)
                                   If LogCommand Then
-                                      Dim logdata As New StringBuilder
-                                      logdata.AppendLine($"TIME {Now.ToString("yyyyMMdd_HHmmss.fffffff")}")
-                                      logdata.AppendLine("CDB")
-                                      logdata.AppendLine(IOManager.Byte2Hex(commandBytes))
-                                      If commandBytes(0) <> &H8 AndAlso commandBytes(0) <> &HA Then
-                                          logdata.AppendLine("PARAM")
-                                          logdata.AppendLine(IOManager.Byte2Hex(responsedata))
-                                      End If
-                                      logdata.AppendLine("SENSE")
-                                      logdata.AppendLine(IOManager.Byte2Hex(sense))
-                                      Dim result = logdata.ToString()
-                                      If TraceSession IsNot Nothing Then TraceSession.Write(result)
+                                      Dim parameterData = If(commandBytes.Length > 0 AndAlso
+                                                              commandBytes(0) <> &H8 AndAlso
+                                                              commandBytes(0) <> &HA,
+                                                              IOManager.Byte2Hex(responsedata),
+                                                              String.Empty)
+                                      Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(SCSIDirectInterface))
+                                          Using categoryScope As IDisposable = LogContext.PushProperty("Category", "iSCSI")
+                                              Using logStreamScope As IDisposable = LogContext.PushProperty("LogStream", "scsi-console")
+                                                  Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ScsiCommand")
+                                                      Using opcodeScope As IDisposable = LogContext.PushProperty("CommandOpcode", If(commandBytes.Length = 0, -1, commandBytes(0)))
+                                                          Using directionScope As IDisposable = LogContext.PushProperty("DataDirection", cmddir)
+                                                              Log.Information(
+                                                                  "SCSI command completed with status {Status}. CDB={Cdb} PARAM={ParameterData} SENSE={SenseData}.",
+                                                                  status.ToString(),
+                                                                  IOManager.Byte2Hex(commandBytes),
+                                                                  parameterData,
+                                                                  IOManager.Byte2Hex(sense))
+                                                          End Using
+                                                      End Using
+                                                  End Using
+                                              End Using
+                                          End Using
+                                      End Using
                                   End If
                               End Sub)
 
@@ -415,35 +425,42 @@ Public Class iSCSIService
     End Sub
     Public Sub StartService(Optional ByVal TargetName As String = "iqn.2019-01.com.ltfscopygui:target1")
         svc = New ISCSIServer()
-        If LogCommand Then _traceSession = AppLogger.CreateTraceSession("iscsi", AppLogger.RunId)
         Try
             Dim directInterface As New SCSIDirectInterface(driveHandle) With {
-                .LogCommand = LogCommand,
-                .TraceSession = _traceSession
+                .LogCommand = LogCommand
             }
             target = New ISCSITarget(TargetName, directInterface)
             svc.AddTarget(target)
             svc.Start(port)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(iSCSIService))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "iSCSI")
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                        Log.Information("iSCSI target started. Target={TargetName} Port={Port}.", TargetName, port)
+                    End Using
+                End Using
+            End Using
             RaiseEvent LogPrint($"Started target={TargetName} port={port}")
         Catch ex As Exception
-            If _traceSession IsNot Nothing Then
-                _traceSession.Dispose()
-                _traceSession = Nothing
-            End If
-            AppLogger.Write(AppLogLevel.Error, "iSCSI", "Failed to start service.", ex)
+            Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(iSCSIService))
+                Using categoryScope As IDisposable = LogContext.PushProperty("Category", "iSCSI")
+                    Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                        Log.Error(ex, "Failed to start iSCSI service.")
+                    End Using
+                End Using
+            End Using
             Throw
         End Try
     End Sub
     Public Sub StopService()
-        Try
-            If svc IsNot Nothing Then svc.Stop()
-            RaiseEvent LogPrint("Stopped")
-        Finally
-            If _traceSession IsNot Nothing Then
-                _traceSession.Dispose()
-                _traceSession = Nothing
-            End If
-        End Try
+        If svc IsNot Nothing Then svc.Stop()
+        Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(iSCSIService))
+            Using categoryScope As IDisposable = LogContext.PushProperty("Category", "iSCSI")
+                Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "ServiceLifecycle")
+                    Log.Information("iSCSI target stopped.")
+                End Using
+            End Using
+        End Using
+        RaiseEvent LogPrint("Stopped")
     End Sub
 
 End Class

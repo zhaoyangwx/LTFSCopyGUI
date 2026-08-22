@@ -38,14 +38,37 @@ Namespace My
             SendKeys.SendWait("{ENTER}")
             FreeConsole()
         End Sub
-        Public Sub CheckUAC(e As StartupEventArgs)
-            If Not New Security.Principal.WindowsPrincipal(Security.Principal.WindowsIdentity.GetCurrent()).IsInRole(Security.Principal.WindowsBuiltInRole.Administrator) Then
-                Process.Start(New ProcessStartInfo With {.FileName = Windows.Forms.Application.ExecutablePath, .Verb = "runas", .Arguments = String.Join(" ", e.CommandLine)})
-                End
+        Public Function CheckUAC(e As StartupEventArgs) As Boolean
+            If ApplicationElevation.IsAdministrator Then Return True
+
+            Dim elevatedProcessStarted = ApplicationElevation.StartElevated(e.CommandLine)
+            e.Cancel = True
+
+            If elevatedProcessStarted Then
+                Serilog.Log.Information("Unelevated startup canceled after launching the elevated application process.")
+            Else
+                Serilog.Log.Information("Startup canceled because the elevated application process was not started.")
             End If
-        End Sub
+            ApplicationElevation.ExitCurrentProcess()
+            Return False
+        End Function
+
+        Private Shared Function NormalizeTapeDrive(tapeDrive As String) As String
+            If String.IsNullOrWhiteSpace(tapeDrive) Then Return String.Empty
+
+            If tapeDrive.StartsWith("TAPE") Then
+                Return "\\." & tapeDrive
+            ElseIf tapeDrive.StartsWith("\\.") Then
+                Return tapeDrive
+            ElseIf tapeDrive = Val(tapeDrive).ToString Then
+                Return "\\.\TAPE" & tapeDrive
+            End If
+
+            Return tapeDrive
+        End Function
+
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            AppLogger.Initialize(Path.Combine(Windows.Forms.Application.StartupPath, "log"), Settings.LTFSWriter_LogEnabled)
+            AppLogging.Initialize(Path.Combine(Windows.Forms.Application.StartupPath, "log"), Settings.LTFSWriter_LogEnabled)
             If Not Directory.Exists(Settings.cfgPath) Then Directory.CreateDirectory(Settings.cfgPath)
             '旧设定迁移
             If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "lang.ini")) Then
@@ -144,19 +167,21 @@ Namespace My
                     Select Case param(i)
                         Case "-s"
                             IndexRead = False
-                        Case "-t"
-                            CheckUAC(e)
-                            If i < param.Count - 1 Then
-                                Dim TapeDrive As String = param(i + 1)
-                                If TapeDrive.StartsWith("TAPE") Then
-                                    TapeDrive = "\\.\" & TapeDrive
-                                ElseIf TapeDrive.StartsWith("\\.\") Then
-                                    'Do Nothing
-                                ElseIf TapeDrive = Val(TapeDrive).ToString Then
-                                    TapeDrive = "\\.\TAPE" & TapeDrive
-                                Else
+                        Case "-open"
+                            If i >= param.Count - 1 Then Exit For
+                            If Not CheckUAC(e) Then Return
 
-                                End If
+                            Dim routeArguments As New List(Of String)
+                            For routeIndex As Integer = i + 2 To param.Count - 1
+                                routeArguments.Add(param(routeIndex))
+                            Next
+                            ApplicationNavigation.ScheduleStartupNavigation(param(i + 1), routeArguments)
+                            MainForm = Form1
+                            Exit For
+                        Case "-t"
+                            If Not CheckUAC(e) Then Return
+                            If i < param.Count - 1 Then
+                                Dim TapeDrive As String = NormalizeTapeDrive(param(i + 1))
                                 Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = Not IndexRead}
                                 If Not IndexRead Then LWF.ExtraPartitionCount = 1
                                 AddHandler LWF.TapeEjected, Sub()
@@ -186,15 +211,15 @@ Namespace My
                                 Exit For
                             End If
                         Case "-c"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             MainForm = LTFSConfigurator
                             Exit For
                         Case "-l"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             MainForm = ChangerTool
                             Exit For
                         Case "-rb"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             InitConsole()
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -213,7 +238,7 @@ Namespace My
                                 End
                             End If
                         Case "-wb"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             InitConsole()
                             If i < param.Count - 2 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -236,7 +261,7 @@ Namespace My
                                 End
                             End If
                         Case "-raw"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             InitConsole()
                             If i < param.Count - 4 Then
                                 Dim TapeDrive As String = param(i + 1)
@@ -289,7 +314,7 @@ dataDir:{dataDir}
                                 End
                             End If
                         Case "-mkltfs"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             InitConsole()
                             'Console.WriteLine($"{i} {param.Count}")
                             If i < param.Count - 1 Then
@@ -358,7 +383,7 @@ dataDir:{dataDir}
                                 End
                             End If
                         Case "-copy"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             MainForm = New TapeCopy()
                         Case "-gt"
                             If i < param.Count - 2 Then
@@ -415,7 +440,7 @@ dataDir:{dataDir}
                             End If
                         Case "-svc"
                             If i < param.Count - 0 Then
-                                CheckUAC(e)
+                                If Not CheckUAC(e) Then Return
                                 InitConsole()
                                 Dim port As Integer = 25900
                                 If i + 2 <= param.Length - 1 Then
@@ -767,7 +792,7 @@ dataDir:{dataDir}
                                 End
                             End If
                         Case "-remoteraw"
-                            CheckUAC(e)
+                            If Not CheckUAC(e) Then Return
                             InitConsole()
                             If i < param.Count - 6 Then
                                 Dim ipstr As String = param(i + 1)
@@ -852,8 +877,8 @@ dataDir:{dataDir}
 
         Private Sub MyApplication_Shutdown(sender As Object, e As EventArgs) Handles Me.Shutdown
             Try
-                AppLogger.Write(AppLogLevel.Info, "Application", "Application shutting down.", force:=True)
-                AppLogger.Shutdown(TimeSpan.FromSeconds(5))
+                Serilog.Log.Information("Application shutting down.")
+                Serilog.Log.CloseAndFlush()
             Finally
                 ' A worker created with Thread (rather than Task) is a
                 ' foreground thread by default.  It may be blocked in a
@@ -866,24 +891,10 @@ dataDir:{dataDir}
         End Sub
 
         Private Sub MyApplication_UnhandledException(sender As Object, e As UnhandledExceptionEventArgs) Handles Me.UnhandledException
-            AppLogger.Write(AppLogLevel.Critical, "Application", "Unhandled exception.", e.Exception, force:=True)
-            If Not AppLogger.Flush(TimeSpan.FromSeconds(5)) Then WriteEmergencyCrashLog(e.Exception)
+            Serilog.Log.Fatal(e.Exception, "Unhandled application exception.")
+            Serilog.Log.CloseAndFlush()
             MessageBox.Show(e.Exception.ToString())
         End Sub
 
-        Private Shared Sub WriteEmergencyCrashLog(ex As Exception)
-            Dim contents = If(ex Is Nothing, "Unknown unhandled exception.", ex.ToString())
-            Dim directories = {Path.Combine(Windows.Forms.Application.StartupPath, "log"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "LTFSCopyGUI", "log"), Path.Combine(Path.GetTempPath(), "LTFSCopyGUI", "log")
-            }
-            For Each directory In directories
-                Try
-                    IO.Directory.CreateDirectory(directory)
-                    Dim path = IO.Path.Combine(directory, $"crash_{Now.ToString("yyyyMMdd_HHmmss.fffffff")}.log")
-                    File.WriteAllText(path, contents, New Text.UTF8Encoding(False))
-                    Return
-                Catch
-                End Try
-            Next
-        End Sub
     End Class
 End Namespace
