@@ -800,10 +800,10 @@ Public Class LTFSWriter
         Dim debuginfo As New StringBuilder
         Dim WERLHeader As Byte()
         Dim WERLPage As Byte() = Nothing
-        If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, TimeOut) Then
+        If Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle), TimeOut) Then
             Try
                 If Not PageValid Then
-                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                     Return 0
                 End If
                 Dim pos As New TapeUtils.PositionData(driveHandle)
@@ -819,7 +819,7 @@ Public Class LTFSWriter
                                                             Return True
                                                         End Function, 1)
                 If WERLHeader.Length <> 4 Then
-                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                     PrintMsg("Invalid page. Skip Errrate Check", LogOnly:=True)
                     PageValid = False
                     Return 0
@@ -828,7 +828,7 @@ Public Class LTFSWriter
                 WERLPageLen <<= 8
                 WERLPageLen = WERLPageLen Or WERLHeader(3)
                 If WERLPageLen = 0 Then
-                    Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                    Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                     PrintMsg("Page is empty. Skip Errrate Check", LogOnly:=True)
                     PageValid = False
                     Return 0
@@ -838,7 +838,7 @@ Public Class LTFSWriter
             Catch ex As Exception
                 PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
             End Try
-            Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+            Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
         Else
             PrintMsg("Device is busy. Skip Errrate Check", LogOnly:=True)
             Return 0
@@ -1342,9 +1342,9 @@ Public Class LTFSWriter
 
                              End If
                              If driveHandle <> CType(-1, IntPtr) AndAlso TapeDrive.Length > 0 Then
-                                 If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 200) Then
+                                 If Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle), 200) Then
                                      RefreshDriveLEDIndicator()
-                                     Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                                     Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                                  End If
                              End If
                              If ToolTipChanErrLogShowing Then
@@ -1412,13 +1412,13 @@ Public Class LTFSWriter
         Dim DriveInfo As String = ""
         Dim IsOpened As Boolean = TapeUtils.IsOpened(driveHandle)
         If IsOpened Then
-            If CurrDrive Is Nothing AndAlso Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
+            If CurrDrive Is Nothing AndAlso Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle)) Then
                 Try
                     CurrDrive = TapeUtils.Inquiry(driveHandle)
                 Catch ex As Exception
                     PrintMsg(ex.ToString(), Warning:=True, LogOnly:=True)
                 End Try
-                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
             End If
         End If
         If CurrDrive IsNot Nothing Then
@@ -1478,13 +1478,13 @@ Public Class LTFSWriter
         Dim logdataDSLP As Byte()
         Dim logdataDTD As Byte()
         Task.Run(Sub()
-                     If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock, 500) Then
+                     If Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle), 500) Then
                          Try
                              logdataDSLP = TapeUtils.LogSense(driveHandle, &H3E, 0, PageControl:=1)
                              logdataDTD = TapeUtils.LogSense(driveHandle, &H11, 0, PageControl:=1)
-                             Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                             Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                          Catch ex As Exception
-                             Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                             Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                              PrintMsg(ex.ToString(), LogOnly:=True)
                              Exit Sub
                          End Try
@@ -1889,8 +1889,8 @@ Public Class LTFSWriter
     <Category("LTFSWriter")>
     Public ReadOnly Property GetCapacityMegaBytes As Long
         Get
-            If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
-                Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+            If Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle)) Then
+                Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                 If ExtraPartitionCount > 0 Then
                     Return TapeUtils.MAMAttribute.FromTapeDrive(driveHandle, 0, 0, 1).AsNumeric
                 Else
@@ -2146,8 +2146,8 @@ Public Class LTFSWriter
         Try
             If True OrElse AllowOperation Then
                 Task.Run(Sub()
-                             If Threading.Monitor.TryEnter(TapeUtils.SCSIOperationLock) Then
-                                 Threading.Monitor.Exit(TapeUtils.SCSIOperationLock)
+                             If Threading.Monitor.TryEnter(TapeUtils.GetSCSIOperationLock(driveHandle)) Then
+                                 Threading.Monitor.Exit(TapeUtils.GetSCSIOperationLock(driveHandle))
                                  RefreshCapacity()
                                  PrintMsg(My.Resources.ResText_CRef, TooltipText:=Nothing)
                              End If
@@ -4854,7 +4854,7 @@ Public Class LTFSWriter
                         SetStatusLight(LWStatus.Err)
                     End Try
                     SyncLock OperationLock
-                        SyncLock TapeUtils.SCSIOperationLock
+                        SyncLock TapeUtils.GetSCSIOperationLock(driveHandle)
                             TapeUtils.AllowMediumRemoval(driveHandle)
                             TapeUtils.ReleaseUnit(driveHandle)
                         End SyncLock
@@ -11311,7 +11311,7 @@ Public Class LTFSWriter
         svc.BlockSize = plabel.blocksize
         svc.ExtraPartitionCount = ExtraPartitionCount
         If My.Settings.LTFSWriter_LogEnabled Then svc.LogCommand = True
-        SyncLock TapeUtils.SCSIOperationLock
+        SyncLock TapeUtils.GetSCSIOperationLock(driveHandle)
             svc.StartService($"iqn.2019-01.com.ltfscopygui:ltfswriter{If(CurrDrive IsNot Nothing, $":{CurrDrive.SerialNumber}", "")}")
             MessageBox.Show(New Form With {.TopMost = True}, $"Service running on port {svc.port}.")
             svc.StopService()
@@ -11691,7 +11691,7 @@ Public Class LTFSWriter
                         SetStatusLight(LWStatus.Err)
                     End Try
                     SyncLock OperationLock
-                        SyncLock TapeUtils.SCSIOperationLock
+                        SyncLock TapeUtils.GetSCSIOperationLock(driveHandle)
                             TapeUtils.AllowMediumRemoval(driveHandle)
                             TapeUtils.ReleaseUnit(driveHandle)
                         End SyncLock
@@ -11787,7 +11787,7 @@ Public Class LTFSWriter
                         SetStatusLight(LWStatus.Err)
                     End Try
                     SyncLock OperationLock
-                        SyncLock TapeUtils.SCSIOperationLock
+                        SyncLock TapeUtils.GetSCSIOperationLock(driveHandle)
                             TapeUtils.AllowMediumRemoval(driveHandle)
                             TapeUtils.ReleaseUnit(driveHandle)
                         End SyncLock

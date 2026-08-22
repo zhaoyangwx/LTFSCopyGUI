@@ -455,6 +455,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Core\Schema.vb" />
+    <Compile Include="Core\SCSIDeviceLockManager.vb" />
     <Compile Include="Forms\SettingPanel.Designer.vb">
       <DependentUpon>SettingPanel.vb</DependentUpon>
     </Compile>

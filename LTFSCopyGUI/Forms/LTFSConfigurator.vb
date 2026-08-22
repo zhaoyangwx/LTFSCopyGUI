@@ -377,7 +377,7 @@ Public Class LTFSConfigurator
 
                     Dim sense(63) As Byte
                     Dim succ As Boolean, BytesReturned As UInteger
-                    SyncLock TapeUtils.SCSIOperationLock
+                    SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                         If TapeUtils.DriverTypeSetting = TapeUtils.DriverType.TapeStream Then
@@ -905,7 +905,7 @@ Public Class LTFSConfigurator
                      Else
                          Dim data As IntPtr = Marshal.AllocHGlobal(1)
                          Dim handle As IntPtr
-                         SyncLock TapeUtils.SCSIOperationLock
+                         SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                              TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                              TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 60000, senseData)
                              TapeUtils.CloseTapeDrive(handle)
@@ -1607,7 +1607,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                     Dim WERLHeader As Byte()
                                     Dim WERLPage As Byte()
                                     Dim WERLPageLen As Integer
-                                    SyncLock TapeUtils.SCSIOperationLock
+                                    SyncLock TapeUtils.GetSCSIOperationLock(handle)
                                         WERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
                                         If WERLHeader.Length <> 4 Then Exit Try
                                         WERLPageLen = WERLHeader(2)
@@ -1737,7 +1737,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                          Dim RERLHeader As Byte()
                          Dim WERLPage As Byte()
                          Dim RERLPage As Byte()
-                         SyncLock TapeUtils.SCSIOperationLock
+                          SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                              WERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H88, &H0, &H4, &H0}, 4)
                              If WERLHeader.Length <> 4 Then Exit Try
                              RERLHeader = TapeUtils.SCSIReadParam(ConfTapeDrive, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
@@ -2057,7 +2057,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, data, 0, 1, 60000, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2077,7 +2077,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim senseData(63) As Byte
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, data, 0, 1, 60000, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2137,7 +2137,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
 
                     Dim senseBuffer(63) As Byte
                     Dim succ As Boolean
-                    SyncLock TapeUtils.SCSIOperationLock
+                    SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                         Dim handle As IntPtr
                         TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                         succ = TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdbData, dataBufferPtr, CUInt(dataData.Length), 0, CUInt(CInt(TextBoxTimeoutValue.Text)), senseBuffer)
@@ -2546,7 +2546,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                      Dim cdb As Byte() = {&H94, &H1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2573,7 +2573,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                         0, 0, 1, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          result = TapeUtils.SCSIReadParam(handle, cdb, sectorSize, Function(s As Byte()) As Boolean
                                                                                        senseData = s
@@ -2652,7 +2652,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2681,7 +2681,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2710,7 +2710,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -2739,7 +2739,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                           0, 0, 0, 0, 0, 0}
                      Dim data As IntPtr = Marshal.AllocHGlobal(1)
                      Dim handle As IntPtr
-                     SyncLock TapeUtils.SCSIOperationLock
+                     SyncLock TapeUtils.GetSCSIOperationLock(ConfTapeDrive)
                          TapeUtils.OpenTapeDrive(ConfTapeDrive, handle)
                          TapeUtils.TapeSCSIIOCtlUnmanaged(handle, cdb, data, 0, 1, 30, senseData)
                          TapeUtils.CloseTapeDrive(handle)
@@ -3166,7 +3166,7 @@ DatasetResidue = {ts.CurrentSetResidueBytes}{vbCrLf}"
                                 Dim RERLHeader As Byte()
                                 Dim RERLPage As Byte()
                                 Dim RERLPageLen As Integer
-                                SyncLock TapeUtils.SCSIOperationLock
+                                SyncLock TapeUtils.GetSCSIOperationLock(handle)
                                     RERLHeader = TapeUtils.SCSIReadParam(handle, {&H1C, &H1, &H87, &H0, &H4, &H0}, 4)
                                     If RERLHeader.Length <> 4 Then Exit Try
                                     RERLPageLen = RERLHeader(2)
