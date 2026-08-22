@@ -451,7 +451,12 @@ Public Class TapeUtils
                                                    Optional ByVal TargetID As Byte = 0,
                                                    Optional ByVal LUN As Byte = 0,
                                                    Optional ByRef BytesReturned As UInteger = 0) As Boolean
-            SyncLock SCSIDeviceLockManager.Instance.GetLock(handle)
+            If handle = IntPtr.Zero OrElse handle = New IntPtr(-1) Then Return False
+
+            Dim operationScope As IDisposable = SCSIDeviceLockManager.Instance.TryEnterOperation(handle)
+            If operationScope Is Nothing Then Return False
+
+            Using operationScope
                 Dim scsi As SCSI_PASS_THROUGH_DIRECT_WITH_BUFFER = BuildSCSIPassThroughStructure(cdb, dataBuffer, bufferLength, dataIn, timeoutValue, TargetID, LUN)
                 Dim size As UInteger = CUInt(Marshal.SizeOf(scsi))
                 Dim inBuffer As IntPtr = Marshal.AllocHGlobal(CInt(size))
@@ -469,7 +474,7 @@ Public Class TapeUtils
                 Finally
                     Marshal.FreeHGlobal(inBuffer)
                 End Try
-            End SyncLock
+            End Using
         End Function
     End Class
 
@@ -600,32 +605,46 @@ Public Class TapeUtils
     <XmlIgnore>
     Public Shared Property DriveHandle As New SerializableDictionary(Of String, IntPtr)
     Public Shared Function OpenTapeDrive(TapeDrive As String, ByRef handle As IntPtr) As Boolean
-        SyncLock DriveHandle
-            If Not DriveHandle.ContainsKey(TapeDrive) Then
-                DriveOpenCount.Add(TapeDrive, 0)
-                DriveHandle.Add(TapeDrive, Nothing)
-            End If
-            If DriveOpenCount(TapeDrive) = 0 Then
-                Select Case DriverTypeSetting
-                    Case DriverType.TapeStream
-                        If File.Exists(TapeDrive) Then
-                            Dim vt As New TapeImage(TapeDrive)
-                            handle = New IntPtr(vt.GetHashCode())
-                            TapeStreamMapping.MappingTable.Add(handle, vt)
-                        Else
+        handle = IntPtr.Zero
+        Dim operationScope As IDisposable = SCSILockManager.TryEnterOperation(TapeDrive)
+        If operationScope Is Nothing Then
+            handle = IntPtr.Zero
+            Return False
+        End If
+
+        Using operationScope
+            SyncLock DriveHandle
+                If Not DriveHandle.ContainsKey(TapeDrive) Then
+                    DriveOpenCount.Add(TapeDrive, 0)
+                    DriveHandle.Add(TapeDrive, Nothing)
+                End If
+                If DriveOpenCount(TapeDrive) = 0 Then
+                    Select Case DriverTypeSetting
+                        Case DriverType.TapeStream
+                            If File.Exists(TapeDrive) Then
+                                Dim vt As New TapeImage(TapeDrive)
+                                handle = New IntPtr(vt.GetHashCode())
+                                TapeStreamMapping.MappingTable.Add(handle, vt)
+                            Else
+                                handle = CreateFile(TapeDrive, GENERIC_READ Or GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero)
+                            End If
+                        Case Else
                             handle = CreateFile(TapeDrive, GENERIC_READ Or GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero)
-                        End If
-                    Case Else
-                        handle = CreateFile(TapeDrive, GENERIC_READ Or GENERIC_WRITE, 0, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero)
-                End Select
-                DriveHandle(TapeDrive) = handle
-            Else
-                handle = DriveHandle(TapeDrive)
-            End If
-            DriveOpenCount(TapeDrive) += 1
-            SCSILockManager.RegisterHandle(TapeDrive, handle)
-            Return handle <> IntPtr.Zero
-        End SyncLock
+                    End Select
+                    If handle = IntPtr.Zero OrElse handle = New IntPtr(-1) Then
+                        DriveHandle(TapeDrive) = IntPtr.Zero
+                        Return False
+                    End If
+                    DriveHandle(TapeDrive) = handle
+                Else
+                    handle = DriveHandle(TapeDrive)
+                    If handle = IntPtr.Zero OrElse handle = New IntPtr(-1) Then Return False
+                End If
+                DriveOpenCount(TapeDrive) += 1
+                SCSILockManager.RegisterHandle(TapeDrive, handle)
+                Return True
+            End SyncLock
+        End Using
     End Function
     Public Shared Function CloseTapeDrive(handle As IntPtr) As Boolean
         SyncLock SCSILockManager.GetLock(handle)
@@ -666,6 +685,7 @@ Public Class TapeUtils
                     Case Else
                         result = CloseHandle(handle)
                 End Select
+                SCSILockManager.UnregisterHandle(handle)
                 Return result
             End SyncLock
         End SyncLock
@@ -7900,6 +7920,46 @@ Public Class TapeUtils
         Dim s As String = Marshal.PtrToStringAnsi(p)
         Return s
     End Function
+
+    Private Shared Function ResolveMappedTapeDrive(driveLetter As Char) As String
+        Try
+            Dim mappings As String = GetDriveMappings()
+            If String.IsNullOrWhiteSpace(mappings) Then Return Nothing
+
+            For Each mapping As String In mappings.Split({vbCr, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                Dim fields As String() = mapping.Split({"|"}, StringSplitOptions.None)
+                If fields.Length < 2 Then Continue For
+
+                Dim mappedLetter As String = fields(0).Trim().TrimEnd(":"c)
+                If Not String.Equals(mappedLetter, driveLetter.ToString(), StringComparison.OrdinalIgnoreCase) Then Continue For
+
+                Dim deviceName As String = fields(1).Trim()
+                If deviceName.StartsWith("\\.", StringComparison.OrdinalIgnoreCase) Then Return deviceName
+                If deviceName.StartsWith("TAPE", StringComparison.OrdinalIgnoreCase) Then Return "\\." & deviceName
+            Next
+        Catch
+        End Try
+        Return Nothing
+    End Function
+
+    Private Shared Function EnterMappedTapeOperation(driveLetter As Char) As IDisposable
+        Dim devicePath As String = ResolveMappedTapeDrive(driveLetter)
+        If String.IsNullOrWhiteSpace(devicePath) Then
+            devicePath = $"drive-letter:{Char.ToUpperInvariant(driveLetter)}"
+        End If
+        Return SCSILockManager.TryEnterOperation(devicePath)
+    End Function
+
+    Private Shared Function RunMappedTapeCommand(driveLetter As Char,
+                                                  command As Func(Of IntPtr)) As String
+        Dim operationScope As IDisposable = EnterMappedTapeOperation(driveLetter)
+        If operationScope Is Nothing Then Return "Device is busy in another process."
+
+        Using operationScope
+            Return Marshal.PtrToStringAnsi(command())
+        End Using
+    End Function
+
     Public Shared Function StartLtfsService() As String
         Dim p As IntPtr = _StartLtfsService()
         Dim s As String = Marshal.PtrToStringAnsi(p)
@@ -7917,24 +7977,22 @@ Public Class TapeUtils
     End Function
     Public Shared Function MapTapeDrive(driveLetter As Char, TapeDrive As String, Optional ByVal logDir As String = DEFAULT_LOG_DIR, Optional ByVal workDir As String = DEFAULT_WORK_DIR, Optional ByVal showOffline As Boolean = False) As String
         Dim tapeIndex As Byte = Byte.Parse(TapeDrive.Substring(4))
-        Dim p As IntPtr = _MapTapeDrive(driveLetter, TapeDrive, tapeIndex, logDir, workDir, showOffline)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Dim operationScope As IDisposable = SCSILockManager.TryEnterOperation(TapeDrive)
+        If operationScope Is Nothing Then Return "Device is busy in another process."
+
+        Using operationScope
+            Dim p As IntPtr = _MapTapeDrive(driveLetter, TapeDrive, tapeIndex, logDir, workDir, showOffline)
+            Return Marshal.PtrToStringAnsi(p)
+        End Using
     End Function
     Public Shared Function UnMapTapeDrive(driveLetter As Char) As String
-        Dim p As IntPtr = _UnmapTapeDrive(driveLetter)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Return RunMappedTapeCommand(driveLetter, Function() _UnmapTapeDrive(driveLetter))
     End Function
     Public Shared Function LoadTapeDrive(driveLetter As Char, mount As Boolean) As String
-        Dim p As IntPtr = _LoadTapeDrive(driveLetter, mount)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Return RunMappedTapeCommand(driveLetter, Function() _LoadTapeDrive(driveLetter, mount))
     End Function
     Public Shared Function EjectTapeDrive(driveLetter As Char) As String
-        Dim p As IntPtr = _EjectTapeDrive(driveLetter)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Return RunMappedTapeCommand(driveLetter, Function() _EjectTapeDrive(driveLetter))
     End Function
     Public Shared Function SetEncryption(handle As IntPtr, Optional ByVal EncryptionKey As Byte() = Nothing, Optional ByVal SenseReport As Func(Of Byte(), Boolean) = Nothing) As Boolean
         Dim result As Boolean = False
@@ -8058,14 +8116,10 @@ Public Class TapeUtils
         End SyncLock
     End Function
     Public Shared Function MountTapeDrive(driveLetter As Char) As String
-        Dim p As IntPtr = _MountTapeDrive(driveLetter)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Return RunMappedTapeCommand(driveLetter, Function() _MountTapeDrive(driveLetter))
     End Function
     Public Shared Function CheckTapeMedia(driveLetter As Char) As String
-        Dim p As IntPtr = _CheckTapeMedia(driveLetter)
-        Dim s As String = Marshal.PtrToStringAnsi(p)
-        Return s
+        Return RunMappedTapeCommand(driveLetter, Function() _CheckTapeMedia(driveLetter))
     End Function
     <Category("Options")>
     <TypeConverter(GetType(ExpandableObjectConverter))>

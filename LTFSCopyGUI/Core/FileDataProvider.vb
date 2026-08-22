@@ -376,21 +376,21 @@ Public Class FileDataProvider
                         End Using
                     End Using
                     Return result
-                Catch ex As Exception
+                Catch fallbackEx As Exception
                     Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(FileDataProvider))
                         Using categoryScope As IDisposable = LogContext.PushProperty("Category", "FileProvider")
                             Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
                                 Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Error")
-                                    Log.Error(ex, "File data provider direct file fallback failed. SourcePath={SourcePath}.", fr.SourcePath)
+                                    Log.Error(fallbackEx, "File data provider direct file fallback failed. SourcePath={SourcePath}.", fr.SourcePath)
                                 End Using
                             End Using
                         End Using
                     End Using
-                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{ex.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
+                    Select Case MessageBox.Show(New Form With {.TopMost = True}, $"{My.Resources.ResText_WErr }{vbCrLf}{fallbackEx.ToString}", My.Resources.ResText_Warning, MessageBoxButtons.AbortRetryIgnore)
                         Case DialogResult.Abort
                             fr.IsOpened = False
                             fr.File = Nothing
-                            Throw ex
+                            Throw fallbackEx
                         Case DialogResult.Retry
                             Continue While
                         Case DialogResult.Ignore

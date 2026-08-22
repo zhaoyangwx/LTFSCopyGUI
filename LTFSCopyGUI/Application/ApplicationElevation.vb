@@ -47,6 +47,40 @@ Public Module ApplicationElevation
         Return StartElevated(CType(arguments, IEnumerable(Of String)))
     End Function
 
+    Public Function StartWriterProcess(tapeDrive As String,
+                                       sessionId As String,
+                                       offlineMode As Boolean) As Process
+        Dim arguments As New List(Of String) From {
+            "-writer-process",
+            tapeDrive,
+            sessionId
+        }
+        If offlineMode Then arguments.Add("offline")
+
+        Dim startInfo As New ProcessStartInfo With {
+            .FileName = Application.ExecutablePath,
+            .Arguments = BuildCommandLine(arguments),
+            .UseShellExecute = True,
+            .WorkingDirectory = AppDomain.CurrentDomain.BaseDirectory
+        }
+        If Not IsAdministrator Then startInfo.Verb = "runas"
+
+        Try
+            Dim child As Process = Process.Start(startInfo)
+            Log.Information("Writer process started. ProcessId={ProcessId} TapeDrive={TapeDrive} SessionId={SessionId} OfflineMode={OfflineMode}.",
+                            child.Id,
+                            tapeDrive,
+                            sessionId,
+                            offlineMode)
+            Return child
+        Catch ex As Win32Exception When ex.NativeErrorCode = ElevationCanceledErrorCode
+            Log.Information("Writer process elevation was canceled. TapeDrive={TapeDrive} SessionId={SessionId}.", tapeDrive, sessionId)
+        Catch ex As Exception
+            Log.Error(ex, "Failed to start writer process. TapeDrive={TapeDrive} SessionId={SessionId}.", tapeDrive, sessionId)
+        End Try
+        Return Nothing
+    End Function
+
     ''' <summary>
     ''' Ends the current process after the elevated process has been started.
     ''' The current logger is flushed before the exit request so no startup

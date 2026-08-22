@@ -1,6 +1,7 @@
 Imports System.Buffers
 Imports System.ComponentModel
 Imports System.Diagnostics
+Imports System.IO
 Imports System.IO.Pipelines
 Imports System.Runtime
 Imports System.Runtime.InteropServices
@@ -15,6 +16,14 @@ Imports ZstdSharp
 
 Public Class LTFSWriter
     Private _lastSelectedFolder As String = String.Empty
+    Private _deviceLease As SCSIDeviceLockManager.WriterLease
+
+    Public Sub New(processSessionId As String)
+        Me.New()
+        If Not String.IsNullOrWhiteSpace(processSessionId) Then
+            _logSessionId = processSessionId
+        End If
+    End Sub
 
     Private Function SelectWriterFolder(Optional initialDirectory As String = Nothing) As String
         Dim startDirectory As String = initialDirectory
@@ -242,7 +251,7 @@ Public Class LTFSWriter
     End Property
     <Category("LTFSWriter")>
     Public Property Session_Start_Time As Date = Now
-    Private ReadOnly _logSessionId As String = $"writer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+    Private _logSessionId As String = $"writer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
     Private ReadOnly _messageStateLock As New Object()
     Private _lastMessage As String = String.Empty
     <Category("LTFSWriter")>
@@ -1292,14 +1301,48 @@ Public Class LTFSWriter
             LoadComplete = True
             Exit Sub
         End If
+
+        _deviceLease = TapeUtils.SCSILockManager.AcquireWriterLease(TapeDrive, _logSessionId, 10000)
+        If _deviceLease Is Nothing Then
+            PrintMsg("Device is busy in another process.", Warning:=True, LogOnly:=False, ForceLog:=True)
+            SetStatusLight(LWStatus.Err)
+            LoadComplete = True
+            BeginInvoke(Sub()
+                            If Not IsDisposed AndAlso Not Disposing Then Close()
+                        End Sub)
+            Exit Sub
+        End If
+
         Dim driveOpened As Boolean = False
         Try
-            TapeUtils.OpenTapeDrive(TapeDrive, driveHandle)
-            driveOpened = True
+            ' The parent may still be unwinding a debug-panel operation and
+            ' therefore hold an OS handle even though this process already
+            ' owns the writer lease.  Keep the lease, let the parent finish,
+            ' and retry the open instead of releasing the reservation.
+            For openAttempt As Integer = 1 To 40
+                If TapeUtils.OpenTapeDrive(TapeDrive, driveHandle) Then
+                    driveOpened = True
+                    Exit For
+                End If
+                If openAttempt < 40 Then Thread.Sleep(250)
+            Next
+
+            If Not driveOpened Then
+                Throw New IOException($"Cannot open {TapeDrive}")
+            End If
 
         Catch ex As Exception
             PrintMsg(My.Resources.ResText_ErrP)
             SetStatusLight(LWStatus.Err)
+            If _deviceLease IsNot Nothing Then
+                _deviceLease.Dispose()
+                _deviceLease = Nothing
+            End If
+            LoadComplete = True
+            BeginInvoke(Sub()
+                            If Not IsDisposed AndAlso Not Disposing Then Close()
+                        End Sub)
+            Exit Sub
         End Try
         AddHandler TapeUtils.IOCtlStart, Sub() Threading.Interlocked.Increment(_IOCtlNum)
         AddHandler TapeUtils.IOCtlFinished, Sub() Threading.Interlocked.Decrement(_IOCtlNum)
@@ -11193,6 +11236,11 @@ Public Class LTFSWriter
         Try
             TapeUtils.CloseTapeDrive(driveHandle)
         Catch
+        Finally
+            If _deviceLease IsNot Nothing Then
+                _deviceLease.Dispose()
+                _deviceLease = Nothing
+            End If
         End Try
     End Sub
 

@@ -1,4 +1,5 @@
 Imports System
+Imports System.Diagnostics
 Imports System.IO
 Imports System.Text
 Imports Serilog
@@ -36,7 +37,9 @@ Public Module AppLogging
         End Get
     End Property
 
-    Public Sub Initialize(requestedDirectory As String, informationEnabled As Boolean)
+    Public Sub Initialize(requestedDirectory As String,
+                          informationEnabled As Boolean,
+                          Optional sessionId As String = Nothing)
         SyncLock StateLock
             InformationLevel.MinimumLevel = If(informationEnabled,
                                                LogEventLevel.Information,
@@ -45,12 +48,33 @@ Public Module AppLogging
             If _initialized Then Return
 
             _logDirectory = ResolveLogDirectory(requestedDirectory)
-            _runId = Guid.NewGuid().ToString("N").Substring(0, 8)
+            _runId = If(String.IsNullOrWhiteSpace(sessionId),
+                        Guid.NewGuid().ToString("N").Substring(0, 8),
+                        sessionId.Trim())
 
-            Dim normalLogPath = Path.Combine(_logDirectory, "application-.log")
-            Dim scsiLogDirectory = Path.Combine(_logDirectory, "scsi")
+            Dim sessionLog As Boolean = Not String.IsNullOrWhiteSpace(sessionId)
+            Dim normalLogPath As String
+            Dim scsiLogDirectory As String
+            Dim scsiLogPath As String
+            Dim sharedFile As Boolean
+            Dim rollingInterval As RollingInterval
+
+            If sessionLog Then
+                Dim fileStem = SanitizeFileName(_runId)
+                normalLogPath = Path.Combine(_logDirectory, $"{fileStem}.log")
+                scsiLogDirectory = _logDirectory
+                scsiLogPath = Path.Combine(_logDirectory, $"{fileStem}-scsi.jsonl")
+                sharedFile = False
+                rollingInterval = RollingInterval.Infinite
+            Else
+                normalLogPath = Path.Combine(_logDirectory, "application-.log")
+                scsiLogDirectory = Path.Combine(_logDirectory, "scsi")
+                scsiLogPath = Path.Combine(scsiLogDirectory, "scsi-.jsonl")
+                sharedFile = True
+                rollingInterval = RollingInterval.Day
+            End If
+
             Directory.CreateDirectory(scsiLogDirectory)
-            Dim scsiLogPath = Path.Combine(scsiLogDirectory, "scsi-.jsonl")
 
             Dim normalFormatter As New ExpressionTemplate(
                 "{@t:yyyy-MM-dd HH:mm:ss.fff zzz} [{@l:u3}]" &
@@ -71,6 +95,7 @@ Public Module AppLogging
             configuration.Enrich.WithThreadName()
             configuration.Enrich.WithProperty("Application", "LTFSCopyGUI")
             configuration.Enrich.WithProperty("RunId", _runId)
+            configuration.Enrich.WithProperty("ProcessId", Process.GetCurrentProcess().Id)
 
             ' Normal events are human-readable. SCSI console events are routed
             ' exclusively to the JSONL sink below by an expression filter.
@@ -82,11 +107,11 @@ Public Module AppLogging
                             asyncSink.File(
                                 normalFormatter,
                                 normalLogPath,
-                                rollingInterval:=RollingInterval.Day,
+                                rollingInterval:=rollingInterval,
                                 rollOnFileSizeLimit:=True,
                                 fileSizeLimitBytes:=NormalLogFileSize,
                                 retainedFileCountLimit:=31,
-                                shared:=True,
+                                shared:=sharedFile,
                                 flushToDiskInterval:=TimeSpan.FromSeconds(1),
                                 encoding:=New UTF8Encoding(False))
                         End Sub,
@@ -104,11 +129,11 @@ Public Module AppLogging
                             asyncSink.File(
                                 scsiFormatter,
                                 scsiLogPath,
-                                rollingInterval:=RollingInterval.Day,
+                                rollingInterval:=rollingInterval,
                                 rollOnFileSizeLimit:=True,
                                 fileSizeLimitBytes:=ScsiLogFileSize,
                                 retainedFileCountLimit:=31,
-                                shared:=True,
+                                shared:=sharedFile,
                                 flushToDiskInterval:=TimeSpan.FromSeconds(1),
                                 encoding:=New UTF8Encoding(False))
                         End Sub,
@@ -148,10 +173,17 @@ Public Module AppLogging
     End Sub
 
     Private Function ResolveLogDirectory(requestedDirectory As String) As String
-        Dim fallback = Path.Combine(
+        Dim fallbackRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "LTFSCopyGUI",
             "log")
+        Dim fallback = fallbackRoot
+        If Not String.IsNullOrWhiteSpace(requestedDirectory) AndAlso
+           String.Equals(Path.GetFileName(requestedDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)),
+                         "writer",
+                         StringComparison.OrdinalIgnoreCase) Then
+            fallback = Path.Combine(fallbackRoot, "writer")
+        End If
 
         For Each candidate In {requestedDirectory, fallback}
             If String.IsNullOrWhiteSpace(candidate) Then Continue For
@@ -159,6 +191,17 @@ Public Module AppLogging
         Next
 
         Return If(String.IsNullOrWhiteSpace(requestedDirectory), fallback, requestedDirectory)
+    End Function
+
+    Private Function SanitizeFileName(value As String) As String
+        Dim result As New StringBuilder(If(value, String.Empty))
+        For i As Integer = 0 To result.Length - 1
+            If Array.IndexOf(Path.GetInvalidFileNameChars(), result(i)) >= 0 Then
+                result(i) = "_"c
+            End If
+        Next
+        If result.Length = 0 Then Return "session"
+        Return result.ToString()
     End Function
 
     Private Function CanWriteDirectory(directoryPath As String) As Boolean

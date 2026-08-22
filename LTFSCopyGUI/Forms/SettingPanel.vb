@@ -19,7 +19,7 @@ Public Class SettingPanel
             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Settings")
                 Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", _logSessionId)
                     Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "Changed")
-                        Log.Information("Setting value changed. PropertyName={PropertyName}.", If(e.PropertyDescriptor Is Nothing, String.Empty, e.PropertyDescriptor.Name))
+                        Log.Information("Setting value changed. PropertyName={PropertyName}.", If(e.ChangedItem Is Nothing, String.Empty, e.ChangedItem.Label))
                     End Using
                 End Using
             End Using

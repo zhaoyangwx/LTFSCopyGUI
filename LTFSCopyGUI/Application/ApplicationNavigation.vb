@@ -69,16 +69,19 @@ Public Module ApplicationNavigation
         End Using
         If Not EnsureAdministrator("writer", normalizedTapeDrive, If(offlineMode, "offline", String.Empty)) Then Return
 
-        Dim writer As New LTFSWriter With {
-            .TapeDrive = normalizedTapeDrive,
-            .OfflineMode = offlineMode
-        }
-        writer.Show()
-        writer.BringToFront()
+        Dim sessionId = $"writer-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+        Dim writerProcess = ApplicationElevation.StartWriterProcess(normalizedTapeDrive, sessionId, offlineMode)
+        If writerProcess Is Nothing Then Return
+
         Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationNavigation))
             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "Navigation")
                 Using eventTypeScope As IDisposable = LogContext.PushProperty("EventType", "WindowOpen")
-                    Log.Information("Writer window opened. TapeDrive={TapeDrive} OfflineMode={OfflineMode}.", normalizedTapeDrive, offlineMode)
+                    Using sessionScope As IDisposable = LogContext.PushProperty("SessionId", sessionId)
+                        Log.Information("Writer process requested for tape drive. TapeDrive={TapeDrive} OfflineMode={OfflineMode} ProcessId={ProcessId}.",
+                                        normalizedTapeDrive,
+                                        offlineMode,
+                                        writerProcess.Id)
+                    End Using
                 End Using
             End Using
         End Using

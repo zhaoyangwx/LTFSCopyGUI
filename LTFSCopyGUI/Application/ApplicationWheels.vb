@@ -1189,7 +1189,7 @@ Partial Public Class ApplicationWheels
     End Property
     Public Shared Function TryExecute(ByVal command As Func(Of Byte()), Optional ByVal AutoRetryCount As Integer = 0) As Boolean
         Dim succ As Boolean = False
-        Dim operationId As String = $"scsi-{Guid.NewGuid().ToString("N").Substring(0, 8)}"
+        Dim operationId As String = $"scsi-{Global.System.Guid.NewGuid().ToString("N").Substring(0, 8)}"
         Using sourceContextScope As IDisposable = LogContext.PushProperty("SourceContext", NameOf(ApplicationWheels))
             Using categoryScope As IDisposable = LogContext.PushProperty("Category", "SCSI")
                 Using operationScope As IDisposable = LogContext.PushProperty("OperationId", operationId)

@@ -1,4 +1,5 @@
 Imports System.ComponentModel
+Imports System.Collections.Generic
 Imports System.IO
 Imports System.Runtime.InteropServices
 Imports Microsoft.VisualBasic.ApplicationServices
@@ -68,7 +69,25 @@ Namespace My
         End Function
 
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
-            AppLogging.Initialize(Path.Combine(Windows.Forms.Application.StartupPath, "log"), Settings.LTFSWriter_LogEnabled)
+            Dim writerProcessArgumentIndex As Integer = -1
+            For commandIndex As Integer = 0 To e.CommandLine.Count - 1
+                Dim commandArgument As String = e.CommandLine(commandIndex)
+                If commandArgument.StartsWith("/") Then commandArgument = "-" & commandArgument.TrimStart("/"c)
+                If String.Equals(commandArgument, "-writer-process", StringComparison.OrdinalIgnoreCase) Then
+                    writerProcessArgumentIndex = commandIndex
+                    Exit For
+                End If
+            Next
+
+            Dim logDirectory As String = Path.Combine(Windows.Forms.Application.StartupPath, "log")
+            Dim writerSessionId As String = Nothing
+            If writerProcessArgumentIndex >= 0 Then
+                logDirectory = Path.Combine(logDirectory, "writer")
+                If writerProcessArgumentIndex + 2 < e.CommandLine.Count Then
+                    writerSessionId = e.CommandLine(writerProcessArgumentIndex + 2)
+                End If
+            End If
+            AppLogging.Initialize(logDirectory, Settings.LTFSWriter_LogEnabled, writerSessionId)
             If Not Directory.Exists(Settings.cfgPath) Then Directory.CreateDirectory(Settings.cfgPath)
             '旧设定迁移
             If File.Exists(Path.Combine(Windows.Forms.Application.StartupPath, "lang.ini")) Then
@@ -178,17 +197,31 @@ Namespace My
                             ApplicationNavigation.ScheduleStartupNavigation(param(i + 1), routeArguments)
                             MainForm = Form1
                             Exit For
+                        Case "-writer-process"
+                            If Not CheckUAC(e) Then Return
+                            If i >= param.Count - 1 Then Exit For
+
+                            Dim tapeDrive As String = NormalizeTapeDrive(param(i + 1))
+                            Dim sessionId As String = Nothing
+                            If i + 2 < param.Count Then sessionId = param(i + 2)
+                            Dim offlineMode As Boolean = i + 3 < param.Count AndAlso
+                                                         String.Equals(param(i + 3), "offline", StringComparison.OrdinalIgnoreCase)
+
+                            Dim writer As New LTFSWriter(sessionId) With {
+                                .TapeDrive = tapeDrive,
+                                .OfflineMode = offlineMode
+                            }
+                            If offlineMode Then writer.ExtraPartitionCount = 1
+                            MainForm = writer
+                            Exit For
                         Case "-t"
                             If Not CheckUAC(e) Then Return
                             If i < param.Count - 1 Then
                                 Dim TapeDrive As String = NormalizeTapeDrive(param(i + 1))
-                                Dim LWF As New LTFSWriter With {.TapeDrive = TapeDrive, .OfflineMode = Not IndexRead}
-                                If Not IndexRead Then LWF.ExtraPartitionCount = 1
-                                AddHandler LWF.TapeEjected, Sub()
-                                                                TapeUtils.CloseTapeDrive(LWF.driveHandle)
-                                                                LWF.SetStatusLight(LTFSWriter.LWStatus.NotReady)
-                                                            End Sub
-                                MainForm = LWF
+                                Dim routeArguments As New List(Of String) From {TapeDrive}
+                                If Not IndexRead Then routeArguments.Add("offline")
+                                ApplicationNavigation.ScheduleStartupNavigation("writer", routeArguments)
+                                MainForm = Form1
                                 Exit For
                             End If
                         Case "-f"
